@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94abd0fdf0d1c4344bf98800c708d622, type: 3}
+  m_Name: Camera_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.CameraSettings
+  mouseSensitivity: 0.1
+  invertMouseY: 0
+  gamepadYawSpeed: 270
+  gamepadPitchSpeed: 180
+  gamepadResponseExponent: 2
+  invertGamepadY: 0
+  pitchLimit: 89
+  baseFov: 70
+  fovBonusAtMaxSpeed: 12
+  fovSpeedMin: 8
+  fovSpeedMax: 20
+  fovLerpSpeed: 8

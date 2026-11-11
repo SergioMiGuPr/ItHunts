@@ -1,6 +1,6 @@
 # Mouvement
 
-**Status:** designed · **Updated:** 2026-11-11 · [GDD](../../GDD.md)
+**Status:** in progress · **Updated:** 2026-11-11 · [GDD](../../GDD.md) · [Implementation](implementation.md) · [Testing](testing.md)
 
 Le joueur court, saute, glisse, rebondit sur les murs et enchaîne les sauts sans perdre son
 élan. C'est sa seule défense contre le boss traqueur, plus rapide que la course de base : la
@@ -18,19 +18,31 @@ est la survie ».
 4. **Air (façon Source) :** l'accélération ne s'applique que sur la composante de la direction
    voulue, plafonnée à une petite vitesse. Tourner la souris en strafant fait donc gagner de la
    vitesse, sans plafond strict.
+   **Contrôle aérien (façon CPMA / Deadlock) :** en avançant **sans strafer** (entrée à moins
+   d'environ 19° de l'avant), la vitesse acquise tourne vers la direction de la caméra **sans
+   changer de valeur**. En strafant, il ne s'applique pas : le gain du bunny hop reste intact.
 5. **Saut :** valable pendant le coyote time après avoir quitté un bord ; une pression juste
    avant l'atterrissage est mémorisée (buffer). Relâcher tôt coupe la vitesse verticale (hauteur
    variable) ; la gravité est plus forte en descente.
 6. **Bunny hop :** un saut pris dans la fenêtre d'atterrissage (buffer) ne subit **aucune
    friction** au sol ce pas-là. La vitesse horizontale est conservée intégralement.
-7. **Glissade :** déclenchée au sol, au-dessus d'une vitesse minimale ; donne un petit bonus de
+   **Auto-bunny hop** (option, activée par défaut) : maintenir le saut fait resauter à chaque
+   atterrissage ; maintenir ne déclenche jamais de saut en l'air.
+7. **Sauts multiples :** `maxJumps` sauts au total avant de retoucher le sol (2 par défaut : 1 au
+   sol + 1 en l'air ; des améliorations pourront l'augmenter). Un saut en l'air demande un nouvel
+   appui, annule la chute et **garde la vitesse horizontale**. Les sauts se rechargent au sol et
+   au contact d'un mur (branché avec la détection des murs). Tomber d'un bord sans sauter fait
+   perdre le saut au sol une fois le coyote time passé.
+8. **Vitesse :** pas de plafond bas sur la vitesse gagnée (bunny hop, glissade, murs). Seul un
+   plafond de sécurité élevé existe ; la limite vient du nombre de sauts (D-012).
+9. **Glissade :** déclenchée au sol, au-dessus d'une vitesse minimale ; donne un petit bonus de
    vitesse (avec recharge), réduit la hitbox, et a une friction très faible. **En pente
    descendante, la gravité ajoute de la vitesse** le long de la pente. Elle s'arrête sous une
    vitesse de sortie, ou quand on la relâche. Sauter depuis une glissade garde la vitesse.
    **Elle ne coûte pas d'endurance** (D-010).
-8. **Wall slide :** en l'air, contre un mur presque vertical, en poussant vers lui : la chute est
+10. **Wall slide :** en l'air, contre un mur presque vertical, en poussant vers lui : la chute est
    plafonnée et la vitesse le long du mur est conservée.
-9. **Wall jump :** depuis un wall slide (ou dans un court délai après l'avoir quitté) : impulsion
+11. **Wall jump :** depuis un wall slide (ou dans un court délai après l'avoir quitté) : impulsion
    loin du mur + vers le haut, en **gardant la vitesse tangentielle**. Pas deux wall jumps de
    suite sur le même mur sans toucher le sol ou un autre mur.
 
@@ -47,6 +59,11 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 | Vitesse d'arrêt (friction minimale) | 2.5 | m/s | |
 | Accélération en l'air | 10 | ×vitesse/s | contrôle du strafe |
 | Plafond de vitesse voulue en l'air | 1 | m/s | gain du bunny hop |
+| Contrôle aérien (0 = Source pur, 1 = instantané) | 0.15 | part de l'angle / tick | ≈ 60 % du virage en 0.1 s, 90 % en 0.25 s |
+| Sauts au total (sol + air) | 2 | sauts | |
+| Hauteur d'un saut en l'air | 1.3 | m | |
+| Auto-bunny hop | activé | — | |
+| Plafond de sécurité de la vitesse horizontale | 50 | m/s | ne doit jamais se sentir en jeu |
 | Gravité | 20 | m/s² | sensation de poids |
 | Multiplicateur de gravité en chute | 1.5 | × | chute nerveuse, pas brutale |
 | Vitesse de chute max | 35 | m/s | chutes longues |
@@ -77,8 +94,9 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 | FOV en plus à pleine vitesse | +12 | ° | atteint à 20 m/s, à partir de 8 m/s |
 | Vitesse d'ajustement du FOV | 8 | /s | sans à-coups |
 | Inclinaison max de la vue (haut / bas) | ±89 | ° | viser le sol sous soi (répulsion) |
-| Sensibilité souris | 0.1 | °/point | réglable |
-| Rotation max à la manette / courbe | 270 / 2 | °/s / exposant | visée fine |
+| Sensibilité souris | 0.1 | °/point | réglable ; inversion Y possible |
+| Manette : rotation horizontale / verticale max | 270 / 180 | °/s | réglable ; inversion Y possible |
+| Manette : courbe de réponse du stick | 2 | exposant | visée fine au centre |
 
 ## Cas particuliers
 
@@ -89,10 +107,16 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 
 ## Questions ouvertes
 
-- [ASSUMPTION] Pas de plafond de vitesse global ; un plafond doux à 25 m/s si le bunny hop casse
-  les arènes.
+- Saut « un peu flottant » au premier playtest : gravité et hauteur à revoir plus tard
+  (accepté tel quel pour l'instant).
+- **Écart de vitesse avec le traqueur (à traiter avec le traqueur, pas maintenant) :** pic de
+  26 m/s en bunny hop au playtest, soit presque 3 × la vitesse du traqueur (9-11 m/s). Pistes :
+  le traqueur coupe les trajectoires, prend des raccourcis, accélère quand il voit le joueur ;
+  des arènes qui cassent l'élan. Voir [boss traqueur](../boss-traqueur/design.md).
 
 ## History
 
 - 2026-11-11 : designed.
 - 2026-11-11 : glissade sans coût d'endurance (D-010).
+- 2026-11-11 : playtest de l'étape 1 ; ajout du contrôle aérien, de l'auto-bunny hop, des sauts
+  multiples et du plafond de sécurité à 50 m/s (D-012).

@@ -4,9 +4,9 @@
 
 ## Étape en cours
 
-2 — Mouvement de base : plan du prototype en greybox écrit dans
-`docs/design/features/mouvement/implementation.md` (point 3 de PROMPT-DE-LANCEMENT.md), en
-attente de l'accord de l'utilisateur. Prochaine action : construire course + saut seulement.
+2 — Mouvement de base. Sous-étape 1 (course, saut, contrôle aérien, auto-bunny hop, 2 sauts)
+**validée en playtest et commitée**. En cours : sous-étape glissade (glissade, glissade en pente,
+passage bas). Ensuite : wall slide et wall jump avec élan (+ recharge des sauts au mur).
 
 ## Fait
 
@@ -28,9 +28,19 @@ attente de l'accord de l'utilisateur. Prochaine action : construire course + sau
   traqueur dans `docs/design/features/` (vérificateur game-docs : 0 erreur). GDD 0.2 validé
   par l'utilisateur (D-008 à D-011).
 
+- 2026-11-11 — Mouvement, sous-étape 1 (course et saut) : simulation pure à 60 Hz
+  (`MovementMotor`), CharacterController, `PlayerInput` (schémas clavier-souris et manette),
+  caméra Cinemachine 3 avec FOV selon la vitesse, `MovementSettings` et `CameraSettings`
+  (sensibilités souris et manette), debug F3 / Select, scène `Test_Movement` générée par le menu
+  *ItHunts > Reconstruire…*. Compilation sans erreur ni avertissement ; 14 tests EditMode verts
+  (et vérifiés capables d'échouer) ; Play Mode vérifié par la CLI.
+- 2026-11-11 — Corrections après playtest : contrôle aérien façon CPMA (`airControl` 0.15, W seul),
+  auto-bunny hop (activé), sauts multiples (`maxJumps` 2), plafond de sécurité 50 m/s. 28 tests
+  EditMode verts. Recharge des sauts au mur : à brancher avec la détection des murs.
+
 ## Décisions
 
-Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-007).
+Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-012).
 
 - Moteur : Unity 6.3 LTS (6000.3.28f1), URP.
 - Vue première personne, deux orbes (magnétisme, télékinésie), roguelite.
@@ -42,10 +52,22 @@ Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-007).
 
 ## Valeurs de réglage validées en playtest
 
-- (à remplir)
+- 2026-11-11 : course au sol validée (7.5 m/s, accélération 10, friction 6, arrêt 2.5 m/s).
+  Saut accepté pour l'instant (1.3 m, gravité 20, chute ×1.5), jugé un peu flottant.
+- 2026-11-11 : contrôle aérien 0.15, auto-bunny hop activé, 2 sauts, plafond 50 m/s validés.
+  Pic de vitesse mesuré en bunny hop : 26 m/s.
 
 ## Problèmes connus / à faire
 
 - Serveur MCP Blender : échec de connexion. Pas bloquant avant l'étape DA (10).
 - Editor.log : deux « Pipe is broken » du runner ILPP à la réouverture, sans effet
   (bruit connu lors des recompilations).
+- Le vérificateur `check_unity_project.py` signale 4 GUID introuvables dans
+  `Assets/Settings/DefaultVolumeProfile.asset` (modèle URP) : faux positif, Unity charge les
+  19 composants sans manque.
+- En Play Mode dans l'éditeur, le clavier n'est lu que si la fenêtre Game a le focus (réglage
+  Input System par défaut) : le clavier simulé par la CLI ne passe pas.
+- Pas fixe passé à 60 Hz (`ProjectSettings/TimeManager.asset`).
+- Unity est réglé sur « recompiler et continuer à jouer » : une recompilation pendant le Play
+  Mode provoque des NullReferenceException (état du joueur perdu). Proposé : « recompiler à la
+  fin du Play Mode » (Preferences > General > Script Changes While Playing).

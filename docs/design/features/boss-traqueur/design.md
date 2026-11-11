@@ -60,6 +60,10 @@ ScriptableObject `StalkerBossSettings`. Valeurs de départ [ASSUMPTION].
 ## Questions ouvertes
 
 - Déroulé exact du combat final (phases, points faibles).
+- **À traiter en construisant le traqueur :** un bon joueur va presque 3 × plus vite que lui
+  (26 m/s en bunny hop au playtest du mouvement, contre 9-11 m/s). Pistes : couper les
+  trajectoires (viser où le joueur va), raccourcis réservés, accélération quand il voit le
+  joueur, arènes qui cassent l'élan. Ne pas brider le mouvement pour autant (D-012).
 - [ASSUMPTION] Temps de grâce de 60 s au début de chaque zone.
 
 ## History
