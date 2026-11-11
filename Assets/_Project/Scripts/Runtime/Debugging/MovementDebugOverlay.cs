@@ -101,7 +101,19 @@ namespace ItHunts.Debugging
             _text.AppendLine($"Contrôle : {scheme}");
             _text.AppendLine($"Vitesse horizontale : {s.HorizontalSpeed:0.00} m/s   (pic sur 1 s : {peak:0.00})");
             _text.AppendLine($"Vitesse verticale : {s.Velocity.y:0.00} m/s");
-            _text.AppendLine($"État : {(s.Mode == MovementMode.Ground ? "Sol" : "Air")}   Au sol : {(s.Grounded ? "oui" : "non")}");
+            string mode = s.Mode switch
+            {
+                MovementMode.Ground => s.Crouched ? "Sol (accroupi)" : "Sol",
+                MovementMode.Slide => "Glissade",
+                _ => "Air",
+            };
+            int boostTicks = MovementSettings.SecondsToTicks(cfg.slideBoostCooldown, dt);
+            int boostLeft = s.LastSlideBoostTick == MovementState.NeverTick ? 0
+                : Mathf.Max(0, boostTicks - (s.Tick - s.LastSlideBoostTick));
+            _text.AppendLine($"État : {mode}   Au sol : {(s.Grounded ? "oui" : "non")}");
+            _text.AppendLine(boostLeft > 0
+                ? $"Bonus de glissade : recharge {boostLeft * dt:0.0} s"
+                : "Bonus de glissade : prêt");
             _text.AppendLine($"Pente : {Vector3.Angle(s.GroundNormal, Vector3.up):0.0}°");
             _text.AppendLine($"Coyote : {coyoteLeft}/{coyoteTicks} ticks   Buffer : {bufferLeft}/{bufferTicks} ticks");
             _text.AppendLine($"Sauts restants : {Mathf.Max(0, cfg.maxJumps - s.JumpsUsed)}/{cfg.maxJumps}   " +

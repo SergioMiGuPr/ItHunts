@@ -20,6 +20,9 @@ namespace ItHunts.Movement
         /// <summary>Tick auquel le dernier appui de saut a été pris en compte (MovementState.NeverTick si aucun).</summary>
         public int JumpPressedTick;
 
+        /// <summary>Bouton de glissade / accroupi maintenu.</summary>
+        public bool SlideHeld;
+
         public static MovementInput Neutral => new MovementInput { JumpPressedTick = MovementState.NeverTick };
     }
 }

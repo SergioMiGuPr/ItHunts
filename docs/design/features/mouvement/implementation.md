@@ -4,8 +4,8 @@
 
 ## Approach
 
-Étape 1 (course et saut) construite ; glissade, bunny hop dédié et murs sont encore à faire
-(voir « Étapes de construction »). Les chiffres vivent dans [design.md](design.md).
+Étapes 1 (course, saut, contrôle aérien, auto-bunny hop, sauts multiples) et 3 (glissade,
+accroupi) construites ; les murs sont à faire (voir « Étapes de construction »). Les chiffres vivent dans [design.md](design.md).
 
 Trois couches séparées, pour que l'écran partagé et la prédiction réseau arrivent sans réécriture :
 
@@ -26,8 +26,9 @@ de marche ; recollage au sol en descente jusqu'à `groundSnapDistance`. *Alterna
 M1 :* Rigidbody cinématique avec notre propre « cast and slide » (plus de travail avant de pouvoir
 sentir quoi que ce soit) ; l'interface permet de basculer plus tard.
 
-**Machine à états :** `enum MovementMode { Ground, Air }` évalué une fois par tick ; Glissade
-et WallSlide viendront s'ajouter. Le bunny hop de base est déjà là, par construction : le tick
+**Machine à états :** `enum MovementMode { Ground, Air, Slide }` évalué une fois par tick, plus
+un drapeau `Crouched` (capsule basse) ; WallSlide viendra s'ajouter. La hauteur de capsule est
+pilotée par la simulation (`ICollisionProbe.SetHeight`, `HasHeadroom` par SphereCast vers le haut). Le bunny hop de base est déjà là, par construction : le tick
 du saut n'applique pas de friction.
 
 ## Code map
@@ -35,11 +36,11 @@ du saut n'applique pas de friction.
 | Fichier | Rôle |
 |---|---|
 | `Assets/_Project/Scripts/Runtime/ItHunts.Runtime.asmdef` | assembly du jeu (Input System, Cinemachine) |
-| `Assets/_Project/Input/PlayerControls.inputactions` | carte « Player » : Move, Look, LookGamepad, Jump, ToggleDebug, Pause ; schémas `KeyboardMouse` et `Gamepad` |
+| `Assets/_Project/Input/PlayerControls.inputactions` | carte « Player » : Move, Look, LookGamepad, Jump, Slide, ToggleDebug, Pause ; schémas `KeyboardMouse` et `Gamepad` |
 | `.../Runtime/Input/PlayerInputReader.cs` | `PlayerInput` → valeurs par image, appuis horodatés en ticks |
 | `.../Runtime/Movement/MovementInput.cs`, `MovementState.cs` | structures de données (état en ticks) |
-| `.../Runtime/Movement/MovementMath.cs` | friction, accélération au sol, accélération en l'air façon Source |
-| `.../Runtime/Movement/MovementMotor.cs` | simulation d'un tick : sol, saut (coyote, buffer, coupe), gravité en demi-pas |
+| `.../Runtime/Movement/MovementMath.cs` | friction, accélération au sol et en l'air (Source), contrôle aérien, accélération en pente, plafond |
+| `.../Runtime/Movement/MovementMotor.cs` | simulation d'un tick : sol, accroupi, glissade, saut (coyote, buffer, coupe, sauts multiples, auto-bunny hop), contrôle aérien, gravité en demi-pas |
 | `.../Runtime/Movement/ICollisionProbe.cs`, `CharacterControllerProbe.cs` | collisions |
 | `.../Runtime/Player/PlayerMotor.cs` | FixedUpdate → `Step`, interpolation, retour au départ sous y = −30 m |
 | `.../Runtime/Player/PlayerLook.cs` | sensibilités souris et manette, pitch, FOV, verrouillage du curseur |
@@ -49,7 +50,7 @@ du saut n'applique pas de friction.
 | `Assets/_Project/Prefabs/Player.prefab` | CharacterController, PlayerInput, scripts, ViewRig (caméra + CinemachineCamera) |
 | `Assets/_Project/Settings/Movement_Default.asset`, `Camera_Default.asset` | réglages en cours |
 | `Assets/Scenes/Test_Movement.unity` | banc d'essai (généré par le builder, modifiable ensuite) |
-| `Assets/_Project/Tests/EditMode/MovementTests.cs` | 14 tests (sol factice, sans physique Unity) |
+| `Assets/_Project/Tests/EditMode/MovementTests.cs` | 45 tests (sol factice avec pente et plafond, sans physique Unity) |
 
 **Règles multijoueur respectées :** aucun singleton ; tout l'état sur le prefab ; caméra dans le
 prefab et non taguée MainCamera (une par joueur) ; `PlayerInput` (puis `PlayerInputManager` pour
@@ -59,7 +60,11 @@ l'écran partagé) ; simulation à pas fixe à partir d'une structure d'entrée.
 
 - **Config :** `MovementSettings` (`runSpeed`, `groundAcceleration`, `groundFriction`, `stopSpeed`,
   `airAcceleration`, `airWishSpeedCap`, `gravity`, `fallGravityMultiplier`, `maxFallSpeed`,
-  `jumpHeight`, `jumpCutMultiplier`, `coyoteTime`, `jumpBuffer`, capsule, `slopeLimit`,
+  `jumpHeight`, `jumpCutMultiplier`, `coyoteTime`, `jumpBuffer`, `airControl`, `maxJumps`,
+  `airJumpHeight`, `autoBunnyHop`, glissade (`slideMinSpeed`, `slideBoost`, `slideBoostCooldown`,
+  `slideDeceleration`, `slideMinSpeedUnderObstacle`, `slideSlopeAcceleration`, `slideExitSpeed`,
+  `slideSteering`), accroupi
+  (`crouchHeight`, `crouchEyeHeight`, `crouchSpeed`), `maxHorizontalSpeed`, capsule, `slopeLimit`,
   `stepOffset`, `groundSnapDistance`) ; `CameraSettings` (`mouseSensitivity`, `invertMouseY`,
   `gamepadYawSpeed`, `gamepadPitchSpeed`, `gamepadResponseExponent`, `invertGamepadY`,
   `pitchLimit`, FOV). Modifiables en Play Mode ; **les modifications restent dans l'asset**.
@@ -89,7 +94,7 @@ l'écran partagé) ; simulation à pas fixe à partir d'une structure d'entrée.
 | Vitesse d'arrêt | 2.5 m/s | **Quake / Source** (`sv_stopspeed` 100 unités/s) |
 | Accélération en l'air / plafond | 10 / 1 m/s | **Source** (`sv_airaccelerate` 10, plafond ≈ 30 unités/s) : gain de vitesse en strafe |
 | Bunny hop | aucune friction sur le tick du saut | mécanique de **Quake / Source** |
-| Glissade (bonus, friction, pente) | 2 m/s, 0.5, g·sin θ | notre choix, dans l'esprit de **Titanfall 2** |
+| Glissade (bonus, décélération, pente) | 2 m/s, 3 m/s², g·sin θ | notre choix, dans l'esprit de **Titanfall 2 / Apex / Deadlock** (élan conservé, décélération constante) ; 3 m/s² fait durer une glissade à 20 m/s environ 6 s |
 | Wall jump : hauteur | 0.8 × saut | skill `platformer` |
 | Wall jump : impulsion | 7.5 m/s (= course) | skill `platformer` (≈ 1.25 × course en 2D), réduit car la vitesse le long du mur est conservée |
 | Wall-coyote / verrou de direction | 0.10 / 0.15 s | skill `platformer` (0.08-0.12 s / 0.15 s ; Celeste 0.16 s) |
@@ -104,15 +109,16 @@ Construite par `TestMovementSceneBuilder` : sol de 80 × 80 m avec repères tous
 d'enceinte ; blocs de 0.5 / 1 / 1.3 / 1.5 / 2 m (x = −20) ; escalier de marches de 0.25 m menant
 à des plateformes de 2 m de haut séparées par des trous de 2 à 7 m (x = 10) ; rampes de 15°,
 30°, 45° et 50° (x = 20 à 35). Départ en (0, 0, −10), face au nord (+z).
-À ajouter aux étapes suivantes : couloir de glissade et passage bas, cheminée, piste de bunny
-hop chronométrée.
+Glissade : couloir de 50 m (x = −32) avec un passage bas de 1.1 m ; longue rampe de 20° (x = 0,
+z = 28.5 à 45) vers une plateforme de 6 m. À ajouter : cheminée et murs de wall jump.
 
 ## Étapes de construction
 
-1. **Course et saut** — fait (2026-11-11).
-2. Bunny hop : piste chronométrée, réglage du gain en strafe.
-3. Glissade, glissade en pente, passage bas.
-4. Wall slide et wall jump, cheminée.
+1. **Course et saut** — fait et validé (2026-11-11), avec contrôle aérien, auto-bunny hop, sauts
+   multiples (D-012).
+2. Bunny hop : fait avec l'étape 1 (piste chronométrée pas encore construite).
+3. **Glissade, glissade en pente, passage bas, accroupi** — fait et validé (2026-11-11, D-013).
+4. Wall slide et wall jump avec élan, recharge des sauts au mur, cheminée.
 
 ## Risques pour le réseau
 
@@ -124,3 +130,6 @@ hop chronométrée.
 
 - 2026-11-11 : plan écrit.
 - 2026-11-11 : étape 1 (course et saut) implémentée.
+- 2026-11-11 : contrôle aérien, auto-bunny hop, sauts multiples, plafond de sécurité.
+- 2026-11-11 : glissade et accroupi.
+- 2026-11-11 : décélération constante et vitesse minimale sous obstacle (D-013).

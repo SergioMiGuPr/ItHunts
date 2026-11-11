@@ -237,12 +237,42 @@ namespace ItHunts.EditorTools
             for (int i = 0; i < angles.Length; i++)
                 Ramp($"Rampe {angles[i]}°", ramps, 20f + i * 5f, 5f, angles[i], 8f, 3f, rampMat);
 
+            BuildSlideArea(level, blockMat, platformMat, rampMat, wallMat);
+
             // Joueur.
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
             player.transform.SetPositionAndRotation(new Vector3(0f, 0f, -10f), Quaternion.identity);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddSceneToBuild(ScenePath);
+        }
+
+        /// <summary>
+        /// Couloir de glissade de 50 m (x = −32) avec un passage bas de 1.1 m, et longue rampe de 20°
+        /// (x = 0, de z = 28.5 à 45) qui monte à une plateforme de 6 m : on la redescend en glissant.
+        /// </summary>
+        private static void BuildSlideArea(Transform level, Material blockMat, Material platformMat,
+            Material rampMat, Material wallMat)
+        {
+            var corridor = new GameObject("Couloir de glissade 50 m").transform;
+            corridor.SetParent(level, false);
+            const float cx = -32f, z0 = -15f, z1 = 35f, inner = 4f, wallH = 3f;
+            float len = z1 - z0, zc = (z0 + z1) * 0.5f;
+            Box("Mur gauche", corridor, new Vector3(cx - inner * 0.5f - 0.5f, wallH * 0.5f, zc), new Vector3(1f, wallH, len), wallMat);
+            Box("Mur droit", corridor, new Vector3(cx + inner * 0.5f + 0.5f, wallH * 0.5f, zc), new Vector3(1f, wallH, len), wallMat);
+            // Passage bas : dalle dont le dessous est à 1.1 m (capsule de glissade : 0.9 m).
+            const float clearance = 1.1f, slab = 1.9f;
+            Box("Passage bas 1.1 m", corridor, new Vector3(cx, clearance + slab * 0.5f, 12f), new Vector3(inner, slab, 6f), blockMat);
+
+            var hill = new GameObject("Longue rampe 20°").transform;
+            hill.SetParent(level, false);
+            const float top = 6f, angle = 20f, width = 8f;
+            float horizontal = top / Mathf.Tan(angle * Mathf.Deg2Rad);   // ≈ 16.5 m
+            float slopeLength = top / Mathf.Sin(angle * Mathf.Deg2Rad);  // ≈ 17.5 m
+            const float platformZ0 = 45f, platformLen = 10f;
+            Ramp("Rampe 20°", hill, 0f, platformZ0 - horizontal, angle, slopeLength, width, rampMat);
+            Box("Plateforme 6 m", hill, new Vector3(0f, top * 0.5f, platformZ0 + platformLen * 0.5f),
+                new Vector3(width, top, platformLen), platformMat);
         }
 
         private static void Ramp(string name, Transform parent, float x, float zBottom, float angle, float length,

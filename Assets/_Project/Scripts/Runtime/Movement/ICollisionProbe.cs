@@ -21,6 +21,15 @@ namespace ItHunts.Movement
     {
         Vector3 Position { get; }
 
+        /// <summary>Hauteur actuelle de la capsule (m), pieds à la position.</summary>
+        float Height { get; }
+
+        /// <summary>Change la hauteur de la capsule en gardant les pieds en place.</summary>
+        void SetHeight(float height);
+
+        /// <summary>Vrai s'il y a la place de grandir jusqu'à targetHeight (pas de plafond au-dessus).</summary>
+        bool HasHeadroom(float targetHeight);
+
         /// <summary>Vrai si un sol marchable est juste sous les pieds ; normal = normale de ce sol.</summary>
         bool ProbeGround(out Vector3 normal);
 

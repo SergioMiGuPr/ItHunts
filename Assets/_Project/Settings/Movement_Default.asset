@@ -22,6 +22,17 @@ MonoBehaviour:
   maxJumps: 2
   airJumpHeight: 1.3
   autoBunnyHop: 1
+  slideMinSpeed: 6
+  slideBoost: 2
+  slideBoostCooldown: 0.8
+  slideDeceleration: 3
+  slideMinSpeedUnderObstacle: 5
+  slideSlopeAcceleration: 1
+  slideExitSpeed: 4
+  slideSteering: 0.05
+  crouchHeight: 0.9
+  crouchEyeHeight: 0.75
+  crouchSpeed: 3.5
   maxHorizontalSpeed: 50
   gravity: 20
   fallGravityMultiplier: 1.5

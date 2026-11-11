@@ -30,6 +30,22 @@ pas le CharacterController.
 - [x] Tomber d'un bord sans sauter laisse seulement le saut en l'air. *(MovementTests › SautsMultiples_TomberDUnBordLaisseLeSeulSautEnLAir)*
 - [x] La vitesse horizontale est plafonnée à 50 m/s. *(MovementTests › Securite_VitesseHorizontalePlafonnee)*
 - [ ] Les sauts se rechargent au contact d'un mur. *(pas encore : branché avec la détection des murs)*
+- [x] Entrer en glissade à 7.5 m/s donne +2 m/s et baisse la capsule à 0.9 m. *(MovementTests › Glissade_EntreeDonneLeBonusEtBaisseLaCapsule)*
+- [x] Sous 6 m/s, la touche accroupit ; la marche accroupie plafonne à 3.5 m/s. *(MovementTests › Glissade_SousLaVitesseMinimaleOnSAccroupit)*
+- [x] Le bonus de glissade ne revient qu'après 0.8 s. *(MovementTests › Glissade_LeBonusARechargeDe08s)*
+- [x] À plat, depuis la course, la glissade dure plus d'1 s (≈ 6.45 m/s après 1 s) puis s'arrête sous 4 m/s, accroupi si la touche reste tenue. *(MovementTests › Glissade_APlatRalentitLentementPuisSArrete)*
+- [x] En descente (30°), la glissade accélère ; en montée, elle freine. *(MovementTests › Glissade_EnDescenteAccelere, Glissade_EnMonteeFreine ; normale de pente simulée, géométrie plate)*
+- [x] Relâcher la touche relève le joueur. *(MovementTests › Glissade_RelacherRelevesLeJoueur)*
+- [x] Entrer en glissade à 20 m/s garde toute la vitesse, plus le bonus. *(MovementTests › Glissade_EntreeA20ConserveToutLElanPlusLeBonus)*
+- [x] Atterrir à 20 m/s en tenant la glissade garde toute la vitesse, plus le bonus. *(MovementTests › Glissade_AtterrirA20DepuisUnBunnyHopConserveLElan)*
+- [x] Une glissade lancée à 20 m/s dure entre 5 et 7 s sur le plat. *(MovementTests › Glissade_A20DurePlusieursSecondesAPlat)*
+- [x] La décélération est de 3 m/s² à 20 comme à 10 m/s. *(MovementTests › Glissade_DecelerationConstanteQuelleQueSoitLaVitesse)*
+- [x] Depuis 7.5 m/s, on traverse en glissade un passage bas de 10 m, touche tenue ou relâchée dessous, sans descendre sous 5 m/s. *(MovementTests › Glissade_TraverseUnPassageBasDe10mDepuis7v5(True/False) ; plafond factice)*
+- [x] Sous un plafond bas, on reste en bas et on ne peut pas sauter ; on se relève en sortant. *(MovementTests › Glissade_SousUnPlafondBasOnResteBasEtOnNeSautePas ; plafond factice)*
+- [x] Sauter depuis une glissade garde toute la vitesse et relève le joueur. *(MovementTests › Glissade_SauterGardeLaVitesseEtRelève)*
+- [x] Atterrir en tenant la touche, à 8 m/s, enchaîne sur une glissade. *(MovementTests › Glissade_AtterrirEnMaintenantLaToucheGlisse)*
+- [x] Saut et glissade tenus ensemble à l'atterrissage : le saut gagne. *(MovementTests › Glissade_SautEtGlissadeMaintenusALAtterrissage_LeSautGagne)*
+- [ ] Le vrai passage bas de 1.1 m se franchit en glissade et bloque le relevé. *(pas prouvé avec le CharacterController : playtest)*
 - [x] Dans `Test_Movement`, le joueur apparaît au sol (état Sol, 60 Hz), la caméra est à 1.6 m, FOV 70°, Cinemachine actif, sans erreur en console. *(Play Mode lancé par la CLI le 2026-11-11, état lu par `script eval`)*
 - [x] Un appui de saut injecté dans `PlayerInputReader` fait sauter puis retomber le vrai CharacterController. *(Play Mode 2026-11-11 : saut au tick 2516, retour au sol ; hauteur non mesurée en jeu)*
 - [ ] Les touches et la manette pilotent bien le joueur. *(pas prouvé : l'éditeur ignore le clavier simulé quand la fenêtre Game n'a pas le focus ; playtest de l'utilisateur)*
@@ -93,7 +109,30 @@ Le debug affiche maintenant « Sauts restants », « Auto-bhop » et « Contrôl
    l'atterrissage. Avec `maxJumps` = 3 : trois sauts.
 5. **Trous :** les trous de 6 et 7 m doivent maintenant passer avec le double saut ou le bunny hop.
 
+## Playtest — glissade
+
+Glissade : Ctrl gauche ou C (B / Rond à la manette), **maintenue**. Le debug affiche l'état
+(Glissade, Sol accroupi) et la recharge du bonus.
+
+1. **Plat :** courir puis glisser : +2 m/s (≈ 9.5 m/s), la vue descend ; la glissade dure
+   environ 1.8 s puis tu restes accroupi tant que tu tiens la touche. Relâcher te relève.
+1 bis. **Depuis un bunny hop** (≈ 20 m/s) : lâcher le saut, tenir la glissade avant
+   d'atterrir : la vitesse du debug ne baisse pas à l'entrée (+2 si le bonus est prêt), puis
+   descend doucement (3 m/s par seconde) ; la glissade dure plusieurs secondes.
+2. **Bonus :** deux glissades rapprochées : la seconde n'a pas le bonus (« recharge » dans le debug).
+3. **Passage bas** (couloir à gauche, x = −32) : y entrer en glissade depuis la course, même
+   en relâchant la touche dessous : tu traverses en glissant (jamais sous 5 m/s), sans pouvoir
+   sauter, et tu te relèves en sortant.
+4. **Longue rampe** (devant, plateforme de 6 m) : monter, puis redescendre en glissade : la
+   vitesse monte (≈ 9.5 m/s en haut, ≈ 14 m/s en bas). Glisser en montée freine.
+5. **Enchaînements :** glisse puis saute : la vitesse est gardée. Tiens la glissade en l'air :
+   tu glisses dès l'atterrissage. Tiens saut + glissade : le bunny hop continue.
+6. **Accroupi :** à l'arrêt, tenir la touche : marche lente (3.5 m/s).
+7. Refaire 1, 4 et 5 à la manette.
+
 ## History
 
 - 2026-11-11 : tests de l'étape 1.
 - 2026-11-11 : tests du contrôle aérien, de l'auto-bunny hop, des sauts multiples et du plafond.
+- 2026-11-11 : tests de la glissade et de l'accroupi.
+- 2026-11-11 : tests de conservation de l'élan, de durée et du passage bas (D-013).

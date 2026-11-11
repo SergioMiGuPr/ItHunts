@@ -73,6 +73,46 @@ namespace ItHunts.Movement
             return new Vector3(result.x, velocity.y, result.z);
         }
 
+        /// <summary>
+        /// Accélération horizontale due à la pente (m/s²) : g·sin θ le long de la pente, projetée à
+        /// l'horizontale (g·sin θ·cos θ), vers le bas de la pente. Nulle sur le plat.
+        /// </summary>
+        public static Vector3 SlopeAcceleration(Vector3 groundNormal, float gravity)
+        {
+            var downhill = new Vector3(groundNormal.x, 0f, groundNormal.z);
+            float sinTheta = downhill.magnitude;
+            if (sinTheta < 1e-4f)
+                return Vector3.zero;
+            float cosTheta = Mathf.Clamp01(groundNormal.y);
+            return downhill / sinTheta * (gravity * sinTheta * cosTheta);
+        }
+
+        /// <summary>Retire une décélération constante (m/s²) à la vitesse horizontale, sans l'inverser.</summary>
+        public static Vector3 Decelerate(Vector3 velocity, float deceleration, float dt)
+        {
+            var horizontal = new Vector3(velocity.x, 0f, velocity.z);
+            float speed = horizontal.magnitude;
+            if (speed < 1e-4f)
+                return new Vector3(0f, velocity.y, 0f);
+            float newSpeed = Mathf.Max(0f, speed - deceleration * dt);
+            horizontal *= newSpeed / speed;
+            return new Vector3(horizontal.x, velocity.y, horizontal.z);
+        }
+
+        /// <summary>
+        /// Garantit une vitesse horizontale minimale, dans la direction actuelle (ou fallbackDir à l'arrêt).
+        /// </summary>
+        public static Vector3 EnsureMinHorizontalSpeed(Vector3 velocity, float minSpeed, Vector3 fallbackDir)
+        {
+            var horizontal = new Vector3(velocity.x, 0f, velocity.z);
+            float speed = horizontal.magnitude;
+            if (speed >= minSpeed)
+                return velocity;
+            Vector3 dir = speed > 1e-3f ? horizontal / speed : fallbackDir;
+            horizontal = dir * minSpeed;
+            return new Vector3(horizontal.x, velocity.y, horizontal.z);
+        }
+
         /// <summary>Plafonne la vitesse horizontale (plafond de sécurité).</summary>
         public static Vector3 ClampHorizontal(Vector3 velocity, float maxSpeed)
         {

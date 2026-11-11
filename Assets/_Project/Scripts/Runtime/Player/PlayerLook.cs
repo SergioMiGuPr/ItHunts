@@ -23,6 +23,10 @@ namespace ItHunts.Player
         private float _yaw;
         private float _pitch;
         private float _fov;
+        private float _eyeHeight = -1f;
+
+        /// <summary>Rapidité de descente et de remontée de la vue en glissade / accroupi (/s).</summary>
+        private const float EyeHeightLerpSpeed = 15f;
 
         public float Yaw => _yaw;
         public float Pitch => _pitch;
@@ -80,9 +84,13 @@ namespace ItHunts.Player
             _yaw = Mathf.Repeat(_yaw, 360f);
             _pitch = Mathf.Clamp(_pitch, -settings.pitchLimit, settings.pitchLimit);
 
-            float eyeHeight = _motor != null && _motor.Settings != null ? _motor.Settings.eyeHeight : 1.6f;
+            float targetEye = 1.6f;
+            if (_motor != null && _motor.Settings != null)
+                targetEye = _motor.State.Crouched ? _motor.Settings.crouchEyeHeight : _motor.Settings.eyeHeight;
+            _eyeHeight = _eyeHeight < 0f ? targetEye : Mathf.Lerp(_eyeHeight, targetEye, 1f - Mathf.Exp(-EyeHeightLerpSpeed * dt));
+
             Vector3 feet = _motor != null ? _motor.InterpolatedPosition : transform.position;
-            viewRig.SetPositionAndRotation(feet + Vector3.up * eyeHeight, Quaternion.Euler(_pitch, _yaw, 0f));
+            viewRig.SetPositionAndRotation(feet + Vector3.up * _eyeHeight, Quaternion.Euler(_pitch, _yaw, 0f));
 
             UpdateFov(dt);
         }

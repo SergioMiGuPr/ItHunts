@@ -1,6 +1,6 @@
 # ItHunts — Game Design Document
 
-**Version:** 0.3 · **Updated:** 2026-11-11 · [Features](#feature-index) · [Decisions](#decisions) · [Change log](#change-log)
+**Version:** 0.4 · **Updated:** 2026-11-11 · [Features](#feature-index) · [Decisions](#decisions) · [Change log](#change-log)
 
 ## Résumé
 
@@ -110,6 +110,7 @@ Suivent l'ordre de travail de CLAUDE.md ; chaque jalon se termine par un playtes
 | D-010 | 2026-11-11 | La glissade ne coûte pas d'endurance ; durée de zone réglable (4 min en test) | glissade payante ; 20 min fixes | validation du GDD : l'endurance reste aux orbes ; tests rapides | [mouvement](features/mouvement/design.md), [boss](features/boss-traqueur/design.md) |
 | D-011 | 2026-11-11 | Premier prototype de zone : une zone, une goule, le traqueur | zone complète d'emblée | valider la tension de la traque avant le reste | jalon M3 |
 | D-012 | 2026-11-11 | Mouvement façon Deadlock : contrôle aérien (W seul), auto-bunny hop, 2 sauts (réglable), pas de plafond bas de vitesse (sécurité à 50 m/s) ; la limite vient du nombre de sauts | Source pur ; plafond doux à 25 m/s | playtest de l'étape 1 : W en l'air partait de côté au lieu de suivre la caméra | [mouvement](features/mouvement/design.md) |
+| D-013 | 2026-11-11 | Glissade façon Deadlock / Apex : élan conservé à 100 % à l'entrée, décélération constante (3 m/s²), vitesse minimale de 5 m/s sous un obstacle | friction proportionnelle à la vitesse (0.5 /s) ; fin de glissade en accroupi sous un plafond | playtest : le bunny hop perdait son élan en glissade, le passage bas finissait accroupi | [mouvement](features/mouvement/design.md) |
 
 ## Open questions
 
@@ -131,3 +132,4 @@ Suivent l'ordre de travail de CLAUDE.md ; chaque jalon se termine par un playtes
 **0.2 (2026-11-11):** GDD validé ; D-008 à D-011 (dégâts via améliorations, bonus en phase
 enragée, glissade sans endurance, zone de test de 4 min, premier prototype de zone) ; références.
 **0.3 (2026-11-11):** D-012, mouvement façon Deadlock après le premier playtest ([mouvement](features/mouvement/design.md)).
+**0.4 (2026-11-11):** D-013, glissade qui conserve l'élan ([mouvement](features/mouvement/design.md)).

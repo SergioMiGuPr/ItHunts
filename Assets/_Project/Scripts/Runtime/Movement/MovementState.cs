@@ -2,11 +2,12 @@ using UnityEngine;
 
 namespace ItHunts.Movement
 {
-    /// <summary>États de la machine à états du mouvement. Glissade et WallSlide arrivent aux étapes 3 et 4.</summary>
+    /// <summary>États de la machine à états du mouvement. WallSlide arrive à l'étape des murs.</summary>
     public enum MovementMode : byte
     {
         Ground,
         Air,
+        Slide,
     }
 
     /// <summary>
@@ -40,6 +41,12 @@ namespace ItHunts.Movement
         /// <summary>Sauts utilisés depuis le dernier contact avec le sol (ou un mur, à l'étape des murs).</summary>
         public int JumpsUsed;
 
+        /// <summary>Capsule basse (glissade ou accroupi).</summary>
+        public bool Crouched;
+
+        /// <summary>Tick du dernier bonus de glissade (recharge).</summary>
+        public int LastSlideBoostTick;
+
         public static MovementState Create(Vector3 position) => new MovementState
         {
             Tick = 0,
@@ -53,6 +60,8 @@ namespace ItHunts.Movement
             JumpRising = false,
             LastJumpTick = NeverTick,
             JumpsUsed = 0,
+            Crouched = false,
+            LastSlideBoostTick = NeverTick,
         };
 
         public float HorizontalSpeed => new Vector2(Velocity.x, Velocity.z).magnitude;

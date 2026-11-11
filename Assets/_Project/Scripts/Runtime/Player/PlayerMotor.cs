@@ -59,6 +59,7 @@ namespace ItHunts.Player
             _look = GetComponent<PlayerLook>();
             ApplyCapsuleSettings();
             _probe = new CharacterControllerProbe(_controller, settings, collisionMask);
+            _probe.SetHeight(settings.capsuleHeight);
             _spawnPosition = transform.position;
             _state = MovementState.Create(_spawnPosition);
             _previousPosition = _currentPosition = _spawnPosition;
@@ -76,6 +77,7 @@ namespace ItHunts.Player
                 input.Move = _reader.Move;
                 input.JumpHeld = _reader.JumpHeld;
                 input.JumpPressedTick = _reader.JumpPressedTick;
+                input.SlideHeld = _reader.SlideHeld;
             }
 
             MovementMotor.Step(ref _state, input, settings, Time.fixedDeltaTime, _probe);
@@ -94,27 +96,24 @@ namespace ItHunts.Player
 
             int tick = _state.Tick;
             int consumed = _state.LastConsumedJumpPressTick;
+            _probe.SetHeight(settings.capsuleHeight);
             _state = MovementState.Create(position);
             _state.Tick = tick;
             _state.LastConsumedJumpPressTick = consumed;
             _previousPosition = _currentPosition = position;
         }
 
+        /// <summary>Rayon, pente et marche. La hauteur est gérée par la simulation (glissade, accroupi).</summary>
         private void ApplyCapsuleSettings()
         {
-            float height = settings.capsuleHeight;
-            float radius = Mathf.Min(settings.capsuleRadius, height * 0.5f);
-            if (!Mathf.Approximately(_controller.height, height) || !Mathf.Approximately(_controller.radius, radius))
-            {
-                _controller.height = height;
+            float radius = Mathf.Min(settings.capsuleRadius, settings.crouchHeight * 0.5f);
+            if (!Mathf.Approximately(_controller.radius, radius))
                 _controller.radius = radius;
-                _controller.center = new Vector3(0f, height * 0.5f, 0f);
-            }
 
             if (!Mathf.Approximately(_controller.slopeLimit, settings.slopeLimit))
                 _controller.slopeLimit = settings.slopeLimit;
             if (!Mathf.Approximately(_controller.stepOffset, settings.stepOffset))
-                _controller.stepOffset = Mathf.Min(settings.stepOffset, height);
+                _controller.stepOffset = Mathf.Min(settings.stepOffset, settings.crouchHeight);
             _controller.minMoveDistance = 0f;
         }
 

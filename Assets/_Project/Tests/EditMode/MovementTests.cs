@@ -5,17 +5,38 @@ using UnityEngine;
 
 namespace ItHunts.Tests
 {
-    /// <summary>Sol factice : un plan y = 0 qui s'arrête à x = EdgeX (au-delà, le vide).</summary>
+    /// <summary>
+    /// Sol factice : un plan y = 0 qui s'arrête à x = EdgeX (au-delà, le vide). GroundNormal simule
+    /// une pente (seule la normale change, la géométrie reste plate). Un plafond à CeilingY couvre
+    /// la bande CeilingMinX..CeilingMaxX.
+    /// </summary>
     internal sealed class FakeGroundProbe : ICollisionProbe
     {
         public float EdgeX = float.PositiveInfinity;
+        public Vector3 GroundNormal = Vector3.up;
+        public float CeilingY = float.PositiveInfinity;
+        public float CeilingMinX = float.NegativeInfinity;
+        public float CeilingMaxX = float.PositiveInfinity;
         public Vector3 Position { get; set; }
+        public float Height { get; private set; } = 1.8f;
 
         private bool OverGround(Vector3 p) => p.x <= EdgeX;
 
+        public void SetHeight(float height)
+        {
+            if (height <= Height || HasHeadroom(height))
+                Height = height;
+        }
+
+        public bool HasHeadroom(float targetHeight)
+        {
+            bool underCeiling = Position.x >= CeilingMinX && Position.x <= CeilingMaxX;
+            return !underCeiling || Position.y + targetHeight <= CeilingY;
+        }
+
         public bool ProbeGround(out Vector3 normal)
         {
-            normal = Vector3.up;
+            normal = GroundNormal;
             return OverGround(Position) && Position.y <= 1e-3f;
         }
 
@@ -490,6 +511,259 @@ namespace ItHunts.Tests
             LaunchInAir(new Vector3(100f, 0f, 0f));
             Step(MovementInput.Neutral);
             Assert.That(_state.HorizontalSpeed, Is.EqualTo(_cfg.maxHorizontalSpeed).Within(1e-3f));
+        }
+
+        // --- Glissade et accroupi (déplacement vers +x) ---
+
+        private static MovementInput SlideIn(bool slide = true, bool jumpHeld = false,
+            int press = MovementState.NeverTick, Vector2 move = default) => new MovementInput
+        {
+            Move = move, Yaw = 90f, SlideHeld = slide, JumpHeld = jumpHeld, JumpPressedTick = press,
+        };
+
+        private void RunAt(float speed) => _state.Velocity = new Vector3(speed, 0f, 0f);
+
+        [Test]
+        public void Glissade_EntreeDonneLeBonusEtBaisseLaCapsule()
+        {
+            RunAt(7.5f);
+            Step(SlideIn());
+            Assert.That(_state.Mode, Is.EqualTo(MovementMode.Slide));
+            Assert.That(_state.Crouched, Is.True);
+            Assert.That(_probe.Height, Is.EqualTo(_cfg.crouchHeight));
+            Assert.That(_state.HorizontalSpeed, Is.InRange(9.3f, 9.5f), "7.5 + 2, moins un tick de friction");
+        }
+
+        [Test]
+        public void Glissade_SousLaVitesseMinimaleOnSAccroupit()
+        {
+            RunAt(5f);
+            Step(SlideIn());
+            Assert.That(_state.Mode, Is.EqualTo(MovementMode.Ground));
+            Assert.That(_state.Crouched, Is.True);
+            for (int i = 0; i < 120; i++)
+                Step(SlideIn(move: Vector2.up));
+            Assert.That(_state.HorizontalSpeed, Is.EqualTo(_cfg.crouchSpeed).Within(0.01f), "marche accroupie");
+        }
+
+        [Test]
+        public void Glissade_LeBonusARechargeDe08s()
+        {
+            RunAt(7.5f);
+            Step(SlideIn());                          // bonus
+            Step(SlideIn(slide: false));              // relâche : debout
+            Assert.That(_state.Mode, Is.EqualTo(MovementMode.Ground));
+            RunAt(7.5f);
+            Step(SlideIn());                          // trop tôt : pas de bonus
+            Assert.That(_state.HorizontalSpeed, Is.LessThan(7.5f));
+
+            Step(SlideIn(slide: false));
+            for (int i = 0; i < 48; i++)
+                Step(MovementInput.Neutral);
+            RunAt(7.5f);
+            Step(SlideIn());                          // plus de 0.8 s après le premier bonus
+            Assert.That(_state.HorizontalSpeed, Is.GreaterThan(9f));
+        }
+
+        [Test]
+        public void Glissade_APlatRalentitLentementPuisSArrete()
+        {
+            RunAt(7.5f);
+            Step(SlideIn());
+            for (int i = 0; i < 60; i++)
+                Step(SlideIn());
+            Assert.That(_state.Mode, Is.EqualTo(MovementMode.Slide), "toujours en glissade après 1 s");
+            Assert.That(_state.HorizontalSpeed, Is.InRange(6.2f, 6.7f), "≈ 9.45 − 3 m/s² × 1 s");
+
+            for (int i = 0; i < 120 && _state.Mode == MovementMode.Slide; i++)
+                Step(SlideIn());
+            Assert.That(_state.Mode, Is.EqualTo(MovementMode.Ground), "fin de glissade sous 4 m/s");
+            Assert.That(_state.Crouched, Is.True, "bouton toujours tenu : accroupi");
+        }
+
+        [Test]
+        public void Glissade_EntreeA20ConserveToutLElanPlusLeBonus()
+        {
+            RunAt(20f);
+            Step(SlideIn());
+            Assert.That(_state.Mode, Is.EqualTo(MovementMode.Slide));
+            Assert.That(_state.HorizontalSpeed, Is.EqualTo(20f + _cfg.slideBoost - _cfg.slideDeceleration * Dt).Within(1e-3f));
+        }
+
+        [Test]
+        public void Glissade_AtterrirA20DepuisUnBunnyHopConserveLElan()
+        {
+            _probe.Position = new Vector3(0f, 1f, 0f);
+            RunAt(20f);
+            Step(SlideIn());
+            for (int i = 0; i < 120 && !_state.Grounded; i++)
+                Step(SlideIn());
+            Assert.That(_state.Mode, Is.EqualTo(MovementMode.Slide));
+            Assert.That(_state.HorizontalSpeed, Is.GreaterThanOrEqualTo(20f + _cfg.slideBoost - 0.1f));
+        }
+
+        [Test]
+        public void Glissade_A20DurePlusieursSecondesAPlat()
+        {
+            RunAt(20f);
+            Step(SlideIn());
+            int ticks = 0;
+            while (_state.Mode == MovementMode.Slide && ticks < 1200)
+            {
+                Step(SlideIn());
+                ticks++;
+            }
+
+            float seconds = ticks * Dt;
+            Assert.That(seconds, Is.InRange(5f, 7f), $"glissade de {seconds:0.00} s ((22 − 4) / 3 ≈ 6 s attendues)");
+        }
+
+        [Test]
+        public void Glissade_DecelerationConstanteQuelleQueSoitLaVitesse()
+        {
+            float LossOverOneSecond(float start)
+            {
+                SetUp();
+                RunAt(start);
+                Step(SlideIn());
+                float before = _state.HorizontalSpeed;
+                for (int i = 0; i < 60; i++)
+                    Step(SlideIn());
+                float loss = before - _state.HorizontalSpeed;
+                TearDown();
+                return loss;
+            }
+
+            Assert.That(LossOverOneSecond(20f), Is.EqualTo(3f).Within(0.01f));
+            Assert.That(LossOverOneSecond(10f), Is.EqualTo(3f).Within(0.01f));
+        }
+
+        [Test]
+        public void Glissade_TraverseUnPassageBasDe10mDepuis7v5([Values(true, false)] bool keepHolding)
+        {
+            // Plafond à 1.2 m entre x = 3 et x = 13 : 0.9 m passe, 1.8 m non.
+            _probe.CeilingY = 1.2f;
+            _probe.CeilingMinX = 3f;
+            _probe.CeilingMaxX = 13f;
+            RunAt(7.5f);
+            Step(SlideIn());
+
+            float minSpeedUnder = float.MaxValue;
+            for (int i = 0; i < 600 && _probe.Position.x <= 14f; i++)
+            {
+                bool under = _probe.Position.x >= 3f && _probe.Position.x <= 13f;
+                Step(SlideIn(slide: keepHolding || !under));   // variante : relâcher dès l'entrée
+                if (under)
+                {
+                    Assert.That(_state.Mode, Is.EqualTo(MovementMode.Slide), $"toujours en glissade à x = {_probe.Position.x:0.0}");
+                    minSpeedUnder = Mathf.Min(minSpeedUnder, _state.HorizontalSpeed);
+                }
+            }
+
+            Assert.That(_probe.Position.x, Is.GreaterThan(14f), "passage traversé");
+            Assert.That(minSpeedUnder, Is.GreaterThanOrEqualTo(_cfg.slideMinSpeedUnderObstacle - 1e-3f));
+        }
+
+        [Test]
+        public void Glissade_EnDescenteAccelere()
+        {
+            _probe.GroundNormal = new Vector3(0.5f, Mathf.Sqrt(3f) / 2f, 0f); // pente de 30° qui descend vers +x
+            RunAt(7.5f);
+            Step(SlideIn());
+            for (int i = 0; i < 60; i++)
+                Step(SlideIn());
+            Assert.That(_state.HorizontalSpeed, Is.GreaterThan(11f), "≈ 12.5 m/s attendus (9.4 au départ)");
+        }
+
+        [Test]
+        public void Glissade_EnMonteeFreine()
+        {
+            _probe.GroundNormal = new Vector3(-0.5f, Mathf.Sqrt(3f) / 2f, 0f); // pente de 30° qui monte vers +x
+            RunAt(7.5f);
+            Step(SlideIn());
+            for (int i = 0; i < 30; i++)
+                Step(SlideIn());
+            Assert.That(_state.HorizontalSpeed, Is.LessThan(6f));
+        }
+
+        [Test]
+        public void Glissade_RelacherRelevesLeJoueur()
+        {
+            RunAt(7.5f);
+            Step(SlideIn());
+            Step(SlideIn(slide: false));
+            Assert.That(_state.Mode, Is.EqualTo(MovementMode.Ground));
+            Assert.That(_state.Crouched, Is.False);
+            Assert.That(_probe.Height, Is.EqualTo(_cfg.capsuleHeight));
+        }
+
+        [Test]
+        public void Glissade_SousUnPlafondBasOnResteBasEtOnNeSautePas()
+        {
+            RunAt(7.5f);
+            Step(SlideIn());
+            _probe.CeilingY = 1.2f;                    // 0.9 m passe, 1.8 m non
+            Step(SlideIn(slide: false));
+            Assert.That(_state.Crouched, Is.True, "pas la place de se relever");
+            Assert.That(_probe.Height, Is.EqualTo(_cfg.crouchHeight));
+
+            int before = _state.LastJumpTick;
+            Step(SlideIn(slide: false, jumpHeld: true, press: _state.Tick + 1));
+            Assert.That(_state.LastJumpTick, Is.EqualTo(before), "pas de saut sous le plafond");
+
+            _probe.CeilingY = float.PositiveInfinity;  // sorti du passage
+            Step(SlideIn(slide: false));
+            Assert.That(_state.Crouched, Is.False);
+            Assert.That(_probe.Height, Is.EqualTo(_cfg.capsuleHeight));
+        }
+
+        [Test]
+        public void Glissade_SauterGardeLaVitesseEtRelève()
+        {
+            RunAt(7.5f);
+            Step(SlideIn());
+            float speed = _state.HorizontalSpeed;
+            Step(SlideIn(jumpHeld: true, press: _state.Tick + 1));
+            Assert.That(_state.Mode, Is.EqualTo(MovementMode.Air));
+            Assert.That(_state.HorizontalSpeed, Is.EqualTo(speed).Within(1e-4f), "aucune friction au saut");
+            Assert.That(_state.Crouched, Is.False);
+            Assert.That(_probe.Height, Is.EqualTo(_cfg.capsuleHeight));
+        }
+
+        [Test]
+        public void Glissade_AtterrirEnMaintenantLaToucheGlisse()
+        {
+            _probe.Position = new Vector3(0f, 1f, 0f);
+            RunAt(8f);
+            Step(SlideIn());
+            Assert.That(_state.Grounded, Is.False, "en l'air");
+            for (int i = 0; i < 120 && !_state.Grounded; i++)
+                Step(SlideIn());
+            Assert.That(_state.Grounded, Is.True, "atterri");
+            Assert.That(_state.Mode, Is.EqualTo(MovementMode.Slide));
+        }
+
+        [Test]
+        public void Glissade_SautEtGlissadeMaintenusALAtterrissage_LeSautGagne()
+        {
+            int press = _state.Tick + 1;
+            Step(SlideIn(slide: false, jumpHeld: true, press: press)); // premier saut
+            _state.Velocity = new Vector3(8f, _state.Velocity.y, 0f);  // élan, sans toucher au saut
+            int jumps = 0;
+            int last = _state.LastJumpTick;
+            for (int i = 0; i < 60; i++)
+            {
+                Step(SlideIn(slide: true, jumpHeld: true, press: press));
+                if (_state.LastJumpTick != last)
+                {
+                    jumps++;
+                    last = _state.LastJumpTick;
+                }
+
+                Assert.That(_state.Mode, Is.Not.EqualTo(MovementMode.Slide));
+            }
+
+            Assert.That(jumps, Is.EqualTo(1), "rebond au premier atterrissage, pas de glissade");
         }
     }
 }

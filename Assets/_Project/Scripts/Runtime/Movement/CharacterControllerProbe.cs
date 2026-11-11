@@ -27,6 +27,30 @@ namespace ItHunts.Movement
 
         public Vector3 Position => _controller.transform.position;
 
+        public float Height => _controller.height;
+
+        public void SetHeight(float height)
+        {
+            height = Mathf.Max(height, _controller.radius * 2f);
+            if (Mathf.Approximately(_controller.height, height))
+                return;
+            _controller.height = height;
+            _controller.center = new Vector3(0f, height * 0.5f, 0f);
+        }
+
+        public bool HasHeadroom(float targetHeight)
+        {
+            float grow = targetHeight - _controller.height;
+            if (grow <= 0f)
+                return true;
+
+            // Lancer vers le haut depuis la sphère du sommet (départ dans notre propre capsule, ignorée).
+            float radius = _controller.radius * RadiusFactor;
+            Vector3 topSphere = Position + Vector3.up * (_controller.height - _controller.radius);
+            return !Physics.SphereCast(topSphere, radius, Vector3.up, out _, grow + _controller.skinWidth, _mask,
+                QueryTriggerInteraction.Ignore);
+        }
+
         public bool ProbeGround(out Vector3 normal)
         {
             float distance = CastLift + _controller.skinWidth + GroundTolerance;

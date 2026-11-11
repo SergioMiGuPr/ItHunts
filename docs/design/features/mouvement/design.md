@@ -35,11 +35,20 @@ est la survie ».
    perdre le saut au sol une fois le coyote time passé.
 8. **Vitesse :** pas de plafond bas sur la vitesse gagnée (bunny hop, glissade, murs). Seul un
    plafond de sécurité élevé existe ; la limite vient du nombre de sauts (D-012).
-9. **Glissade :** déclenchée au sol, au-dessus d'une vitesse minimale ; donne un petit bonus de
-   vitesse (avec recharge), réduit la hitbox, et a une friction très faible. **En pente
+9. **Glissade :** déclenchée au sol, au-dessus d'une vitesse minimale. Elle **garde 100 % de la
+   vitesse acquise** (bunny hop compris), plus un bonus s'il est rechargé ; aucun plafond à
+   l'entrée. Elle réduit la hitbox et freine par une **décélération constante** (m/s²), pas
+   proportionnelle à la vitesse : aller vite ne fait pas perdre plus vite (D-013). **En pente
    descendante, la gravité ajoute de la vitesse** le long de la pente. Elle s'arrête sous une
    vitesse de sortie, ou quand on la relâche. Sauter depuis une glissade garde la vitesse.
    **Elle ne coûte pas d'endurance** (D-010).
+   - Touche **maintenue** (Ctrl gauche ou C ; B / Rond à la manette). Atterrir en la tenant,
+     assez vite, enchaîne directement sur une glissade. Saut et glissade tenus ensemble à
+     l'atterrissage : **le saut gagne** (le bunny hop n'est pas cassé).
+   - En montée, la pente freine. Un léger braquage tourne la vitesse sans la changer.
+   - **Sous un obstacle**, la glissade ne s'arrête pas, même touche relâchée : elle continue à
+     une vitesse minimale jusqu'à la sortie. On ne se relève (et on ne saute) que s'il y a la place.
+   - **Accroupi** : sous la vitesse minimale, la touche accroupit (capsule basse, marche lente).
 10. **Wall slide :** en l'air, contre un mur presque vertical, en poussant vers lui : la chute est
    plafonnée et la vitesse le long du mur est conservée.
 11. **Wall jump :** depuis un wall slide (ou dans un court délai après l'avoir quitté) : impulsion
@@ -74,10 +83,14 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 | Vitesse minimale de glissade | 6 | m/s | |
 | Bonus de vitesse en entrée de glissade | 2 | m/s | |
 | Recharge du bonus de glissade | 0.8 | s | spam de glissade |
-| Friction en glissade | 0.5 | /s | durée d'une glissade à plat |
+| Décélération de glissade (plat) | 3 | m/s² | 22 → 4 m/s en ≈ 6 s ; depuis la course ≈ 1.8 s |
+| Vitesse minimale de glissade sous un obstacle | 5 | m/s | traverser un passage bas |
 | Accélération en pente (part de g·sin θ) | 1.0 | × | gain en descente |
 | Vitesse de sortie de glissade | 4 | m/s | |
-| Hauteur de hitbox debout / en glissade | 1.8 / 0.9 | m | passages bas |
+| Braquage en glissade | 0.05 | part de l'angle / tick | [ASSUMPTION] |
+| Hauteur de hitbox debout / en glissade et accroupi | 1.8 / 0.9 | m | passages bas |
+| Hauteur des yeux en glissade et accroupi | 0.75 | m | [ASSUMPTION] |
+| Vitesse accroupi | 3.5 | m/s | [ASSUMPTION] |
 | Chute max en wall slide | 3 | m/s | |
 | Wall jump : impulsion loin du mur | 7.5 | m/s | |
 | Wall jump : hauteur | 1.05 | m | 0.8 × saut au sol (→ 6.5 m/s) |
@@ -120,3 +133,6 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 - 2026-11-11 : glissade sans coût d'endurance (D-010).
 - 2026-11-11 : playtest de l'étape 1 ; ajout du contrôle aérien, de l'auto-bunny hop, des sauts
   multiples et du plafond de sécurité à 50 m/s (D-012).
+- 2026-11-11 : glissade et accroupi précisés (touche maintenue, saut prioritaire, braquage).
+- 2026-11-11 : playtest de la glissade : décélération constante 3 m/s² au lieu d'une friction
+  proportionnelle, élan conservé à l'entrée, vitesse minimale de 5 m/s sous un obstacle (D-013).

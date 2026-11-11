@@ -5,8 +5,11 @@
 ## Étape en cours
 
 2 — Mouvement de base. Sous-étape 1 (course, saut, contrôle aérien, auto-bunny hop, 2 sauts)
-**validée en playtest et commitée**. En cours : sous-étape glissade (glissade, glissade en pente,
-passage bas). Ensuite : wall slide et wall jump avec élan (+ recharge des sauts au mur).
+**validée en playtest et commitée**. Glissade et accroupi : **validés en playtest (v2) et commités**.
+Ensuite, dans l'ordre : (1) agrandir Test_Movement (zone ouverte ≥ 200 × 200 m, ligne droite de
+bunny hop, longues pentes, grands murs, écarts larges, verticalité) ; (2) wall slide et wall jump
+avec recharge des sauts au mur ; (3) dash et endurance de mouvement à charges (proposer d'abord
+2-3 options sur le lien avec l'endurance des orbes). Chaque point : tests, checklist, playtest.
 
 ## Fait
 
@@ -37,10 +40,15 @@ passage bas). Ensuite : wall slide et wall jump avec élan (+ recharge des sauts
 - 2026-11-11 — Corrections après playtest : contrôle aérien façon CPMA (`airControl` 0.15, W seul),
   auto-bunny hop (activé), sauts multiples (`maxJumps` 2), plafond de sécurité 50 m/s. 28 tests
   EditMode verts. Recharge des sauts au mur : à brancher avec la détection des murs.
+- 2026-11-11 — Glissade et accroupi : touche Slide maintenue, bonus +2 m/s (recharge 0.8 s),
+  accélération en pente, capsule 0.9 m avec relevé seulement s'il y a la place, saut prioritaire
+  à l'atterrissage. Scène : couloir avec passage bas de 1.1 m et longue rampe de 20°. 39 tests verts.
+- 2026-11-11 — Correction glissade après playtest (D-013) : élan conservé, décélération constante
+  3 m/s², vitesse minimale 5 m/s sous un obstacle. 45 tests verts.
 
 ## Décisions
 
-Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-012).
+Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-013).
 
 - Moteur : Unity 6.3 LTS (6000.3.28f1), URP.
 - Vue première personne, deux orbes (magnétisme, télékinésie), roguelite.

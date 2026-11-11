@@ -39,6 +39,31 @@ namespace ItHunts.Settings
         [Tooltip("Maintenir le saut fait resauter automatiquement à chaque atterrissage (jamais en l'air).")]
         public bool autoBunnyHop = true;
 
+        [Header("Glissade et accroupi")]
+        [Tooltip("Vitesse horizontale minimale (m/s) pour déclencher une glissade. En dessous, la touche accroupit.")]
+        [Min(0f)] public float slideMinSpeed = 6f;
+        [Tooltip("Bonus de vitesse (m/s) à l'entrée d'une glissade.")]
+        [Min(0f)] public float slideBoost = 2f;
+        [Tooltip("Délai (s) avant qu'une nouvelle glissade redonne le bonus.")]
+        [Min(0f)] public float slideBoostCooldown = 0.8f;
+        [Tooltip("Décélération de glissade sur le plat (m/s²), constante : aller vite ne fait pas perdre plus " +
+                 "vite. À 3 m/s², une glissade lancée à 20 m/s dure environ 5 à 6 s.")]
+        [Min(0f)] public float slideDeceleration = 3f;
+        [Tooltip("Sous un obstacle (pas la place de se relever), la glissade continue au moins à cette vitesse (m/s).")]
+        [Min(0f)] public float slideMinSpeedUnderObstacle = 5f;
+        [Tooltip("Part de la gravité le long de la pente ajoutée en glissade (descente : accélère, montée : freine).")]
+        [Min(0f)] public float slideSlopeAcceleration = 1f;
+        [Tooltip("Sous cette vitesse (m/s), la glissade s'arrête.")]
+        [Min(0f)] public float slideExitSpeed = 4f;
+        [Tooltip("Braquage en glissade : la vitesse tourne vers la direction voulue, sans changer de valeur.")]
+        [Range(0f, 1f)] public float slideSteering = 0.05f;
+        [Tooltip("Hauteur de la capsule en glissade et accroupi (m).")]
+        [Min(0.5f)] public float crouchHeight = 0.9f;
+        [Tooltip("Hauteur des yeux en glissade et accroupi (m).")]
+        [Min(0.1f)] public float crouchEyeHeight = 0.75f;
+        [Tooltip("Vitesse de marche accroupie (m/s).")]
+        [Min(0f)] public float crouchSpeed = 3.5f;
+
         [Header("Sécurité")]
         [Tooltip("Plafond de sécurité de la vitesse horizontale (m/s). Volontairement haut : ce sont les " +
                  "sauts qui limitent, pas la vitesse.")]
