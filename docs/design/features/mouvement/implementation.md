@@ -46,6 +46,7 @@ du saut n'applique pas de friction.
 | `.../Runtime/Player/PlayerLook.cs` | sensibilités souris et manette, pitch, FOV, verrouillage du curseur |
 | `.../Runtime/Settings/MovementSettings.cs`, `CameraSettings.cs` | ScriptableObjects de réglage |
 | `.../Runtime/Debugging/MovementDebugOverlay.cs` | debug F3 / Select |
+| `.../Runtime/Debugging/DebugTeleportPoints.cs`, `DebugTeleporter.cs` | téléportation de debug : F4 départ, F5 à F9 zones (points dans la scène ; clavier lu directement, joueur clavier-souris seulement) |
 | `.../Scripts/Editor/TestMovementSceneBuilder.cs` | menu *ItHunts > Reconstruire…* : pas fixe 60 Hz, réglages, prefab, scène |
 | `Assets/_Project/Prefabs/Player.prefab` | CharacterController, PlayerInput, scripts, ViewRig (caméra + CinemachineCamera) |
 | `Assets/_Project/Settings/Movement_Default.asset`, `Camera_Default.asset` | réglages en cours |
@@ -105,12 +106,22 @@ l'écran partagé) ; simulation à pas fixe à partir d'une structure d'entrée.
 
 ## Scène `Test_Movement` (greybox)
 
-Construite par `TestMovementSceneBuilder` : sol de 80 × 80 m avec repères tous les 5 m et murs
-d'enceinte ; blocs de 0.5 / 1 / 1.3 / 1.5 / 2 m (x = −20) ; escalier de marches de 0.25 m menant
-à des plateformes de 2 m de haut séparées par des trous de 2 à 7 m (x = 10) ; rampes de 15°,
-30°, 45° et 50° (x = 20 à 35). Départ en (0, 0, −10), face au nord (+z).
-Glissade : couloir de 50 m (x = −32) avec un passage bas de 1.1 m ; longue rampe de 20° (x = 0,
-z = 28.5 à 45) vers une plateforme de 6 m. À ajouter : cheminée et murs de wall jump.
+Téléportation de debug : **F4** départ, **F5** zone ouverte, **F6** ligne droite, **F7** pentes,
+**F8** grands murs, **F9** écarts et verticalité.
+
+Construite par `TestMovementSceneBuilder` (menu *ItHunts > Reconstruire…*) sur un sol de
+**400 × 400 m** (x −200..200, z −40..360), grille tous les 10 m, enceinte de 12 m. Départ en
+(0, 0, −10), face au nord (+z). Caméra : vue jusqu'à 1 000 m.
+
+| Zone | Position | Contenu |
+|---|---|---|
+| Zone de base | x −40..40, z −20..60 | repères tous les 5 m ; blocs 0.5 à 2 m (x = −20) ; escalier et trous de 2 à 7 m (x = 10) ; rampes 15° à 50° (x = 20..35) ; couloir de glissade 50 m avec passage bas de 1.1 m (x = −32) ; rampe de 20° vers une plateforme de 6 m (x = 0) |
+| Grande zone ouverte | x −100..100, z 80..300 | 200 × 220 m vides ; 4 tours repères orange de 30 m juste hors des coins |
+| Ligne droite de bunny hop | x = 185, z −30..350 | 380 m × 10 m, bandes tous les 25 m, bande jaune tous les 100 m |
+| Longues pentes | x = −180 / −160 / −140, depuis z = −20 | 10° sur 150 m (+26 m), 20° sur 90 m (+30.8 m), 30° sur 60 m (+30 m), plateforme de 20 m au sommet |
+| Grands murs | x 117..163, z 90..290 | paires de murs de 20 m × 120 m espacées de 6 m et de 10 m ; mur seul de 200 m × 15 m (x = 162) ; cheminée de 3 m × 30 m (x = 130, z = 250) |
+| Écarts larges | z = 315, x −99..26 | plateformes à 4 m (accès par rampe de 20°) séparées de 8, 10, 12, 15, 18 et 22 m |
+| Verticalité | z = 342, x 20..83 | 8 plateformes de 2 à 16 m, +2 m à chaque fois, 4 m d'écart |
 
 ## Étapes de construction
 
@@ -133,3 +144,4 @@ z = 28.5 à 45) vers une plateforme de 6 m. À ajouter : cheminée et murs de wa
 - 2026-11-11 : contrôle aérien, auto-bunny hop, sauts multiples, plafond de sécurité.
 - 2026-11-11 : glissade et accroupi.
 - 2026-11-11 : décélération constante et vitesse minimale sous obstacle (D-013).
+- 2026-11-11 : scène de test agrandie à 400 × 400 m.

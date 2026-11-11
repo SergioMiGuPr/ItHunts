@@ -103,7 +103,7 @@ namespace ItHunts.EditorTools
                 camGo.transform.SetParent(rig.transform, false);
                 var unityCamera = camGo.AddComponent<Camera>();
                 unityCamera.nearClipPlane = 0.05f;
-                unityCamera.farClipPlane = 500f;
+                unityCamera.farClipPlane = 1000f;
                 unityCamera.clearFlags = CameraClearFlags.SolidColor;
                 unityCamera.backgroundColor = new Color(0.04f, 0.04f, 0.06f);
                 camGo.AddComponent<CinemachineBrain>();
@@ -115,7 +115,7 @@ namespace ItHunts.EditorTools
                 LensSettings lens = vcam.Lens;
                 lens.FieldOfView = cameraSettings.baseFov;
                 lens.NearClipPlane = 0.05f;
-                lens.FarClipPlane = 500f;
+                lens.FarClipPlane = 1000f;
                 vcam.Lens = lens;
 
                 var playerInput = root.AddComponent<PlayerInput>();
@@ -128,6 +128,7 @@ namespace ItHunts.EditorTools
                 var motor = root.AddComponent<PlayerMotor>();
                 var look = root.AddComponent<PlayerLook>();
                 root.AddComponent<MovementDebugOverlay>();
+                root.AddComponent<DebugTeleporter>();
 
                 SetRef(motor, "settings", movement);
                 SetRef(look, "settings", cameraSettings);
@@ -179,22 +180,7 @@ namespace ItHunts.EditorTools
 
             var level = new GameObject("Level").transform;
 
-            // Sol 80 × 80 m (x : -40..40, z : -20..60), dessus à y = 0.
-            Box("Sol", level, new Vector3(0f, -0.5f, 20f), new Vector3(80f, 1f, 80f), floorMat);
-
-            // Repères tous les 5 m (sans collision).
-            var lines = new GameObject("Repères 5 m").transform;
-            lines.SetParent(level, false);
-            for (int z = -20; z <= 60; z += 5)
-                Box($"z={z}", lines, new Vector3(0f, 0.005f, z), new Vector3(80f, 0.01f, 0.08f), lineMat, collider: false);
-            for (int x = -40; x <= 40; x += 5)
-                Box($"x={x}", lines, new Vector3(x, 0.005f, 20f), new Vector3(0.08f, 0.01f, 80f), lineMat, collider: false);
-
-            // Murs d'enceinte.
-            Box("Mur N", level, new Vector3(0f, 3f, 60.5f), new Vector3(80f, 6f, 1f), wallMat);
-            Box("Mur S", level, new Vector3(0f, 3f, -20.5f), new Vector3(80f, 6f, 1f), wallMat);
-            Box("Mur E", level, new Vector3(40.5f, 3f, 20f), new Vector3(1f, 6f, 82f), wallMat);
-            Box("Mur O", level, new Vector3(-40.5f, 3f, 20f), new Vector3(1f, 6f, 82f), wallMat);
+            BuildGround(level, floorMat, lineMat, wallMat);
 
             // Blocs de hauteur : 0.5 / 1 / 1.3 / 1.5 / 2 m (x = -20).
             var blocks = new GameObject("Blocs de hauteur").transform;
@@ -239,12 +225,184 @@ namespace ItHunts.EditorTools
 
             BuildSlideArea(level, blockMat, platformMat, rampMat, wallMat);
 
+            Material landmarkMat = Mat("Greybox_Landmark", new Color(0.85f, 0.45f, 0.15f));
+            Material laneMat = Mat("Greybox_Lane", new Color(0.9f, 0.8f, 0.2f));
+            Material tallWallMat = Mat("Greybox_TallWall", new Color(0.25f, 0.32f, 0.45f));
+            BuildOpenArea(level, landmarkMat);
+            BuildBunnyHopLane(level, laneMat, lineMat);
+            BuildLongSlopes(level, rampMat, platformMat);
+            BuildTallWalls(level, tallWallMat);
+            BuildGapsAndVerticality(level, platformMat, rampMat, blockMat);
+            BuildTeleportPoints();
+
             // Joueur.
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
             player.transform.SetPositionAndRotation(new Vector3(0f, 0f, -10f), Quaternion.identity);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddSceneToBuild(ScenePath);
+        }
+
+        // ---------- Grand terrain (400 × 400 m) ----------
+        //
+        // Plan (vue de dessus, +z = nord, départ en (0, 0, −10) face au nord) :
+        //   x −200..−100 : longues pentes (10°, 20°, 30°)
+        //   x  −40.. 40, z −20..60 : zone de base (blocs, trous, rampes, couloir de glissade)
+        //   x −100..100, z  80..300 : grande zone ouverte (200 × 220 m)
+        //   x  110..170, z  80..300 : grands murs (paires de 6 et 10 m, mur seul de 200 m, cheminée)
+        //   x  180..190, z −30..350 : ligne droite de bunny hop (380 m)
+        //   x −100..100, z 305..355 : écarts larges et verticalité
+
+        private const float GroundMinX = -200f, GroundMaxX = 200f, GroundMinZ = -40f, GroundMaxZ = 360f;
+
+        private static void BuildGround(Transform level, Material floorMat, Material lineMat, Material wallMat)
+        {
+            float sizeX = GroundMaxX - GroundMinX, sizeZ = GroundMaxZ - GroundMinZ;
+            float cx = (GroundMinX + GroundMaxX) * 0.5f, cz = (GroundMinZ + GroundMaxZ) * 0.5f;
+            Box("Sol 400 × 400 m", level, new Vector3(cx, -0.5f, cz), new Vector3(sizeX, 1f, sizeZ), floorMat);
+
+            // Grille tous les 10 m sur tout le terrain, et tous les 5 m dans la zone de base (sans collision).
+            var grid = new GameObject("Grille 10 m").transform;
+            grid.SetParent(level, false);
+            for (float z = GroundMinZ; z <= GroundMaxZ; z += 10f)
+                Box($"z={z}", grid, new Vector3(cx, 0.005f, z), new Vector3(sizeX, 0.01f, 0.1f), lineMat, collider: false);
+            for (float x = GroundMinX; x <= GroundMaxX; x += 10f)
+                Box($"x={x}", grid, new Vector3(x, 0.005f, cz), new Vector3(0.1f, 0.01f, sizeZ), lineMat, collider: false);
+
+            var fine = new GameObject("Repères 5 m (zone de base)").transform;
+            fine.SetParent(level, false);
+            for (int z = -15; z <= 55; z += 10)
+                Box($"z={z}", fine, new Vector3(0f, 0.005f, z), new Vector3(80f, 0.01f, 0.06f), lineMat, collider: false);
+            for (int x = -35; x <= 35; x += 10)
+                Box($"x={x}", fine, new Vector3(x, 0.005f, 20f), new Vector3(0.06f, 0.01f, 80f), lineMat, collider: false);
+
+            // Enceinte de 12 m.
+            var walls = new GameObject("Enceinte").transform;
+            walls.SetParent(level, false);
+            const float h = 12f;
+            Box("Mur N", walls, new Vector3(cx, h * 0.5f, GroundMaxZ + 0.5f), new Vector3(sizeX + 2f, h, 1f), wallMat);
+            Box("Mur S", walls, new Vector3(cx, h * 0.5f, GroundMinZ - 0.5f), new Vector3(sizeX + 2f, h, 1f), wallMat);
+            Box("Mur E", walls, new Vector3(GroundMaxX + 0.5f, h * 0.5f, cz), new Vector3(1f, h, sizeZ), wallMat);
+            Box("Mur O", walls, new Vector3(GroundMinX - 0.5f, h * 0.5f, cz), new Vector3(1f, h, sizeZ), wallMat);
+        }
+
+        /// <summary>Points de téléportation de debug : F4 départ, F5 à F9 zones (position des pieds, yaw).</summary>
+        private static void BuildTeleportPoints()
+        {
+            var root = new GameObject("Points de téléportation (debug)");
+            var points = root.AddComponent<DebugTeleportPoints>();
+            (string label, Vector3 pos, float yaw)[] defs =
+            {
+                ("Départ", new Vector3(0f, 0f, -10f), 0f),
+                ("Grande zone ouverte", new Vector3(0f, 0f, 90f), 0f),
+                ("Ligne droite bunny hop", new Vector3(185f, 0f, -25f), 0f),
+                ("Longues pentes", new Vector3(-160f, 0f, -32f), 0f),
+                ("Grands murs", new Vector3(121f, 0f, 95f), 0f),
+                ("Écarts larges et verticalité", new Vector3(-99f, 4f, 315f), 90f),
+            };
+            points.points = new DebugTeleportPoints.Point[defs.Length];
+            for (int i = 0; i < defs.Length; i++)
+            {
+                var t = new GameObject($"F{4 + i} {defs[i].label}").transform;
+                t.SetParent(root.transform, false);
+                t.SetPositionAndRotation(defs[i].pos, Quaternion.Euler(0f, defs[i].yaw, 0f));
+                points.points[i] = new DebugTeleportPoints.Point { label = defs[i].label, target = t };
+            }
+        }
+
+        /// <summary>Zone ouverte de 200 × 220 m, vide ; quatre tours repères de 30 m aux coins.</summary>
+        private static void BuildOpenArea(Transform level, Material landmarkMat)
+        {
+            var area = new GameObject("Grande zone ouverte 200 × 220 m").transform;
+            area.SetParent(level, false);
+            Vector3[] corners = { new(-101.5f, 0f, 78.5f), new(101.5f, 0f, 78.5f), new(-101.5f, 0f, 301.5f), new(101.5f, 0f, 301.5f) };  // juste hors de la zone
+            foreach (Vector3 c in corners)
+                Box($"Tour repère ({c.x}, {c.z})", area, c + new Vector3(0f, 15f, 0f), new Vector3(3f, 30f, 3f), landmarkMat);
+        }
+
+        /// <summary>Ligne droite de 380 m (x = 185) : bandes tous les 25 m, plus marquées tous les 100 m.</summary>
+        private static void BuildBunnyHopLane(Transform level, Material laneMat, Material lineMat)
+        {
+            var lane = new GameObject("Ligne droite bunny hop 380 m").transform;
+            lane.SetParent(level, false);
+            const float x = 185f, width = 10f, z0 = -30f, z1 = 350f;
+            Box("Bord gauche", lane, new Vector3(x - width * 0.5f, 0.01f, (z0 + z1) * 0.5f), new Vector3(0.3f, 0.02f, z1 - z0), laneMat, collider: false);
+            Box("Bord droit", lane, new Vector3(x + width * 0.5f, 0.01f, (z0 + z1) * 0.5f), new Vector3(0.3f, 0.02f, z1 - z0), laneMat, collider: false);
+            for (float z = z0; z <= z1 + 0.1f; z += 25f)
+            {
+                bool major = Mathf.Approximately((z - z0) % 100f, 0f);
+                Box($"{z - z0} m", lane, new Vector3(x, 0.012f, z), new Vector3(width, 0.02f, major ? 1f : 0.3f),
+                    major ? laneMat : lineMat, collider: false);
+            }
+        }
+
+        /// <summary>Longues pentes de 10°, 20° et 30° (ouest), chacune menant à une plateforme de 20 m.</summary>
+        private static void BuildLongSlopes(Transform level, Material rampMat, Material platformMat)
+        {
+            var slopes = new GameObject("Longues pentes").transform;
+            slopes.SetParent(level, false);
+            (float x, float angle, float length)[] defs = { (-180f, 10f, 150f), (-160f, 20f, 90f), (-140f, 30f, 60f) };
+            const float zBottom = -20f, width = 14f, platformDepth = 20f;
+            foreach (var (x, angle, length) in defs)
+            {
+                float a = angle * Mathf.Deg2Rad;
+                float rise = length * Mathf.Sin(a), run = length * Mathf.Cos(a);
+                Ramp($"Pente {angle}° ({length} m, +{rise:0} m)", slopes, x, zBottom, angle, length, width, rampMat);
+                Box($"Sommet pente {angle}°", slopes, new Vector3(x, rise * 0.5f, zBottom + run + platformDepth * 0.5f),
+                    new Vector3(width, rise, platformDepth), platformMat);
+            }
+        }
+
+        /// <summary>Murs hauts et longs pour le wall slide (entre la zone ouverte et la ligne de bunny hop).</summary>
+        private static void BuildTallWalls(Transform level, Material wallMat)
+        {
+            var walls = new GameObject("Grands murs").transform;
+            walls.SetParent(level, false);
+            const float zA = 100f, zB = 220f, h = 20f;
+            float len = zB - zA, zc = (zA + zB) * 0.5f;
+            // Paire à 6 m (bords intérieurs) et paire à 10 m.
+            Box("Paire 6 m - ouest", walls, new Vector3(117.5f, h * 0.5f, zc), new Vector3(1f, h, len), wallMat);
+            Box("Paire 6 m - est", walls, new Vector3(124.5f, h * 0.5f, zc), new Vector3(1f, h, len), wallMat);
+            Box("Paire 10 m - ouest", walls, new Vector3(137.5f, h * 0.5f, zc), new Vector3(1f, h, len), wallMat);
+            Box("Paire 10 m - est", walls, new Vector3(148.5f, h * 0.5f, zc), new Vector3(1f, h, len), wallMat);
+            // Mur seul de 200 m, 15 m de haut.
+            Box("Mur seul 200 m", walls, new Vector3(162f, 7.5f, 190f), new Vector3(1f, 15f, 200f), wallMat);
+            // Cheminée de 3 m de large, 30 m de haut.
+            Box("Cheminée - ouest", walls, new Vector3(128.5f, 15f, 250f), new Vector3(1f, 30f, 8f), wallMat);
+            Box("Cheminée - est", walls, new Vector3(132.5f, 15f, 250f), new Vector3(1f, 30f, 8f), wallMat);
+        }
+
+        /// <summary>
+        /// Nord : plateformes à 4 m séparées d'écarts de 8 à 22 m (accès par une rampe de 20°), et un
+        /// escalier de plateformes qui monte de 2 m en 2 m jusqu'à 16 m.
+        /// </summary>
+        private static void BuildGapsAndVerticality(Transform level, Material platformMat, Material rampMat,
+            Material blockMat)
+        {
+            var gaps = new GameObject("Écarts larges 8 à 22 m").transform;
+            gaps.SetParent(level, false);
+            const float top = 4f, zc = 315f, depth = 10f, platLen = 6f;
+            float start = -95f;
+            float rampRun = top / Mathf.Tan(20f * Mathf.Deg2Rad);
+            Ramp("Accès 20°", gaps, start - 4f, zc - depth * 0.5f - rampRun, 20f, top / Mathf.Sin(20f * Mathf.Deg2Rad), 8f, rampMat);
+            Box("Départ", gaps, new Vector3(start - 4f, top * 0.5f, zc), new Vector3(8f, top, depth), platformMat);
+            float x = start;
+            foreach (float gap in new[] { 8f, 10f, 12f, 15f, 18f, 22f })
+            {
+                x += gap;
+                Box($"Après écart de {gap} m", gaps, new Vector3(x + platLen * 0.5f, top * 0.5f, zc),
+                    new Vector3(platLen, top, depth), platformMat);
+                x += platLen;
+            }
+
+            var vertical = new GameObject("Verticalité 2 à 16 m").transform;
+            vertical.SetParent(level, false);
+            for (int i = 0; i < 8; i++)
+            {
+                float height = 2f * (i + 1);
+                Box($"Plateforme {height} m", vertical, new Vector3(20f + i * 9f, height * 0.5f, 342f),
+                    new Vector3(5f, height, 5f), i % 2 == 0 ? platformMat : blockMat);
+            }
         }
 
         /// <summary>

@@ -70,7 +70,7 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 | Plafond de vitesse voulue en l'air | 1 | m/s | gain du bunny hop |
 | Contrôle aérien (0 = Source pur, 1 = instantané) | 0.15 | part de l'angle / tick | ≈ 60 % du virage en 0.1 s, 90 % en 0.25 s |
 | Sauts au total (sol + air) | 2 | sauts | |
-| Hauteur d'un saut en l'air | 1.3 | m | |
+| Hauteur d'un saut en l'air | 1.6 | m | relevée de 1.3 à 1.6 m après le playtest de la grande scène |
 | Auto-bunny hop | activé | — | |
 | Plafond de sécurité de la vitesse horizontale | 50 | m/s | ne doit jamais se sentir en jeu |
 | Gravité | 20 | m/s² | sensation de poids |

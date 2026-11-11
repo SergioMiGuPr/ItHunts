@@ -28,6 +28,13 @@ namespace ItHunts.Player
         /// <summary>Rapidité de descente et de remontée de la vue en glissade / accroupi (/s).</summary>
         private const float EyeHeightLerpSpeed = 15f;
 
+        /// <summary>Oriente la vue (téléportation, réapparition).</summary>
+        public void SetView(float yaw, float pitch)
+        {
+            _yaw = Mathf.Repeat(yaw, 360f);
+            _pitch = pitch;
+        }
+
         public float Yaw => _yaw;
         public float Pitch => _pitch;
         public float CurrentFov => _fov;

@@ -35,7 +35,7 @@ namespace ItHunts.Settings
                  "Les améliorations pourront l'augmenter.")]
         [Min(1)] public int maxJumps = 2;
         [Tooltip("Hauteur d'un saut en l'air (m). La vitesse horizontale est conservée.")]
-        [Min(0.01f)] public float airJumpHeight = 1.3f;
+        [Min(0.01f)] public float airJumpHeight = 1.6f;
         [Tooltip("Maintenir le saut fait resauter automatiquement à chaque atterrissage (jamais en l'air).")]
         public bool autoBunnyHop = true;
 

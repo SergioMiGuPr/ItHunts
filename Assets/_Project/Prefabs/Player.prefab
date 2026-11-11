@@ -66,7 +66,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.05
-  far clip plane: 500
+  far clip plane: 1000
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -217,7 +217,7 @@ MonoBehaviour:
     FieldOfView: 70
     OrthographicSize: 10
     NearClipPlane: 0.05
-    FarClipPlane: 500
+    FarClipPlane: 1000
     Dutch: 0
     ModeOverride: 0
     PhysicalProperties:
@@ -248,6 +248,7 @@ GameObject:
   - component: {fileID: 7325253356882069308}
   - component: {fileID: 571279725940702901}
   - component: {fileID: 7863865896918639265}
+  - component: {fileID: 1973928570591129331}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -383,3 +384,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Debugging.MovementDebugOverlay
   visibleOnStart: 1
+--- !u!114 &1973928570591129331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4554349776337732255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3144a7ebb55beb2438dafd29db29f7b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Debugging.DebugTeleporter

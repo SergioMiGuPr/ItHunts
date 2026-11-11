@@ -6,10 +6,12 @@
 
 2 — Mouvement de base. Sous-étape 1 (course, saut, contrôle aérien, auto-bunny hop, 2 sauts)
 **validée en playtest et commitée**. Glissade et accroupi : **validés en playtest (v2) et commités**.
-Ensuite, dans l'ordre : (1) agrandir Test_Movement (zone ouverte ≥ 200 × 200 m, ligne droite de
-bunny hop, longues pentes, grands murs, écarts larges, verticalité) ; (2) wall slide et wall jump
-avec recharge des sauts au mur ; (3) dash et endurance de mouvement à charges (proposer d'abord
-2-3 options sur le lien avec l'endurance des orbes). Chaque point : tests, checklist, playtest.
+Points suivants, dans l'ordre (chacun : tests, checklist, playtest) :
+1. Test_Movement agrandie à 400 × 400 m : **validée en playtest et commitée** (+ téléportation F4-F9,
+   saut en l'air relevé à 1.6 m).
+2. Wall slide et wall jump avec élan, recharge des sauts au contact d'un mur.
+3. Dash et endurance de mouvement à charges : proposer d'abord 2-3 options sur le lien avec
+   l'endurance des orbes (barre commune ou séparée), avant de coder.
 
 ## Fait
 
@@ -45,6 +47,11 @@ avec recharge des sauts au mur ; (3) dash et endurance de mouvement à charges (
   à l'atterrissage. Scène : couloir avec passage bas de 1.1 m et longue rampe de 20°. 39 tests verts.
 - 2026-11-11 — Correction glissade après playtest (D-013) : élan conservé, décélération constante
   3 m/s², vitesse minimale 5 m/s sous un obstacle. 45 tests verts.
+- 2026-11-11 — Scène Test_Movement agrandie : 400 × 400 m, zone ouverte 200 × 220 m, ligne droite
+  de 380 m, pentes de 10/20/30° (jusqu'à 30 m de haut), murs de 20 m × 120 m et de 200 m,
+  cheminée, écarts de 8 à 22 m, verticalité jusqu'à 16 m. Zones existantes conservées.
+- 2026-11-11 — Après playtest de la grande scène : `airJumpHeight` 1.3 → 1.6 m ; téléportation de
+  debug F4 (départ) et F5-F9 (zones).
 
 ## Décisions
 
@@ -63,6 +70,8 @@ Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-013).
 - 2026-11-11 : course au sol validée (7.5 m/s, accélération 10, friction 6, arrêt 2.5 m/s).
   Saut accepté pour l'instant (1.3 m, gravité 20, chute ×1.5), jugé un peu flottant.
 - 2026-11-11 : contrôle aérien 0.15, auto-bunny hop activé, 2 sauts, plafond 50 m/s validés.
+- 2026-11-11 : glissade v2 validée (décélération 3 m/s², 5 m/s sous obstacle). Saut en l'air
+  relevé à 1.6 m (valeur de départ, à ajuster en Play Mode).
   Pic de vitesse mesuré en bunny hop : 26 m/s.
 
 ## Problèmes connus / à faire

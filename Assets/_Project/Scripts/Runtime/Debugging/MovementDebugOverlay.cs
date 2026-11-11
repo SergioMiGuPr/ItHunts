@@ -20,6 +20,7 @@ namespace ItHunts.Debugging
         private PlayerMotor _motor;
         private PlayerInputReader _reader;
         private PlayerLook _look;
+        private DebugTeleporter _teleporter;
         private readonly float[] _speedHistory = new float[HistoryTicks];
         private int _historyIndex;
         private bool _visible;
@@ -34,6 +35,7 @@ namespace ItHunts.Debugging
             _motor = GetComponent<PlayerMotor>();
             _reader = GetComponent<PlayerInputReader>();
             _look = GetComponent<PlayerLook>();
+            _teleporter = GetComponent<DebugTeleporter>();
             _visible = visibleOnStart;
         }
 
@@ -121,6 +123,10 @@ namespace ItHunts.Debugging
             _text.AppendLine(_seenJumpTick == MovementState.NeverTick
                 ? "Dernier saut : —"
                 : $"Dernier saut : {_speedAtLastJump:0.00} m/s (gain {_lastJumpGain:+0.00;-0.00;0.00})");
+            if (_teleporter != null)
+                _text.AppendLine(string.IsNullOrEmpty(_teleporter.LastLabel)
+                    ? "Téléport : F4 départ, F5 ouvert, F6 ligne droite, F7 pentes, F8 murs, F9 écarts"
+                    : $"Téléport : {_teleporter.LastLabel}   (F4 départ, F5 à F9 zones)");
             _text.Append($"Tick : {s.Tick} ({Mathf.RoundToInt(1f / dt)} Hz)");
             if (_look != null)
                 _text.Append($"   FOV : {_look.CurrentFov:0.0}°");

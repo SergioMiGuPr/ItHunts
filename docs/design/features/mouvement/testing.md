@@ -130,9 +130,30 @@ Glissade : Ctrl gauche ou C (B / Rond à la manette), **maintenue**. Le debug af
 6. **Accroupi :** à l'arrêt, tenir la touche : marche lente (3.5 m/s).
 7. Refaire 1, 4 et 5 à la manette.
 
+## Scène de test agrandie — vérifications
+
+- [x] Le sol fait 400 × 400 m ; toutes les zones existent (base, zone ouverte, ligne droite, pentes, grands murs, écarts, verticalité). *(script `check_scene.cs` par `script eval`, 2026-11-11)*
+- [x] La zone ouverte (198 × 218 m, de 0.1 à 25 m de haut) ne contient aucun obstacle. *(même script : 0 collider)*
+- [x] Sommets des pentes à 26, 30.8 et 30 m ; mur seul de 200 m × 15 m ; vue à 1 000 m. *(même script)*
+- [x] Le joueur démarre au sol en (0, 0, −10), sans erreur en console. *(Play Mode par la CLI)*
+- [x] Les 6 points de téléportation (F4 départ, F5 à F9 zones) posent le joueur au sol au bon endroit. *(Play Mode par la CLI, 2026-11-11 : `PlayerMotor.Teleport` appelé sur chaque point ; touches non simulables sans le focus de la fenêtre Game)*
+- [ ] Les touches F4 à F9 téléportent bien. *(playtest)*
+
+**Playtest de la scène**
+1. Bunny hop sur la ligne droite de 380 m (à l'est) : vitesse de pointe atteinte, et la ligne
+   est-elle assez longue ?
+2. Zone ouverte : bunny hop libre et virages en contrôle aérien ; repères visibles de loin ?
+3. Pentes de 10°, 20° et 30° : monter, puis redescendre en glissade (vitesse en bas ?).
+4. Grands murs : longer les murs de 20 m et le mur de 200 m (pas encore de wall slide : c'est
+   l'étape suivante) ; vérifier que l'échelle convient.
+5. Écarts de 8 à 22 m : lesquels passent en bunny hop + double saut ?
+6. Verticalité : monter de 2 m en 2 m avec le double saut jusqu'à 16 m.
+7. Lisibilité générale : la lumière et les couleurs suffisent-elles à 100 m et plus ?
+
 ## History
 
 - 2026-11-11 : tests de l'étape 1.
 - 2026-11-11 : tests du contrôle aérien, de l'auto-bunny hop, des sauts multiples et du plafond.
 - 2026-11-11 : tests de la glissade et de l'accroupi.
 - 2026-11-11 : tests de conservation de l'élan, de durée et du passage bas (D-013).
+- 2026-11-11 : vérifications de la scène agrandie.

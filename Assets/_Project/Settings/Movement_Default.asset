@@ -20,7 +20,7 @@ MonoBehaviour:
   airWishSpeedCap: 1
   airControl: 0.15
   maxJumps: 2
-  airJumpHeight: 1.3
+  airJumpHeight: 1.6
   autoBunnyHop: 1
   slideMinSpeed: 6
   slideBoost: 2
