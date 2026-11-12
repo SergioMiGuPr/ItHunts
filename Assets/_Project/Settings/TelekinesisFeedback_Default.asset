@@ -15,7 +15,6 @@ MonoBehaviour:
   grabColor: {r: 0.6, g: 0.25, b: 1, a: 1}
   throwColor: {r: 0.25, g: 1, b: 0.35, a: 1}
   tooHeavyColor: {r: 0.8, g: 0.1, b: 0.1, a: 1}
-  staminaColor: {r: 0.65, g: 0.35, b: 1, a: 0.95}
   glowIdle: 0.08
   glowInRange: 0.35
   glowAimed: 1.6
@@ -26,5 +25,5 @@ MonoBehaviour:
   orbUsageIntensity: 2.5
   orbReadyIntensity: 0.8
   lineIntensity: 1.5
-  grabRingRadius: 8
-  throwRingRadius: 13
+  grabRingRadius: 18
+  throwRingRadius: 18

@@ -1,7 +1,7 @@
-# Projet : roguelite FPS de mouvement à deux orbes (Unity)
+# Projet : roguelite FPS de mouvement à orbe magique (Unity)
 
 Tu travailles sur un **roguelite à la première personne**, construit autour de déplacements très
-dynamiques et de **deux orbes magiques**. Le joueur enchaîne des **vagues d'ennemis** dans des
+dynamiques et d'une **orbe magique** aux deux pouvoirs (magnétisme et télékinésie). Le joueur enchaîne des **vagues d'ennemis** dans des
 arènes pensées pour le mouvement, gagne des **âmes**, améliore sa run via des **coffres et des
 marchands**, puis affronte un **boss** qui ouvre la zone suivante. L'utilisateur fait le game
 design et, plus tard, le level design ; toi, tu écris le code, tu pilotes Unity et Blender, et tu
@@ -18,18 +18,20 @@ ouverte, propose 2 ou 3 options à l'utilisateur.
    variable), **glissade** qui garde l'élan, **wall slide** et **wall jump** avec élan,
    **bunny hop** (enchaîner les sauts à l'atterrissage sans perdre de vitesse, contrôle en l'air
    façon Source). Les arènes récompensent le joueur qui bouge bien, comme dans Deadlock.
-2. **Deux orbes, un seul actif à la fois, échange instantané.** On voit seulement les mains et
-   l'orbe en vue première personne.
-   - **Orbe de magnétisme** : sur un mur ou le sol visé, **attirer** le joueur vers le point ou
-     le **repousser** loin de lui. Deux couleurs, une par mode.
-   - **Orbe de télékinésie** : **attraper** un objet (caisse, lustre…) puis le **lancer**. Deux
-     couleurs, une par mode.
-   - **Endurance** consommée par les orbes (et peut-être la glissade), et **court temps de
-     recharge** entre deux utilisations : juste assez pour éviter les abus et les bugs, sans
-     casser le rythme.
+2. **Une seule orbe, deux pouvoirs, toutes les actions en même temps** (D-024 : plus d'échange
+   d'orbes). On voit seulement les mains et l'orbe en vue première personne. Chaque action a sa
+   touche, on peut les combiner (se tracter en tenant une caisse, la lancer en arrivant) :
+   - **Magnétisme** : sur un mur ou le sol visé, **attirer** le joueur vers le point (A en AZERTY
+     maintenu / RB) ou le **repousser** loin de lui (clic droit / LT).
+   - **Télékinésie** : **attraper** un objet (caisse, lustre…) ou le relâcher (F / X), puis le
+     **lancer** (clic gauche / RT ; sans objet, le clic gauche est réservé à l'artefact).
+   - **Couleur de l'orbe selon l'action** : bleu traction, orange répulsion, violet objet tenu,
+     vert lancer (un éclat bref l'emporte, la traction l'emporte sur l'objet tenu).
+   - **Pas d'endurance** : des charges (attraction, répulsion) et un **court temps de recharge**
+     après un lancer : juste assez pour éviter les abus et les bugs, sans casser le rythme.
 3. **Boucle roguelite.** Zone → salles ou arènes → vagues d'ennemis → récompense (coffre,
-   marchand, salle verrouillée) → … → boss → zone suivante. Les orbes **collectent
-   automatiquement les âmes** des monstres tués dans un rayon autour d'elles ; les âmes servent
+   marchand, salle verrouillée) → … → boss → zone suivante. L'orbe **collecte
+   automatiquement les âmes** des monstres tués dans un rayon autour d'elle ; les âmes servent
    de monnaie. Chaque run doit être différente grâce aux améliorations et à l'ordre des salles.
 4. **Lisibilité dans le noir.** Décors très sombres, beaucoup de sources de lumière, et **tout ce
    qui est interactif brille** (lueur colorée) : objets attrapables, surfaces magnétiques,
@@ -44,9 +46,9 @@ ouverte, propose 2 ou 3 options à l'utilisateur.
   un Rigidbody dynamique. Vitesse et élan gérés explicitement : accélération au sol, en l'air,
   friction, conservation de l'élan à la glissade et au bunny hop.
 - **Machines à états explicites** : joueur (Sol, Air, Glissade, WallSlide, WallJump,
-  Magnétisme…), orbes (Prête, EnUsage, Recharge), ennemis, vagues, déroulement de la run.
+  Magnétisme…), actions de l'orbe (Prête, EnUsage, Recharge), ennemis, vagues, déroulement de la run.
 - **Tous les réglages dans des ScriptableObjects**, un asset par système : mouvement, chaque
-  orbe, endurance, ennemis, vagues, économie des âmes, tables de butin, prix des marchands.
+  pouvoir de l'orbe, ennemis, vagues, économie des âmes, tables de butin, prix des marchands.
   L'utilisateur doit pouvoir régler en Play Mode sans toucher au code.
 - **Règles pour ne pas bloquer le multijoueur plus tard** :
   - aucun singleton pour le joueur : tout l'état d'un joueur vit sur son prefab, instanciable
@@ -89,13 +91,13 @@ détaillé se fait à l'étape DA (voir l'ordre de travail). Images d'inspiratio
    (annonce le nombre de modèles et demande un oui), un `execute_blender_code` sur un fichier
    `.blend` non sauvegardé, l'installation d'un package, un build, un commit.
 2. **Petites étapes vérifiées.** Après chaque fonctionnalité : compilation sans erreur (logs
-   Unity), tests EditMode/PlayMode quand c'est testable (calculs de vitesse, endurance, recharge,
+   Unity), tests EditMode/PlayMode quand c'est testable (calculs de vitesse, charges, recharge,
    économie), puis une **checklist de playtest concrète** pour l'utilisateur. Tu ne peux pas
    sentir la manette : c'est l'utilisateur qui valide le ressenti.
 3. **Une scène de test** (`Assets/Scenes/Test_Movement.unity`) avec murs, rampes, couloirs de
    glissade, surfaces magnétiques, objets à lancer et quelques ennemis factices, maintenue à jour
    : c'est le banc d'essai de chaque capacité.
-4. **Debug visible** : un affichage activable (vitesse horizontale, état du joueur, endurance,
+4. **Debug visible** : un affichage activable (vitesse horizontale, état du joueur, charges,
    recharges) pour que l'utilisateur puisse décrire précisément ce qu'il ressent.
 5. **Assets.** Chaque modèle a une entrée dans `docs/assets/MANIFEST.md` (source, outil, licence,
    échelle, pivot, triangles). Vérifie échelle (1 unité = 1 m), pivot, orientation et nombre de
@@ -118,12 +120,12 @@ détaillé se fait à l'étape DA (voir l'ordre de travail). Images d'inspiratio
 | Caméra première personne, FOV selon la vitesse | `camera-systems` |
 | Combat : dégâts des objets lancés, temps pour tuer, ennemis qui ripostent | `fps-shooter` |
 | Réglages data-driven | `unity-scriptableobjects` |
-| Mains et orbes en vue FPS, ennemis animés | `unity-animation` |
+| Mains et orbe en vue FPS, ennemis animés | `unity-animation` |
 | IA des ennemis et du boss | `game-ai`, `ai-behavior-trees-utility-ai`, `unity-navmesh` |
 | Structure de run, seeds, méta-progression | `roguelike` |
 | Ordre des salles, tables de butin, choix aléatoires | `procedural-gen` |
 | Sauvegarde run et méta | `save-systems` |
-| HUD (endurance, recharges, âmes), menus, choix d'amélioration | `game-ui-ux` |
+| HUD (charges, recharges, âmes), menus, choix d'amélioration | `game-ui-ux` |
 | Sons, son 3D | `audio-design` |
 | Cel-shading, contours, lueurs, post-process | `shader-programming` (+ skills URP du plugin Unity) |
 | Arènes, verticalité, routes de mouvement | `level-design` |
@@ -148,15 +150,15 @@ jusqu'à l'étape 10.
 1. **Brief** : poser à l'utilisateur les questions ouvertes de `docs/design/BRIEF.md`, puis
    écrire un GDD court via `game-docs`.
 2. **Mouvement de base** : course, saut, glissade avec élan, wall slide et wall jump, bunny hop.
-3. **Orbe de magnétisme** : attirer et repousser, endurance, recharge, retour visuel et sonore.
-4. **Orbe de télékinésie** : attraper et lancer des objets physiques ; objets interactifs qui
-   brillent ; échange entre les deux orbes.
-5. **Vue FPS et HUD** : mains et orbes, couleurs par mode, endurance, recharges, debug.
+3. **Magnétisme** : attirer et repousser, charges, recharge, retour visuel et sonore.
+4. **Télékinésie** : attraper et lancer des objets physiques ; objets interactifs qui brillent ;
+   une seule orbe, toutes les actions en même temps (D-024).
+5. **Vue FPS et HUD** : mains et orbe, couleur selon l'action, charges, recharges, debug.
 5 bis. **Artefacts** : système générique (1 artefact tiré au hasard par joueur et par run, pas de
    doublon en coop, un emplacement en main gauche), puis le **barillet** comme premier artefact
    (`docs/design/features/artefacts/design.md`). Avant ou avec les ennemis et les vagues.
 6. **Ennemis et vagues** dans une arène test ; dégâts des objets lancés.
-7. **Âmes et économie** : collecte autour des orbes, coffre, marchand, salle verrouillée,
+7. **Âmes et économie** : collecte autour de l'orbe, coffre, marchand, salle verrouillée,
    premières améliorations.
 8. **Run complète** : enchaînement des salles, boss, changement de zone, mort et relance.
 9. **Écran partagé local à 2 joueurs** pour tester la coop.

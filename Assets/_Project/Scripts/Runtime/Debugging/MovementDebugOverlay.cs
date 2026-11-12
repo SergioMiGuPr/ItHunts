@@ -123,8 +123,7 @@ namespace ItHunts.Debugging
         private void AppendTelekinesis(in MovementState s, float dt)
         {
             TelekinesisOrbSettings tc = _motor.TelekinesisSettings;
-            StaminaSettings st = _motor.StaminaSettings;
-            if (tc == null || st == null)
+            if (tc == null)
                 return;
             TelekinesisState t = _motor.Telekinesis;
             string status = t.Status switch
@@ -136,7 +135,7 @@ namespace ItHunts.Debugging
             Grabbable aimed = t.AimHit ? Grabbable.Find(t.AimId) : null;
             string aim = aimed == null ? $"rien d'attrapable (≤ {tc.range:0} m)"
                 : $"{aimed.name} ({aimed.Mass:0} kg{(t.AimTooHeavy ? ", TROP LOURD" : "")}) à {t.AimDistance:0.0} m";
-            _text.AppendLine($"Télékinésie : {status}, endurance {Mathf.Max(0f, t.Stamina):0}/{st.max:0}   Visée : {aim}");
+            _text.AppendLine($"Télékinésie : {status}   Visée : {aim}");
             Grabbable held = _motor.Holder != null ? _motor.Holder.Held : null;
             if (held != null)
             {
@@ -154,12 +153,14 @@ namespace ItHunts.Debugging
                 {
                     TelekinesisRefusal.RienAttrapable => "rien d'attrapable",
                     TelekinesisRefusal.TropLourd => "trop lourd",
-                    TelekinesisRefusal.PasDEndurance => "pas assez d'endurance",
                     TelekinesisRefusal.Recharge => "en recharge",
-                    TelekinesisRefusal.RienEnMain => "rien en main",
                     _ => "?",
                 });
         }
+
+        /// <summary>Temps depuis un appui (« — » si aucun).</summary>
+        private static string Since(int pressTick, int tick, float dt) =>
+            pressTick > 0 ? $"il y a {Mathf.Max(0, tick - pressTick) * dt:0.0} s" : "—";
 
         private static string EndLabel(TractionEnd end) => end switch
         {
@@ -171,7 +172,6 @@ namespace ItHunts.Debugging
             TractionEnd.Dash => "dash",
             TractionEnd.Repulsion => "répulsion",
             TractionEnd.Bloquee => "bloquée par un obstacle",
-            TractionEnd.Echange => "échange d'orbe",
             _ => "—",
         };
 
@@ -247,21 +247,14 @@ namespace ItHunts.Debugging
                 _text.AppendLine(s.LastDashJumpSuccess
                     ? $"Dash-jump : RÉUSSI  {s.LastDashJumpSpeedBefore:0.0} → {s.LastDashJumpSpeedAfter:0.0} m/s"
                     : $"Dash-jump : raté, trop tard de {s.LastDashJumpLateTicks * dt * 1000f:0} ms (fenêtre {cfg.dashJumpWindow * 1000f:0} ms)");
-            if (_motor.TelekinesisSettings != null)
+            if (_reader != null)
             {
-                bool magnet = _motor.ActiveOrb == ActiveOrb.Magnetisme;
-                _text.AppendLine($"Orbe active : {(magnet ? "MAGNÉTISME" : "TÉLÉKINÉSIE")}   (molette / Y : échanger ; 1 / 2 : choisir)");
-                _text.AppendLine(magnet
-                    ? "Commandes : clic gauche / RT maintenu = traction ; clic droit / LT = répulsion"
-                    : "Commandes : clic gauche / RT = attraper (et poser si un objet est tenu) ; clic droit / LT = lancer");
-                if (_reader != null)
-                {
-                    int sinceLeft = s.Tick - _reader.AttractPressedTick, sinceRight = s.Tick - _reader.RepelPressedTick;
-                    string last = _reader.AttractPressedTick > 0 && (sinceLeft <= sinceRight || _reader.RepelPressedTick <= 0)
-                        ? $"clic gauche / RT il y a {Mathf.Max(0, sinceLeft) * dt:0.0} s"
-                        : _reader.RepelPressedTick > 0 ? $"clic droit / LT il y a {Mathf.Max(0, sinceRight) * dt:0.0} s" : "—";
-                    _text.AppendLine($"Dernier appui reçu : {last}   (tenu : {(_reader.AttractHeld ? "oui" : "non")})");
-                }
+                _text.AppendLine(_reader.UsingGamepad
+                    ? "Orbe : RB maintenu = traction ; LT = répulsion ; X = attraper / relâcher ; RT = lancer (sans objet : artefact, plus tard)"
+                    : "Orbe : A maintenu = traction ; clic droit = répulsion ; F = attraper / relâcher ; clic gauche = lancer (sans objet : artefact, plus tard)");
+                _text.AppendLine($"Derniers appuis : traction {Since(_reader.AttractPressedTick, s.Tick, dt)}{(_reader.AttractHeld ? " (tenu)" : "")}, " +
+                                 $"répulsion {Since(_reader.RepelPressedTick, s.Tick, dt)}, attraper {Since(_reader.GrabPressedTick, s.Tick, dt)}, " +
+                                 $"lancer {Since(_reader.ThrowPressedTick, s.Tick, dt)}");
             }
             AppendMagnetism(s, dt);
             AppendTelekinesis(s, dt);

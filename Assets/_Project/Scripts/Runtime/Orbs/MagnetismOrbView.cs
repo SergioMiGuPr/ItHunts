@@ -6,9 +6,10 @@ using UnityEngine;
 namespace ItHunts.Orbs
 {
     /// <summary>
-    /// Retour visuel de l'orbe de magnétisme (greybox), réglé par MagnetismFeedbackSettings. Les couleurs HDR brillent
-    /// avec le bloom.
-    /// - Orbe en bas à droite de la vue : bleue en traction, orange à la répulsion, terne et plus petite en recharge,
+    /// Retour visuel de l'orbe unique (couleur, D-024) et du magnétisme (greybox), réglé par MagnetismFeedbackSettings et
+    /// TelekinesisFeedbackSettings. Les couleurs HDR brillent avec le bloom.
+    /// - Orbe en bas à droite de la vue, une couleur par action (règle : OrbLook) : bleue en traction, orange à la
+    ///   répulsion, violette quand un objet est tenu, verte au lancer ; terne et plus petite sans charge d'attraction,
     ///   neutre quand elle est prête.
     /// - Traction : trait de l'orbe au point, ancre bleue au point (tant qu'on tire), éclat bleu au départ.
     /// - Répulsion : disque orange au point visé quand une surface est à portée (terne en recharge), éclat orange à
@@ -18,6 +19,8 @@ namespace ItHunts.Orbs
     public sealed class MagnetismOrbView : MonoBehaviour
     {
         [SerializeField] private MagnetismFeedbackSettings settings;
+        [Tooltip("Couleurs de la télékinésie (objet tenu : violet ; lancer : vert).")]
+        [SerializeField] private TelekinesisFeedbackSettings tkFeedback;
         [SerializeField] private Renderer orbRenderer;
         [SerializeField] private LineRenderer line;
         [SerializeField] private Renderer aimMarker;
@@ -86,25 +89,35 @@ namespace ItHunts.Orbs
 
             MagnetismState m = _motor.Magnetism;
             MovementState s = _motor.State;
-            bool active = _motor.ActiveOrb == ActiveOrb.Magnetisme;
-            if (active)
-                UpdateOrb(m);                   // sinon, la couleur de l'orbe vient de TelekinesisView
+            UpdateOrb(m, s);
             UpdateTraction(m, s);
-            UpdateRepel(m, active);
+            UpdateRepel(m);
         }
 
-        private void UpdateOrb(in MagnetismState m)
+        private void UpdateOrb(in MagnetismState m, in MovementState s)
         {
-            Color modeColor = m.LastMode == MagnetMode.Attraction ? settings.attractColor : settings.repelColor;
+            int flashTicks = MovementSettings.SecondsToTicks(settings.orbFlashDuration, Time.fixedDeltaTime);
+            OrbLookKind look = OrbLook.Resolve(s, m, _motor.Telekinesis, flashTicks);
+            Color grab = tkFeedback != null ? tkFeedback.grabColor : new Color(0.6f, 0.25f, 1f);
+            Color thrown = tkFeedback != null ? tkFeedback.throwColor : new Color(0.25f, 1f, 0.35f);
             Color target;
             float targetScale = 1f;
-            switch (m.Status)
+            switch (look)
             {
-                case OrbStatus.EnUsage:
-                    target = modeColor * settings.orbUsageIntensity;
+                case OrbLookKind.Lancer:
+                    target = thrown * settings.orbUsageIntensity;
                     break;
-                case OrbStatus.Recharge:
-                    target = Color.Lerp(settings.rechargeColor, modeColor, 0.2f);
+                case OrbLookKind.Repulsion:
+                    target = settings.repelColor * settings.orbUsageIntensity;
+                    break;
+                case OrbLookKind.Traction:
+                    target = settings.attractColor * settings.orbUsageIntensity;
+                    break;
+                case OrbLookKind.Tenu:
+                    target = grab * settings.orbUsageIntensity;
+                    break;
+                case OrbLookKind.Recharge:
+                    target = Color.Lerp(settings.rechargeColor, settings.attractColor, 0.2f);
                     targetScale = rechargeScale;
                     break;
                 default:
@@ -112,9 +125,10 @@ namespace ItHunts.Orbs
                     break;
             }
 
+            bool lit = look != OrbLookKind.Prete && look != OrbLookKind.Recharge;
             // L'allumage est immédiat ; le retour à l'état prêt est un peu adouci.
             float k = 1f - Mathf.Exp(-lerpSpeed * Time.deltaTime);
-            _color = m.Status == OrbStatus.EnUsage ? target : Color.Lerp(_color, target, k);
+            _color = lit ? target : Color.Lerp(_color, target, k);
             _scale = Mathf.Lerp(_scale, targetScale, k);
             SetColor(orbRenderer, _color);
             orbRenderer.transform.localScale = _baseScale * _scale;
@@ -157,11 +171,11 @@ namespace ItHunts.Orbs
             Animate(_attractFlash, settings.attractColor, settings.tractionFlashDuration, settings.tractionFlashGrowth);
         }
 
-        private void UpdateRepel(in MagnetismState m, bool active)
+        private void UpdateRepel(in MagnetismState m)
         {
             if (aimMarker != null)
             {
-                bool show = active && m.RepelInRange;
+                bool show = m.RepelInRange;
                 aimMarker.enabled = show;
                 if (show)
                 {

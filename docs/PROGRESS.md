@@ -4,22 +4,21 @@
 
 ## Étape en cours
 
-**4 — Orbe de télékinésie et échange des orbes**, en deux temps (choix 1a 2a 3a 4a 5a, D-023).
+**4 — Télékinésie, puis une seule orbe** (D-023, puis D-024), en deux temps.
 
-1. **Cœur** — fait ; **playtest de la partie 1 non terminé.**
-   - Contenu : échange (molette / Y, touches 1 et 2) ; attraper (clic gauche / RT : l'objet vole jusqu'au
-     joueur à 40 m/s au plus, portée 60 m, puis reste tenu sans maintenir), poser (nouveau clic gauche),
-     lancer (clic droit / LT, 30 m/s + vitesse du joueur) ; endurance 100 (10 / 15, +25/s après 0.8 s) ;
-     recharge 0.3 s après un lancer ; objets attrapables qui brillent ; HUD (endurance, orbe active,
-     anneaux violet et vert) ; commandes de l'orbe active au debug (F3) ; zone Télékinésie (F12) :
-     caisses de 5 à 60 kg, tonneaux, pile, lustre accroché. 174 tests ; vérifié en Play Mode avec de
-     vraies entrées (Input System simulé). Checklist : `docs/design/features/orbes/testing.md`.
-   - **Bug de prise des objets corrigé** (ils ne bougeaient pas : simulation physique restée en mode
-     Script après une mesure, voir « Problèmes connus ») et **vérifié rapidement en jeu** par
-     l'utilisateur : les objets viennent bien devant lui (2026-11-12).
-   - **Reste à vérifier en playtest :** objets qui brillent ; objet lointain (vitesse d'approche
-     40 m/s) ; caisse tenue en mouvement ; lancer à l'arrêt et en course ; poser et lustre ; endurance ;
-     échange d'orbe.
+1. **Cœur** — fait.
+   - Partie 1 (D-023) : attraper, tenir, poser, lancer (30 m/s + vitesse du joueur), objets qui brillent,
+     zone Télékinésie (F12) : caisses de 5 à 60 kg, tonneaux, pile, lustre accroché. Playtest du
+     2026-11-12 : retour de design ci-dessous. Dégâts selon la vitesse pas encore testés (pas d'ennemis).
+   - **Une seule orbe (D-024), fait le 2026-11-12, playtest en attente :** plus d'échange ni d'orbe
+     active ; les quatre actions en même temps, chacune sur sa touche : **A** (AZERTY) maintenu =
+     traction, **clic droit** = répulsion, **F** = attraper / relâcher, **clic gauche** = lancer (sans
+     objet : réservé à l'artefact) ; manette **RB**, **LT**, **X**, **RT**. Couleur de l'orbe selon
+     l'action (lancer > répulsion > traction > objet tenu). **Plus d'endurance** (seul le délai de 0.3 s
+     après un lancer). Attraction : **1 charge toutes les 4 s**. La visée du magnétisme ignore l'objet
+     tenu. **Défaut corrigé :** l'objet tenu prenait un tick d'avance à grande vitesse (0.47 m à
+     40 m/s) ; mesuré en Play Mode avec le vrai joueur : 0.000 m en traction à 30 m/s, 0.05 m en bunny
+     hop à 20 m/s. 181 tests. Checklist : `docs/design/features/orbes/testing.md` (« une seule orbe »).
 2. **Dégâts et cibles** — **prochaine étape après ce playtest** : dégâts = masse × vitesse d'impact ×
    facteur au-dessus d'un seuil, ennemis factices avec PV et chiffres de dégâts, éclats et sons
    provisoires.
@@ -33,7 +32,7 @@ L'étape 3 (orbe de magnétisme) est **terminée et validée en playtest** (2026
 ## Feuille de route
 
 Ordre de CLAUDE.md, une étape validée en playtest avant la suivante :
-3. Magnétisme (fait) → **4. Télékinésie et échange des orbes** → 5. Vue FPS et HUD →
+3. Magnétisme (fait) → **4. Télékinésie, une seule orbe** → 5. Vue FPS et HUD →
 **5 bis. Artefacts** (système générique : tirage au hasard, pas de doublon en coop, main gauche ; puis
 le barillet, D-022 ; avant ou avec les ennemis) → 6. Ennemis et vagues → 7. Âmes et économie →
 8. Run complète → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
@@ -107,7 +106,9 @@ Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-023).
 - Mouvement façon Deadlock : la vitesse se gagne et se garde ; la limite vient des sauts et des
   charges ; un seul plafond pour tous les gains (20 m/s).
 - Dash et saut en l'air partagent les charges de mouvement ; le magnétisme a ses propres charges
-  (3 charges d'attraction, répulsion unique, D-021) ; la télékinésie garde sa propre endurance.
+  (3 charges d'attraction, répulsion unique, D-021) ; la télékinésie n'a pas d'endurance (D-024).
+- **Une seule orbe** (D-024) : traction, répulsion, attraper / relâcher et lancer en même temps, chacun sur
+  sa touche ; couleur de l'orbe selon l'action.
 - Artefacts : 1 par joueur et par run, tiré au hasard, sans doublon en coop, en main gauche ;
   premier : le barillet (D-022).
 - Architecture prête pour l'écran partagé et la coop en ligne (voir CLAUDE.md).
@@ -135,7 +136,8 @@ et `Camera_Default.asset` (la note de conception en fait foi) :
 Magnétisme validé le 2026-11-12 (v3) avec `Assets/_Project/Settings/Magnetism_Default.asset` :
 
 - **Traction (attraction) :** portée 60 m, 80 m/s² jusqu'à 30 m/s, 2.5 s max, arrivée à 1 m ;
-  3 charges d'attraction, 1 toutes les 3 s ; jamais de perte, hors plafond commun.
+  3 charges d'attraction, 1 toutes les 3 s (passé à **4 s** par D-024, à valider en playtest) ; jamais
+  de perte, hors plafond commun.
 - **Répulsion :** 14 m/s, portée 40 m, charge unique rechargée en 5 s ; gain dans le plafond commun.
 - **Commun :** toute surface ; aucune charge de mouvement ; mémorisation d'un appui 0.1 s.
 
@@ -159,6 +161,11 @@ Magnétisme validé le 2026-11-12 (v3) avec `Assets/_Project/Settings/Magnetism_
 - Le vérificateur `check_unity_project.py` signale 4 GUID introuvables dans
   `Assets/Settings/DefaultVolumeProfile.asset` (modèle URP) : faux positif, Unity charge les
   19 composants sans manque.
+- Touches clavier de l'Input System = positions physiques QWERTY : `<Keyboard>/q` est la touche marquée A
+  sur l'AZERTY de l'utilisateur, `<Keyboard>/w` son Z (déplacements ZQSD).
+- Tests EditMode : pas de scène additive (« untitled scene unsaved ») ; utiliser une scène de prévisualisation
+  (`EditorSceneManager.NewPreviewScene`) et `PhysicsAimProbe.Scene`. Commandes CLI : `unity command test run
+  --mode EditMode`, `unity command editor.playmode start` / `stop`, `unity command script eval --file`.
 - En Play Mode dans l'éditeur, le clavier n'est lu que si la fenêtre Game a le focus (réglage
   Input System par défaut) : le clavier simulé par la CLI ne passe pas. Les vérifications en Play
   Mode passent donc par la simulation avancée tick par tick avec des entrées injectées.

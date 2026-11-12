@@ -186,7 +186,7 @@ namespace ItHunts.Orbs
                 : OrbStatus.Prete;
         }
 
-        /// <summary>Arrête la traction en cours (échange d'orbe) ; la vitesse reste telle quelle.</summary>
+        /// <summary>Arrête la traction en cours (mort, cinématique…) ; la vitesse reste telle quelle.</summary>
         public static void StopTraction(ref MagnetismState m, ref MovementState s, int tick, TractionEnd reason)
         {
             if (m.Tracting)

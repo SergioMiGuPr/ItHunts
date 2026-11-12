@@ -18,8 +18,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   pressBuffer: 0.1
-  grabCost: 10
-  throwCost: 15
   cooldown: 0.3
   holdDistance: 2.5
   holdDrop: 0.35

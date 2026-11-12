@@ -153,8 +153,14 @@ namespace ItHunts.Orbs
             }
         }
 
-        /// <summary>Fait suivre le point de maintien à l'objet tenu ; faux s'il est perdu (coincé trop longtemps, détruit).</summary>
-        public bool Drive(TelekinesisOrbSettings cfg, Vector3 eye, Vector3 aimDir, Vector3 playerVelocity, float dt)
+        /// <summary>
+        /// Fait suivre le point de maintien à l'objet tenu ; faux s'il est perdu (coincé trop longtemps, détruit).
+        /// eye est la position des yeux après le pas du mouvement de ce tick, eyeVelocity le déplacement réel des yeux
+        /// pendant ce tick divisé par dt. L'objet reprend ce déplacement tel quel, plus une correction de l'écart qu'il
+        /// avait AVANT ce déplacement : ainsi, il ne prend pas un tick d'avance à grande vitesse (avant correction :
+        /// 0.5 m d'avance à 30 m/s, 0.67 m à 40 m/s).
+        /// </summary>
+        public bool Drive(TelekinesisOrbSettings cfg, Vector3 eye, Vector3 aimDir, Vector3 eyeVelocity, float dt)
         {
             if (Held == null)
                 return false;
@@ -165,9 +171,9 @@ namespace ItHunts.Orbs
             }
 
             Vector3 holdPoint = HoldPoint(cfg, eye, aimDir);
-            Vector3 error = holdPoint - Held.Body.position;
+            Vector3 error = holdPoint - eyeVelocity * dt - Held.Body.position;                    // écart avant ce tick
             Vector3 correction = Vector3.ClampMagnitude(error * cfg.holdGain, cfg.approachSpeed);   // vole vers le point, ralentit en arrivant
-            Held.Body.linearVelocity = playerVelocity + correction;
+            Held.Body.linearVelocity = eyeVelocity + correction;
             Held.Body.angularVelocity *= 0.8f;
 
             // Coincé : après avoir rejoint le point de maintien, trop loin de lui ; avant (objet attrapé de loin, en

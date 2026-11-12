@@ -24,6 +24,9 @@ namespace ItHunts.Settings
         [Min(0f)] public float repelAimMarkerIntensity = 1.5f;
         [Min(0f)] public float anchorIntensity = 3f;
         [Min(0f)] public float flashIntensity = 4f;
+        [Tooltip("Orbe unique : durée de l'éclat de couleur d'une action brève (répulsion orange, lancer vert), qui " +
+                 "l'emporte sur la traction (bleu) et l'objet tenu (violet) (s).")]
+        [Min(0.02f)] public float orbFlashDuration = 0.15f;
 
         [Header("Marques dans le monde")]
         [Tooltip("Au-delà de cette distance (m), les marques grandissent avec la distance : même taille à l'écran.")]

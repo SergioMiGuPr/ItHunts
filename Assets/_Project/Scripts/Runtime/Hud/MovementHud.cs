@@ -11,8 +11,9 @@ namespace ItHunts.Hud
     /// - rangée 1 : charges de mouvement (saut en l'air, dash) ;
     /// - rangée 2 : charges d'attraction (bleu) puis la répulsion (orange : pleine, ou remplissage et temps restant) ;
     ///   le groupe d'un mode refusé clignote en rouge ;
-    /// - rangée 3 : endurance de la télékinésie (violet) ; l'orbe inactive est atténuée, son nom est écrit dessous ;
-    /// - viseur : anneaux de l'orbe active (magnétisme : bleu et orange ; télékinésie : violet et vert).
+    /// - viseur : anneaux de l'orbe unique (D-024), toutes les actions en même temps : bleu (traction possible), orange
+    ///   (répulsion possible), puis à l'extérieur violet (objet visé attrapable) ou vert (objet tenu, lancer possible) ;
+    ///   l'anneau extérieur clignote en rouge après un refus de la télékinésie. Pas d'endurance.
     /// Segments pleins, vides, ou en cours de recharge. Dessiné dans la zone de la caméra du joueur (prêt pour l'écran
     /// partagé). Version greybox en IMGUI ; le vrai HUD viendra à l'étape 5.
     /// </summary>
@@ -22,10 +23,8 @@ namespace ItHunts.Hud
         [SerializeField] private Color rechargeColor = new Color(0.35f, 0.85f, 1f, 0.45f);
         [Tooltip("Couleurs de l'attraction, de la répulsion et du refus, anneaux du viseur, clignotement.")]
         [SerializeField] private MagnetismFeedbackSettings feedback;
-        [Tooltip("Couleurs de la télékinésie (endurance, anneaux violet et vert).")]
+        [Tooltip("Couleurs de la télékinésie (anneaux violet et vert).")]
         [SerializeField] private TelekinesisFeedbackSettings tkFeedback;
-        [Tooltip("Opacité de la rangée de l'orbe inactive.")]
-        [SerializeField, Range(0f, 1f)] private float inactiveAlpha = 0.35f;
         [SerializeField] private Color emptyColor = new Color(0f, 0f, 0f, 0.55f);
         [SerializeField] private Color crosshairColor = new Color(1f, 1f, 1f, 0.85f);
         [SerializeField, Min(1f)] private float segmentWidth = 22f;
@@ -38,7 +37,6 @@ namespace ItHunts.Hud
         private PlayerMotor _motor;
         private Camera _camera;
         private GUIStyle _timeStyle;
-        private GUIStyle _labelStyle;
         private readonly System.Collections.Generic.Dictionary<Vector2, Texture2D> _rings =
             new System.Collections.Generic.Dictionary<Vector2, Texture2D>();
 
@@ -70,24 +68,10 @@ namespace ItHunts.Hud
                 Segments(center.x - total * 0.5f, y, count, Mathf.Max(0f, _motor.State.Charges), filledColor, rechargeColor, emptyColor);
             }
 
-            // Rangée 2 : magnétisme ; rangée 3 : endurance de la télékinésie. L'orbe inactive est atténuée.
-            bool magnetActive = _motor.ActiveOrb == ActiveOrb.Magnetisme;
-            float rowWidth = 0f;
+            // Rangée 2 : magnétisme (charges d'attraction, répulsion).
             y += segmentHeight + rowGap;
             if (_motor.MagnetismSettings != null)
-                rowWidth = DrawMagnetismRow(center, y, magnetActive ? 1f : inactiveAlpha);
-            if (_motor.TelekinesisSettings != null && _motor.StaminaSettings != null)
-            {
-                y += segmentHeight + rowGap;
-                DrawStaminaRow(center, y, rowWidth > 0f ? rowWidth : Width(3), magnetActive ? inactiveAlpha : 1f);
-            }
-
-            // Orbe active, en toutes lettres.
-            _labelStyle ??= new GUIStyle(GUI.skin.label) { fontSize = 11, alignment = TextAnchor.UpperCenter, fontStyle = FontStyle.Bold };
-            _labelStyle.normal.textColor = magnetActive
-                ? Opaque(feedback != null ? feedback.attractColor : Color.cyan)
-                : Opaque(tkFeedback != null ? tkFeedback.grabColor : Color.magenta);
-            GUI.Label(new Rect(center.x - 80f, y + segmentHeight + 3f, 160f, 16f), magnetActive ? "MAGNÉTISME" : "TÉLÉKINÉSIE", _labelStyle);
+                DrawMagnetismRow(center, y, 1f);
         }
 
         /// <summary>Charges d'attraction (bleu) puis répulsion (orange, temps restant) ; renvoie la largeur de la rangée.</summary>
@@ -134,23 +118,6 @@ namespace ItHunts.Hud
             return row;
         }
 
-        /// <summary>Barre d'endurance de la télékinésie (violet) ; clignote en rouge après un refus de la télékinésie.</summary>
-        private void DrawStaminaRow(Vector2 center, float y, float width, float alpha)
-        {
-            TelekinesisState t = _motor.Telekinesis;
-            float max = _motor.StaminaSettings.max;
-            float value = t.Stamina < 0f ? max : t.Stamina;
-            bool blink = feedback != null && MagnetismFeedback.BlinkOn(t.LastRefusalTick, _motor.State.Tick, Time.fixedDeltaTime,
-                feedback.refusalFlashDuration, feedback.refusalBlinkPeriod);
-            Color bar = Opaque(tkFeedback != null ? tkFeedback.staminaColor : new Color(0.65f, 0.35f, 1f));
-            Color empty = blink ? feedback.refusalColor : emptyColor;
-            bar.a *= alpha;
-            empty.a *= alpha;
-            var rect = new Rect(center.x - width * 0.5f, y, width, segmentHeight);
-            Fill(rect, empty);
-            Fill(new Rect(rect.x, rect.y, rect.width * Mathf.Clamp01(value / max), rect.height), bar);
-        }
-
         private static Color Opaque(Color c) => new Color(c.r, c.g, c.b, 0.95f);
 
         private bool Blink(in MagnetismState m, MagnetMode mode) =>
@@ -158,32 +125,34 @@ namespace ItHunts.Hud
                 feedback.refusalFlashDuration, feedback.refusalBlinkPeriod);
 
         /// <summary>
-        /// Anneaux du viseur de l'orbe active : magnétisme (bleu : traction possible ; orange : répulsion possible),
-        /// télékinésie (violet : objet visé attrapable ; vert : lancer possible).
+        /// Anneaux du viseur, toutes les actions de l'orbe en même temps : bleu (traction possible), orange (répulsion
+        /// possible), puis violet (objet visé attrapable) ou vert (objet tenu : lancer possible) ; rouge un court instant
+        /// après un refus de la télékinésie (rien d'attrapable, trop lourd, recharge).
         /// </summary>
         private void DrawRings(Vector2 center)
         {
             if (feedback == null)
                 return;
-            if (_motor.ActiveOrb == ActiveOrb.Magnetisme)
+            if (_motor.MagnetismSettings != null)
             {
-                if (_motor.MagnetismSettings == null)
-                    return;
                 MagnetismState m = _motor.Magnetism;
                 if (MagnetismFeedback.CanAttract(m))
                     DrawRing(center, Ring(feedback.attractRingRadius), Opaque(feedback.attractColor));
                 if (MagnetismFeedback.CanRepel(m))
                     DrawRing(center, Ring(feedback.repelRingRadius), Opaque(feedback.repelColor));
-                return;
             }
 
             if (tkFeedback == null || _motor.TelekinesisSettings == null)
                 return;
             TelekinesisState t = _motor.Telekinesis;
-            if (TelekinesisOrb.CanGrab(t, _motor.TelekinesisSettings, _motor.State.Tick, Time.fixedDeltaTime))
-                DrawRing(center, Ring(tkFeedback.grabRingRadius), Opaque(tkFeedback.grabColor));
-            if (TelekinesisOrb.CanThrow(t, _motor.TelekinesisSettings))
+            bool refused = MagnetismFeedback.BlinkOn(t.LastRefusalTick, _motor.State.Tick, Time.fixedDeltaTime,
+                feedback.refusalFlashDuration, feedback.refusalBlinkPeriod);
+            if (refused)
+                DrawRing(center, Ring(tkFeedback.grabRingRadius), feedback.refusalColor);
+            else if (TelekinesisOrb.CanThrow(t))
                 DrawRing(center, Ring(tkFeedback.throwRingRadius), Opaque(tkFeedback.throwColor));
+            else if (TelekinesisOrb.CanGrab(t, _motor.TelekinesisSettings, _motor.State.Tick, Time.fixedDeltaTime))
+                DrawRing(center, Ring(tkFeedback.grabRingRadius), Opaque(tkFeedback.grabColor));
         }
 
         private static void DrawRing(Vector2 center, Texture2D tex, Color color)

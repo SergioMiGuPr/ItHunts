@@ -1,8 +1,11 @@
+using System.Linq;
 using ItHunts.Movement;
 using ItHunts.Orbs;
 using ItHunts.Settings;
 using NUnit.Framework;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace ItHunts.Tests
 {
@@ -24,20 +27,22 @@ namespace ItHunts.Tests
         }
     }
 
+    /// <summary>
+    /// Orbe unique (D-024) : traction (A / RB maintenu), répulsion (clic droit / LT), attraper ou relâcher (F / X) et lancer
+    /// (clic gauche / RT), toutes disponibles en même temps ; pas d'endurance ; couleur de l'orbe selon l'action.
+    /// </summary>
     public class TelekinesisTests
     {
         private const float Dt = 1f / 60f;
         private MovementSettings _move;
         private MagnetismOrbSettings _magnetCfg;
         private TelekinesisOrbSettings _cfg;
-        private StaminaSettings _stamina;
         private FakeGroundProbe _ground;
         private FakeAimProbe _aim;
         private FakeGrabProbe _grab;
         private MovementState _s;
         private MagnetismState _m;
         private TelekinesisState _t;
-        private OrbSelectionState _orbs;
         private TelekinesisCommand _last;
 
         [SetUp]
@@ -46,14 +51,12 @@ namespace ItHunts.Tests
             _move = ScriptableObject.CreateInstance<MovementSettings>();
             _magnetCfg = ScriptableObject.CreateInstance<MagnetismOrbSettings>();
             _cfg = ScriptableObject.CreateInstance<TelekinesisOrbSettings>();
-            _stamina = ScriptableObject.CreateInstance<StaminaSettings>();
             _ground = new FakeGroundProbe { Position = Vector3.zero };
             _aim = new FakeAimProbe();
             _grab = new FakeGrabProbe();
             _s = MovementState.Create(Vector3.zero);
             _m = MagnetismState.Create();
             _t = TelekinesisState.Create();
-            _orbs = OrbSelectionState.Create();
             Step(MovementInput.Neutral);
         }
 
@@ -63,206 +66,188 @@ namespace ItHunts.Tests
             Object.DestroyImmediate(_move);
             Object.DestroyImmediate(_magnetCfg);
             Object.DestroyImmediate(_cfg);
-            Object.DestroyImmediate(_stamina);
         }
 
-        /// <summary>Comme PlayerMotor : échange, magnétisme, télékinésie (seule l'orbe active reçoit les boutons), mouvement.</summary>
+        /// <summary>Comme PlayerMotor : magnétisme, télékinésie (même entrée, chacun sur ses touches), mouvement.</summary>
         private void Step(MovementInput input)
         {
-            int tick = _s.Tick + 1;
-            bool swapped = OrbSelection.Step(ref _orbs, input, tick);
-            if (swapped && _orbs.Active != ActiveOrb.Magnetisme)
-                MagnetismOrb.StopTraction(ref _m, ref _s, tick, TractionEnd.Echange);
-            MovementInput magnetInput = _orbs.Active == ActiveOrb.Magnetisme ? input : OrbSelection.WithoutOrbButtons(input);
-            MagnetismOrb.Step(ref _m, ref _s, magnetInput, _magnetCfg, _move, Dt, _aim);
-            MovementInput tkInput = _orbs.Active == ActiveOrb.Telekinesie ? input : OrbSelection.WithoutOrbButtons(input);
-            _last = TelekinesisOrb.Step(ref _t, _s, tkInput, _cfg, _stamina, _move, Dt, _grab,
-                dropHeld: swapped && _orbs.Active != ActiveOrb.Telekinesie);
+            MagnetismOrb.Step(ref _m, ref _s, input, _magnetCfg, _move, Dt, _aim);
+            _last = TelekinesisOrb.Step(ref _t, _s, input, _cfg, _move, Dt, _grab);
             MovementMotor.Step(ref _s, input, _move, Dt, _ground);
         }
 
-        private MovementInput Select(byte orb)
+        private MovementInput Grab(int pressTick = 0)
         {
             MovementInput i = MovementInput.Neutral;
-            i.OrbSelectPressedTick = _s.Tick + 1;
-            i.OrbSelect = orb;
+            i.GrabPressedTick = pressTick != 0 ? pressTick : _s.Tick + 1;
             return i;
         }
 
-        private MovementInput Swap()
+        private MovementInput Throw(int pressTick = 0)
         {
             MovementInput i = MovementInput.Neutral;
-            i.OrbSwapPressedTick = _s.Tick + 1;
+            i.ThrowPressedTick = pressTick != 0 ? pressTick : _s.Tick + 1;
             return i;
-        }
-
-        private MovementInput Primary(int pressTick = 0)
-        {
-            MovementInput i = MovementInput.Neutral;
-            i.AttractPressedTick = pressTick != 0 ? pressTick : _s.Tick + 1;
-            i.AttractHeld = true;
-            return i;
-        }
-
-        private MovementInput Secondary(int pressTick = 0)
-        {
-            MovementInput i = MovementInput.Neutral;
-            i.RepelPressedTick = pressTick != 0 ? pressTick : _s.Tick + 1;
-            return i;
-        }
-
-        private void UseTelekinesis()
-        {
-            Step(Select(2));
-            Assume.That(_orbs.Active, Is.EqualTo(ActiveOrb.Telekinesie));
         }
 
         private void GrabTarget(float mass = 10f)
         {
             _grab.HasTarget = true;
             _grab.Mass = mass;
-            Step(Primary());
+            Step(Grab());
             Assume.That(_t.Holding, Is.True);
         }
 
-        // ---------- Échange ----------
-
-        [Test]
-        public void Echange_BasculeEtChoixDirect()
-        {
-            Assert.That(_orbs.Active, Is.EqualTo(ActiveOrb.Magnetisme), "magnétisme au départ");
-            Step(Swap());
-            Assert.That(_orbs.Active, Is.EqualTo(ActiveOrb.Telekinesie));
-            Step(Swap());
-            Assert.That(_orbs.Active, Is.EqualTo(ActiveOrb.Magnetisme));
-            Step(Select(2));
-            Assert.That(_orbs.Active, Is.EqualTo(ActiveOrb.Telekinesie));
-            int swapTick = _orbs.LastSwapTick;
-            Step(Select(2));
-            Assert.That(_orbs.LastSwapTick, Is.EqualTo(swapTick), "choisir l'orbe déjà active ne change rien");
-            Step(Select(1));
-            Assert.That(_orbs.Active, Is.EqualTo(ActiveOrb.Magnetisme));
-        }
-
-        [Test]
-        public void Echange_ArreteLaTraction_SansPerte()
+        /// <summary>Surface à 35 m devant, en haut (pitch -45°), pour une traction.</summary>
+        private MovementInput AimAtWall(MovementInput i)
         {
             _aim.HasTarget = true;
             _aim.Target = MagnetismOrb.EyePosition(_s, _move) + new Vector3(0f, 25f, 25f);
-            MovementInput attract = Primary();
-            attract.Pitch = -45f;
-            attract.Yaw = 0f;
-            Step(attract);
-            for (int i = 0; i < 10; i++)
-            {
-                MovementInput hold = MovementInput.Neutral;
-                hold.AttractPressedTick = attract.AttractPressedTick;
-                hold.AttractHeld = true;
-                Step(hold);
-            }
-
-            Assume.That(_s.Mode, Is.EqualTo(MovementMode.Traction));
-            float speed = _s.Velocity.magnitude;
-            MovementInput swap = Swap();
-            swap.AttractPressedTick = attract.AttractPressedTick;
-            swap.AttractHeld = true;
-            Step(swap);
-            Assert.That(_m.LastTractionEnd, Is.EqualTo(TractionEnd.Echange));
-            Assert.That(_s.Mode, Is.Not.EqualTo(MovementMode.Traction));
-            Assert.That(_s.Velocity.magnitude, Is.GreaterThan(speed - _move.gravity * Dt - 1e-3f), "aucune perte d'élan");
+            i.Pitch = -45f;
+            i.Yaw = 0f;
+            return i;
         }
 
-        [Test]
-        public void TelekinesieActive_LeMagnetismeNeRecoitPasLesBoutons()
+        private int StartTraction()
         {
-            UseTelekinesis();
-            _aim.HasTarget = true;
-            _aim.Target = MagnetismOrb.EyePosition(_s, _move) + new Vector3(0f, 0f, 10f);
-            Step(Primary());
-            Assert.That(_m.Tracting, Is.False);
-            Assert.That(_t.LastRefusal, Is.EqualTo(TelekinesisRefusal.RienAttrapable), "le clic va à la télékinésie");
+            MovementInput attract = AimAtWall(MovementInput.Neutral);
+            attract.AttractPressedTick = _s.Tick + 1;
+            attract.AttractHeld = true;
+            Step(attract);
+            Assume.That(_s.Mode, Is.EqualTo(MovementMode.Traction));
+            return attract.AttractPressedTick;
+        }
+
+        private MovementInput HoldTraction(int pressTick)
+        {
+            MovementInput i = AimAtWall(MovementInput.Neutral);
+            i.AttractPressedTick = pressTick;
+            i.AttractHeld = true;
+            return i;
+        }
+
+        // ---------- Orbe unique : toutes les actions en même temps ----------
+
+        [Test]
+        public void OrbeUnique_TractionEnTenantUnObjet_PuisLancerEnArrivant()
+        {
+            GrabTarget();
+            int press = StartTraction();
+            Assert.That(_t.Holding, Is.True, "l'objet reste tenu pendant la traction");
+            for (int i = 0; i < 20; i++)
+                Step(HoldTraction(press));
+            Assume.That(_s.Mode, Is.EqualTo(MovementMode.Traction));
+
+            MovementInput throwDuring = HoldTraction(press);
+            throwDuring.ThrowPressedTick = _s.Tick + 1;
+            Step(throwDuring);
+            Assert.That(_last.Kind, Is.EqualTo(TelekinesisCommandKind.Lancer), "lancer pendant la traction");
+            Assert.That(_t.Holding, Is.False);
+            Assert.That(_s.Mode, Is.EqualTo(MovementMode.Traction), "le lancer n'arrête pas la traction");
+            Assert.That(_m.Tracting, Is.True);
         }
 
         [Test]
-        public void MagnetismeActif_LaTelekinesieNeRecoitPasLesBoutons()
+        public void OrbeUnique_RepulsionEnTenantUnObjet_LObjetResteTenu()
+        {
+            GrabTarget();
+            MovementInput repel = AimAtWall(MovementInput.Neutral);
+            repel.Pitch = 60f;                                        // vers le sol
+            _aim.HasTarget = false;
+            _aim.BlockAt = 3f;
+            repel.RepelPressedTick = _s.Tick + 1;
+            Step(repel);
+            Assert.That(_m.LastRepelTick, Is.EqualTo(_s.Tick), "la répulsion part");
+            Assert.That(_t.Holding, Is.True);
+        }
+
+        [Test]
+        public void OrbeUnique_ChaqueToucheSonAction()
+        {
+            // F ne lance pas de traction, A n'attrape pas.
+            _grab.HasTarget = true;
+            MovementInput grab = AimAtWall(Grab());
+            Step(grab);
+            Assert.That(_t.Holding, Is.True);
+            Assert.That(_m.Tracting, Is.False, "F n'attire pas");
+
+            Step(Grab());                                             // relâche
+            Assume.That(_t.Holding, Is.False);
+            int press = StartTraction();
+            Assert.That(_t.Holding, Is.False, "A n'attrape pas");
+            Assert.That(press, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void ClicGauche_SansObjet_NeFaitRien()
         {
             _grab.HasTarget = true;
-            Step(Primary());
-            Assert.That(_t.Holding, Is.False);
+            Step(AimAtWall(Throw()));
+            Assert.That(_last.Kind, Is.EqualTo(TelekinesisCommandKind.Aucune));
+            Assert.That(_t.Holding, Is.False, "le clic gauche n'attrape pas");
+            Assert.That(_t.LastRefusalTick, Is.EqualTo(MovementState.NeverTick), "aucun refus : réservé à l'artefact");
+            Assert.That(_m.Tracting, Is.False);
+            Assert.That(_m.LastRepelTick, Is.EqualTo(MovementState.NeverTick));
         }
 
-        // ---------- Attraper, tenir, poser ----------
+        // ---------- Attraper, tenir, relâcher ----------
 
         [Test]
-        public void Attraper_Coute10_ObjetTenuSansMaintenir()
+        public void Attraper_F_ObjetTenuSansMaintenir()
         {
-            UseTelekinesis();
             GrabTarget();
             Assert.That(_last.Kind, Is.EqualTo(TelekinesisCommandKind.Attraper));
             Assert.That(_last.TargetId, Is.EqualTo(_grab.Id));
-            Assert.That(_t.Stamina, Is.EqualTo(_stamina.max - _cfg.grabCost).Within(1e-3f));
             for (int i = 0; i < 30; i++)
-                Step(MovementInput.Neutral);                         // bouton relâché
-            Assert.That(_t.Holding, Is.True, "tenu sans maintenir le bouton");
+                Step(MovementInput.Neutral);                         // touche relâchée
+            Assert.That(_t.Holding, Is.True, "tenu sans maintenir la touche");
             Assert.That(_t.Status, Is.EqualTo(OrbStatus.EnUsage));
         }
 
         [Test]
-        public void Attraper_Refus_TropLourd_Rien_PasDEndurance()
+        public void Attraper_Refus_TropLourd_Rien()
         {
-            UseTelekinesis();
             _grab.HasTarget = true;
             _grab.Mass = 60f;
-            Step(Primary());
+            Step(Grab());
             Assert.That(_t.LastRefusal, Is.EqualTo(TelekinesisRefusal.TropLourd));
             Assert.That(_t.AimTooHeavy, Is.True);
 
             _grab.HasTarget = false;
-            Step(Primary());
+            Step(Grab());
             Assert.That(_t.LastRefusal, Is.EqualTo(TelekinesisRefusal.RienAttrapable));
-
-            _grab.HasTarget = true;
-            _grab.Mass = 10f;
-            _t.Stamina = 5f;
-            _t.LastSpendTick = _s.Tick;                             // pas de régénération ce tick
-            Step(Primary());
-            Assert.That(_t.LastRefusal, Is.EqualTo(TelekinesisRefusal.PasDEndurance));
             Assert.That(_t.Holding, Is.False);
         }
 
         [Test]
         public void Attraper_HorsDePortee_Refuse()
         {
-            UseTelekinesis();
             _grab.HasTarget = true;
             _grab.Distance = _cfg.range + 1f;
-            Step(Primary());
+            Step(Grab());
             Assert.That(_t.LastRefusal, Is.EqualTo(TelekinesisRefusal.RienAttrapable));
         }
 
         [Test]
-        public void Poser_NouveauClicGauche()
+        public void Relacher_F_PoseLObjet()
         {
-            UseTelekinesis();
             GrabTarget();
             Step(MovementInput.Neutral);
-            float stamina = _t.Stamina;
-            Step(Primary());
+            Step(Grab());
             Assert.That(_last.Kind, Is.EqualTo(TelekinesisCommandKind.Poser));
+            Assert.That(_last.TargetId, Is.EqualTo(_grab.Id));
             Assert.That(_t.Holding, Is.False);
-            Assert.That(_t.Stamina, Is.EqualTo(stamina).Within(1e-3f), "poser ne coûte rien");
+            Assert.That(_t.LastThrowTick, Is.EqualTo(MovementState.NeverTick), "poser n'est pas un lancer (pas de recharge)");
         }
 
         // ---------- Lancer ----------
 
         [Test]
-        public void Lancer_Coute15_EtRelacheLObjet()
+        public void Lancer_ClicGauche_RelacheLObjetDansLaVisee()
         {
-            UseTelekinesis();
             GrabTarget();
             Step(MovementInput.Neutral);
-            float stamina = _t.Stamina;
-            MovementInput throwInput = Secondary();
+            MovementInput throwInput = Throw();
             throwInput.Yaw = 90f;
             Step(throwInput);
             Assert.That(_last.Kind, Is.EqualTo(TelekinesisCommandKind.Lancer));
@@ -270,27 +255,6 @@ namespace ItHunts.Tests
             Assert.That(Vector3.Angle(_last.AimDirection, Vector3.right), Is.LessThan(0.1f), "direction de la visée");
             Assert.That(_t.Holding, Is.False);
             Assert.That(_t.LastThrownId, Is.EqualTo(_grab.Id));
-            Assert.That(_t.Stamina, Is.EqualTo(stamina - _cfg.throwCost).Within(1e-3f));
-        }
-
-        [Test]
-        public void Lancer_SansEndurance_GardeLObjet()
-        {
-            UseTelekinesis();
-            GrabTarget();
-            _t.Stamina = 10f;
-            _t.LastSpendTick = _s.Tick;
-            Step(Secondary());
-            Assert.That(_t.LastRefusal, Is.EqualTo(TelekinesisRefusal.PasDEndurance));
-            Assert.That(_t.Holding, Is.True);
-        }
-
-        [Test]
-        public void Lancer_RienEnMain_Refuse()
-        {
-            UseTelekinesis();
-            Step(Secondary());
-            Assert.That(_t.LastRefusal, Is.EqualTo(TelekinesisRefusal.RienEnMain));
         }
 
         [Test]
@@ -309,10 +273,9 @@ namespace ItHunts.Tests
         {
             int cooldown = MovementSettings.SecondsToTicks(_cfg.cooldown, Dt);   // 18
             int buffer = MovementSettings.SecondsToTicks(_cfg.pressBuffer, Dt);  // 6
-            UseTelekinesis();
             GrabTarget();
             int thrown = _s.Tick + 1;
-            Step(Secondary(thrown));
+            Step(Throw(thrown));
             Assume.That(_t.LastThrowTick, Is.EqualTo(thrown));
             Assert.That(_t.Status, Is.EqualTo(OrbStatus.Recharge));
 
@@ -320,7 +283,7 @@ namespace ItHunts.Tests
             while (_s.Tick < early - 1)
                 Step(MovementInput.Neutral);
             while (_s.Tick < early + buffer)
-                Step(Primary(early));
+                Step(Grab(early));
             Assert.That(_t.LastRefusal, Is.EqualTo(TelekinesisRefusal.Recharge));
             Assert.That(_t.Holding, Is.False);
 
@@ -328,52 +291,35 @@ namespace ItHunts.Tests
             while (_s.Tick < late - 1)
                 Step(MovementInput.Neutral);
             while (_s.Tick < thrown + cooldown)
-                Step(Primary(late));
-            Assert.That(_t.Holding, Is.True, "attrapé dès la fin de la recharge");
+                Step(Grab(late));
+            Assert.That(_t.Holding, Is.True, "attrapé dès la fin de la recharge (appui mémorisé)");
             Assert.That(_t.GrabTick, Is.EqualTo(thrown + cooldown));
         }
 
-        // ---------- Endurance ----------
-
         [Test]
-        public void Endurance_RegenereApresLeDelai()
+        public void PasDEndurance_AttraperEtLancerEnChaine()
         {
-            UseTelekinesis();
-            GrabTarget();
-            _t.Stamina = 50f;                                       // comme après plusieurs usages
-            _t.LastSpendTick = _s.Tick;
-            int spent = _t.LastSpendTick;
-            float after = _t.Stamina;
-            int delay = MovementSettings.SecondsToTicks(_stamina.regenDelay, Dt);   // 48
-            while (_s.Tick < spent + delay - 1)
-                Step(MovementInput.Neutral);
-            Assert.That(_t.Stamina, Is.EqualTo(after).Within(1e-3f), "rien pendant 0.8 s");
-            for (int i = 0; i < 61; i++)
-                Step(MovementInput.Neutral);
-            Assert.That(_t.Stamina, Is.EqualTo(Mathf.Min(_stamina.max, after + _stamina.regenPerSecond)).Within(0.5f), "+25 en 1 s");
-            for (int i = 0; i < 300; i++)
-                Step(MovementInput.Neutral);
-            Assert.That(_t.Stamina, Is.EqualTo(_stamina.max).Within(1e-3f), "plafonnée à 100");
+            // Avec l'ancienne endurance (100, 10 + 15 par cycle, sans régénération pendant 0.8 s), le 5e cycle était refusé.
+            int cooldown = MovementSettings.SecondsToTicks(_cfg.cooldown, Dt);
+            _grab.HasTarget = true;
+            for (int cycle = 0; cycle < 12; cycle++)
+            {
+                Step(Grab());
+                Assert.That(_t.Holding, Is.True, $"cycle {cycle} : attrapé");
+                Step(Throw());
+                Assert.That(_last.Kind, Is.EqualTo(TelekinesisCommandKind.Lancer), $"cycle {cycle} : lancé");
+                for (int i = 0; i < cooldown; i++)
+                    Step(MovementInput.Neutral);
+            }
+
+            Assert.That(_t.LastRefusalTick, Is.EqualTo(MovementState.NeverTick), "jamais refusé");
         }
 
-        // ---------- Échange et perte ----------
-
-        [Test]
-        public void Echange_LacheLObjetTenu()
-        {
-            UseTelekinesis();
-            GrabTarget();
-            Step(Swap());
-            Assert.That(_last.Kind, Is.EqualTo(TelekinesisCommandKind.Lacher));
-            Assert.That(_last.TargetId, Is.EqualTo(_grab.Id));
-            Assert.That(_t.Holding, Is.False);
-            Assert.That(_orbs.Active, Is.EqualTo(ActiveOrb.Magnetisme));
-        }
+        // ---------- Perte et viseur ----------
 
         [Test]
         public void ObjetPerdu_PlusRienEnMain()
         {
-            UseTelekinesis();
             GrabTarget();
             TelekinesisOrb.NotifyLost(ref _t, _s.Tick);
             Assert.That(_t.Holding, Is.False);
@@ -383,18 +329,94 @@ namespace ItHunts.Tests
         [Test]
         public void Viseur_AttraperEtLancerPossibles()
         {
-            UseTelekinesis();
             _grab.HasTarget = true;
             Step(MovementInput.Neutral);
             Assert.That(TelekinesisOrb.CanGrab(_t, _cfg, _s.Tick, Dt), Is.True);
-            Assert.That(TelekinesisOrb.CanThrow(_t, _cfg), Is.False);
+            Assert.That(TelekinesisOrb.CanThrow(_t), Is.False);
             _grab.Mass = 60f;
             Step(MovementInput.Neutral);
             Assert.That(TelekinesisOrb.CanGrab(_t, _cfg, _s.Tick, Dt), Is.False, "trop lourd");
             _grab.Mass = 10f;
             GrabTarget();
             Assert.That(TelekinesisOrb.CanGrab(_t, _cfg, _s.Tick, Dt), Is.False, "déjà un objet en main");
-            Assert.That(TelekinesisOrb.CanThrow(_t, _cfg), Is.True);
+            Assert.That(TelekinesisOrb.CanThrow(_t), Is.True);
+        }
+
+        // ---------- Couleur de l'orbe (OrbLook) ----------
+
+        private OrbLookKind Look() => OrbLook.Resolve(_s, _m, _t, flashTicks: 9);
+
+        [Test]
+        public void Couleur_PreteTractionTenuLancer()
+        {
+            Assert.That(Look(), Is.EqualTo(OrbLookKind.Prete));
+            GrabTarget();
+            Assert.That(Look(), Is.EqualTo(OrbLookKind.Tenu), "violet : objet tenu");
+            int press = StartTraction();
+            Assert.That(Look(), Is.EqualTo(OrbLookKind.Traction), "bleu : la traction l'emporte sur l'objet tenu");
+            MovementInput throwDuring = HoldTraction(press);
+            throwDuring.ThrowPressedTick = _s.Tick + 1;
+            Step(throwDuring);
+            Assert.That(Look(), Is.EqualTo(OrbLookKind.Lancer), "vert : le lancer l'emporte (éclat)");
+            for (int i = 0; i < 9; i++)
+                Step(HoldTraction(press));
+            Assert.That(Look(), Is.EqualTo(OrbLookKind.Traction), "puis retour au bleu après l'éclat");
+        }
+
+        [Test]
+        public void Couleur_RepulsionEclatSurLObjetTenu()
+        {
+            GrabTarget();
+            MovementInput repel = MovementInput.Neutral;
+            repel.Pitch = 60f;
+            _aim.BlockAt = 3f;
+            repel.RepelPressedTick = _s.Tick + 1;
+            Step(repel);
+            Assert.That(Look(), Is.EqualTo(OrbLookKind.Repulsion), "orange : la répulsion l'emporte (éclat)");
+            for (int i = 0; i < 9; i++)
+                Step(MovementInput.Neutral);
+            Assert.That(Look(), Is.EqualTo(OrbLookKind.Tenu), "puis retour au violet");
+        }
+
+        [Test]
+        public void Couleur_RechargeSansChargeDAttraction()
+        {
+            _m.AttractCharges = 0.5f;
+            Assert.That(Look(), Is.EqualTo(OrbLookKind.Recharge));
+            GrabTarget();
+            Assert.That(Look(), Is.EqualTo(OrbLookKind.Tenu), "l'objet tenu passe avant la recharge");
+        }
+
+        // ---------- Réglages et commandes du projet ----------
+
+        [Test]
+        public void Reglages_AttractionUneChargeToutesLes4s()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<MagnetismOrbSettings>("Assets/_Project/Settings/Magnetism_Default.asset");
+            Assert.That(asset, Is.Not.Null);
+            Assert.That(asset.attractChargeRechargeTime, Is.EqualTo(4f));
+        }
+
+        [Test]
+        public void Commandes_OrbeUnique_ClavierAzertyEtManette()
+        {
+            var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>("Assets/_Project/Input/PlayerControls.inputactions");
+            Assert.That(actions, Is.Not.Null);
+            InputActionMap map = actions.FindActionMap("Player", throwIfNotFound: true);
+            string Paths(string action) =>
+                string.Join(" ", map.FindAction(action, throwIfNotFound: true).bindings.Select(b => b.path).OrderBy(p => p));
+
+            // <Keyboard>/q = la touche physique à la place du Q en QWERTY, marquée A sur un AZERTY.
+            Assert.That(Paths("Attract"), Is.EqualTo("<Gamepad>/rightShoulder <Keyboard>/q"));
+            Assert.That(Paths("Repel"), Is.EqualTo("<Gamepad>/leftTrigger <Mouse>/rightButton"));
+            Assert.That(Paths("Grab"), Is.EqualTo("<Gamepad>/buttonWest <Keyboard>/f"));
+            Assert.That(Paths("Throw"), Is.EqualTo("<Gamepad>/rightTrigger <Mouse>/leftButton"));
+            foreach (string removed in new[] { "SwapOrb", "SwapOrbScroll", "SelectOrb1", "SelectOrb2" })
+                Assert.That(map.FindAction(removed), Is.Null, $"{removed} supprimé");
+
+            // Aucune touche n'est partagée entre deux actions.
+            var all = map.bindings.Where(b => !b.isComposite).GroupBy(b => b.path).Where(g => g.Select(b => b.action).Distinct().Count() > 1);
+            Assert.That(all.Select(g => g.Key), Is.Empty);
         }
     }
 }

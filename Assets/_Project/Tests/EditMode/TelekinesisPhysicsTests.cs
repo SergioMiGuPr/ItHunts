@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Reflection;
 using ItHunts.Orbs;
 using ItHunts.Settings;
@@ -10,7 +11,8 @@ namespace ItHunts.Tests
 {
     /// <summary>
     /// Télékinésie avec de vrais corps physiques, dans une scène isolée (sa propre simulation : la scène ouverte n'est
-    /// pas touchée) : un objet attrapé loin doit voler jusqu'au point de maintien puis y rester.
+    /// pas touchée) : un objet attrapé loin doit voler jusqu'au point de maintien puis y rester ; un objet tenu reste
+    /// devant le joueur en traction rapide et en bunny hop (orbe unique, D-024).
     /// </summary>
     public class TelekinesisPhysicsTests
     {
@@ -94,6 +96,130 @@ namespace ItHunts.Tests
             Assert.That(maxSpeed, Is.LessThanOrEqualTo(_cfg.approachSpeed + 0.5f), "sans dépasser la vitesse d'approche");
             Assert.That(Vector3.Distance(hold, crate.Body.position), Is.LessThan(0.1f), "il reste au point de maintien");
             Assert.That(holder.Held, Is.SameAs(crate));
+        }
+
+        /// <summary>
+        /// Fait suivre au porteur une trajectoire (position des yeux et visée à chaque tick), dans l'ordre du jeu : le
+        /// joueur bouge, puis l'objet reçoit sa vitesse (Drive, avec le déplacement réel des yeux), puis la physique avance.
+        /// L'écart est mesuré au même instant que la caméra : objet après la physique contre point de maintien des yeux de
+        /// ce tick. Renvoie l'écart maximal et moyen (l'objet part du point de maintien, déjà tenu).
+        /// </summary>
+        private (float max, float mean) Follow(List<(Vector3 eye, Vector3 aim)> path, Vector3 startEye, Vector3 startAim)
+        {
+            var owner = new GameObject("Porteur");
+            SceneManager.MoveGameObjectToScene(owner, _scene);
+            var cc = owner.AddComponent<CharacterController>();
+            Grabbable crate = Crate(TelekinesisHolder.HoldPoint(_cfg, startEye, startAim), 25f);
+            PhysicsScene physics = _scene.GetPhysicsScene();
+            var holder = new TelekinesisHolder(cc, new PhysicsGrabProbe(~0, owner.transform));
+            Assert.That(holder.Apply(new TelekinesisCommand { Kind = TelekinesisCommandKind.Attraper, TargetId = crate.Id },
+                _cfg, startEye, Vector3.zero), Is.True);
+
+            float max = 0f, sum = 0f;
+            int n = 0;
+            Vector3 lastEye = startEye;
+            foreach ((Vector3 eye, Vector3 aim) in path)
+            {
+                Assert.That(holder.Drive(_cfg, eye, aim, (eye - lastEye) / Dt, Dt), Is.True, $"lâché au tick {n}");
+                lastEye = eye;
+                physics.Simulate(Dt);
+                float d = Vector3.Distance(TelekinesisHolder.HoldPoint(_cfg, eye, aim), crate.Body.position);
+                max = Mathf.Max(max, d);
+                sum += d;
+                n++;
+            }
+
+            Assert.That(holder.Held, Is.SameAs(crate), "toujours tenu");
+            return (max, sum / Mathf.Max(1, n));
+        }
+
+        /// <summary>Traction en ligne droite vers un point en hauteur : accélération 80 m/s² jusqu'à la vitesse donnée, 2 s.</summary>
+        [TestCase(0f, 30f, TestName = "Physique_ObjetTenu_TractionDe0a30ms_ResteDevant")]
+        [TestCase(40f, 40f, TestName = "Physique_ObjetTenu_TractionA40ms_ResteDevant")]
+        public void ObjetTenu_TractionRapide(float startSpeed, float tractionSpeed)
+        {
+            Vector3 dir = new Vector3(0.3f, 0.5f, 0.8f).normalized;
+            Vector3 eye = new Vector3(0f, 1.6f, 0f);
+            float speed = startSpeed;
+            var path = new List<(Vector3 eye, Vector3 aim)>();
+            for (int i = 0; i < 120; i++)
+            {
+                speed = Mathf.Max(speed, Mathf.Min(tractionSpeed, speed + 80f * Dt));
+                Vector3 v = dir * speed;
+                eye += v * Dt;
+                path.Add((eye, dir));
+            }
+
+            (float max, float mean) = Follow(path, new Vector3(0f, 1.6f, 0f), dir);
+            TestContext.WriteLine($"Traction {startSpeed:0} -> {tractionSpeed:0} m/s : écart max {max:0.000} m, moyen {mean:0.000} m");
+            Debug.Log($"[Mesure] Traction {startSpeed:0} -> {tractionSpeed:0} m/s : écart max {max:0.000} m, moyen {mean:0.000} m");
+            Assert.That(max, Is.LessThan(0.15f), "l'objet reste devant (écart max)");
+            Assert.That(mean, Is.LessThan(0.05f));
+        }
+
+        /// <summary>
+        /// Bunny hop : sauts de 1.3 m (gravité 20, chute x1.5) enchaînés dès l'atterrissage, avec un virage en strafe (la
+        /// visée tourne de 90°/s, la vitesse suit), 3 s.
+        /// </summary>
+        [TestCase(20f, TestName = "Physique_ObjetTenu_BunnyHopA20ms_ResteDevant")]
+        [TestCase(26f, TestName = "Physique_ObjetTenu_BunnyHopA26ms_ResteDevant")]
+        public void ObjetTenu_BunnyHop(float horizontalSpeed)
+        {
+            float jumpSpeed = Mathf.Sqrt(2f * 20f * 1.3f);
+            Vector3 feet = Vector3.zero;
+            float vy = jumpSpeed, yaw = 0f;
+            var path = new List<(Vector3 eye, Vector3 aim)>();
+            for (int i = 0; i < 180; i++)
+            {
+                yaw += 90f * Dt;
+                Vector3 forward = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
+                vy -= (vy < 0f ? 30f : 20f) * Dt;
+                Vector3 v = forward * horizontalSpeed + Vector3.up * vy;
+                feet += v * Dt;
+                if (feet.y <= 0f)
+                {
+                    feet.y = 0f;
+                    vy = jumpSpeed;                                   // saut dès l'atterrissage
+                    v.y = vy;
+                }
+
+                path.Add((feet + Vector3.up * 1.6f, forward));
+            }
+
+            (float max, float mean) = Follow(path, new Vector3(0f, 1.6f, 0f), Vector3.forward);
+            TestContext.WriteLine($"Bunny hop {horizontalSpeed:0} m/s : écart max {max:0.000} m, moyen {mean:0.000} m");
+            Debug.Log($"[Mesure] Bunny hop {horizontalSpeed:0} m/s : écart max {max:0.000} m, moyen {mean:0.000} m");
+            Assert.That(max, Is.LessThan(0.2f), "l'objet reste devant (écart max, atterrissages et virage compris)");
+            Assert.That(mean, Is.LessThan(0.2f));
+        }
+
+        /// <summary>
+        /// La visée du magnétisme ignore l'objet tenu (orbe unique : traction et répulsion en tenant une caisse), mais
+        /// pas un autre objet.
+        /// </summary>
+        [Test]
+        public void Physique_ViseeDuMagnetisme_IgnoreLObjetTenu()
+        {
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            SceneManager.MoveGameObjectToScene(wall, _scene);
+            wall.transform.position = Vector3.forward * 20f;
+            wall.transform.localScale = new Vector3(10f, 10f, 1f);
+            GameObject crate = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            SceneManager.MoveGameObjectToScene(crate, _scene);
+            crate.transform.position = Vector3.forward * 2.5f;
+            crate.transform.localScale = Vector3.one * 0.9f;
+            var body = crate.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            Physics.SyncTransforms();
+            _scene.GetPhysicsScene().Simulate(Dt);
+
+            var probe = new PhysicsAimProbe(~0) { Scene = _scene.GetPhysicsScene() };
+            Assert.That(probe.Raycast(Vector3.zero, Vector3.forward, 60f, out AimHit hit), Is.True);
+            Assert.That(hit.Distance, Is.EqualTo(2.05f).Within(0.01f), "sans objet tenu, la caisse arrête le rayon");
+
+            probe.IgnoreBody = body;
+            Assert.That(probe.Raycast(Vector3.zero, Vector3.forward, 60f, out hit), Is.True);
+            Assert.That(hit.Distance, Is.EqualTo(19.5f).Within(0.01f), "tenue, la caisse est ignorée : le mur derrière");
         }
     }
 }

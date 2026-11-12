@@ -982,7 +982,6 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: a6bd474d2627e5442afb24d7a86cb8d0, type: 2}
   magnetism: {fileID: 11400000, guid: 7d99e710aebde124fa350a910a35bb43, type: 2}
   telekinesis: {fileID: 11400000, guid: cd353a9c38178fd419f90ef9b2716415, type: 2}
-  stamina: {fileID: 11400000, guid: e22d6d67cfd6b494ab08d34a0cb4f9ef, type: 2}
   collisionMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -1043,7 +1042,6 @@ MonoBehaviour:
   rechargeColor: {r: 0.35, g: 0.85, b: 1, a: 0.45}
   feedback: {fileID: 11400000, guid: a5394a506cf3eb743ad8c34f1008d1f8, type: 2}
   tkFeedback: {fileID: 11400000, guid: 3aacf22bbc43a74438de970bb8cd7638, type: 2}
-  inactiveAlpha: 0.35
   emptyColor: {r: 0, g: 0, b: 0, a: 0.55}
   crosshairColor: {r: 1, g: 1, b: 1, a: 0.85}
   segmentWidth: 22
@@ -1065,6 +1063,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Orbs.MagnetismOrbView
   settings: {fileID: 11400000, guid: a5394a506cf3eb743ad8c34f1008d1f8, type: 2}
+  tkFeedback: {fileID: 11400000, guid: 3aacf22bbc43a74438de970bb8cd7638, type: 2}
   orbRenderer: {fileID: 2120912395945380332}
   line: {fileID: 4240824766528204528}
   aimMarker: {fileID: 2337608055654563181}
@@ -1101,7 +1100,6 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: 3aacf22bbc43a74438de970bb8cd7638, type: 2}
   orbRenderer: {fileID: 2120912395945380332}
   line: {fileID: 3882523780979044985}
-  throwFlashDuration: 0.15
 --- !u!1 &6093231452389037007
 GameObject:
   m_ObjectHideFlags: 0

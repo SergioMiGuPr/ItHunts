@@ -2,26 +2,35 @@
 
 **Status:** in progress · **Updated:** 2026-11-12 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md)
 
-Deux orbes, un seul actif, échange instantané. Le magnétisme déplace le joueur (et bouscule les
-ennemis) ; la télékinésie transforme l'arène en munitions. De base, les orbes ne font pas de
-dégâts directs ; des améliorations peuvent en ajouter, en plus de l'environnement (D-008). Elles
-collectent aussi les âmes autour d'elles. Piliers : « l'arène est
+**Une seule orbe** (D-024), qui réunit deux pouvoirs : le magnétisme déplace le joueur (et bouscule les
+ennemis) ; la télékinésie transforme l'arène en munitions. Les quatre actions sont disponibles **en même
+temps**, chacune sur sa touche : on peut se tracter en tenant une caisse, puis la lancer en arrivant. De
+base, l'orbe ne fait pas de dégâts directs ; des améliorations peuvent en ajouter, en plus de
+l'environnement (D-008). Elle collecte aussi les âmes autour d'elle. Piliers : « l'arène est
 l'arme », « le mouvement est la survie ».
 
 ## Règles
 
-1. **Échange :** instantané, sans recharge : la molette (un cran, dans les deux sens) ou Y à la
-   manette bascule ; les touches 1 (magnétisme) et 2 (télékinésie) choisissent directement. Les mêmes
-   boutons servent à l'orbe active. Échanger lâche l'objet tenu (avec sa vitesse) et arrête la
-   traction (sans perte d'élan). Le HUD atténue l'orbe inactive et écrit le nom de l'orbe active (D-023).
-2. **États de chaque orbe :** Prête → EnUsage → Recharge → Prête (pour le magnétisme, un état par
-   mode). Coût : le **magnétisme** n'utilise **aucune charge de mouvement** (D-021) : l'attraction a
-   ses propres **charges d'attraction**, la répulsion une **charge unique** ; la **télékinésie**
-   consomme sa propre **endurance**. Usage refusé (son et HUD) : sans charge, en recharge, ou rien à
-   portée. **HUD** (sous les charges de mouvement) : les charges d'attraction en bleu, la répulsion en
-   orange (pleine, ou en recharge avec le temps restant).
-3. **Attraction (magnétisme, mode 1) : traction linéaire continue.** Tant que le bouton est tenu (clic
-   gauche ou RT), le joueur est tiré **en ligne droite** vers le point visé au moment du clic, sur
+1. **Commandes (D-024) :**
+
+   | Action | Clavier (AZERTY) | Manette |
+   |---|---|---|
+   | Traction (maintenir) | A (touche Q d'un QWERTY) | RB |
+   | Répulsion | clic droit | LT |
+   | Attraper l'objet visé / le relâcher (posé doucement) | F | X |
+   | Lancer l'objet tenu (sans objet : artefact, plus tard) | clic gauche | RT |
+
+   Mouvement inchangé : saut espace / A, glissade Ctrl ou C / B, dash Maj / LB. Épaules = mobilité (LB
+   dash, RB traction), gâchettes = combat (RT lancer et artefact, LT répulsion), X = interagir ; Y reste
+   libre. Plus d'orbe active ni d'échange : la molette, Y et les touches 1 et 2 ne font plus rien.
+2. **États :** Prête → EnUsage → Recharge → Prête, par action. Coût : le **magnétisme** n'utilise
+   **aucune charge de mouvement** (D-021) : l'attraction a ses propres **charges d'attraction**, la
+   répulsion une **charge unique** ; la **télékinésie** n'a **pas d'endurance** (D-024), seulement un
+   court délai après un lancer. Usage refusé (son et HUD) : sans charge, en recharge, rien à portée, objet
+   trop lourd. **HUD** (sous les charges de mouvement) : les charges d'attraction en bleu, la répulsion en
+   orange (pleine, ou en recharge avec le temps restant). Pas de barre pour la télékinésie.
+3. **Attraction (magnétisme, mode 1) : traction linéaire continue.** Tant que la touche est tenue (A ou
+   RB), le joueur est tiré **en ligne droite** vers le point visé au moment du clic, sur
    **n'importe quelle surface** (murs, sol, plafond ; jamais les ennemis). Pas de câble ni de
    balancement, **ni gravité ni friction** pendant la traction. La vitesse monte avec une forte
    accélération jusqu'à la vitesse de traction ; elle **ne baisse jamais** : plus vite que la vitesse de
@@ -31,7 +40,8 @@ l'arme », « le mouvement est la survie ».
    moment : **relâchement**, **arrivée** au point, **ligne de vue coupée**, **durée max**, **saut**
    (le saut part aussitôt), **dash**, **répulsion**, ou obstacle qui bloque. **Chaque traction coûte
    1 charge d'attraction** (3 charges, séparées des charges de mouvement) ; elles reviennent une par
-   une, 1 toutes les 3 s. Pas d'autre délai entre deux tractions.
+   une, **1 toutes les 4 s** (D-024). Pas d'autre délai entre deux tractions. Tenir un objet ne gêne pas
+   la traction : la visée ignore l'objet tenu.
 4. **Répulsion (magnétisme, mode 2) :** appui (clic droit ou LT), **impulsion instantanée** à
    l'opposé du point visé, sur **n'importe quelle surface** (rocket jump). La **vitesse horizontale ne
    baisse jamais** (au pire conservée et redirigée) ; son gain reste dans le plafond commun des gains
@@ -42,25 +52,33 @@ l'arme », « le mouvement est la survie ».
    point d'impact. Au point visé, une **onde** bouscule les ennemis dans son rayon. Un ennemi qui
    percute un mur au-dessus d'une vitesse d'impact prend des dégâts proportionnels. **Sans effet
    sur le boss.**
-5. **Attraper (télékinésie, mode 1, violet) :** un clic gauche / RT attrape l'objet visé (à portée, sous la
+5. **Attraper (télékinésie, violet) :** F / X attrape l'objet visé (à portée, sous la
    masse maximale) : il **vole jusqu'au joueur** (vitesse d'approche, il ralentit en arrivant), puis
-   **reste tenu sans maintenir** le bouton et flotte devant le joueur, un peu sous
-   la visée ; il bute sur les murs au lieu de les traverser et ne touche jamais son porteur. Un
-   **nouveau clic gauche le pose** doucement (gratuit). Un objet coincé loin du point de maintien est
+   **reste tenu sans maintenir** la touche et flotte devant le joueur, un peu sous
+   la visée ; il bute sur les murs au lieu de les traverser et ne touche jamais son porteur. **F de
+   nouveau le relâche** : il est posé doucement. Un objet coincé loin du point de maintien est
    lâché. Plus tard : un petit ennemi, un projectile ennemi ; la goule seulement **étourdie**.
-6. **Lancer (télékinésie, mode 2, vert) :** clic droit / LT : l'objet part vers ce que vise le viseur,
+6. **Lancer (télékinésie, vert) :** clic gauche / RT : l'objet part vers ce que vise le viseur,
    à la vitesse de lancer **plus la vitesse du joueur** (lancer en pleine course frappe plus fort,
    D-023). Ses dégâts dépendent de sa masse et de sa vitesse d'impact (partie 2). Après un lancer, une
-   courte recharge avant d'attraper de nouveau. Un projectile ennemi renvoyé blesse son tireur (plus tard).
+   courte recharge (0.3 s) avant d'attraper de nouveau ; c'est la seule limite (pas d'endurance). Sans objet
+   en main, le clic gauche ne fait rien : il est réservé à l'artefact (étape 5 bis). Un projectile ennemi renvoyé blesse son tireur (plus tard).
    **Retour (greybox) :** objets attrapables qui brillent (faiblement de loin, plus à portée, vivement
-   quand ils sont visés, rouge terne s'ils sont trop lourds, violet tenus, vert une fois lancés) ; orbe
-   violette (verte au lancer) ; trait violet vers l'objet tenu ; anneaux du viseur violet (attrapable)
-   et vert (lancer possible) ; barre d'endurance violette qui clignote en rouge au refus.
-7. **Âmes :** chaque orbe aspire automatiquement les âmes dans un rayon autour d'elle.
-8. **Dégâts par amélioration :** une amélioration peut donner des dégâts directs à une orbe
+   quand ils sont visés, rouge terne s'ils sont trop lourds, violet tenus, vert une fois lancés) ; trait
+   violet vers l'objet tenu ; au viseur, un troisième anneau, à l'extérieur des anneaux bleu et orange :
+   violet (objet visé attrapable) ou vert (objet tenu, lancer possible), rouge un court instant au refus.
+7. **Couleur de l'orbe selon l'action (D-024) :** bleu = traction, orange = répulsion, violet = objet
+   tenu, vert = lancer ; neutre quand elle est prête, terne et plus petite sans charge d'attraction.
+   Quand des actions se superposent : **un éclat bref (lancer, répulsion : 0.15 s) l'emporte sur un état
+   qui dure, et la traction l'emporte sur l'objet tenu.** Ordre : lancer > répulsion > traction > objet
+   tenu > recharge > prête. Exemple : traction en tenant une caisse → orbe bleue (ce qui te déplace), la
+   caisse et son trait restent violets ; lancer en arrivant → éclair vert, puis bleu ou neutre. Écarté :
+   un mélange bleu-violet (illisible à pleine vitesse) ou une orbe coupée en deux couleurs.
+8. **Âmes :** l'orbe aspire automatiquement les âmes dans un rayon autour d'elle.
+9. **Dégâts par amélioration :** une amélioration peut donner des dégâts directs à l'orbe
    (par exemple l'onde de répulsion) ou un bonus aux objets lancés. Ces dégâts s'ajoutent à
    ceux de l'environnement, sans les remplacer.
-9. **Retour du magnétisme (greybox) :**
+10. **Retour du magnétisme (greybox) :**
    - **Lueur** (bloom) : l'orbe, le trait de traction, l'ancre au point de traction et les marques
      brillent ; le décor non. Les surfaces ne brillent pas : toutes répondent au magnétisme.
    - **Viseur** : un anneau bleu quand une traction est possible (surface à portée, une charge
@@ -75,18 +93,16 @@ l'arme », « le mouvement est la survie ».
 
 ## Valeurs
 
-ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `StaminaSettings` (endurance de
-la télékinésie). Les charges de mouvement sont dans `MovementSettings`. Valeurs de départ [ASSUMPTION].
+ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFeedbackSettings` et
+`TelekinesisFeedbackSettings` (couleurs, éclat de l'orbe). Les charges de mouvement sont dans `MovementSettings`. Valeurs de départ [ASSUMPTION].
 
 | Nom | Valeur | Unité | À observer en playtest |
 |---|---|---|---|
-| Endurance max (télékinésie) | 100 | pts | |
-| Régénération / délai avant régénération | 25 / 0.8 | pts/s / s | rythme d'usage |
 | Portée de l'attraction | 60 | m | plafond d'une grande salle depuis le sol |
 | Accélération / vitesse de traction | 80 / 30 | m/s² / m/s | 30 m/s atteints en 0.38 s |
 | Durée max d'une traction | 2.5 | s | |
 | Arrivée au point | 1 | m | |
-| Charges d'attraction / recharge d'une charge | 3 / 3 | charges / s | une par une ; séparées des charges de mouvement |
+| Charges d'attraction / recharge d'une charge | 3 / 4 | charges / s | une par une ; séparées des charges de mouvement |
 | Impulsion / portée de la répulsion | 14 / 40 | m/s / m | hauteur du rocket jump (mesuré : 5.0 m ; 7.6 m avec un saut juste avant) |
 | Recharge de la répulsion (charge unique, sans cumul) | 5 | s | |
 | Mémorisation d'un appui pendant la recharge | 0.1 | s | |
@@ -100,8 +116,8 @@ la télékinésie). Les charges de mouvement sont dans `MovementSettings`. Valeu
 | Portée de la télékinésie | 60 | m | à peu près celle de l'attraction |
 | Masse maximale attrapable | 40 | kg | quels ennemis sont « petits » |
 | Vitesse de lancer | 30 | m/s | |
-| Coût attraper / lancer | 10 / 15 | pts | |
-| Recharge télékinésie (après un lancer, avant d'attraper) | 0.3 | s | |
+| Recharge télékinésie (après un lancer, avant d'attraper) | 0.3 | s | seule limite de la télékinésie |
+| Éclat de couleur de l'orbe (lancer, répulsion) | 0.15 | s | lisible sans masquer la traction |
 | Point de maintien : distance / sous la visée | 2.5 / 0.35 | m | l'objet tenu cache-t-il trop la vue ? |
 | Rattrapage du point de maintien : gain / vitesse d'approche | 18 / 40 | /s / m/s | un objet à 55 m arrive en ≈ 1.35 s |
 | Objet lâché s'il reste coincé à plus de / pendant | 4 / 0.3 | m / s | |
@@ -125,12 +141,19 @@ la télékinésie). Les charges de mouvement sont dans `MovementSettings`. Valeu
 - Impulsion ou traction vers le haut depuis le sol : on décolle (pas de saut au sol via le coyote time).
 - Répulsion pendant une traction : la traction s'arrête, la répulsion s'applique.
 - Objet tenu qui touche le joueur : pas de collision avec son porteur (pas de « vol sur caisse »).
-- Mort ou échange en tenant un objet : l'objet tombe avec sa vitesse actuelle.
+- Traction ou répulsion en tenant un objet : le rayon de visée ignore l'objet tenu (sinon on se
+  tracterait vers sa propre caisse, ou on ferait un rocket jump gratuit dessus).
+- Objet tenu à grande vitesse : il garde sa place devant le joueur (mesuré : 0.00 m d'écart en traction
+  à 30 m/s, 0.05 m en bunny hop à 20 m/s en virage) ; contre un mur, il bute.
+- Lancer pendant une traction : la traction continue ; l'objet part avec la vitesse du joueur en plus.
+- Mort ou téléportation en tenant un objet : l'objet tombe avec sa vitesse actuelle.
 
 ## Questions ouvertes
 
 - [ASSUMPTION] L'objet tenu ne bloque pas les projectiles (pas de bouclier).
-- Rester en l'air : 3 tractions de suite, puis 1 toutes les 3 s, et 1 répulsion toutes les 5 s. À
+- Toutes les actions en même temps : faut-il limiter les combos (par exemple, un lancer pendant une
+  traction) ? Pour l'instant non ; à juger en playtest.
+- Rester en l'air : 3 tractions de suite, puis 1 toutes les 4 s, et 1 répulsion toutes les 5 s. À
   revoir en playtest, notamment face au traqueur.
 - Une traction vers le bas plus rapide que 35 m/s est ramenée à la chute max dès qu'elle s'arrête.
 - L'onde de répulsion (ennemis bousculés) attend les ennemis (étape 6).
@@ -154,3 +177,7 @@ la télékinésie). Les charges de mouvement sont dans `MovementSettings`. Valeu
   (choix 1a 2a 3a ; réglages dans `MagnetismFeedbackSettings`).
 - 2026-11-12 : après le playtest v2 : 3 charges d'attraction (1 toutes les 3 s), répulsion unique
   (40 m, 5 s), marquage de la répulsion, HUD des charges d'attraction et de la répulsion (D-021 mise à jour).
+- 2026-11-12 : après le playtest de la télékinésie : **une seule orbe** (D-024) : plus d'échange, quatre actions
+  simultanées sur des touches séparées (A, clic droit, F, clic gauche ; RB, LT, X, RT), couleur de l'orbe selon
+  l'action, plus d'endurance, attraction toutes les 4 s ; l'objet tenu ne prend plus un tick d'avance à grande
+  vitesse.

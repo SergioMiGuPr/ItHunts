@@ -30,21 +30,22 @@ namespace ItHunts.Movement
         public int DashPressedTick;
 
         /// <summary>
-        /// Boutons de l'orbe active (clic gauche / RT, clic droit / LT) : attraction / répulsion pour le magnétisme,
-        /// attraper-poser / lancer pour la télékinésie. Tick du dernier appui (0 ou moins : aucun).
+        /// Orbe unique (D-024) : chaque action a sa touche, toutes disponibles en même temps.
+        /// Attraction (A en AZERTY / RB, maintenu) : tick du dernier appui (0 ou moins : aucun).
         /// </summary>
         public int AttractPressedTick;
 
         /// <summary>Bouton d'attraction maintenu (la traction dure tant qu'il est tenu).</summary>
         public bool AttractHeld;
 
-        /// <summary>Échange des orbes : tick du dernier appui de bascule (molette, Y) ; choix direct (touches 1 et 2).</summary>
-        public int OrbSwapPressedTick;
-        public int OrbSelectPressedTick;
-
-        /// <summary>Orbe demandée par le dernier choix direct : 1 = magnétisme, 2 = télékinésie.</summary>
-        public byte OrbSelect;
+        /// <summary>Répulsion (clic droit / LT) : tick du dernier appui.</summary>
         public int RepelPressedTick;
+
+        /// <summary>Attraper l'objet visé, ou relâcher l'objet tenu (F / X) : tick du dernier appui.</summary>
+        public int GrabPressedTick;
+
+        /// <summary>Lancer l'objet tenu (clic gauche / RT ; sans objet : réservé à l'artefact) : tick du dernier appui.</summary>
+        public int ThrowPressedTick;
 
         public static MovementInput Neutral => new MovementInput
         {
@@ -52,8 +53,8 @@ namespace ItHunts.Movement
             DashPressedTick = MovementState.NeverTick,
             AttractPressedTick = MovementState.NeverTick,
             RepelPressedTick = MovementState.NeverTick,
-            OrbSwapPressedTick = MovementState.NeverTick,
-            OrbSelectPressedTick = MovementState.NeverTick,
+            GrabPressedTick = MovementState.NeverTick,
+            ThrowPressedTick = MovementState.NeverTick,
         };
     }
 }

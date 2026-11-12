@@ -78,36 +78,18 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "SwapOrb",
+                    "name": "Grab",
                     "type": "Button",
-                    "id": "43fd0c7f-05b6-46e8-afd1-7788e431c5cb",
+                    "id": "dae326e8-9286-42c2-803c-d8402188fd29",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "SwapOrbScroll",
-                    "type": "Value",
-                    "id": "1ab7766e-acb4-434d-b54b-54f1b18ec677",
-                    "expectedControlType": "Axis",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "SelectOrb1",
+                    "name": "Throw",
                     "type": "Button",
-                    "id": "96da85bb-1d29-4d5e-a337-29adfd222d93",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "SelectOrb2",
-                    "type": "Button",
-                    "id": "c7336c0a-d539-4e02-8e9d-403168ad21fd",
+                    "id": "20d436d3-a025-4f25-93fb-e23b3b0fcfe1",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -400,7 +382,7 @@
                 {
                     "name": "",
                     "id": "4fa75ab4-c2e0-4dbe-9c2b-f0c1706642a5",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<Keyboard>/q",
                     "interactions": "",
                     "processors": "",
                     "groups": "KeyboardMouse",
@@ -411,7 +393,7 @@
                 {
                     "name": "",
                     "id": "f2de486f-266e-4dec-b59d-ab0ce93ecee9",
-                    "path": "<Gamepad>/rightTrigger",
+                    "path": "<Gamepad>/rightShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -443,45 +425,45 @@
                 },
                 {
                     "name": "",
-                    "id": "7b440fb1-f62a-4675-8161-044ee023c010",
-                    "path": "<Gamepad>/buttonNorth",
+                    "id": "758ca3a8-0bf2-4f22-a066-60fada9f5b6c",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "Grab",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9d145507-0c88-4ddc-ad43-e1c12bc6e35e",
+                    "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "SwapOrb",
+                    "action": "Grab",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "5064bd07-dcd8-4c53-ac98-2befd0d3cf8d",
-                    "path": "<Mouse>/scroll/y",
+                    "id": "ebb9dbde-9ff0-40e1-8a40-d539f622f45b",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "KeyboardMouse",
-                    "action": "SwapOrbScroll",
+                    "action": "Throw",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "a0f9820d-0332-4cb8-b886-674fba63ca01",
-                    "path": "<Keyboard>/1",
+                    "id": "9c8ef7f7-ab61-4b88-9b4e-c95743dfd441",
+                    "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
-                    "groups": "KeyboardMouse",
-                    "action": "SelectOrb1",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "d3786dd4-90db-4d11-b008-5eefbb81c582",
-                    "path": "<Keyboard>/2",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "KeyboardMouse",
-                    "action": "SelectOrb2",
+                    "groups": "Gamepad",
+                    "action": "Throw",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

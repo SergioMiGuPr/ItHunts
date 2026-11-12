@@ -304,19 +304,20 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Attraction_UneChargeToutesLes3s_UneParUne()
+        public void Attraction_UneChargeToutesLes4s_UneParUne()
         {
+            Assert.That(_cfg.attractChargeRechargeTime, Is.EqualTo(4f), "1 charge toutes les 4 s (D-024)");
             _m.AttractCharges = 0f;
-            int recharge = MovementSettings.SecondsToTicks(_cfg.attractChargeRechargeTime, Dt);   // 180
+            int recharge = MovementSettings.SecondsToTicks(_cfg.attractChargeRechargeTime, Dt);   // 240
             for (int i = 0; i < recharge - 2; i++)
                 Step(MovementInput.Neutral);
-            Assert.That(_m.AttractCharges, Is.LessThan(1f), "pas encore de charge juste avant 3 s");
+            Assert.That(_m.AttractCharges, Is.LessThan(1f), "pas encore de charge juste avant 4 s");
             Step(MovementInput.Neutral);
             Step(MovementInput.Neutral);
-            Assert.That(_m.AttractCharges, Is.EqualTo(1f).Within(0.02f), "1 charge après 3 s");
+            Assert.That(_m.AttractCharges, Is.EqualTo(1f).Within(0.02f), "1 charge après 4 s");
             for (int i = 0; i < recharge; i++)
                 Step(MovementInput.Neutral);
-            Assert.That(_m.AttractCharges, Is.EqualTo(2f).Within(0.02f), "2 après 6 s");
+            Assert.That(_m.AttractCharges, Is.EqualTo(2f).Within(0.02f), "2 après 8 s");
             for (int i = 0; i < 3 * recharge; i++)
                 Step(MovementInput.Neutral);
             Assert.That(_m.AttractCharges, Is.EqualTo(_cfg.attractCharges).Within(1e-3f), "plafonnées à 3");

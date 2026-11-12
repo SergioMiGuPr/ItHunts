@@ -32,7 +32,7 @@ namespace ItHunts.Settings
         [Tooltip("Charges d'attraction (séparées des charges de mouvement) : 1 traction = 1 charge.")]
         [Min(1)] public int attractCharges = 3;
         [Tooltip("Temps de recharge d'une charge d'attraction (s) ; elles reviennent une par une.")]
-        [Min(0.05f)] public float attractChargeRechargeTime = 3f;
+        [Min(0.05f)] public float attractChargeRechargeTime = 4f;
 
         [Header("Répulsion : impulsion")]
         [Tooltip("Portée du rayon de répulsion (m).")]

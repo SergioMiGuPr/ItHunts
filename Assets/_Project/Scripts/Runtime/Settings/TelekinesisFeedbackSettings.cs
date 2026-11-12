@@ -3,8 +3,8 @@ using UnityEngine;
 namespace ItHunts.Settings
 {
     /// <summary>
-    /// Retour visuel de la télékinésie (greybox) : couleurs par mode (violet : attraper et tenir, vert : lancer),
-    /// lueur des objets attrapables, anneaux du viseur, barre d'endurance. Couleurs HDR au-dessus de 1 : bloom.
+    /// Retour visuel de la télékinésie (greybox) : couleurs (violet : objet tenu, vert : lancer), lueur des objets
+    /// attrapables, anneau du viseur. Couleurs HDR au-dessus de 1 : bloom.
     /// Modifiable en Play Mode.
     /// </summary>
     [CreateAssetMenu(fileName = "TelekinesisFeedback_Default", menuName = "ItHunts/Réglages/Retour de la télékinésie")]
@@ -14,7 +14,6 @@ namespace ItHunts.Settings
         public Color grabColor = new Color(0.6f, 0.25f, 1f);
         public Color throwColor = new Color(0.25f, 1f, 0.35f);
         public Color tooHeavyColor = new Color(0.8f, 0.1f, 0.1f);
-        public Color staminaColor = new Color(0.65f, 0.35f, 1f, 0.95f);
 
         [Header("Lueur des objets attrapables (intensité d'émission)")]
         [Tooltip("Objet attrapable hors de portée (repérable de loin).")]
@@ -36,10 +35,10 @@ namespace ItHunts.Settings
         [Min(0f)] public float orbReadyIntensity = 0.8f;
         [Min(0f)] public float lineIntensity = 1.5f;
 
-        [Header("Viseur : anneaux (pixels)")]
-        [Tooltip("Anneau violet : un objet visé peut être attrapé.")]
-        [Min(1f)] public float grabRingRadius = 8f;
-        [Tooltip("Anneau vert : l'objet tenu peut être lancé.")]
-        [Min(1f)] public float throwRingRadius = 13f;
+        [Header("Viseur : anneaux (pixels), à l'extérieur de ceux du magnétisme (bleu 8, orange 13)")]
+        [Tooltip("Anneau violet : un objet visé peut être attrapé (F / X).")]
+        [Min(1f)] public float grabRingRadius = 18f;
+        [Tooltip("Anneau vert : l'objet tenu peut être lancé (clic gauche / RT). Jamais en même temps que le violet.")]
+        [Min(1f)] public float throwRingRadius = 18f;
     }
 }

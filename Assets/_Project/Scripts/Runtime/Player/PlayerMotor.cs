@@ -17,9 +17,8 @@ namespace ItHunts.Player
         [SerializeField] private MovementSettings settings;
         [Tooltip("Orbe de magnétisme (vide : pas d'orbe).")]
         [SerializeField] private MagnetismOrbSettings magnetism;
-        [Tooltip("Orbe de télékinésie et son endurance (vides : pas de télékinésie).")]
+        [Tooltip("Télékinésie de l'orbe (vide : pas de télékinésie).")]
         [SerializeField] private TelekinesisOrbSettings telekinesis;
-        [SerializeField] private StaminaSettings stamina;
         [SerializeField] private LayerMask collisionMask = ~0;
         [Tooltip("Sous cette hauteur (m), le joueur revient à son point de départ.")]
         [SerializeField] private float killHeight = -30f;
@@ -31,25 +30,22 @@ namespace ItHunts.Player
         private MovementState _state;
         private MagnetismState _magnet;
         private PhysicsAimProbe _aim;
-        private OrbSelectionState _orbs;
         private TelekinesisState _tk;
         private PhysicsGrabProbe _grabProbe;
         private TelekinesisHolder _holder;
         private Vector3 _previousPosition;
         private Vector3 _currentPosition;
         private Vector3 _spawnPosition;
+        private Vector3 _lastEye;
 
         public MovementState State => _state;
         public MovementSettings Settings => settings;
         public MagnetismState Magnetism => _magnet;
         public MagnetismOrbSettings MagnetismSettings => magnetism;
-        public OrbSelectionState Orbs => _orbs;
-        public ActiveOrb ActiveOrb => _orbs.Active;
         public TelekinesisState Telekinesis => _tk;
         public TelekinesisOrbSettings TelekinesisSettings => telekinesis;
-        public StaminaSettings StaminaSettings => stamina;
         public TelekinesisHolder Holder => _holder;
-        private bool HasTelekinesis => telekinesis != null && stamina != null;
+        private bool HasTelekinesis => telekinesis != null;
 
         /// <summary>Numéro du prochain tick simulé : sert à horodater les appuis.</summary>
         public int NextTick => _state.Tick + 1;
@@ -88,11 +84,11 @@ namespace ItHunts.Player
             _state = MovementState.Create(_spawnPosition);
             _magnet = MagnetismState.Create();
             _aim = new PhysicsAimProbe(magnetism != null ? magnetism.aimMask : (LayerMask)~0, transform);
-            _orbs = OrbSelectionState.Create();
             _tk = TelekinesisState.Create();
             _grabProbe = new PhysicsGrabProbe(telekinesis != null ? telekinesis.aimMask : (LayerMask)~0, transform);
             _holder = new TelekinesisHolder(_controller, _grabProbe);
             _previousPosition = _currentPosition = _spawnPosition;
+            _lastEye = MagnetismOrb.EyePosition(_state, settings);
         }
 
         private void FixedUpdate()
@@ -113,25 +109,19 @@ namespace ItHunts.Player
                 input.AttractPressedTick = _reader.AttractPressedTick;
                 input.AttractHeld = _reader.AttractHeld;
                 input.RepelPressedTick = _reader.RepelPressedTick;
-                input.OrbSwapPressedTick = _reader.OrbSwapPressedTick;
-                input.OrbSelectPressedTick = _reader.OrbSelectPressedTick;
-                input.OrbSelect = _reader.OrbSelect;
+                input.GrabPressedTick = _reader.GrabPressedTick;
+                input.ThrowPressedTick = _reader.ThrowPressedTick;
             }
 
             float dt = Time.fixedDeltaTime;
-            int tick = _state.Tick + 1;
 
-            // Même tick, même entrée : échange d'orbe, puis les orbes (la seule orbe active reçoit les boutons), puis le
-            // mouvement, puis le côté physique de la télékinésie.
-            bool swapped = OrbSelection.Step(ref _orbs, input, tick);
-            if (swapped && _orbs.Active != ActiveOrb.Magnetisme)
-                MagnetismOrb.StopTraction(ref _magnet, ref _state, tick, TractionEnd.Echange);
-
+            // Même tick, même entrée. Orbe unique (D-024) : magnétisme et télékinésie reçoivent tous les boutons, chacun
+            // sur sa touche ; puis le mouvement, puis le côté physique de la télékinésie.
             if (magnetism != null)
             {
                 _aim.Mask = magnetism.aimMask;
-                MovementInput magnetInput = _orbs.Active == ActiveOrb.Magnetisme ? input : OrbSelection.WithoutOrbButtons(input);
-                MagnetismOrb.Step(ref _magnet, ref _state, magnetInput, magnetism, settings, dt, _aim);
+                _aim.IgnoreBody = _holder.Held != null ? _holder.Held.Body : null;   // l'objet tenu ne bloque pas la visée
+                MagnetismOrb.Step(ref _magnet, ref _state, input, magnetism, settings, dt, _aim);
             }
 
             var command = new TelekinesisCommand();
@@ -139,9 +129,7 @@ namespace ItHunts.Player
             {
                 _grabProbe.Mask = telekinesis.aimMask;
                 _grabProbe.IgnoreId = _tk.HeldId;
-                MovementInput tkInput = _orbs.Active == ActiveOrb.Telekinesie ? input : OrbSelection.WithoutOrbButtons(input);
-                command = TelekinesisOrb.Step(ref _tk, _state, tkInput, telekinesis, stamina, settings, dt, _grabProbe,
-                    dropHeld: swapped && _orbs.Active != ActiveOrb.Telekinesie);
+                command = TelekinesisOrb.Step(ref _tk, _state, input, telekinesis, settings, dt, _grabProbe);
             }
 
             MovementMotor.Step(ref _state, input, settings, dt, _probe);
@@ -150,14 +138,16 @@ namespace ItHunts.Player
             if (HasTelekinesis)
             {
                 Vector3 eye = MagnetismOrb.EyePosition(_state, settings);
+                Vector3 eyeVelocity = (eye - _lastEye) / dt;     // déplacement réel des yeux ce tick (collisions, accroupi)
                 Vector3 aimDir = MagnetismOrb.AimDirection(input.Yaw, input.Pitch);
                 if (!_holder.Apply(command, telekinesis, eye, _state.Velocity))
                     TelekinesisOrb.NotifyLost(ref _tk, _state.Tick);
-                if (_tk.Holding && !_holder.Drive(telekinesis, eye, aimDir, _state.Velocity, dt))
+                if (_tk.Holding && !_holder.Drive(telekinesis, eye, aimDir, eyeVelocity, dt))
                     TelekinesisOrb.NotifyLost(ref _tk, _state.Tick);
                 _holder.Tick(Time.time);
             }
 
+            _lastEye = MagnetismOrb.EyePosition(_state, settings);
             if (_currentPosition.y < killHeight)
                 Teleport(_spawnPosition);
         }
@@ -187,6 +177,7 @@ namespace ItHunts.Player
             _state.LastConsumedJumpPressTick = consumed;
             _state.LastConsumedDashPressTick = consumedDash;
             _previousPosition = _currentPosition = position;
+            _lastEye = MagnetismOrb.EyePosition(_state, settings);
         }
 
         /// <summary>Rayon, pente et marche. La hauteur est gérée par la simulation (glissade, accroupi).</summary>

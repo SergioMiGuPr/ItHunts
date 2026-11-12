@@ -22,7 +22,7 @@ MonoBehaviour:
   tractionMaxDuration: 2.5
   tractionArrivalDistance: 1
   attractCharges: 3
-  attractChargeRechargeTime: 3
+  attractChargeRechargeTime: 4
   repelRange: 40
   repelImpulse: 14
   repelCooldown: 5

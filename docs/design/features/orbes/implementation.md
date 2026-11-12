@@ -25,10 +25,16 @@ visuel et sonore complet est la partie 2. Les chiffres vivent dans [design.md](d
   sortie), puis s'applique.
 - **État :** `MagnetismState` (structure copiable) : états par mode, recharges, appuis consommés,
   visée du tick, dernière traction et dernière répulsion, dernier refus.
-- **Entrées :** `MovementInput.Pitch`, `AttractPressedTick`, `AttractHeld`, `RepelPressedTick`
-  (`PlayerInputReader`, actions `Attract` et `Repel`).
-- **Visée :** `IAimProbe` ; en jeu `PhysicsAimProbe` (Raycast, ignore les triggers et le joueur
-  lui-même). Toute surface répond.
+- **Entrées (orbe unique, D-024) :** `MovementInput.Pitch`, `AttractPressedTick`, `AttractHeld`,
+  `RepelPressedTick`, `GrabPressedTick`, `ThrowPressedTick` (`PlayerInputReader`, actions `Attract`
+  (`<Keyboard>/q` = A en AZERTY, RB), `Repel` (clic droit, LT), `Grab` (F, X), `Throw` (clic gauche, RT)).
+  Les touches physiques de l'Input System suivent la disposition QWERTY : `q` est la touche marquée A sur un
+  AZERTY. Le magnétisme et la télékinésie reçoivent la même entrée chaque tick, chacun lit ses champs.
+- **Visée :** `IAimProbe` ; en jeu `PhysicsAimProbe` (Raycast dans `Scene`, la scène physique par défaut ;
+  ignore les triggers, le joueur lui-même et `IgnoreBody`, l'objet tenu). Toute surface répond.
+- **Couleur de l'orbe :** `OrbLook.Resolve` (pure, testée) choisit l'action affichée : lancer > répulsion
+  (éclats de `orbFlashDuration`) > traction > objet tenu > recharge > prête ; `MagnetismOrbView` colore la
+  sphère (couleurs du magnétisme et de la télékinésie).
 - **Vue :** `MagnetismOrbView` sur la racine du joueur : sphère sous la caméra, en bas à droite
   (matériau URP Unlit, couleur par `MaterialPropertyBlock`), `LineRenderer` vers le point pendant la
   traction, et deux disques plats pour la répulsion : la marque de visée (`MagnetismState.RepelInRange`,
@@ -59,13 +65,13 @@ dépend de la scène.
 | `Assets/_Project/Scripts/Runtime/Audio/ProceduralSfx.cs`, `MagnetismAudio.cs` | sons synthétisés et leur déclenchement |
 | `Assets/_Project/Scripts/Runtime/Settings/MagnetismFeedbackSettings.cs` | réglages du retour |
 | `Assets/_Project/Tests/EditMode/MagnetismFeedbackTests.cs` | 14 tests (viseur, refus, sons, bloom, prefab) |
-| `Assets/_Project/Scripts/Runtime/Orbs/OrbSelection.cs` | échange des orbes |
+| `Assets/_Project/Scripts/Runtime/Orbs/OrbLook.cs` | couleur de l'orbe unique selon l'action (D-024) |
 | `Assets/_Project/Scripts/Runtime/Orbs/TelekinesisOrb.cs`, `TelekinesisState.cs` | logique de la télékinésie |
 | `Assets/_Project/Scripts/Runtime/Orbs/TelekinesisHolder.cs` | côté physique, rayon de visée |
 | `Assets/_Project/Scripts/Runtime/Orbs/Grabbable.cs`, `TelekinesisView.cs` | objets attrapables, retour visuel |
-| `Assets/_Project/Scripts/Runtime/Settings/TelekinesisOrbSettings.cs`, `StaminaSettings.cs`, `TelekinesisFeedbackSettings.cs` | réglages |
-| `Assets/_Project/Tests/EditMode/TelekinesisTests.cs` | 17 tests (échange, attraper, poser, lancer, endurance, recharge) |
-| `Assets/_Project/Tests/EditMode/TelekinesisPhysicsTests.cs` | 2 tests avec de vrais corps dans une scène isolée (l'objet vient au point de maintien) |
+| `Assets/_Project/Scripts/Runtime/Settings/TelekinesisOrbSettings.cs`, `TelekinesisFeedbackSettings.cs` | réglages |
+| `Assets/_Project/Tests/EditMode/TelekinesisTests.cs` | 19 tests (actions simultanées, attraper, relâcher, lancer, recharge, sans endurance, couleur de l'orbe, commandes, réglages) |
+| `Assets/_Project/Tests/EditMode/TelekinesisPhysicsTests.cs` | 7 tests avec de vrais corps dans une scène isolée (l'objet vient au point de maintien ; il y reste en traction à 30 et 40 m/s et en bunny hop ; la visée ignore l'objet tenu) |
 
 ## Build steps
 
@@ -83,7 +89,8 @@ dépend de la scène.
      règles dans `MagnetismFeedback` (testables) ;
    - `ProceduralSfx` (sons synthétisés) et `MagnetismAudio` (détection des changements d'état à chaque
      tick, bourdonnement en boucle dont `pitch` suit la vitesse).
-3. **Télékinésie et échange des orbes, partie 1** — fait (2026-11-12, D-023), playtest en attente :
+3. **Télékinésie et échange des orbes, partie 1** — fait (2026-11-12, D-023) ; l'échange et l'endurance ont été
+   retirés après le playtest (étape 3 bis) :
    - `OrbSelection` (état copiable `OrbSelectionState`) : bascule et choix direct ; la seule orbe active
      reçoit les boutons (`OrbSelection.WithoutOrbButtons`) ; l'échange arrête la traction
      (`MagnetismOrb.StopTraction`, `TractionEnd.Echange`) et lâche l'objet tenu ;
@@ -96,7 +103,24 @@ dépend de la scène.
    - `Grabbable` : objet attrapable (masse du Rigidbody, accroché ou non, lueur par émission) ;
    - `TelekinesisView` : lueur des objets, orbe violette ou verte, trait ; HUD : barre d'endurance,
      orbe active, anneaux violet et vert ; debug F3 ; zone Télékinésie (F12).
-   - Ordre d'un tick dans `PlayerMotor` : échange → magnétisme → télékinésie → mouvement → côté physique.
+   - Ordre d'un tick dans `PlayerMotor` (partie 1) : échange → magnétisme → télékinésie → mouvement → côté physique.
    - `PlayerMotor` avertit au lancement si la physique n'est pas en `SimulationMode.FixedUpdate` (sinon les
      objets ne bougent pas).
+3 bis. **Une seule orbe (D-024)** — fait (2026-11-12), playtest en attente :
+   - `OrbSelection`, `StaminaSettings` et `Stamina_Default.asset` supprimés ; `TractionEnd.Echange` aussi ;
+   - actions `Grab` et `Throw` ajoutées, `SwapOrb`, `SwapOrbScroll`, `SelectOrb1`, `SelectOrb2` supprimées ;
+     `Attract` passe sur A (AZERTY) / RB ;
+   - `TelekinesisOrb.Step` sans endurance : F attrape ou pose, clic gauche lance (sans objet : consommé sans
+     effet ni refus, réservé à l'artefact) ; refus : rien d'attrapable, trop lourd, recharge ;
+   - `OrbLook` et `MagnetismOrbView` : couleur de l'orbe ; `TelekinesisView` ne touche plus l'orbe ;
+   - `MovementHud` : plus de barre d'endurance ni de nom d'orbe ; troisième anneau (violet ou vert, rouge au
+     refus) ; debug F3 : commandes du schéma actif et derniers appuis des quatre actions ;
+   - `PhysicsAimProbe.IgnoreBody` : la visée du magnétisme ignore l'objet tenu ;
+   - **objet tenu à grande vitesse :** `TelekinesisHolder.Drive` reçoit le déplacement réel des yeux pendant le
+     tick (`PlayerMotor`, `_lastEye`) et corrige l'écart d'avant ce déplacement. Avant, il ajoutait la vitesse
+     du joueur à une correction qui la comptait déjà : l'objet prenait un tick d'avance (0.22 m mesurés à
+     15 m/s en partie 1, 0.67 m à 40 m/s). Mesuré en Play Mode avec le vrai joueur : 0.000 m en traction à
+     30 m/s, 0.05 m en bunny hop à 20 m/s en virage de 30°/s ;
+   - attraction : 1 charge toutes les 4 s (`Magnetism_Default.asset`).
+   - Ordre d'un tick dans `PlayerMotor` : magnétisme → télékinésie → mouvement → côté physique.
 4. **Télékinésie, partie 2** — à faire : dégâts des objets lancés, ennemis factices, éclats et sons.

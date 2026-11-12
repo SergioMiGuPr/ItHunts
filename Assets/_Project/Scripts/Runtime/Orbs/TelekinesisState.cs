@@ -9,9 +9,7 @@ namespace ItHunts.Orbs
         Aucun,
         RienAttrapable,
         TropLourd,
-        PasDEndurance,
         Recharge,
-        RienEnMain,
     }
 
     /// <summary>Ce que l'orbe demande au monde physique ce tick (appliqué par TelekinesisHolder).</summary>
@@ -21,7 +19,7 @@ namespace ItHunts.Orbs
         Attraper,
         Lancer,
         Poser,
-        Lacher,     // échange d'orbe, mort : l'objet garde sa vitesse
+        Lacher,     // téléportation, mort, objet perdu : l'objet garde sa vitesse
     }
 
     public struct TelekinesisCommand
@@ -50,12 +48,6 @@ namespace ItHunts.Orbs
     {
         public OrbStatus Status;
 
-        /// <summary>Endurance (points). Négatif : pas encore initialisée.</summary>
-        public float Stamina;
-
-        /// <summary>Dernière dépense d'endurance (la régénération attend regenDelay).</summary>
-        public int LastSpendTick;
-
         /// <summary>Dernier lancer (recharge avant d'attraper de nouveau).</summary>
         public int LastThrowTick;
 
@@ -63,8 +55,9 @@ namespace ItHunts.Orbs
         public int HeldId;
         public int GrabTick;
 
-        public int LastConsumedPrimaryPressTick;
-        public int LastConsumedSecondaryPressTick;
+        /// <summary>Appuis déjà consommés : attraper / relâcher (F), lancer (clic gauche).</summary>
+        public int LastConsumedGrabPressTick;
+        public int LastConsumedThrowPressTick;
 
         /// <summary>Visée de ce tick : objet attrapable touché, trop lourd ou non, distance.</summary>
         public bool AimHit;
@@ -85,13 +78,11 @@ namespace ItHunts.Orbs
         public static TelekinesisState Create() => new TelekinesisState
         {
             Status = OrbStatus.Prete,
-            Stamina = -1f,
-            LastSpendTick = MovementState.NeverTick,
             LastThrowTick = MovementState.NeverTick,
             HeldId = 0,
             GrabTick = MovementState.NeverTick,
-            LastConsumedPrimaryPressTick = MovementState.NeverTick,
-            LastConsumedSecondaryPressTick = MovementState.NeverTick,
+            LastConsumedGrabPressTick = MovementState.NeverTick,
+            LastConsumedThrowPressTick = MovementState.NeverTick,
             AimHit = false,
             AimId = 0,
             AimTooHeavy = false,

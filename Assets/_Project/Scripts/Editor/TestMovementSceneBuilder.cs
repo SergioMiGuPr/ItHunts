@@ -31,7 +31,6 @@ namespace ItHunts.EditorTools
         private const string MagnetismPath = SettingsDir + "/Magnetism_Default.asset";
         private const string FeedbackPath = SettingsDir + "/MagnetismFeedback_Default.asset";
         private const string TelekinesisPath = SettingsDir + "/Telekinesis_Default.asset";
-        private const string StaminaPath = SettingsDir + "/Stamina_Default.asset";
         private const string TkFeedbackPath = SettingsDir + "/TelekinesisFeedback_Default.asset";
         private const string PostProcessPath = SettingsDir + "/PostProcess_TestMovement.asset";
         private const string PlayerPrefabPath = PrefabDir + "/Player.prefab";
@@ -57,7 +56,6 @@ namespace ItHunts.EditorTools
             var tk = new TelekinesisAssets
             {
                 Orb = LoadOrCreate<TelekinesisOrbSettings>(TelekinesisPath),
-                Stamina = LoadOrCreate<StaminaSettings>(StaminaPath),
                 Feedback = LoadOrCreate<TelekinesisFeedbackSettings>(TkFeedbackPath),
             };
             var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsPath);
@@ -82,7 +80,6 @@ namespace ItHunts.EditorTools
             var tk = new TelekinesisAssets
             {
                 Orb = LoadOrCreate<TelekinesisOrbSettings>(TelekinesisPath),
-                Stamina = LoadOrCreate<StaminaSettings>(StaminaPath),
                 Feedback = LoadOrCreate<TelekinesisFeedbackSettings>(TkFeedbackPath),
             };
             var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsPath);
@@ -122,7 +119,6 @@ namespace ItHunts.EditorTools
         private struct TelekinesisAssets
         {
             public TelekinesisOrbSettings Orb;
-            public StaminaSettings Stamina;
             public TelekinesisFeedbackSettings Feedback;
         }
 
@@ -233,11 +229,11 @@ namespace ItHunts.EditorTools
                 SetRef(orbView, "anchorMarker", anchorMarker);
                 SetRef(orbView, "tractionFlash", tractionFlash);
                 SetRef(orbView, "settings", feedback);
+                SetRef(orbView, "tkFeedback", tk.Feedback);
                 SetRef(audio, "settings", feedback);
                 SetRef(root.GetComponent<MovementHud>(), "feedback", feedback);
                 SetRef(root.GetComponent<MovementHud>(), "tkFeedback", tk.Feedback);
                 SetRef(motor, "telekinesis", tk.Orb);
-                SetRef(motor, "stamina", tk.Stamina);
                 SetRef(tkView, "settings", tk.Feedback);
                 SetRef(tkView, "orbRenderer", orbRenderer);
                 SetRef(tkView, "line", tkLine);

@@ -5,31 +5,22 @@ using UnityEngine;
 namespace ItHunts.Orbs
 {
     /// <summary>
-    /// Orbe de télékinésie, un tick à la fois, avant MovementMotor.Step (même tick, même entrée). Logique pure : elle
-    /// décide et renvoie une commande (attraper, lancer, poser, lâcher) que TelekinesisHolder applique aux corps
-    /// physiques. Commandes (télékinésie active) :
-    /// - clic gauche / RT : attrape l'objet visé (il reste tenu sans maintenir) ; si un objet est tenu, le pose ;
-    /// - clic droit / LT : lance l'objet tenu.
-    /// Coûts en endurance propre (grabCost, throwCost) ; la régénération attend regenDelay après une dépense. Après un
-    /// lancer, cooldown avant d'attraper de nouveau. Refus : rien d'attrapable, trop lourd, pas d'endurance, recharge,
-    /// rien en main.
+    /// Télékinésie de l'orbe unique (D-024), un tick à la fois, avant MovementMotor.Step (même tick, même entrée). Logique
+    /// pure : elle décide et renvoie une commande (attraper, lancer, poser) que TelekinesisHolder applique aux corps
+    /// physiques. Disponible en même temps que la traction et la répulsion, chacune sur sa touche :
+    /// - F / X : attrape l'objet visé (il reste tenu sans maintenir) ; si un objet est tenu, le pose doucement ;
+    /// - clic gauche / RT : lance l'objet tenu ; sans objet, ne fait rien (réservé à l'artefact, étape 5 bis).
+    /// Aucune endurance ; après un lancer, cooldown avant d'attraper de nouveau (appui mémorisé). Refus : rien
+    /// d'attrapable, trop lourd, recharge.
     /// </summary>
     public static class TelekinesisOrb
     {
         public static TelekinesisCommand Step(ref TelekinesisState t, in MovementState s, in MovementInput input,
-            TelekinesisOrbSettings cfg, StaminaSettings stamina, MovementSettings move, float dt, IGrabProbe probe,
-            bool dropHeld)
+            TelekinesisOrbSettings cfg, MovementSettings move, float dt, IGrabProbe probe)
         {
             int tick = s.Tick + 1;   // le tick que le moteur va simuler juste après
             int bufferTicks = MovementSettings.SecondsToTicks(cfg.pressBuffer, dt);
             int cooldownTicks = MovementSettings.SecondsToTicks(cfg.cooldown, dt);
-            int regenDelayTicks = MovementSettings.SecondsToTicks(stamina.regenDelay, dt);
-
-            // Endurance : pleine au premier tick, puis régénération après le délai.
-            if (t.Stamina < 0f)
-                t.Stamina = stamina.max;
-            if (t.LastSpendTick == MovementState.NeverTick || tick - t.LastSpendTick >= regenDelayTicks)
-                t.Stamina = Mathf.Min(stamina.max, t.Stamina + stamina.regenPerSecond * dt);
 
             // Visée.
             Vector3 eye = MagnetismOrb.EyePosition(s, move);
@@ -43,63 +34,49 @@ namespace ItHunts.Orbs
             var cmd = new TelekinesisCommand { Kind = TelekinesisCommandKind.Aucune };
             bool cooling = t.LastThrowTick != MovementState.NeverTick && tick - t.LastThrowTick < cooldownTicks;
 
-            // Échange d'orbe (ou mort) : l'objet tenu est lâché avec sa vitesse.
-            if (dropHeld && t.Holding)
-                cmd = Release(ref t, tick, TelekinesisCommandKind.Lacher);
+            bool grab = IsFresh(input.GrabPressedTick, t.LastConsumedGrabPressTick, tick, bufferTicks);
+            bool throwPress = IsFresh(input.ThrowPressedTick, t.LastConsumedThrowPressTick, tick, bufferTicks);
 
-            bool primary = IsFresh(input.AttractPressedTick, t.LastConsumedPrimaryPressTick, tick, bufferTicks);
-            bool secondary = IsFresh(input.RepelPressedTick, t.LastConsumedSecondaryPressTick, tick, bufferTicks);
-
-            if (primary && cmd.Kind == TelekinesisCommandKind.Aucune)
+            if (grab)
             {
                 if (t.Holding)
                 {
                     cmd = Release(ref t, tick, TelekinesisCommandKind.Poser);
-                    t.LastConsumedPrimaryPressTick = input.AttractPressedTick;
+                    t.LastConsumedGrabPressTick = input.GrabPressedTick;
                 }
                 else if (cooling)
                 {
-                    if (tick - input.AttractPressedTick >= bufferTicks)
-                        Refuse(ref t, tick, TelekinesisRefusal.Recharge, ref t.LastConsumedPrimaryPressTick, input.AttractPressedTick);
+                    // Mémorisé : part dès la fin de la recharge, sinon refusé une fois le délai de mémorisation passé.
+                    if (tick - input.GrabPressedTick >= bufferTicks)
+                        Refuse(ref t, tick, TelekinesisRefusal.Recharge, ref t.LastConsumedGrabPressTick, input.GrabPressedTick);
                 }
                 else if (!hit)
-                    Refuse(ref t, tick, TelekinesisRefusal.RienAttrapable, ref t.LastConsumedPrimaryPressTick, input.AttractPressedTick);
+                    Refuse(ref t, tick, TelekinesisRefusal.RienAttrapable, ref t.LastConsumedGrabPressTick, input.GrabPressedTick);
                 else if (c.Mass > cfg.maxMass)
-                    Refuse(ref t, tick, TelekinesisRefusal.TropLourd, ref t.LastConsumedPrimaryPressTick, input.AttractPressedTick);
-                else if (t.Stamina < cfg.grabCost)
-                    Refuse(ref t, tick, TelekinesisRefusal.PasDEndurance, ref t.LastConsumedPrimaryPressTick, input.AttractPressedTick);
+                    Refuse(ref t, tick, TelekinesisRefusal.TropLourd, ref t.LastConsumedGrabPressTick, input.GrabPressedTick);
                 else
                 {
-                    Spend(ref t, tick, cfg.grabCost);
                     t.HeldId = c.Id;
                     t.GrabTick = tick;
                     t.LastAction = TelekinesisCommandKind.Attraper;
                     t.LastActionTick = tick;
-                    t.LastConsumedPrimaryPressTick = input.AttractPressedTick;
+                    t.LastConsumedGrabPressTick = input.GrabPressedTick;
                     cmd = new TelekinesisCommand { Kind = TelekinesisCommandKind.Attraper, TargetId = c.Id };
                 }
             }
 
-            if (secondary && cmd.Kind == TelekinesisCommandKind.Aucune)
+            if (throwPress)
             {
-                if (!t.Holding)
-                    Refuse(ref t, tick, TelekinesisRefusal.RienEnMain, ref t.LastConsumedSecondaryPressTick, input.RepelPressedTick);
-                else if (t.Stamina < cfg.throwCost)
-                    Refuse(ref t, tick, TelekinesisRefusal.PasDEndurance, ref t.LastConsumedSecondaryPressTick, input.RepelPressedTick);
-                else
+                // Sans objet en main, le clic gauche est réservé à l'artefact : consommé sans effet ni refus.
+                t.LastConsumedThrowPressTick = input.ThrowPressedTick;
+                if (t.Holding && cmd.Kind == TelekinesisCommandKind.Aucune)
                 {
-                    Spend(ref t, tick, cfg.throwCost);
                     int id = t.HeldId;
                     cmd = Release(ref t, tick, TelekinesisCommandKind.Lancer);
                     cmd.AimDirection = aimDir;
                     t.LastThrownId = id;
                     t.LastThrowTick = tick;
-                    t.LastConsumedSecondaryPressTick = input.RepelPressedTick;
                 }
-            }
-            else if (secondary)
-            {
-                t.LastConsumedSecondaryPressTick = input.RepelPressedTick;
             }
 
             cooling = t.LastThrowTick != MovementState.NeverTick && tick - t.LastThrowTick < cooldownTicks;
@@ -123,11 +100,11 @@ namespace ItHunts.Orbs
         {
             int cooldownTicks = MovementSettings.SecondsToTicks(cfg.cooldown, dt);
             bool cooling = t.LastThrowTick != MovementState.NeverTick && tick - t.LastThrowTick < cooldownTicks;
-            return !t.Holding && t.AimHit && !t.AimTooHeavy && !cooling && t.Stamina >= cfg.grabCost;
+            return !t.Holding && t.AimHit && !t.AimTooHeavy && !cooling;
         }
 
         /// <summary>Peut-on lancer l'objet tenu maintenant ? (anneau vert du viseur)</summary>
-        public static bool CanThrow(in TelekinesisState t, TelekinesisOrbSettings cfg) => t.Holding && t.Stamina >= cfg.throwCost;
+        public static bool CanThrow(in TelekinesisState t) => t.Holding;
 
         /// <summary>
         /// Vitesse d'un lancer : throwSpeed dans la direction voulue, plus la vitesse du joueur si inheritPlayerVelocity
@@ -146,12 +123,6 @@ namespace ItHunts.Orbs
             t.LastAction = kind;
             t.LastActionTick = tick;
             return cmd;
-        }
-
-        private static void Spend(ref TelekinesisState t, int tick, float cost)
-        {
-            t.Stamina -= cost;
-            t.LastSpendTick = tick;
         }
 
         private static bool IsFresh(int pressTick, int consumedTick, int tick, int bufferTicks)
