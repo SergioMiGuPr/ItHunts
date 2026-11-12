@@ -18,6 +18,11 @@ cœur du jeu.
 - **Réglages partagés** (`ProjectSettings/`, `Packages/`, renderer URP dans `Assets/Settings/`) : n'y touche pas
   directement. Décris le changement voulu (par exemple : ajouter une passe de contours au renderer URP) dans la
   PR ou dans un ticket ; il est fait sur `main`.
+- **⚠ Réglages partagés changés sur `main` (2026-11-12, commit `ba228b1`, étape 5) :** couches `FirstPersonP1` à
+  `P4` (8 à 11) dans `ProjectSettings/TagManager.asset` ; dans `PC_Renderer` et `Mobile_Renderer`, ces couches sont
+  exclues des passes normales et trois passes « ItHunts Mains » dessinent les mains et le HUD (voir § mains). **Mets
+  ta branche `art` à jour avant de continuer** (`git merge main` ou `git rebase main`) et ne garde pas une ancienne
+  version de ces fichiers en résolvant un conflit. N'utilise pas les couches 8 à 11 pour tes objets.
 - **Unity 6000.3.28f1** exactement (même version que `main`), URP. Les gros fichiers (FBX, GLB, PNG, PSD, blend…)
   passent par **Git LFS** (déjà configuré dans `.gitattributes`). Le quota LFS gratuit de GitHub est petit (de
   l'ordre de 1 Go de stockage) : pas de fichiers de travail inutiles dans le dépôt.
