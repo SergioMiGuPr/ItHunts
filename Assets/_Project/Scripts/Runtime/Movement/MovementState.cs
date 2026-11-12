@@ -9,6 +9,22 @@ namespace ItHunts.Movement
         Air,
         Slide,
         WallSlide,
+        /// <summary>Traction de l'orbe de magnétisme : ligne droite vers un point, sans gravité ni friction.</summary>
+        Traction,
+    }
+
+    /// <summary>Raison de la fin d'une traction (debug).</summary>
+    public enum TractionEnd : byte
+    {
+        Aucune,
+        Relache,
+        Arrivee,
+        LigneCoupee,
+        DureeMax,
+        Saut,
+        Dash,
+        Repulsion,
+        Bloquee,
     }
 
     /// <summary>
@@ -97,6 +113,17 @@ namespace ItHunts.Movement
         public float LastDashEndSpeed;
         public float LastDashDistance;
 
+        /// <summary>
+        /// Traction en cours (Mode == Traction) : point visé (fixé au clic), accélération et vitesse de traction
+        /// (copiées des réglages au départ), tick de départ. Fin : tick et raison.
+        /// </summary>
+        public Vector3 TractionPoint;
+        public float TractionAcceleration;
+        public float TractionSpeed;
+        public int TractionStartTick;
+        public int TractionEndTick;
+        public TractionEnd TractionEndReason;
+
         public static MovementState Create(Vector3 position) => new MovementState
         {
             Tick = 0,
@@ -139,6 +166,12 @@ namespace ItHunts.Movement
             LastDashStartSpeed = 0f,
             LastDashEndSpeed = 0f,
             LastDashDistance = 0f,
+            TractionPoint = Vector3.zero,
+            TractionAcceleration = 0f,
+            TractionSpeed = 0f,
+            TractionStartTick = NeverTick,
+            TractionEndTick = NeverTick,
+            TractionEndReason = TractionEnd.Aucune,
         };
 
         public float HorizontalSpeed => new Vector2(Velocity.x, Velocity.z).magnitude;

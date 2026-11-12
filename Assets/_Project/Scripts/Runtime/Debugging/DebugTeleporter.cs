@@ -6,12 +6,12 @@ using UnityEngine.InputSystem;
 namespace ItHunts.Debugging
 {
     /// <summary>
-    /// Téléportation de debug : F4 = départ, F5 à F9 = zones de la scène de test (DebugTeleportPoints).
+    /// Téléportation de debug : F4 = départ, F5 à F11 = zones de la scène de test (DebugTeleportPoints).
     /// Outil de test seulement : lit le clavier directement, et seulement pour un joueur au clavier-souris.
     /// </summary>
     public sealed class DebugTeleporter : MonoBehaviour
     {
-        private static readonly Key[] Keys = { Key.F4, Key.F5, Key.F6, Key.F7, Key.F8, Key.F9 };
+        private static readonly Key[] Keys = { Key.F4, Key.F5, Key.F6, Key.F7, Key.F8, Key.F9, Key.F10, Key.F11 };
 
         private PlayerMotor _motor;
         private PlayerLook _look;

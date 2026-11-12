@@ -1,5 +1,6 @@
 using ItHunts.Input;
 using ItHunts.Movement;
+using ItHunts.Orbs;
 using ItHunts.Settings;
 using UnityEngine;
 
@@ -14,6 +15,8 @@ namespace ItHunts.Player
     public sealed class PlayerMotor : MonoBehaviour
     {
         [SerializeField] private MovementSettings settings;
+        [Tooltip("Orbe de magnétisme (vide : pas d'orbe).")]
+        [SerializeField] private MagnetismOrbSettings magnetism;
         [SerializeField] private LayerMask collisionMask = ~0;
         [Tooltip("Sous cette hauteur (m), le joueur revient à son point de départ.")]
         [SerializeField] private float killHeight = -30f;
@@ -23,12 +26,16 @@ namespace ItHunts.Player
         private PlayerInputReader _reader;
         private PlayerLook _look;
         private MovementState _state;
+        private MagnetismState _magnet;
+        private PhysicsAimProbe _aim;
         private Vector3 _previousPosition;
         private Vector3 _currentPosition;
         private Vector3 _spawnPosition;
 
         public MovementState State => _state;
         public MovementSettings Settings => settings;
+        public MagnetismState Magnetism => _magnet;
+        public MagnetismOrbSettings MagnetismSettings => magnetism;
 
         /// <summary>Numéro du prochain tick simulé : sert à horodater les appuis.</summary>
         public int NextTick => _state.Tick + 1;
@@ -62,6 +69,8 @@ namespace ItHunts.Player
             _probe.SetHeight(settings.capsuleHeight);
             _spawnPosition = transform.position;
             _state = MovementState.Create(_spawnPosition);
+            _magnet = MagnetismState.Create();
+            _aim = new PhysicsAimProbe(magnetism != null ? magnetism.aimMask : (LayerMask)~0, transform);
             _previousPosition = _currentPosition = _spawnPosition;
         }
 
@@ -72,6 +81,7 @@ namespace ItHunts.Player
 
             var input = MovementInput.Neutral;
             input.Yaw = _look != null ? _look.Yaw : transform.eulerAngles.y;
+            input.Pitch = _look != null ? _look.Pitch : 0f;
             if (_reader != null)
             {
                 input.Move = _reader.Move;
@@ -79,6 +89,16 @@ namespace ItHunts.Player
                 input.JumpPressedTick = _reader.JumpPressedTick;
                 input.SlideHeld = _reader.SlideHeld;
                 input.DashPressedTick = _reader.DashPressedTick;
+                input.AttractPressedTick = _reader.AttractPressedTick;
+                input.AttractHeld = _reader.AttractHeld;
+                input.RepelPressedTick = _reader.RepelPressedTick;
+            }
+
+            // Même tick, même entrée : l'orbe (démarre ou arrête la traction, applique la répulsion), puis le mouvement.
+            if (magnetism != null)
+            {
+                _aim.Mask = magnetism.aimMask;
+                MagnetismOrb.Step(ref _magnet, ref _state, input, magnetism, settings, Time.fixedDeltaTime, _aim);
             }
 
             MovementMotor.Step(ref _state, input, settings, Time.fixedDeltaTime, _probe);
@@ -97,11 +117,13 @@ namespace ItHunts.Player
 
             int tick = _state.Tick;
             int consumed = _state.LastConsumedJumpPressTick;
+            int consumedDash = _state.LastConsumedDashPressTick;
             _probe.SetHeight(settings.capsuleHeight);
             _probe.ResetContacts();
             _state = MovementState.Create(position);
             _state.Tick = tick;
             _state.LastConsumedJumpPressTick = consumed;
+            _state.LastConsumedDashPressTick = consumedDash;
             _previousPosition = _currentPosition = position;
         }
 

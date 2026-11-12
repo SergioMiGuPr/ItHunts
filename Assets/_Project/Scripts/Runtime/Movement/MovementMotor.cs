@@ -7,7 +7,8 @@ namespace ItHunts.Movement
     /// <summary>
     /// Simulation du mouvement, un tick à la fois. Classe pure : aucune lecture d'entrée, d'horloge
     /// ou de scène. Tout passe par les paramètres, pour pouvoir tester et rejouer (réseau).
-    /// États : Sol (debout ou accroupi), Air, Glissade, WallSlide. Saut (coyote, buffer, hauteur
+    /// États : Sol (debout ou accroupi), Air, Glissade, WallSlide, Traction (orbe de magnétisme, démarrée et
+    /// arrêtée par MagnetismOrb avant ce pas). Saut (coyote, buffer, hauteur
     /// variable, gravité de chute), sauts multiples, auto-bunny hop, wall jump, contrôle aérien.
     /// </summary>
     public static class MovementMotor
@@ -34,9 +35,12 @@ namespace ItHunts.Movement
             float wishAmount = wish.magnitude;
             Vector3 wishDir = wishAmount > 1e-4f ? wish / wishAmount : Vector3.zero;
 
+            // Traction : ligne droite vers le point, ni sol, ni mur, ni gravité, ni friction.
+            bool traction = s.Mode == MovementMode.Traction;
+
             // 1. Sol. On ne se colle pas au sol pendant une montée (sinon le saut serait annulé).
             bool groundHit = probe.ProbeGround(out Vector3 groundNormal);
-            bool grounded = groundHit && s.Velocity.y <= 1e-3f;
+            bool grounded = !traction && groundHit && s.Velocity.y <= 1e-3f;
             if (grounded)
             {
                 s.LastGroundedTick = s.Tick;
@@ -55,7 +59,7 @@ namespace ItHunts.Movement
             //        côtés de la trajectoire (pour un mur longé bien parallèlement).
             bool onWall = false;
             Vector3 wallNormal = Vector3.zero;
-            if (!grounded)
+            if (!grounded && !traction)
             {
                 var horizontal = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
                 Vector3 velocityDir = horizontal.sqrMagnitude > 0.01f ? horizontal.normalized : Vector3.zero;
@@ -91,16 +95,16 @@ namespace ItHunts.Movement
             bool freshPress = input.JumpPressedTick > s.LastConsumedJumpPressTick
                               && sincePress >= 0 && sincePress <= bufferTicks;
             bool inCoyote = !grounded && s.Tick - s.LastGroundedTick <= coyoteTicks;
-            bool groundJump = (grounded || inCoyote) && canStand
+            bool groundJump = !traction && (grounded || inCoyote) && canStand
                               && (freshPress || (grounded && cfg.autoBunnyHop && input.JumpHeld));
 
-            bool wallJump = !groundJump && !grounded && freshPress && canStand
+            bool wallJump = !traction && !groundJump && !grounded && freshPress && canStand
                             && s.LastWallTick != MovementState.NeverTick
                             && s.Tick - s.LastWallTick <= wallCoyoteTicks
                             && (cfg.allowSameWallJump || s.LastWallId != s.LastWallJumpId);
 
             bool airJump = false;
-            if (!groundJump && !wallJump && !grounded && !inCoyote && freshPress)
+            if (!traction && !groundJump && !wallJump && !grounded && !inCoyote && freshPress)
             {
                 // Tombé d'un bord sans sauter : le saut au sol est perdu une fois le coyote time passé.
                 s.JumpsUsed = Mathf.Max(s.JumpsUsed, 1);
@@ -108,7 +112,7 @@ namespace ItHunts.Movement
             }
 
             if ((groundJump || airJump || wallJump) && s.DashTicksLeft > 0)
-                EndDash(ref s, cfg, probe, dashGraceTicks);           // un saut termine le dash (vitesse de sortie)
+                EndDash(ref s, probe.Position, dashGraceTicks);           // un saut termine le dash (vitesse de sortie)
 
             if (groundJump || airJump)
             {
@@ -138,7 +142,7 @@ namespace ItHunts.Movement
             {
                 UpdateGroundPosture(ref s, input, cfg, canStand, horizontalSpeed, slideBoostTicks);
             }
-            else
+            else if (!traction)
             {
                 // En l'air : on se relève dès qu'il y a la place. Accroché au mur si on pousse vers lui (avec une
                 // tolérance d'angle) ou si on le longe assez vite ; wall slide quand on descend.
@@ -184,6 +188,11 @@ namespace ItHunts.Movement
                 s.LastDashMove = input.Move;
                 s.LastDashStartSpeed = s.DashSpeedBefore;
                 s.JumpRising = false;
+                if (traction)
+                {
+                    EndTraction(ref s, TractionEnd.Dash);                  // le dash termine la traction
+                    traction = false;
+                }
             }
 
             bool dashed = s.DashTicksLeft > 0;
@@ -198,8 +207,16 @@ namespace ItHunts.Movement
             float speedBeforeHorizontal = s.HorizontalSpeed;
 
             // 3. Horizontal (rien ce tick-ci après un dash : la vitesse du dash est exacte).
+            Vector3 tractionDir = Vector3.zero;
             if (dashed)
             {
+            }
+            else if (traction)
+            {
+                Vector3 eye = s.Position + Vector3.up * (s.Crouched ? cfg.crouchEyeHeight : cfg.eyeHeight);
+                Vector3 to = s.TractionPoint - eye;
+                tractionDir = to.sqrMagnitude > 1e-6f ? to.normalized : Vector3.zero;
+                s.Velocity = MovementMath.TractionVelocity(s.Velocity, tractionDir, s.TractionAcceleration, s.TractionSpeed, dt);
             }
             else if (grounded && s.Mode == MovementMode.Slide)
             {
@@ -246,7 +263,7 @@ namespace ItHunts.Movement
 
             // 5. Vertical : coupe au relâchement, puis gravité en deux demi-pas (hauteur de saut exacte).
             float g = 0f;
-            if (!grounded && !dashed)                                 // pas de gravité pendant un dash
+            if (!grounded && !dashed && !traction)                    // pas de gravité pendant un dash ni une traction
             {
                 if (s.JumpRising && !input.JumpHeld && s.Velocity.y > 0f)
                 {
@@ -266,11 +283,20 @@ namespace ItHunts.Movement
 
             if (!grounded)
                 s.Velocity.y -= 0.5f * g * dt;
-            s.Velocity.y = Mathf.Max(s.Velocity.y, -cfg.maxFallSpeed);
+            if (!traction)
+                s.Velocity.y = Mathf.Max(s.Velocity.y, -cfg.maxFallSpeed);
+
+            // Traction bloquée par un obstacle (moins de la moitié du déplacement voulu vers le point) : fin.
+            if (traction)
+            {
+                float wanted = Vector3.Dot(delta, tractionDir);
+                if (wanted > 1e-4f && Vector3.Dot(result.ActualDelta, tractionDir) < 0.5f * wanted)
+                    EndTraction(ref s, TractionEnd.Bloquee);
+            }
 
             // Fin du dash : vitesse de sortie.
             if (dashed && --s.DashTicksLeft == 0)
-                EndDash(ref s, cfg, probe, dashGraceTicks);
+                EndDash(ref s, probe.Position, dashGraceTicks);
             if (s.Mode == MovementMode.WallSlide)
             {
                 // Effet wall run : plus on longe le mur vite, plus la chute est lente.
@@ -326,17 +352,28 @@ namespace ItHunts.Movement
         /// <summary>
         /// Termine le dash : vitesse horizontale = la plus grande entre celle d'avant et dashExitSpeed, dans la
         /// direction du dash ; puis courte période sans friction au sol. Mémorise les chiffres pour le debug.
+        /// Appelé aussi par l'orbe de magnétisme (une impulsion termine le dash).
         /// </summary>
-        private static void EndDash(ref MovementState s, MovementSettings cfg, ICollisionProbe probe, int graceTicks)
+        public static void EndDash(ref MovementState s, Vector3 position, int graceTicks)
         {
             float exit = s.DashExitTarget;
             s.Velocity = new Vector3(s.DashDir.x * exit, s.Velocity.y, s.DashDir.z * exit);
             s.DashTicksLeft = 0;
             s.DashEndTick = s.Tick;
             s.DashGraceUntilTick = s.Tick + 1 + graceTicks;
-            Vector3 moved = probe.Position - s.DashStartPosition;
+            Vector3 moved = position - s.DashStartPosition;
             s.LastDashDistance = new Vector2(moved.x, moved.z).magnitude;
             s.LastDashEndSpeed = exit;
+        }
+
+        /// <summary>Termine la traction (la vitesse reste telle quelle) ; l'orbe démarre sa recharge.</summary>
+        public static void EndTraction(ref MovementState s, TractionEnd reason)
+        {
+            if (s.Mode != MovementMode.Traction)
+                return;
+            s.Mode = MovementMode.Air;
+            s.TractionEndTick = s.Tick;
+            s.TractionEndReason = reason;
         }
 
         /// <summary>

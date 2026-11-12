@@ -14,6 +14,9 @@ namespace ItHunts.Movement
         /// <summary>Orientation horizontale de la vue (degrés, monde).</summary>
         public float Yaw;
 
+        /// <summary>Inclinaison verticale de la vue (degrés ; positif = vers le bas, comme la caméra). Sert à viser.</summary>
+        public float Pitch;
+
         /// <summary>Bouton de saut maintenu au moment du tick.</summary>
         public bool JumpHeld;
 
@@ -26,10 +29,19 @@ namespace ItHunts.Movement
         /// <summary>Tick du dernier appui de dash (0 ou MovementState.NeverTick si aucun ; les ticks commencent à 1).</summary>
         public int DashPressedTick;
 
+        /// <summary>Tick du dernier appui d'attraction (traction) / de répulsion de l'orbe de magnétisme (0 ou moins : aucun).</summary>
+        public int AttractPressedTick;
+
+        /// <summary>Bouton d'attraction maintenu (la traction dure tant qu'il est tenu).</summary>
+        public bool AttractHeld;
+        public int RepelPressedTick;
+
         public static MovementInput Neutral => new MovementInput
         {
             JumpPressedTick = MovementState.NeverTick,
             DashPressedTick = MovementState.NeverTick,
+            AttractPressedTick = MovementState.NeverTick,
+            RepelPressedTick = MovementState.NeverTick,
         };
     }
 }

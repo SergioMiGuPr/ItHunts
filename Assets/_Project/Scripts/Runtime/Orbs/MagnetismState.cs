@@ -1,0 +1,116 @@
+using ItHunts.Movement;
+using UnityEngine;
+
+namespace ItHunts.Orbs
+{
+    /// <summary>États d'une orbe (ou d'un de ses modes) : Prête → EnUsage → Recharge → Prête.</summary>
+    public enum OrbStatus : byte
+    {
+        Prete,
+        EnUsage,
+        Recharge,
+    }
+
+    public enum MagnetMode : byte
+    {
+        Attraction,
+        Repulsion,
+    }
+
+    /// <summary>Raison d'un usage refusé (debug, puis son et HUD).</summary>
+    public enum MagnetRefusal : byte
+    {
+        Aucun,
+        PasDeCharge,
+        Recharge,
+        RienAPortee,
+    }
+
+    /// <summary>
+    /// État de l'orbe de magnétisme d'un joueur. Données seulement, copiable et rejouable comme le
+    /// MovementState (prédiction réseau). La traction elle-même (point, vitesse) vit dans le MovementState.
+    /// Les délais sont en ticks.
+    /// </summary>
+    public struct MagnetismState
+    {
+        /// <summary>État affiché de l'orbe, et de chaque mode.</summary>
+        public OrbStatus Status;
+        public OrbStatus AttractStatus;
+        public OrbStatus RepelStatus;
+
+        /// <summary>Mode utilisé en dernier (couleur de l'orbe).</summary>
+        public MagnetMode LastMode;
+
+        /// <summary>Traction en cours (vue par l'orbe ; le moteur peut la terminer : dash, obstacle).</summary>
+        public bool Tracting;
+
+        /// <summary>Charges d'attraction (fractionnaires pendant la recharge). Négatif : pas encore initialisé.</summary>
+        public float AttractCharges;
+
+        /// <summary>Fin de la dernière traction et dernière répulsion (sa recharge part de là).</summary>
+        public int LastTractionEndTick;
+        public int LastRepelTick;
+
+        /// <summary>Appuis déjà consommés (un appui = un usage ou un refus).</summary>
+        public int LastConsumedAttractPressTick;
+        public int LastConsumedRepelPressTick;
+
+        /// <summary>Visée de ce tick (portée de l'attraction) : surface touchée, distance, point.</summary>
+        public bool AimHit;
+        public float AimDistance;
+        public Vector3 AimPoint;
+        public Vector3 AimNormal;
+
+        /// <summary>La répulsion peut s'appliquer au point visé (surface à portée de la répulsion).</summary>
+        public bool RepelInRange;
+
+        /// <summary>Dernière traction (debug) : vitesses au départ, maximale et à la fin, durée, raison de la fin.</summary>
+        public float LastTractionStartSpeed;
+        public float LastTractionPeakSpeed;
+        public float LastTractionEndSpeed;
+        public int LastTractionTicks;
+        public TractionEnd LastTractionEnd;
+
+        /// <summary>Dernière répulsion (debug).</summary>
+        public Vector3 LastRepelVelocityBefore;
+        public Vector3 LastRepelVelocityAfter;
+        public Vector3 LastRepelPoint;
+        public Vector3 LastRepelNormal;
+
+        /// <summary>Dernier refus : tick, raison, mode demandé.</summary>
+        public int LastRefusalTick;
+        public MagnetRefusal LastRefusal;
+        public MagnetMode LastRefusalMode;
+
+        public static MagnetismState Create() => new MagnetismState
+        {
+            Status = OrbStatus.Prete,
+            AttractStatus = OrbStatus.Prete,
+            RepelStatus = OrbStatus.Prete,
+            LastMode = MagnetMode.Attraction,
+            Tracting = false,
+            AttractCharges = -1f,
+            LastTractionEndTick = MovementState.NeverTick,
+            LastRepelTick = MovementState.NeverTick,
+            LastConsumedAttractPressTick = MovementState.NeverTick,
+            LastConsumedRepelPressTick = MovementState.NeverTick,
+            AimHit = false,
+            AimDistance = 0f,
+            AimPoint = Vector3.zero,
+            AimNormal = Vector3.up,
+            RepelInRange = false,
+            LastTractionStartSpeed = 0f,
+            LastTractionPeakSpeed = 0f,
+            LastTractionEndSpeed = 0f,
+            LastTractionTicks = 0,
+            LastTractionEnd = TractionEnd.Aucune,
+            LastRepelVelocityBefore = Vector3.zero,
+            LastRepelVelocityAfter = Vector3.zero,
+            LastRepelPoint = Vector3.zero,
+            LastRepelNormal = Vector3.up,
+            LastRefusalTick = MovementState.NeverTick,
+            LastRefusal = MagnetRefusal.Aucun,
+            LastRefusalMode = MagnetMode.Attraction,
+        };
+    }
+}

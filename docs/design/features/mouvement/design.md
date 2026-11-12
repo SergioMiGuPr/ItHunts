@@ -12,7 +12,7 @@ est la survie ».
 1. **Contrôleur cinématique** à pas fixe (60 Hz) : la vitesse est calculée explicitement à
    partir d'une structure d'entrée, jamais par un Rigidbody dynamique. Les délais sont comptés
    en pas (ticks), pas en secondes décrémentées.
-2. **États :** Sol, Air, Glissade, WallSlide, WallJump (et plus tard Magnétisme). Une seule
+2. **États :** Sol, Air, Glissade, WallSlide, WallJump, Traction (magnétisme, [orbes](../orbes/design.md)). Une seule
    transition par pas, depuis une table de transitions explicite.
 3. **Sol :** accélération vers la vitesse voulue, friction quand il n'y a pas d'entrée.
 4. **Air (façon Source) :** l'accélération ne s'applique que sur la composante de la direction
@@ -68,8 +68,8 @@ est la survie ».
    jump, puis saut en l'air. Pendant le verrou de direction, aucun contrôle en l'air.
 
 12. **Charges de mouvement et dash (D-015) :** une barre de **3 charges** (réglable, les
-    améliorations pourront l'augmenter), partagée par le **saut en l'air**, le **dash** et le
-    **magnétisme** (attraction et répulsion, à l'étape des orbes) : 1 charge chacun. Le saut au
+    améliorations pourront l'augmenter), partagée par le **saut en l'air** et le **dash** : 1 charge
+    chacun. Le magnétisme ne les utilise pas : il a ses propres recharges (D-021). Le saut au
     sol et le wall jump sont gratuits. Les charges se rechargent une par une avec le temps, **plus
     vite au sol** qu'en l'air. Sans charge, l'action est refusée (son et HUD). La télékinésie a sa
     propre jauge d'endurance ([orbes](../orbes/design.md)).
@@ -87,6 +87,8 @@ est la survie ».
       affiche « réussi » ou « raté, trop tard de N ms ».
     - **Plafond commun des gains** : wall jump, dash au sol, dash-jump et bonus de glissade
       n'ajoutent de la vitesse qu'en dessous de 20 m/s ; au-delà, la vitesse est conservée sans gain.
+      La répulsion du magnétisme suit aussi ce plafond. **Exception : la traction du magnétisme** n'y
+      est pas soumise (seul le plafond de sécurité de 50 m/s reste, D-021).
       Un saut pendant le dash le termine (vitesse de sortie). Délai entre deux débuts de dash ; un
       appui pendant un dash est mémorisé et part dès la fin du délai (un seul appui en attente).
     - **HUD** : segments sous le viseur, pleins, vides, ou en cours de recharge.
@@ -122,7 +124,7 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 | Délai entre deux débuts de dash | 0.3 | s | jamais avant la fin du dash précédent |
 | Mémorisation de l'appui de dash | 0.3 | s | enchaînements |
 | Sans friction au sol après un dash | 0.2 | s | pas de chute brutale à 7.5 m/s |
-| Plafond commun des gains (wall jump, dash au sol, dash-jump, bonus de glissade) | 20 | m/s | au-delà : vitesse conservée, pas de gain |
+| Plafond commun des gains (wall jump, dash au sol, dash-jump, bonus de glissade, répulsion) | 20 | m/s | au-delà : vitesse conservée, pas de gain ; la traction n'y est pas soumise |
 | Gravité | 20 | m/s² | sensation de poids |
 | Multiplicateur de gravité en chute | 1.5 | × | chute nerveuse, pas brutale |
 | Vitesse de chute max | 35 | m/s | chutes longues |
@@ -206,3 +208,4 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 - 2026-11-12 : dash v3 : profil progressif sur 0.3 s, +1 m/s au sol, aucun gain en l'air, dash-jump
   (+3 m/s, fenêtre 0.15 s), plafond commun des gains à 20 m/s (D-018).
 - 2026-11-12 : bonus de glissade soumis au plafond commun (D-019). Mouvement de base validé en playtest.
+- 2026-11-12 : le magnétisme quitte les charges ; état Traction ; exception au plafond commun pour la traction (D-021).

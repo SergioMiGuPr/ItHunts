@@ -2,6 +2,7 @@ using System.IO;
 using ItHunts.Debugging;
 using ItHunts.Hud;
 using ItHunts.Input;
+using ItHunts.Orbs;
 using ItHunts.Player;
 using ItHunts.Settings;
 using Unity.Cinemachine;
@@ -24,6 +25,7 @@ namespace ItHunts.EditorTools
         private const string ActionsPath = "Assets/_Project/Input/PlayerControls.inputactions";
         private const string MovementPath = SettingsDir + "/Movement_Default.asset";
         private const string CameraPath = SettingsDir + "/Camera_Default.asset";
+        private const string MagnetismPath = SettingsDir + "/Magnetism_Default.asset";
         private const string PlayerPrefabPath = PrefabDir + "/Player.prefab";
         private const string ScenePath = "Assets/Scenes/Test_Movement.unity";
 
@@ -42,10 +44,11 @@ namespace ItHunts.EditorTools
         {
             var movement = LoadOrCreate<MovementSettings>(MovementPath);
             var camera = LoadOrCreate<CameraSettings>(CameraPath);
+            var magnetism = LoadOrCreate<MagnetismOrbSettings>(MagnetismPath);
             var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsPath);
             if (actions == null)
                 return $"ERREUR : {ActionsPath} introuvable.";
-            BuildPlayerPrefab(movement, camera, actions);
+            BuildPlayerPrefab(movement, camera, magnetism, actions);
             return $"OK : {PlayerPrefabPath} reconstruit.";
         }
 
@@ -59,13 +62,14 @@ namespace ItHunts.EditorTools
 
             var movement = LoadOrCreate<MovementSettings>(MovementPath);
             var camera = LoadOrCreate<CameraSettings>(CameraPath);
+            var magnetism = LoadOrCreate<MagnetismOrbSettings>(MagnetismPath);
             var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsPath);
             if (actions == null)
                 return $"ERREUR : {ActionsPath} introuvable.";
 
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefabPath);
             if (prefab == null || overwrite)
-                prefab = BuildPlayerPrefab(movement, camera, actions);
+                prefab = BuildPlayerPrefab(movement, camera, magnetism, actions);
 
             if (File.Exists(ScenePath) && !overwrite)
                 return $"OK (scène existante conservée : {ScenePath}). Pas fixe = {Time.fixedDeltaTime:0.#####} s.";
@@ -94,7 +98,7 @@ namespace ItHunts.EditorTools
         // ---------- Prefab joueur ----------
 
         private static GameObject BuildPlayerPrefab(MovementSettings movement, CameraSettings cameraSettings,
-            InputActionAsset actions)
+            MagnetismOrbSettings magnetism, InputActionAsset actions)
         {
             var root = new GameObject("Player");
             try
@@ -122,6 +126,35 @@ namespace ItHunts.EditorTools
                 camGo.AddComponent<CinemachineBrain>();
                 camGo.AddComponent<AudioListener>();
 
+                // Orbe tenue en bas à droite de la vue, et trait de traction.
+                GameObject orb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                orb.name = "Orbe (vue)";
+                Object.DestroyImmediate(orb.GetComponent<Collider>());
+                orb.transform.SetParent(camGo.transform, false);
+                orb.transform.localPosition = new Vector3(0.28f, -0.24f, 0.55f);
+                orb.transform.localScale = Vector3.one * 0.09f;
+                var orbRenderer = orb.GetComponent<MeshRenderer>();
+                orbRenderer.sharedMaterial = UnlitMat("Orb_View", "Universal Render Pipeline/Unlit", Color.white);
+                orbRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                orbRenderer.receiveShadows = false;
+
+                var lineGo = new GameObject("Trait de traction");
+                lineGo.transform.SetParent(camGo.transform, false);
+                var line = lineGo.AddComponent<LineRenderer>();
+                line.useWorldSpace = true;
+                line.positionCount = 2;
+                line.startWidth = 0.03f;
+                line.endWidth = 0.06f;
+                line.sharedMaterial = UnlitMat("Orb_Line", "Universal Render Pipeline/Particles/Unlit", Color.white);
+                line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                line.receiveShadows = false;
+                line.enabled = false;
+
+                // Marquage de la répulsion : point visé et impact (placés dans le monde à chaque image).
+                Material markerMat = UnlitMat("Orb_Marker", "Universal Render Pipeline/Unlit", Color.white);
+                Renderer aimMarker = Marker("Marque de répulsion (visée)", root.transform, 0.35f, markerMat);
+                Renderer impactMarker = Marker("Marque de répulsion (impact)", root.transform, 0.6f, markerMat);
+
                 var vcamGo = new GameObject("CinemachineCamera");
                 vcamGo.transform.SetParent(rig.transform, false);
                 var vcam = vcamGo.AddComponent<CinemachineCamera>();
@@ -143,8 +176,14 @@ namespace ItHunts.EditorTools
                 root.AddComponent<MovementDebugOverlay>();
                 root.AddComponent<DebugTeleporter>();
                 root.AddComponent<MovementHud>();
+                var orbView = root.AddComponent<MagnetismOrbView>();
 
                 SetRef(motor, "settings", movement);
+                SetRef(motor, "magnetism", magnetism);
+                SetRef(orbView, "orbRenderer", orbRenderer);
+                SetRef(orbView, "line", line);
+                SetRef(orbView, "aimMarker", aimMarker);
+                SetRef(orbView, "impactMarker", impactMarker);
                 SetRef(look, "settings", cameraSettings);
                 SetRef(look, "viewRig", rig.transform);
                 SetRef(look, "virtualCamera", vcam);
@@ -156,6 +195,22 @@ namespace ItHunts.EditorTools
             {
                 Object.DestroyImmediate(root);
             }
+        }
+
+        /// <summary>Disque plat sans collision (cylindre écrasé), masqué au départ.</summary>
+        private static Renderer Marker(string name, Transform parent, float diameter, Material mat)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            go.name = name;
+            Object.DestroyImmediate(go.GetComponent<Collider>());
+            go.transform.SetParent(parent, false);
+            go.transform.localScale = new Vector3(diameter, 0.005f, diameter);
+            var r = go.GetComponent<MeshRenderer>();
+            r.sharedMaterial = mat;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            r.enabled = false;
+            return r;
         }
 
         private static void SetRef(Object target, string field, Object value)
@@ -247,6 +302,9 @@ namespace ItHunts.EditorTools
             BuildLongSlopes(level, rampMat, platformMat);
             BuildTallWalls(level, tallWallMat);
             BuildGapsAndVerticality(level, platformMat, rampMat, blockMat);
+            Material magneticMat = Mat("Greybox_Magnetic", new Color(0.15f, 0.45f, 1f));
+            BuildMagnetismArea(level, magneticMat, platformMat, rampMat, wallMat, lineMat, landmarkMat);
+            BuildGreatHall(level, wallMat, platformMat, magneticMat, lineMat);
             BuildTeleportPoints();
 
             // Joueur.
@@ -266,6 +324,8 @@ namespace ItHunts.EditorTools
         //   x  110..170, z  80..300 : grands murs (paires de 6 et 10 m, mur seul de 200 m, cheminée)
         //   x  180..190, z −30..350 : ligne droite de bunny hop (380 m)
         //   x −100..100, z 305..355 : écarts larges et verticalité
+        //   x   45..95,  z −30..60  : magnétisme (cibles en bleu, mais toute surface répond)
+        //   x −100..−50, z   0..50  : grande salle de 45 m de haut (portée de la traction)
 
         private const float GroundMinX = -200f, GroundMaxX = 200f, GroundMinZ = -40f, GroundMaxZ = 360f;
 
@@ -300,7 +360,7 @@ namespace ItHunts.EditorTools
             Box("Mur O", walls, new Vector3(GroundMinX - 0.5f, h * 0.5f, cz), new Vector3(1f, h, sizeZ), wallMat);
         }
 
-        /// <summary>Points de téléportation de debug : F4 départ, F5 à F9 zones (position des pieds, yaw).</summary>
+        /// <summary>Points de téléportation de debug : F4 départ, F5 à F11 zones (position des pieds, yaw).</summary>
         private static void BuildTeleportPoints()
         {
             var root = new GameObject("Points de téléportation (debug)");
@@ -313,6 +373,8 @@ namespace ItHunts.EditorTools
                 ("Longues pentes", new Vector3(-160f, 0f, -32f), 0f),
                 ("Grands murs", new Vector3(121f, 0f, 95f), 0f),
                 ("Écarts larges et verticalité", new Vector3(-99f, 4f, 315f), 90f),
+                ("Magnétisme", new Vector3(60f, 0f, -30f), 0f),
+                ("Grande salle 45 m", new Vector3(-56f, 0f, 25f), -90f),
             };
             points.points = new DebugTeleportPoints.Point[defs.Length];
             for (int i = 0; i < defs.Length; i++)
@@ -447,6 +509,93 @@ namespace ItHunts.EditorTools
                 new Vector3(width, top, platformLen), platformMat);
         }
 
+        /// <summary>
+        /// Zone du magnétisme, départ F10 en (60, 0, −30) face au nord. Toute surface répond au magnétisme ; le bleu
+        /// sert seulement de repère (cibles prévues) :
+        /// - mur bleu de 14 m derrière une plateforme de 6 m, repères au sol à 10, 20 et 25 m du mur ;
+        /// - mur gris (répond aussi : toute surface) ;
+        /// - plafond bleu à 14 m ; puits de 25 m ;
+        /// - dalles bleues au sol (rocket jump) près de plateformes de 4 et 8 m ;
+        /// - gouffre de 30 m entre deux plateformes de 6 m, bloc flottant au milieu.
+        /// </summary>
+        private static void BuildMagnetismArea(Transform level, Material magneticMat, Material platformMat,
+            Material rampMat, Material wallMat, Material lineMat, Material markMat)
+        {
+            var area = new GameObject("Magnétisme").transform;
+            area.SetParent(level, false);
+
+            Box("Plateforme 6 m", area, new Vector3(60f, 3f, 5f), new Vector3(10f, 6f, 6f), platformMat);
+            Box("Mur bleu 14 m", area, new Vector3(60f, 7f, 8.5f), new Vector3(10f, 14f, 1f), magneticMat);
+            foreach (float d in new[] { 10f, 20f, 25f })   // face du mur en z = 8
+                Box($"Repère {d} m du mur", area, new Vector3(60f, 0.012f, 8f - d), new Vector3(10f, 0.02f, d >= 25f ? 0.6f : 0.3f),
+                    d >= 25f ? markMat : lineMat, collider: false);
+            Box("Mur gris", area, new Vector3(71f, 7f, 8.5f), new Vector3(8f, 14f, 1f), wallMat);
+
+            Box("Plafond bleu 14 m", area, new Vector3(88f, 14.5f, 5f), new Vector3(10f, 1f, 10f), magneticMat);
+
+            Box("Puits 25 m - paroi ouest", area, new Vector3(87.5f, 12.5f, -22f), new Vector3(1f, 25f, 6f), magneticMat);
+            Box("Puits 25 m - paroi est", area, new Vector3(92.5f, 12.5f, -22f), new Vector3(1f, 25f, 6f), magneticMat);
+            Box("Puits 25 m - fond", area, new Vector3(90f, 12.5f, -18.5f), new Vector3(6f, 25f, 1f), wallMat);
+
+            Box("Dalle bleue 1", area, new Vector3(48f, 0.05f, -25f), new Vector3(4f, 0.1f, 4f), magneticMat);
+            Box("Dalle bleue 2", area, new Vector3(48f, 0.05f, -21f), new Vector3(4f, 0.1f, 2f), magneticMat);
+            Box("Plateforme 4 m", area, new Vector3(48f, 2f, -17f), new Vector3(6f, 4f, 4f), platformMat);
+            Box("Plateforme 8 m", area, new Vector3(48f, 4f, -9f), new Vector3(6f, 8f, 4f), platformMat);
+
+            const float top = 6f, angle = 20f;
+            float run = top / Mathf.Tan(angle * Mathf.Deg2Rad);
+            Ramp("Accès au gouffre 20°", area, 52f, 45f - run, angle, top / Mathf.Sin(angle * Mathf.Deg2Rad), 8f, rampMat);
+            Box("Gouffre 30 m - départ", area, new Vector3(52f, top * 0.5f, 50f), new Vector3(8f, top, 10f), platformMat);
+            Box("Gouffre 30 m - bloc flottant", area, new Vector3(71f, 10f, 50f), new Vector3(2f, 2f, 2f), magneticMat);
+            Box("Gouffre 30 m - arrivée (bleue)", area, new Vector3(90f, top * 0.5f, 50f), new Vector3(8f, top, 10f), magneticMat);
+        }
+
+        /// <summary>
+        /// Grande salle fermée de 50 × 50 m et 45 m de haut (x −100..−50, z 0..50), porte de 8 m à l'est. Repères de
+        /// hauteur tous les 10 m sur le mur ouest ; pilier central de 40 m ; corniche à 20 m ; plateforme à 30 m ;
+        /// blocs flottants à 15, 25 et 35 m. Éclairée par des lampes (le toit coupe le soleil).
+        /// </summary>
+        private static void BuildGreatHall(Transform level, Material wallMat, Material platformMat, Material targetMat,
+            Material lineMat)
+        {
+            var hall = new GameObject("Grande salle 45 m").transform;
+            hall.SetParent(level, false);
+            const float x0 = -100f, x1 = -50f, z0 = 0f, z1 = 50f, h = 45f, door = 8f, doorH = 8f;
+            float cx = (x0 + x1) * 0.5f, cz = (z0 + z1) * 0.5f, size = x1 - x0;
+            Box("Mur ouest", hall, new Vector3(x0 - 0.5f, h * 0.5f, cz), new Vector3(1f, h, size + 2f), wallMat);
+            Box("Mur nord", hall, new Vector3(cx, h * 0.5f, z1 + 0.5f), new Vector3(size + 2f, h, 1f), wallMat);
+            Box("Mur sud", hall, new Vector3(cx, h * 0.5f, z0 - 0.5f), new Vector3(size + 2f, h, 1f), wallMat);
+            float doorZ0 = cz - door * 0.5f, doorZ1 = cz + door * 0.5f;
+            Box("Mur est (sud)", hall, new Vector3(x1 + 0.5f, h * 0.5f, (z0 + doorZ0) * 0.5f), new Vector3(1f, h, doorZ0 - z0), wallMat);
+            Box("Mur est (nord)", hall, new Vector3(x1 + 0.5f, h * 0.5f, (doorZ1 + z1) * 0.5f), new Vector3(1f, h, z1 - doorZ1), wallMat);
+            Box("Mur est (au-dessus de la porte)", hall, new Vector3(x1 + 0.5f, (doorH + h) * 0.5f, cz), new Vector3(1f, h - doorH, door), wallMat);
+            Box("Toit à 45 m", hall, new Vector3(cx, h + 0.5f, cz), new Vector3(size + 2f, 1f, size + 2f), wallMat);
+
+            for (int y = 10; y < h; y += 10)
+                Box($"Repère {y} m", hall, new Vector3(x0 + 0.03f, y, cz), new Vector3(0.06f, 0.3f, size), lineMat, collider: false);
+
+            Box("Pilier central 40 m", hall, new Vector3(cx, 20f, cz), new Vector3(3f, 40f, 3f), platformMat);
+            Box("Corniche à 20 m", hall, new Vector3(x0 + 3f, 19.5f, cz), new Vector3(6f, 1f, 12f), platformMat);
+            Box("Plateforme à 30 m", hall, new Vector3(cx, 29.5f, z1 - 4f), new Vector3(8f, 1f, 8f), platformMat);
+            Box("Bloc flottant 15 m", hall, new Vector3(x0 + 12f, 15f, z0 + 12f), new Vector3(2f, 2f, 2f), targetMat);
+            Box("Bloc flottant 25 m", hall, new Vector3(x1 - 12f, 25f, z0 + 14f), new Vector3(2f, 2f, 2f), targetMat);
+            Box("Bloc flottant 35 m", hall, new Vector3(x0 + 12f, 35f, z1 - 12f), new Vector3(2f, 2f, 2f), targetMat);
+
+            foreach (Vector3 p in new[] { new Vector3(cx - 15f, 40f, cz - 15f), new Vector3(cx + 15f, 40f, cz - 15f),
+                         new Vector3(cx - 15f, 40f, cz + 15f), new Vector3(cx + 15f, 40f, cz + 15f), new Vector3(cx, 12f, cz - 12f) })
+            {
+                var lamp = new GameObject($"Lampe ({p.x}, {p.y}, {p.z})");
+                lamp.transform.SetParent(hall, false);
+                lamp.transform.localPosition = p;
+                var light = lamp.AddComponent<Light>();
+                light.type = LightType.Point;
+                light.range = 45f;
+                light.intensity = 6f;
+                light.color = new Color(1f, 0.9f, 0.75f);
+                light.shadows = LightShadows.None;
+            }
+        }
+
         private static void Ramp(string name, Transform parent, float x, float zBottom, float angle, float length,
             float width, Material mat)
         {
@@ -482,6 +631,21 @@ namespace ItHunts.EditorTools
             {
                 Shader shader = Shader.Find("Universal Render Pipeline/Lit");
                 mat = new Material(shader) { name = name };
+                AssetDatabase.CreateAsset(mat, path);
+            }
+
+            mat.SetColor("_BaseColor", color);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        private static Material UnlitMat(string name, string shaderName, Color color)
+        {
+            string path = $"{MaterialDir}/{name}.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find(shaderName)) { name = name };
                 AssetDatabase.CreateAsset(mat, path);
             }
 

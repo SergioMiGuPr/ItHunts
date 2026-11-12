@@ -24,6 +24,8 @@ namespace ItHunts.Input
         private InputAction _jump;
         private InputAction _slide;
         private InputAction _dash;
+        private InputAction _attract;
+        private InputAction _repel;
         private InputAction _toggleDebug;
         private InputAction _pause;
 
@@ -39,6 +41,9 @@ namespace ItHunts.Input
         public int JumpPressedTick { get; private set; } = MovementState.NeverTick;
         public bool SlideHeld { get; private set; }
         public int DashPressedTick { get; private set; } = MovementState.NeverTick;
+        public int AttractPressedTick { get; private set; } = MovementState.NeverTick;
+        public bool AttractHeld { get; private set; }
+        public int RepelPressedTick { get; private set; } = MovementState.NeverTick;
         public bool ToggleDebugPressed { get; private set; }
         public bool PausePressed { get; private set; }
 
@@ -57,6 +62,8 @@ namespace ItHunts.Input
             _jump = actions.FindAction("Player/Jump", throwIfNotFound: true);
             _slide = actions.FindAction("Player/Slide", throwIfNotFound: true);
             _dash = actions.FindAction("Player/Dash", throwIfNotFound: true);
+            _attract = actions.FindAction("Player/Attract", throwIfNotFound: true);
+            _repel = actions.FindAction("Player/Repel", throwIfNotFound: true);
             _toggleDebug = actions.FindAction("Player/ToggleDebug", throwIfNotFound: true);
             _pause = actions.FindAction("Player/Pause", throwIfNotFound: true);
         }
@@ -72,6 +79,13 @@ namespace ItHunts.Input
             SlideHeld = _slide.IsPressed();
             if (_dash.WasPressedThisFrame())
                 DashPressedTick = _motor != null ? _motor.NextTick : 0;
+            // Souris libre (clic pour la reprendre) : le clic ne déclenche pas l'orbe.
+            bool aimReady = UsingGamepad || Cursor.lockState == CursorLockMode.Locked;
+            if (_attract.WasPressedThisFrame() && aimReady)
+                AttractPressedTick = _motor != null ? _motor.NextTick : 0;
+            AttractHeld = _attract.IsPressed() && aimReady;
+            if (_repel.WasPressedThisFrame() && aimReady)
+                RepelPressedTick = _motor != null ? _motor.NextTick : 0;
             ToggleDebugPressed = _toggleDebug.WasPressedThisFrame();
             PausePressed = _pause.WasPressedThisFrame();
         }

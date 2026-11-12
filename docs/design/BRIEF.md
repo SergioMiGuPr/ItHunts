@@ -44,7 +44,7 @@ monstre géant et intuable qu'on ne peut que fuir, jusqu'à la zone finale où o
 
 | Orbe | Mode 1 | Mode 2 | Couleurs |
 |---|---|---|---|
-| Magnétisme | S'attirer vers un mur ou le sol visé (impulsion unique) | S'en repousser (propulsion) ; l'onde bouscule les ennemis, qui prennent des dégâts s'ils percutent un mur | 2 couleurs, une par mode |
+| Magnétisme | Se tracter en ligne droite vers n'importe quelle surface visée (bouton maintenu, D-021) | S'en repousser (propulsion) ; l'onde bouscule les ennemis, qui prennent des dégâts s'ils percutent un mur | 2 couleurs, une par mode |
 | Télékinésie | Attraper un objet, un petit ennemi ou un projectile | Lancer ce qu'on tient | 2 couleurs, une par mode |
 
 ## Réponses aux questions (2026-11-11)

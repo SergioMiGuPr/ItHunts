@@ -152,6 +152,9 @@ jusqu'à l'étape 10.
 4. **Orbe de télékinésie** : attraper et lancer des objets physiques ; objets interactifs qui
    brillent ; échange entre les deux orbes.
 5. **Vue FPS et HUD** : mains et orbes, couleurs par mode, endurance, recharges, debug.
+5 bis. **Artefacts** : système générique (1 artefact tiré au hasard par joueur et par run, pas de
+   doublon en coop, un emplacement en main gauche), puis le **barillet** comme premier artefact
+   (`docs/design/features/artefacts/design.md`). Avant ou avec les ennemis et les vagues.
 6. **Ennemis et vagues** dans une arène test ; dégâts des objets lancés.
 7. **Âmes et économie** : collecte autour des orbes, coffre, marchand, salle verrouillée,
    premières améliorations.

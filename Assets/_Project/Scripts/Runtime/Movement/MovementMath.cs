@@ -193,6 +193,43 @@ namespace ItHunts.Movement
             return extra <= 0f ? exit : exit + extra / (dt * (ticks + 1) * 0.5f);
         }
 
+        /// <summary>
+        /// Traction du magnétisme : toute la vitesse est redirigée vers dir (ligne droite) et ne baisse jamais ;
+        /// sous tractionSpeed, elle monte de acceleration·dt. Quand dir monte, la vitesse vers le bas (chute) n'est
+        /// pas comptée. Aucun plafond des gains (exception à movementGainCap).
+        /// </summary>
+        public static Vector3 TractionVelocity(Vector3 velocity, Vector3 dir, float acceleration, float tractionSpeed, float dt)
+        {
+            if (dir.y > 0f && velocity.y < 0f)
+                velocity.y = 0f;
+            float speed = velocity.magnitude;
+            float target = speed >= tractionSpeed ? speed : Mathf.Min(speed + acceleration * dt, tractionSpeed);
+            return dir * target;
+        }
+
+        /// <summary>
+        /// Répulsion du magnétisme : impulsion ajoutée dans dir. La vitesse horizontale ne baisse jamais (au pire elle
+        /// est conservée et redirigée) ; son gain suit le plafond commun des gains. Quand dir monte, la chute est
+        /// d'abord annulée.
+        /// </summary>
+        public static Vector3 RepelVelocity(Vector3 velocity, Vector3 dir, float impulse, float gainCap)
+        {
+            if (dir.y > 0f && velocity.y < 0f)
+                velocity.y = 0f;
+            var before = new Vector3(velocity.x, 0f, velocity.z);
+            float speedBefore = before.magnitude;
+            Vector3 raw = velocity + dir * impulse;
+            var h = new Vector3(raw.x, 0f, raw.z);
+            float speedRaw = h.magnitude;
+            float target = speedRaw > speedBefore
+                ? Mathf.Min(speedRaw, CappedGain(speedBefore, speedRaw - speedBefore, gainCap))
+                : speedBefore;
+            Vector3 hDir = speedRaw > 1e-4f ? h / speedRaw
+                : speedBefore > 1e-4f ? before / speedBefore
+                : Vector3.zero;
+            return hDir * target + Vector3.up * raw.y;
+        }
+
         /// <summary>Plafonne la vitesse horizontale (plafond de sécurité).</summary>
         public static Vector3 ClampHorizontal(Vector3 velocity, float maxSpeed)
         {

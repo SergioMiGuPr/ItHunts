@@ -1,6 +1,6 @@
 # ItHunts — Game Design Document
 
-**Version:** 0.9 · **Updated:** 2026-11-11 · [Features](#feature-index) · [Decisions](#decisions) · [Change log](#change-log)
+**Version:** 0.12 · **Updated:** 2026-11-12 · [Features](#feature-index) · [Decisions](#decisions) · [Change log](#change-log)
 
 ## Résumé
 
@@ -55,7 +55,8 @@ bouger → trouver objets / ennemis → lancer, tuer → âmes → coffres, marc
 | Feature | Status | Scope | Summary | Docs |
 |---|---|---|---|---|
 | Mouvement | implemented | MVP | Course, saut tolérant, glissade (accélère en pente), wall slide et wall jump, bunny hop façon Source, dash ; charges de mouvement partagées (saut en l'air, dash, magnétisme) | [design](features/mouvement/design.md) |
-| Orbes | designed | MVP | Magnétisme (attirer / repousser, sur les charges de mouvement) et télékinésie (attraper / lancer, sur sa propre endurance), échange instantané | [design](features/orbes/design.md) |
+| Orbes | in progress | MVP | Magnétisme (traction continue sur 3 charges d'attraction / répulsion unique, sur toute surface) et télékinésie (attraper / lancer, sur sa propre endurance), échange instantané | [design](features/orbes/design.md) |
+| Artefacts | designed | MVP | 1 artefact tiré au hasard par joueur et par run (pas de doublon en coop), en main gauche ; premier : le barillet (6 munitions, projectiles) | [design](features/artefacts/design.md) |
 | Boss traqueur | designed | MVP | Monstre géant intuable qui rôde, tue en un coup, plus rapide que la course ; enragé après le timer | [design](features/boss-traqueur/design.md) |
 | Zones et timer | idea | MVP | Arènes faites main tirées au hasard et reliées ; timer de 20 min ; sortie anticipée | — |
 | Ennemis zone 1 | idea | MVP | Goule (rampe, bondit, grimpe aux murs ; attrapable étourdie) et petit volant attrapable | — |
@@ -78,12 +79,15 @@ Suivent l'ordre de travail de CLAUDE.md ; chaque jalon se termine par un playtes
 2. **M2, orbes :** magnétisme puis télékinésie, endurance, échange · fini quand : on atteint une
    plateforme hors de portée de saut avec l'attraction, et on tue un ennemi factice avec une
    caisse.
-3. **M3, premier prototype de zone :** une seule zone, **une goule et le traqueur**, timer de
+3. **M2 bis, artefacts :** système générique (tirage au hasard, pas de doublon en coop, emplacement en
+   main gauche), puis le barillet · fini quand : on tue un ennemi factice au barillet quand il ne reste
+   rien à lancer.
+4. **M3, premier prototype de zone :** une seule zone, **une goule et le traqueur**, timer de
    test de 4 min, sortie · fini quand : on tue la goule avec l'environnement et on atteint la
    sortie en échappant au traqueur.
-4. **M3 bis, boucle d'une zone :** vagues, âmes, coffre, marchand, améliorations · fini quand :
+5. **M3 bis, boucle d'une zone :** vagues, âmes, coffre, marchand, améliorations · fini quand :
    une zone de 3 arènes se joue du début à la sortie.
-5. **M4, run complète,** puis écran partagé, direction artistique, coop en ligne, build.
+6. **M4, run complète,** puis écran partagé, direction artistique, coop en ligne, build.
 
 ## Direction
 
@@ -102,7 +106,7 @@ Suivent l'ordre de travail de CLAUDE.md ; chaque jalon se termine par un playtes
 | D-002 | 2026-11-11 | Le boss est un traqueur unique, intuable avant la zone finale, qui tue en un coup | boss par zone ; boss qu'on étourdit | choix de l'utilisateur : la fuite par le mouvement est le cœur du jeu | [boss](features/boss-traqueur/design.md), [mouvement](features/mouvement/design.md) |
 | D-003 | 2026-11-11 | Zones de farm avec timer de 20 min et sortie anticipée, au lieu d'une suite de salles fixe | salles enchaînées ; grande zone ouverte | risque contre butin, et place pour que le boss rôde | zones et timer |
 | D-004 | 2026-11-11 | Les orbes ne font pas de dégâts directs → superseded by D-008 | petit tir de base ; dégâts au contact | « l'arène est l'arme » | [orbes](features/orbes/design.md) |
-| D-005 | 2026-11-11 | Attraction = impulsion unique, sur surfaces seulement | grappin maintenu ; cible ennemi | se combine avec le bunny hop sans l'éclipser ; simple à prédire en réseau | [orbes](features/orbes/design.md) |
+| D-005 | 2026-11-11 | Attraction = impulsion unique, sur surfaces seulement → superseded by D-021 | grappin maintenu ; cible ennemi | se combine avec le bunny hop sans l'éclipser ; simple à prédire en réseau | [orbes](features/orbes/design.md) |
 | D-006 | 2026-11-11 | Méta-progression par déblocages, sans bonus chiffrés | petits bonus permanents ; rien | équité en coop entre joueurs de niveaux différents | méta-progression |
 | D-007 | 2026-11-11 | Coop : âmes et améliorations individuelles ; non réanimé = retour à la zone suivante | âmes partagées ; mort jusqu'à la zone suivante sans réanimation | choix de l'utilisateur | coop en ligne |
 | D-008 | 2026-11-11 | Pas de dégâts directs de base ; des améliorations peuvent en ajouter aux orbes et aux objets lancés, en plus de l'environnement. Boss final tué par l'environnement | aucun dégât direct jamais (D-004) | validation du GDD : plus de variété de builds | [orbes](features/orbes/design.md), améliorations, combat final |
@@ -110,13 +114,16 @@ Suivent l'ordre de travail de CLAUDE.md ; chaque jalon se termine par un playtes
 | D-010 | 2026-11-11 | La glissade ne coûte pas d'endurance ; durée de zone réglable (4 min en test) | glissade payante ; 20 min fixes | validation du GDD : l'endurance reste aux orbes ; tests rapides | [mouvement](features/mouvement/design.md), [boss](features/boss-traqueur/design.md) |
 | D-011 | 2026-11-11 | Premier prototype de zone : une zone, une goule, le traqueur | zone complète d'emblée | valider la tension de la traque avant le reste | jalon M3 |
 | D-012 | 2026-11-11 | Mouvement façon Deadlock : contrôle aérien (W seul), auto-bunny hop, 2 sauts (réglable), pas de plafond bas de vitesse (sécurité à 50 m/s) ; la limite vient du nombre de sauts | Source pur ; plafond doux à 25 m/s | playtest de l'étape 1 : W en l'air partait de côté au lieu de suivre la caméra | [mouvement](features/mouvement/design.md) |
-| D-014 | 2026-11-12 | Le contrôle aérien ne s'applique pas au-delà de 100° entre la caméra et la trajectoire | contrôle aérien plus long coupé après un wall jump ; ne rien changer | Play Mode : tenir W face au mur ramenait sur le mur après un wall jump | [mouvement](features/mouvement/design.md) |
-| D-015 | 2026-11-12 | Charges de mouvement (3 par défaut) partagées par le saut en l'air, le dash et le magnétisme ; la télékinésie garde sa propre endurance | deux barres séparées ; une seule barre pour tout | un seul budget pour toute la mobilité : lisible, et limite l'écart de vitesse avec le traqueur ; le combat (télékinésie) ne prive jamais de mobilité | [mouvement](features/mouvement/design.md), [orbes](features/orbes/design.md) |
-| D-019 | 2026-11-12 | Le bonus de glissade (+2 m/s) entre dans le plafond commun des gains (20 m/s) | bonus toujours ajouté | cohérence : un seul plafond pour tous les gains de mouvement | [mouvement](features/mouvement/design.md) |
-| D-018 | 2026-11-12 | Dash progressif sur 0.3 s (pic 30 m/s à l'arrêt), +1 m/s au sol, aucun gain en l'air (vitesse redirigée), dash-jump au sol +3 m/s (fenêtre 0.15 s), plafond commun des gains à 20 m/s (remplace celui du wall jump) | plateau constant plus bas et plus long (21.7 m/s) | playtest : pic à 35 m/s puis marche à 12 m/s jugée bizarre ; besoin d'une technique de timing au sol | [mouvement](features/mouvement/design.md) |
-| D-017 | 2026-11-12 | Dash avec durée (0.18 s, 6.5 m, ni friction ni gravité), sortie à max(vitesse d'avant, 12 m/s), appui mémorisé 0.3 s ; gain du wall jump plafonné à 20 m/s ; HUD des charges sous le viseur | dash instantané à 14 m/s | playtest et mesures : retombée à 7.5 m/s en 0.2 s, 4.2 m seulement, aucun effet à 20 m/s en l'air, 1 dash sur 3 avec des appuis à 0.05 s ; montée trop rapide dans la cheminée | [mouvement](features/mouvement/design.md) |
-| D-016 | 2026-11-12 | Murs façon Deadlock : wall jump à 1.8 m, impulsion ajoutée à la vitesse, direction mi-normale mi-avant, jamais moins vite qu'avant (+1 m/s) ; wall slide sans perte, actif en longeant le mur, effet wall run ; le mur recharge les sauts, pas les charges | wall jump perpendiculaire au mur (1.05 m) ; wall slide seulement en poussant | playtest : wall jump trop bas et de côté, perte de vitesse le long du mur (mesurée : 15 → 7.5 m/s sans détection, −8 %/s caméra vers le mur) | [mouvement](features/mouvement/design.md) |
 | D-013 | 2026-11-11 | Glissade façon Deadlock / Apex : élan conservé à 100 % à l'entrée, décélération constante (3 m/s²), vitesse minimale de 5 m/s sous un obstacle | friction proportionnelle à la vitesse (0.5 /s) ; fin de glissade en accroupi sous un plafond | playtest : le bunny hop perdait son élan en glissade, le passage bas finissait accroupi | [mouvement](features/mouvement/design.md) |
+| D-014 | 2026-11-12 | Le contrôle aérien ne s'applique pas au-delà de 100° entre la caméra et la trajectoire | contrôle aérien plus long coupé après un wall jump ; ne rien changer | Play Mode : tenir W face au mur ramenait sur le mur après un wall jump | [mouvement](features/mouvement/design.md) |
+| D-015 | 2026-11-12 | Charges de mouvement (3 par défaut) partagées par le saut en l'air et le dash ; la télékinésie garde sa propre endurance. *Mis à jour par D-021 : le magnétisme n'utilise plus les charges* | deux barres séparées ; une seule barre pour tout | un seul budget pour toute la mobilité : lisible, et limite l'écart de vitesse avec le traqueur ; le combat (télékinésie) ne prive jamais de mobilité | [mouvement](features/mouvement/design.md), [orbes](features/orbes/design.md) |
+| D-016 | 2026-11-12 | Murs façon Deadlock : wall jump à 1.8 m, impulsion ajoutée à la vitesse, direction mi-normale mi-avant, jamais moins vite qu'avant (+1 m/s) ; wall slide sans perte, actif en longeant le mur, effet wall run ; le mur recharge les sauts, pas les charges | wall jump perpendiculaire au mur (1.05 m) ; wall slide seulement en poussant | playtest : wall jump trop bas et de côté, perte de vitesse le long du mur (mesurée : 15 → 7.5 m/s sans détection, −8 %/s caméra vers le mur) | [mouvement](features/mouvement/design.md) |
+| D-017 | 2026-11-12 | Dash avec durée (0.18 s, 6.5 m, ni friction ni gravité), sortie à max(vitesse d'avant, 12 m/s), appui mémorisé 0.3 s ; gain du wall jump plafonné à 20 m/s ; HUD des charges sous le viseur | dash instantané à 14 m/s | playtest et mesures : retombée à 7.5 m/s en 0.2 s, 4.2 m seulement, aucun effet à 20 m/s en l'air, 1 dash sur 3 avec des appuis à 0.05 s ; montée trop rapide dans la cheminée | [mouvement](features/mouvement/design.md) |
+| D-018 | 2026-11-12 | Dash progressif sur 0.3 s (pic 30 m/s à l'arrêt), +1 m/s au sol, aucun gain en l'air (vitesse redirigée), dash-jump au sol +3 m/s (fenêtre 0.15 s), plafond commun des gains à 20 m/s (remplace celui du wall jump) | plateau constant plus bas et plus long (21.7 m/s) | playtest : pic à 35 m/s puis marche à 12 m/s jugée bizarre ; besoin d'une technique de timing au sol | [mouvement](features/mouvement/design.md) |
+| D-019 | 2026-11-12 | Le bonus de glissade (+2 m/s) entre dans le plafond commun des gains (20 m/s) | bonus toujours ajouté | cohérence : un seul plafond pour tous les gains de mouvement | [mouvement](features/mouvement/design.md) |
+| D-020 | 2026-11-12 | → superseded by D-021. Magnétisme : l'impulsion annule d'abord la part de vitesse qui va dans le sens contraire, puis s'ajoute ; gain horizontal dans le plafond commun des gains (20 m/s, au-delà vitesse conservée et redirigée) ; attraction et répulsion seulement sur les surfaces magnétiques ; clic gauche / RT attire, clic droit / LT repousse | addition pure ; traction continue façon grappin ; pas de plafond ; répulsion sur toute surface ; un bouton + changement de mode | l'attraction marche même en pleine chute ; un seul plafond pour tous les gains ; le level design garde la main ; réagir vite à pleine vitesse | [orbes](features/orbes/design.md) |
+| D-021 | 2026-11-12 | Magnétisme, après playtest : **attraction = traction linéaire continue** (bouton maintenu, ligne droite vers le point fixé au clic, 80 m/s² jusqu'à 30 m/s, portée 60 m, 2.5 s max ; arrêt au relâchement, à l'arrivée, ligne de vue coupée, saut, dash, répulsion ou obstacle), sans gravité ; elle ne réduit jamais la vitesse (plus vite : vitesse gardée et redirigée) et **n'est pas soumise au plafond commun des gains** (exception, seul le plafond de sécurité de 50 m/s reste) ; **répulsion** instantanée (14 m/s, 25 m) dont la vitesse horizontale ne baisse jamais et dont le gain reste dans le plafond commun ; **toute surface** répond ; **aucune charge de mouvement** : **mis à jour après le playtest v2 :** 3 charges d'attraction séparées (1 traction = 1 charge, 1 charge toutes les 3 s, une par une) et une répulsion à charge unique (portée 40 m, recharge 5 s après chaque usage, marquage du point visé et de l'impact), au lieu des recharges de 0.25 s et 0.35 s jugées abusées ; pendant un dash, la vitesse gardée est celle de sortie du dash ; un saut arrête la traction | impulsion unique (D-020) ; charges partagées (D-015) ; surfaces magnétiques seulement ; répulsion sans plafond ; pic du dash gardé | playtest : l'impulsion ne portait pas assez haut ; la traction est l'outil de grande verticalité ; rien ne doit casser l'élan | [orbes](features/orbes/design.md), [mouvement](features/mouvement/design.md) |
+| D-022 | 2026-11-12 | **Artefacts** : au début de chaque run, chaque joueur reçoit 1 artefact tiré au hasard (pas de doublon entre joueurs en coop), porté en main gauche ; il ajoute une mécanique de combat en plus des objets du terrain. Premier artefact : le **barillet** (la main gauche devient un barillet de 6 munitions qui tire des projectiles). Cohérent avec D-008 : de base, les orbes ne font pas de dégâts directs ; artefacts et améliorations en ajoutent | combat seulement par les objets lancés ; arme de base pour tous | une source de dégâts quand il ne reste rien à lancer ; variété d'une run à l'autre ; rôles différents en coop | [artefacts](features/artefacts/design.md) |
 
 ## Open questions
 
@@ -139,8 +146,11 @@ Suivent l'ordre de travail de CLAUDE.md ; chaque jalon se termine par un playtes
 enragée, glissade sans endurance, zone de test de 4 min, premier prototype de zone) ; références.
 **0.3 (2026-11-11):** D-012, mouvement façon Deadlock après le premier playtest ([mouvement](features/mouvement/design.md)).
 **0.4 (2026-11-11):** D-013, glissade qui conserve l'élan ([mouvement](features/mouvement/design.md)).
-**0.9 (2026-11-12):** D-019 ; mouvement de base validé et implémenté ([mouvement](features/mouvement/design.md)).
-**0.8 (2026-11-12):** D-018, dash progressif, gains plafonnés, dash-jump ([mouvement](features/mouvement/design.md)).
-**0.7 (2026-11-12):** D-017, dash v2, plafond du wall jump, HUD des charges ([mouvement](features/mouvement/design.md)).
-**0.6 (2026-11-12):** D-016, murs façon Deadlock ([mouvement](features/mouvement/design.md)).
 **0.5 (2026-11-12):** D-014 (seuil d'angle du contrôle aérien) et D-015 (charges de mouvement partagées, dash) ([mouvement](features/mouvement/design.md), [orbes](features/orbes/design.md)).
+**0.6 (2026-11-12):** D-016, murs façon Deadlock ([mouvement](features/mouvement/design.md)).
+**0.7 (2026-11-12):** D-017, dash v2, plafond du wall jump, HUD des charges ([mouvement](features/mouvement/design.md)).
+**0.8 (2026-11-12):** D-018, dash progressif, gains plafonnés, dash-jump ([mouvement](features/mouvement/design.md)).
+**0.9 (2026-11-12):** D-019 ; mouvement de base validé et implémenté ([mouvement](features/mouvement/design.md)).
+**0.10 (2026-11-12):** D-020, orbe de magnétisme (partie 1 : attraction, répulsion, charges) ([orbes](features/orbes/design.md)) ; décisions et journal remis dans l'ordre.
+**0.11 (2026-11-12):** D-021 : traction continue, toute surface, sans charges ; D-015 mise à jour, D-005 et D-020 remplacées ([orbes](features/orbes/design.md)).
+**0.12 (2026-11-12):** D-021 mise à jour (charges d'attraction, répulsion unique) ; D-022, artefacts et barillet ([artefacts](features/artefacts/design.md)) ; jalon M2 bis.
