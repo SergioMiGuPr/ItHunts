@@ -121,6 +121,8 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
   (`FirstPersonP1` à `P4`, mise par le code).
 - **Contour cel-shading des mains :** un contour en post-process qui lit la profondeur ne les verra pas (elles n'y
   sont pas) ; prévoir un contour par le matériau (coque inversée) ou une passe dédiée à la couche des mains.
+- **Occlusion ambiante :** les mains ne la reçoivent pas (elle est calculée sur le décor, derrière elles) ; leur
+  ombrage doit venir du matériau (ombres en aplats peintes, cel-shading), pas de la SSAO.
 - **Repère d'une main :** origine au **poignet**, doigts vers **+z**, dos de la main vers **+y**. Mesures (m) :
 
   | Pièce | Taille | Position (repère de la main) |
@@ -137,13 +139,29 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
 - **Orbe :** sphère de **Ø 0.08 m**, centre en (0, 0.06, 0.045) dans le repère de la main droite (au-dessus de la
   paume). Prévoir un point d'attache nommé `Orb_Socket` à cet endroit ; l'orbe reste un objet séparé (le jeu change sa
   couleur, HDR, bloom).
+- **Barillet (premier artefact, main gauche, D-032) :** tenu dans la paume gauche, pointé dans le sens des doigts
+  (+z de la main). Repère `Barillet (vue)` en (0, 0.055, 0.05) dans le repère de la main gauche. Mesures (m) :
+
+  | Pièce | Taille | Position (repère du barillet) |
+  |---|---|---|
+  | Corps (tourne d'un cran de 60° à chaque tir, autour de z) | cylindre Ø 0.075 × 0.07 | centre (0, 0, 0) |
+  | 6 chambres (face arrière, vers la caméra) | Ø 0.016, au rayon 0.024 | z −0.037 ; chambre 1 en haut, puis tous les 60° |
+  | Canon | cylindre Ø 0.022 × 0.10 | centre (0, 0.022, 0.085) |
+  | Bouche du canon (départ de la traînée) | — | (0, 0.022, 0.136) |
+
+  **Les munitions se lisent sur les chambres** : une chambre chargée s'allume (couleur HDR orangée, bloom), une vide
+  est noire, et elles sont grisées quand l'orbe tient un objet (barillet inactif). Prévoir dans le modèle : 6
+  chambres **séparées** (le jeu change leur couleur une à une), le corps qui tourne en pièce séparée, un point
+  d'attache `Barrel_Muzzle` au bout du canon, pivot du corps sur son axe. Budget proposé : 3 000 à 5 000 triangles,
+  texture 1024. Recul géré par le code (la main recule de 3.5 cm et se relève de 8° à chaque tir).
 - **Livraison des mains :** `SK_Mains` (bras et mains, squelette avec poignet et doigts), pivot au poignet de chaque
   main, mêmes axes ; budget 15 000 à 20 000 triangles, texture 2048. Les gestes sont faits par le code (positions et
   rotations du poignet, ouverture des doigts) : des animations faites à la main pourront venir plus tard.
 - **HUD :** résolution de référence **1920 × 1080**, échelle 1, marge de sécurité **5 %** ; autour du viseur :
   segments de **22 × 6 px** (écart 4 px, rangées à 6 px, 26 px sous le viseur), anneaux de rayon **8 / 13 / 18 px**,
   épaisseur 2 px ; coins réservés de **240 × 60 px** (âmes en haut à gauche, timer en haut à droite, traqueur enragé
-  sous le timer). Couleurs réservées : § 7.
+  sous le timer) ; munitions du barillet : **6 segments de 8 × 9 px** sous les jauges de l'orbe ; PV du joueur (tir
+  ami, provisoire) : barre de **220 × 10 px** en bas à gauche, cachée quand ils sont pleins. Couleurs réservées : § 7.
 
 ## 6. Budgets proposés (à valider ensemble)
 

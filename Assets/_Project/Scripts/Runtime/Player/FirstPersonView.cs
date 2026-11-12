@@ -64,6 +64,10 @@ namespace ItHunts.Player
         private int _seenRepelTick = MovementState.NeverTick;
         private int _seenActionTick = MovementState.NeverTick;
         private float _gestureStart = float.NegativeInfinity;
+        private ItHunts.Artifacts.ArtifactHolder _artifact;
+        private int _seenShotTick = MovementState.NeverTick;
+        private float _recoilStart = float.NegativeInfinity;
+        private float _inactive;
 
         public FpsViewSettings Settings => settings;
         public Camera OverlayCamera => overlayCamera;
@@ -90,6 +94,7 @@ namespace ItHunts.Player
         {
             _motor = GetComponent<PlayerMotor>();
             _look = GetComponent<PlayerLook>();
+            _artifact = GetComponent<ItHunts.Artifacts.ArtifactHolder>();
             var playerInput = GetComponent<PlayerInput>();
             _mainCamera = playerInput != null ? playerInput.camera : null;
             _playerIndex = playerInput != null ? Mathf.Max(0, playerInput.playerIndex) : 0;
@@ -167,26 +172,27 @@ namespace ItHunts.Player
         /// Point du monde où la caméra du monde voit l'orbe à la même place que la caméra des mains (les deux n'ont pas le
         /// même champ de vision) : départ des traits de traction et de télékinésie.
         /// </summary>
-        public Vector3 LineStart
-        {
-            get
-            {
-                if (orb == null)
-                    return transform.position;
-                if (_mainCamera == null || settings == null)
-                    return orb.position;
-                if (overlayCamera != null && overlayCamera.enabled)
-                {
-                    Vector3 vp = overlayCamera.WorldToViewportPoint(orb.position);
-                    return _mainCamera.ViewportToWorldPoint(new Vector3(vp.x, vp.y, Mathf.Max(vp.z, _mainCamera.nearClipPlane + 0.01f)));
-                }
+        public Vector3 LineStart => orb != null ? ViewToWorld(orb.position) : transform.position;
 
-                // Option 2 : l'orbe est dessinée à viewmodelFov ; même direction à l'écran pour la caméra du monde.
-                Transform cam = _mainCamera.transform;
-                Vector3 local = cam.InverseTransformPoint(orb.position);
-                float k = Mathf.Tan(_mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) / Mathf.Tan(settings.viewmodelFov * 0.5f * Mathf.Deg2Rad);
-                return cam.TransformPoint(new Vector3(local.x * k, local.y * k, local.z));
+        /// <summary>
+        /// Point du monde que la caméra du monde voit à la même place qu'un point des mains (dessiné à viewmodelFov) :
+        /// départ des traits de l'orbe, de la traînée du barillet.
+        /// </summary>
+        public Vector3 ViewToWorld(Vector3 viewmodelPoint)
+        {
+            if (_mainCamera == null || settings == null)
+                return viewmodelPoint;
+            if (overlayCamera != null && overlayCamera.enabled)
+            {
+                Vector3 vp = overlayCamera.WorldToViewportPoint(viewmodelPoint);
+                return _mainCamera.ViewportToWorldPoint(new Vector3(vp.x, vp.y, Mathf.Max(vp.z, _mainCamera.nearClipPlane + 0.01f)));
             }
+
+            // Option 2 : les mains sont dessinées à viewmodelFov ; même direction à l'écran pour la caméra du monde.
+            Transform cam = _mainCamera.transform;
+            Vector3 local = cam.InverseTransformPoint(viewmodelPoint);
+            float k = Mathf.Tan(_mainCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) / Mathf.Tan(settings.viewmodelFov * 0.5f * Mathf.Deg2Rad);
+            return cam.TransformPoint(new Vector3(local.x * k, local.y * k, local.z));
         }
 
         private void LateUpdate()
@@ -313,12 +319,39 @@ namespace ItHunts.Player
             if (rightFingers != null)
                 rightFingers.localRotation = Quaternion.Euler(_rightCurl, 0f, 0f);
 
-            // Main gauche : visible au repos (l'artefact viendra à l'étape 5 bis).
-            _leftCurl = Mathf.Lerp(_leftCurl, 30f, kp);
+            // Main gauche : tient l'artefact (D-032). Recul à chaque tir (sans lissage, sans l'intensité) ; un peu abaissée
+            // quand le barillet est inactif (l'orbe tient un objet).
+            Vector3 leftOffset = Vector3.zero, leftEuler = Vector3.zero;
+            float leftCurl = 30f;
+            ItHunts.Settings.BarrelSettings barrel = _artifact != null ? _artifact.BarrelSettings : null;
+            if (barrel != null)
+            {
+                leftCurl = 70f;                                          // doigts refermés sur la poignée
+                ItHunts.Artifacts.BarrelState b = _artifact.Barrel;
+                if (b.LastShotTick != MovementState.NeverTick && b.LastShotTick != _seenShotTick)
+                {
+                    _seenShotTick = b.LastShotTick;
+                    _recoilStart = Time.time;
+                }
+
+                float r = (Time.time - _recoilStart) / barrel.recoilDuration;
+                if (r < 1f)
+                {
+                    float kick = ViewmodelMotion.Punch(r);
+                    leftOffset += new Vector3(0f, 0.01f, -barrel.recoilKick) * kick;
+                    leftEuler += new Vector3(-barrel.recoilPitch, 0f, 0f) * kick;
+                }
+
+                _inactive = Mathf.Lerp(_inactive, b.Inactive ? 1f : 0f, kp);
+                leftOffset += new Vector3(-0.01f, -0.04f, -0.02f) * _inactive;
+                leftEuler += new Vector3(15f, 0f, 0f) * _inactive;
+            }
+
+            _leftCurl = Mathf.Lerp(_leftCurl, leftCurl, kp);
             if (leftHand != null)
             {
-                leftHand.localPosition = settings.leftHandRest;
-                leftHand.localRotation = Quaternion.Euler(settings.leftHandRestEuler);
+                leftHand.localPosition = settings.leftHandRest + leftOffset;
+                leftHand.localRotation = Quaternion.Euler(settings.leftHandRestEuler + leftEuler);
             }
 
             if (leftFingers != null)

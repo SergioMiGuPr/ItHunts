@@ -45,6 +45,17 @@ namespace ItHunts.Settings
         [Min(0.01f)] public float returnBlinkDuration = 0.2f;
         [Min(1f)] public float returnBlinkBrightness = 1.8f;
 
+        [Header("Artefact (barillet, D-032) : munitions sous les jauges de l'orbe")]
+        [Min(1f)] public float ammoSegmentWidth = 8f;
+        public Color ammoColor = new Color(1f, 0.75f, 0.35f, 0.95f);
+        [Tooltip("Munitions quand le barillet est inactif (l'orbe tient un objet).")]
+        public Color ammoInactiveColor = new Color(0.6f, 0.6f, 0.6f, 0.6f);
+
+        [Header("PV du joueur (tir ami, provisoire) : coin bas gauche, cachés quand ils sont pleins")]
+        public Vector2 playerHealthSize = new Vector2(220f, 10f);
+        public Color playerHealthColor = new Color(0.9f, 0.25f, 0.25f, 0.95f);
+        public Color friendlyHitColor = new Color(1f, 0.45f, 0.85f, 1f);
+
         [Header("Chiffres de dégâts, barres de PV, durabilité")]
         [Min(6)] public int damageFontMin = 18;
         [Min(6)] public int damageFontMax = 40;

@@ -187,6 +187,54 @@ namespace ItHunts.Audio
             return Normalize(s, 0.7f);
         }
 
+        /// <summary>Tir du barillet (D-032) : claquement (bruit très bref) et coup grave (90 → 45 Hz).</summary>
+        public static float[] BarrelShot()
+        {
+            float duration = 0.22f;
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(53);
+            float phase = 0f, low = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float noise = (float)(rng.NextDouble() * 2.0 - 1.0);
+                low += (noise - low) * 0.3f;
+                phase += 2f * Mathf.PI * Mathf.Lerp(90f, 45f, t / duration) / SampleRate;
+                s[i] = noise * Mathf.Exp(-t * 90f) + 0.8f * low * Mathf.Exp(-t * 25f) + 0.9f * Mathf.Sin(phase) * Mathf.Exp(-t * 20f);
+            }
+
+            return Normalize(s, 0.9f);
+        }
+
+        /// <summary>Début du rechargement : deux cliquetis métalliques.</summary>
+        public static float[] BarrelReloadStart() => Clicks(new[] { 0f, 0.09f }, 2600f, 0.2f);
+
+        /// <summary>Fin du rechargement : cliquetis plus grave et net (barillet refermé).</summary>
+        public static float[] BarrelReloadDone() => Clicks(new[] { 0f }, 1700f, 0.12f);
+
+        private static float[] Clicks(float[] at, float frequency, float duration)
+        {
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(61);
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float x = 0f;
+                foreach (float start in at)
+                {
+                    float u = t - start;
+                    if (u < 0f)
+                        continue;
+                    float env = Mathf.Exp(-u * 140f);
+                    x += env * (Mathf.Sin(2f * Mathf.PI * frequency * u) + 0.5f * (float)(rng.NextDouble() * 2.0 - 1.0));
+                }
+
+                s[i] = x;
+            }
+
+            return Normalize(s, 0.7f);
+        }
+
         public static AudioClip ToClip(string name, float[] samples)
         {
             var clip = AudioClip.Create(name, samples.Length, 1, SampleRate, false);

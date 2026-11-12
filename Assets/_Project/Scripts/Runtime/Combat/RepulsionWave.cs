@@ -53,6 +53,7 @@ namespace ItHunts.Combat
                 if (g.Anchored)
                 {
                     g.Unanchor();                                    // décroché : il tombe droit (lustre sur un ennemi)
+                    g.SetOwner(ItHunts.Player.PlayerHealth.IdOf(owner));
                     pushed++;
                     continue;
                 }
@@ -60,7 +61,7 @@ namespace ItHunts.Combat
                 if (g.Body.isKinematic)
                     continue;
                 g.Body.linearVelocity += AreaEffects.WavePushDirection(eye, g.Body.worldCenterOfMass, cfg) * speed;
-                g.MarkPushed(Time.time);                             // dangereux un court moment (D-031)
+                g.MarkPushed(Time.time, ItHunts.Player.PlayerHealth.IdOf(owner));                             // dangereux un court moment (D-031)
                 pushed++;
             }
 
@@ -120,6 +121,7 @@ namespace ItHunts.Combat
                 if (g.Anchored)
                 {
                     g.Unanchor();                                    // le lustre reste décrochable pendant le maintien
+                    g.SetOwner(ItHunts.Player.PlayerHealth.IdOf(owner));
                     pushed++;
                     continue;
                 }
@@ -131,7 +133,7 @@ namespace ItHunts.Combat
                 if (dv <= 0f)
                     continue;
                 g.Body.linearVelocity += aimDir * dv;
-                g.MarkPushed(Time.time);
+                g.MarkPushed(Time.time, ItHunts.Player.PlayerHealth.IdOf(owner));
                 pushed++;
             }
 

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
-  m_Name: "ItHunts Mains : mains \xE0 60\xB0"
+  m_Name: 'ItHunts Mains : mains'
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.RenderObjects
   m_Active: 1
   settings:
@@ -155,3 +155,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Player.FirstPersonDepthClearFeature
   m_Active: 1
   passEvent: 500
+  handsReceiveAmbientOcclusion: 0

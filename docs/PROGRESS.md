@@ -4,7 +4,7 @@
 
 ## Étape en cours
 
-**4 — Télékinésie, une seule orbe, dégâts** (D-023, D-024, D-025, D-026).
+**4 — Télékinésie, une seule orbe, dégâts** (D-023 à D-027) — terminée.
 
 1. **Cœur et orbe unique** — **fait et validé en playtest** (2026-11-12), commit `5a8d454`. Retour : la prise à
    distance en mouvement était trop dure → aide à la visée.
@@ -37,10 +37,28 @@
 - Répulsion façon aimant (D-029) : cône de 14 m, onde de choc à l'appui, poussée continue au maintien (0.8 s).
 - Prise des ennemis étourdis (D-030), dégâts contre un mur d'un ennemi repoussé (5 PV/m/s au-delà de 6, 40 au plus)
   et objets repoussés qui blessent (×0.5, sans zone) (D-031).
-- 243 tests (1 non concluant à dessein).
+- 243 tests (1 non concluant à dessein). Commits `ba228b1` et `ce89ec8`, poussés sur `main`.
+- Après coup : `0b23a0d` (poussé) rétablit trois réglages URP modifiés par le build sans le vouloir
+  (préfiltres de shaders de `PC_RPAsset`, liste de `UniversalRenderPipelineGlobalSettings`, deux références mortes de
+  `DefaultVolumeProfile`) et prévient la branche `art` dans ART-HANDOFF ; occlusion ambiante coupée pour les mains
+  (taches sombres 21.9 % → 0.1 % des pixels des mains), validée en playtest.
 
-**Prochaine étape : 5 bis, artefacts** (système générique, puis le barillet) — plan envoyé, en attente de la réponse
-de l'utilisateur avant de coder.
+**5 bis — Artefacts** (D-032) — **fait et validé en playtest** (2026-11-12) ; commit et push sur `main`.
+- Système générique : un asset par artefact, pool `ArtifactPool_Default`, `RunState` (seed de la run) dans la scène,
+  tirage sans doublon tant que le pool suffit, puis nouveau tour (validé).
+- Barillet (`Barrel_Default`) : clic gauche / RT sans objet, tir instantané depuis les yeux (60 m), 6 coups, 12 dégâts,
+  0.25 s, rechargement 1.2 s automatique ou R / Y ; inactif et rechargement annulé quand l'orbe tient un objet ; tir et
+  lancer jamais au même tick ; munitions sur les chambres du barillet et sous le viseur ; traqueur insensible.
+- Tir ami (`Coop_Default`, désactivé) : balles, objets lancés et repoussés ; jamais soi-même ; PV du joueur
+  provisoires (`PlayerHealth_Default`, 100, réapparition). Découvert : Unity n'envoie pas `OnCollisionEnter` à un
+  objet qui percute un `CharacterController` → contact testé à la main (`ImpactDamager.FixedUpdate`).
+- Mesuré en Play Mode : temps pour tuer 2.95 s (9 balles), cadence 0.250 s, 100 % de touches à 10 / 30 / 60 m à l'arrêt
+  et en bunny hop à 18 m/s (écart vu / balle 10 cm en moyenne), coût 0.015 ms par image. Pas de tir au sud de la zone
+  Télékinésie (cibles à 10, 30 et 60 m). 255 tests (1 non concluant à dessein). Checklist :
+  `docs/design/features/artefacts/testing.md`.
+
+**Prochaine étape : 6, ennemis et vagues, avec le traqueur** (voir CLAUDE.md : rôde, tue en un coup, enragé à la fin
+du timer, intuable).
 
 **Note pour plus tard (lustre) :** le lustre doit pouvoir tomber **à distance** — traction sèche, objet
 lancé dessus, ou chaîne visée — pour s'en servir contre les ennemis et contre le boss final (combat
@@ -51,9 +69,10 @@ L'étape 3 (orbe de magnétisme) est **terminée et validée en playtest** (2026
 ## Feuille de route
 
 Ordre de CLAUDE.md, une étape validée en playtest avant la suivante :
-3. Magnétisme (fait) → **4. Télékinésie, une seule orbe, dégâts** → 5. Vue FPS et HUD →
-**5 bis. Artefacts** (système générique : tirage au hasard, pas de doublon en coop, main gauche ; puis
-le barillet, D-022 ; avant ou avec les ennemis) → 6. Ennemis et vagues → 7. Âmes et économie →
+3. Magnétisme (fait) → 4. Télékinésie, une seule orbe, dégâts (fait) → 5. Vue FPS et HUD (fait) →
+**5 bis. Artefacts** (fait, playtest en attente, D-032) → **6. Ennemis et vagues, avec le traqueur** (rôde, tue en un
+coup, enragé à la fin du timer, intuable : exclu de la répulsion, de l'étourdissement, des dégâts de zone, des balles
+et de la prise) → 7. Âmes et économie →
 8. Run complète → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
 ci-dessous) → 11. Coop en ligne → 12. Build.
 
@@ -187,12 +206,29 @@ Télékinésie et orbe unique validées le 2026-11-12 (D-024 à D-027), `Telekin
   - dégâts d'un ennemi lancé : 176 pour 80 kg à 30 m/s (un factice de 100 PV meurt, sa cible aussi) ;
   - plafond du bonus de vitesse au lancer (20 m/s) ;
   - force de la répulsion (22 m/s, 35 m/s², 14 m) ;
-  - vitesse de la traction (30 m/s), peut-être à augmenter ; à régler avec la vitesse du traqueur, car la traction n'a
-    pas de plafond.
-- **À vérifier au prochain playtest :** dégâts contre un mur d'un ennemi repoussé (40 PV au plus, une fois par impact) ;
-  objets repoussés qui blessent (×0.5, 1 s, sous 6 m/s inoffensifs) ; rendu des mains par la passe de rendu.
-- **Tir ami en coop :** pas encore de réglage ; aujourd'hui, les objets ne blessent jamais un joueur (étape 11).
-- **Occlusion ambiante (SSAO) sur les mains :** légères taches sombres (calculée sans les mains) ; étape DA.
+  - vitesse de la traction (30 m/s), peut-être à augmenter : **à régler à l'étape 6, en même temps que la vitesse du
+    traqueur**, car la traction n'a pas de plafond (avec les autres points ci-dessus) ;
+  - barillet (12 dégâts, 0.25 s, 1.2 s) face aux goules et aux volants.
+- **Validés au playtest du 2026-11-12 :** dégâts contre un mur, objets repoussés, rendu des mains, occlusion ambiante,
+  barillet (recharge, prise pendant une recharge, précision).
+- **Tir ami :** réglage `Coop_Default.friendlyFire` (désactivé) en place (D-032) ; les PV du joueur sont provisoires
+  (réapparition au départ, la vraie mort vient à l'étape 8). À tester pour de vrai à l'étape 9 (écran partagé).
+- **Étape 8, point ouvert : PV du joueur, mort et réapparition.** Aujourd'hui : 100 PV provisoires (validés pour les
+  tests), réapparition au point de départ après 1 s (`PlayerHealth_Default`). À décider à l'étape 8 : PV définitifs,
+  soins rares, écran de bilan et relance (BRIEF), réanimation en coop. Le test du traqueur qui tue en un coup est prêt
+  (`StalkerTests`, ignoré jusqu'à l'étape 6).
+- **Coop en ligne (étape 11) :** la détection maison du contact objet-joueur (`ImpactDamager.FixedUpdate`) et le tir
+  ami devront être calculés côté autorité réseau.
+- **Constructeur de la scène :** il ne touche plus aux renderers des packages (il modifiait celui d'URP, en lecture
+  seule) et réutilise les passes des mains existantes (sinon chaque reconstruction changeait les identifiants dans
+  `PC_Renderer` et `Mobile_Renderer`, partagés avec la branche `art`).
+- **Unity :** un `GlobalKeyword.Create` dans un initialiseur statique d'une passe de rendu fait planter l'éditeur au
+  rechargement du code (« not allowed during serialization ») ; le créer dans `Create()`. Après ce plantage, URP
+  restait cassé (« Blitter is already initialized ») jusqu'à la correction du code et un redémarrage.
+- **Tests :** un `CharacterController` créé dans une scène de prévisualisation reste dans la physique de la scène
+  principale (les rayons du test ne le touchent pas) ; ajouter une capsule ordinaire au joueur simulé.
+- **Mesures à 2 joueurs :** le `PlayerInput` d'un 2e joueur instancié à la main lit la même souris : couper son
+  `PlayerInputReader` pendant une mesure.
 
 - **Menu d'options** : l'intensité du mouvement des mains n'a pas encore d'écran (inspecteur du joueur, PlayerPrefs).
 - Mesures en Play Mode par la CLI : une boucle d'attente trop courte laisse un script tourner ; attendre le `#fin`
@@ -204,9 +240,9 @@ Télékinésie et orbe unique validées le 2026-11-12 (D-024 à D-027), `Telekin
   (20 m/s par défaut, `TelekinesisOrbSettings.throwSpeedBonusCap`, ajouté à l'étape 5).
 - **À revérifier au prochain playtest :**
   - gravité des objets à 20 m/s² (en place, D-027) ;
-  - exclusion du traqueur de la répulsion, de l'étourdissement et des dégâts de zone : **le traqueur n'existe pas
-    encore** (étape des ennemis) ; à prévoir dans `RepulsionWave`, `EnemyBody` et `ImpactDamager.ApplyArea` quand il
-    arrivera (GDD : intuable, insensible à la répulsion) ;
+  - exclusion du traqueur de la répulsion, de l'étourdissement, des dégâts de zone, des balles et de la prise : **le
+    traqueur n'existe pas encore** (étape 6) ; tous ces systèmes respectent déjà `Damageable.ImmuneToOrbs`
+    (`RepulsionWave`, `EnemyBody`, `ImpactDamager.ApplyArea`, `BarrelShooter`, prise) : le traqueur devra l'avoir ;
   - immunité de 2 s après un étourdissement : faite à l'étape 5 (`TrainingDummySettings.stunImmunity`).
 
 - **Gravité :** objets à 20 m/s² comme le joueur (D-027). Unity n'enregistre pas `Physics.gravity` changée par

@@ -163,10 +163,14 @@ namespace ItHunts.Orbs
         /// <summary>Vitesse donnée au dernier objet lancé (debug, mesures).</summary>
         public Vector3 LastThrowVelocity { get; private set; }
 
-        public TelekinesisHolder(Collider ownerCollider, PhysicsGrabProbe probe)
+        /// <summary>Joueur qui tient et lance (tir ami, D-032) : identifiant d'instance de son objet racine, 0 si aucun.</summary>
+        public int OwnerId { get; }
+
+        public TelekinesisHolder(Collider ownerCollider, PhysicsGrabProbe probe, int ownerId = 0)
         {
             _ownerCollider = ownerCollider;
             _probe = probe;
+            OwnerId = ownerId;
         }
 
         /// <summary>Applique la commande ; faux si l'objet à attraper n'existe plus.</summary>
@@ -184,6 +188,7 @@ namespace ItHunts.Orbs
                     _reached = false;
                     _lastError = float.PositiveInfinity;
                     g.OnGrabbed();
+                    g.SetOwner(OwnerId);                                 // ce qu'il percute ensuite vient de ce joueur
                     SetIgnore(g, true);
                     _ignored.RemoveAll(e => e.grabbable == g);
                     return true;

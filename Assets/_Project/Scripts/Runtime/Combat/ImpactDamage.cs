@@ -121,6 +121,9 @@ namespace ItHunts.Combat
         public bool Area;
         public HitTier Tier;
         public float Time;
+
+        /// <summary>Balle du barillet (D-032) : ni vitesse d'impact ni masse.</summary>
+        public bool Bullet;
     }
 
     /// <summary>Canal des coups portés dans le monde. Chaque joueur affiche les chiffres pour sa propre caméra.</summary>

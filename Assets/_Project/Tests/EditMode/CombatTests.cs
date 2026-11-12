@@ -294,9 +294,10 @@ namespace ItHunts.Tests
         public void Scene_EnnemisFacticesEtObjetsQuiBlessent()
         {
             const string scene = "Assets/Scenes/Test_Movement.unity";
-            Assert.That(CountScript(scene, "Assets/_Project/Scripts/Runtime/Combat/Damageable.cs"), Is.EqualTo(4), "3 fixes + 1 mobile");
+            Assert.That(CountScript(scene, "Assets/_Project/Scripts/Runtime/Combat/Damageable.cs"), Is.EqualTo(7),
+                "3 fixes + 1 mobile + 3 cibles du pas de tir (D-032)");
             Assert.That(CountScript(scene, "Assets/_Project/Scripts/Runtime/Combat/TrainingDummyMover.cs"), Is.EqualTo(1));
-            Assert.That(CountScript(scene, "Assets/_Project/Scripts/Runtime/Combat/EnemyBody.cs"), Is.EqualTo(4), "tous repoussables");
+            Assert.That(CountScript(scene, "Assets/_Project/Scripts/Runtime/Combat/EnemyBody.cs"), Is.EqualTo(7), "tous repoussables");
             Assert.That(CountScript(scene, "Assets/_Project/Scripts/Runtime/Combat/DamageFeedback.cs"), Is.EqualTo(1));
             int grabbables = CountScript(scene, "Assets/_Project/Scripts/Runtime/Orbs/Grabbable.cs");
             Assert.That(grabbables, Is.GreaterThan(10));

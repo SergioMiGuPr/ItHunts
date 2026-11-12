@@ -16,7 +16,8 @@ retouches ([ART-HANDOFF](../../../art/ART-HANDOFF.md)). Décision D-028.
    dessiné juste après par une autre passe (file transparente). Choisie après mesure dans un build : la caméra
    superposée (option 1) coûtait trop.
 2. **Mains :** deux mains greybox ; l'**orbe dans la paume droite**, avec sa couleur selon l'action (D-024) ; la
-   **main gauche visible au repos**, réservée à l'artefact (étape 5 bis).
+   **main gauche** qui tient l'artefact (le barillet, D-032 : recul à chaque tir, abaissée quand il est inactif).
+   Les mains ne reçoivent pas l'occlusion ambiante (SSAO) du décor situé derrière elles.
 3. **Mouvement des mains** (réglé par l'**intensité du mouvement des mains**, réglage de confort du joueur de 0 à
    100 %, 100 % par défaut, enregistré par joueur) : **balancement** quand la vue tourne, **balancier de course**
    (proportionnel à la vitesse au sol, rien en l'air), **plongée à l'atterrissage** (selon la vitesse de chute).

@@ -145,9 +145,22 @@ namespace ItHunts.Orbs
             return ThrowsLeft == 0;
         }
 
-        /// <summary>Poussé par la répulsion (onde ou poussée continue) à ce temps.</summary>
-        public void MarkPushed(float time)
+        /// <summary>
+        /// Dernier joueur qui a attrapé, lancé ou repoussé l'objet (identifiant d'instance de son objet racine ; 0 : aucun).
+        /// Tir ami (D-032) : ce que l'objet percute est attribué à ce joueur (il ne se blesse jamais lui-même).
+        /// </summary>
+        public int LastOwnerId { get; private set; }
+
+        public void SetOwner(int playerId)
         {
+            if (playerId != 0)
+                LastOwnerId = playerId;
+        }
+
+        /// <summary>Poussé par la répulsion (onde ou poussée continue) à ce temps, par ce joueur (0 : inconnu).</summary>
+        public void MarkPushed(float time, int byPlayer = 0)
+        {
+            SetOwner(byPlayer);
             Pushed = true;
             _pushSlowed = false;
             LastPushedAt = time;

@@ -28,6 +28,7 @@ namespace ItHunts.Input
         private InputAction _repel;
         private InputAction _grab;
         private InputAction _throw;
+        private InputAction _reload;
         private InputAction _toggleDebug;
         private InputAction _pause;
 
@@ -49,6 +50,7 @@ namespace ItHunts.Input
         public bool RepelHeld { get; private set; }
         public int GrabPressedTick { get; private set; } = MovementState.NeverTick;
         public int ThrowPressedTick { get; private set; } = MovementState.NeverTick;
+        public int ReloadPressedTick { get; private set; } = MovementState.NeverTick;
         public bool ToggleDebugPressed { get; private set; }
         public bool PausePressed { get; private set; }
 
@@ -71,6 +73,7 @@ namespace ItHunts.Input
             _repel = actions.FindAction("Player/Repel", throwIfNotFound: true);
             _grab = actions.FindAction("Player/Grab", throwIfNotFound: true);
             _throw = actions.FindAction("Player/Throw", throwIfNotFound: true);
+            _reload = actions.FindAction("Player/Reload", throwIfNotFound: true);
             _toggleDebug = actions.FindAction("Player/ToggleDebug", throwIfNotFound: true);
             _pause = actions.FindAction("Player/Pause", throwIfNotFound: true);
         }
@@ -99,7 +102,9 @@ namespace ItHunts.Input
             if (_grab.WasPressedThisFrame() && aimReady)
                 GrabPressedTick = next;
             if (_throw.WasPressedThisFrame() && aimReady)
-                ThrowPressedTick = next;
+                ThrowPressedTick = next;                      // lancer si l'orbe tient un objet, sinon tir de l'artefact
+            if (_reload.WasPressedThisFrame() && aimReady)
+                ReloadPressedTick = next;                     // R / Y : recharger l'artefact
             ToggleDebugPressed = _toggleDebug.WasPressedThisFrame();
             PausePressed = _pause.WasPressedThisFrame();
         }

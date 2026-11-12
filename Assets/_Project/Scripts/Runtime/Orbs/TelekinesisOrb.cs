@@ -9,7 +9,7 @@ namespace ItHunts.Orbs
     /// pure : elle décide et renvoie une commande (attraper, lancer, poser) que TelekinesisHolder applique aux corps
     /// physiques. Disponible en même temps que la traction et la répulsion, chacune sur sa touche :
     /// - F / X : attrape l'objet visé (il reste tenu sans maintenir) ; si un objet est tenu, le pose doucement ;
-    /// - clic gauche / RT : lance l'objet tenu ; sans objet, ne fait rien (réservé à l'artefact, étape 5 bis).
+    /// - clic gauche / RT : lance l'objet tenu ; sans objet, ne fait rien ici : c'est le tir de l'artefact (D-032).
     /// Aucune endurance ; après un lancer, cooldown avant d'attraper de nouveau (appui mémorisé). Refus : rien
     /// d'attrapable, trop lourd, recharge.
     /// </summary>

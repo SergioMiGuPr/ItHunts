@@ -1,0 +1,57 @@
+using UnityEngine;
+
+namespace ItHunts.Settings
+{
+    /// <summary>
+    /// Le barillet (premier artefact, D-022, D-032) : la main gauche tient un barillet de 6 coups. Tir instantané
+    /// (rayon depuis les yeux, sans chute) sur le clic gauche / RT quand l'orbe ne tient rien ; rechargement automatique
+    /// quand il est vide, ou plus tôt avec R / Y. Inactif pendant que l'orbe tient un objet. Valeurs de départ :
+    /// docs/design/features/artefacts/design.md. Modifiable en Play Mode.
+    /// </summary>
+    [CreateAssetMenu(fileName = "Barrel_Default", menuName = "ItHunts/Artefacts/Barillet")]
+    public sealed class BarrelSettings : ArtifactDefinition
+    {
+        [Header("Tir")]
+        [Tooltip("Munitions dans le barillet.")]
+        [Min(1)] public int rounds = 6;
+        [Tooltip("Dégâts d'une balle.")]
+        [Min(0f)] public float damage = 12f;
+        [Tooltip("Temps minimal entre deux tirs (s).")]
+        [Min(0.02f)] public float fireInterval = 0.25f;
+        [Tooltip("Portée du tir instantané (m) ; au-delà, la balle se perd.")]
+        [Min(1f)] public float range = 60f;
+        [Tooltip("Un clic arrivé un peu trop tôt (cadence, fin de rechargement) part dès que possible pendant ce délai (s).")]
+        [Min(0f)] public float pressBuffer = 0.12f;
+        [Tooltip("Ce que la balle peut toucher (le joueur qui tire est toujours ignoré).")]
+        public LayerMask hitMask = ~0;
+
+        [Header("Rechargement")]
+        [Tooltip("Durée du rechargement (s), automatique quand le barillet est vide, ou sur R / Y.")]
+        [Min(0f)] public float reloadTime = 1.2f;
+        [Tooltip("Prendre un objet pendant un rechargement l'annule (vide : il reprendra à zéro au relâchement). " +
+                 "Décoché : il continue et se termine pendant que l'objet est tenu.")]
+        public bool grabCancelsReload = true;
+
+        [Header("Retour visuel")]
+        [Tooltip("Traînée lumineuse : durée (s), largeur au départ et à l'arrivée (m), couleur (HDR, lueur).")]
+        [Min(0.01f)] public float tracerDuration = 0.06f;
+        [Min(0f)] public float tracerStartWidth = 0.02f;
+        [Min(0f)] public float tracerEndWidth = 0.05f;
+        [ColorUsage(false, true)] public Color tracerColor = new Color(4f, 2.6f, 1f);
+        [Tooltip("Impact : taille (m) et durée (s) de l'éclat au point touché.")]
+        [Min(0f)] public float impactSize = 0.25f;
+        [Min(0.01f)] public float impactDuration = 0.12f;
+        [Tooltip("Chambres chargées (lueur), vides, et barillet inactif (objet tenu).")]
+        [ColorUsage(false, true)] public Color loadedColor = new Color(3f, 1.8f, 0.6f);
+        public Color emptyColor = new Color(0.05f, 0.05f, 0.05f);
+        [ColorUsage(false, true)] public Color inactiveColor = new Color(0.4f, 0.35f, 0.3f);
+        [Tooltip("Recul de la main gauche à chaque tir : distance (m), relèvement (°), durée (s).")]
+        [Min(0f)] public float recoilKick = 0.035f;
+        [Min(0f)] public float recoilPitch = 8f;
+        [Min(0.02f)] public float recoilDuration = 0.12f;
+
+        [Header("Sons (provisoires)")]
+        [Range(0f, 1f)] public float shotVolume = 0.7f;
+        [Range(0f, 1f)] public float reloadVolume = 0.5f;
+    }
+}

@@ -38,6 +38,7 @@ namespace ItHunts.Player
         private Vector3 _spawnPosition;
         private Vector3 _lastEye;
         private FirstPersonView _view;
+        private ItHunts.Artifacts.ArtifactHolder _artifact;
 
         public MovementState State => _state;
         public MovementSettings Settings => settings;
@@ -46,6 +47,7 @@ namespace ItHunts.Player
         public TelekinesisState Telekinesis => _tk;
         public TelekinesisOrbSettings TelekinesisSettings => telekinesis;
         public TelekinesisHolder Holder => _holder;
+        public ItHunts.Artifacts.ArtifactHolder Artifact => _artifact;
         private bool HasTelekinesis => telekinesis != null;
 
         /// <summary>Numéro du prochain tick simulé : sert à horodater les appuis.</summary>
@@ -87,7 +89,8 @@ namespace ItHunts.Player
             _aim = new PhysicsAimProbe(magnetism != null ? magnetism.aimMask : (LayerMask)~0, transform);
             _tk = TelekinesisState.Create();
             _grabProbe = new PhysicsGrabProbe(telekinesis != null ? telekinesis.aimMask : (LayerMask)~0, transform);
-            _holder = new TelekinesisHolder(_controller, _grabProbe);
+            _holder = new TelekinesisHolder(_controller, _grabProbe, gameObject.GetInstanceID());
+            _artifact = GetComponent<ItHunts.Artifacts.ArtifactHolder>();
             _previousPosition = _currentPosition = _spawnPosition;
             _lastEye = MagnetismOrb.EyePosition(_state, settings);
         }
@@ -113,6 +116,7 @@ namespace ItHunts.Player
                 input.RepelHeld = _reader.RepelHeld;
                 input.GrabPressedTick = _reader.GrabPressedTick;
                 input.ThrowPressedTick = _reader.ThrowPressedTick;
+                input.ReloadPressedTick = _reader.ReloadPressedTick;
             }
 
             float dt = Time.fixedDeltaTime;
@@ -127,6 +131,7 @@ namespace ItHunts.Player
             }
 
             var command = new TelekinesisCommand();
+            bool heldAtTickStart = _tk.Holding;
             if (HasTelekinesis)
             {
                 _grabProbe.Mask = telekinesis.aimMask;
@@ -160,6 +165,12 @@ namespace ItHunts.Player
                     _holder != null && _holder.Held != null ? _holder.Held.Body : null, transform, dt);
             }
 
+            // Artefact (main gauche, D-032) : même clic que le lancer ; il ne tire que si l'orbe ne tenait rien au début du
+            // tick et ne tient rien maintenant (tir et lancer jamais au même tick). Rayon depuis les yeux au moment du clic.
+            if (_artifact != null)
+                _artifact.Step(_state.Tick, input, heldAtTickStart, _tk.Holding, eyeAtClick,
+                    MagnetismOrb.AimDirection(input.Yaw, input.Pitch), dt);
+
             if (HasTelekinesis)
             {
                 Vector3 eye = MagnetismOrb.EyePosition(_state, settings);
@@ -176,6 +187,9 @@ namespace ItHunts.Player
             if (_currentPosition.y < killHeight)
                 Teleport(_spawnPosition);
         }
+
+        /// <summary>Retour au point de départ (PV à 0, provisoire avant la mort de l'étape 8).</summary>
+        public void Respawn() => Teleport(_spawnPosition);
 
         /// <summary>Déplace le joueur sans interpolation ; garde le compteur de ticks (appuis horodatés).</summary>
         public void Teleport(Vector3 position)

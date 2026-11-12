@@ -1,4 +1,5 @@
 using System.IO;
+using ItHunts.Artifacts;
 using ItHunts.Audio;
 using ItHunts.Combat;
 using ItHunts.Debugging;
@@ -38,6 +39,10 @@ namespace ItHunts.EditorTools
         private const string DamageFeedbackPath = SettingsDir + "/DamageFeedback_Default.asset";
         private const string FpsViewPath = SettingsDir + "/FpsView_Default.asset";
         private const string HudPath = SettingsDir + "/Hud_Default.asset";
+        private const string BarrelPath = SettingsDir + "/Barrel_Default.asset";
+        private const string ArtifactPoolPath = SettingsDir + "/ArtifactPool_Default.asset";
+        private const string CoopPath = SettingsDir + "/Coop_Default.asset";
+        private const string PlayerHealthPath = SettingsDir + "/PlayerHealth_Default.asset";
         private const int FirstPersonLayerStart = 8;    // couches 8 à 11 : FirstPersonP1..P4 (mains de chaque joueur)
         private const string PostProcessPath = SettingsDir + "/PostProcess_TestMovement.asset";
         private const string PlayerPrefabPath = PrefabDir + "/Player.prefab";
@@ -164,17 +169,26 @@ namespace ItHunts.EditorTools
             foreach (string guid in AssetDatabase.FindAssets("t:UniversalRendererData"))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (!path.StartsWith("Assets/"))
+                    continue;                                            // jamais les renderers des packages (lecture seule)
                 var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(path);
                 if (data == null)
                     continue;
                 data.opaqueLayerMask &= ~mask;
                 data.transparentLayerMask &= ~mask;
 
-                // Retire les anciennes passes des mains.
+                // Passes des mains : réutilisées si elles existent déjà (mêmes identifiants : pas de modification inutile du
+                // renderer partagé), créées sinon ; les autres passes « ItHunts Mains » sont retirées.
+                string clearName = FeaturePrefix + " : profondeur effacée";
+                string handsName = FeaturePrefix + " : mains";
+                string hudName = FeaturePrefix + " : HUD";
+                var clear = Reuse<FirstPersonDepthClearFeature>(data, clearName);
+                var hands = Reuse<RenderObjects>(data, handsName);
+                var hud = Reuse<RenderObjects>(data, hudName);
                 for (int i = data.rendererFeatures.Count - 1; i >= 0; i--)
                 {
                     ScriptableRendererFeature f = data.rendererFeatures[i];
-                    if (f != null && f.name.StartsWith(FeaturePrefix))
+                    if (f != null && f.name.StartsWith(FeaturePrefix) && f != clear && f != hands && f != hud)
                     {
                         data.rendererFeatures.RemoveAt(i);
                         AssetDatabase.RemoveObjectFromAsset(f);
@@ -182,10 +196,6 @@ namespace ItHunts.EditorTools
                     }
                 }
 
-                var clear = ScriptableObject.CreateInstance<FirstPersonDepthClearFeature>();
-                clear.name = FeaturePrefix + " : profondeur effacée";
-                var hands = ScriptableObject.CreateInstance<RenderObjects>();
-                hands.name = FeaturePrefix + " : mains à " + fps.viewmodelFov + "°";
                 hands.settings.Event = RenderPassEvent.AfterRenderingTransparents;
                 hands.settings.filterSettings.RenderQueueType = RenderQueueType.Opaque;
                 hands.settings.filterSettings.LayerMask = mask;
@@ -196,14 +206,14 @@ namespace ItHunts.EditorTools
                 hands.settings.cameraSettings.restoreCamera = true;
                 hands.settings.cameraSettings.cameraFieldOfView = fps.viewmodelFov;
                 hands.settings.cameraSettings.offset = Vector4.zero;
-                var hud = ScriptableObject.CreateInstance<RenderObjects>();
-                hud.name = FeaturePrefix + " : HUD";
                 hud.settings.Event = RenderPassEvent.AfterRenderingTransparents;
                 hud.settings.filterSettings.RenderQueueType = RenderQueueType.Transparent;
                 hud.settings.filterSettings.LayerMask = mask;
+
+                // Ordre : profondeur effacée, mains, HUD, à la fin de la liste.
                 foreach (ScriptableRendererFeature f in new ScriptableRendererFeature[] { clear, hands, hud })
                 {
-                    AssetDatabase.AddObjectToAsset(f, data);
+                    data.rendererFeatures.Remove(f);
                     data.rendererFeatures.Add(f);
                 }
 
@@ -220,6 +230,23 @@ namespace ItHunts.EditorTools
             }
 
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>Passe du renderer de ce nom et de ce type (existante, renommée si besoin, ou créée et ajoutée à l'asset).</summary>
+        private static T Reuse<T>(UniversalRendererData data, string name) where T : ScriptableRendererFeature
+        {
+            foreach (ScriptableRendererFeature f in data.rendererFeatures)
+                if (f is T t && f.name.StartsWith(name))
+                {
+                    t.name = name;
+                    return t;
+                }
+
+            var created = ScriptableObject.CreateInstance<T>();
+            created.name = name;
+            AssetDatabase.AddObjectToAsset(created, data);
+            data.rendererFeatures.Add(created);
+            return created;
         }
 
         /// <summary>
@@ -306,6 +333,7 @@ namespace ItHunts.EditorTools
                 rightHand.localRotation = Quaternion.Euler(fps.rightHandRestEuler);
                 leftHand.localPosition = fps.leftHandRest;
                 leftHand.localRotation = Quaternion.Euler(fps.leftHandRestEuler);
+                BarrelParts barrel = BuildBarrel(leftHand);
 
                 GameObject orb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 orb.name = "Orbe (vue)";
@@ -374,6 +402,44 @@ namespace ItHunts.EditorTools
                 var orbView = root.AddComponent<MagnetismOrbView>();
                 var audio = root.AddComponent<MagnetismAudio>();
                 var tkView = root.AddComponent<TelekinesisView>();
+
+                // Artefact (D-032) : porte-artefact, vue du barillet, PV du joueur (tir ami).
+                var barrelSettings = LoadOrCreate<BarrelSettings>(BarrelPath);
+                var holder = root.AddComponent<ArtifactHolder>();
+                SetRef(holder, "fallback", barrelSettings);
+                var barrelView = root.AddComponent<BarrelView>();
+                SetRef(barrelView, "barrelRoot", barrel.Root);
+                SetRef(barrelView, "cylinder", barrel.Cylinder);
+                SetRef(barrelView, "muzzle", barrel.Muzzle);
+                var chambersProp = new SerializedObject(barrelView);
+                SerializedProperty list = chambersProp.FindProperty("chambers");
+                list.arraySize = barrel.Chambers.Length;
+                for (int i = 0; i < barrel.Chambers.Length; i++)
+                    list.GetArrayElementAtIndex(i).objectReferenceValue = barrel.Chambers[i];
+                chambersProp.ApplyModifiedPropertiesWithoutUndo();
+                var tracerGo = new GameObject("Traînée du barillet");
+                tracerGo.transform.SetParent(root.transform, false);
+                var tracer = tracerGo.AddComponent<LineRenderer>();
+                tracer.useWorldSpace = true;
+                tracer.positionCount = 2;
+                tracer.sharedMaterial = UnlitMat("Orb_Line", "Universal Render Pipeline/Particles/Unlit", Color.white);
+                tracer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                tracer.receiveShadows = false;
+                tracer.enabled = false;
+                SetRef(barrelView, "tracer", tracer);
+                GameObject impactGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                impactGo.name = "Impact de balle";
+                Object.DestroyImmediate(impactGo.GetComponent<Collider>());
+                impactGo.transform.SetParent(root.transform, false);
+                var impactRenderer = impactGo.GetComponent<MeshRenderer>();
+                impactRenderer.sharedMaterial = UnlitMat("Barrel_Impact", "Universal Render Pipeline/Unlit", Color.white);
+                impactRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                impactRenderer.receiveShadows = false;
+                impactRenderer.enabled = false;
+                SetRef(barrelView, "impact", impactRenderer);
+                var health = root.AddComponent<PlayerHealth>();
+                SetRef(health, "settings", LoadOrCreate<PlayerHealthSettings>(PlayerHealthPath));
+                SetRef(health, "coop", LoadOrCreate<CoopSettings>(CoopPath));
                 SetRef(view, "settings", fps);
                 SetRef(view, "viewRoot", viewRoot);
                 SetRef(view, "rightHand", rightHand);
@@ -412,6 +478,45 @@ namespace ItHunts.EditorTools
             {
                 Object.DestroyImmediate(root);
             }
+        }
+
+        private struct BarrelParts
+        {
+            public Transform Root;
+            public Transform Cylinder;
+            public Transform Muzzle;
+            public Renderer[] Chambers;
+        }
+
+        /// <summary>
+        /// Barillet greybox (D-032) tenu dans la paume gauche, pointé dans le sens des doigts (+z de la main) : corps de
+        /// 7.5 cm de diamètre et 7 cm de long qui tourne, 6 chambres de 1.6 cm sur la face arrière (vers la caméra : les
+        /// munitions se lisent dessus), canon de 2.2 cm × 10 cm. Mesures dans docs/art/ART-HANDOFF.md.
+        /// </summary>
+        private static BarrelParts BuildBarrel(Transform leftHand)
+        {
+            Material metal = Mat("Greybox_Barrel", new Color(0.18f, 0.17f, 0.2f));
+            Material chamberMat = UnlitMat("Barrel_Chamber", "Universal Render Pipeline/Unlit", Color.white);
+            var root = new GameObject("Barillet (vue)").transform;
+            root.SetParent(leftHand, false);
+            root.localPosition = new Vector3(0f, 0.055f, 0.05f);
+            var cylinder = new GameObject("Barillet (tourne)").transform;
+            cylinder.SetParent(root, false);
+            Part(PrimitiveType.Cylinder, "Corps", cylinder, Vector3.zero, new Vector3(0.075f, 0.035f, 0.075f), new Vector3(90f, 0f, 0f), metal);
+            var chambers = new Renderer[6];
+            for (int i = 0; i < chambers.Length; i++)
+            {
+                float a = i * Mathf.PI * 2f / chambers.Length;              // chambre 0 en haut, puis dans le sens horaire vu de derrière
+                var p = new Vector3(Mathf.Sin(a) * 0.024f, Mathf.Cos(a) * 0.024f, -0.037f);
+                Part(PrimitiveType.Cylinder, $"Chambre {i + 1}", cylinder, p, new Vector3(0.016f, 0.003f, 0.016f), new Vector3(90f, 0f, 0f), chamberMat);
+                chambers[i] = cylinder.Find($"Chambre {i + 1}").GetComponent<Renderer>();
+            }
+
+            Part(PrimitiveType.Cylinder, "Canon", root, new Vector3(0f, 0.022f, 0.085f), new Vector3(0.022f, 0.05f, 0.022f), new Vector3(90f, 0f, 0f), metal);
+            var muzzle = new GameObject("Bouche du canon").transform;
+            muzzle.SetParent(root, false);
+            muzzle.localPosition = new Vector3(0f, 0.022f, 0.136f);
+            return new BarrelParts { Root = root, Cylinder = cylinder, Muzzle = muzzle, Chambers = chambers };
         }
 
         /// <summary>Disque plat sans collision (cylindre écrasé), masqué au départ.</summary>
@@ -530,6 +635,26 @@ namespace ItHunts.EditorTools
             BuildGreatHall(level, wallMat, platformMat, magneticMat, lineMat);
             BuildTelekinesisArea(level, blockMat, lineMat);
             BuildTeleportPoints();
+
+            // État de la run (D-032) : seed et tirage des artefacts.
+            var pool = LoadOrCreate<ArtifactPool>(ArtifactPoolPath);
+            var barrelAsset = LoadOrCreate<BarrelSettings>(BarrelPath);
+            if (barrelAsset.id == "artefact")
+            {
+                barrelAsset.id = "barillet";
+                barrelAsset.displayName = "Barillet";
+                EditorUtility.SetDirty(barrelAsset);
+            }
+
+            if (!pool.artifacts.Contains(barrelAsset))
+            {
+                pool.artifacts.Add(barrelAsset);
+                EditorUtility.SetDirty(pool);
+                AssetDatabase.SaveAssets();
+            }
+
+            var run = new GameObject("État de la run").AddComponent<RunState>();
+            SetRef(run, "pool", pool);
 
             // Joueur.
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
@@ -866,8 +991,28 @@ namespace ItHunts.EditorTools
             GrabbableBox("Lustre (accroché)", area, new Vector3(-75f, 7.6f, -12f), new Vector3(1.6f, 0.3f, 1.6f), 25f, crateMat, true);
 
             BuildTrainingDummies(area);
+            BuildShootingLane(area, lineMat);
 
             Box("Repère portée 15 m (depuis le départ)", area, new Vector3(-75f, 0.012f, -20f), new Vector3(50f, 0.02f, 0.3f), lineMat, collider: false);
+        }
+
+        /// <summary>
+        /// Pas de tir du barillet (D-032), au sud de la zone : marque de départ en (−95, 0, −34) face à l'est, cibles fixes à
+        /// 10, 30 et 60 m (la portée), repères au sol tous les 10 m.
+        /// </summary>
+        private static void BuildShootingLane(Transform area, Material lineMat)
+        {
+            var lane = new GameObject("Pas de tir (barillet)").transform;
+            lane.SetParent(area, false);
+            var dummySettings = LoadOrCreate<TrainingDummySettings>(DummyPath);
+            Material targetMat = GrabbableMat("Greybox_Dummy", new Color(0.55f, 0.2f, 0.18f));
+            Vector3 start = new Vector3(-95f, 0f, -34f);
+            Box("Pas de tir : départ", lane, start + new Vector3(0f, 0.012f, 0f), new Vector3(1.2f, 0.02f, 1.2f), lineMat, collider: false);
+            for (int d = 10; d <= 60; d += 10)
+                Box($"Repère {d} m", lane, start + new Vector3(d, 0.012f, 0f), new Vector3(0.15f, 0.02f, 2f), lineMat, collider: false);
+            // Décalées sur le côté : aucune ne cache les autres depuis le départ.
+            foreach ((int d, float side) in new[] { (10, 0f), (30, 2.5f), (60, -4f) })
+                Dummy($"Cible de tir ({d} m)", lane, start + new Vector3(d, 0f, side), targetMat, dummySettings, moving: false);
         }
 
         private static GameObject GrabbableBox(string name, Transform parent, Vector3 center, Vector3 size, float mass,

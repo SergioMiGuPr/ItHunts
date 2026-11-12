@@ -26,6 +26,7 @@
   (Total : le plus lourd des deux fils CPU, plus le GPU.) Décision : option 2.
 - [x] Ressenti : mains, gestes et HUD validés. *(playtest de l'utilisateur, 2026-11-12)*
 - [x] **Barres de PV, chiffres de dégâts et durabilité collés à leur cible en mouvement.** Cause : `RectTransformUtility.ScreenPointToLocalPointInRectangle` visait le plan du canvas de l'image précédente. Corrigé : position calculée directement (écart au centre de la zone de la caméra ÷ échelle du canvas). Écart moyen avant → après : arrêt 0 → 0 px ; saut 168 px (max 978) → 0 ; bunny hop 141 px (max 46 960) → 0 ; traction 162 px (max 707) → 0 ; dash 556 px (max 5 518) → 0. *(Play Mode, 2026-11-12)*
+- [x] **Occlusion ambiante (SSAO) coupée pour les mains** : la passe qui efface la profondeur coupe aussi le mot-clé de la SSAO pour la suite de l'image (la SSAO, calculée sur le décor, assombrissait les mains). Collé à un mur, au pied du mur, SSAO allumée / éteinte : pixels des mains assombris de plus de 4/255 **21.9 % → 0.1 %**, assombrissement moyen **2.87 → −0.01** /255 ; le décor la reçoit toujours (1.06 /255, inchangé). *(Play Mode, 2026-11-12, captures avant / après ; `ArtifactTests` › Reglages_PrefabEtRendu)*
 - [ ] Ressenti : dégâts contre un mur, objets repoussés, rendu des mains par la passe de rendu. *(playtest)*
 
 ## Playtest — vue FPS, HUD, orbe (checklist F12)
@@ -51,9 +52,11 @@ F12 : zone Télékinésie. F3 : pages du debug (la page 3 montre l'intensité, l
 17. **Dégâts contre un mur (D-031) :** repousse un factice contre un mur de près : chiffre de dégâts (40 au plus), une seule fois par impact ; pendant ses 2 s d'immunité, un nouvel impact ne compte pas.
 18. **Objet repoussé (D-031) :** repousse une caisse sur un factice : petit chiffre de dégâts (moitié d'un lancer), pas de cercle de zone ; un carré de durabilité en moins seulement si elle touche le factice ; une caisse lente (sous 6 m/s) ou repoussée il y a plus de 1 s ne blesse plus.
 19. **Rendu des mains (passe de rendu) :** mêmes mains qu'avant, entières contre un mur, même taille à pleine vitesse.
+20. **Occlusion ambiante :** collé à un mur, regard vers son pied : plus de taches sombres sur la paume ni sur l'orbe.
 
 ## History
 
 - 2026-11-12 : vue FPS et HUD (D-028).
 - 2026-11-12 : barres de PV collées à leur cible ; répulsion en cône (D-029) ; prise des ennemis étourdis (D-030).
 - 2026-11-12 : répulsion façon aimant ; dégâts contre un mur et objets repoussés (D-031) ; mesure dans un build, option 2.
+- 2026-11-12 : occlusion ambiante coupée pour les mains ; barillet dans la main gauche (D-032).

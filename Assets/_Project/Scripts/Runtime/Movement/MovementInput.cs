@@ -47,8 +47,14 @@ namespace ItHunts.Movement
         /// <summary>Attraper l'objet visé, ou relâcher l'objet tenu (F / X) : tick du dernier appui.</summary>
         public int GrabPressedTick;
 
-        /// <summary>Lancer l'objet tenu (clic gauche / RT ; sans objet : réservé à l'artefact) : tick du dernier appui.</summary>
+        /// <summary>
+        /// Action principale (clic gauche / RT) : lance l'objet tenu ; sans objet, tire avec l'artefact (D-032). Tick du
+        /// dernier appui.
+        /// </summary>
         public int ThrowPressedTick;
+
+        /// <summary>Recharger l'artefact (R / Y) : tick du dernier appui.</summary>
+        public int ReloadPressedTick;
 
         public static MovementInput Neutral => new MovementInput
         {
@@ -58,6 +64,7 @@ namespace ItHunts.Movement
             RepelPressedTick = MovementState.NeverTick,
             GrabPressedTick = MovementState.NeverTick,
             ThrowPressedTick = MovementState.NeverTick,
+            ReloadPressedTick = MovementState.NeverTick,
         };
     }
 }

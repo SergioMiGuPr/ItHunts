@@ -49,6 +49,9 @@ visuel et sonore complet est la partie 2. Les chiffres vivent dans [design.md](d
 **Réseau :** l'orbe et la traction sont des fonctions pures des entrées et de l'état ; seul le rayon
 dépend de la scène.
 
+**Coop en ligne (étape 11) :** le contact entre un objet et un joueur (tir ami) est détecté à la main dans
+`ImpactDamager.FixedUpdate`, Unity ne signalant pas ce choc ; à faire tourner côté autorité réseau, avec les dégâts.
+
 ## Files
 
 | File | Role |

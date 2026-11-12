@@ -48,8 +48,17 @@ namespace ItHunts.Hud
         private RectTransform _worldRect;
         private Text _repelTime;
         private Image _holdBack, _holdFill;
-        private CanvasGroup _moveGroup, _attractGroup, _repelGroup;
-        private readonly GaugeFade _moveFade = new GaugeFade(), _attractFade = new GaugeFade(), _repelFade = new GaugeFade();
+        private CanvasGroup _moveGroup, _attractGroup, _repelGroup, _ammoGroup;
+        private readonly GaugeFade _moveFade = new GaugeFade(), _attractFade = new GaugeFade(), _repelFade = new GaugeFade(),
+            _ammoFade = new GaugeFade();
+        private readonly List<(Image back, Image fill)> _ammoSegments = new List<(Image, Image)>();
+        private ItHunts.Artifacts.ArtifactHolder _artifact;
+        private PlayerHealth _health;
+        private Image _healthBack, _healthFill;
+        private float _healthFlashUntil = float.NegativeInfinity;
+        private int _ammoBuiltFor = -1;
+        private float _ammoRowY;
+        private RectTransform _center;
 
         private struct Number
         {
@@ -71,6 +80,10 @@ namespace ItHunts.Hud
         public RectTransform StalkerCorner { get; private set; }
         public Canvas Canvas => _canvas;
 
+        /// <summary>Munitions affichées (segments) : 0 si pas de barillet ; opacité (HUD discret).</summary>
+        public int AmmoSegments => _ammoSegments.Count;
+        public float AmmoAlpha => _ammoFade.Alpha;
+
         /// <summary>Opacité actuelle des jauges (HUD discret) : mouvement, attraction, répulsion.</summary>
         public Vector3 GaugeAlphas => new Vector3(_moveFade.Alpha, _attractFade.Alpha, _repelFade.Alpha);
 
@@ -78,6 +91,8 @@ namespace ItHunts.Hud
         {
             _motor = GetComponent<PlayerMotor>();
             _view = GetComponent<FirstPersonView>();
+            _artifact = GetComponent<ItHunts.Artifacts.ArtifactHolder>();
+            _health = GetComponent<PlayerHealth>();
             var playerInput = GetComponent<PlayerInput>();
             _worldCamera = playerInput != null ? playerInput.camera : null;
         }
@@ -89,8 +104,17 @@ namespace ItHunts.Hud
             Build();
         }
 
-        private void OnEnable() => DamageEvents.Hit += OnHit;
-        private void OnDisable() => DamageEvents.Hit -= OnHit;
+        private void OnEnable()
+        {
+            DamageEvents.Hit += OnHit;
+            PlayerHealth.Hurt += OnPlayerHurt;
+        }
+
+        private void OnDisable()
+        {
+            DamageEvents.Hit -= OnHit;
+            PlayerHealth.Hurt -= OnPlayerHurt;
+        }
 
         // ---------- Construction ----------
 
@@ -115,6 +139,7 @@ namespace ItHunts.Hud
             _root = (RectTransform)go.transform;
 
             RectTransform center = Rect("Viseur", _root, Vector2.one * 0.5f, Vector2.zero, Vector2.zero);
+            _center = center;
             Image dot = NewImage("Point", center, Vector2.zero, Vector2.one * settings.crosshairSize, settings.crosshairColor);
             dot.raycastTarget = false;
             float thickness = feedback != null ? feedback.ringThickness : 2f;
@@ -157,6 +182,20 @@ namespace ItHunts.Hud
                 _holdFill.fillOrigin = (int)Image.OriginHorizontal.Left;
                 _holdBack.gameObject.SetActive(false);
             }
+
+            // Rangée 3 : munitions de l'artefact (construite quand l'artefact est connu, voir UpdateAmmo).
+            _ammoRowY = y - 2f * (settings.segmentHeight + settings.rowGap) - 4f;
+
+            // PV du joueur (tir ami) : coin bas gauche, cachés quand ils sont pleins.
+            float hm = settings.safeMargin;
+            RectTransform healthCorner = Rect("Coin : PV du joueur", _root, new Vector2(hm, hm), Vector2.zero, settings.playerHealthSize,
+                new Vector2(0f, 0f));
+            _healthBack = NewImage("PV du joueur (fond)", healthCorner, Vector2.zero, settings.playerHealthSize, new Color(0f, 0f, 0f, 0.6f));
+            _healthFill = NewImage("PV du joueur", _healthBack.rectTransform, Vector2.zero, settings.playerHealthSize, settings.playerHealthColor);
+            _healthFill.type = Image.Type.Filled;
+            _healthFill.fillMethod = Image.FillMethod.Horizontal;
+            _healthFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+            _healthBack.gameObject.SetActive(false);
 
             // Coins réservés (vides), dans la marge de sécurité.
             float m = settings.safeMargin;
@@ -348,7 +387,78 @@ namespace ItHunts.Hud
                 _repelTime.color = repelColor;
             }
 
+            UpdateAmmo(tick, now, dt, fixedDt);
+            UpdatePlayerHealth(now);
             UpdateWorld();
+        }
+
+        /// <summary>Munitions du barillet : un segment par munition ; en rechargement, ils se remplissent ; grisés si inactif.</summary>
+        private void UpdateAmmo(int tick, float now, float dt, float fixedDt)
+        {
+            ItHunts.Settings.BarrelSettings cfg = _artifact != null ? _artifact.BarrelSettings : null;
+            int rounds = cfg != null ? cfg.rounds : 0;
+            if (rounds != _ammoBuiltFor)
+            {
+                _ammoBuiltFor = rounds;
+                if (_ammoGroup != null)
+                    Destroy(_ammoGroup.gameObject);
+                _ammoSegments.Clear();
+                _ammoGroup = null;
+                if (rounds > 0)
+                {
+                    _ammoGroup = Group("Munitions", _center);
+                    float w = rounds * settings.ammoSegmentWidth + (rounds - 1) * settings.segmentGap;
+                    float x = -w * 0.5f;
+                    var size = new Vector2(settings.ammoSegmentWidth, settings.segmentHeight * 1.5f);
+                    for (int i = 0; i < rounds; i++)
+                    {
+                        float sx = x + i * (settings.ammoSegmentWidth + settings.segmentGap) + settings.ammoSegmentWidth * 0.5f;
+                        Image back = NewImage("Munition (fond)", _ammoGroup.transform, new Vector2(sx, _ammoRowY), size, settings.emptyColor);
+                        Image fill = NewImage("Munition", back.rectTransform, Vector2.zero, size, Color.white);
+                        fill.type = Image.Type.Filled;
+                        fill.fillMethod = Image.FillMethod.Vertical;
+                        fill.fillOrigin = (int)Image.OriginVertical.Bottom;
+                        _ammoSegments.Add((back, fill));
+                    }
+                }
+            }
+
+            if (_ammoGroup == null || cfg == null)
+                return;
+            ItHunts.Artifacts.BarrelState b = _artifact.Barrel;
+            float value = b.Reloading ? ItHunts.Artifacts.Barrel.ReloadProgress(b, tick, cfg, fixedDt) * rounds : b.Rounds;
+            bool active = b.Reloading || b.Rounds < rounds;
+            _ammoGroup.alpha = _ammoFade.Update(b.Reloading ? 0f : b.Rounds, rounds, active, now, dt, settings.idleAlpha, settings.idleDelay,
+                settings.fadeSpeed, settings.returnBlinkDuration);
+            FillSegments(_ammoSegments, value, b.Inactive ? settings.ammoInactiveColor : settings.ammoColor, settings.emptyColor,
+                _ammoFade.Blinking(now));
+        }
+
+        private void UpdatePlayerHealth(float now)
+        {
+            if (_health == null || _healthBack == null)
+                return;
+            HealthState h = _health.Health;
+            bool show = h.Dead || h.Current < h.Max;
+            _healthBack.gameObject.SetActive(show);
+            if (!show)
+                return;
+            _healthFill.fillAmount = h.Max > 0f ? h.Current / h.Max : 0f;
+            _healthFill.color = now < _healthFlashUntil ? Color.white : settings.playerHealthColor;
+        }
+
+        private void OnPlayerHurt(PlayerHurtEvent e)
+        {
+            if (_canvas == null)
+                return;
+            if (e.Victim != null && e.Victim == _health)
+            {
+                _healthFlashUntil = Time.time + 0.15f;                   // c'est moi : la barre de PV clignote
+                return;
+            }
+
+            AddNumber(Mathf.CeilToInt(e.Damage).ToString(), e.Victim != null ? e.Victim.Center + Vector3.up * 0.6f : e.Point,
+                settings.friendlyHitColor, settings.damageFontMin);
         }
 
         private void UpdateRings(int tick, float fixedDt)

@@ -62,7 +62,7 @@ l'arme », « le mouvement est la survie ».
    orbe orange, paume tendue, temps de maintien restant près du viseur. Jamais l'objet tenu, un ennemi
    tenu, les joueurs ni le traqueur. **Objet repoussé (D-031)** : il blesse ce qu'il percute comme un objet lancé,
    **×0.5**, sans dégâts de zone, et ne perd un lancer de durabilité que s'il blesse un ennemi ; dangereux **1 s** après
-   la fin de la poussée ou jusqu'à passer **sous 6 m/s** ; jamais contre un joueur.
+   la fin de la poussée ou jusqu'à passer **sous 6 m/s** ; un joueur seulement avec le tir ami (D-032, désactivé par défaut), jamais celui qui l'a repoussé.
    tenu, les joueurs ni le traqueur. **Étourdissement** : un ennemi repoussé qui percute un mur
    ou un obstacle solide à **6 m/s** ou plus est **étourdi 1.5 s** : il ne bouge plus (le factice mobile
    s'arrête), trois étoiles tournent au-dessus de sa tête, il luit en jaune, gazouillis. Un ennemi
@@ -92,7 +92,7 @@ l'arme », « le mouvement est la survie ».
    **masse × (vitesse d'impact − 8 m/s) × 0.1** (vitesse relative au contact). Ça vaut pour un objet lancé, un
    rebond, une chute et un objet tenu qu'on percute. **Chute** (impact surtout vertical, objet au-dessus de la
    cible) : seuil de **3 m/s**. Un même objet ne blesse la même cible qu'une fois toutes les 0.3 s. Les objets ne
-   blessent jamais les joueurs. Retour : chiffre de dégâts flottant (blanc, jaune au-dessus de 25, rouge au-dessus
+   blessent jamais les joueurs (sauf tir ami, D-032 : désactivé par défaut, jamais le lanceur). Retour : chiffre de dégâts flottant (blanc, jaune au-dessus de 25, rouge au-dessus
    de 60, « K.O. » à la mort), barre de PV au-dessus de la cible, éclat au point d'impact, éclair blanc sur la
    cible, son 3D de coup (plus grave pour un objet lourd) et de mort.
    **Zone (D-027)** : au premier impact d'un objet lancé (au-dessus du seuil), les ennemis autour prennent des

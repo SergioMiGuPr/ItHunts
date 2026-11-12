@@ -10,7 +10,10 @@
   `UniversalRendererData` (`PC_Renderer`, `Mobile_Renderer`) : les passes normales ignorent les quatre couches ; après
   les transparents, `FirstPersonDepthClearFeature` (passe Render Graph qui efface la profondeur, caméras de jeu
   seulement), puis « Render Objects » des mains (file opaque, champ de vision `viewmodelFov`), puis « Render Objects »
-  du HUD (file transparente). Changer `viewmodelFov` demande de relancer le constructeur. Une caméra superposée
+  du HUD (file transparente). Changer `viewmodelFov` demande de relancer le constructeur. La passe qui efface la
+  profondeur coupe aussi le mot-clé `_SCREEN_SPACE_OCCLUSION` pour la suite de l'image (réglage
+  `handsReceiveAmbientOcclusion`, non par défaut ; la passe SSAO le rallume à l'image suivante). Le constructeur
+  réutilise les passes existantes (mêmes identifiants) et ne touche jamais aux renderers des packages. Une caméra superposée
   (option 1) reste possible si `overlayCamera` est assignée.
 - **Mesure dans un build :** `PerfProbe` (objet de la scène de test, inactif sans l'argument `-ithunts-perf`) :
   1 joueur puis 2 en écran partagé, blocs de 5 s allumés / éteints, médianes `FrameTimingManager` (fil principal, fil

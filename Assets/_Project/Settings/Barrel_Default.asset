@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1042bc81fd8ecae4ba87032e01f9cbbb, type: 3}
+  m_Name: Barrel_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.BarrelSettings
+  id: barillet
+  displayName: Barillet
+  rounds: 6
+  damage: 12
+  fireInterval: 0.25
+  range: 60
+  pressBuffer: 0.12
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  reloadTime: 1.2
+  grabCancelsReload: 1
+  tracerDuration: 0.06
+  tracerStartWidth: 0.02
+  tracerEndWidth: 0.05
+  tracerColor: {r: 4, g: 2.6, b: 1, a: 1}
+  impactSize: 0.25
+  impactDuration: 0.12
+  loadedColor: {r: 3, g: 1.8, b: 0.6, a: 1}
+  emptyColor: {r: 0.05, g: 0.05, b: 0.05, a: 1}
+  inactiveColor: {r: 0.4, g: 0.35, b: 0.3, a: 1}
+  recoilKick: 0.035
+  recoilPitch: 8
+  recoilDuration: 0.12
+  shotVolume: 0.7
+  reloadVolume: 0.5

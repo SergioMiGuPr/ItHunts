@@ -309,6 +309,9 @@ namespace ItHunts.Debugging
                 : $"Dernier saut : {_speedAtLastJump:0.00} m/s (gain {_lastJumpGain:+0.00;-0.00;0.00})");
         }
 
+        private static float Barrel(in ItHunts.Artifacts.BarrelState b, ItHunts.Settings.BarrelSettings cfg, int tick, float dt) =>
+            ItHunts.Artifacts.Barrel.ReloadProgress(b, tick, cfg, dt);
+
         /// <summary>Page 3 : ennemis (PV, recul, étourdi, immunité), objet tenu, geste des mains, HUD discret.</summary>
         private void AppendCombatPage(in MovementState s, float dt)
         {
@@ -333,6 +336,26 @@ namespace ItHunts.Debugging
             if (_motor.Holder != null && _motor.Telekinesis.LastAction == ItHunts.Orbs.TelekinesisCommandKind.Lancer)
                 _text.AppendLine($"Dernier lancer : {_motor.Holder.LastThrowVelocity.magnitude:0.0} m/s " +
                                  $"(bonus de vitesse plafonné à {_motor.TelekinesisSettings.throwSpeedBonusCap:0} m/s)");
+            ItHunts.Artifacts.ArtifactHolder art = _motor.Artifact;
+            if (art != null && art.Current != null)
+            {
+                ItHunts.Artifacts.BarrelState br = art.Barrel;
+                ItHunts.Settings.BarrelSettings bc = art.BarrelSettings;
+                ItHunts.Artifacts.BarrelShot shot = art.LastShot;
+                var run = FindFirstObjectByType<ItHunts.Artifacts.RunState>();
+                _text.AppendLine($"Artefact : {art.Current.displayName}{(run != null ? $" (seed {run.Seed})" : "")}" +
+                                 (bc == null ? "" : $", {br.Rounds}/{bc.rounds} coups" +
+                                                    (br.Reloading ? $", RECHARGE {Barrel(br, bc, s.Tick, dt) * 100f:0} %" : "") +
+                                                    (br.Inactive ? ", inactif (objet tenu)" : "") + $", tirs {br.ShotCount}"));
+                if (bc != null && br.ShotCount > 0)
+                    _text.AppendLine($"Dernier tir : {shot.Kind}, {shot.Distance:0.0} m, {shot.Damage:0} dégâts" +
+                                     $"{(shot.Collider != null ? $" ({shot.Collider.name})" : "")}");
+            }
+
+            var hp = _motor.GetComponent<ItHunts.Player.PlayerHealth>();
+            if (hp != null)
+                _text.AppendLine($"PV du joueur : {hp.Health.Current:0}/{hp.Health.Max:0}, tir ami " +
+                                 $"{(hp.Coop != null && hp.Coop.friendlyFire ? "ACTIVÉ" : "désactivé")}");
             if (_view != null)
                 _text.AppendLine($"Mains : geste {_view.Gesture}, intensité du mouvement {_view.HandMotionIntensity * 100f:0} %, " +
                                  $"couche {(_view.Layer >= 0 ? LayerMask.LayerToName(_view.Layer) : "—")}");
