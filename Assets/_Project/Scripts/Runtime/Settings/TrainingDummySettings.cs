@@ -28,6 +28,13 @@ namespace ItHunts.Settings
         [Min(0f)] public float stunImpactSpeed = 6f;
         [Tooltip("Durée de l'étourdissement (s). Un ennemi étourdi pourra être attrapé par la télékinésie (goule : 1.5 s).")]
         [Min(0f)] public float stunDuration = 1.5f;
+        [Tooltip("Dégâts contre un mur d'un ennemi repoussé (D-031) : PV par m/s au-delà de stunImpactSpeed, une fois par " +
+                 "impact (avec l'étourdissement, donc pas pendant l'immunité).")]
+        [Min(0f)] public float wallDamagePerSpeed = 5f;
+        [Tooltip("Plafond des dégâts contre un mur, par impact (PV).")]
+        [Min(0f)] public float wallDamageMax = 40f;
+        [Tooltip("Immunité après la fin d'un étourdissement (s) : pas de nouvel étourdissement pendant ce temps.")]
+        [Min(0f)] public float stunImmunity = 2f;
         [Tooltip("Retour au poste après un recul : attente (s) puis vitesse de marche (m/s).")]
         [Min(0f)] public float returnHomeDelay = 2f;
         [Min(0f)] public float returnHomeSpeed = 3f;

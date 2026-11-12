@@ -41,6 +41,9 @@ namespace ItHunts.Orbs
 
         /// <summary>Angle entre le viseur et l'objet (degrés) : 0 si le rayon exact le touche.</summary>
         public float Angle;
+
+        /// <summary>Ennemi étourdi (D-030) : pas de limite de masse ; tenu, il se libère seul.</summary>
+        public bool Enemy;
     }
 
     /// <summary>
@@ -57,6 +60,9 @@ namespace ItHunts.Orbs
         /// <summary>Objet tenu (0 = aucun) et tick où il a été attrapé.</summary>
         public int HeldId;
         public int GrabTick;
+
+        /// <summary>L'objet tenu est un ennemi étourdi : il se libère seul au bout de enemyHoldDuration.</summary>
+        public bool HeldIsEnemy;
 
         /// <summary>Appuis déjà consommés : attraper / relâcher (F), lancer (clic gauche).</summary>
         public int LastConsumedGrabPressTick;

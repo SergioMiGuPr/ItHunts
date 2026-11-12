@@ -27,13 +27,20 @@ MonoBehaviour:
   repelImpulse: 14
   repelCooldown: 5
   repelUseDuration: 0.15
-  waveRadius: 4
-  waveObjectSpeed: 16
+  waveRange: 14
+  waveConeAngle: 60
+  waveAngleEdgeShare: 1
+  waveObjectSpeed: 22
   waveObjectReferenceMass: 15
-  waveEnemySpeed: 16
+  waveEnemySpeed: 22
   waveEnemyReferenceMass: 80
   waveMassScaleMin: 0.35
   waveMassScaleMax: 1.3
-  waveEdgeShare: 0.5
+  waveFalloffStart: 2
+  waveEdgeShare: 0.6
+  repelHoldMaxDuration: 0.8
+  repelHoldAcceleration: 35
+  repelHoldEdgeShare: 0.5
+  repelHoldMaxSpeed: 25
   waveLift: 0.25
   groundFrictionGrace: 0.2

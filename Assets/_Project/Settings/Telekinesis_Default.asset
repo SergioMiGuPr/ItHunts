@@ -22,6 +22,9 @@ MonoBehaviour:
   assistNearDistance: 5
   assistFarAngle: 3
   pressBuffer: 0.1
+  enemyHoldDuration: 3
+  enemyStruggleWarning: 0.5
+  enemyStruggleShake: 0.06
   cooldown: 0.3
   holdDistance: 2.5
   holdDrop: 0.35
@@ -33,4 +36,5 @@ MonoBehaviour:
   throwSpeed: 30
   throwNoGravityTime: 0.5
   inheritPlayerVelocity: 1
+  throwSpeedBonusCap: 20
   ignoreHolderAfterRelease: 0.4

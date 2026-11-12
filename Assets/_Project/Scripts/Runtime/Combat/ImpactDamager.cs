@@ -37,6 +37,8 @@ namespace ItHunts.Combat
         {
             _grabbable = GetComponent<Grabbable>();
             if (settings != null && _grabbable != null)
+                _grabbable.PushMinSpeed = settings.pushedMinSpeed;
+            if (settings != null && _grabbable != null && !_grabbable.IsEnemy)
                 _grabbable.InitDurability(AreaEffects.DurabilityForMass(_grabbable.Mass, settings, _grabbable.DurabilityOverride));
         }
 
@@ -60,10 +62,37 @@ namespace ItHunts.Combat
         public static void HandleImpact(Grabbable g, Damageable target, Vector3 relativeVelocity, Vector3 point,
             DamageSettings cfg, float time)
         {
+            // Un ennemi n'est un projectile que tenu ou en vol (lancé, lâché) : au repos ou repoussé, il ne blesse pas ce
+            // qui le percute (c'est l'objet qui arrive qui blesse).
+            if (g.IsEnemy && (g.EnemyBody == null || !(g.EnemyBody.InFlight || g.Held)))
+                return;
             float speed = relativeVelocity.magnitude;
             bool falling = ImpactDamage.IsFall(relativeVelocity, g.transform.position, point, cfg);
+
+            // Objet repoussé par la répulsion (D-031) : il blesse ce qu'il percute comme un objet lancé, × multiplicateur,
+            // sans zone ; il perd un lancer de durabilité seulement s'il blesse un ennemi. Dangereux pushedDangerTime après
+            // la poussée ou jusqu'à passer sous pushedMinSpeed ; ensuite, il ne blesse plus (sauf une vraie chute).
+            if (!g.IsEnemy && g.Pushed && !g.ThrowArmed)
+            {
+                if (target != null && g.PushDangerous(time, cfg.pushedDangerTime))
+                {
+                    float damage = ImpactDamage.Compute(g.Mass, speed, cfg, falling) * cfg.pushedDamageMultiplier;
+                    if (ApplyRaw(target, g.Id, damage, speed, g.Mass, point, falling, false, cfg, time, out _) && g.ConsumeDurability())
+                        g.Break();
+                    return;
+                }
+
+                if (!falling)
+                    return;
+            }
+
             if (target != null)
                 TryDamage(target, g.Id, g.Mass, speed, point, cfg, time, out _, falling);
+
+            // Ennemi lancé (D-030) : il subit lui aussi les dégâts de chaque impact pendant son vol, mur compris.
+            if (g.IsEnemy && g.Damageable != null && g.EnemyBody != null && g.EnemyBody.InFlight)
+                ApplyRaw(g.Damageable, ~g.Id, ImpactDamage.Compute(g.Mass, speed, cfg, falling), speed, g.Mass, point, falling,
+                    false, cfg, time, out _);
 
             bool thrownImpact = g.TakeThrowImpact() && speed >= cfg.speedThreshold;
             bool fragileImpact = g.BreaksOnAnyImpact && !g.Held && speed >= cfg.fallSpeedThreshold;
@@ -74,6 +103,8 @@ namespace ItHunts.Combat
             float radius = AreaEffects.SplashRadius(g.Mass, cfg, g.SplashRadiusOverride);
             ApplyArea(g, target, point, radius, impactDamage, speed, cfg, time);
 
+            if (g.IsEnemy)
+                return;                                                  // pas de durabilité pour un ennemi
             bool breaks = fragileImpact || g.ConsumeDurability();
             if (breaks)
                 g.Break();
@@ -95,8 +126,10 @@ namespace ItHunts.Combat
                 targets[i] = Damageable.All[i];
             foreach (Damageable d in targets)
             {
-                if (d == null || d == directTarget || d.Dead)
+                if (d == null || d == directTarget || d.Dead || d.ImmuneToOrbs)
                     continue;
+                if (source != null && d.gameObject == source.gameObject)
+                    continue;                                            // l'ennemi lancé ne se blesse pas par sa propre zone
                 Collider col = d.MainCollider;
                 Vector3 closest = col != null ? col.ClosestPoint(point) : d.transform.position;
                 float distance = Vector3.Distance(point, closest);
@@ -133,6 +166,29 @@ namespace ItHunts.Combat
             }
 
             return !blocked;
+        }
+
+        /// <summary>
+        /// Dégâts publiés sans calcul d'impact (mur, D-031) : retire les PV, respecte l'intervalle par cible, publie le
+        /// coup. Les paliers viennent des réglages de la cible (son ImpactDamager), sinon « petit ».
+        /// </summary>
+        public static bool ApplyDirect(Damageable target, int sourceId, float damage, float speed, float mass, Vector3 point,
+            float time)
+        {
+            if (target == null || damage <= 0f)
+                return false;
+            var damager = target.GetComponent<ImpactDamager>();
+            if (damager != null && damager.Settings != null)
+                return ApplyRaw(target, sourceId, damage, speed, mass, point, false, false, damager.Settings, time, out _);
+            float taken = target.ApplyDamage(damage, time, out bool killed);
+            if (taken <= 0f)
+                return false;
+            DamageEvents.Raise(new DamageEvent
+            {
+                Target = target, Damage = taken, ImpactSpeed = speed, SourceMass = mass, Point = point, Killed = killed,
+                Tier = HitTier.Petit, Time = time,
+            });
+            return true;
         }
 
         /// <summary>

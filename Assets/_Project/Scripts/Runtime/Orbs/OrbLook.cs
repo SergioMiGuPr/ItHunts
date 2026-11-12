@@ -30,8 +30,8 @@ namespace ItHunts.Orbs
             if (t.LastAction == TelekinesisCommandKind.Lancer && t.LastActionTick != MovementState.NeverTick
                                                               && tick - t.LastActionTick < flashTicks)
                 return OrbLookKind.Lancer;
-            if (m.LastRepelTick != MovementState.NeverTick && tick - m.LastRepelTick < flashTicks)
-                return OrbLookKind.Repulsion;
+            if (m.RepelHolding || (m.LastRepelTick != MovementState.NeverTick && tick - m.LastRepelTick < flashTicks))
+                return OrbLookKind.Repulsion;                            // orange pendant toute la répulsion maintenue
             if (s.Mode == MovementMode.Traction)
                 return OrbLookKind.Traction;
             if (t.Holding)

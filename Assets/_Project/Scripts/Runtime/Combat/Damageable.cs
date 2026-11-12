@@ -16,6 +16,8 @@ namespace ItHunts.Combat
         [SerializeField] private TrainingDummySettings settings;
         [Tooltip("Réapparaît après settings.respawnDelay (ennemi factice).")]
         [SerializeField] private bool respawns = true;
+        [Tooltip("Traqueur : insensible à la répulsion, à l'étourdissement, aux dégâts de zone et à la prise (GDD).")]
+        [SerializeField] private bool immuneToOrbs;
         [Tooltip("Couleur et intensité de la lueur pendant l'étourdissement.")]
         [SerializeField] private Color stunColor = new Color(1f, 0.9f, 0.2f);
         [SerializeField, Min(0f)] private float stunGlowIntensity = 1.5f;
@@ -30,6 +32,7 @@ namespace ItHunts.Combat
         private float _flashUntil = float.NegativeInfinity;
         private Color _flashColor;
         private EnemyBody _body;
+        private ItHunts.Orbs.Grabbable _grabbable;
 
         public static IReadOnlyList<Damageable> All => AllList;
         public HealthState Health => _health;
@@ -39,6 +42,9 @@ namespace ItHunts.Combat
         /// <summary>Corps (recul, étourdissement) ; null pour une cible fixe.</summary>
         public EnemyBody Body => _body;
         public bool Stunned => _body != null && _body.Stunned;
+
+        /// <summary>Traqueur : jamais repoussé, étourdi, blessé par une zone ni attrapé.</summary>
+        public bool ImmuneToOrbs => immuneToOrbs;
 
         public Collider MainCollider => _colliders != null && _colliders.Length > 0 ? _colliders[0] : null;
 
@@ -65,6 +71,7 @@ namespace ItHunts.Combat
             _colliders = GetComponentsInChildren<Collider>();
             _block = new MaterialPropertyBlock();
             _body = GetComponent<EnemyBody>();
+            _grabbable = GetComponent<ItHunts.Orbs.Grabbable>();
             _health = HealthState.Create(settings != null ? settings.maxHealth : 100f);
         }
 
@@ -105,6 +112,8 @@ namespace ItHunts.Combat
 
             if (_renderers == null)
                 return;
+            if (_grabbable != null && _grabbable.Held)
+                return;                                                  // tenu : sa lueur vient de la télékinésie
             Color glow = Time.time < _flashUntil ? _flashColor
                 : Stunned ? stunColor * (stunGlowIntensity * (0.6f + 0.4f * Mathf.Sin(Time.time * 18f)))
                 : Color.black;

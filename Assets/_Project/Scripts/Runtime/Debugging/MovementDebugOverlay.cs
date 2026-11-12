@@ -9,8 +9,10 @@ using UnityEngine;
 namespace ItHunts.Debugging
 {
     /// <summary>
-    /// Affichage de debug du mouvement (F3 au clavier, Select à la manette) : vitesses, état,
-    /// pente, compteurs coyote et buffer, gain de vitesse entre deux sauts.
+    /// Affichage de debug (F3 au clavier, Select à la manette), en trois pages qu'on fait défiler (puis caché) :
+    /// 1. mouvement (vitesses, état, pente, coyote, buffer, charges, dash, sauts) ;
+    /// 2. orbe (commandes, derniers appuis, magnétisme, télékinésie) ;
+    /// 3. combat et vue (ennemis : PV, recul, étourdi, immunité ; objet tenu ; geste des mains ; HUD discret).
     /// </summary>
     public sealed class MovementDebugOverlay : MonoBehaviour
     {
@@ -24,7 +26,11 @@ namespace ItHunts.Debugging
         private DebugTeleporter _teleporter;
         private readonly float[] _speedHistory = new float[HistoryTicks];
         private int _historyIndex;
-        private bool _visible;
+        private int _page;
+        private const int PageCount = 3;
+        private static readonly string[] PageNames = { "", "Mouvement", "Orbe", "Combat et vue" };
+        private ItHunts.Player.FirstPersonView _view;
+        private ItHunts.Hud.PlayerHud _hud;
         private int _seenJumpTick = MovementState.NeverTick;
         private float _speedAtLastJump;
         private float _lastJumpGain;
@@ -37,7 +43,9 @@ namespace ItHunts.Debugging
             _reader = GetComponent<PlayerInputReader>();
             _look = GetComponent<PlayerLook>();
             _teleporter = GetComponent<DebugTeleporter>();
-            _visible = visibleOnStart;
+            _page = visibleOnStart ? 1 : 0;
+            _view = GetComponent<ItHunts.Player.FirstPersonView>();
+            _hud = GetComponent<ItHunts.Hud.PlayerHud>();
         }
 
         private void FixedUpdate()
@@ -61,7 +69,7 @@ namespace ItHunts.Debugging
         private void Update()
         {
             if (_reader != null && _reader.ToggleDebugPressed)
-                _visible = !_visible;
+                _page = (_page + 1) % (PageCount + 1);       // 1, 2, 3, puis caché
         }
 
         private static readonly string[] DashSectors =
@@ -93,7 +101,10 @@ namespace ItHunts.Debugging
             string aim = m.AimHit ? $"surface à {m.AimDistance:0.0} m" : $"rien à portée ({mc.attractRange:0} m)";
             string attract = m.AttractStatus == OrbStatus.EnUsage ? "EN USAGE" : m.AttractStatus == OrbStatus.Recharge ? "vide" : "prête";
             _text.AppendLine($"Magnétisme : attraction {attract}, charges {Mathf.Max(0f, m.AttractCharges):0.0}/{mc.attractCharges} " +
-                             $"(1 toutes les {mc.attractChargeRechargeTime:0.#} s) ; répulsion {Status(m.RepelStatus, m.LastRepelTick, mc.repelCooldown)}");
+                             $"(1 toutes les {mc.attractChargeRechargeTime:0.#} s) ; répulsion " +
+                             (m.RepelHolding ? $"MAINTENUE ({MagnetismOrb.RepelHoldRemaining(m, mc, now, dt):0.00} s restantes)"
+                                 : m.RepelStatus == OrbStatus.Recharge ? $"recharge {MagnetismOrb.RepelCooldownRemaining(m, mc, now, dt):0.00} s"
+                                 : m.RepelStatus == OrbStatus.EnUsage ? "EN USAGE" : "prête"));
             _text.AppendLine($"Visée : {aim}{(m.RepelInRange ? $" (répulsion possible, ≤ {mc.repelRange:0} m)" : m.AimHit ? $" (trop loin pour la répulsion, {mc.repelRange:0} m)" : "")}");
 
             if (s.Mode == MovementMode.Traction)
@@ -178,7 +189,7 @@ namespace ItHunts.Debugging
 
         private void OnGUI()
         {
-            if (!_visible || _motor == null || _motor.Settings == null)
+            if (_page == 0 || _motor == null || _motor.Settings == null)
                 return;
 
             _style ??= new GUIStyle(GUI.skin.box)
@@ -212,8 +223,31 @@ namespace ItHunts.Debugging
                 : _reader.ControlScheme ?? "?";
 
             _text.Clear();
-            _text.AppendLine("Debug mouvement (F3 / Select)");
+            _text.AppendLine($"Debug, page {_page}/{PageCount} : {PageNames[_page]}   (F3 / Select : page suivante, puis caché)");
             _text.AppendLine($"Contrôle : {scheme}");
+            if (_page == 2)
+                AppendOrbPage(s, dt);
+            else if (_page == 3)
+                AppendCombatPage(s, dt);
+            else
+                AppendMovementPage(s, cfg, dt, coyoteLeft, coyoteTicks, bufferLeft, bufferTicks, peak);
+            if (_teleporter != null)
+                _text.AppendLine(string.IsNullOrEmpty(_teleporter.LastLabel)
+                    ? "Téléport : F4 départ, F5 ouvert, F6 ligne droite, F7 pentes, F8 murs, F9 écarts, F10 magnétisme, F11 grande salle, F12 télékinésie"
+                    : $"Téléport : {_teleporter.LastLabel}   (F4 départ, F5 à F12 zones)");
+            _text.Append($"Tick : {s.Tick} ({Mathf.RoundToInt(1f / dt)} Hz)");
+            if (_look != null)
+                _text.Append($"   FOV : {_look.CurrentFov:0.0}°");
+
+            int index = _reader != null ? _reader.PlayerIndex : 0;
+            var content = new GUIContent(_text.ToString());
+            Vector2 size = _style.CalcSize(content);
+            GUI.Box(new Rect(10f + index * (size.x + 10f), 10f, size.x, size.y), content, _style);
+        }
+
+        private void AppendMovementPage(in MovementState s, MovementSettings cfg, float dt, int coyoteLeft, int coyoteTicks,
+            int bufferLeft, int bufferTicks, float peak)
+        {
             _text.AppendLine($"Vitesse horizontale : {s.HorizontalSpeed:0.00} m/s   (pic sur 1 s : {peak:0.00})");
             _text.AppendLine($"Vitesse verticale : {s.Velocity.y:0.00} m/s");
             string mode = s.Mode switch
@@ -248,6 +282,11 @@ namespace ItHunts.Debugging
                 _text.AppendLine(s.LastDashJumpSuccess
                     ? $"Dash-jump : RÉUSSI  {s.LastDashJumpSpeedBefore:0.0} → {s.LastDashJumpSpeedAfter:0.0} m/s"
                     : $"Dash-jump : raté, trop tard de {s.LastDashJumpLateTicks * dt * 1000f:0} ms (fenêtre {cfg.dashJumpWindow * 1000f:0} ms)");
+            AppendJumps(s, cfg);
+        }
+
+        private void AppendOrbPage(in MovementState s, float dt)
+        {
             if (_reader != null)
             {
                 _text.AppendLine(_reader.UsingGamepad
@@ -259,23 +298,49 @@ namespace ItHunts.Debugging
             }
             AppendMagnetism(s, dt);
             AppendTelekinesis(s, dt);
+        }
+
+        private void AppendJumps(in MovementState s, MovementSettings cfg)
+        {
             _text.AppendLine($"Sauts restants : {Mathf.Max(0, cfg.maxJumps - s.JumpsUsed)}/{cfg.maxJumps}   " +
                              $"Auto-bhop : {(cfg.autoBunnyHop ? "oui" : "non")}   Contrôle aérien : {cfg.airControl:0.00}");
             _text.AppendLine(_seenJumpTick == MovementState.NeverTick
                 ? "Dernier saut : —"
                 : $"Dernier saut : {_speedAtLastJump:0.00} m/s (gain {_lastJumpGain:+0.00;-0.00;0.00})");
-            if (_teleporter != null)
-                _text.AppendLine(string.IsNullOrEmpty(_teleporter.LastLabel)
-                    ? "Téléport : F4 départ, F5 ouvert, F6 ligne droite, F7 pentes, F8 murs, F9 écarts, F10 magnétisme, F11 grande salle, F12 télékinésie"
-                    : $"Téléport : {_teleporter.LastLabel}   (F4 départ, F5 à F12 zones)");
-            _text.Append($"Tick : {s.Tick} ({Mathf.RoundToInt(1f / dt)} Hz)");
-            if (_look != null)
-                _text.Append($"   FOV : {_look.CurrentFov:0.0}°");
+        }
 
-            int index = _reader != null ? _reader.PlayerIndex : 0;
-            var content = new GUIContent(_text.ToString());
-            Vector2 size = _style.CalcSize(content);
-            GUI.Box(new Rect(10f + index * (size.x + 10f), 10f, size.x, size.y), content, _style);
+        /// <summary>Page 3 : ennemis (PV, recul, étourdi, immunité), objet tenu, geste des mains, HUD discret.</summary>
+        private void AppendCombatPage(in MovementState s, float dt)
+        {
+            foreach (ItHunts.Combat.Damageable d in ItHunts.Combat.Damageable.All)
+            {
+                if (d == null)
+                    continue;
+                ItHunts.Combat.EnemyBody b = d.Body;
+                string body = b == null ? "fixe"
+                    : b.Stunned ? $"ÉTOURDI ({b.StunnedUntil - Time.time:0.0} s, impact {b.LastStunImpactSpeed:0.0} m/s)"
+                    : b.StunImmune ? "immunisé"
+                    : b.Knocked ? $"repoussé {b.Velocity.magnitude:0.0} m/s"
+                    : "—";
+                _text.AppendLine($"{d.name} : {(d.Dead ? "mort" : $"{d.Health.Current:0}/{d.Health.Max:0} PV")}, {body}, " +
+                                 $"à {Vector3.Distance(transform.position, d.transform.position):0} m");
+            }
+
+            ItHunts.Orbs.Grabbable held = _motor.Holder != null ? _motor.Holder.Held : null;
+            _text.AppendLine(held == null ? "Objet tenu : —"
+                : $"Objet tenu : {held.name} ({held.Mass:0} kg), lancers restants {held.ThrowsLeft}/{held.MaxDurability}" +
+                  $"{(held.BreaksOnAnyImpact ? ", fragile" : "")}");
+            if (_motor.Holder != null && _motor.Telekinesis.LastAction == ItHunts.Orbs.TelekinesisCommandKind.Lancer)
+                _text.AppendLine($"Dernier lancer : {_motor.Holder.LastThrowVelocity.magnitude:0.0} m/s " +
+                                 $"(bonus de vitesse plafonné à {_motor.TelekinesisSettings.throwSpeedBonusCap:0} m/s)");
+            if (_view != null)
+                _text.AppendLine($"Mains : geste {_view.Gesture}, intensité du mouvement {_view.HandMotionIntensity * 100f:0} %, " +
+                                 $"couche {(_view.Layer >= 0 ? LayerMask.LayerToName(_view.Layer) : "—")}");
+            if (_hud != null)
+            {
+                Vector3 a = _hud.GaugeAlphas;
+                _text.AppendLine($"HUD discret : mouvement {a.x * 100f:0} %, attraction {a.y * 100f:0} %, répulsion {a.z * 100f:0} %");
+            }
         }
     }
 }

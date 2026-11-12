@@ -304,9 +304,9 @@ namespace ItHunts.Tests
                 "chaque objet attrapable blesse");
 
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");
-            var hud = prefab.GetComponent<DamageNumbersHud>();
-            Assert.That(hud, Is.Not.Null, "chiffres de dégâts sur le joueur");
-            Assert.That(new SerializedObject(hud).FindProperty("settings").objectReferenceValue, Is.Not.Null);
+            var hud = prefab.GetComponent<ItHunts.Hud.PlayerHud>();
+            Assert.That(hud, Is.Not.Null, "chiffres de dégâts sur le joueur (HUD)");
+            Assert.That(new SerializedObject(hud).FindProperty("damageFeedback").objectReferenceValue, Is.Not.Null);
         }
 
         [Test]
@@ -493,19 +493,25 @@ namespace ItHunts.Tests
         // ---------- Onde de répulsion et étourdissement (D-027) ----------
 
         [Test]
-        public void Onde_VitesseSelonMasseEtDistance()
+        public void Onde_VitesseSelonMasseDistanceEtAngle()
         {
             var magnet = ScriptableObject.CreateInstance<MagnetismOrbSettings>();
             try
             {
-                Assert.That(AreaEffects.WavePushSpeed(15f, 0f, false, magnet), Is.EqualTo(16f).Within(1e-3f), "caisse de 15 kg au centre");
-                Assert.That(AreaEffects.WavePushSpeed(5f, 0f, false, magnet), Is.EqualTo(20.8f).Within(1e-3f), "légère : ×1.3 au plus");
-                Assert.That(AreaEffects.WavePushSpeed(60f, 0f, false, magnet), Is.EqualTo(5.6f).Within(1e-3f), "lourde : ×0.35 au moins");
-                Assert.That(AreaEffects.WavePushSpeed(80f, 0f, true, magnet), Is.EqualTo(16f).Within(1e-3f), "ennemi de 80 kg");
-                Assert.That(AreaEffects.WavePushSpeed(80f, 4f, true, magnet), Is.EqualTo(8f).Within(1e-3f), "moitié au bord");
-                Assert.That(AreaEffects.WavePushSpeed(80f, 4.1f, true, magnet), Is.EqualTo(0f), "hors de l'onde");
+                Assert.That(magnet.waveRange, Is.EqualTo(14f));
+                Assert.That(magnet.waveConeAngle, Is.EqualTo(60f));
+                Assert.That(AreaEffects.WavePushSpeed(15f, 0f, false, magnet), Is.EqualTo(22f).Within(1e-3f), "caisse de 15 kg tout près");
+                Assert.That(AreaEffects.WavePushSpeed(15f, 2f, false, magnet), Is.EqualTo(22f).Within(1e-3f), "22 m/s à 2 m");
+                Assert.That(AreaEffects.WavePushSpeed(5f, 2f, false, magnet), Is.EqualTo(28.6f).Within(1e-3f), "légère : ×1.3 au plus");
+                Assert.That(AreaEffects.WavePushSpeed(60f, 2f, false, magnet), Is.EqualTo(7.7f).Within(1e-3f), "lourde : ×0.35 au moins");
+                Assert.That(AreaEffects.WavePushSpeed(80f, 2f, true, magnet), Is.EqualTo(22f).Within(1e-3f), "ennemi de 80 kg");
+                Assert.That(AreaEffects.WavePushSpeed(80f, 8f, true, magnet), Is.EqualTo(17.6f).Within(1e-3f), "à mi-chemin de 2 à 14 m : ×0.8");
+                Assert.That(AreaEffects.WavePushSpeed(80f, 14f, true, magnet), Is.EqualTo(13.2f).Within(1e-3f), "au bout de la portée : ×0.6");
+                Assert.That(AreaEffects.WavePushSpeed(80f, 14.1f, true, magnet), Is.EqualTo(0f), "au-delà de 14 m");
+                Assert.That(AreaEffects.WavePushSpeed(80f, 2f, true, magnet, 30f), Is.EqualTo(22f).Within(1e-3f), "au bord du cône (30°) : même force");
+                Assert.That(AreaEffects.WavePushSpeed(80f, 2f, true, magnet, 31f), Is.EqualTo(0f), "hors du cône");
                 Vector3 dir = AreaEffects.WavePushDirection(Vector3.zero, new Vector3(2f, -1f, 0f), magnet);
-                Assert.That(dir.x, Is.GreaterThan(0.9f), "loin du centre");
+                Assert.That(dir.x, Is.GreaterThan(0.9f), "loin du joueur");
                 Assert.That(dir.y, Is.GreaterThan(0f), "un peu vers le haut, jamais vers le bas");
             }
             finally
@@ -527,34 +533,53 @@ namespace ItHunts.Tests
             return e;
         }
 
+        private Grabbable Floating(Vector3 position, float mass)
+        {
+            Grabbable g = Crate(position, mass);
+            g.Body.useGravity = false;
+            return g;
+        }
+
+        private void SyncPhysics()
+        {
+            Physics.SyncTransforms();
+            _scene.GetPhysicsScene().Simulate(Dt);
+        }
+
         [Test]
-        public void Onde_RepousseObjetsEtEnnemis_DecrocheLeLustre_PasLObjetTenu()
+        public void Onde_ConeDepuisLeJoueur_DedansDehorsDerriereUnMur()
         {
             var magnet = ScriptableObject.CreateInstance<MagnetismOrbSettings>();
             try
             {
-                Grabbable loose = Crate(new Vector3(2f, 0.5f, 0f), 15f);
-                Grabbable held = Crate(new Vector3(-2f, 0.5f, 0f), 15f);
+                var eye = new Vector3(0f, 1f, 0f);
+                Grabbable inside = Floating(new Vector3(0f, 1f, 4f), 15f);
+                Grabbable behindPlayer = Floating(new Vector3(0f, 1f, -3f), 15f);
+                Grabbable aside = Floating(new Vector3(5f, 1f, 3f), 15f);            // à 59° : hors du cône de 60°
+                Grabbable tooFar = Floating(new Vector3(0f, 1f, 16f), 15f);
+                Grabbable held = Floating(new Vector3(0f, 1f, 2.5f), 15f);
                 held.OnGrabbed();
-                Grabbable lustre = Crate(new Vector3(0f, 3f, 0f), 25f, fragile: true);
-                var so = new SerializedObject(lustre);
-                so.FindProperty("startsAnchored").boolValue = true;
-                so.ApplyModifiedPropertiesWithoutUndo();
-                Invoke(lustre, "Awake");
-                Assume.That(lustre.Anchored, Is.True);
-                Damageable d = Dummy(new Vector3(0f, 0f, 2.5f));
+                Damageable d = Dummy(new Vector3(1f, 0f, 5f));
                 EnemyBody enemy = Body(d);
-                Grabbable outside = Crate(new Vector3(10f, 0.5f, 0f), 15f);
+                GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                SceneManager.MoveGameObjectToScene(wall, _scene);
+                wall.transform.position = new Vector3(-2.5f, 1f, 5f);
+                wall.transform.localScale = new Vector3(2f, 4f, 0.3f);
+                Grabbable hidden = Floating(new Vector3(-2.8f, 1f, 6.5f), 15f);      // dans le cône, mais derrière le mur
+                SyncPhysics();
+                Vector3 v0 = behindPlayer.Body.linearVelocity, v1 = aside.Body.linearVelocity, v2 = tooFar.Body.linearVelocity, v3 = hidden.Body.linearVelocity;
 
-                int pushed = RepulsionWave.Apply(new Vector3(0f, 0.5f, 0f), magnet, held.Body);
-                Assert.That(loose.Body.linearVelocity.x, Is.GreaterThan(5f), "objet repoussé loin du point");
-                Assert.That(held.Body.linearVelocity.magnitude, Is.LessThan(1e-3f), "l'objet tenu n'est pas poussé");
-                Assert.That(lustre.Anchored, Is.False, "lustre décroché : il tombe");
-                Assert.That(lustre.Body.linearVelocity.magnitude, Is.LessThan(1e-3f), "sans poussée : il tombe droit");
-                Assert.That(enemy.Knocked, Is.True);
-                Assert.That(enemy.Velocity.z, Is.GreaterThan(5f), "ennemi repoussé loin du point");
-                Assert.That(outside.Body.linearVelocity.magnitude, Is.LessThan(1e-3f), "hors de l'onde");
-                Assert.That(pushed, Is.GreaterThanOrEqualTo(3));
+                int pushed = RepulsionWave.Apply(eye, Vector3.forward, eye, magnet, held.Body, null, _scene.GetPhysicsScene());
+
+                Assert.That(inside.Body.linearVelocity.z, Is.GreaterThan(8f), "dans le cône : repoussé loin du joueur");
+                Assert.That(enemy.Knocked, Is.True, "factice dans le cône : repoussé");
+                Assert.That(enemy.Velocity.z, Is.GreaterThan(5f));
+                Assert.That((behindPlayer.Body.linearVelocity - v0).magnitude, Is.LessThan(1e-3f), "derrière le joueur : rien");
+                Assert.That((aside.Body.linearVelocity - v1).magnitude, Is.LessThan(1e-3f), "sur le côté, hors du cône : rien");
+                Assert.That((tooFar.Body.linearVelocity - v2).magnitude, Is.LessThan(1e-3f), "au-delà de 14 m : rien");
+                Assert.That((hidden.Body.linearVelocity - v3).magnitude, Is.LessThan(1e-3f), "derrière un mur : rien");
+                Assert.That(held.Body.linearVelocity.magnitude, Is.LessThan(1e-3f), "l'objet tenu : rien");
+                Assert.That(pushed, Is.EqualTo(2));
             }
             finally
             {
@@ -562,6 +587,105 @@ namespace ItHunts.Tests
             }
         }
 
+        [Test]
+        public void Onde_LustreDecrocheEnVisantVersLeHaut_TraqueurExclu()
+        {
+            var magnet = ScriptableObject.CreateInstance<MagnetismOrbSettings>();
+            try
+            {
+                Grabbable lustre = Crate(new Vector3(0f, 7.6f, 2f), 25f, fragile: true);
+                var so = new SerializedObject(lustre);
+                so.FindProperty("startsAnchored").boolValue = true;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                Invoke(lustre, "Awake");
+                Assume.That(lustre.Anchored, Is.True);
+                Damageable stalker = Dummy(new Vector3(0f, 0f, 3f));
+                var sso = new SerializedObject(stalker);
+                sso.FindProperty("immuneToOrbs").boolValue = true;
+                sso.ApplyModifiedPropertiesWithoutUndo();
+                EnemyBody stalkerBody = Body(stalker);
+                SyncPhysics();
+
+                var eye = new Vector3(0f, 1.6f, 0f);
+                RepulsionWave.Apply(eye, (lustre.transform.position - eye).normalized, eye, magnet, null, null, _scene.GetPhysicsScene());
+                Assert.That(lustre.Anchored, Is.False, "visé par en dessous (≈ 6.3 m) : décroché, il tombe");
+                Assert.That(lustre.Body.linearVelocity.magnitude, Is.LessThan(1e-3f), "sans poussée : il tombe droit");
+
+                RepulsionWave.Apply(eye, Vector3.forward, eye, magnet, null, null, _scene.GetPhysicsScene());
+                Assert.That(stalkerBody.Knocked, Is.False, "le traqueur n'est jamais repoussé");
+                Assert.That(stalkerBody.Stun(20f), Is.False, "ni étourdi");
+            }
+            finally
+            {
+                Object.DestroyImmediate(magnet);
+            }
+        }
+
+        // ---------- Prise des ennemis étourdis (D-030) ----------
+
+        private (Damageable d, EnemyBody body, Grabbable g) GrabbableDummy(Vector3 feet, bool stalker = false)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            SceneManager.MoveGameObjectToScene(go, _scene);
+            go.transform.position = feet + Vector3.up * 0.9f;
+            go.transform.localScale = new Vector3(0.8f, 0.9f, 0.8f);
+            var rb = go.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.mass = 80f;
+            var g = go.AddComponent<Grabbable>();
+            var gso = new SerializedObject(g);
+            gso.FindProperty("isEnemy").boolValue = true;
+            gso.ApplyModifiedPropertiesWithoutUndo();
+            var body = go.AddComponent<EnemyBody>();
+            var bso = new SerializedObject(body);
+            bso.FindProperty("settings").objectReferenceValue = _dummyCfg;
+            bso.ApplyModifiedPropertiesWithoutUndo();
+            var d = go.AddComponent<Damageable>();
+            var dso = new SerializedObject(d);
+            dso.FindProperty("settings").objectReferenceValue = _dummyCfg;
+            dso.FindProperty("immuneToOrbs").boolValue = stalker;
+            dso.ApplyModifiedPropertiesWithoutUndo();
+            body.Init();
+            d.Init();
+            Invoke(d, "OnEnable");
+            Invoke(g, "Awake");
+            Invoke(g, "OnEnable");
+            return (d, body, g);
+        }
+
+        [Test]
+        public void Prise_SeulUnEnnemiEtourdi_JamaisLeTraqueur()
+        {
+            var tk = ScriptableObject.CreateInstance<TelekinesisOrbSettings>();
+            try
+            {
+                (_, EnemyBody body, Grabbable g) = GrabbableDummy(new Vector3(0f, 0f, 6f));
+                (_, EnemyBody stalkerBody, Grabbable stalker) = GrabbableDummy(new Vector3(4f, 0f, 6f), stalker: true);
+                SyncPhysics();
+                var probe = new PhysicsGrabProbe(~0, null) { Settings = tk, Scene = _scene.GetPhysicsScene() };
+                var eye = new Vector3(0f, 1f, 0f);
+
+                Assert.That(probe.FindGrabbable(eye, Vector3.forward, tk.range, out _), Is.False, "pas étourdi : pas attrapable");
+                Assert.That(body.Stun(10f), Is.True);
+                Assert.That(probe.FindGrabbable(eye, Vector3.forward, tk.range, out GrabCandidate c), Is.True, "étourdi : attrapable");
+                Assert.That(c.Id, Is.EqualTo(g.Id));
+                Assert.That(c.Enemy, Is.True);
+                Assert.That(c.Mass, Is.EqualTo(80f), "80 kg : au-delà de la masse maximale, mais un ennemi n'a pas de limite");
+                Assert.That(probe.FindGrabbable(eye, (new Vector3(0.5f, 1f, 6f) - eye).normalized, tk.range, out c), Is.True,
+                    "l'aide à la visée en cône l'inclut");
+
+                Assert.That(stalkerBody.Stun(10f), Is.False, "le traqueur n'est jamais étourdi");
+                Assert.That(stalker.CanBeGrabbedNow, Is.False, "ni attrapé");
+                Assert.That(probe.FindGrabbable(eye, (new Vector3(4f, 1f, 6f) - eye).normalized, tk.range, out c) && c.Id == stalker.Id, Is.False);
+
+                g.OnGrabbed();
+                Assert.That(g.CanBeGrabbedNow, Is.False, "déjà tenu : un seul joueur le tient");
+            }
+            finally
+            {
+                Object.DestroyImmediate(tk);
+            }
+        }
         private (EnemyBody enemy, Damageable d) PushTowardWall(float speed)
         {
             Damageable d = Dummy(Vector3.zero);
@@ -605,7 +729,8 @@ namespace ItHunts.Tests
             var magnet = AssetDatabase.LoadAssetAtPath<MagnetismOrbSettings>("Assets/_Project/Settings/Magnetism_Default.asset");
             var dummy = AssetDatabase.LoadAssetAtPath<TrainingDummySettings>("Assets/_Project/Settings/TrainingDummy_Default.asset");
             var damage = AssetDatabase.LoadAssetAtPath<DamageSettings>("Assets/_Project/Settings/Damage_Default.asset");
-            Assert.That(magnet.waveRadius, Is.EqualTo(4f));
+            Assert.That(magnet.waveRange, Is.EqualTo(14f));
+            Assert.That(magnet.waveConeAngle, Is.EqualTo(60f));
             Assert.That(dummy.stunImpactSpeed, Is.EqualTo(6f));
             Assert.That(dummy.stunDuration, Is.EqualTo(1.5f));
             Assert.That(damage.heavyDurability, Is.EqualTo(5));

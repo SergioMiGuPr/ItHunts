@@ -51,6 +51,14 @@ namespace ItHunts.Orbs
         public int LastTractionEndTick;
         public int LastRepelTick;
 
+        /// <summary>
+        /// Répulsion maintenue en cours (D-029) : poussée continue depuis RepelHoldStartTick ; la recharge part de
+        /// LastRepelEndTick (fin du maintien, ou appui simple).
+        /// </summary>
+        public bool RepelHolding;
+        public int RepelHoldStartTick;
+        public int LastRepelEndTick;
+
         /// <summary>Appuis déjà consommés (un appui = un usage ou un refus).</summary>
         public int LastConsumedAttractPressTick;
         public int LastConsumedRepelPressTick;
@@ -99,6 +107,9 @@ namespace ItHunts.Orbs
             AttractCharges = -1f,
             LastTractionEndTick = MovementState.NeverTick,
             LastRepelTick = MovementState.NeverTick,
+            RepelHolding = false,
+            RepelHoldStartTick = MovementState.NeverTick,
+            LastRepelEndTick = MovementState.NeverTick,
             LastConsumedAttractPressTick = MovementState.NeverTick,
             LastConsumedRepelPressTick = MovementState.NeverTick,
             AimHit = false,

@@ -7,8 +7,9 @@ namespace ItHunts.Combat
     /// Corps d'un ennemi (factice pour l'instant) : recul quand l'onde de répulsion le pousse (corps cinématique déplacé à
     /// pas fixe, avec gravité et freinage au sol), étourdissement s'il percute un obstacle solide au-dessus de
     /// stunImpactSpeed, puis retour à son poste. Pendant le recul et l'étourdissement, il ne marche pas (TrainingDummyMover
-    /// attend). L'état « étourdi » prépare la prise d'ennemis par la télékinésie (goule, 1.5 s, étape des ennemis) :
-    /// CanBeGrabbed.
+    /// attend). Étourdi, il peut être attrapé par la télékinésie (D-030) : tenu, c'est un objet physique de sa masse ; à la
+    /// libération (lancer, ou seul au bout du temps réglé), il vole jusqu'à se poser, puis reprend son corps
+    /// cinématique ; l'étourdissement s'arrête et l'immunité commence.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public sealed class EnemyBody : MonoBehaviour
@@ -26,19 +27,52 @@ namespace ItHunts.Combat
         private bool _knocked;
         private float _restSince = float.NegativeInfinity;
         private float _stunnedUntil = float.NegativeInfinity;
+        private float _immuneUntil = float.NegativeInfinity;
+        private ItHunts.Orbs.Grabbable _grabbable;
+        private Damageable _damageable;
+        private bool _wasHeld;
+        private bool _inFlight;
+        private float _flightStart;
 
         public Vector3 Velocity => _velocity;
         public bool Knocked => _knocked;
         public bool Stunned => Time.time < _stunnedUntil;
+
+        /// <summary>Immunisé : un étourdissement vient de finir (stunImmunity), pas de nouvel étourdissement.</summary>
+        public bool StunImmune => !Stunned && Time.time < _immuneUntil;
         public float StunnedUntil => _stunnedUntil;
         public float Mass => settings != null ? settings.mass : 80f;
+        public Rigidbody Rigidbody => _body;
+
+        /// <summary>Tenu par la télékinésie.</summary>
+        public bool Held => _grabbable != null && _grabbable.Held;
+
+        /// <summary>Lâché ou lancé par la télékinésie, il vole (corps dynamique) jusqu'à se poser.</summary>
+        public bool InFlight => _inFlight;
         public TrainingDummySettings Settings => settings;
 
-        /// <summary>Repoussé ou étourdi : il ne marche pas.</summary>
-        public bool Busy => _knocked || Stunned;
+        /// <summary>Repoussé, étourdi, tenu ou en vol : il ne marche pas.</summary>
+        public bool Busy => _knocked || Stunned || Held || _inFlight;
 
-        /// <summary>Un ennemi étourdi pourra être attrapé par la télékinésie (étape des ennemis).</summary>
-        public bool CanBeGrabbed => Stunned;
+        /// <summary>Attrapable par la télékinésie : étourdi, pas déjà tenu, pas le traqueur (D-030).</summary>
+        public bool CanBeGrabbed => Stunned && !Held && (_damageable == null || !_damageable.ImmuneToOrbs);
+
+        /// <summary>Derniers dégâts contre un mur (D-031, debug et mesures).</summary>
+        public float LastWallDamage { get; private set; }
+
+        /// <summary>
+        /// Dégâts contre un mur d'un ennemi repoussé (D-031) : 5 PV par m/s au-delà de 6 m/s, au plus 40 ; appelé avec
+        /// l'étourdissement réussi (donc une fois par impact, jamais pendant l'immunité ; traqueur exclu). Renvoie les dégâts.
+        /// </summary>
+        public float ApplyWallDamage(float impactSpeed, Vector3 point)
+        {
+            if (settings == null || _damageable == null || _damageable.ImmuneToOrbs)
+                return 0f;
+            float damage = AreaEffects.WallDamage(impactSpeed, settings);
+            float before = _damageable.Health.Current;
+            ImpactDamager.ApplyDirect(_damageable, -GetInstanceID() - 1, damage, impactSpeed, Mass, point, Time.time);
+            return before - _damageable.Health.Current;
+        }
 
         /// <summary>Dernier étourdissement : vitesse d'impact contre l'obstacle (debug, mesures).</summary>
         public float LastStunImpactSpeed { get; private set; }
@@ -51,23 +85,42 @@ namespace ItHunts.Combat
             _body = GetComponent<Rigidbody>();
             _body.isKinematic = true;
             _body.interpolation = RigidbodyInterpolation.Interpolate;
+            if (settings != null)
+                _body.mass = settings.mass;
             _home = transform.position;
+            _grabbable = GetComponent<ItHunts.Orbs.Grabbable>();
+            _damageable = GetComponent<Damageable>();
         }
 
         /// <summary>Ajoute une vitesse de recul (onde de répulsion).</summary>
         public void Push(Vector3 velocity)
         {
+            if (Held)
+                return;
+            if (_inFlight)
+            {
+                _body.linearVelocity += velocity;
+                return;
+            }
+
             _velocity += velocity;
             _knocked = _velocity.sqrMagnitude > RestSpeed * RestSpeed;
         }
 
-        /// <summary>Étourdi pendant la durée réglée (repère et son par AreaEvents.Stunned).</summary>
-        public void Stun(float impactSpeed)
+        /// <summary>
+        /// Étourdi pendant la durée réglée (repère et son par AreaEvents.Stunned) ; refusé s'il l'est déjà ou s'il est
+        /// encore immunisé (stunImmunity après la fin du précédent). Vrai s'il est étourdi par cet appel.
+        /// </summary>
+        public bool Stun(float impactSpeed)
         {
-            float duration = settings != null ? settings.stunDuration : 1.5f;
-            _stunnedUntil = Time.time + duration;
+            if (settings == null || Held || (_damageable != null && _damageable.ImmuneToOrbs)
+                || !AreaEffects.CanStun(Time.time, _stunnedUntil, _immuneUntil))
+                return false;
+            float duration = settings.stunDuration;
+            AreaEffects.StunTimes(Time.time, settings, out _stunnedUntil, out _immuneUntil);
             LastStunImpactSpeed = impactSpeed;
             AreaEvents.RaiseStunned(new StunEvent { Target = transform, Point = transform.position + Vector3.up * 1f, Duration = duration });
+            return true;
         }
 
         /// <summary>Réapparition : à son poste, immobile, pas étourdi.</summary>
@@ -76,14 +129,73 @@ namespace ItHunts.Combat
             _velocity = Vector3.zero;
             _knocked = false;
             _stunnedUntil = float.NegativeInfinity;
-            transform.position = _home;
+            _immuneUntil = float.NegativeInfinity;
+            _inFlight = false;
+            _wasHeld = false;
+            _body.isKinematic = true;
+            _body.constraints = RigidbodyConstraints.None;
+            transform.SetPositionAndRotation(_home, Quaternion.identity);
             _body.position = _home;
+            _body.rotation = Quaternion.identity;
+        }
+
+        /// <summary>Attrapé : il reste « pris » (étourdi) tant qu'il est tenu ; plus de recul.</summary>
+        private void OnCaptured()
+        {
+            _stunnedUntil = float.PositiveInfinity;
+            _knocked = false;
+            _velocity = Vector3.zero;
+            _body.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+
+        /// <summary>Lâché ou lancé : fin de l'étourdissement, début de l'immunité, vol jusqu'à se poser.</summary>
+        private void OnReleasedFromHold()
+        {
+            float now = Time.time;
+            _stunnedUntil = now;
+            _immuneUntil = now + (settings != null ? settings.stunImmunity : 2f);
+            _inFlight = !_body.isKinematic;
+            _flightStart = now;
+        }
+
+        private void FlightStep()
+        {
+            bool slow = _body.linearVelocity.magnitude < 0.3f && Time.time - _flightStart > 0.2f;
+            if (!slow && Time.time - _flightStart < 4f)
+                return;
+            _inFlight = false;
+            _body.linearVelocity = Vector3.zero;
+            _body.isKinematic = true;
+            _body.constraints = RigidbodyConstraints.None;
+            transform.rotation = Quaternion.identity;
+            _body.rotation = Quaternion.identity;
+            _restSince = Time.time;
         }
 
         private void FixedUpdate()
         {
             if (_body == null)
                 Init();
+            if (Held)
+            {
+                if (!_wasHeld)
+                    OnCaptured();
+                _wasHeld = true;
+                return;
+            }
+
+            if (_wasHeld)
+            {
+                _wasHeld = false;
+                OnReleasedFromHold();
+            }
+
+            if (_inFlight)
+            {
+                FlightStep();
+                return;
+            }
+
             Step(Time.fixedDeltaTime);
         }
 
@@ -123,8 +235,8 @@ namespace ItHunts.Combat
                     float into = -Vector3.Dot(_velocity, n);
                     bool wall = n.y < 0.5f;
                     bool solid = hit.collider.GetComponent<CharacterController>() == null;
-                    if (wall && solid && settings != null && AreaEffects.Stuns(into, settings))
-                        Stun(into);
+                    if (wall && solid && settings != null && AreaEffects.Stuns(into, settings) && Stun(into))
+                        LastWallDamage = ApplyWallDamage(into, hit.point);   // une fois par impact, pas pendant l'immunité
                     if (into > 0f)
                         _velocity += n * into;                         // glisse le long de l'obstacle, sans rebond
                 }

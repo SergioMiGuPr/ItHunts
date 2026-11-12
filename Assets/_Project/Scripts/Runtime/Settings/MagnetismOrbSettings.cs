@@ -45,21 +45,40 @@ namespace ItHunts.Settings
         [Min(0f)] public float repelCooldown = 5f;
         [Tooltip("Durée de l'état « En usage » après une répulsion (s) : retour visuel.")]
         [Min(0f)] public float repelUseDuration = 0.15f;
-        [Header("Répulsion : onde au point visé (D-027)")]
-        [Tooltip("Rayon de l'onde (m) : elle repousse les objets déplaçables et les ennemis, en plus de propulser le joueur.")]
-        [Min(0f)] public float waveRadius = 4f;
-        [Tooltip("Vitesse donnée à un objet de masse de référence (m/s), loin du point ; plus faible pour un objet lourd.")]
-        [Min(0f)] public float waveObjectSpeed = 16f;
+        [Header("Répulsion : onde en cône depuis le joueur (D-029)")]
+        [Tooltip("Portée de l'onde (m), depuis les yeux, dans la direction visée : elle repousse les objets déplaçables et " +
+                 "les ennemis ; le joueur n'est propulsé qu'à l'appui (inchangé).")]
+        [Min(0f)] public float waveRange = 14f;
+        [Tooltip("Ouverture totale du cône (degrés) : 60° = 30° de chaque côté de la visée.")]
+        [Range(1f, 179f)] public float waveConeAngle = 60f;
+        [Tooltip("Au bord du cône (angle), part de la vitesse sur l'axe (1 : la même).")]
+        [Range(0f, 1f)] public float waveAngleEdgeShare = 1f;
+        [Tooltip("Onde de départ (appui) : vitesse donnée à un objet de masse de référence jusqu'à waveFalloffStart (m/s) ; " +
+                 "plus faible pour un objet lourd.")]
+        [Min(0f)] public float waveObjectSpeed = 22f;
         [Min(0.1f)] public float waveObjectReferenceMass = 15f;
-        [Tooltip("Vitesse donnée à un ennemi de masse de référence (m/s).")]
-        [Min(0f)] public float waveEnemySpeed = 16f;
+        [Tooltip("Onde de départ : vitesse donnée à un ennemi de masse de référence (m/s).")]
+        [Min(0f)] public float waveEnemySpeed = 22f;
         [Min(0.1f)] public float waveEnemyReferenceMass = 80f;
         [Tooltip("Facteur de masse (référence / masse) borné entre ces valeurs : un objet léger part au plus 1.3 fois plus " +
                  "vite, un objet très lourd au moins 0.35 fois.")]
         [Min(0f)] public float waveMassScaleMin = 0.35f;
         [Min(0f)] public float waveMassScaleMax = 1.3f;
-        [Tooltip("Au bord de l'onde, part de la vitesse du centre (décroissance linéaire).")]
-        [Range(0f, 1f)] public float waveEdgeShare = 0.5f;
+        [Tooltip("Distance (m) jusqu'à laquelle l'onde garde toute sa force ; elle décroît ensuite jusqu'au bout de la portée.")]
+        [Min(0f)] public float waveFalloffStart = 2f;
+        [Tooltip("Onde de départ : au bout de la portée, part de la vitesse donnée de près.")]
+        [Range(0f, 1f)] public float waveEdgeShare = 0.6f;
+
+        [Header("Répulsion maintenue : poussée continue (D-029)")]
+        [Tooltip("Bouton maintenu : la répulsion continue au plus ce temps (s) et pousse tout ce qui est dans le cône ; " +
+                 "elle s'arrête au relâchement, à cette durée ou à une autre action de l'orbe. La recharge part de la fin.")]
+        [Min(0f)] public float repelHoldMaxDuration = 0.8f;
+        [Tooltip("Poussée continue dans l'axe du cône (m/s²), pour la masse de référence, jusqu'à waveFalloffStart.")]
+        [Min(0f)] public float repelHoldAcceleration = 35f;
+        [Tooltip("Poussée continue : au bout de la portée, part de la poussée de près.")]
+        [Range(0f, 1f)] public float repelHoldEdgeShare = 0.5f;
+        [Tooltip("La poussée continue n'ajoute plus rien au-delà de cette vitesse dans l'axe du cône (m/s).")]
+        [Min(0f)] public float repelHoldMaxSpeed = 25f;
         [Tooltip("Part de montée ajoutée à la direction de poussée (les objets décollent un peu).")]
         [Range(0f, 1f)] public float waveLift = 0.25f;
         [Tooltip("Au sol, pas de friction pendant ce temps après une répulsion (s).")]

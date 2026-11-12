@@ -28,17 +28,23 @@ namespace ItHunts.Orbs
             bool hit = probe.FindGrabbable(eye, aimDir, cfg.range, out GrabCandidate c);
             t.AimHit = hit;
             t.AimId = hit ? c.Id : 0;
-            t.AimTooHeavy = hit && c.Mass > cfg.maxMass;
+            t.AimTooHeavy = hit && !c.Enemy && c.Mass > cfg.maxMass;
             t.AimDistance = hit ? c.Distance : 0f;
             t.AimAngle = hit ? c.Angle : 0f;
 
             var cmd = new TelekinesisCommand { Kind = TelekinesisCommandKind.Aucune };
+
+            // Ennemi tenu : il se libère seul au bout du temps réglé (D-030).
+            int enemyHoldTicks = MovementSettings.SecondsToTicks(cfg.enemyHoldDuration, dt);
+            if (t.Holding && t.HeldIsEnemy && tick - t.GrabTick >= enemyHoldTicks)
+                cmd = Release(ref t, tick, TelekinesisCommandKind.Lacher);
+
             bool cooling = t.LastThrowTick != MovementState.NeverTick && tick - t.LastThrowTick < cooldownTicks;
 
             bool grab = IsFresh(input.GrabPressedTick, t.LastConsumedGrabPressTick, tick, bufferTicks);
             bool throwPress = IsFresh(input.ThrowPressedTick, t.LastConsumedThrowPressTick, tick, bufferTicks);
 
-            if (grab)
+            if (grab && cmd.Kind == TelekinesisCommandKind.Aucune)
             {
                 if (t.Holding)
                 {
@@ -53,12 +59,13 @@ namespace ItHunts.Orbs
                 }
                 else if (!hit)
                     Refuse(ref t, tick, TelekinesisRefusal.RienAttrapable, ref t.LastConsumedGrabPressTick, input.GrabPressedTick);
-                else if (c.Mass > cfg.maxMass)
+                else if (!c.Enemy && c.Mass > cfg.maxMass)
                     Refuse(ref t, tick, TelekinesisRefusal.TropLourd, ref t.LastConsumedGrabPressTick, input.GrabPressedTick);
                 else
                 {
                     t.HeldId = c.Id;
                     t.GrabTick = tick;
+                    t.HeldIsEnemy = c.Enemy;
                     t.LastAction = TelekinesisCommandKind.Attraper;
                     t.LastActionTick = tick;
                     t.LastConsumedGrabPressTick = input.GrabPressedTick;
@@ -110,14 +117,14 @@ namespace ItHunts.Orbs
         /// <summary>
         /// Vitesse d'un lancer, toujours exactement dans la direction voulue (de l'objet vers le point sous le viseur) :
         /// throwSpeed, plus la part de la vitesse du joueur dans cette direction si elle est positive et si
-        /// inheritPlayerVelocity (lancer en pleine course frappe plus fort). Le reste de la vitesse du joueur est ignoré :
+        /// inheritPlayerVelocity (lancer en pleine course frappe plus fort), au plus throwSpeedBonusCap. Le reste de la vitesse du joueur est ignoré :
         /// il ne dévie jamais l'objet (avant correction, toute la vitesse était ajoutée : 7 m d'écart à 30 m en course de
         /// côté, 10 m en traction).
         /// </summary>
         public static Vector3 ThrowVelocity(Vector3 direction, Vector3 playerVelocity, TelekinesisOrbSettings cfg)
         {
             Vector3 dir = direction.normalized;
-            float bonus = cfg.inheritPlayerVelocity ? Mathf.Max(0f, Vector3.Dot(playerVelocity, dir)) : 0f;
+            float bonus = cfg.inheritPlayerVelocity ? Mathf.Clamp(Vector3.Dot(playerVelocity, dir), 0f, cfg.throwSpeedBonusCap) : 0f;
             return dir * (cfg.throwSpeed + bonus);
         }
 

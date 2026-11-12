@@ -19,10 +19,15 @@ namespace ItHunts.Orbs
         [SerializeField] private LineRenderer line;
 
         private PlayerMotor _motor;
+        private FirstPersonView _view;
+        private Camera _camera;
 
         private void Awake()
         {
             _motor = GetComponent<PlayerMotor>();
+            _view = GetComponent<FirstPersonView>();
+            var playerInput = GetComponent<UnityEngine.InputSystem.PlayerInput>();
+            _camera = playerInput != null ? playerInput.camera : null;
             if (line != null)
                 line.enabled = false;
         }
@@ -40,12 +45,23 @@ namespace ItHunts.Orbs
         private void UpdateObjects(in TelekinesisState t)
         {
             TelekinesisOrbSettings cfg = _motor.TelekinesisSettings;
-            Vector3 eye = orbRenderer != null && orbRenderer.transform.parent != null
-                ? orbRenderer.transform.parent.position                    // la caméra du joueur
+            Vector3 eye = _camera != null
+                ? _camera.transform.position                               // la caméra du joueur
                 : transform.position + Vector3.up * 1.6f;
             foreach (Grabbable g in Grabbable.All)
             {
+                if (g.IsEnemy && g.Id != t.HeldId && !(t.AimHit && t.AimId == g.Id))
+                    continue;                                            // ennemi : sa lueur vient de Damageable (étourdi, coups)
                 Color glow;
+                if (g.IsEnemy && g.Id == t.HeldId
+                    && Time.time >= g.HeldSince + cfg.enemyHoldDuration - cfg.enemyStruggleWarning)
+                {
+                    // Il va se libérer : il clignote (violet / blanc).
+                    bool on = Mathf.Repeat(Time.time * 12f, 1f) < 0.5f;
+                    g.SetGlow(on ? Color.white * settings.glowHeld * 2f : settings.grabColor * settings.glowHeld);
+                    continue;
+                }
+
                 float sinceThrow = Time.time - g.ThrownAt;
                 if (g.Id == t.HeldId)
                     glow = settings.grabColor * settings.glowHeld;
@@ -75,7 +91,7 @@ namespace ItHunts.Orbs
             line.enabled = show;
             if (!show)
                 return;
-            line.SetPosition(0, orbRenderer.transform.position);
+            line.SetPosition(0, _view != null ? _view.LineStart : orbRenderer.transform.position);
             line.SetPosition(1, held.transform.position);
             Color c = settings.grabColor * settings.lineIntensity;
             line.startColor = c;

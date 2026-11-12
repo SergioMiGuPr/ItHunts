@@ -100,6 +100,45 @@ Après le playtest de la partie 2 (D-027) :
 - [x] En Play Mode (2026-11-12) : caisse de 25 kg sur un factice → **55** direct et **20.6 de zone** sur le voisin à 1.6 m ; durabilité 3/3 → 2/3 → 1/3 → cassée au 3e lancer ; caisse de 5 kg cassée au premier, revenue après 4 s ; onde sur le factice mobile → **12.3 m/s**, projeté contre le mur, **étourdi 1.5 s** ; factice fixe repoussé contre le mur à **10.3 m/s** → étourdi, libéré après 1.5 s ; lustre décroché par l'onde → tombe droit, **30 dégâts de chute** à 15 m/s sur le factice dessous, casse, zone de 4 m. Corrigé pendant ces mesures : durabilité lue avant la masse (1 lancer pour tout), lustre poussé de côté par l'onde, lustre trop bas (le factice dessous était dans l'onde).
 - [x] Ressenti : visée du lancer en mouvement, répulsion (onde) et étourdissement contre un mur validés. *(playtest de l'utilisateur, 2026-11-12)*
 
+Onde en cône (D-029) et prise des ennemis étourdis (D-030) :
+
+- [x] Cône : 16 m/s tout près, ×0.75 à 4 m, ×0.5 à 8 m, rien au-delà ; même force au bord (30°), rien au-delà de 30°. *(`Assets/_Project/Tests/EditMode/CombatTests.cs` › Onde_VitesseSelonMasseDistanceEtAngle)*
+- [x] Dans le cône : caisse et factice repoussés ; derrière le joueur, sur le côté (59°), au-delà de 8 m, derrière un mur, ou tenu : rien. *(CombatTests › Onde_ConeDepuisLeJoueur_DedansDehorsDerriereUnMur)*
+- [x] Lustre décroché en visant vers le haut par en dessous (≈ 6.3 m), sans poussée ; traqueur jamais repoussé ni étourdi. *(CombatTests › Onde_LustreDecrocheEnVisantVersLeHaut_TraqueurExclu)*
+- [x] Prise : un factice non étourdi est refusé ; étourdi, il est pris (80 kg, sans limite de masse), aussi par l'aide à la visée ; le traqueur jamais ; déjà tenu, personne d'autre ne le prend. *(CombatTests › Prise_SeulUnEnnemiEtourdi_JamaisLeTraqueur)*
+- [x] Ennemi tenu : libéré seul à 3 s ; lancé comme un objet. *(`Assets/_Project/Tests/EditMode/TelekinesisTests.cs` › EnnemiTenu_SansLimiteDeMasse_SeLibereSeulAuBoutDe3s, EnnemiTenu_LanceCommeUnObjet)*
+- [x] En Play Mode : vitesses du cône, caisse de 15 kg / factice de 80 kg : **2 m : 14.0 / 14.0 m/s (bord 14.1 / 14.2)** ; **5 m : 11.0 / 11.0 (bord 11.1 / 11.1)** ; **7.9 m : 8.1 / 8.1 (bord 8.3 / 8.3)** ; vrai clic droit : factice à 4 m repoussé à 11.8 m/s, joueur propulsé à 13.8 m/s ; lustre visé par en dessous à 5.9 m : décroché, 30 dégâts sur le factice dessous ; prise refusée sans étourdissement, acceptée étourdi ; factice lancé sur un autre à 11 m : 100 → 0 pour les deux (176 dégâts calculés) ; libération seule à 2.99 s, puis immunisé (ni ré-étourdi, ni repris) ; lancé contre un mur à 30 m/s : 100 → 0. Corrigé pendant ces mesures : un factice au repos (devenu attrapable) blessait celui qui le percutait. *(Play Mode, 2026-11-12)*
+- [x] Playtest du cône de 8 m : pas assez fort ni assez loin → répulsion façon aimant (D-029 mise à jour). *(playtest de l'utilisateur, 2026-11-12)*
+
+Répulsion façon aimant (D-029 mise à jour) :
+
+- [x] Onde de choc : 22 m/s jusqu'à 2 m, ×0.8 à 8 m, ×0.6 à 14 m, rien au-delà ; même force au bord du cône ; multiplicateurs de masse. *(`Assets/_Project/Tests/EditMode/CombatTests.cs` › Onde_VitesseSelonMasseDistanceEtAngle ; `Assets/_Project/Tests/EditMode/RepulsionHoldTests.cs` › Reglages_RepulsionMaintenue)*
+- [x] Propulsion seulement à l'appui : même vitesse du joueur, tick par tick, avec et sans maintien ; aucune nouvelle répulsion pendant le maintien. *(RepulsionHoldTests › Propulsion_SeulementALAppui_IdentiqueAvecEtSansMaintien)*
+- [x] Maintien : fin au relâchement (recharge de 5 s à partir de la fin), fin à 0.8 s bouton tenu, coupé par une prise, un lancer ou une traction. *(RepulsionHoldTests › Maintien_SArreteAuRelachement_RechargeDepuisLaFin, Maintien_SArreteA08s, Maintien_CoupeParUneAutreActionDeLOrbe)*
+- [x] Poussée continue plafonnée à 25 m/s dans l'axe (sans gravité : 25.0 au plus, atteints). *(RepulsionHoldTests › Poussee_ContinueNeDepassePas25ms)*
+- [x] Contre un mur : plaqué en continu, ni étourdi ni blessé ; projeté par l'onde, étourdi une seule fois à l'impact. *(RepulsionHoldTests › Poussee_PlaqueContreUnMur_NiDegatsNiEtourdissementContinus, Poussee_EtourdiUneSeuleFoisALImpact_PuisImmunite)*
+- [x] Traqueur exclu, à l'appui et en continu. *(RepulsionHoldTests › Poussee_TraqueurExclu)*
+- [x] En Play Mode, vrais clics droits, **avant** (cône de 8 m, 16 m/s, sans maintien) → **après** ; vitesse juste après l'appui et distance parcourue avant l'arrêt : *(Play Mode, 2026-11-12)*
+
+  | Cible, distance | Appui avant | Appui après | Maintien 0.8 s après |
+  |---|---|---|---|
+  | Caisse 15 kg, 2 m | 13.1 m/s, 7.1 m | 22.8 m/s, 22.1 m | 22.1 → max 26.0 m/s, 22.8 m |
+  | Caisse 15 kg, 7 m | 8.4 m/s, 2.3 m | 18.0 m/s, 12.3 m | 18.9 → 22.5 m/s, 23.5 m |
+  | Caisse 15 kg, 14 m | rien | 13.1 m/s, 6.3 m | 13.1 m/s, 6.3 m (sort aussitôt du cône) |
+  | Factice 80 kg, 2 m | 13.4 m/s, 10.2 m | 21.9 m/s, 27.0 m | 22.8 → 25.8 m/s, 33.9 m |
+  | Factice 80 kg, 7 m | 8.6 m/s, 4.3 m | 18.3 m/s, 19.0 m | 19.1 → 19.5 m/s, 20.8 m |
+  | Factice 80 kg, 14 m | rien | 13.3 m/s, 10.0 m | 13.3 m/s, 10.0 m |
+
+  Propulsion du joueur : 13.3 à 14.0 m/s, la même avec un appui et avec un maintien. Plafond : la poussée continue s'arrête à 25 m/s dans son axe ; les 0.4 à 1.0 m/s de plus mesurés viennent de la gravité (axe tourné vers le bas, sur une cible au sol). Capture : anneaux continus dans le cône, orbe orange, paume tendue, « 0.5 s » et barre de maintien sous les jauges. Corrigé pendant ces mesures : pour une cible traversée par l'axe du cône, la distance était celle de son centre (une caisse à 13.8 m comptait 14.2 m) ; c'est maintenant sa surface avant.
+- [x] Ressenti : répulsion façon aimant (appui et maintien), coupures, mur et lustre validés. *(playtest de l'utilisateur, 2026-11-12)*
+
+Dégâts contre un mur et objets repoussés (D-031) :
+
+- [x] Contre un mur : 5 PV par m/s au-delà de 6 m/s, 40 au plus ; une fois par impact, pas pendant l'immunité, traqueur exclu ; projeté par l'onde : dégâts une seule fois à l'impact, rien en continu. *(`Assets/_Project/Tests/EditMode/RepulsionHoldTests.cs` › Mur_5PVParMsAuDelaDe6_Plafond40, Mur_UnSeulDegatParImpact_PasPendantLImmunite_TraqueurExclu, Poussee_EtourdiUneSeuleFoisALImpact_PuisImmunite)*
+- [x] Objet repoussé : 15 kg à 20 m/s sur un factice → 9 PV (×0.5), sans zone, un lancer de durabilité en moins (pas contre un mur) ; inoffensif sous 6 m/s, après 1 s, et pour un joueur (aucun joueur n'est une cible). *(RepulsionHoldTests › Repousse_BlesseCommeUnLancerFois05_SansZone_DurabiliteSurEnnemiSeulement, Repousse_InoffensifSous6ms_EtApres1s_EtPourLeJoueur)*
+- [x] En Play Mode (vrais clics droits, 2026-11-12) : factice repoussé contre le mur de la grande salle, à 1.5 m devant le mur, joueur à **2 m : impact 22.3 m/s → 40 PV** (plafond) ; **7 m : 18.2 m/s → 40 PV** ; **13.8 m : 12.9 m/s → 34.7 PV**. Caisse de 15 kg repoussée sur un factice placé à 15.5 m (hors du cône) : **à 2 m, arrivée à 10.9 m/s → 2.2 PV** ; **à 7 m, 11.1 m/s → 2.3 PV** (elle ralentit en glissant au sol) ; un lancer de durabilité perdu à chaque fois. Lustre visé par en dessous à 5.9 m : décroché, 30 PV sur le factice dessous, cassé.
+- [ ] Ressenti : dégâts contre un mur, objets repoussés. *(playtest)*
+
 ## Playtest — lancer, zone, durabilité, onde (checklist courte)
 
 Commandes : A traction, clic droit répulsion (onde), F attraper / relâcher, clic gauche lancer. F12 : zone

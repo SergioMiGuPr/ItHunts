@@ -41,11 +41,14 @@ namespace ItHunts.Orbs
             if (Nearest(origin, direction, range, out RaycastHit hit))
             {
                 Grabbable g = hit.collider.attachedRigidbody != null ? hit.collider.attachedRigidbody.GetComponent<Grabbable>() : null;
-                if (g != null && g.isActiveAndEnabled && g.Id != IgnoreId)
+                if (g != null && g.isActiveAndEnabled && g.Id != IgnoreId && g.CanBeGrabbedNow)
                 {
-                    candidate = new GrabCandidate { Id = g.Id, Mass = g.Mass, Distance = hit.distance, Point = hit.point, Angle = 0f };
+                    candidate = new GrabCandidate { Id = g.Id, Mass = g.Mass, Distance = hit.distance, Point = hit.point, Angle = 0f, Enemy = g.IsEnemy };
                     return true;
                 }
+
+                if (g != null && g.IsEnemy)
+                    return false;                                        // ennemi non étourdi : il cache ce qui est derrière
             }
 
             return Settings != null && Settings.aimAssist && FindInCone(origin, direction, range, out candidate);
@@ -59,8 +62,10 @@ namespace ItHunts.Orbs
             float maxCone = Mathf.Max(Settings.assistNearAngle, Settings.assistFarAngle);
             foreach (Grabbable g in Grabbable.All)
             {
-                if (g == null || !g.isActiveAndEnabled || g.Id == IgnoreId || g.Mass > Settings.maxMass || g.Colliders == null)
+                if (g == null || !g.isActiveAndEnabled || g.Id == IgnoreId || !g.CanBeGrabbedNow || g.Colliders == null)
                     continue;
+                if (!g.IsEnemy && g.Mass > Settings.maxMass)
+                    continue;                                            // un ennemi étourdi n'a pas de limite de masse
                 foreach (Collider col in g.Colliders)
                 {
                     if (col == null || !col.enabled || col.isTrigger)
@@ -75,7 +80,7 @@ namespace ItHunts.Orbs
                     if (!Visible(g, col, origin, point))
                         continue;
                     bestAngle = angle;
-                    best = new GrabCandidate { Id = g.Id, Mass = g.Mass, Distance = distance, Point = point, Angle = angle };
+                    best = new GrabCandidate { Id = g.Id, Mass = g.Mass, Distance = distance, Point = point, Angle = angle, Enemy = g.IsEnemy };
                     found = true;
                 }
             }
@@ -237,13 +242,19 @@ namespace ItHunts.Orbs
         {
             if (Held == null)
                 return false;
-            if (!Held.isActiveAndEnabled)
+            if (!Held.isActiveAndEnabled || !Held.CanStayHeld)
             {
+                Grabbable gone = Held;
                 Held = null;
+                if (gone != null && gone.isActiveAndEnabled)
+                    gone.OnReleased(thrown: false);
                 return false;
             }
 
             Vector3 holdPoint = HoldPoint(cfg, eye, aimDir);
+            // Ennemi tenu qui va se libérer : il se débat.
+            if (Held.IsEnemy && Time.time >= Held.HeldSince + cfg.enemyHoldDuration - cfg.enemyStruggleWarning)
+                holdPoint += Random.insideUnitSphere * cfg.enemyStruggleShake;
             Vector3 error = holdPoint - eyeVelocity * dt - Held.Body.position;                    // écart avant ce tick
             Vector3 correction = Vector3.ClampMagnitude(error * cfg.holdGain, cfg.approachSpeed);   // vole vers le point, ralentit en arrivant
             Held.Body.linearVelocity = eyeVelocity + correction;

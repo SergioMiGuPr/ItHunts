@@ -71,6 +71,7 @@ L'orbe a deux pouvoirs, utilisables en même temps.
 |---|---|---|
 | **Traction** (le joueur est tiré en ligne droite vers un point visé, **toute surface**) | **60 m**, jusqu'à 30 m/s | salles de **30 à 50 m** de haut possibles ; points d'accroche visibles en hauteur |
 | **Répulsion** (rocket jump depuis une surface) | **40 m** ; saut de **5 m** (7.6 m avec un saut juste avant) | |
+| **Onde de répulsion** (repousse objets et ennemis devant le joueur ; maintenue, elle pousse en continu 0.8 s) | cône de **14 m**, ouverture **60°**, jusqu'à 22 m/s | les lustres doivent être à **moins de 14 m** des yeux du dessous ; prévoir de la place derrière les ennemis (ils glissent jusqu'à 27–34 m) |
 | **Télékinésie** (attraper puis lancer un objet) | **60 m** ; aide à la visée : cône de 8° de près, 3° à 60 m | **chaque arène fournit des objets à lancer**, visibles de loin |
 | Objet tenu | flotte à **2.5 m** devant les yeux, **0.35 m** sous la visée | objets tenus ≤ **1.3 m** pour ne pas boucher la vue |
 | Lancer | **30 m/s** + la vitesse du joueur ; **droit sur ≈ 15 m** (tir tendu), puis l'objet retombe | lignes de tir dégagées de 15 à 20 m dans les arènes |
@@ -99,8 +100,45 @@ greybox, à garder comme gabarit :
 - Le jeu fait **briller** ces objets (émission pilotée par le code, voir § 7).
 - Les objets **se cassent** après 1 à 5 lancers selon leur masse (le lustre au premier choc) : prévoir à terme des
   morceaux cassés (pour l'instant, débris en cubes greybox). Ils tombent à **20 m/s²**, comme le joueur.
-- Un lustre doit pendre **à plus de 4 m au-dessus** de la hauteur d'une tête d'ennemi (rayon de l'onde qui le
-  décroche).
+- Un lustre doit pouvoir être visé **par en dessous à moins de 14 m** des yeux (l'onde en cône le décroche) : en
+  dessous de ≈ 15 m de haut.
+- Les ennemis **étourdis** peuvent être attrapés et lancés : prévoir des créatures dont la silhouette reste lisible
+  quand elles flottent devant le joueur (factice actuel : capsule de 1.8 × 0.8 m, 80 kg).
+
+## 5 bis. Mains et HUD (greybox, étape 5)
+
+Les mains greybox sont faites pour être **remplacées telles quelles** : garde les mêmes volumes (± 10 %), le même
+point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
+
+- **Rendu des mains :** champ de vision **fixe de 60°** (indépendant du FOV de vitesse, 70 → 82°), dessinées par une
+  passe du renderer URP après le monde, sur une profondeur effacée (elles passent devant tout). Plan proche de la
+  caméra du joueur : **0.05 m** (rien des mains plus près). Les mains sont sur une couche par joueur
+  (`FirstPersonP1` à `P4`, mise par le code).
+- **Contour cel-shading des mains :** un contour en post-process qui lit la profondeur ne les verra pas (elles n'y
+  sont pas) ; prévoir un contour par le matériau (coque inversée) ou une passe dédiée à la couche des mains.
+- **Repère d'une main :** origine au **poignet**, doigts vers **+z**, dos de la main vers **+y**. Mesures (m) :
+
+  | Pièce | Taille | Position (repère de la main) |
+  |---|---|---|
+  | Avant-bras | cylindre Ø 0.06 × 0.26 | de z −0.27 à −0.01 |
+  | Paume | 0.085 × 0.03 × 0.09 | centre z 0.045 |
+  | Articulation des doigts | — | z 0.09 (les doigts tournent autour de x : 0° ouverts, 25° au repos, 40° fermés) |
+  | Doigts | 0.08 × 0.025 × 0.07 | centre z 0.035 après l'articulation |
+  | Pouce | 0.022 × 0.022 × 0.055 | x ∓0.05 (côté intérieur), z 0.05, tourné de 30° |
+
+- **Position de repos (repère caméra, m et °) :** main droite (0.21, −0.22, 0.47), rotation (−15, −10, 0) ; main
+  gauche (−0.23, −0.25, 0.45), rotation (−10, 12, 0). Au repos, les mains couvrent **4.8 %** de l'écran, et rien ne
+  doit entrer dans un cercle de **48 px** (à 1080) autour du viseur.
+- **Orbe :** sphère de **Ø 0.08 m**, centre en (0, 0.06, 0.045) dans le repère de la main droite (au-dessus de la
+  paume). Prévoir un point d'attache nommé `Orb_Socket` à cet endroit ; l'orbe reste un objet séparé (le jeu change sa
+  couleur, HDR, bloom).
+- **Livraison des mains :** `SK_Mains` (bras et mains, squelette avec poignet et doigts), pivot au poignet de chaque
+  main, mêmes axes ; budget 15 000 à 20 000 triangles, texture 2048. Les gestes sont faits par le code (positions et
+  rotations du poignet, ouverture des doigts) : des animations faites à la main pourront venir plus tard.
+- **HUD :** résolution de référence **1920 × 1080**, échelle 1, marge de sécurité **5 %** ; autour du viseur :
+  segments de **22 × 6 px** (écart 4 px, rangées à 6 px, 26 px sous le viseur), anneaux de rayon **8 / 13 / 18 px**,
+  épaisseur 2 px ; coins réservés de **240 × 60 px** (âmes en haut à gauche, timer en haut à droite, traqueur enragé
+  sous le timer). Couleurs réservées : § 7.
 
 ## 6. Budgets proposés (à valider ensemble)
 

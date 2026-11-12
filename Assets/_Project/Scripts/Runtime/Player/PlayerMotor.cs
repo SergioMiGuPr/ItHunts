@@ -37,6 +37,7 @@ namespace ItHunts.Player
         private Vector3 _currentPosition;
         private Vector3 _spawnPosition;
         private Vector3 _lastEye;
+        private FirstPersonView _view;
 
         public MovementState State => _state;
         public MovementSettings Settings => settings;
@@ -109,6 +110,7 @@ namespace ItHunts.Player
                 input.AttractPressedTick = _reader.AttractPressedTick;
                 input.AttractHeld = _reader.AttractHeld;
                 input.RepelPressedTick = _reader.RepelPressedTick;
+                input.RepelHeld = _reader.RepelHeld;
                 input.GrabPressedTick = _reader.GrabPressedTick;
                 input.ThrowPressedTick = _reader.ThrowPressedTick;
             }
@@ -139,10 +141,24 @@ namespace ItHunts.Player
             MovementMotor.Step(ref _state, input, settings, dt, _probe);
             _currentPosition = transform.position;
 
-            // Répulsion partie ce tick : onde au point visé (objets et ennemis repoussés, D-027).
+            // Répulsion partie ce tick : onde en cône depuis le joueur, dans la direction visée (D-029).
             if (magnetism != null && _magnet.LastRepelTick == _state.Tick)
-                ItHunts.Combat.RepulsionWave.Apply(_magnet.LastRepelPoint, magnetism,
-                    _holder != null && _holder.Held != null ? _holder.Held.Body : null);
+            {
+                if (_view == null)
+                    _view = GetComponent<FirstPersonView>();
+                Vector3 aim = MagnetismOrb.AimDirection(input.Yaw, input.Pitch);
+                ItHunts.Combat.RepulsionWave.Apply(eyeAtClick, aim, _view != null ? _view.LineStart : eyeAtClick, magnetism,
+                    _holder != null && _holder.Held != null ? _holder.Held.Body : null, transform);
+            }
+            else if (magnetism != null && _magnet.RepelHolding)
+            {
+                // Répulsion maintenue : poussée continue dans le cône, sans nouvelle propulsion du joueur (D-029).
+                if (_view == null)
+                    _view = GetComponent<FirstPersonView>();
+                Vector3 aim = MagnetismOrb.AimDirection(input.Yaw, input.Pitch);
+                ItHunts.Combat.RepulsionWave.ApplyContinuous(eyeAtClick, aim, _view != null ? _view.LineStart : eyeAtClick, magnetism,
+                    _holder != null && _holder.Held != null ? _holder.Held.Body : null, transform, dt);
+            }
 
             if (HasTelekinesis)
             {

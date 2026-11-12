@@ -41,6 +41,8 @@ namespace ItHunts.Orbs
         }
 
         private PlayerMotor _motor;
+        private FirstPersonView _view;
+        private Camera _camera;
         private MaterialPropertyBlock _block;
         private Vector3 _baseScale, _aimMarkerScale, _anchorScale;
         private Color _color;
@@ -53,6 +55,9 @@ namespace ItHunts.Orbs
         private void Awake()
         {
             _motor = GetComponent<PlayerMotor>();
+            _view = GetComponent<FirstPersonView>();
+            var playerInput = GetComponent<UnityEngine.InputSystem.PlayerInput>();
+            _camera = playerInput != null ? playerInput.camera : null;
             _block = new MaterialPropertyBlock();
             if (orbRenderer != null)
                 _baseScale = orbRenderer.transform.localScale;
@@ -143,7 +148,7 @@ namespace ItHunts.Orbs
                 line.enabled = tracting;
                 if (tracting)
                 {
-                    line.SetPosition(0, orbRenderer.transform.position);
+                    line.SetPosition(0, _view != null ? _view.LineStart : orbRenderer.transform.position);
                     line.SetPosition(1, s.TractionPoint);
                     line.startColor = glow;
                     line.endColor = glow;
@@ -224,7 +229,7 @@ namespace ItHunts.Orbs
         /// <summary>Grandit au-delà de markerReferenceDistance pour garder la même taille à l'écran.</summary>
         private float DistanceScale(Vector3 point)
         {
-            Vector3 eye = orbRenderer.transform.parent != null ? orbRenderer.transform.parent.position : transform.position;
+            Vector3 eye = _camera != null ? _camera.transform.position : transform.position + Vector3.up * 1.6f;
             return Mathf.Max(1f, Vector3.Distance(eye, point) / settings.markerReferenceDistance);
         }
 

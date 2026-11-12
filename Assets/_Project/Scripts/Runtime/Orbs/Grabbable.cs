@@ -27,6 +27,10 @@ namespace ItHunts.Orbs
         [Tooltip("Réapparaît à sa place ce temps après s'être cassé (s ; 0 : jamais). Scène de test.")]
         [SerializeField, Min(0f)] private float respawnAfterBreak;
 
+        [Header("Ennemi (D-030)")]
+        [Tooltip("Ennemi : attrapable seulement s'il est étourdi, sans limite de masse ni durabilité.")]
+        [SerializeField] private bool isEnemy;
+
         private static readonly List<Grabbable> AllList = new List<Grabbable>();
         private static readonly Dictionary<int, Grabbable> ById = new Dictionary<int, Grabbable>();
         private static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
@@ -53,6 +57,24 @@ namespace ItHunts.Orbs
         public float ThrownAt { get; private set; } = float.NegativeInfinity;
 
         public int DurabilityOverride => durabilityOverride;
+
+        /// <summary>Ennemi (D-030) : attrapable seulement étourdi, sans limite de masse, sans durabilité.</summary>
+        public bool IsEnemy => isEnemy;
+        public ItHunts.Combat.Damageable Damageable { get; private set; }
+        public ItHunts.Combat.EnemyBody EnemyBody { get; private set; }
+
+        /// <summary>Temps (Time.time) de la prise en cours (libération d'un ennemi au bout du temps réglé).</summary>
+        public float HeldSince { get; private set; } = float.NegativeInfinity;
+
+        /// <summary>
+        /// Attrapable maintenant : pas cassé, pas déjà tenu (en coop, le premier qui l'attrape le garde) ; un ennemi
+        /// seulement s'il est étourdi, vivant et pas le traqueur.
+        /// </summary>
+        public bool CanBeGrabbedNow =>
+            !Broken && !Held && (!isEnemy || (EnemyBody != null && EnemyBody.Stunned && Damageable != null && !Damageable.Dead && !Damageable.ImmuneToOrbs));
+
+        /// <summary>Peut rester tenu : un ennemi mort est lâché.</summary>
+        public bool CanStayHeld => !Broken && (Damageable == null || !Damageable.Dead);
         public bool BreaksOnAnyImpact => breaksOnAnyImpact;
         public float SplashRadiusOverride => splashRadiusOverride;
 
@@ -62,6 +84,14 @@ namespace ItHunts.Orbs
 
         /// <summary>Lancé et pas encore touché quoi que ce soit : son premier impact compte (zone, durabilité).</summary>
         public bool ThrowArmed { get; private set; }
+
+        /// <summary>
+        /// Dernière poussée de la répulsion (D-031) : l'objet est « repoussé » depuis ce temps (Time.time) ; il est
+        /// dangereux pushedDangerTime après, tant que sa vitesse n'est pas passée sous pushedMinSpeed.
+        /// </summary>
+        public float LastPushedAt { get; private set; } = float.NegativeInfinity;
+        public bool Pushed { get; private set; }
+        private bool _pushSlowed;
 
         /// <summary>Cassé : invisible et sans collision, en attente de réapparition.</summary>
         public bool Broken { get; private set; }
@@ -84,6 +114,8 @@ namespace ItHunts.Orbs
                 Body.isKinematic = true;
             _homePosition = transform.position;
             _homeRotation = transform.rotation;
+            Damageable = GetComponent<ItHunts.Combat.Damageable>();
+            EnemyBody = GetComponent<ItHunts.Combat.EnemyBody>();
         }
 
         /// <summary>Fixe la durabilité de départ (une seule fois, par ImpactDamager qui connaît les réglages).</summary>
@@ -111,6 +143,30 @@ namespace ItHunts.Orbs
                 return false;
             ThrowsLeft = Mathf.Max(0, ThrowsLeft - 1);
             return ThrowsLeft == 0;
+        }
+
+        /// <summary>Poussé par la répulsion (onde ou poussée continue) à ce temps.</summary>
+        public void MarkPushed(float time)
+        {
+            Pushed = true;
+            _pushSlowed = false;
+            LastPushedAt = time;
+        }
+
+        /// <summary>Danger d'un objet repoussé : ni plus de pushedDangerTime après la dernière poussée, ni passé sous pushedMinSpeed.</summary>
+        public bool PushDangerous(float time, float dangerTime) => Pushed && !_pushSlowed && time - LastPushedAt <= dangerTime;
+
+        /// <summary>À chaque pas : un objet repoussé qui passe sous le seuil de vitesse n'est plus dangereux.</summary>
+        public void TickPushDanger(float minSpeed)
+        {
+            if (Pushed && !_pushSlowed && Body != null && !Body.isKinematic && Body.linearVelocity.magnitude < minSpeed)
+                _pushSlowed = true;
+        }
+
+        private void ClearPush()
+        {
+            Pushed = false;
+            _pushSlowed = false;
         }
 
         /// <summary>Décroché par une onde de répulsion (lustre) : il tombe.</summary>
@@ -202,6 +258,8 @@ namespace ItHunts.Orbs
         public void OnGrabbed()
         {
             Held = true;
+            HeldSince = Time.time;
+            ClearPush();
             ThrowArmed = false;
             InStraightFlight = false;
             Anchored = false;
@@ -218,6 +276,8 @@ namespace ItHunts.Orbs
         {
             Held = false;
             ThrowArmed = thrown;
+            if (thrown)
+                ClearPush();
             InStraightFlight = thrown && noGravityFor > 0f;
             _straightFlightUntil = Time.time + noGravityFor;
             Body.useGravity = !InStraightFlight;
@@ -225,8 +285,12 @@ namespace ItHunts.Orbs
                 ThrownAt = Time.time;
         }
 
+        /// <summary>Seuil de vitesse du danger d'un objet repoussé (fixé par ImpactDamager, qui connaît les réglages).</summary>
+        public float PushMinSpeed { get; set; } = 6f;
+
         private void FixedUpdate()
         {
+            TickPushDanger(PushMinSpeed);
             if (InStraightFlight && Time.time >= _straightFlightUntil)
                 EndStraightFlight();
         }

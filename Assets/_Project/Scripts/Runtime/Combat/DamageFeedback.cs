@@ -11,7 +11,7 @@ namespace ItHunts.Combat
     /// au point d'impact (coup, plus grave pour un objet lourd ; son de mort). Effets de zone (D-027) : cercle bref au sol
     /// de la zone de dégâts (orange) et de l'onde de répulsion (couleur de la répulsion), débris d'un objet cassé, étoiles
     /// au-dessus d'un ennemi étourdi, sons de casse et d'étourdissement. Les chiffres de dégâts sont dessinés par chaque
-    /// joueur (DamageNumbersHud).
+    /// joueur (PlayerHud).
     /// </summary>
     public sealed class DamageFeedback : MonoBehaviour
     {
@@ -19,8 +19,18 @@ namespace ItHunts.Combat
         [Tooltip("Matériau de l'éclat (URP Unlit, couleur pilotée par le code).")]
         [SerializeField] private Material flashMaterial;
         [SerializeField, Min(1)] private int poolSize = 16;
-        [Tooltip("Couleur du cercle de l'onde de répulsion.")]
+        [Tooltip("Couleur de l'onde de répulsion (cône).")]
         [SerializeField] private Color waveColor = new Color(1f, 0.5f, 0.1f);
+        [Tooltip("Matériau des traits de l'onde en cône (couleur par sommet, transparent).")]
+        [SerializeField] private Material lineMaterial;
+        [Tooltip("Onde de départ (appui) : durée, intensité, épaisseur de l'anneau (m).")]
+        [SerializeField, Min(0.05f)] private float coneWaveDuration = 0.35f;
+        [SerializeField, Min(0f)] private float coneWaveIntensity = 4f;
+        [SerializeField, Min(0.01f)] private float coneWaveWidth = 0.22f;
+        [Tooltip("Répulsion maintenue : un anneau tous les … (s), durée de vie, intensité.")]
+        [SerializeField, Min(0.02f)] private float holdRingInterval = 0.07f;
+        [SerializeField, Min(0.05f)] private float holdRingDuration = 0.3f;
+        [SerializeField, Min(0f)] private float holdRingIntensity = 1.8f;
 
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
@@ -39,6 +49,21 @@ namespace ItHunts.Combat
             new List<(Transform, Transform, float, float)>();
         private readonly List<(GameObject go, float until)> _debris = new List<(GameObject, float)>();
         private AudioClip _break, _stun;
+        private sealed class ConeRing
+        {
+            public LineRenderer Line;
+            public ConeWaveEvent Wave;
+            public float Age = float.PositiveInfinity;
+            public bool Strong;
+        }
+
+        private readonly List<ConeRing> _coneRings = new List<ConeRing>();
+        private readonly LineRenderer[] _coneEdges = new LineRenderer[4];
+        private ConeWaveEvent _edgeWave;
+        private float _edgeAge = float.PositiveInfinity;
+        private float _lastHoldRing = float.NegativeInfinity;
+        private int _nextConeRing;
+        private const int RingPoints = 32;
         private int _nextRing;
         private readonly List<AudioSource> _voices = new List<AudioSource>();
         private MaterialPropertyBlock _block;
@@ -52,6 +77,10 @@ namespace ItHunts.Combat
             _kill = ProceduralSfx.ToClip("Ennemi tué", ProceduralSfx.Kill());
             _break = ProceduralSfx.ToClip("Objet cassé", ProceduralSfx.Break());
             _stun = ProceduralSfx.ToClip("Étourdi", ProceduralSfx.Stun());
+            for (int i = 0; i < 10; i++)
+                _coneRings.Add(new ConeRing { Line = NewLine($"Onde de répulsion (anneau {i})", RingPoints, true) });
+            for (int i = 0; i < _coneEdges.Length; i++)
+                _coneEdges[i] = NewLine($"Onde de répulsion (arête {i})", 2, false);
             for (int i = 0; i < 6; i++)
             {
                 GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -92,8 +121,109 @@ namespace ItHunts.Combat
             }
         }
 
+        private LineRenderer NewLine(string name, int points, bool loop)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = true;
+            line.positionCount = points;
+            line.loop = loop;
+            line.startWidth = line.endWidth = 0.05f;
+            if (lineMaterial != null)
+                line.sharedMaterial = lineMaterial;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            line.enabled = false;
+            return line;
+        }
+
+        /// <summary>
+        /// Onde de répulsion en cône depuis la main droite : à l'appui, un anneau épais et lumineux qui file jusqu'au bout
+        /// de la portée, avec les quatre arêtes du cône ; pendant le maintien, des anneaux plus fins émis à intervalle
+        /// régulier, qui s'estompent à la fin.
+        /// </summary>
+        private void OnConeWave(ConeWaveEvent e)
+        {
+            if (e.Continuous && Time.time - _lastHoldRing < holdRingInterval)
+                return;
+            if (e.Continuous)
+                _lastHoldRing = Time.time;
+            else
+            {
+                _edgeWave = e;
+                _edgeAge = 0f;
+            }
+
+            ConeRing ring = _coneRings[_nextConeRing];
+            _nextConeRing = (_nextConeRing + 1) % _coneRings.Count;
+            ring.Wave = e;
+            ring.Age = 0f;
+            ring.Strong = !e.Continuous;
+        }
+
+        private static void ConeFrame(in ConeWaveEvent w, float d, out Vector3 center, out float radius, out Vector3 right, out Vector3 up)
+        {
+            Vector3 axis = w.Direction.normalized;
+            right = Vector3.Cross(Mathf.Abs(axis.y) > 0.95f ? Vector3.forward : Vector3.up, axis).normalized;
+            up = Vector3.Cross(axis, right);
+            center = w.Origin + axis * d;
+            radius = d * Mathf.Tan(w.ConeAngle * 0.5f * Mathf.Deg2Rad);
+        }
+
+        private void UpdateCone()
+        {
+            foreach (ConeRing ring in _coneRings)
+            {
+                float duration = ring.Strong ? coneWaveDuration : holdRingDuration;
+                bool visible = ring.Age < duration;
+                ring.Line.enabled = visible;
+                if (!visible)
+                    continue;
+                float t = ring.Age / duration;
+                ConeFrame(ring.Wave, ring.Wave.Range * Mathf.Sqrt(t), out Vector3 center, out float radius, out Vector3 right, out Vector3 up);
+                Color c = waveColor * (ring.Strong ? coneWaveIntensity : holdRingIntensity);
+                c.a = (1f - t) * (ring.Strong ? 1f : 0.6f);
+                ring.Line.startColor = ring.Line.endColor = c;
+                float width = ring.Strong ? Mathf.Lerp(0.06f, coneWaveWidth, t) : Mathf.Lerp(0.03f, 0.08f, t);
+                ring.Line.startWidth = ring.Line.endWidth = width;
+                for (int i = 0; i < RingPoints; i++)
+                {
+                    float a = i * 2f * Mathf.PI / RingPoints;
+                    ring.Line.SetPosition(i, center + (right * Mathf.Cos(a) + up * Mathf.Sin(a)) * radius);
+                }
+
+                ring.Age += Time.deltaTime;
+            }
+
+            bool edges = _edgeAge < coneWaveDuration;
+            foreach (LineRenderer edge in _coneEdges)
+                if (edge != null)
+                    edge.enabled = edges;
+            if (!edges)
+                return;
+            float u = _edgeAge / coneWaveDuration;
+            ConeFrame(_edgeWave, _edgeWave.Range, out Vector3 end, out float endRadius, out Vector3 r, out Vector3 upv);
+            Color ec = waveColor * coneWaveIntensity;
+            ec.a = (1f - u) * 0.7f;
+            for (int i = 0; i < _coneEdges.Length; i++)
+            {
+                float a = i * Mathf.PI * 0.5f + Mathf.PI * 0.25f;
+                LineRenderer edge = _coneEdges[i];
+                edge.startColor = ec;
+                edge.endColor = new Color(ec.r, ec.g, ec.b, 0f);
+                edge.startWidth = 0.03f;
+                edge.endWidth = 0.1f;
+                edge.SetPosition(0, _edgeWave.Origin);
+                edge.SetPosition(1, end + (r * Mathf.Cos(a) + upv * Mathf.Sin(a)) * endRadius);
+            }
+
+            _edgeAge += Time.deltaTime;
+        }
+
         private void OnEnable()
         {
+            AreaEvents.ConeWave += OnConeWave;
             DamageEvents.Hit += OnHit;
             AreaEvents.Area += OnArea;
             AreaEvents.Broken += OnBroken;
@@ -102,6 +232,7 @@ namespace ItHunts.Combat
 
         private void OnDisable()
         {
+            AreaEvents.ConeWave -= OnConeWave;
             DamageEvents.Hit -= OnHit;
             AreaEvents.Area -= OnArea;
             AreaEvents.Broken -= OnBroken;
@@ -262,6 +393,7 @@ namespace ItHunts.Combat
                 return;
             UpdateRings();
             UpdateStars();
+            UpdateCone();
             for (int i = _debris.Count - 1; i >= 0; i--)
             {
                 if (_debris[i].go != null && Time.time < _debris[i].until)

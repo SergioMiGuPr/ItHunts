@@ -21,5 +21,8 @@ MonoBehaviour:
   groundFriction: 15
   stunImpactSpeed: 6
   stunDuration: 1.5
+  wallDamagePerSpeed: 5
+  wallDamageMax: 40
+  stunImmunity: 2
   returnHomeDelay: 2
   returnHomeSpeed: 3

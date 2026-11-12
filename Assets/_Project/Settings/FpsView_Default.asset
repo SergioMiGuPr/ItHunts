@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09748160cc1e41742bae8e6fa144bd75, type: 3}
+  m_Name: FpsView_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.FpsViewSettings
+  viewmodelFov: 60
+  viewmodelNearClip: 0.01
+  rightHandRest: {x: 0.21, y: -0.22, z: 0.47}
+  rightHandRestEuler: {x: -15, y: -10, z: 0}
+  leftHandRest: {x: -0.23, y: -0.25, z: 0.45}
+  leftHandRestEuler: {x: -10, y: 12, z: 0}
+  orbDiameter: 0.08
+  orbInHand: {x: 0, y: 0.06, z: 0.045}
+  swayPerDegree: 0.002
+  swayMaxOffset: 0.04
+  swayMaxAngle: 4
+  swayReturn: 10
+  bobAmplitude: 0.015
+  bobStepsPerSecond: 1.8
+  bobReferenceSpeed: 7.5
+  bobMaxSpeedFactor: 1.5
+  landingDipPer10: 0.04
+  landingDipMax: 0.08
+  landingReturn: 8
+  slideDrop: 0.06
+  slideRoll: 6
+  speedLagAt20: 0.03
+  poseSmoothing: 18
+  repelGestureDuration: 0.15
+  throwGestureDuration: 0.2
+  grabGestureDuration: 0.15
+  tractionOffset: {x: -0.04, y: 0.06, z: 0.12}
+  holdOffset: {x: -0.02, y: 0.05, z: 0.05}
+  repelPunch: 0.15
+  throwWindup: 0.05
+  throwPush: 0.18
+  grabReach: 0.1

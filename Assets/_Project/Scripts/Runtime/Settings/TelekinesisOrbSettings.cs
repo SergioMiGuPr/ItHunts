@@ -33,6 +33,14 @@ namespace ItHunts.Settings
         [Tooltip("Un appui pendant la recharge est mémorisé ce temps (s).")]
         [Min(0f)] public float pressBuffer = 0.1f;
 
+        [Header("Ennemis étourdis (D-030)")]
+        [Tooltip("Un ennemi tenu se libère seul au bout de ce temps (s).")]
+        [Min(0.1f)] public float enemyHoldDuration = 3f;
+        [Tooltip("Il se débat et clignote pendant ce temps avant de se libérer (s).")]
+        [Min(0f)] public float enemyStruggleWarning = 0.5f;
+        [Tooltip("Amplitude du « débattement » de l'ennemi tenu (m).")]
+        [Min(0f)] public float enemyStruggleShake = 0.06f;
+
         [Header("Rythme")]
         [Tooltip("Après un lancer, délai avant de pouvoir attraper de nouveau (s).")]
         [Min(0f)] public float cooldown = 0.3f;
@@ -64,6 +72,8 @@ namespace ItHunts.Settings
         [Tooltip("Ajoute la part de la vitesse du joueur dans la direction du lancer (si elle est positive) : lancer en " +
                  "pleine course frappe plus fort. Le reste est ignoré : la direction reste celle du viseur.")]
         public bool inheritPlayerVelocity = true;
+        [Tooltip("Plafond de ce bonus (m/s) : 20 par défaut, à rééquilibrer après des runs complètes.")]
+        [Min(0f)] public float throwSpeedBonusCap = 20f;
         [Tooltip("Pendant ce temps après un lancer ou un lâcher (s), l'objet ne touche pas son lanceur.")]
         [Min(0f)] public float ignoreHolderAfterRelease = 0.4f;
     }

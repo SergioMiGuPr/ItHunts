@@ -17,6 +17,9 @@ MonoBehaviour:
   fallVerticalShare: 0.7
   damageFactor: 0.1
   perTargetCooldown: 0.3
+  pushedDamageMultiplier: 0.5
+  pushedDangerTime: 1
+  pushedMinSpeed: 6
   splashBaseRadius: 1
   splashRadiusPerKg: 0.06
   splashCenterShare: 0.6

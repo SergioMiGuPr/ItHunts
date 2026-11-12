@@ -25,8 +25,22 @@
    objets à 20 m/s², dégâts de zone, durabilité selon la masse (1 / 2 / 3 / 5 lancers), lustre fragile (zone 4 m),
    répulsion en onde (4 m) qui repousse objets et ennemis, étourdissement 1.5 s contre un mur à 6 m/s ou plus.
    215 tests (1 non concluant à dessein). Checklist : `docs/design/features/orbes/testing.md`.
-5. **Étape 4 terminée.** Ensuite : **étape 5, vue FPS et HUD** (plan envoyé à l'utilisateur, en attente de sa
-   réponse avant de coder).
+5. **Étape 4 terminée** (commit `44c2a2e`, poussé sur `main`).
+
+**5 — Vue FPS et HUD, répulsion façon aimant, prise des ennemis étourdis, dégâts contre un mur** (D-028 à D-031) —
+**fait et validé en playtest** (2026-11-12) ; commit et push sur `main`.
+- Mains greybox, orbe dans la paume droite, mouvement et gestes ; HUD uGUI par joueur (barres de PV corrigées en
+  mouvement : 168 px d'écart en saut → 0) ; debug F3 en trois pages.
+- **Rendu des mains : option 2** (D-028), décidée après un build de développement : passe « Render Objects » à 60°
+  après effacement de la profondeur, sans caméra en plus. Surcoût mesuré : 1 joueur **+0.26 ms** (option 1 : +1.60),
+  2 joueurs **+0.63 ms** (option 1 : +7.19).
+- Répulsion façon aimant (D-029) : cône de 14 m, onde de choc à l'appui, poussée continue au maintien (0.8 s).
+- Prise des ennemis étourdis (D-030), dégâts contre un mur d'un ennemi repoussé (5 PV/m/s au-delà de 6, 40 au plus)
+  et objets repoussés qui blessent (×0.5, sans zone) (D-031).
+- 243 tests (1 non concluant à dessein).
+
+**Prochaine étape : 5 bis, artefacts** (système générique, puis le barillet) — plan envoyé, en attente de la réponse
+de l'utilisateur avant de coder.
 
 **Note pour plus tard (lustre) :** le lustre doit pouvoir tomber **à distance** — traction sèche, objet
 lancé dessus, ou chaîne visée — pour s'en servir contre les ennemis et contre le boss final (combat
@@ -169,17 +183,31 @@ Télékinésie et orbe unique validées le 2026-11-12 (D-024 à D-027), `Telekin
 
 ## Problèmes connus / à faire
 
+- **Équilibrage ouvert, à traiter quand les goules et les volants auront leurs PV (pas avant) :**
+  - dégâts d'un ennemi lancé : 176 pour 80 kg à 30 m/s (un factice de 100 PV meurt, sa cible aussi) ;
+  - plafond du bonus de vitesse au lancer (20 m/s) ;
+  - force de la répulsion (22 m/s, 35 m/s², 14 m) ;
+  - vitesse de la traction (30 m/s), peut-être à augmenter ; à régler avec la vitesse du traqueur, car la traction n'a
+    pas de plafond.
+- **À vérifier au prochain playtest :** dégâts contre un mur d'un ennemi repoussé (40 PV au plus, une fois par impact) ;
+  objets repoussés qui blessent (×0.5, 1 s, sous 6 m/s inoffensifs) ; rendu des mains par la passe de rendu.
+- **Tir ami en coop :** pas encore de réglage ; aujourd'hui, les objets ne blessent jamais un joueur (étape 11).
+- **Occlusion ambiante (SSAO) sur les mains :** légères taches sombres (calculée sans les mains) ; étape DA.
+
+- **Menu d'options** : l'intensité du mouvement des mains n'a pas encore d'écran (inspecteur du joueur, PlayerPrefs).
+- Mesures en Play Mode par la CLI : une boucle d'attente trop courte laisse un script tourner ; attendre le `#fin`
+  du journal avant d'arrêter le Play Mode. Un 2e joueur temporaire : couper son `AudioListener` (sinon avertissement
+  à chaque image) ; sa caméra virtuelle n'est pas trouvée par `GetComponentInChildren` (P2 sans suivi, assez pour
+  mesurer).
+
 - **Point ouvert, à rééquilibrer après des runs complètes (pas avant) :** plafond du bonus de vitesse au lancer
-  (20 m/s par défaut). **Attention : ce plafond n'existe pas encore dans le code** ; aujourd'hui, la part de la
-  vitesse du joueur dans la direction du lancer s'ajoute sans limite (`TelekinesisOrb.ThrowVelocity`). À ajouter
-  (réglage `TelekinesisOrbSettings`, 20 m/s), puis à régler plus tard.
+  (20 m/s par défaut, `TelekinesisOrbSettings.throwSpeedBonusCap`, ajouté à l'étape 5).
 - **À revérifier au prochain playtest :**
   - gravité des objets à 20 m/s² (en place, D-027) ;
   - exclusion du traqueur de la répulsion, de l'étourdissement et des dégâts de zone : **le traqueur n'existe pas
     encore** (étape des ennemis) ; à prévoir dans `RepulsionWave`, `EnemyBody` et `ImpactDamager.ApplyArea` quand il
     arrivera (GDD : intuable, insensible à la répulsion) ;
-  - immunité de 2 s après un étourdissement : **pas encore codée** (aujourd'hui, un ennemi peut être ré-étourdi dès la
-    fin du précédent) ; à ajouter dans `EnemyBody` (réglage `TrainingDummySettings`, 2 s).
+  - immunité de 2 s après un étourdissement : faite à l'étape 5 (`TrainingDummySettings.stunImmunity`).
 
 - **Gravité :** objets à 20 m/s² comme le joueur (D-027). Unity n'enregistre pas `Physics.gravity` changée par
   la CLI : modifier `ProjectSettings/DynamicsManager.asset` et la valeur en mémoire.

@@ -46,6 +46,7 @@ namespace ItHunts.Input
         public int AttractPressedTick { get; private set; } = MovementState.NeverTick;
         public bool AttractHeld { get; private set; }
         public int RepelPressedTick { get; private set; } = MovementState.NeverTick;
+        public bool RepelHeld { get; private set; }
         public int GrabPressedTick { get; private set; } = MovementState.NeverTick;
         public int ThrowPressedTick { get; private set; } = MovementState.NeverTick;
         public bool ToggleDebugPressed { get; private set; }
@@ -94,6 +95,7 @@ namespace ItHunts.Input
             AttractHeld = _attract.IsPressed() && aimReady;
             if (_repel.WasPressedThisFrame() && aimReady)
                 RepelPressedTick = next;
+            RepelHeld = _repel.IsPressed() && aimReady;
             if (_grab.WasPressedThisFrame() && aimReady)
                 GrabPressedTick = next;
             if (_throw.WasPressedThisFrame() && aimReady)

@@ -28,6 +28,7 @@ namespace ItHunts.Orbs
             int bufferTicks = MovementSettings.SecondsToTicks(cfg.pressBuffer, dt);
             int repelCooldownTicks = MovementSettings.SecondsToTicks(cfg.repelCooldown, dt);
             int repelUseTicks = MovementSettings.SecondsToTicks(cfg.repelUseDuration, dt);
+            int repelHoldTicks = MovementSettings.SecondsToTicks(cfg.repelHoldMaxDuration, dt);
             int maxTractionTicks = Mathf.Max(1, MovementSettings.SecondsToTicks(cfg.tractionMaxDuration, dt));
             int dashGraceTicks = MovementSettings.SecondsToTicks(move.dashFrictionGrace, dt);
 
@@ -78,10 +79,21 @@ namespace ItHunts.Orbs
                     EndTraction(ref m, ref s, tick, end);
             }
 
-            // 2. Répulsion : impulsion instantanée.
+            // 1 bis. Répulsion maintenue (D-029) : elle s'arrête au relâchement, à la durée max ou à une autre action de l'orbe.
+            if (m.RepelHolding && tick > m.RepelHoldStartTick)
+            {
+                bool otherAction = attractPress
+                                   || (input.GrabPressedTick > m.RepelHoldStartTick && input.GrabPressedTick <= tick)
+                                   || (input.ThrowPressedTick > m.RepelHoldStartTick && input.ThrowPressedTick <= tick);
+                if (!input.RepelHeld || tick - m.RepelHoldStartTick >= repelHoldTicks || otherAction)
+                    EndRepelHold(ref m, tick);
+            }
+
+            // 2. Répulsion : impulsion instantanée (la seule propulsion du joueur), puis maintien possible.
             if (repelPress)
             {
-                bool ready = m.LastRepelTick == MovementState.NeverTick || tick - m.LastRepelTick >= repelCooldownTicks;
+                bool ready = !m.RepelHolding
+                             && (m.LastRepelEndTick == MovementState.NeverTick || tick - m.LastRepelEndTick >= repelCooldownTicks);
                 if (!ready)
                 {
                     // Appui mémorisé : il part dès la fin de la recharge, ou il est refusé à la fin de la mémorisation.
@@ -124,6 +136,10 @@ namespace ItHunts.Orbs
                     m.LastRepelPoint = h.Point;
                     m.LastRepelNormal = h.Normal;
                     m.LastConsumedRepelPressTick = input.RepelPressedTick;
+                    m.RepelHolding = true;
+                    m.RepelHoldStartTick = tick;
+                    if (!input.RepelHeld || repelHoldTicks <= 0)
+                        EndRepelHold(ref m, tick);                     // appui simple : la recharge part tout de suite
                 }
             }
 
@@ -149,6 +165,8 @@ namespace ItHunts.Orbs
                 {
                     if (s.DashTicksLeft > 0)
                         MovementMotor.EndDash(ref s, s.Position, dashGraceTicks);   // vitesse de sortie, pas le pic
+                    if (m.RepelHolding)
+                        EndRepelHold(ref m, tick);                     // la traction coupe le maintien
                     s.Mode = MovementMode.Traction;
                     s.TractionPoint = h.Point;
                     s.TractionAcceleration = cfg.tractionAcceleration;
@@ -178,14 +196,35 @@ namespace ItHunts.Orbs
             m.AttractStatus = m.Tracting ? OrbStatus.EnUsage
                 : m.AttractCharges < 1f ? OrbStatus.Recharge
                 : OrbStatus.Prete;
-            int sinceRepel = tick - m.LastRepelTick;
-            m.RepelStatus = m.LastRepelTick == MovementState.NeverTick ? OrbStatus.Prete
-                : sinceRepel < repelUseTicks ? OrbStatus.EnUsage
-                : sinceRepel < repelCooldownTicks ? OrbStatus.Recharge
+            m.RepelStatus = m.RepelHolding ? OrbStatus.EnUsage
+                : m.LastRepelEndTick == MovementState.NeverTick ? OrbStatus.Prete
+                : tick - m.LastRepelTick < repelUseTicks ? OrbStatus.EnUsage
+                : tick - m.LastRepelEndTick < repelCooldownTicks ? OrbStatus.Recharge
                 : OrbStatus.Prete;
             m.Status = m.AttractStatus == OrbStatus.EnUsage || m.RepelStatus == OrbStatus.EnUsage ? OrbStatus.EnUsage
                 : m.AttractStatus == OrbStatus.Recharge || m.RepelStatus == OrbStatus.Recharge ? OrbStatus.Recharge
                 : OrbStatus.Prete;
+        }
+
+        /// <summary>Fin de la répulsion maintenue : la recharge part de ce tick.</summary>
+        public static void EndRepelHold(ref MagnetismState m, int tick)
+        {
+            m.RepelHolding = false;
+            m.LastRepelEndTick = tick;
+        }
+
+        /// <summary>Temps restant de la répulsion maintenue (s), 0 si elle n'est pas en cours.</summary>
+        public static float RepelHoldRemaining(in MagnetismState m, MagnetismOrbSettings cfg, int tick, float dt) =>
+            m.RepelHolding ? Mathf.Max(0f, cfg.repelHoldMaxDuration - (tick - m.RepelHoldStartTick) * dt) : 0f;
+
+        /// <summary>Temps restant avant que la répulsion soit de nouveau prête (s) : la recharge part de la fin du maintien.</summary>
+        public static float RepelCooldownRemaining(in MagnetismState m, MagnetismOrbSettings cfg, int tick, float dt)
+        {
+            if (m.RepelHolding)
+                return cfg.repelCooldown;
+            if (m.LastRepelEndTick == MovementState.NeverTick)
+                return 0f;
+            return Mathf.Max(0f, cfg.repelCooldown - (tick - m.LastRepelEndTick) * dt);
         }
 
         /// <summary>Arrête la traction en cours (mort, cinématique…) ; la vitesse reste telle quelle.</summary>

@@ -49,15 +49,29 @@ l'arme », « le mouvement est la survie ».
    pas** : elle revient 5 s après chaque usage ; un appui juste avant est mémorisé un court instant.
    **Marquage :** quand une surface est à portée, un disque orange marque au viseur le point où la
    répulsion s'appliquera (terne pendant la recharge) ; à l'usage, une marque s'étend puis s'efface au
-   point d'impact. **Onde (D-027)** : au point visé (surface ou ennemi), une onde de **4 m** repousse,
-   en plus de propulser le joueur, les objets déplaçables par la télékinésie et les ennemis, loin du point
-   et un peu vers le haut : **16 m/s** pour un objet de 15 kg ou un ennemi de 80 kg, de ×0.35 (lourd) à
-   ×1.3 (léger) selon la masse, moitié moins au bord. Un objet accroché (lustre) est décroché et tombe
-   droit. Jamais l'objet tenu ni les joueurs. **Étourdissement** : un ennemi repoussé qui percute un mur
+   point d'impact. **Onde (D-029), façon aimant qui repousse** : un **cône depuis le joueur**, dans la direction visée
+   (**14 m**, ouverture **60°**), qu'un mur ou le décor arrêtent. **À l'appui** : une onde de choc repousse
+   loin du joueur (et un peu vers le haut) les objets déplaçables et les ennemis : **22 m/s jusqu'à 2 m**
+   pour un objet de 15 kg ou un ennemi de 80 kg (de ×0.35 à ×1.3 selon la masse), **×0.6 au bout de la
+   portée** ; c'est le **seul** moment où le joueur est propulsé, et la charge est consommée. **Bouton
+   maintenu** : la répulsion continue **au plus 0.8 s** et pousse en continu tout ce qui est dans le cône,
+   **35 m/s² dans l'axe** (×0.5 au bout), sans jamais dépasser **25 m/s** dans l'axe et sans nouvelle
+   propulsion ; elle s'arrête au relâchement, à 0.8 s, ou si l'on fait une autre action de l'orbe (traction,
+   prise, lancer). La **recharge de 5 s part de la fin** de la répulsion. Le lustre se décroche (on le vise
+   par en dessous). Retour : onde marquée à l'appui, anneaux continus dans le cône pendant le maintien,
+   orbe orange, paume tendue, temps de maintien restant près du viseur. Jamais l'objet tenu, un ennemi
+   tenu, les joueurs ni le traqueur. **Objet repoussé (D-031)** : il blesse ce qu'il percute comme un objet lancé,
+   **×0.5**, sans dégâts de zone, et ne perd un lancer de durabilité que s'il blesse un ennemi ; dangereux **1 s** après
+   la fin de la poussée ou jusqu'à passer **sous 6 m/s** ; jamais contre un joueur.
+   tenu, les joueurs ni le traqueur. **Étourdissement** : un ennemi repoussé qui percute un mur
    ou un obstacle solide à **6 m/s** ou plus est **étourdi 1.5 s** : il ne bouge plus (le factice mobile
    s'arrête), trois étoiles tournent au-dessus de sa tête, il luit en jaune, gazouillis. Un ennemi
    étourdi pourra être attrapé par la télékinésie (prévu pour la goule : étape des ennemis). Plus tard :
-   des dégâts quand il percute le mur. **Sans effet sur le boss.**
+   des dégâts contre le mur (D-031) : **5 PV par m/s au-delà de 6 m/s, 40 au plus par impact**, en même temps que
+   l'étourdissement (donc une fois par impact, jamais pendant l'immunité ; un ennemi lancé garde ses propres dégâts
+   d'impact). Seul l'impact compte : un ennemi
+   maintenu plaqué contre un mur n'est ni ré-étourdi ni blessé en continu. **Sans effet sur le boss** (traqueur exclu de l'onde, de
+   l'étourdissement, des dégâts de zone et de la prise). Après un étourdissement, **2 s d'immunité**.
 5. **Attraper (télékinésie, violet) :** F / X attrape l'objet sélectionné (à portée, sous la
    masse maximale). **Aide à la visée (D-026)** : un objet est sélectionné s'il est vu dans un **cône** autour du
    viseur, de **8°** (demi-angle) jusqu'à 5 m, puis de plus en plus étroit jusqu'à **3° à 60 m** ; parmi plusieurs
@@ -88,7 +102,14 @@ l'arme », « le mouvement est la survie ».
    3 jusqu'à 25 kg, 5 au-delà** (réglable par objet) ; un lancer compte à son premier impact au-dessus du seuil ; le
    dernier le casse : éclat, débris, son, puis il disparaît (dans la scène de test, il revient à sa place après 4 s).
    Repère : une rangée de carrés au-dessus de l'objet tenu (pleins : lancers restants). **Lustre** : il se casse au
-   premier impact, lancé ou tombé, avec une zone de **4 m**. Après un lancer, une
+   premier impact, lancé ou tombé, avec une zone de **4 m**.
+   **Ennemi étourdi (D-030)** : F / X peut attraper un ennemi **étourdi** (et lui seul ; l'aide à la visée en
+   cône l'inclut). Tenu, c'est un objet de sa masse (80 kg pour le factice, sans limite de masse ni
+   durabilité) : même main levée, même lancer, mêmes dégâts et zone. Il se libère seul au bout de **3 s**
+   (il se débat et clignote 0.5 s avant) ; ensuite, 2 s d'immunité : ni ré-étourdi, ni repris. Lancé, il
+   subit aussi les dégâts de chaque impact, mur compris (mesuré : lancé à 30 m/s sur un factice à 11 m,
+   les deux meurent ; contre un mur, il meurt : 80 kg × 22 × 0.1 = 176 dégâts). Un seul joueur le tient ;
+   il ne blesse pas son lanceur. Après un lancer, une
    courte recharge (0.3 s) avant d'attraper de nouveau ; c'est la seule limite (pas d'endurance). Sans objet
    en main, le clic gauche ne fait rien : il est réservé à l'artefact (étape 5 bis). Un projectile ennemi renvoyé blesse son tireur (plus tard).
    **Retour (greybox) :** objets attrapables qui brillent (faiblement de loin, plus à portée, vivement
@@ -157,8 +178,14 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
 | Zone : dégâts au centre / au bord | 60 / 25 | % des dégâts d'impact / % du centre | |
 | Durabilité : jusqu'à 5 / 15 / 25 kg / au-delà | 1 / 2 / 3 / 5 | lancers | |
 | Lustre : zone | 4 | m | casse au premier impact |
-| Onde de répulsion : rayon | 4 | m | |
-| Onde : vitesse (objet de 15 kg / ennemi de 80 kg), facteur de masse, bord | 16 / 16, 0.35 à 1.3, 50 % | m/s | |
+| Répulsion (cône) : portée / ouverture | 14 / 60 | m / ° | |
+| Onde de choc (appui) : vitesse jusqu'à 2 m (objet de 15 kg / ennemi de 80 kg), bout de portée, facteur de masse | 22 / 22, ×0.6, 0.35 à 1.3 | m/s | assez fort ? |
+| Maintien : durée max / poussée dans l'axe / bout de portée / vitesse max | 0.8 / 35 / ×0.5 / 25 | s / m/s² / — / m/s | assez de contrôle ? |
+| Recharge de la répulsion | 5, à partir de la fin du maintien | s | |
+| Dégâts contre un mur (ennemi repoussé) : par m/s au-delà de 6 / plafond | 5 / 40 | PV | |
+| Objet repoussé : multiplicateur / danger / vitesse mini | 0.5 / 1 / 6 | — / s / m/s | |
+| Ennemi étourdi tenu : libération seule / avertissement / débattement | 3 / 0.5 / 0.06 | s / s / m | |
+| Immunité après un étourdissement | 2 | s | |
 | Étourdissement : vitesse d'impact / durée | 6 / 1.5 | m/s / s | |
 | Ennemi factice : masse / retour au poste | 80 / 2 s puis 3 m/s | kg | |
 | Aide à la visée : cône de près / jusqu'à / à 60 m | 8 / 5 / 3 | ° / m / ° | mesuré : écart toléré 1.8 m à 10 m, 3.5 m à 30 m, 3.6 m à 60 m |
@@ -192,8 +219,9 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
 - Objet tenu qu'on fait percuter un ennemi (traction, course) : il blesse comme un objet lancé.
 - Les objets tombent à 20 m/s², comme le joueur (D-027).
 - Objet gros visé au ras du sol : son centre va vers le point visé, donc il touche le sol un peu avant.
-- Onde visée sur un lustre : il est décroché et tombe droit ; un ennemi à moins de 4 m du lustre est aussi
-  repoussé (dans la scène de test, le lustre pend à 7.6 m, 5.8 m au-dessus du factice).
+- Onde vers un lustre : il est décroché et tombe droit ; on le vise par en dessous (dans la scène de test, à
+  ≈ 5.9 m des yeux depuis 2 m à côté du factice placé dessous : 30 dégâts de chute).
+- Un ennemi au repos ne blesse pas ce qui le percute : seul un ennemi tenu ou en vol est un projectile.
 - Mort ou téléportation en tenant un objet : l'objet tombe avec sa vitesse actuelle.
 
 ## Questions ouvertes
@@ -237,3 +265,6 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
   factices, chiffres de dégâts, éclats et sons (D-025) ; aide à la visée de la prise en cône (D-026).
 - 2026-11-12 : après le playtest de la partie 2 (D-027) : lancer toujours vers le viseur, gravité des objets à
   20 m/s², dégâts de zone, durabilité, lustre fragile, onde de répulsion, étourdissement.
+- 2026-11-12 : onde de répulsion en cône depuis le joueur (D-029) ; prise des ennemis étourdis (D-030).
+- 2026-11-12 : répulsion façon aimant (D-029 mise à jour) : onde de choc à l'appui, poussée continue au maintien (0.8 s), cône de 14 m, recharge à partir de la fin.
+- 2026-11-12 : dégâts contre un mur d'un ennemi repoussé et objets repoussés qui blessent (D-031).

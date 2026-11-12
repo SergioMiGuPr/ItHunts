@@ -36,6 +36,9 @@ namespace ItHunts.EditorTools
         private const string DamagePath = SettingsDir + "/Damage_Default.asset";
         private const string DummyPath = SettingsDir + "/TrainingDummy_Default.asset";
         private const string DamageFeedbackPath = SettingsDir + "/DamageFeedback_Default.asset";
+        private const string FpsViewPath = SettingsDir + "/FpsView_Default.asset";
+        private const string HudPath = SettingsDir + "/Hud_Default.asset";
+        private const int FirstPersonLayerStart = 8;    // couches 8 à 11 : FirstPersonP1..P4 (mains de chaque joueur)
         private const string PostProcessPath = SettingsDir + "/PostProcess_TestMovement.asset";
         private const string PlayerPrefabPath = PrefabDir + "/Player.prefab";
         private const string ScenePath = "Assets/Scenes/Test_Movement.unity";
@@ -65,6 +68,8 @@ namespace ItHunts.EditorTools
             var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsPath);
             if (actions == null)
                 return $"ERREUR : {ActionsPath} introuvable.";
+            EnsureFirstPersonLayers();
+            EnsureFirstPersonRendering(LoadOrCreate<FpsViewSettings>(FpsViewPath));
             BuildPlayerPrefab(movement, camera, magnetism, feedback, tk, actions);
             return $"OK : {PlayerPrefabPath} reconstruit.";
         }
@@ -90,6 +95,8 @@ namespace ItHunts.EditorTools
             if (actions == null)
                 return $"ERREUR : {ActionsPath} introuvable.";
 
+            EnsureFirstPersonLayers();
+            EnsureFirstPersonRendering(LoadOrCreate<FpsViewSettings>(FpsViewPath));
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefabPath);
             if (prefab == null || overwrite)
                 prefab = BuildPlayerPrefab(movement, camera, magnetism, feedback, tk, actions);
@@ -119,6 +126,136 @@ namespace ItHunts.EditorTools
         }
 
         // ---------- Prefab joueur ----------
+
+        /// <summary>Couches des mains, une par joueur (écran partagé : chaque caméra des mains ne dessine que les siennes).</summary>
+        private static void EnsureFirstPersonLayers()
+        {
+            var tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+            SerializedProperty layers = tagManager.FindProperty("layers");
+            for (int i = 0; i < 4; i++)
+            {
+                SerializedProperty layer = layers.GetArrayElementAtIndex(FirstPersonLayerStart + i);
+                string name = FirstPersonView.LayerPrefix + (i + 1);
+                if (layer.stringValue != name)
+                {
+                    if (!string.IsNullOrEmpty(layer.stringValue))
+                        throw new System.InvalidOperationException($"La couche {FirstPersonLayerStart + i} est déjà prise : {layer.stringValue}");
+                    layer.stringValue = name;
+                }
+            }
+
+            tagManager.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssets();
+        }
+
+        private const string FeaturePrefix = "ItHunts Mains";
+
+        /// <summary>
+        /// Option 2 de la vue FPS (D-028), sur chaque renderer URP du projet : les passes normales ignorent les couches des
+        /// mains ; après les transparents, une passe efface la profondeur, une passe « Render Objects » dessine les mains
+        /// (file opaque) avec un champ de vision de viewmodelFov, puis une autre dessine le HUD (file transparente, couches
+        /// des mains, sans changer la caméra). Idempotent : les passes « ItHunts Mains » existantes sont remplacées.
+        /// </summary>
+        public static void EnsureFirstPersonRendering(FpsViewSettings fps)
+        {
+            int mask = 0;
+            for (int i = 0; i < 4; i++)
+                mask |= 1 << (FirstPersonLayerStart + i);
+            foreach (string guid in AssetDatabase.FindAssets("t:UniversalRendererData"))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(path);
+                if (data == null)
+                    continue;
+                data.opaqueLayerMask &= ~mask;
+                data.transparentLayerMask &= ~mask;
+
+                // Retire les anciennes passes des mains.
+                for (int i = data.rendererFeatures.Count - 1; i >= 0; i--)
+                {
+                    ScriptableRendererFeature f = data.rendererFeatures[i];
+                    if (f != null && f.name.StartsWith(FeaturePrefix))
+                    {
+                        data.rendererFeatures.RemoveAt(i);
+                        AssetDatabase.RemoveObjectFromAsset(f);
+                        Object.DestroyImmediate(f, true);
+                    }
+                }
+
+                var clear = ScriptableObject.CreateInstance<FirstPersonDepthClearFeature>();
+                clear.name = FeaturePrefix + " : profondeur effacée";
+                var hands = ScriptableObject.CreateInstance<RenderObjects>();
+                hands.name = FeaturePrefix + " : mains à " + fps.viewmodelFov + "°";
+                hands.settings.Event = RenderPassEvent.AfterRenderingTransparents;
+                hands.settings.filterSettings.RenderQueueType = RenderQueueType.Opaque;
+                hands.settings.filterSettings.LayerMask = mask;
+                hands.settings.overrideDepthState = true;
+                hands.settings.depthCompareFunction = UnityEngine.Rendering.CompareFunction.LessEqual;
+                hands.settings.enableWrite = true;
+                hands.settings.cameraSettings.overrideCamera = true;
+                hands.settings.cameraSettings.restoreCamera = true;
+                hands.settings.cameraSettings.cameraFieldOfView = fps.viewmodelFov;
+                hands.settings.cameraSettings.offset = Vector4.zero;
+                var hud = ScriptableObject.CreateInstance<RenderObjects>();
+                hud.name = FeaturePrefix + " : HUD";
+                hud.settings.Event = RenderPassEvent.AfterRenderingTransparents;
+                hud.settings.filterSettings.RenderQueueType = RenderQueueType.Transparent;
+                hud.settings.filterSettings.LayerMask = mask;
+                foreach (ScriptableRendererFeature f in new ScriptableRendererFeature[] { clear, hands, hud })
+                {
+                    AssetDatabase.AddObjectToAsset(f, data);
+                    data.rendererFeatures.Add(f);
+                }
+
+                // Table des identifiants des passes (comme l'éditeur du renderer).
+                var so = new SerializedObject(data);
+                SerializedProperty map = so.FindProperty("m_RendererFeatureMap");
+                map.arraySize = data.rendererFeatures.Count;
+                for (int i = 0; i < data.rendererFeatures.Count; i++)
+                    if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(data.rendererFeatures[i], out string _, out long id))
+                        map.GetArrayElementAtIndex(i).longValue = id;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                data.SetDirty();
+                EditorUtility.SetDirty(data);
+            }
+
+            AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// Main greybox (repère : poignet à l'origine, doigts vers +z) : avant-bras, paume, doigts (articulés au bout de
+        /// la paume), pouce. Mesures dans docs/art/ART-HANDOFF.md. Renvoie la main et l'articulation des doigts.
+        /// </summary>
+        private static (Transform hand, Transform fingers) Hand(string name, Transform parent, bool right, Material skin)
+        {
+            var hand = new GameObject(name).transform;
+            hand.SetParent(parent, false);
+            float side = right ? 1f : -1f;
+            Part(PrimitiveType.Cylinder, "Avant-bras", hand, new Vector3(0f, 0f, -0.14f), new Vector3(0.06f, 0.13f, 0.06f), new Vector3(90f, 0f, 0f), skin);
+            Part(PrimitiveType.Cube, "Paume", hand, new Vector3(0f, 0f, 0.045f), new Vector3(0.085f, 0.03f, 0.09f), Vector3.zero, skin);
+            var fingers = new GameObject("Doigts (articulation)").transform;
+            fingers.SetParent(hand, false);
+            fingers.localPosition = new Vector3(0f, 0f, 0.09f);
+            Part(PrimitiveType.Cube, "Doigts", fingers, new Vector3(0f, 0f, 0.035f), new Vector3(0.08f, 0.025f, 0.07f), Vector3.zero, skin);
+            Part(PrimitiveType.Cube, "Pouce", hand, new Vector3(-0.05f * side, 0.005f, 0.05f), new Vector3(0.022f, 0.022f, 0.055f),
+                new Vector3(0f, -30f * side, 0f), skin);
+            return (hand, fingers);
+        }
+
+        private static void Part(PrimitiveType type, string name, Transform parent, Vector3 position, Vector3 scale, Vector3 euler, Material mat)
+        {
+            GameObject go = GameObject.CreatePrimitive(type);
+            go.name = name;
+            Object.DestroyImmediate(go.GetComponent<Collider>());
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = position;
+            go.transform.localRotation = Quaternion.Euler(euler);
+            go.transform.localScale = scale;
+            var r = go.GetComponent<MeshRenderer>();
+            r.sharedMaterial = mat;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
+        }
 
         private struct TelekinesisAssets
         {
@@ -156,13 +293,26 @@ namespace ItHunts.EditorTools
                 camGo.AddComponent<CinemachineBrain>();
                 camGo.AddComponent<AudioListener>();
 
-                // Orbe tenue en bas à droite de la vue, et trait de traction.
+                // Vue première personne : caméra des mains (superposée, FOV fixe), mains greybox, orbe dans la paume droite.
+                var fps = LoadOrCreate<FpsViewSettings>(FpsViewPath);
+                // Option 2 (D-028) : pas de caméra des mains ; passes du renderer URP (EnsureFirstPersonRendering).
+
+                var viewRoot = new GameObject("Mains (vue)").transform;
+                viewRoot.SetParent(camGo.transform, false);
+                Material skin = Mat("Greybox_Skin", new Color(0.72f, 0.58f, 0.48f));
+                (Transform rightHand, Transform rightFingers) = Hand("Main droite", viewRoot, true, skin);
+                (Transform leftHand, Transform leftFingers) = Hand("Main gauche", viewRoot, false, skin);
+                rightHand.localPosition = fps.rightHandRest;
+                rightHand.localRotation = Quaternion.Euler(fps.rightHandRestEuler);
+                leftHand.localPosition = fps.leftHandRest;
+                leftHand.localRotation = Quaternion.Euler(fps.leftHandRestEuler);
+
                 GameObject orb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 orb.name = "Orbe (vue)";
                 Object.DestroyImmediate(orb.GetComponent<Collider>());
-                orb.transform.SetParent(camGo.transform, false);
-                orb.transform.localPosition = new Vector3(0.28f, -0.24f, 0.55f);
-                orb.transform.localScale = Vector3.one * 0.09f;
+                orb.transform.SetParent(rightHand, false);
+                orb.transform.localPosition = fps.orbInHand;
+                orb.transform.localScale = Vector3.one * fps.orbDiameter;
                 var orbRenderer = orb.GetComponent<MeshRenderer>();
                 orbRenderer.sharedMaterial = UnlitMat("Orb_View", "Universal Render Pipeline/Unlit", Color.white);
                 orbRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -219,12 +369,20 @@ namespace ItHunts.EditorTools
                 var look = root.AddComponent<PlayerLook>();
                 root.AddComponent<MovementDebugOverlay>();
                 root.AddComponent<DebugTeleporter>();
-                root.AddComponent<MovementHud>();
+                var view = root.AddComponent<FirstPersonView>();
+                var hud = root.AddComponent<PlayerHud>();
                 var orbView = root.AddComponent<MagnetismOrbView>();
                 var audio = root.AddComponent<MagnetismAudio>();
                 var tkView = root.AddComponent<TelekinesisView>();
-                var damageNumbers = root.AddComponent<DamageNumbersHud>();
-                SetRef(damageNumbers, "settings", LoadOrCreate<DamageFeedbackSettings>(DamageFeedbackPath));
+                SetRef(view, "settings", fps);
+                SetRef(view, "viewRoot", viewRoot);
+                SetRef(view, "rightHand", rightHand);
+                SetRef(view, "leftHand", leftHand);
+                SetRef(view, "rightFingers", rightFingers);
+                SetRef(view, "leftFingers", leftFingers);
+                SetRef(view, "orb", orb.transform);
+                SetRef(hud, "settings", LoadOrCreate<HudSettings>(HudPath));
+                SetRef(hud, "damageFeedback", LoadOrCreate<DamageFeedbackSettings>(DamageFeedbackPath));
 
                 SetRef(motor, "settings", movement);
                 SetRef(motor, "magnetism", magnetism);
@@ -237,8 +395,8 @@ namespace ItHunts.EditorTools
                 SetRef(orbView, "settings", feedback);
                 SetRef(orbView, "tkFeedback", tk.Feedback);
                 SetRef(audio, "settings", feedback);
-                SetRef(root.GetComponent<MovementHud>(), "feedback", feedback);
-                SetRef(root.GetComponent<MovementHud>(), "tkFeedback", tk.Feedback);
+                SetRef(hud, "feedback", feedback);
+                SetRef(hud, "tkFeedback", tk.Feedback);
                 SetRef(motor, "telekinesis", tk.Orb);
                 SetRef(tkView, "settings", tk.Feedback);
                 SetRef(tkView, "orbRenderer", orbRenderer);
@@ -376,6 +534,10 @@ namespace ItHunts.EditorTools
             // Joueur.
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
             player.transform.SetPositionAndRotation(new Vector3(0f, 0f, -10f), Quaternion.identity);
+
+            // Mesure de performance dans un build (inactive sans l'argument -ithunts-perf).
+            var probe = new GameObject("Mesure de performance (build)").AddComponent<PerfProbe>();
+            SetRef(probe, "playerPrefab", playerPrefab);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddSceneToBuild(ScenePath);
@@ -751,6 +913,7 @@ namespace ItHunts.EditorTools
             var feedback = feedbackGo.AddComponent<DamageFeedback>();
             SetRef(feedback, "settings", LoadOrCreate<DamageFeedbackSettings>(DamageFeedbackPath));
             SetRef(feedback, "flashMaterial", UnlitMat("Damage_Flash", "Universal Render Pipeline/Unlit", Color.white));
+            SetRef(feedback, "lineMaterial", UnlitMat("Orb_Line", "Universal Render Pipeline/Particles/Unlit", Color.white));
         }
 
         /// <summary>Mannequin : capsule de 1.8 m × 0.8 m (taille du joueur), posée au sol.</summary>
@@ -766,7 +929,14 @@ namespace ItHunts.EditorTools
             GameObjectUtility.SetStaticEditorFlags(go, 0);
             var body = go.AddComponent<Rigidbody>();
             body.isKinematic = true;
+            body.mass = settings.mass;
             body.interpolation = RigidbodyInterpolation.Interpolate;
+            // Ennemi attrapable quand il est étourdi (D-030), qui blesse ce qu'il percute une fois lancé.
+            var grabbable = go.AddComponent<Grabbable>();
+            var gso = new SerializedObject(grabbable);
+            gso.FindProperty("isEnemy").boolValue = true;
+            gso.ApplyModifiedPropertiesWithoutUndo();
+            SetRef(go.AddComponent<ImpactDamager>(), "settings", LoadOrCreate<DamageSettings>(DamagePath));
             var enemy = go.AddComponent<EnemyBody>();
             SetRef(enemy, "settings", settings);
             SetRef(go.AddComponent<Damageable>(), "settings", settings);

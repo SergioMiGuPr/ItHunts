@@ -24,6 +24,14 @@ namespace ItHunts.Settings
                  "contact qui frotte ou rebondit sur place.")]
         [Min(0f)] public float perTargetCooldown = 0.3f;
 
+        [Header("Objet repoussé par la répulsion (D-031)")]
+        [Tooltip("Un objet repoussé blesse ce qu'il percute comme un objet lancé, multiplié par ce facteur (sans zone).")]
+        [Range(0f, 2f)] public float pushedDamageMultiplier = 0.5f;
+        [Tooltip("Il reste dangereux ce temps après la fin de la poussée (s)…")]
+        [Min(0f)] public float pushedDangerTime = 1f;
+        [Tooltip("… ou jusqu'à ce que sa vitesse passe sous ce seuil (m/s).")]
+        [Min(0f)] public float pushedMinSpeed = 6f;
+
         [Header("Dégâts de zone (objet lancé, premier impact ; D-027)")]
         [Tooltip("Rayon de la zone (m) = base + par kg × masse : 5 kg ≈ 1.3 m, 15 kg ≈ 1.9 m, 25 kg ≈ 2.5 m, 40 kg ≈ 3.4 m. " +
                  "Un objet peut imposer son propre rayon (Grabbable).")]

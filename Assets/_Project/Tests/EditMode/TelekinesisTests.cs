@@ -16,13 +16,14 @@ namespace ItHunts.Tests
         public int Id = 42;
         public float Mass = 10f;
         public float Distance = 5f;
+        public bool Enemy;
 
         public bool FindGrabbable(Vector3 origin, Vector3 direction, float range, out GrabCandidate candidate)
         {
             candidate = default;
             if (!HasTarget || Distance > range)
                 return false;
-            candidate = new GrabCandidate { Id = Id, Mass = Mass, Distance = Distance, Point = origin + direction * Distance };
+            candidate = new GrabCandidate { Id = Id, Mass = Mass, Distance = Distance, Point = origin + direction * Distance, Enemy = Enemy };
             return true;
         }
     }
@@ -466,6 +467,42 @@ namespace ItHunts.Tests
             _grab.HasTarget = true;
             Step(MovementInput.Neutral);
             Assert.That(_t.AimAngle, Is.EqualTo(0f));
+        }
+
+        // ---------- Ennemi étourdi tenu (D-030) ----------
+
+        [Test]
+        public void EnnemiTenu_SansLimiteDeMasse_SeLibereSeulAuBoutDe3s()
+        {
+            Assert.That(_cfg.enemyHoldDuration, Is.EqualTo(3f));
+            _grab.HasTarget = true;
+            _grab.Enemy = true;
+            _grab.Mass = 80f;
+            Step(Grab());
+            Assert.That(_t.Holding, Is.True, "80 kg, mais un ennemi étourdi : pris");
+            Assert.That(_t.HeldIsEnemy, Is.True);
+            Assert.That(_t.AimTooHeavy, Is.False);
+            int grabbed = _t.GrabTick;
+            int holdTicks = MovementSettings.SecondsToTicks(_cfg.enemyHoldDuration, Dt);   // 180
+            _grab.HasTarget = false;
+            while (_s.Tick < grabbed + holdTicks - 1)
+                Step(MovementInput.Neutral);
+            Assert.That(_t.Holding, Is.True, "encore tenu juste avant 3 s");
+            Step(MovementInput.Neutral);
+            Assert.That(_last.Kind, Is.EqualTo(TelekinesisCommandKind.Lacher), "il se libère seul à 3 s");
+            Assert.That(_t.Holding, Is.False);
+        }
+
+        [Test]
+        public void EnnemiTenu_LanceCommeUnObjet()
+        {
+            _grab.HasTarget = true;
+            _grab.Enemy = true;
+            _grab.Mass = 80f;
+            Step(Grab());
+            Step(Throw());
+            Assert.That(_last.Kind, Is.EqualTo(TelekinesisCommandKind.Lancer));
+            Assert.That(_t.HeldIsEnemy, Is.True, "le drapeau reste jusqu'à la prochaine prise (sans effet)");
         }
     }
 }

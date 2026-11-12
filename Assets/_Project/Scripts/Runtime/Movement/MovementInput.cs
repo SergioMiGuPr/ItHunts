@@ -41,6 +41,9 @@ namespace ItHunts.Movement
         /// <summary>Répulsion (clic droit / LT) : tick du dernier appui.</summary>
         public int RepelPressedTick;
 
+        /// <summary>Répulsion maintenue (D-029) : la poussée continue dure tant qu'il est tenu (au plus repelHoldMaxDuration).</summary>
+        public bool RepelHeld;
+
         /// <summary>Attraper l'objet visé, ou relâcher l'objet tenu (F / X) : tick du dernier appui.</summary>
         public int GrabPressedTick;
 

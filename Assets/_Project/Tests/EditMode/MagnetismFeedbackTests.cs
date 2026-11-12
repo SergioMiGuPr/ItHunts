@@ -168,7 +168,7 @@ namespace ItHunts.Tests
             Assert.That(camera.GetUniversalAdditionalCameraData().renderPostProcessing, Is.True);
             Assert.That(prefab.GetComponent<MagnetismAudio>(), Is.Not.Null);
             foreach (var c in new Component[] { prefab.GetComponent<MagnetismAudio>(), prefab.GetComponent<MagnetismOrbView>(),
-                         prefab.GetComponent<ItHunts.Hud.MovementHud>() })
+                         prefab.GetComponent<ItHunts.Hud.PlayerHud>() })
             {
                 var so = new SerializedObject(c);
                 SerializedProperty p = so.FindProperty("settings") ?? so.FindProperty("feedback");
