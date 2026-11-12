@@ -189,6 +189,7 @@ namespace ItHunts.Debugging
 
         private void OnGUI()
         {
+            ItHunts.Enemies.Stalker.ShowDebugMarker = _page == 3;       // point prédit du traqueur, page combat
             if (_page == 0 || _motor == null || _motor.Settings == null)
                 return;
 
@@ -351,6 +352,57 @@ namespace ItHunts.Debugging
                     _text.AppendLine($"Dernier tir : {shot.Kind}, {shot.Distance:0.0} m, {shot.Damage:0} dégâts" +
                                      $"{(shot.Collider != null ? $" ({shot.Collider.name})" : "")}");
             }
+
+            foreach (ItHunts.Enemies.Stalker st in FindObjectsByType<ItHunts.Enemies.Stalker>(FindObjectsSortMode.None))
+            {
+                Vector3 pr = st.Predicted;
+                var g = st.Graph;
+                string node(int i) => g != null && i >= 0 ? g.NodeName(i) : "—";
+                _text.AppendLine($"Traqueur : {st.Mode}, {st.Speed:0.0} m/s (voulue {st.WantedSpeed:0.0}), " +
+                                 $"pointe {(st.BurstActive ? $"ACTIVE {st.BurstRemaining:0.0} s" : st.BurstCooldownRemaining > 0f ? $"recharge {st.BurstCooldownRemaining:0.0} s" : "prête")}, " +
+                                 $"{(st.SeesTarget ? "te voit" : "ne te voit pas")}, à {Vector3.Distance(transform.position, st.transform.position):0} m, " +
+                                 $"point prédit ({pr.x:0}, {pr.z:0}) à {Vector3.Distance(transform.position, pr):0.0} m de toi");
+                _text.AppendLine($"  Poursuite : {(st.Direct ? "DROIT SUR TOI" : $"labyrinthe vers {node(st.GoalNode)}")}, dans {node(st.InNode)}, " +
+                                 $"arrivé par {node(st.ArrivedFrom)}, demi-tours {st.UTurns}, {(st.Crouching ? $"BAISSÉ ({st.Crouch * st.Settings.height:0.0} m)" : "debout")}");
+                _text.AppendLine($"  Main : {st.Grab}{(st.GrabThroughOpening ? " (par une ouverture)" : "")}{(st.GrabCooldownRemaining > 0f ? $", recharge {st.GrabCooldownRemaining:0.0} s" : "")}, " +
+                                 $"épaule à {Vector3.Distance(st.Shoulder, transform.position):0.0} m (portée {st.Settings.handReach:0} m), " +
+                                 $"{(st.TargetSheltered ? "HORS DE PORTÉE " : "")}prises {st.GrabAttempts} (dont {st.RoomGrabs} par une ouverture), tués {st.GrabKills} + {st.ContactKills} au contact");
+                if (st.Mode == ItHunts.Enemies.StalkerMode.Enrage)
+                    _text.AppendLine($"  Enragé : sur la même cible depuis {st.TimeOnTarget:0.0} s, palier {st.EnragedTier + 1}/{st.Settings.enragedRampSpeeds.Length} (base {st.EnragedBaseSpeed:0.0} m/s)");
+                _text.AppendLine($"  Main plantée : {(st.Planted ? "OUI (passe maintenant)" : "non")}, prises ratées {st.MissedGrabs}");
+                _text.AppendLine($"  Mains levées : {st.Overhead}{(st.OverheadCooldownRemaining > 0f ? $", recharge {st.OverheadCooldownRemaining:0.0} s" : "")}, " +
+                                 $"gestes {st.OverheadAttempts}, tués {st.OverheadKills} ; morts au contact des bras ou des mains {st.LimbKills}");
+            }
+
+            // Goules : résumé (elles peuvent être nombreuses) et la plus proche.
+            int alive = 0, onWall = 0, leaping = 0;
+            ItHunts.Enemies.Ghoul nearest = null;
+            float nearestD = float.PositiveInfinity;
+            foreach (ItHunts.Enemies.Ghoul gh in ItHunts.Enemies.Ghoul.All)
+            {
+                var dmg = gh.GetComponent<ItHunts.Combat.Damageable>();
+                if (dmg != null && dmg.Dead)
+                    continue;
+                alive++;
+                if (gh.Mode == ItHunts.Enemies.GhoulMode.Mur)
+                    onWall++;
+                if (gh.Mode == ItHunts.Enemies.GhoulMode.Annonce || gh.Mode == ItHunts.Enemies.GhoulMode.Bond)
+                    leaping++;
+                float d = (gh.transform.position - transform.position).sqrMagnitude;
+                if (d < nearestD)
+                {
+                    nearestD = d;
+                    nearest = gh;
+                }
+            }
+
+            if (alive > 0)
+                _text.AppendLine($"Goules : {alive} en vie, {ItHunts.Enemies.Ghoul.HuntingCount} en chasse (dont {ItHunts.Enemies.Ghoul.HuntingCount - ItHunts.Enemies.Ghoul.PackCount} réveillées par l'aggro), {onWall} sur un mur, {leaping} en bond ; la plus proche à {Mathf.Sqrt(nearestD):0.0} m : " +
+                                 $"{nearest.Mode}, {nearest.Speed:0.0} m/s, bond {(nearest.LeapCooldownRemaining > 0f ? $"dans {nearest.LeapCooldownRemaining:0.0} s" : "prêt")}");
+            var zone = FindFirstObjectByType<ItHunts.Enemies.ZoneState>();
+            if (zone != null)
+                _text.AppendLine($"Zone : {zone.Elapsed:0} s écoulées, {(zone.InGrace ? $"grâce {zone.GraceLeft:0} s, " : "")}" +
+                                 $"{(zone.Enraged ? "ENRAGÉ" : $"{zone.TimeLeft:0} s avant l'enragé")}, remises à zéro {zone.Resets - 1}");
 
             var hp = _motor.GetComponent<ItHunts.Player.PlayerHealth>();
             if (hp != null)

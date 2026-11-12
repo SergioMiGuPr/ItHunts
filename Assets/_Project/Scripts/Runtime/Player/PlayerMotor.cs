@@ -143,12 +143,25 @@ namespace ItHunts.Player
             // Yeux au début du tick : c'est de là que le joueur voyait la scène au moment du clic (le rayon du lancer en
             // part ; partir des yeux après le mouvement décalait l'impact d'un tick de déplacement, 0.13 m à 7.5 m/s).
             Vector3 eyeAtClick = MagnetismOrb.EyePosition(_state, settings);
+            bool wasGrounded = _state.Grounded;
+            float fallSpeed = -_state.Velocity.y;
             MovementMotor.Step(ref _state, input, settings, dt, _probe);
+            if (!wasGrounded && _state.Grounded && fallSpeed >= ItHunts.Enemies.NoiseEvents.HardLandingSpeed)
+                ItHunts.Enemies.NoiseEvents.Raise(new ItHunts.Enemies.Noise
+                {
+                    Point = transform.position, Kind = ItHunts.Enemies.NoiseKind.AtterrissageDur, PlayerId = gameObject.GetInstanceID(),
+                    Time = Time.time,
+                });
             _currentPosition = transform.position;
 
             // Répulsion partie ce tick : onde en cône depuis le joueur, dans la direction visée (D-029).
             if (magnetism != null && _magnet.LastRepelTick == _state.Tick)
             {
+                ItHunts.Enemies.NoiseEvents.Raise(new ItHunts.Enemies.Noise
+                {
+                    Point = transform.position, Kind = ItHunts.Enemies.NoiseKind.Repulsion, PlayerId = gameObject.GetInstanceID(),
+                    Time = Time.time,
+                });
                 if (_view == null)
                     _view = GetComponent<FirstPersonView>();
                 Vector3 aim = MagnetismOrb.AimDirection(input.Yaw, input.Pitch);
@@ -187,6 +200,12 @@ namespace ItHunts.Player
             if (_currentPosition.y < killHeight)
                 Teleport(_spawnPosition);
         }
+
+        /// <summary>
+        /// Poussée venue d'un ennemi (bond de la goule) : ajoutée à la vitesse simulée sans jamais ralentir le joueur
+        /// (D-012, EnemyMath.PushWithoutSlowdown). Réseau : à appliquer côté autorité, comme un coup.
+        /// </summary>
+        public void AddVelocity(Vector3 push) => _state.Velocity = ItHunts.Enemies.EnemyMath.PushWithoutSlowdown(_state.Velocity, push);
 
         /// <summary>Retour au point de départ (PV à 0, provisoire avant la mort de l'étape 8).</summary>
         public void Respawn() => Teleport(_spawnPosition);

@@ -80,7 +80,7 @@ Une deuxième personne mène l'étape 10 (direction artistique) **en même temps
 - **Même dépôt GitHub, branche `art`**, fusion dans `main` **par pull request** seulement.
 - L'artiste travaille **uniquement dans `Assets/Art/` et `docs/art/`** (plus sa ligne dans
   `docs/assets/MANIFEST.md`), avec **ses propres scènes** (`Assets/Art/Scenes/`). Il ne touche ni à
-  `Assets/_Project/` ni à `Assets/Scenes/Test_Movement.unity`.
+  `Assets/_Project/` ni à `Assets/Scenes/Test_Movement.unity` et `Test_Arena.unity`.
 - Réciproquement, sur `main`, ne modifie pas `Assets/Art/` ni `docs/art/` (sauf `docs/art/ART-HANDOFF.md`,
   tenu à jour par toi quand un réglage qui y figure change : tailles, hauteurs, portées, objets).
 - Les réglages partagés (`ProjectSettings/`, `Packages/`, renderer URP dans `Assets/Settings/`) se changent
@@ -116,7 +116,9 @@ Une deuxième personne mène l'étape 10 (direction artistique) **en même temps
    sentir la manette : c'est l'utilisateur qui valide le ressenti.
 3. **Une scène de test** (`Assets/Scenes/Test_Movement.unity`) avec murs, rampes, couloirs de
    glissade, surfaces magnétiques, objets à lancer et quelques ennemis factices, maintenue à jour
-   : c'est le banc d'essai de chaque capacité.
+   : c'est le banc d'essai de chaque capacité. **`Assets/Scenes/Test_Arena.unity`** (étape 6) est le prototype de zone
+   (labyrinthe de salles et de couloirs, pièces fermées, goules, traqueur, timer, sortie, D-035), généré par *ItHunts >
+   Reconstruire la scène Test_Arena (labyrinthe)*.
 4. **Debug visible** : un affichage activable (vitesse horizontale, état du joueur, charges,
    recharges) pour que l'utilisateur puisse décrire précisément ce qu'il ressent.
 5. **Assets.** Chaque modèle a une entrée dans `docs/assets/MANIFEST.md` (source, outil, licence,

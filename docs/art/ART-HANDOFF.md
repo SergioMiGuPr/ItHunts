@@ -74,7 +74,7 @@ L'orbe a deux pouvoirs, utilisables en même temps.
 
 | Pouvoir | Portée | Repère pour le décor |
 |---|---|---|
-| **Traction** (le joueur est tiré en ligne droite vers un point visé, **toute surface**) | **60 m**, jusqu'à 30 m/s | salles de **30 à 50 m** de haut possibles ; points d'accroche visibles en hauteur |
+| **Traction** (le joueur est tiré en ligne droite vers un point visé, **toute surface**) | **60 m**, jusqu'à 18 m/s (D-036), 2.5 s au plus (≈ 43 m) | salles de **30 à 50 m** de haut possibles ; points d'accroche visibles en hauteur |
 | **Répulsion** (rocket jump depuis une surface) | **40 m** ; saut de **5 m** (7.6 m avec un saut juste avant) | |
 | **Onde de répulsion** (repousse objets et ennemis devant le joueur ; maintenue, elle pousse en continu 0.8 s) | cône de **14 m**, ouverture **60°**, jusqu'à 22 m/s | les lustres doivent être à **moins de 14 m** des yeux du dessous ; prévoir de la place derrière les ennemis (ils glissent jusqu'à 27–34 m) |
 | **Télékinésie** (attraper puis lancer un objet) | **60 m** ; aide à la visée : cône de 8° de près, 3° à 60 m | **chaque arène fournit des objets à lancer**, visibles de loin |
@@ -162,6 +162,47 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
   épaisseur 2 px ; coins réservés de **240 × 60 px** (âmes en haut à gauche, timer en haut à droite, traqueur enragé
   sous le timer) ; munitions du barillet : **6 segments de 8 × 9 px** sous les jauges de l'orbe ; PV du joueur (tir
   ami, provisoire) : barre de **220 × 10 px** en bas à gauche, cachée quand ils sont pleins. Couleurs réservées : § 7.
+
+## 5 ter. Ennemis, passages et labyrinthe (étape 6, D-033 à D-035)
+
+Mesures greybox (le jeu s'appuie dessus : collisions, NavMesh, portée des coups). Un modèle doit tenir dans ces
+volumes (± 10 %), pivot **aux pieds**, avant vers **+z**.
+
+| Créature | Volume de collision | Notes |
+|---|---|---|
+| Goule | capsule Ø 0.9 × 1.1 m de haut, 50 kg | basse, rampe ; yeux lumineux ; posture accroupie avant le bond (le code écrase le visuel à 60 % en hauteur) ; **grimpe aux murs** : le code bascule le visuel de 80° (plaquée contre la paroi) |
+| **Traqueur (géant)** | capsule **Ø 7 × 14 m** ; **baissé : 9 m** | intuable ; yeux rouges vers 13 m ; **épaule à 12 m** ; il ne grimpe pas ; **se baisse** sous les ponts (le code écrase le corps jusqu'à 9 m : prévoir une pose accroupie) |
+| Mains du traqueur (deux) | **boîtes de 4 × 2.2 × 4.5 m** (largeur × épaisseur × longueur) ; bras de **1.5 m** d'épaisseur | elles tuent au contact, comme le corps et les bras (D-037) : garder ces volumes ; bras de l'épaule à la main (le code l'étire), **portée 15 m depuis l'épaule** ; pose **deux mains levées au-dessus de la tête** (geste contre ceux qui passent par-dessus) |
+| Volant (à venir) | ≈ 0.5 m d'envergure, 8 kg | attrapable comme une caisse |
+
+**Prévoir dans le modèle du traqueur :** un bras droit articulé épaule → coude → poignet (le code pose la main : repos le
+long du corps, levée au-dessus de la tête pendant l'annonce, abattue sur la cible), une main en pièce séparée
+(`Stalker_Hand`, pivot au centre de la paume), et un repère `Stalker_Shoulder_R`. Annonce visible de loin : bras levé,
+**ombre et lueur rouge au sol** à la taille de la main (couleur réservée au danger).
+
+**Labyrinthe (Test_Arena, `ArenaLayout_Test`, D-035) :**
+
+| Élément | Mesure | Pour qui |
+|---|---|---|
+| Carte | ≈ **260 × 260 m**, grille de 3 × 3 intersections à **100 m** ; deux niveaux (sol, **+16 m**) | le mouvement et le géant |
+| Grandes salles | **50 à 64 m** de côté, plafond **36 m** au-dessus de leur sol | |
+| Carrefours | **20 m** de côté, plafond 24 m | |
+| Couloirs | **14 m de large, 19 m de haut** (12–16 × 18–20) ; tous dans une boucle, aucun cul-de-sac (sauf le repaire) | lui et le joueur |
+| Couloirs en pente entre niveaux | **16 m de large** : pente de **8 m** (14 à 16° sur 55 à 65 m, pleine) et **voie au sol de 8 m** qui finit au pied d'un **mur de 16 m** (les goules le grimpent) | glissade ; goules |
+| Lignes droites | **145 à 255 m** | élan |
+| **Hauteur minimale de passage** | **9 m** (il se baisse en dessous de 14 m) ; ponts et poutres : **dessous à 10 m**, tablier de 1 m | il passe dessous baissé |
+| Ponts, corniches | **6 m de large** au plus (moins que lui : il n'y monte pas) ; corniches à **11 m**, pleines jusqu'au sol | |
+| **Pièces fermées** | **12 × 12 m, 6 m de haut**, porte de **3 × 3 m** (2 à 4 m) et une fenêtre ; **profondeur au plus 15 m depuis une ouverture** | le joueur et les goules ; lui passe le bras |
+| Repaire | cul-de-sac de 26 × 20 m, 20 m de haut | |
+| Murs de course | au moins 10 m de long ; 9 à 12 m de haut | |
+
+- **Plus d'abris (D-035) :** tout point où l'on tient debout doit rester à portée de sa main (15 m depuis l'épaule, ou
+  15 m depuis l'ouverture d'une pièce). Pas de recoin sous un objet bas, pas de pièce plus profonde que 15 m.
+- **Murs grimpables des goules :** faces avant des corniches et murs sous les ponts des couloirs (composant
+  `ClimbLink`) ; les garder dégagés.
+- **Lisibilité :** la goule et le traqueur doivent rester visibles dans le noir (yeux, silhouette) ; les volumes se
+  lisent à pleine vitesse (éclairage en grille, panneaux bleus de traction, murs de course plus clairs) ; la sortie est
+  verte.
 
 ## 6. Budgets proposés (à valider ensemble)
 

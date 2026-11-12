@@ -22,17 +22,17 @@ namespace ItHunts.Settings
         [Min(1f)] public float attractRange = 60f;
         [Tooltip("Accélération de la traction (m/s²) jusqu'à la vitesse de traction.")]
         [Min(0f)] public float tractionAcceleration = 80f;
-        [Tooltip("Vitesse de traction (m/s). Plus vite, on garde sa vitesse, redirigée vers le point (jamais de perte, " +
-                 "pas de plafond des gains).")]
-        [Min(0f)] public float tractionSpeed = 30f;
+        [Tooltip("Plafond de vitesse de la traction (m/s, D-036) : elle accélère jusqu'à cette vitesse. Déjà plus vite (bunny " +
+                 "hop, dash, pente), elle garde la vitesse sans rien ajouter et la redirige vers le point visé : elle ne freine jamais.")]
+        [Min(0f)] public float tractionSpeed = 18f;
         [Tooltip("Durée maximale d'une traction (s).")]
         [Min(0.05f)] public float tractionMaxDuration = 2.5f;
         [Tooltip("La traction s'arrête à cette distance du point visé (m, depuis les yeux).")]
         [Min(0f)] public float tractionArrivalDistance = 1f;
         [Tooltip("Charges d'attraction (séparées des charges de mouvement) : 1 traction = 1 charge.")]
         [Min(1)] public int attractCharges = 3;
-        [Tooltip("Temps de recharge d'une charge d'attraction (s) ; elles reviennent une par une.")]
-        [Min(0.05f)] public float attractChargeRechargeTime = 4f;
+        [Tooltip("Temps de recharge d'une charge d'attraction (s, 6 depuis D-036) ; elles reviennent une par une.")]
+        [Min(0.05f)] public float attractChargeRechargeTime = 6f;
 
         [Header("Répulsion : impulsion")]
         [Tooltip("Portée du rayon de répulsion (m).")]

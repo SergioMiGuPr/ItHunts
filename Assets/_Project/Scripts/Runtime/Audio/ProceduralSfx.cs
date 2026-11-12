@@ -235,6 +235,99 @@ namespace ItHunts.Audio
             return Normalize(s, 0.7f);
         }
 
+        /// <summary>Goule qui va bondir : sifflement (bruit aigu qui monte), 0.3 s.</summary>
+        public static float[] GhoulHiss()
+        {
+            float duration = 0.32f;
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(71);
+            float prev = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float noise = (float)(rng.NextDouble() * 2.0 - 1.0);
+                float hp = noise - prev;                                  // passe-haut grossier : sifflement
+                prev = noise;
+                float env = Mathf.Min(1f, t / 0.05f) * (1f - t / duration);
+                s[i] = hp * env * (0.6f + 0.4f * t / duration);
+            }
+
+            return Normalize(s, 0.7f);
+        }
+
+        /// <summary>Pas du traqueur : coup très grave (55 → 30 Hz) et frottement.</summary>
+        public static float[] StalkerStep()
+        {
+            float duration = 0.5f;
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(81);
+            float phase = 0f, low = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                phase += 2f * Mathf.PI * Mathf.Lerp(55f, 30f, t / duration) / SampleRate;
+                float noise = (float)(rng.NextDouble() * 2.0 - 1.0);
+                low += (noise - low) * 0.05f;
+                s[i] = Mathf.Sin(phase) * Mathf.Exp(-t * 7f) + 2.5f * low * Mathf.Exp(-t * 12f);
+            }
+
+            return Normalize(s, 0.95f);
+        }
+
+        /// <summary>Souffle du traqueur, en boucle (3 s) : bruit grave qui enfle et retombe deux fois.</summary>
+        public static float[] StalkerBreath()
+        {
+            float duration = 3f;
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(91);
+            float low = 0f, lower = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float noise = (float)(rng.NextDouble() * 2.0 - 1.0);
+                low += (noise - low) * 0.08f;
+                lower += (low - lower) * 0.2f;
+                float swell = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(Mathf.PI * 2f * t / 1.5f)), 2f);
+                s[i] = lower * swell;
+            }
+
+            return Normalize(s, 0.8f);
+        }
+
+        /// <summary>Le traqueur repère le joueur : grondement qui descend (180 → 60 Hz), 1 s.</summary>
+        public static float[] StalkerRoar()
+        {
+            float duration = 1f;
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(101);
+            float phase = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float u = t / duration;
+                phase += 2f * Mathf.PI * Mathf.Lerp(180f, 60f, u) / SampleRate;
+                float rough = (float)(rng.NextDouble() * 2.0 - 1.0) * 0.4f;
+                float env = Mathf.Min(1f, t / 0.08f) * (1f - u);
+                s[i] = env * (Mathf.Sign(Mathf.Sin(phase)) * 0.5f + Mathf.Sin(phase * 0.5f) + rough);
+            }
+
+            return Normalize(s, 0.9f);
+        }
+
+        /// <summary>Nappe de tension en boucle (4 s) : deux graves légèrement désaccordés qui battent.</summary>
+        public static float[] TensionDrone()
+        {
+            float duration = 4f;
+            float[] s = new float[Samples(duration)];
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                s[i] = Mathf.Sin(2f * Mathf.PI * 55f * t) + Mathf.Sin(2f * Mathf.PI * 55.5f * t) + 0.4f * Mathf.Sin(2f * Mathf.PI * 82.5f * t);
+            }
+
+            return Normalize(s, 0.6f);
+        }
+
         public static AudioClip ToClip(string name, float[] samples)
         {
             var clip = AudioClip.Create(name, samples.Length, 1, SampleRate, false);

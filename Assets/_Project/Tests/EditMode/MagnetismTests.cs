@@ -134,9 +134,40 @@ namespace ItHunts.Tests
             Assert.That(_s.Velocity.magnitude, Is.EqualTo(_cfg.tractionAcceleration * Dt).Within(1e-3f));
             for (int i = 0; i < 22; i++)
                 Step(Holding());
-            Assert.That(_s.Velocity.magnitude, Is.EqualTo(_cfg.tractionSpeed).Within(1e-3f), "30 m/s en 23 ticks (80 m/s²)");
+            Assert.That(_s.Velocity.magnitude, Is.EqualTo(_cfg.tractionSpeed).Within(1e-3f), "18 m/s en 14 ticks (80 m/s²), atteints avant 23");
             Step(Holding());
             Assert.That(_s.Velocity.magnitude, Is.EqualTo(_cfg.tractionSpeed).Within(1e-3f), "pas au-delà de la vitesse de traction");
+        }
+
+        /// <summary>D-036 : la traction plafonne à 18 m/s ; plus vite (bunny hop, dash), elle garde la vitesse et la redirige.</summary>
+        [Test]
+        public void Traction_Plafond18_SansPerteAuDessus()
+        {
+            Assert.That(_cfg.tractionSpeed, Is.EqualTo(18f), "plafond par défaut");
+            Step(PressAttract(new Vector3(0f, 25f, 25f)));
+            float max = 0f;
+            for (int i = 0; i < 60; i++)
+            {
+                Step(Holding());
+                max = Mathf.Max(max, _s.Velocity.magnitude);
+            }
+
+            Assert.That(max, Is.LessThanOrEqualTo(18f + 1e-3f), "depuis l'arrêt : jamais plus de 18 m/s");
+        }
+
+        /// <summary>D-036 : lancé à 24 m/s de côté, la traction ne freine pas, n'ajoute rien et redirige vers le point.</summary>
+        [Test]
+        public void Traction_Plafond18_GardeLaVitesseAuDessus()
+        {
+            PutInAir(new Vector3(24f, 0f, 0f));
+            Step(PressAttract(new Vector3(0f, 10f, 40f)));
+            for (int i = 0; i < 20; i++)
+            {
+                Assert.That(_s.Velocity.magnitude, Is.EqualTo(24f).Within(1e-3f), $"tick {i} : vitesse gardée");
+                Step(Holding());
+            }
+
+            Assert.That(Vector3.Angle(_s.Velocity, new Vector3(0f, 10f, 40f)), Is.LessThan(25f), "redirigée vers le point visé");
         }
 
         [Test]
@@ -304,20 +335,20 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Attraction_UneChargeToutesLes4s_UneParUne()
+        public void Attraction_UneChargeToutesLes6s_UneParUne()
         {
-            Assert.That(_cfg.attractChargeRechargeTime, Is.EqualTo(4f), "1 charge toutes les 4 s (D-024)");
+            Assert.That(_cfg.attractChargeRechargeTime, Is.EqualTo(6f), "1 charge toutes les 6 s (D-036 ; 4 s avant)");
             _m.AttractCharges = 0f;
-            int recharge = MovementSettings.SecondsToTicks(_cfg.attractChargeRechargeTime, Dt);   // 240
+            int recharge = MovementSettings.SecondsToTicks(_cfg.attractChargeRechargeTime, Dt);   // 360
             for (int i = 0; i < recharge - 2; i++)
                 Step(MovementInput.Neutral);
-            Assert.That(_m.AttractCharges, Is.LessThan(1f), "pas encore de charge juste avant 4 s");
+            Assert.That(_m.AttractCharges, Is.LessThan(1f), "pas encore de charge juste avant 6 s");
             Step(MovementInput.Neutral);
             Step(MovementInput.Neutral);
-            Assert.That(_m.AttractCharges, Is.EqualTo(1f).Within(0.02f), "1 charge après 4 s");
+            Assert.That(_m.AttractCharges, Is.EqualTo(1f).Within(0.02f), "1 charge après 6 s");
             for (int i = 0; i < recharge; i++)
                 Step(MovementInput.Neutral);
-            Assert.That(_m.AttractCharges, Is.EqualTo(2f).Within(0.02f), "2 après 8 s");
+            Assert.That(_m.AttractCharges, Is.EqualTo(2f).Within(0.02f), "2 après 12 s");
             for (int i = 0; i < 3 * recharge; i++)
                 Step(MovementInput.Neutral);
             Assert.That(_m.AttractCharges, Is.EqualTo(_cfg.attractCharges).Within(1e-3f), "plafonnées à 3");

@@ -231,6 +231,22 @@ namespace ItHunts.Orbs
                 Respawn();
         }
 
+        /// <summary>Remise à zéro de la zone : à sa place, intact, immobile (s'il n'est pas tenu).</summary>
+        public void ResetToHome()
+        {
+            if (Held)
+                return;
+            ClearPush();
+            ThrowArmed = false;
+            InStraightFlight = false;
+            Respawn();
+            if (!Body.isKinematic)
+            {
+                Body.linearVelocity = Vector3.zero;
+                Body.angularVelocity = Vector3.zero;
+            }
+        }
+
         private void Respawn()
         {
             Broken = false;

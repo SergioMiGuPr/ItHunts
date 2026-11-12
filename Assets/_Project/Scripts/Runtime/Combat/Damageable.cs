@@ -13,10 +13,11 @@ namespace ItHunts.Combat
     [DisallowMultipleComponent]
     public sealed class Damageable : MonoBehaviour
     {
-        [SerializeField] private TrainingDummySettings settings;
+        [SerializeField] private EnemySettings settings;
         [Tooltip("Réapparaît après settings.respawnDelay (ennemi factice).")]
         [SerializeField] private bool respawns = true;
-        [Tooltip("Traqueur : insensible à la répulsion, à l'étourdissement, aux dégâts de zone et à la prise (GDD).")]
+        [Tooltip("Traqueur : intuable (aucun dégât), insensible à la répulsion, à l'étourdissement, aux dégâts de zone, aux " +
+                 "balles et à la prise (GDD, D-033).")]
         [SerializeField] private bool immuneToOrbs;
         [Tooltip("Couleur et intensité de la lueur pendant l'étourdissement.")]
         [SerializeField] private Color stunColor = new Color(1f, 0.9f, 0.2f);
@@ -43,8 +44,11 @@ namespace ItHunts.Combat
         public EnemyBody Body => _body;
         public bool Stunned => _body != null && _body.Stunned;
 
-        /// <summary>Traqueur : jamais repoussé, étourdi, blessé par une zone ni attrapé.</summary>
+        /// <summary>Traqueur : jamais blessé (aucun dégât), repoussé, étourdi, blessé par une zone ni attrapé.</summary>
         public bool ImmuneToOrbs => immuneToOrbs;
+
+        /// <summary>Réapparaît seul après sa mort (factices) ; les ennemis d'une zone reviennent à la remise à zéro.</summary>
+        public bool Respawns => respawns;
 
         public Collider MainCollider => _colliders != null && _colliders.Length > 0 ? _colliders[0] : null;
 
@@ -88,10 +92,24 @@ namespace ItHunts.Combat
         {
             if (_renderers == null)
                 Init();
+            killed = false;
+            if (immuneToOrbs)
+                return 0f;                                              // le traqueur est intuable
             float taken = HealthState.Apply(ref _health, damage, time, out killed);
             if (killed)
                 SetAlive(false);
             return taken;
+        }
+
+        /// <summary>Remise à zéro de la zone : tous les PV, présent (rendus et collisions).</summary>
+        public void Revive()
+        {
+            if (_renderers == null)
+                Init();
+            _health = HealthState.Create(settings != null ? settings.maxHealth : 100f);
+            if (_body != null)
+                _body.ResetToHome();
+            SetAlive(true);
         }
 
         /// <summary>Éclair d'émission sur la cible (coup reçu).</summary>

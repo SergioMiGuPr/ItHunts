@@ -38,6 +38,18 @@ namespace ItHunts.Player
         public static IReadOnlyList<PlayerHealth> All => AllList;
         public static event System.Action<PlayerHurtEvent> Hurt;
 
+        /// <summary>Un joueur vient de mourir (la zone le remet à zéro, sinon il réapparaît seul).</summary>
+        public static event System.Action<PlayerHealth> Died;
+
+        /// <summary>Identifiant d'attaquant des ennemis (pas un joueur : le tir ami ne s'applique pas).</summary>
+        public const int EnemyAttacker = -1;
+
+        /// <summary>Quand vrai, la zone gère la mort (remise à zéro) : pas de réapparition seule.</summary>
+        public static bool ZoneHandlesDeath { get; set; }
+
+        public bool Dead => _health.Dead;
+        public PlayerMotor Motor => _motor;
+
         public int PlayerId => gameObject.GetInstanceID();
         public HealthState Health => _health;
         public CoopSettings Coop => coop;
@@ -87,16 +99,50 @@ namespace ItHunts.Player
             float taken = HealthState.Apply(ref _health, FriendlyFire.Scale(damage, coop), time, out bool killed);
             if (taken <= 0f)
                 return false;
+            Raise(attackerId, taken, point, killed, time);
+            return true;
+        }
+
+        /// <summary>Coup d'un ennemi (goule, volant) : pas de tir ami, il blesse toujours. Vrai si des PV ont été retirés.</summary>
+        public bool TakeEnemyDamage(float damage, Vector3 point, float time)
+        {
+            if (damage <= 0f || _health.Dead)
+                return false;
+            float taken = HealthState.Apply(ref _health, damage, time, out bool killed);
+            if (taken <= 0f)
+                return false;
+            Raise(EnemyAttacker, taken, point, killed, time);
+            return true;
+        }
+
+        /// <summary>Tué net, quels que soient ses PV (coup du traqueur). Vrai s'il était vivant.</summary>
+        public bool Kill(Vector3 point, float time)
+        {
+            if (_health.Dead)
+                return false;
+            float taken = _health.Current;
+            HealthState.Apply(ref _health, float.PositiveInfinity, time, out bool killed);
+            Raise(EnemyAttacker, taken, point, killed, time);
+            return true;
+        }
+
+        /// <summary>Tous les PV, vivant (remise à zéro de la zone).</summary>
+        public void Restore() => _health = HealthState.Create(settings != null ? settings.maxHealth : 100f);
+
+        private void Raise(int attacker, float taken, Vector3 point, bool killed, float time)
+        {
             Hurt?.Invoke(new PlayerHurtEvent
             {
-                Victim = this, AttackerId = attackerId, Damage = taken, Point = point, Killed = killed, Time = time,
+                Victim = this, AttackerId = attacker, Damage = taken, Point = point, Killed = killed, Time = time,
             });
-            return true;
+            if (killed)
+                Died?.Invoke(this);
         }
 
         private void Update()
         {
-            if (!_health.Dead || !HealthState.TryRespawn(ref _health, Time.time, settings != null ? settings.respawnDelay : 1f))
+            if (!_health.Dead || ZoneHandlesDeath
+                || !HealthState.TryRespawn(ref _health, Time.time, settings != null ? settings.respawnDelay : 1f))
                 return;
             if (_motor != null)
                 _motor.Respawn();

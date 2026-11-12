@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0805983250594914f98dc30fe5be597d, type: 3}
+  m_Name: ArenaLayout_Test
+  m_EditorClassIdentifier: ItHunts.Editor::ItHunts.EditorTools.ArenaLayoutSettings
+  openSize: 100
+  openCeiling: 35
+  verticalSize: 90
+  verticalCeiling: 40
+  platformHeights:
+  - 4
+  - 8
+  - 12
+  - 16
+  - 20
+  - 25
+  - 6
+  - 10
+  mixedSize: 90
+  mixedCeiling: 32
+  bigCorridorWidth: 12
+  bigCorridorHeight: 18
+  narrowWidth: 4
+  narrowHeight: 4
+  doorWidth: 1.2
+  doorHeight: 2.4
+  corridorLengthAB: 80
+  slopeLength: 60
+  slopeDrop: 8
+  corridorLengthBC: 60
+  lairWidth: 24
+  lairDepth: 24
+  lairHeight: 20
+  lairOpening: 14
+  ghoulsPerArena: 10
+  lightsPerSide: 3
+  lightIntensity: 6
+  lightRange: 50
+  ambient: {r: 0.16, g: 0.16, b: 0.2, a: 1}

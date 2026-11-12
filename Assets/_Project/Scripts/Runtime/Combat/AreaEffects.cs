@@ -111,18 +111,18 @@ namespace ItHunts.Combat
         }
 
         /// <summary>Un ennemi qui percute un obstacle à cette vitesse (composante vers l'obstacle) est-il étourdi ?</summary>
-        public static bool Stuns(float impactSpeedIntoObstacle, TrainingDummySettings cfg) =>
+        public static bool Stuns(float impactSpeedIntoObstacle, EnemySettings cfg) =>
             impactSpeedIntoObstacle >= cfg.stunImpactSpeed;
 
         /// <summary>Dégâts contre un mur d'un ennemi repoussé (D-031) : PV par m/s au-delà du seuil, plafonnés par impact.</summary>
-        public static float WallDamage(float impactSpeedIntoWall, TrainingDummySettings cfg) =>
+        public static float WallDamage(float impactSpeedIntoWall, EnemySettings cfg) =>
             Mathf.Min(cfg.wallDamageMax, Mathf.Max(0f, impactSpeedIntoWall - cfg.stunImpactSpeed) * cfg.wallDamagePerSpeed);
 
         /// <summary>Peut-on étourdir maintenant ? Non s'il l'est déjà ou s'il est encore immunisé (après le précédent).</summary>
         public static bool CanStun(float now, float stunnedUntil, float immuneUntil) => now >= stunnedUntil && now >= immuneUntil;
 
         /// <summary>Fin de l'étourdissement et de l'immunité qui le suit, pour un étourdissement qui commence maintenant.</summary>
-        public static void StunTimes(float now, TrainingDummySettings cfg, out float stunnedUntil, out float immuneUntil)
+        public static void StunTimes(float now, EnemySettings cfg, out float stunnedUntil, out float immuneUntil)
         {
             stunnedUntil = now + cfg.stunDuration;
             immuneUntil = stunnedUntil + cfg.stunImmunity;

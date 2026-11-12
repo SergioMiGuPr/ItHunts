@@ -18,11 +18,11 @@ MonoBehaviour:
   pressBuffer: 0.1
   attractRange: 60
   tractionAcceleration: 80
-  tractionSpeed: 30
+  tractionSpeed: 18
   tractionMaxDuration: 2.5
   tractionArrivalDistance: 1
   attractCharges: 3
-  attractChargeRechargeTime: 4
+  attractChargeRechargeTime: 6
   repelRange: 40
   repelImpulse: 14
   repelCooldown: 5

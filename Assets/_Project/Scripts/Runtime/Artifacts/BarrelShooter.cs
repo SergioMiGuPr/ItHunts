@@ -28,6 +28,7 @@ namespace ItHunts.Artifacts
         public float Damage;
         public bool Killed;
         public Collider Collider;
+        public int ShooterId;
     }
 
     /// <summary>
@@ -47,7 +48,7 @@ namespace ItHunts.Artifacts
             var shot = new BarrelShot
             {
                 Tick = tick, Origin = eye, Direction = dir, Point = eye + dir * cfg.range, Normal = -dir, Distance = cfg.range,
-                Kind = BarrelHitKind.Rien,
+                Kind = BarrelHitKind.Rien, ShooterId = shooterId,
             };
             PhysicsScene physics = scene ?? Physics.defaultPhysicsScene;
             int count = physics.Raycast(eye, dir, Hits, cfg.range, cfg.hitMask, QueryTriggerInteraction.Ignore);

@@ -403,11 +403,11 @@ namespace ItHunts.Tests
         // ---------- Réglages et commandes du projet ----------
 
         [Test]
-        public void Reglages_AttractionUneChargeToutesLes4s()
+        public void Reglages_AttractionUneChargeToutesLes6s()
         {
             var asset = AssetDatabase.LoadAssetAtPath<MagnetismOrbSettings>("Assets/_Project/Settings/Magnetism_Default.asset");
             Assert.That(asset, Is.Not.Null);
-            Assert.That(asset.attractChargeRechargeTime, Is.EqualTo(4f));
+            Assert.That(asset.attractChargeRechargeTime, Is.EqualTo(6f), "D-036");
         }
 
         [Test]

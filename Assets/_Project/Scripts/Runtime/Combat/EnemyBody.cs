@@ -14,7 +14,7 @@ namespace ItHunts.Combat
     [RequireComponent(typeof(Rigidbody))]
     public sealed class EnemyBody : MonoBehaviour
     {
-        [SerializeField] private TrainingDummySettings settings;
+        [SerializeField] private EnemySettings settings;
         [Tooltip("Revient seul à son poste après un recul (non : c'est TrainingDummyMover qui le ramène sur son trajet).")]
         [SerializeField] private bool returnHome = true;
 
@@ -49,7 +49,7 @@ namespace ItHunts.Combat
 
         /// <summary>Lâché ou lancé par la télékinésie, il vole (corps dynamique) jusqu'à se poser.</summary>
         public bool InFlight => _inFlight;
-        public TrainingDummySettings Settings => settings;
+        public EnemySettings Settings => settings;
 
         /// <summary>Repoussé, étourdi, tenu ou en vol : il ne marche pas.</summary>
         public bool Busy => _knocked || Stunned || Held || _inFlight;

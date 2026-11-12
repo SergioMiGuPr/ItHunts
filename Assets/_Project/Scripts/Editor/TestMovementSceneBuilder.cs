@@ -24,9 +24,9 @@ namespace ItHunts.EditorTools
     /// </summary>
     public static class TestMovementSceneBuilder
     {
-        private const string SettingsDir = "Assets/_Project/Settings";
+        internal const string SettingsDir = "Assets/_Project/Settings";
         private const string PrefabDir = "Assets/_Project/Prefabs";
-        private const string MaterialDir = "Assets/_Project/Art/Greybox";
+        internal const string MaterialDir = "Assets/_Project/Art/Greybox";
         private const string ActionsPath = "Assets/_Project/Input/PlayerControls.inputactions";
         private const string MovementPath = SettingsDir + "/Movement_Default.asset";
         private const string CameraPath = SettingsDir + "/Camera_Default.asset";
@@ -34,7 +34,7 @@ namespace ItHunts.EditorTools
         private const string FeedbackPath = SettingsDir + "/MagnetismFeedback_Default.asset";
         private const string TelekinesisPath = SettingsDir + "/Telekinesis_Default.asset";
         private const string TkFeedbackPath = SettingsDir + "/TelekinesisFeedback_Default.asset";
-        private const string DamagePath = SettingsDir + "/Damage_Default.asset";
+        internal const string DamagePath = SettingsDir + "/Damage_Default.asset";
         private const string DummyPath = SettingsDir + "/TrainingDummy_Default.asset";
         private const string DamageFeedbackPath = SettingsDir + "/DamageFeedback_Default.asset";
         private const string FpsViewPath = SettingsDir + "/FpsView_Default.asset";
@@ -44,8 +44,8 @@ namespace ItHunts.EditorTools
         private const string CoopPath = SettingsDir + "/Coop_Default.asset";
         private const string PlayerHealthPath = SettingsDir + "/PlayerHealth_Default.asset";
         private const int FirstPersonLayerStart = 8;    // couches 8 à 11 : FirstPersonP1..P4 (mains de chaque joueur)
-        private const string PostProcessPath = SettingsDir + "/PostProcess_TestMovement.asset";
-        private const string PlayerPrefabPath = PrefabDir + "/Player.prefab";
+        internal const string PostProcessPath = SettingsDir + "/PostProcess_TestMovement.asset";
+        internal const string PlayerPrefabPath = PrefabDir + "/Player.prefab";
         private const string ScenePath = "Assets/Scenes/Test_Movement.unity";
 
         [MenuItem("ItHunts/Reconstruire le prefab joueur et la scène Test_Movement")]
@@ -133,7 +133,7 @@ namespace ItHunts.EditorTools
         // ---------- Prefab joueur ----------
 
         /// <summary>Couches des mains, une par joueur (écran partagé : chaque caméra des mains ne dessine que les siennes).</summary>
-        private static void EnsureFirstPersonLayers()
+        internal static void EnsureFirstPersonLayers()
         {
             var tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
             SerializedProperty layers = tagManager.FindProperty("layers");
@@ -269,7 +269,7 @@ namespace ItHunts.EditorTools
             return (hand, fingers);
         }
 
-        private static void Part(PrimitiveType type, string name, Transform parent, Vector3 position, Vector3 scale, Vector3 euler, Material mat)
+        internal static void Part(PrimitiveType type, string name, Transform parent, Vector3 position, Vector3 scale, Vector3 euler, Material mat)
         {
             GameObject go = GameObject.CreatePrimitive(type);
             go.name = name;
@@ -437,6 +437,8 @@ namespace ItHunts.EditorTools
                 impactRenderer.receiveShadows = false;
                 impactRenderer.enabled = false;
                 SetRef(barrelView, "impact", impactRenderer);
+                var shake = root.AddComponent<CameraShake>();
+                SetRef(shake, "virtualCamera", vcam);
                 var health = root.AddComponent<PlayerHealth>();
                 SetRef(health, "settings", LoadOrCreate<PlayerHealthSettings>(PlayerHealthPath));
                 SetRef(health, "coop", LoadOrCreate<CoopSettings>(CoopPath));
@@ -535,7 +537,7 @@ namespace ItHunts.EditorTools
             return r;
         }
 
-        private static void SetRef(Object target, string field, Object value)
+        internal static void SetRef(Object target, string field, Object value)
         {
             var so = new SerializedObject(target);
             SerializedProperty prop = so.FindProperty(field);
@@ -1108,7 +1110,7 @@ namespace ItHunts.EditorTools
         }
 
         /// <summary>Corps dynamique attrapable (jamais statique : il bouge).</summary>
-        private static void MakeGrabbable(GameObject go, float mass, bool anchored)
+        internal static void MakeGrabbable(GameObject go, float mass, bool anchored)
         {
             GameObjectUtility.SetStaticEditorFlags(go, 0);
             var body = go.AddComponent<Rigidbody>();
@@ -1131,7 +1133,7 @@ namespace ItHunts.EditorTools
         }
 
         /// <summary>Matériau Lit avec émission activée (la lueur est réglée par objet, par MaterialPropertyBlock).</summary>
-        private static Material GrabbableMat(string name, Color color)
+        internal static Material GrabbableMat(string name, Color color)
         {
             Material mat = Mat(name, color);
             mat.EnableKeyword("_EMISSION");
@@ -1153,7 +1155,7 @@ namespace ItHunts.EditorTools
             go.transform.rotation = Quaternion.Euler(-angle, 0f, 0f);
         }
 
-        private static GameObject Box(string name, Transform parent, Vector3 center, Vector3 size, Material mat,
+        internal static GameObject Box(string name, Transform parent, Vector3 center, Vector3 size, Material mat,
             bool collider = true)
         {
             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -1168,7 +1170,7 @@ namespace ItHunts.EditorTools
             return go;
         }
 
-        private static Material Mat(string name, Color color)
+        internal static Material Mat(string name, Color color)
         {
             string path = $"{MaterialDir}/{name}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -1185,7 +1187,7 @@ namespace ItHunts.EditorTools
         }
 
         /// <summary>Profil de post-process de la scène de test (créé une fois, ensuite conservé comme les réglages).</summary>
-        private static VolumeProfile LoadOrCreatePostProcess()
+        internal static VolumeProfile LoadOrCreatePostProcess()
         {
             var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(PostProcessPath);
             if (profile == null)
@@ -1210,7 +1212,7 @@ namespace ItHunts.EditorTools
             return profile;
         }
 
-        private static Material UnlitMat(string name, string shaderName, Color color)
+        internal static Material UnlitMat(string name, string shaderName, Color color)
         {
             string path = $"{MaterialDir}/{name}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -1227,7 +1229,7 @@ namespace ItHunts.EditorTools
 
         // ---------- Utilitaires ----------
 
-        private static T LoadOrCreate<T>(string path) where T : ScriptableObject
+        internal static T LoadOrCreate<T>(string path) where T : ScriptableObject
         {
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
             if (asset != null)
@@ -1238,7 +1240,7 @@ namespace ItHunts.EditorTools
             return asset;
         }
 
-        private static void EnsureFolder(string path)
+        internal static void EnsureFolder(string path)
         {
             if (AssetDatabase.IsValidFolder(path))
                 return;
@@ -1248,7 +1250,7 @@ namespace ItHunts.EditorTools
             AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
         }
 
-        private static void AddSceneToBuild(string path)
+        internal static void AddSceneToBuild(string path)
         {
             var scenes = new System.Collections.Generic.List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (scenes.Exists(s => s.path == path))

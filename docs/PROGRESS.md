@@ -57,8 +57,73 @@
   Télékinésie (cibles à 10, 30 et 60 m). 255 tests (1 non concluant à dessein). Checklist :
   `docs/design/features/artefacts/testing.md`.
 
-**Prochaine étape : 6, ennemis et vagues, avec le traqueur** (voir CLAUDE.md : rôde, tue en un coup, enragé à la fin
-du timer, intuable).
+**6 — Ennemis, vagues et traqueur** (D-033), ordre de l'utilisateur (D-011 d'abord) :
+1. **Base commune et coups des ennemis** — fait (2026-11-12) : `EnemySettings` (base des factices, de la goule et du
+   traqueur), `EnemyLocomotion` (NavMesh, pas fixe, sans NavMeshAgent), `EnemySenses`, `NoiseEvents`,
+   `PlayerHealth.TakeEnemyDamage` / `Kill`, poussée sans ralentissement.
+2. **Goule au sol** — fait : 10 m/s, bond annoncé 0.3 s, contact 15 PV/s ; tuée avec l'environnement en Play Mode.
+3. **Traqueur complet** — fait : états, vue et ouïe, prédiction 0.8 s, pointe 16 / 18 m/s, suivi 85 % plafonné, NavMesh
+   large construit au lancement (`ZoneNavMesh`), raccourcis réservés (`StalkerShortcut`), coup mortel, intuable, sons
+   provisoires, timer et coin « enragé ». Mesuré : course rattrapée en 3.1 s ; bunny hop 18 / 26, traction, wall jump
+   + glissade : jamais ; glissade + saut qui ralentit : 12 s.
+4. **Prototype M3 dans Test_Arena** — fait. **Playtest du 2026-11-12 : arène beaucoup trop petite, pas assez
+   d'ennemis, traqueur pas assez géant** → D-034 :
+   - **Traqueur géant** (14 × 7 m) qui **attrape à la main** (15 m depuis l'épaule, annonce 0.5 s, recharge 2.5 s, mort
+     quels que soient les PV), contact mortel, abris = passages étroits et bas seulement (4.5 m de dégagement), il
+     contourne pour couper la sortie, perception de proximité, vue et sons à 60 m, tremblement de caméra à moins de
+     25 m (confort), suivi de vitesse à 0.
+   - **Nouvelle Test_Arena** : arènes de 100 / 90 / 90 m (plafonds 35 / 40 / 32 m), couloirs de 12 × 18 m (pente, sinueux,
+     raccourcis à grilles) et tunnels de 4 × 4 m à petites portes, 3 repaires, 10 goules et 21 objets par arène.
+     Dimensions réglables : `Assets/_Project/Settings/Editor/ArenaLayout_Test.asset`.
+   - Mesuré : portée de la main sur 6 547 points, aucun hors de portée (14.8 m au plus), aucun abri dans les arènes ;
+     dash qui esquive 20/20 à l'arrêt, en course, en bunny hop, sur la plateforme de 25 m (sans réaction : mort 5/5) ;
+     lignes droites de 104 à 127 m (6.8 s au-dessus de 18 m/s dans A) ; 30 goules en chasse : 0.22 ms par pas fixe.
+   - **Playtest en attente** (rien de commité). Checklist : `docs/design/features/boss-traqueur/testing.md`. 271 tests
+     (1 non concluant à dessein).
+   - **Playtest D-034 → D-035 et D-036** (« tu n'es en sécurité nulle part ») : fait le 2026-11-12, **playtest en
+     attente, rien de commité** :
+     - **Goules** : savent toujours où sont les joueurs (le plus proche par le chemin), encerclement (6 m), plus de poste ;
+       **murs** (bloc 5 avancé) : liens `ClimbLink`, mode Mur, bond depuis un mur, une corniche ou un pont.
+     - **Traqueur façon Pac-Man** : poursuite continue après la grâce, jamais de demi-tour (sauf cul-de-sac, ou Enragé),
+       droit dessus quand le joueur est proche et devant, se baisse jusqu'à 9 m (×0.6), passe le bras par les ouvertures
+       des pièces (15 m), portée depuis là où il tient (penché au bord), visée corrigée 0.15 s, cible la plus proche par
+       le chemin toutes les 5 s au plus. `MazeGraph`, `ReachRoom`, `NotWalkable`, `ClimbLink`.
+     - **Test_Arena en labyrinthe** (≈ 260 × 260 m, 9 intersections + repaire, 12 couloirs de 14 × 19 m en boucles, niveau
+       haut à +16 m, pentes de 14 à 16°, ponts et poutres à 10 m, 6 pièces, 76 goules, 86 objets) ; tunnels et grilles
+       supprimés. Captures : vue de dessus, traqueur baissé sous un pont, bras par une porte.
+     - **Traction plafonnée à 18 m/s** sans jamais freiner (D-036).
+     - Mesuré : 7 893/7 893 points à portée ; 9 passages bas franchis (0.5 à 0.7 s perdues) ; course rattrapée en 6.9 s
+       (ligne) et 13.5 s (boucle), bunny hop et traction pas rattrapés en ligne droite, bunny hop rattrapé en 35 s dans
+       la boucle ; Enragé : traction 8 à 12.5 s, traction + bunny hop 26 s dans la boucle (demi-tour) ; 0 demi-tour
+       interdit ; goules : pont 6–8 s, salle haute 9.9 s, bond d'en haut esquivé 20/20 par un dash pendant le vol (0/20
+       pendant l'annonce) ; 76 goules : 0.55 ms par pas fixe. 277 tests (1 non concluant à dessein).
+     - Checklist : `docs/design/features/boss-traqueur/testing.md` (et goule, orbes).
+   - **Playtest D-035 → D-037 et D-036 mise à jour** (2026-11-12), **playtest en attente, rien de commité** :
+     - **Traqueur, mains levées** au-dessus de la tête (cylindre 10 m, jusqu'à 12 m au-dessus de la tête, trajectoire
+       prédite 0.6 s ; annonce 0.2 s, zone mortelle 1 s, recharge 1.5 s, séparée de la prise) ; **corps, bras et mains
+       mortels au contact** (modèle couvert à 100 %). Mesuré : **0 passage sur 200 essais**.
+     - **Traction** : recharge d'une charge à 6 s (durée 2.5 s et plafond 18 m/s gardés).
+     - **Goules** : murs grimpables partout (corniches tous les 5 m, ponts) et **murs de 16 m** au bout des voies au sol des
+       couloirs en pente (16 m : pente 8 m + voie 8 m) ; salle haute en 6.8 s par le mur contre 9.7 s par la pente ;
+       **25 en chasse au plus**, relais par la plus proche par le chemin (0.31 s) ; coût 0.34 ms par pas fixe.
+     - 278 tests (1 non concluant à dessein). Checklist : `docs/design/features/boss-traqueur/testing.md`.
+     - **Playtest du 2026-11-12 : traqueur beaucoup mieux, le reste bon** → D-038 : Enragé qui accélère sur la même cible
+       (11 → 18 m/s en 30 s, paliers annoncés), aggro des goules (20 m en vue, 8 m, total 40, rendormie à 50 m / 5 s), murs
+       grimpables automatiques (191 liens, 73 ms) ; passage à côté du traqueur mesuré quasi impossible (0/60 en 40 m, 4/60 en
+       80 m) → trois pistes proposées (question ouverte dans boss-traqueur/design.md). 279 tests (1 non concluant à dessein).
+     - **Playtest du 2026-11-12 : D-038 validé** (Enragé qui accélère, aggro, escalade automatique, mains levées, Pac-Man,
+       pièces, traction à 6 s). Passage à côté : option (c) → **main plantée** (D-039) : 1.5 s après une prise ratée, sans
+       nouvelle prise, rotation ×0.4, sans pointe. Mesuré : salle de 80 m 20/20 en bunny hop et en traction, salle de 40 m 3/20
+       en bunny hop mais 20/20 en traction (plus facile que voulu, pistes dans boss-traqueur/design.md), couloir 0/60. Mur de
+       16 m : 6.2 s contre 9.8 s par la pente. 280 tests (1 non concluant à dessein). **Main plantée : playtest en attente.**
+     - Commit et push sur `main` : étape 6, blocs 1 à 5 (D-033 à D-039).
+5. Goule sur les murs (fait et validé, D-035, D-037, D-038) · **6. Volant : plan envoyé, en attente de réponse** · 7. Vagues.
+
+**Notes pour plus tard (ne pas coder maintenant) :**
+- **Bloc 7, vagues :** le nombre de goules augmente avec le temps passé dans la zone : peu au début, de plus en plus
+  jusqu'au timer, plus encore en Enragé (le plafond de goules en chasse, D-037, pourra suivre la même courbe).
+- **Étape 8 et level design :** point de départ de la zone plus sûr (moins d'ennemis à proximité, loin du repaire du
+  traqueur). Test_Arena reste un banc d'essai ; le vrai level design viendra plus tard.
 
 **Note pour plus tard (lustre) :** le lustre doit pouvoir tomber **à distance** — traction sèche, objet
 lancé dessus, ou chaîne visée — pour s'en servir contre les ennemis et contre le boss final (combat
@@ -180,7 +245,7 @@ et `Camera_Default.asset` (la note de conception en fait foi) :
 
 Magnétisme validé le 2026-11-12 (v3) avec `Assets/_Project/Settings/Magnetism_Default.asset` :
 
-- **Traction (attraction) :** portée 60 m, 80 m/s² jusqu'à 30 m/s, 2.5 s max, arrivée à 1 m ;
+- **Traction (attraction) :** portée 60 m, 80 m/s² jusqu'à 30 m/s (**18 m/s depuis D-036**), 2.5 s max, arrivée à 1 m ;
   3 charges d'attraction, 1 toutes les 3 s (passé à **4 s** par D-024, à valider en playtest) ; jamais
   de perte, hors plafond commun.
 - **Répulsion :** 14 m/s, portée 40 m, charge unique rechargée en 5 s ; gain dans le plafond commun.
@@ -206,13 +271,27 @@ Télékinésie et orbe unique validées le 2026-11-12 (D-024 à D-027), `Telekin
   - dégâts d'un ennemi lancé : 176 pour 80 kg à 30 m/s (un factice de 100 PV meurt, sa cible aussi) ;
   - plafond du bonus de vitesse au lancer (20 m/s) ;
   - force de la répulsion (22 m/s, 35 m/s², 14 m) ;
-  - vitesse de la traction (30 m/s), peut-être à augmenter : **à régler à l'étape 6, en même temps que la vitesse du
-    traqueur**, car la traction n'a pas de plafond (avec les autres points ci-dessus) ;
   - barillet (12 dégâts, 0.25 s, 1.2 s) face aux goules et aux volants.
 - **Validés au playtest du 2026-11-12 :** dégâts contre un mur, objets repoussés, rendu des mains, occlusion ambiante,
   barillet (recharge, prise pendant une recharge, précision).
 - **Tir ami :** réglage `Coop_Default.friendlyFire` (désactivé) en place (D-032) ; les PV du joueur sont provisoires
   (réapparition au départ, la vraie mort vient à l'étape 8). À tester pour de vrai à l'étape 9 (écran partagé).
+- **Coop, traqueur :** il vise le joueur le plus proche par le chemin, au plus un changement toutes les 5 s (D-035 ; prêt,
+  testé en solo seulement). Mort : la zone
+  se remet à zéro quand tous les joueurs sont morts (réanimation : étape 9 / 11).
+- **Traqueur, prise à la main :** visée corrigée 0.15 s avant la descente (D-035) ; encore trop facile ? À juger au playtest.
+- **Traction (D-036) :** à 18 m/s, la durée max de 2.5 s limite une traction à ≈ 43 m (55 m avant) ; durée gardée par
+  l'utilisateur (2026-11-12), recharge d'une charge passée à 6 s.
+- **Goules (D-035) :** bond d'en haut esquivable seulement pendant le vol ; salles hautes atteintes par les pentes (pas
+  de mur direct du sol vers +16 m : ajoutés par D-037) ; 76 goules, 25 en chasse au plus (D-037).
+- **Mesures dans le labyrinthe :** un traqueur qui démarre au milieu d'une intersection prend son dos comme couloir
+  d'arrivée (corrigé) ; la traction a une portée de 60 m (viser plus près dans les scripts).
+- **`ProjectSettings/NavMeshAreas.asset` :** chaque Play de Test_Arena avance `m_LastAgentTypeID` (types d'agent créés
+  à l'exécution par `ZoneNavMesh`) ; sans effet : ne pas commiter ce seul changement (le rétablir avec `git checkout`).
+- **Unity (étape 6) :** les types d'agent de NavMesh créés à l'exécution ont des identifiants **négatifs** (ne pas
+  tester `< 0`) ; un `NavMeshPath` ne se crée pas dans un initialiseur de champ d'un MonoBehaviour ; dans un
+  constructeur de scène, `EditorSceneManager.NewScene` décharge les assets chargés avant (les recharger après) ; dans
+  les scripts de mesure, viser après une téléportation seulement une image plus tard (la caméra suit en LateUpdate).
 - **Étape 8, point ouvert : PV du joueur, mort et réapparition.** Aujourd'hui : 100 PV provisoires (validés pour les
   tests), réapparition au point de départ après 1 s (`PlayerHealth_Default`). À décider à l'étape 8 : PV définitifs,
   soins rares, écran de bilan et relance (BRIEF), réanimation en coop. Le test du traqueur qui tue en un coup est prêt

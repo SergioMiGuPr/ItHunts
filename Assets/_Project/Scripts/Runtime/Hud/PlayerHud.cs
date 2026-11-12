@@ -59,6 +59,9 @@ namespace ItHunts.Hud
         private int _ammoBuiltFor = -1;
         private float _ammoRowY;
         private RectTransform _center;
+        private ItHunts.Enemies.ZoneState _zone;
+        private ItHunts.Enemies.Stalker _stalker;
+        private Text _timerText, _stalkerText, _zoneMessage;
 
         private struct Number
         {
@@ -202,6 +205,18 @@ namespace ItHunts.Hud
             SoulsCorner = Rect("Coin : âmes", _root, new Vector2(m, 1f - m), Vector2.zero, new Vector2(240f, 60f), new Vector2(0f, 1f));
             TimerCorner = Rect("Coin : timer", _root, new Vector2(1f - m, 1f - m), Vector2.zero, new Vector2(240f, 60f), new Vector2(1f, 1f));
             StalkerCorner = Rect("Coin : traqueur enragé", _root, new Vector2(1f - m, 1f - m), new Vector2(0f, -70f), new Vector2(240f, 40f), new Vector2(1f, 1f));
+            _timerText = NewText("Timer de la zone", TimerCorner, Vector2.zero, new Vector2(240f, 60f), 34, TextAnchor.MiddleRight);
+            _stalkerText = NewText("Traqueur enragé", StalkerCorner, Vector2.zero, new Vector2(240f, 40f), 22, TextAnchor.MiddleRight);
+            _stalkerText.fontStyle = FontStyle.Bold;
+            _zoneMessage = NewText("Message de zone", _root, new Vector2(0f, 120f), new Vector2(900f, 60f), 36, TextAnchor.MiddleCenter);
+            _zoneMessage.rectTransform.anchorMin = _zoneMessage.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            foreach (Text t in new[] { _timerText, _stalkerText, _zoneMessage })
+            {
+                var sh = t.gameObject.AddComponent<Shadow>();
+                sh.effectColor = new Color(0f, 0f, 0f, 0.8f);
+                sh.effectDistance = new Vector2(2f, -2f);
+                t.text = string.Empty;
+            }
 
             // Monde : barres de PV, chiffres de dégâts, durabilité.
             var world = Rect("Monde", _root, Vector2.one * 0.5f, Vector2.zero, Vector2.zero);
@@ -387,9 +402,38 @@ namespace ItHunts.Hud
                 _repelTime.color = repelColor;
             }
 
+            UpdateZone(now);
             UpdateAmmo(tick, now, dt, fixedDt);
             UpdatePlayerHealth(now);
             UpdateWorld();
+        }
+
+        /// <summary>Timer de la zone (coin haut droite), traqueur enragé (sous le timer), message central (mort, sortie).</summary>
+        private void UpdateZone(float now)
+        {
+            if (_timerText == null)
+                return;
+            if (_zone == null)
+                _zone = FindFirstObjectByType<ItHunts.Enemies.ZoneState>();
+            if (_zone == null)
+            {
+                _timerText.text = _stalkerText.text = _zoneMessage.text = string.Empty;
+                return;
+            }
+
+            int left = Mathf.CeilToInt(_zone.TimeLeft);
+            _timerText.text = _zone.InGrace ? $"grâce {Mathf.CeilToInt(_zone.GraceLeft)} s   {left / 60}:{left % 60:00}" : $"{left / 60}:{left % 60:00}";
+            _timerText.color = _zone.Enraged ? new Color(1f, 0.25f, 0.2f) : left <= 30 ? new Color(1f, 0.7f, 0.3f) : Color.white;
+            _stalkerText.text = _zone.Enraged ? "TRAQUEUR ENRAGÉ" : string.Empty;
+            // D-038 : plus il accélère, plus l'indication pulse fort ; éclat d'une seconde à chaque palier.
+            if (_stalker == null)
+                _stalker = FindFirstObjectByType<ItHunts.Enemies.Stalker>();
+            int tier = _stalker != null ? _stalker.EnragedTier : 0;
+            float flash = _stalker != null ? Mathf.Clamp01(1f - (now - _stalker.LastTierTime)) : 0f;
+            float pulse = 0.5f + 0.5f * Mathf.Sin(now * (8f + 3f * tier));
+            _stalkerText.color = new Color(1f, 0.2f + 0.6f * flash, 0.15f + 0.5f * flash, Mathf.Lerp(0.6f - 0.08f * tier, 1f, pulse));
+            _stalkerText.rectTransform.localScale = Vector3.one * (1f + 0.04f * tier * pulse + 0.35f * flash);
+            _zoneMessage.text = _zone.Message ?? string.Empty;
         }
 
         /// <summary>Munitions du barillet : un segment par munition ; en rechargement, ils se remplissent ; grisés si inactif.</summary>
@@ -457,8 +501,9 @@ namespace ItHunts.Hud
                 return;
             }
 
-            AddNumber(Mathf.CeilToInt(e.Damage).ToString(), e.Victim != null ? e.Victim.Center + Vector3.up * 0.6f : e.Point,
-                settings.friendlyHitColor, settings.damageFontMin);
+            if (e.AttackerId > 0)                                        // tir ami seulement (pas les coups des ennemis)
+                AddNumber(Mathf.CeilToInt(e.Damage).ToString(), e.Victim != null ? e.Victim.Center + Vector3.up * 0.6f : e.Point,
+                    settings.friendlyHitColor, settings.damageFontMin);
         }
 
         private void UpdateRings(int tick, float fixedDt)
@@ -573,8 +618,8 @@ namespace ItHunts.Hud
             {
                 if (bar >= _healthBars.Count)
                     break;
-                if (d == null || d.Dead)
-                    continue;
+                if (d == null || d.Dead || d.ImmuneToOrbs)
+                    continue;                                            // le traqueur, intuable, n'a pas de barre de PV
                 Vector3 top = d.Top + Vector3.up * 0.35f;
                 if (Vector3.Distance(cam.transform.position, top) > damageFeedback.healthBarDistance)
                     continue;

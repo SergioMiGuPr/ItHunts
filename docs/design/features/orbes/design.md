@@ -33,10 +33,9 @@ l'arme », « le mouvement est la survie ».
    RB), le joueur est tiré **en ligne droite** vers le point visé au moment du clic, sur
    **n'importe quelle surface** (murs, sol, plafond ; jamais les ennemis). Pas de câble ni de
    balancement, **ni gravité ni friction** pendant la traction. La vitesse monte avec une forte
-   accélération jusqu'à la vitesse de traction ; elle **ne baisse jamais** : plus vite que la vitesse de
-   traction, on garde toute sa vitesse, redirigée vers le point. Quand le point est plus haut, la chute
-   n'est pas comptée. **Pas de plafond des gains** (exception au plafond commun ; seul le plafond de
-   sécurité de 50 m/s reste, D-021). Fin de la traction, avec toute la vitesse et la direction du
+   accélération jusqu'à la vitesse de traction, **plafonnée à 18 m/s** (D-036) ; elle **ne baisse jamais** : plus vite
+   que 18 m/s (bunny hop, dash, pente), on garde toute sa vitesse, sans rien y ajouter, redirigée vers le point.
+   Quand le point est plus haut, la chute n'est pas comptée. Fin de la traction, avec toute la vitesse et la direction du
    moment : **relâchement**, **arrivée** au point, **ligne de vue coupée**, **durée max**, **saut**
    (le saut part aussitôt), **dash**, **répulsion**, ou obstacle qui bloque. **Chaque traction coûte
    1 charge d'attraction** (3 charges, séparées des charges de mouvement) ; elles reviennent une par
@@ -148,10 +147,10 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
 | Nom | Valeur | Unité | À observer en playtest |
 |---|---|---|---|
 | Portée de l'attraction | 60 | m | plafond d'une grande salle depuis le sol |
-| Accélération / vitesse de traction | 80 / 30 | m/s² / m/s | 30 m/s atteints en 0.38 s |
-| Durée max d'une traction | 2.5 | s | |
+| Accélération / vitesse de traction (plafond) | 80 / 18 | m/s² / m/s | 18 m/s en 0.23 s ; 30 avant D-036 |
+| Durée max d'une traction | 2.5 | s | à 18 m/s, ≈ 43 m par traction : à rallonger ? |
 | Arrivée au point | 1 | m | |
-| Charges d'attraction / recharge d'une charge | 3 / 4 | charges / s | une par une ; séparées des charges de mouvement |
+| Charges d'attraction / recharge d'une charge | 3 / 6 | charges / s | une par une ; séparées des charges de mouvement ; 6 s depuis D-036 (4 avant) |
 | Impulsion / portée de la répulsion | 14 / 40 | m/s / m | hauteur du rocket jump (mesuré : 5.0 m ; 7.6 m avec un saut juste avant) |
 | Recharge de la répulsion (charge unique, sans cumul) | 5 | s | |
 | Mémorisation d'un appui pendant la recharge | 0.1 | s | |
@@ -268,3 +267,5 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
 - 2026-11-12 : onde de répulsion en cône depuis le joueur (D-029) ; prise des ennemis étourdis (D-030).
 - 2026-11-12 : répulsion façon aimant (D-029 mise à jour) : onde de choc à l'appui, poussée continue au maintien (0.8 s), cône de 14 m, recharge à partir de la fin.
 - 2026-11-12 : dégâts contre un mur d'un ennemi repoussé et objets repoussés qui blessent (D-031).
+- 2026-11-12 : traction plafonnée à 18 m/s, sans jamais freiner (D-036).
+- 2026-11-12 : recharge d'une charge d'attraction à 6 s (D-036).

@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1d873eff7e4216449f4e14b3722f0b1, type: 3}
+  m_Name: Stalker_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.StalkerSettings
+  maxHealth: 1
+  respawnDelay: 0
+  mass: 1000
+  gravity: 20
+  groundFriction: 15
+  stunImpactSpeed: 6
+  stunDuration: 1.5
+  wallDamagePerSpeed: 5
+  wallDamageMax: 40
+  stunImmunity: 2
+  returnHomeDelay: 2
+  returnHomeSpeed: 3
+  roamSpeed: 3
+  alertSpeed: 6
+  chaseSpeed: 9
+  enragedSpeed: 11
+  searchSpeed: 4
+  burstSpeed: 16
+  enragedBurstSpeed: 18
+  burstDuration: 3
+  burstCooldown: 6
+  followPlayerSpeedShare: 0
+  acceleration: 12
+  turnRate: 180
+  predictionHorizon: 0.8
+  repathInterval: 0.2
+  sightRange: 60
+  sightAngle: 110
+  eyeHeight: 12.5
+  hearHardLanding: 15
+  hearBreak: 25
+  hearShot: 25
+  hearRepel: 15
+  hearCombat: 20
+  searchDuration: 10
+  searchRadius: 8
+  loseSightTime: 1.5
+  shoulderHeight: 12
+  handReach: 15
+  grabTelegraph: 0.5
+  grabSlam: 0.12
+  grabHold: 0.35
+  grabCooldown: 2.5
+  grabMoveFactor: 0.3
+  handSize: {x: 4, y: 2.2, z: 4.5}
+  cutOffHorizon: 3
+  attackRange: 0.3
+  width: 7
+  height: 14
+  stepVolume: 0.9
+  breathVolume: 0.5
+  soundRange: 60
+  shakeRange: 25
+  shakeStrength: 0.6
+  stepsPerSecondAtChase: 0.9
