@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ItHunts.Settings
 {
@@ -7,6 +8,15 @@ namespace ItHunts.Settings
     /// docs/design/features/mouvement/design.md (qui fait foi).
     /// Modifiable en Play Mode : les changements restent dans l'asset.
     /// </summary>
+    /// <summary>Profil de vitesse pendant un dash.</summary>
+    public enum DashProfile
+    {
+        /// <summary>Départ au pic puis baisse linéaire jusqu'à la vitesse de sortie : pas de cassure.</summary>
+        Progressif,
+        /// <summary>Vitesse constante pendant tout le dash, puis vitesse de sortie.</summary>
+        Constant,
+    }
+
     [CreateAssetMenu(fileName = "Movement_Default", menuName = "ItHunts/Réglages/Mouvement")]
     public sealed class MovementSettings : ScriptableObject
     {
@@ -29,6 +39,9 @@ namespace ItHunts.Settings
                  "vitesse vers la caméra sans changer sa valeur. 0 = Source pur, 1 = direction suivie " +
                  "instantanément. Part de l'angle rattrapée à chaque tick de 1/60 s.")]
         [Range(0f, 1f)] public float airControl = 0.15f;
+        [Tooltip("Le contrôle aérien ne s'applique que si la caméra regarde à moins de cet angle (°) de la " +
+                 "trajectoire. Au-delà (par ex. face au mur après un wall jump), il ne ramène pas en arrière.")]
+        [Range(0f, 180f)] public float airControlMaxAngle = 100f;
 
         [Header("Sauts multiples et bunny hop")]
         [Tooltip("Nombre total de sauts avant de retoucher le sol (1 au sol + les sauts en l'air). " +
@@ -63,6 +76,77 @@ namespace ItHunts.Settings
         [Min(0.1f)] public float crouchEyeHeight = 0.75f;
         [Tooltip("Vitesse de marche accroupie (m/s).")]
         [Min(0f)] public float crouchSpeed = 3.5f;
+
+        [Header("Murs : wall slide et wall jump")]
+        [Tooltip("Vitesse de chute maximale (m/s) en wall slide, à faible vitesse le long du mur.")]
+        [Min(0f)] public float wallSlideMaxFallSpeed = 3f;
+        [Tooltip("Wall slide si l'entrée vise le mur à moins de cet angle (°) de sa direction intérieure.")]
+        [Range(0f, 90f)] public float wallSlideInputTolerance = 75f;
+        [Tooltip("Wall slide sans entrée dès que la vitesse le long du mur atteint cette valeur (m/s).")]
+        [Min(0f)] public float wallSlideMinSpeed = 3f;
+        [Tooltip("Effet wall run : à partir de cette vitesse le long du mur (m/s), la chute ralentit…")]
+        [Min(0f)] public float wallRunSpeedStart = 8f;
+        [Tooltip("… jusqu'à cette vitesse (m/s), où la chute maximale vaut wallRunMaxFallSpeed.")]
+        [Min(0f)] public float wallRunSpeedFull = 15f;
+        [Tooltip("Vitesse de chute maximale (m/s) à pleine vitesse de wall run.")]
+        [Min(0f)] public float wallRunMaxFallSpeed = 0.5f;
+        [Tooltip("Légère poussée vers le mur (m/s, sur le déplacement seulement) pour garder le contact en wall slide.")]
+        [Min(0f)] public float wallStickSpeed = 1f;
+        [Tooltip("Impulsion horizontale (m/s) du wall jump, AJOUTÉE à la vitesse acquise.")]
+        [Min(0f)] public float wallJumpKick = 7.5f;
+        [Tooltip("Hauteur d'un wall jump (m).")]
+        [Min(0.01f)] public float wallJumpHeight = 1.8f;
+        [Tooltip("Direction de l'impulsion : 0 = pur éloignement du mur, 1 = pur vers l'avant (caméra, sinon trajectoire).")]
+        [Range(0f, 1f)] public float wallJumpForwardBias = 0.5f;
+        [Tooltip("Après un wall jump, vitesse horizontale au moins égale à celle d'avant + ce bonus (m/s).")]
+        [Min(0f)] public float wallJumpSpeedBonus = 1f;
+
+        [Tooltip("Délai (s) après avoir quitté un mur pendant lequel le wall jump reste possible.")]
+        [Min(0f)] public float wallCoyoteTime = 0.10f;
+        [Tooltip("Durée (s) sans contrôle en l'air après un wall jump, pour ne pas annuler l'impulsion.")]
+        [Min(0f)] public float wallJumpSteerLock = 0.15f;
+        [Tooltip("Autoriser deux wall jumps de suite sur le même mur (sinon il faut toucher le sol ou un autre mur).")]
+        public bool allowSameWallJump;
+        [Tooltip("Toucher un mur recharge le compteur de sauts (maxJumps).")]
+        public bool wallRefillsJumps = true;
+        [Tooltip("Toucher un mur recharge aussi les charges de mouvement (non par défaut : elles reviennent avec le temps).")]
+        public bool wallRefillsCharges;
+
+        [Header("Charges de mouvement et dash")]
+        [Tooltip("Charges de mouvement, partagées par le saut en l'air, le dash et le magnétisme (1 chacun). " +
+                 "Les améliorations pourront l'augmenter.")]
+        [Min(0)] public int movementCharges = 3;
+        [Tooltip("Temps (s) pour recharger une charge au sol.")]
+        [Min(0.01f)] public float chargeRechargeTimeGround = 1f;
+        [Tooltip("Temps (s) pour recharger une charge en l'air.")]
+        [Min(0.01f)] public float chargeRechargeTimeAir = 3f;
+        [Tooltip("Distance parcourue pendant un dash (m), à l'arrêt.")]
+        [Min(0f)] public float dashDistance = 6.5f;
+        [Tooltip("Durée du dash (s) : ni friction ni gravité pendant ce temps.")]
+        [Min(0.02f)] public float dashDuration = 0.3f;
+        [Tooltip("Profil de vitesse du dash. Progressif : départ au pic puis baisse jusqu'à la vitesse de sortie " +
+                 "(le pic est calculé pour parcourir dashDistance).")]
+        public DashProfile dashProfile = DashProfile.Progressif;
+        [Tooltip("Gain de vitesse (m/s) d'un dash AU SOL par rapport à la vitesse d'avant. En l'air : aucun gain.")]
+        [Min(0f)] public float dashSpeedGain = 1f;
+        [Tooltip("Dash-jump : sauter pendant un dash au sol ou dans cette fenêtre (s) après sa fin.")]
+        [Min(0f)] public float dashJumpWindow = 0.15f;
+        [Tooltip("Gain de vitesse (m/s) d'un dash-jump réussi, par rapport à la vitesse d'avant le dash.")]
+        [Min(0f)] public float dashJumpSpeedGain = 3f;
+        [Tooltip("À la sortie du dash, vitesse horizontale = la plus grande entre celle d'avant et celle-ci (m/s).")]
+        [Min(0f)] public float dashExitSpeed = 12f;
+        [Tooltip("Délai minimal (s) entre le début de deux dashs (un dash ne commence jamais avant la fin du précédent).")]
+        [Min(0f)] public float dashCooldown = 0.3f;
+        [Tooltip("Durée (s) pendant laquelle un appui de dash est mémorisé (un appui pendant un dash part ensuite).")]
+        [Min(0f)] public float dashBuffer = 0.3f;
+        [Tooltip("Après un dash, durée (s) sans friction au sol, pour ne pas retomber brutalement à la vitesse de course.")]
+        [Min(0f)] public float dashFrictionGrace = 0.2f;
+
+        [Header("Plafond commun des gains")]
+        [Tooltip("Les gains de vitesse (wall jump, dash au sol, dash-jump, bonus de glissade) ne s'appliquent qu'en dessous de cette " +
+                 "vitesse (m/s) ; au-delà, la vitesse est conservée sans gain.")]
+        [FormerlySerializedAs("wallJumpBonusCap")]
+        [Min(0f)] public float movementGainCap = 20f;
 
         [Header("Sécurité")]
         [Tooltip("Plafond de sécurité de la vitesse horizontale (m/s). Volontairement haut : ce sont les " +
@@ -102,6 +186,9 @@ namespace ItHunts.Settings
 
         /// <summary>Impulsion verticale d'un saut en l'air (m/s).</summary>
         public float AirJumpVelocity => Mathf.Sqrt(2f * gravity * airJumpHeight);
+
+        /// <summary>Impulsion verticale d'un wall jump (m/s).</summary>
+        public float WallJumpVelocity => Mathf.Sqrt(2f * gravity * wallJumpHeight);
 
         public static int SecondsToTicks(float seconds, float fixedDeltaTime) =>
             Mathf.Max(0, Mathf.RoundToInt(seconds / fixedDeltaTime));

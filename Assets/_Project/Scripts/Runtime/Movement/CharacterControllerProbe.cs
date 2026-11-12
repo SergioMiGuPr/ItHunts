@@ -1,3 +1,4 @@
+using System;
 using ItHunts.Settings;
 using UnityEngine;
 
@@ -51,6 +52,66 @@ namespace ItHunts.Movement
                 QueryTriggerInteraction.Ignore);
         }
 
+        private const float WallDistance = 0.15f;   // distance de contact avec un mur (m)
+        private const float MaxWallNormalY = 0.3f;  // |normale.y| max : murs à plus de ≈ 72°
+
+        public bool ProbeWall(ReadOnlySpan<Vector3> directions, out Vector3 normal, out int wallId)
+        {
+            foreach (Vector3 dir in directions)
+            {
+                if (CastWall(dir, out normal, out wallId))
+                    return true;
+            }
+
+            normal = Vector3.zero;
+            wallId = 0;
+            return false;
+        }
+
+        private Vector3 _sideNormal;
+        private bool _hasSideNormal;
+
+        /// <summary>Oublie les contacts mémorisés (après une téléportation).</summary>
+        public void ResetContacts()
+        {
+            _lastMoveHitBelow = false;
+            _hasSideNormal = false;
+        }
+
+        /// <summary>Appelé par OnControllerColliderHit pendant CharacterController.Move.</summary>
+        public void ReportHit(Vector3 normal)
+        {
+            if (Mathf.Abs(normal.y) < 0.7f)
+            {
+                _sideNormal = normal;
+                _hasSideNormal = true;
+            }
+        }
+
+        private bool CastWall(Vector3 dir, out Vector3 normal, out int wallId)
+        {
+            normal = Vector3.zero;
+            wallId = 0;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 1e-4f)
+                return false;
+            dir.Normalize();
+
+            float radius = _controller.radius * RadiusFactor;
+            // Bas de la capsule relevé au-dessus de la marche franchissable : le sol n'est pas un mur.
+            Vector3 p1 = Position + Vector3.up * (_controller.radius + _controller.stepOffset);
+            Vector3 p2 = Position + Vector3.up * Mathf.Max(_controller.height - _controller.radius, p1.y - Position.y);
+            if (!Physics.CapsuleCast(p1, p2, radius, dir, out RaycastHit hit, WallDistance + _controller.skinWidth,
+                    _mask, QueryTriggerInteraction.Ignore))
+                return false;
+            if (Mathf.Abs(hit.normal.y) > MaxWallNormalY)
+                return false;
+
+            normal = new Vector3(hit.normal.x, 0f, hit.normal.z).normalized;
+            wallId = hit.collider.GetInstanceID();
+            return true;
+        }
+
         public bool ProbeGround(out Vector3 normal)
         {
             float distance = CastLift + _controller.skinWidth + GroundTolerance;
@@ -69,6 +130,7 @@ namespace ItHunts.Movement
         public MoveResult Move(Vector3 delta, bool snapToGround)
         {
             Vector3 start = Position;
+            _hasSideNormal = false;
             CollisionFlags flags = _controller.Move(delta);
             bool hitBelow = (flags & CollisionFlags.Below) != 0;
 
@@ -90,6 +152,8 @@ namespace ItHunts.Movement
                 HitSides = (flags & CollisionFlags.Sides) != 0,
                 HitAbove = (flags & CollisionFlags.Above) != 0,
                 ActualDelta = Position - start,
+                SideNormal = _sideNormal,
+                HasSideNormal = _hasSideNormal,
             };
         }
 

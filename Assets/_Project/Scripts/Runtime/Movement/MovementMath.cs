@@ -55,7 +55,8 @@ namespace ItHunts.Movement
         /// Contrôle aérien : fait tourner la vitesse horizontale vers targetDir (normalisée, horizontale)
         /// sans changer sa norme. strength = part de l'angle rattrapée par tick de 1/60 s (1 = instantané).
         /// </summary>
-        public static Vector3 AirControl(Vector3 velocity, Vector3 targetDir, float strength, float dt)
+        public static Vector3 AirControl(Vector3 velocity, Vector3 targetDir, float strength, float dt,
+            float maxAngleDegrees = 180f)
         {
             if (strength <= 0f)
                 return velocity;
@@ -65,9 +66,13 @@ namespace ItHunts.Movement
             if (speed < 1e-3f)
                 return velocity;
 
-            float alpha = strength >= 1f ? 1f : 1f - Mathf.Pow(1f - strength, dt * 60f);
             Vector3 dir = horizontal / speed;
-            float angle = Vector3.Angle(dir, targetDir) * Mathf.Deg2Rad;
+            float angleDegrees = Vector3.Angle(dir, targetDir);
+            if (angleDegrees > maxAngleDegrees)
+                return velocity;   // caméra trop loin de la trajectoire : pas de demi-tour forcé
+
+            float alpha = strength >= 1f ? 1f : 1f - Mathf.Pow(1f - strength, dt * 60f);
+            float angle = angleDegrees * Mathf.Deg2Rad;
             Vector3 newDir = alpha >= 1f ? targetDir : Vector3.RotateTowards(dir, targetDir, angle * alpha, 0f);
             Vector3 result = newDir.normalized * speed;
             return new Vector3(result.x, velocity.y, result.z);
@@ -111,6 +116,81 @@ namespace ItHunts.Movement
             Vector3 dir = speed > 1e-3f ? horizontal / speed : fallbackDir;
             horizontal = dir * minSpeed;
             return new Vector3(horizontal.x, velocity.y, horizontal.z);
+        }
+
+        /// <summary>
+        /// Reporte le long du mur la part de vitesse horizontale qui entre dedans : longer un mur ne fait jamais
+        /// perdre de vitesse. La norme gardée est au plus speedBefore (vitesse avant l'accélération du tick) :
+        /// pousser contre le mur ne fait pas non plus accélérer ; un gain le long du mur (strafe) est gardé.
+        /// </summary>
+        public static Vector3 ProjectAlongWall(Vector3 velocity, Vector3 wallNormal, float speedBefore)
+        {
+            var h = new Vector3(velocity.x, 0f, velocity.z);
+            float into = Vector3.Dot(h, wallNormal);
+            if (into >= 0f)
+                return velocity;
+            Vector3 along = h - wallNormal * into;
+            float speed = Mathf.Max(along.magnitude, Mathf.Min(h.magnitude, speedBefore));
+            h = along.sqrMagnitude > 1e-6f ? along.normalized * speed : along;
+            return new Vector3(h.x, velocity.y, h.z);
+        }
+
+        /// <summary>
+        /// Vitesse après un wall jump : l'impulsion (kick) s'ajoute à la vitesse acquise, dans une direction qui
+        /// mélange la normale du mur (bias 0) et l'avant (bias 1 : caméra sans sa part vers le mur, sinon
+        /// trajectoire le long du mur). Vitesse horizontale finale ≥ vitesse d'avant + bonus.
+        /// </summary>
+        public static Vector3 WallJumpVelocity(Vector3 velocity, Vector3 wallNormal, float yawDegrees, float forwardBias,
+            float kick, float speedBonus, float jumpVelocity, float bonusCap = float.PositiveInfinity)
+        {
+            var h = new Vector3(velocity.x, 0f, velocity.z);
+            float speedBefore = h.magnitude;
+            float into = Vector3.Dot(h, wallNormal);
+            if (into < 0f)
+                h -= wallNormal * into;                       // rien vers le mur
+
+            Vector3 forward = Quaternion.Euler(0f, yawDegrees, 0f) * Vector3.forward;
+            float forwardInto = Vector3.Dot(forward, wallNormal);
+            if (forwardInto < 0f)
+                forward -= wallNormal * forwardInto;          // la caméra regarde le mur : on garde sa part le long du mur
+            if (forward.sqrMagnitude < 0.01f)
+                forward = h - wallNormal * Vector3.Dot(h, wallNormal);   // sinon : la trajectoire le long du mur
+            forward = forward.sqrMagnitude > 1e-4f ? forward.normalized : wallNormal;
+
+            Vector3 dir = wallNormal * (1f - forwardBias) + forward * forwardBias;
+            dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : wallNormal;
+            h += dir * kick;
+
+            // Gain plafonné : au-delà de bonusCap, la vitesse est conservée mais plus augmentée.
+            float limit = Mathf.Max(speedBefore, bonusCap);
+            float minSpeed = Mathf.Min(speedBefore + speedBonus, limit);
+            if (h.magnitude < minSpeed)
+                h = h.sqrMagnitude > 1e-6f ? h.normalized * minSpeed : dir * minSpeed;
+            if (h.magnitude > limit)
+                h = h.normalized * limit;
+
+            return new Vector3(h.x, Mathf.Max(velocity.y, jumpVelocity), h.z);
+        }
+
+        /// <summary>Gain de vitesse plafonné : rien au-delà de cap, et jamais au-dessus de cap en gagnant.</summary>
+        public static float CappedGain(float speed, float gain, float cap) =>
+            speed >= cap ? speed : Mathf.Min(speed + gain, cap);
+
+        /// <summary>
+        /// Profil du dash : vitesse au tick index (0 = départ) sur ticks, entre le pic et la sortie. Progressif :
+        /// baisse linéaire du pic vers la sortie ; Constant : le pic pendant tout le dash.
+        /// </summary>
+        public static float DashSpeedAt(int index, int ticks, float peak, float exit, bool progressive) =>
+            progressive ? exit + (peak - exit) * (1f - index / (float)ticks) : peak;
+
+        /// <summary>Pic de vitesse du dash pour parcourir distance en ticks (jamais sous la vitesse de sortie).</summary>
+        public static float DashPeakSpeed(float distance, int ticks, float dt, float exit, bool progressive)
+        {
+            float duration = ticks * dt;
+            if (!progressive)
+                return Mathf.Max(exit, distance / duration);
+            float extra = distance - duration * exit;        // distance à couvrir au-dessus de la vitesse de sortie
+            return extra <= 0f ? exit : exit + extra / (dt * (ticks + 1) * 0.5f);
         }
 
         /// <summary>Plafonne la vitesse horizontale (plafond de sécurité).</summary>

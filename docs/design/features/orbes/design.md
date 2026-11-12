@@ -1,6 +1,6 @@
 # Orbes
 
-**Status:** designed · **Updated:** 2026-11-11 · [GDD](../../GDD.md)
+**Status:** designed · **Updated:** 2026-11-12 · [GDD](../../GDD.md)
 
 Deux orbes, un seul actif, échange instantané. Le magnétisme déplace le joueur (et bouscule les
 ennemis) ; la télékinésie transforme l'arène en munitions. De base, les orbes ne font pas de
@@ -12,8 +12,10 @@ l'arme », « le mouvement est la survie ».
 
 1. **Échange :** une touche (molette au clavier-souris, un bouton à la manette), sans recharge.
    Échanger lâche l'objet tenu.
-2. **États de chaque orbe :** Prête → EnUsage → Recharge → Prête. Chaque usage coûte de
-   l'endurance ; sans assez d'endurance, l'usage est refusé (son et HUD).
+2. **États de chaque orbe :** Prête → EnUsage → Recharge → Prête. Coût (D-015) : le
+   **magnétisme** consomme **1 charge de mouvement** par attraction ou répulsion (barre partagée
+   avec le saut en l'air et le dash, voir [mouvement](../mouvement/design.md)) ; la
+   **télékinésie** consomme sa propre **endurance**. Sans ressource, l'usage est refusé (son et HUD).
 3. **Attraction (magnétisme, mode 1) :** un rayon sur une surface magnétique (qui brille) à portée
    donne une **impulsion unique** vers le point visé, ajoutée à la vitesse actuelle. Surfaces
    seulement, jamais les ennemis.
@@ -33,17 +35,17 @@ l'arme », « le mouvement est la survie ».
 
 ## Valeurs
 
-ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `StaminaSettings`. Valeurs de
-départ [ASSUMPTION].
+ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `StaminaSettings` (endurance de
+la télékinésie). Les charges de mouvement sont dans `MovementSettings`. Valeurs de départ [ASSUMPTION].
 
 | Nom | Valeur | Unité | À observer en playtest |
 |---|---|---|---|
-| Endurance max | 100 | pts | |
+| Endurance max (télékinésie) | 100 | pts | |
 | Régénération / délai avant régénération | 25 / 0.8 | pts/s / s | rythme d'usage |
 | Portée du magnétisme | 25 | m | |
 | Impulsion d'attraction | 16 | m/s | atteindre une plateforme à 6 m de haut |
 | Impulsion de répulsion | 14 | m/s | hauteur du rocket jump |
-| Coût attraction / répulsion | 25 / 30 | pts | |
+| Coût attraction / répulsion | 1 / 1 | charge de mouvement | partagé avec saut en l'air et dash |
 | Recharge magnétisme | 0.5 | s | abus et bugs |
 | Rayon de l'onde de répulsion / poussée | 4 / 12 | m / m/s | |
 | Vitesse d'impact mini contre un mur / dégâts | 6 / 5 | m/s / PV par m/s | |
@@ -76,3 +78,5 @@ départ [ASSUMPTION].
 
 - 2026-11-11 : designed.
 - 2026-11-11 : dégâts directs possibles via les améliorations (D-008).
+- 2026-11-12 : le magnétisme consomme les charges de mouvement ; l'endurance ne sert plus qu'à la
+  télékinésie (D-015).

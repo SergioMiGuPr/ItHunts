@@ -26,8 +26,15 @@ de marche ; recollage au sol en descente jusqu'à `groundSnapDistance`. *Alterna
 M1 :* Rigidbody cinématique avec notre propre « cast and slide » (plus de travail avant de pouvoir
 sentir quoi que ce soit) ; l'interface permet de basculer plus tard.
 
-**Machine à états :** `enum MovementMode { Ground, Air, Slide }` évalué une fois par tick, plus
-un drapeau `Crouched` (capsule basse) ; WallSlide viendra s'ajouter. La hauteur de capsule est
+**Machine à états :** `enum MovementMode { Ground, Air, Slide, WallSlide }` évalué une fois par tick, plus
+un drapeau `Crouched` (capsule basse). Murs : `ICollisionProbe.ProbeWall` (CapsuleCast
+horizontal vers la direction voulue, la vitesse et le dernier mur, au-dessus de la hauteur de
+marche), état de mur dans `MovementState` (`LastWallTick`, `LastWallNormal`, `LastWallId`,
+`LastWallJumpId`, `SteerLockUntilTick`). Le mur est cherché vers l'entrée, la vitesse, le mur
+précédent et les deux côtés de la trajectoire ; les collisions latérales retirent seulement la
+part de vitesse qui entre dans l'obstacle (normale reçue par `OnControllerColliderHit`).
+Charges de mouvement et dash : `MovementState.Charges`, `LastDashTick` ; formules du wall jump et de
+la projection le long du mur dans `MovementMath` (`WallJumpVelocity`, `ProjectAlongWall`). La hauteur de capsule est
 pilotée par la simulation (`ICollisionProbe.SetHeight`, `HasHeadroom` par SphereCast vers le haut). Le bunny hop de base est déjà là, par construction : le tick
 du saut n'applique pas de friction.
 
@@ -36,7 +43,7 @@ du saut n'applique pas de friction.
 | Fichier | Rôle |
 |---|---|
 | `Assets/_Project/Scripts/Runtime/ItHunts.Runtime.asmdef` | assembly du jeu (Input System, Cinemachine) |
-| `Assets/_Project/Input/PlayerControls.inputactions` | carte « Player » : Move, Look, LookGamepad, Jump, Slide, ToggleDebug, Pause ; schémas `KeyboardMouse` et `Gamepad` |
+| `Assets/_Project/Input/PlayerControls.inputactions` | carte « Player » : Move, Look, LookGamepad, Jump, Slide, Dash, ToggleDebug, Pause ; schémas `KeyboardMouse` et `Gamepad` |
 | `.../Runtime/Input/PlayerInputReader.cs` | `PlayerInput` → valeurs par image, appuis horodatés en ticks |
 | `.../Runtime/Movement/MovementInput.cs`, `MovementState.cs` | structures de données (état en ticks) |
 | `.../Runtime/Movement/MovementMath.cs` | friction, accélération au sol et en l'air (Source), contrôle aérien, accélération en pente, plafond |
@@ -51,7 +58,8 @@ du saut n'applique pas de friction.
 | `Assets/_Project/Prefabs/Player.prefab` | CharacterController, PlayerInput, scripts, ViewRig (caméra + CinemachineCamera) |
 | `Assets/_Project/Settings/Movement_Default.asset`, `Camera_Default.asset` | réglages en cours |
 | `Assets/Scenes/Test_Movement.unity` | banc d'essai (généré par le builder, modifiable ensuite) |
-| `Assets/_Project/Tests/EditMode/MovementTests.cs` | 45 tests (sol factice avec pente et plafond, sans physique Unity) |
+| `Assets/_Project/Tests/EditMode/MovementTests.cs` | 109 tests (sol factice avec pente, plafond et murs, sans physique Unity) |
+| `.../Runtime/Hud/MovementHud.cs` | HUD greybox (IMGUI) : point de visée et segments des charges, dans la zone de la caméra du joueur |
 
 **Règles multijoueur respectées :** aucun singleton ; tout l'état sur le prefab ; caméra dans le
 prefab et non taguée MainCamera (une par joueur) ; `PlayerInput` (puis `PlayerInputManager` pour
@@ -65,7 +73,9 @@ l'écran partagé) ; simulation à pas fixe à partir d'une structure d'entrée.
   `airJumpHeight`, `autoBunnyHop`, glissade (`slideMinSpeed`, `slideBoost`, `slideBoostCooldown`,
   `slideDeceleration`, `slideMinSpeedUnderObstacle`, `slideSlopeAcceleration`, `slideExitSpeed`,
   `slideSteering`), accroupi
-  (`crouchHeight`, `crouchEyeHeight`, `crouchSpeed`), `maxHorizontalSpeed`, capsule, `slopeLimit`,
+  (`crouchHeight`, `crouchEyeHeight`, `crouchSpeed`), murs (`wallSlideMaxFallSpeed`, `wallJumpKick`,
+  `wallJumpHeight`, `wallCoyoteTime`, `wallJumpSteerLock`, `allowSameWallJump`,
+  `wallRefillsJumps`), `maxHorizontalSpeed`, capsule, `slopeLimit`,
   `stepOffset`, `groundSnapDistance`) ; `CameraSettings` (`mouseSensitivity`, `invertMouseY`,
   `gamepadYawSpeed`, `gamepadPitchSpeed`, `gamepadResponseExponent`, `invertGamepadY`,
   `pitchLimit`, FOV). Modifiables en Play Mode ; **les modifications restent dans l'asset**.
@@ -129,7 +139,9 @@ Construite par `TestMovementSceneBuilder` (menu *ItHunts > Reconstruire…*) sur
    multiples (D-012).
 2. Bunny hop : fait avec l'étape 1 (piste chronométrée pas encore construite).
 3. **Glissade, glissade en pente, passage bas, accroupi** — fait et validé (2026-11-11, D-013).
-4. Wall slide et wall jump avec élan, recharge des sauts au mur, cheminée.
+4. **Wall slide et wall jump avec élan, recharge des sauts au mur** — fait et validé (v2 façon
+   Deadlock, 2026-11-12, D-016).
+5. **Charges de mouvement et dash** — fait et validé (2026-11-12, D-015, D-017, D-018, D-019).
 
 ## Risques pour le réseau
 
@@ -145,3 +157,6 @@ Construite par `TestMovementSceneBuilder` (menu *ItHunts > Reconstruire…*) sur
 - 2026-11-11 : glissade et accroupi.
 - 2026-11-11 : décélération constante et vitesse minimale sous obstacle (D-013).
 - 2026-11-11 : scène de test agrandie à 400 × 400 m.
+- 2026-11-11 : wall slide et wall jump.
+- 2026-11-12 : murs v2 (D-016), charges de mouvement et dash (D-015) ; correction : la téléportation
+  oublie les contacts mémorisés (sinon un tick de friction au sol après une téléportation en l'air).

@@ -1,6 +1,6 @@
 # ItHunts — Game Design Document
 
-**Version:** 0.4 · **Updated:** 2026-11-11 · [Features](#feature-index) · [Decisions](#decisions) · [Change log](#change-log)
+**Version:** 0.9 · **Updated:** 2026-11-11 · [Features](#feature-index) · [Decisions](#decisions) · [Change log](#change-log)
 
 ## Résumé
 
@@ -54,8 +54,8 @@ bouger → trouver objets / ennemis → lancer, tuer → âmes → coffres, marc
 
 | Feature | Status | Scope | Summary | Docs |
 |---|---|---|---|---|
-| Mouvement | in progress | MVP | Course, saut tolérant, glissade (accélère en pente), wall slide et wall jump, bunny hop façon Source | [design](features/mouvement/design.md) |
-| Orbes | designed | MVP | Magnétisme (attirer / repousser) et télékinésie (attraper / lancer), échange instantané, endurance | [design](features/orbes/design.md) |
+| Mouvement | implemented | MVP | Course, saut tolérant, glissade (accélère en pente), wall slide et wall jump, bunny hop façon Source, dash ; charges de mouvement partagées (saut en l'air, dash, magnétisme) | [design](features/mouvement/design.md) |
+| Orbes | designed | MVP | Magnétisme (attirer / repousser, sur les charges de mouvement) et télékinésie (attraper / lancer, sur sa propre endurance), échange instantané | [design](features/orbes/design.md) |
 | Boss traqueur | designed | MVP | Monstre géant intuable qui rôde, tue en un coup, plus rapide que la course ; enragé après le timer | [design](features/boss-traqueur/design.md) |
 | Zones et timer | idea | MVP | Arènes faites main tirées au hasard et reliées ; timer de 20 min ; sortie anticipée | — |
 | Ennemis zone 1 | idea | MVP | Goule (rampe, bondit, grimpe aux murs ; attrapable étourdie) et petit volant attrapable | — |
@@ -72,7 +72,7 @@ bouger → trouver objets / ennemis → lancer, tuer → âmes → coffres, marc
 ## Jalons
 
 Suivent l'ordre de travail de CLAUDE.md ; chaque jalon se termine par un playtest.
-1. **M1, mouvement en greybox :** mouvement + HUD de debug dans `Test_Movement` · fini quand :
+1. **M1, mouvement en greybox — terminé (2026-11-12) :** mouvement + HUD de debug dans `Test_Movement` · fini quand :
    l'utilisateur enchaîne glissade → wall jump → bunny hop sans perdre de vitesse, et valide
    les réglages.
 2. **M2, orbes :** magnétisme puis télékinésie, endurance, échange · fini quand : on atteint une
@@ -110,6 +110,12 @@ Suivent l'ordre de travail de CLAUDE.md ; chaque jalon se termine par un playtes
 | D-010 | 2026-11-11 | La glissade ne coûte pas d'endurance ; durée de zone réglable (4 min en test) | glissade payante ; 20 min fixes | validation du GDD : l'endurance reste aux orbes ; tests rapides | [mouvement](features/mouvement/design.md), [boss](features/boss-traqueur/design.md) |
 | D-011 | 2026-11-11 | Premier prototype de zone : une zone, une goule, le traqueur | zone complète d'emblée | valider la tension de la traque avant le reste | jalon M3 |
 | D-012 | 2026-11-11 | Mouvement façon Deadlock : contrôle aérien (W seul), auto-bunny hop, 2 sauts (réglable), pas de plafond bas de vitesse (sécurité à 50 m/s) ; la limite vient du nombre de sauts | Source pur ; plafond doux à 25 m/s | playtest de l'étape 1 : W en l'air partait de côté au lieu de suivre la caméra | [mouvement](features/mouvement/design.md) |
+| D-014 | 2026-11-12 | Le contrôle aérien ne s'applique pas au-delà de 100° entre la caméra et la trajectoire | contrôle aérien plus long coupé après un wall jump ; ne rien changer | Play Mode : tenir W face au mur ramenait sur le mur après un wall jump | [mouvement](features/mouvement/design.md) |
+| D-015 | 2026-11-12 | Charges de mouvement (3 par défaut) partagées par le saut en l'air, le dash et le magnétisme ; la télékinésie garde sa propre endurance | deux barres séparées ; une seule barre pour tout | un seul budget pour toute la mobilité : lisible, et limite l'écart de vitesse avec le traqueur ; le combat (télékinésie) ne prive jamais de mobilité | [mouvement](features/mouvement/design.md), [orbes](features/orbes/design.md) |
+| D-019 | 2026-11-12 | Le bonus de glissade (+2 m/s) entre dans le plafond commun des gains (20 m/s) | bonus toujours ajouté | cohérence : un seul plafond pour tous les gains de mouvement | [mouvement](features/mouvement/design.md) |
+| D-018 | 2026-11-12 | Dash progressif sur 0.3 s (pic 30 m/s à l'arrêt), +1 m/s au sol, aucun gain en l'air (vitesse redirigée), dash-jump au sol +3 m/s (fenêtre 0.15 s), plafond commun des gains à 20 m/s (remplace celui du wall jump) | plateau constant plus bas et plus long (21.7 m/s) | playtest : pic à 35 m/s puis marche à 12 m/s jugée bizarre ; besoin d'une technique de timing au sol | [mouvement](features/mouvement/design.md) |
+| D-017 | 2026-11-12 | Dash avec durée (0.18 s, 6.5 m, ni friction ni gravité), sortie à max(vitesse d'avant, 12 m/s), appui mémorisé 0.3 s ; gain du wall jump plafonné à 20 m/s ; HUD des charges sous le viseur | dash instantané à 14 m/s | playtest et mesures : retombée à 7.5 m/s en 0.2 s, 4.2 m seulement, aucun effet à 20 m/s en l'air, 1 dash sur 3 avec des appuis à 0.05 s ; montée trop rapide dans la cheminée | [mouvement](features/mouvement/design.md) |
+| D-016 | 2026-11-12 | Murs façon Deadlock : wall jump à 1.8 m, impulsion ajoutée à la vitesse, direction mi-normale mi-avant, jamais moins vite qu'avant (+1 m/s) ; wall slide sans perte, actif en longeant le mur, effet wall run ; le mur recharge les sauts, pas les charges | wall jump perpendiculaire au mur (1.05 m) ; wall slide seulement en poussant | playtest : wall jump trop bas et de côté, perte de vitesse le long du mur (mesurée : 15 → 7.5 m/s sans détection, −8 %/s caméra vers le mur) | [mouvement](features/mouvement/design.md) |
 | D-013 | 2026-11-11 | Glissade façon Deadlock / Apex : élan conservé à 100 % à l'entrée, décélération constante (3 m/s²), vitesse minimale de 5 m/s sous un obstacle | friction proportionnelle à la vitesse (0.5 /s) ; fin de glissade en accroupi sous un plafond | playtest : le bunny hop perdait son élan en glissade, le passage bas finissait accroupi | [mouvement](features/mouvement/design.md) |
 
 ## Open questions
@@ -133,3 +139,8 @@ Suivent l'ordre de travail de CLAUDE.md ; chaque jalon se termine par un playtes
 enragée, glissade sans endurance, zone de test de 4 min, premier prototype de zone) ; références.
 **0.3 (2026-11-11):** D-012, mouvement façon Deadlock après le premier playtest ([mouvement](features/mouvement/design.md)).
 **0.4 (2026-11-11):** D-013, glissade qui conserve l'élan ([mouvement](features/mouvement/design.md)).
+**0.9 (2026-11-12):** D-019 ; mouvement de base validé et implémenté ([mouvement](features/mouvement/design.md)).
+**0.8 (2026-11-12):** D-018, dash progressif, gains plafonnés, dash-jump ([mouvement](features/mouvement/design.md)).
+**0.7 (2026-11-12):** D-017, dash v2, plafond du wall jump, HUD des charges ([mouvement](features/mouvement/design.md)).
+**0.6 (2026-11-12):** D-016, murs façon Deadlock ([mouvement](features/mouvement/design.md)).
+**0.5 (2026-11-12):** D-014 (seuil d'angle du contrôle aérien) et D-015 (charges de mouvement partagées, dash) ([mouvement](features/mouvement/design.md), [orbes](features/orbes/design.md)).

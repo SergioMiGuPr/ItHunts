@@ -249,6 +249,7 @@ GameObject:
   - component: {fileID: 571279725940702901}
   - component: {fileID: 7863865896918639265}
   - component: {fileID: 1973928570591129331}
+  - component: {fileID: 4709111866979706031}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -396,3 +397,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3144a7ebb55beb2438dafd29db29f7b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Debugging.DebugTeleporter
+--- !u!114 &4709111866979706031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4554349776337732255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bbb00668691fb2429bb494904bc06df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Hud.MovementHud
+  filledColor: {r: 0.35, g: 0.85, b: 1, a: 0.95}
+  rechargeColor: {r: 0.35, g: 0.85, b: 1, a: 0.45}
+  emptyColor: {r: 0, g: 0, b: 0, a: 0.55}
+  crosshairColor: {r: 1, g: 1, b: 1, a: 0.85}
+  segmentWidth: 22
+  segmentHeight: 6
+  segmentGap: 4
+  offsetBelowCrosshair: 26

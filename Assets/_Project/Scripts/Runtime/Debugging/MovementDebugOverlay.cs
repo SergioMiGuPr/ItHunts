@@ -63,6 +63,18 @@ namespace ItHunts.Debugging
                 _visible = !_visible;
         }
 
+        private static readonly string[] DashSectors =
+            { "avant", "avant-droite", "droite", "arrière-droite", "arrière", "arrière-gauche", "gauche", "avant-gauche" };
+
+        /// <summary>Direction du dash par rapport à la caméra, en 8 secteurs.</summary>
+        private static string DashLabel(Vector2 move)
+        {
+            if (move.sqrMagnitude < 0.01f)
+                return "avant (sans entrée)";
+            float angle = Mathf.Repeat(Mathf.Atan2(move.x, move.y) * Mathf.Rad2Deg, 360f);
+            return DashSectors[Mathf.RoundToInt(angle / 45f) % 8];
+        }
+
         private void OnGUI()
         {
             if (!_visible || _motor == null || _motor.Settings == null)
@@ -107,8 +119,13 @@ namespace ItHunts.Debugging
             {
                 MovementMode.Ground => s.Crouched ? "Sol (accroupi)" : "Sol",
                 MovementMode.Slide => "Glissade",
+                MovementMode.WallSlide => "Wall slide",
                 _ => "Air",
             };
+            int wallCoyoteTicks = MovementSettings.SecondsToTicks(cfg.wallCoyoteTime, dt);
+            int wallLeft = s.LastWallTick == MovementState.NeverTick ? 0
+                : Mathf.Max(0, wallCoyoteTicks - (s.Tick - s.LastWallTick));
+            int lockLeft = Mathf.Max(0, s.SteerLockUntilTick - s.Tick);
             int boostTicks = MovementSettings.SecondsToTicks(cfg.slideBoostCooldown, dt);
             int boostLeft = s.LastSlideBoostTick == MovementState.NeverTick ? 0
                 : Mathf.Max(0, boostTicks - (s.Tick - s.LastSlideBoostTick));
@@ -116,8 +133,19 @@ namespace ItHunts.Debugging
             _text.AppendLine(boostLeft > 0
                 ? $"Bonus de glissade : recharge {boostLeft * dt:0.0} s"
                 : "Bonus de glissade : prêt");
+            _text.AppendLine($"Mur : {(s.OnWall ? "contact" : "—")}   Wall-coyote : {wallLeft}/{wallCoyoteTicks} ticks   " +
+                             $"Verrou : {lockLeft} ticks   Même mur bloqué : {(s.LastWallJumpId != 0 && s.LastWallJumpId == s.LastWallId ? "oui" : "non")}");
             _text.AppendLine($"Pente : {Vector3.Angle(s.GroundNormal, Vector3.up):0.0}°");
             _text.AppendLine($"Coyote : {coyoteLeft}/{coyoteTicks} ticks   Buffer : {bufferLeft}/{bufferTicks} ticks");
+            _text.AppendLine($"Charges de mouvement : {Mathf.Max(0f, s.Charges):0.0}/{cfg.movementCharges}   " +
+                             $"(recharge {cfg.chargeRechargeTimeGround:0.#} s au sol, {cfg.chargeRechargeTimeAir:0.#} s en l'air)");
+            if (s.LastDashTick != MovementState.NeverTick)
+                _text.AppendLine($"Dernier dash : {DashLabel(s.LastDashMove)}, {s.LastDashStartSpeed:0.0} → {s.LastDashEndSpeed:0.0} m/s, " +
+                                 $"{s.LastDashDistance:0.0} m{(s.DashTicksLeft > 0 ? " (en cours)" : "")}, charges restantes {Mathf.Max(0f, s.Charges):0.0}");
+            if (s.LastDashJumpTick != MovementState.NeverTick)
+                _text.AppendLine(s.LastDashJumpSuccess
+                    ? $"Dash-jump : RÉUSSI  {s.LastDashJumpSpeedBefore:0.0} → {s.LastDashJumpSpeedAfter:0.0} m/s"
+                    : $"Dash-jump : raté, trop tard de {s.LastDashJumpLateTicks * dt * 1000f:0} ms (fenêtre {cfg.dashJumpWindow * 1000f:0} ms)");
             _text.AppendLine($"Sauts restants : {Mathf.Max(0, cfg.maxJumps - s.JumpsUsed)}/{cfg.maxJumps}   " +
                              $"Auto-bhop : {(cfg.autoBunnyHop ? "oui" : "non")}   Contrôle aérien : {cfg.airControl:0.00}");
             _text.AppendLine(_seenJumpTick == MovementState.NeverTick

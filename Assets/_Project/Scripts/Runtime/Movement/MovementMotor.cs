@@ -1,3 +1,4 @@
+using System;
 using ItHunts.Settings;
 using UnityEngine;
 
@@ -6,8 +7,8 @@ namespace ItHunts.Movement
     /// <summary>
     /// Simulation du mouvement, un tick à la fois. Classe pure : aucune lecture d'entrée, d'horloge
     /// ou de scène. Tout passe par les paramètres, pour pouvoir tester et rejouer (réseau).
-    /// États : Sol (debout ou accroupi), Air, Glissade. Saut (coyote, buffer, hauteur variable,
-    /// gravité de chute), sauts multiples, auto-bunny hop, contrôle aérien, plafond de sécurité.
+    /// États : Sol (debout ou accroupi), Air, Glissade, WallSlide. Saut (coyote, buffer, hauteur
+    /// variable, gravité de chute), sauts multiples, auto-bunny hop, wall jump, contrôle aérien.
     /// </summary>
     public static class MovementMotor
     {
@@ -19,6 +20,19 @@ namespace ItHunts.Movement
             int coyoteTicks = MovementSettings.SecondsToTicks(cfg.coyoteTime, dt);
             int bufferTicks = MovementSettings.SecondsToTicks(cfg.jumpBuffer, dt);
             int slideBoostTicks = MovementSettings.SecondsToTicks(cfg.slideBoostCooldown, dt);
+            int wallCoyoteTicks = MovementSettings.SecondsToTicks(cfg.wallCoyoteTime, dt);
+            int steerLockTicks = MovementSettings.SecondsToTicks(cfg.wallJumpSteerLock, dt);
+            int dashCooldownTicks = MovementSettings.SecondsToTicks(cfg.dashCooldown, dt);
+            int dashBufferTicks = MovementSettings.SecondsToTicks(cfg.dashBuffer, dt);
+            int dashDurationTicks = Mathf.Max(1, MovementSettings.SecondsToTicks(cfg.dashDuration, dt));
+            int dashGraceTicks = MovementSettings.SecondsToTicks(cfg.dashFrictionGrace, dt);
+            int dashJumpWindowTicks = MovementSettings.SecondsToTicks(cfg.dashJumpWindow, dt);
+            if (s.Charges < 0f)
+                s.Charges = cfg.movementCharges;   // premier tick : barre pleine
+
+            Vector3 wish = MovementMath.WishVector(input.Move, input.Yaw);
+            float wishAmount = wish.magnitude;
+            Vector3 wishDir = wishAmount > 1e-4f ? wish / wishAmount : Vector3.zero;
 
             // 1. Sol. On ne se colle pas au sol pendant une montée (sinon le saut serait annulé).
             bool groundHit = probe.ProbeGround(out Vector3 groundNormal);
@@ -28,17 +42,51 @@ namespace ItHunts.Movement
                 s.LastGroundedTick = s.Tick;
                 s.JumpRising = false;
                 s.JumpsUsed = 0;
+                s.LastWallJumpId = 0;
                 if (s.Velocity.y < 0f)
                     s.Velocity.y = 0f;
             }
 
+            // Recharge des charges de mouvement, une par une, plus vite au sol.
+            float rechargeTime = grounded ? cfg.chargeRechargeTimeGround : cfg.chargeRechargeTimeAir;
+            s.Charges = Mathf.Min(cfg.movementCharges, s.Charges + dt / rechargeTime);
+
+            // 1 bis. Mur (en l'air) : vers la direction voulue, la vitesse, le mur du tick précédent, et les deux
+            //        côtés de la trajectoire (pour un mur longé bien parallèlement).
+            bool onWall = false;
+            Vector3 wallNormal = Vector3.zero;
+            if (!grounded)
+            {
+                var horizontal = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
+                Vector3 velocityDir = horizontal.sqrMagnitude > 0.01f ? horizontal.normalized : Vector3.zero;
+                Span<Vector3> directions = stackalloc Vector3[5];
+                directions[0] = s.Tick - s.LastWallTick <= 1 ? -s.LastWallNormal : Vector3.zero;
+                directions[1] = wishDir;
+                directions[2] = velocityDir;
+                directions[3] = new Vector3(velocityDir.z, 0f, -velocityDir.x);
+                directions[4] = -directions[3];
+                onWall = probe.ProbeWall(directions, out wallNormal, out int wallId);
+                if (onWall)
+                {
+                    s.LastWallTick = s.Tick;
+                    s.LastWallNormal = wallNormal;
+                    s.LastWallId = wallId;
+                    if (cfg.wallRefillsJumps)
+                        s.JumpsUsed = 0;
+                    if (cfg.wallRefillsCharges)
+                        s.Charges = cfg.movementCharges;
+                }
+            }
+
             bool canStand = !s.Crouched || probe.HasHeadroom(cfg.capsuleHeight);
             float horizontalSpeed = s.HorizontalSpeed;
+            bool wallAttached = false;
 
-            // 2. Saut.
+            // 2. Saut, par priorité :
             //    - au sol ou dans le coyote time : appui récent (buffer) non consommé, ou bouton maintenu
             //      au sol si l'auto-bunny hop est actif ; impossible sous un plafond bas ;
-            //    - en l'air : seulement un NOUVEL appui, s'il reste des sauts.
+            //    - wall jump : nouvel appui, au mur ou dans le wall-coyote, pas deux fois de suite le même mur ;
+            //    - en l'air : nouvel appui, s'il reste des sauts.
             int sincePress = s.Tick - input.JumpPressedTick;
             bool freshPress = input.JumpPressedTick > s.LastConsumedJumpPressTick
                               && sincePress >= 0 && sincePress <= bufferTicks;
@@ -46,33 +94,45 @@ namespace ItHunts.Movement
             bool groundJump = (grounded || inCoyote) && canStand
                               && (freshPress || (grounded && cfg.autoBunnyHop && input.JumpHeld));
 
+            bool wallJump = !groundJump && !grounded && freshPress && canStand
+                            && s.LastWallTick != MovementState.NeverTick
+                            && s.Tick - s.LastWallTick <= wallCoyoteTicks
+                            && (cfg.allowSameWallJump || s.LastWallId != s.LastWallJumpId);
+
             bool airJump = false;
-            if (!groundJump && !grounded && !inCoyote && freshPress)
+            if (!groundJump && !wallJump && !grounded && !inCoyote && freshPress)
             {
                 // Tombé d'un bord sans sauter : le saut au sol est perdu une fois le coyote time passé.
                 s.JumpsUsed = Mathf.Max(s.JumpsUsed, 1);
-                airJump = s.JumpsUsed < cfg.maxJumps && canStand;
+                airJump = s.JumpsUsed < cfg.maxJumps && canStand && s.Charges >= 1f;
             }
+
+            if ((groundJump || airJump || wallJump) && s.DashTicksLeft > 0)
+                EndDash(ref s, cfg, probe, dashGraceTicks);           // un saut termine le dash (vitesse de sortie)
 
             if (groundJump || airJump)
             {
                 float jumpVelocity = groundJump ? cfg.JumpVelocity : cfg.AirJumpVelocity;
                 s.Velocity.y = groundJump ? jumpVelocity : Mathf.Max(s.Velocity.y, jumpVelocity);
                 s.JumpsUsed = groundJump ? 1 : s.JumpsUsed + 1;
-                if (freshPress)
-                    s.LastConsumedJumpPressTick = input.JumpPressedTick;
-                s.LastGroundedTick = MovementState.NeverTick;   // pas de second saut via le coyote time
-                s.LastJumpTick = s.Tick;
-                s.JumpRising = true;
-                s.Crouched = false;                              // on se relève pour sauter (canStand)
+                if (airJump)
+                    s.Charges -= 1f;                              // le saut en l'air coûte une charge
+                if (groundJump)
+                    TryDashJump(ref s, cfg, dashJumpWindowTicks);
+                StartJump(ref s, input, cfg, freshPress);
                 grounded = false;                                // pas de friction ce tick-ci (bunny hop)
-                s.Mode = MovementMode.Air;
-                if (!input.JumpHeld)
-                {
-                    // Appui déjà relâché avant le tick (tape très brève) : petit saut.
-                    s.Velocity.y *= cfg.jumpCutMultiplier;
-                    s.JumpRising = false;
-                }
+            }
+            else if (wallJump)
+            {
+                // Impulsion AJOUTÉE à la vitesse acquise, dans une direction qui mélange la normale du mur et
+                // l'avant (caméra, sinon trajectoire) ; jamais moins vite qu'avant (+ bonus).
+                s.Velocity = MovementMath.WallJumpVelocity(s.Velocity, s.LastWallNormal, input.Yaw, cfg.wallJumpForwardBias,
+                    cfg.wallJumpKick, cfg.wallJumpSpeedBonus, cfg.WallJumpVelocity, cfg.movementGainCap);
+                s.LastWallJumpId = s.LastWallId;
+                s.LastWallTick = MovementState.NeverTick;        // pas de second wall jump via le wall-coyote
+                s.SteerLockUntilTick = s.Tick + steerLockTicks;
+                StartJump(ref s, input, cfg, freshPress: true);
+                onWall = false;
             }
             else if (grounded)
             {
@@ -80,18 +140,68 @@ namespace ItHunts.Movement
             }
             else
             {
-                // En l'air : on se relève dès qu'il y a la place.
+                // En l'air : on se relève dès qu'il y a la place. Accroché au mur si on pousse vers lui (avec une
+                // tolérance d'angle) ou si on le longe assez vite ; wall slide quand on descend.
                 if (s.Crouched && canStand)
                     s.Crouched = false;
-                s.Mode = MovementMode.Air;
+                if (onWall)
+                {
+                    var horizontal = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
+                    float alongWall = (horizontal - wallNormal * Vector3.Dot(horizontal, wallNormal)).magnitude;
+                    bool pushing = wishAmount > 0.1f && Vector3.Angle(wishDir, -wallNormal) <= cfg.wallSlideInputTolerance;
+                    bool leaving = Vector3.Dot(horizontal, wallNormal) > 1f;   // on s'éloigne du mur (après un wall jump)
+                    wallAttached = !leaving && (pushing || alongWall >= cfg.wallSlideMinSpeed);
+                }
+
+                s.Mode = wallAttached && s.Velocity.y <= 0f ? MovementMode.WallSlide : MovementMode.Air;
             }
 
-            // 3. Horizontal.
-            Vector3 wish = MovementMath.WishVector(input.Move, input.Yaw);
-            float wishAmount = wish.magnitude;
-            Vector3 wishDir = wishAmount > 1e-4f ? wish / wishAmount : Vector3.zero;
+            // 2 bis. Dash : appui mémorisé (dashBuffer, un appui pendant un dash part ensuite), une charge, délai
+            //        entre deux dashs. Direction de l'entrée (avant de la caméra sans entrée). Pendant dashDuration :
+            //        vitesse constante (dashDistance / durée, ou plus si on allait plus vite), ni friction ni gravité.
+            int sinceDash = s.Tick - input.DashPressedTick;
+            bool dashPress = input.DashPressedTick > 0                       // 0 ou moins : aucun appui
+                             && input.DashPressedTick > s.LastConsumedDashPressTick
+                             && sinceDash >= 0 && sinceDash <= dashBufferTicks;
+            if (dashPress && s.DashTicksLeft == 0 && s.Charges >= 1f && s.Tick - s.LastDashTick >= dashCooldownTicks)
+            {
+                s.DashDir = wishAmount > 1e-4f ? wishDir : Quaternion.Euler(0f, input.Yaw, 0f) * Vector3.forward;
+                s.DashSpeedBefore = s.HorizontalSpeed;
+                s.DashStartedGrounded = grounded;
+                // Sortie : au sol, gain plafonné ; en l'air, exactement la vitesse d'avant (redirigée) ; jamais
+                // sous dashExitSpeed. Pic calculé pour parcourir dashDistance.
+                float afterGain = grounded
+                    ? MovementMath.CappedGain(s.DashSpeedBefore, cfg.dashSpeedGain, cfg.movementGainCap)
+                    : s.DashSpeedBefore;
+                s.DashExitTarget = Mathf.Max(cfg.dashExitSpeed, afterGain);
+                s.DashPeakSpeed = MovementMath.DashPeakSpeed(cfg.dashDistance, dashDurationTicks, dt, s.DashExitTarget,
+                    cfg.dashProfile == DashProfile.Progressif);
+                s.DashTicksLeft = dashDurationTicks;
+                s.DashStartPosition = probe.Position;
+                s.Charges -= 1f;
+                s.LastDashTick = s.Tick;
+                s.LastConsumedDashPressTick = input.DashPressedTick;
+                s.LastDashMove = input.Move;
+                s.LastDashStartSpeed = s.DashSpeedBefore;
+                s.JumpRising = false;
+            }
 
-            if (grounded && s.Mode == MovementMode.Slide)
+            bool dashed = s.DashTicksLeft > 0;
+            if (dashed)
+            {
+                int index = dashDurationTicks - s.DashTicksLeft;
+                float speed = MovementMath.DashSpeedAt(index, dashDurationTicks, s.DashPeakSpeed, s.DashExitTarget,
+                    cfg.dashProfile == DashProfile.Progressif);
+                s.Velocity = new Vector3(s.DashDir.x * speed, 0f, s.DashDir.z * speed);
+            }
+
+            float speedBeforeHorizontal = s.HorizontalSpeed;
+
+            // 3. Horizontal (rien ce tick-ci après un dash : la vitesse du dash est exacte).
+            if (dashed)
+            {
+            }
+            else if (grounded && s.Mode == MovementMode.Slide)
             {
                 // Décélération constante (pas proportionnelle à la vitesse), puis effet de la pente.
                 s.Velocity = MovementMath.Decelerate(s.Velocity, cfg.slideDeceleration, dt);
@@ -109,10 +219,11 @@ namespace ItHunts.Movement
             else if (grounded)
             {
                 float topSpeed = s.Crouched ? cfg.crouchSpeed : cfg.runSpeed;
-                s.Velocity = MovementMath.ApplyFriction(s.Velocity, cfg.groundFriction, cfg.stopSpeed, dt);
+                if (s.Tick >= s.DashGraceUntilTick)                   // pas de friction juste après un dash
+                    s.Velocity = MovementMath.ApplyFriction(s.Velocity, cfg.groundFriction, cfg.stopSpeed, dt);
                 s.Velocity = MovementMath.Accelerate(s.Velocity, wishDir, topSpeed * wishAmount, cfg.groundAcceleration, dt);
             }
-            else
+            else if (s.Tick >= s.SteerLockUntilTick)
             {
                 s.Velocity = MovementMath.AirAccelerate(s.Velocity, wishDir, cfg.runSpeed * wishAmount,
                     cfg.airWishSpeedCap, cfg.airAcceleration, dt);
@@ -120,8 +231,13 @@ namespace ItHunts.Movement
                 // Contrôle aérien (W seul) : la vitesse acquise tourne vers la caméra. En strafant, rien :
                 // on garde le gain de vitesse façon Source.
                 if (MovementMath.IsForwardOnly(input.Move))
-                    s.Velocity = MovementMath.AirControl(s.Velocity, wishDir, cfg.airControl * wishAmount, dt);
+                    s.Velocity = MovementMath.AirControl(s.Velocity, wishDir, cfg.airControl * wishAmount, dt,
+                        cfg.airControlMaxAngle);
             }
+
+            // Accroché au mur : la part de vitesse qui entre dans le mur est reportée le long du mur, sans perte.
+            if (wallAttached && !dashed)
+                s.Velocity = MovementMath.ProjectAlongWall(s.Velocity, wallNormal, speedBeforeHorizontal);
 
             s.Velocity = MovementMath.ClampHorizontal(s.Velocity, cfg.maxHorizontalSpeed);
 
@@ -130,7 +246,7 @@ namespace ItHunts.Movement
 
             // 5. Vertical : coupe au relâchement, puis gravité en deux demi-pas (hauteur de saut exacte).
             float g = 0f;
-            if (!grounded)
+            if (!grounded && !dashed)                                 // pas de gravité pendant un dash
             {
                 if (s.JumpRising && !input.JumpHeld && s.Velocity.y > 0f)
                 {
@@ -142,12 +258,26 @@ namespace ItHunts.Movement
                 s.Velocity.y -= 0.5f * g * dt;
             }
 
-            // 6. Déplacement.
-            MoveResult result = probe.Move(s.Velocity * dt, snapToGround: grounded);
+            // 6. Déplacement (accroché au mur : légère poussée vers lui pour garder le contact).
+            Vector3 delta = s.Velocity * dt;
+            if (wallAttached)
+                delta -= wallNormal * (cfg.wallStickSpeed * dt);
+            MoveResult result = probe.Move(delta, snapToGround: grounded);
 
             if (!grounded)
                 s.Velocity.y -= 0.5f * g * dt;
             s.Velocity.y = Mathf.Max(s.Velocity.y, -cfg.maxFallSpeed);
+
+            // Fin du dash : vitesse de sortie.
+            if (dashed && --s.DashTicksLeft == 0)
+                EndDash(ref s, cfg, probe, dashGraceTicks);
+            if (s.Mode == MovementMode.WallSlide)
+            {
+                // Effet wall run : plus on longe le mur vite, plus la chute est lente.
+                float run = Mathf.InverseLerp(cfg.wallRunSpeedStart, cfg.wallRunSpeedFull, s.HorizontalSpeed);
+                float maxFall = Mathf.Lerp(cfg.wallSlideMaxFallSpeed, cfg.wallRunMaxFallSpeed, run);
+                s.Velocity.y = Mathf.Max(s.Velocity.y, -maxFall);
+            }
 
             // 7. Réponse aux collisions.
             if (result.HitAbove && s.Velocity.y > 0f)
@@ -161,11 +291,27 @@ namespace ItHunts.Movement
 
             if (result.HitSides && dt > 0f)
             {
-                // On perd seulement la part de vitesse qui est entrée dans le mur.
-                var actual = new Vector3(result.ActualDelta.x, 0f, result.ActualDelta.z) / dt;
-                var wanted = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
-                if (actual.sqrMagnitude < wanted.sqrMagnitude)
-                    s.Velocity = new Vector3(actual.x, s.Velocity.y, actual.z);
+                var sideNormal = new Vector3(result.SideNormal.x, 0f, result.SideNormal.z);
+                if (result.HasSideNormal && sideNormal.sqrMagnitude > 1e-6f)
+                {
+                    // On retire seulement la part de vitesse qui entre dans l'obstacle (le reste est intact).
+                    sideNormal.Normalize();
+                    var h = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
+                    float into = Vector3.Dot(h, sideNormal);
+                    if (into < 0f)
+                    {
+                        h -= sideNormal * into;
+                        s.Velocity = new Vector3(h.x, s.Velocity.y, h.z);
+                    }
+                }
+                else
+                {
+                    // Sans normale : on se fie au déplacement réellement effectué.
+                    var actual = new Vector3(result.ActualDelta.x, 0f, result.ActualDelta.z) / dt;
+                    var wanted = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
+                    if (actual.sqrMagnitude < wanted.sqrMagnitude)
+                        s.Velocity = new Vector3(actual.x, s.Velocity.y, actual.z);
+                }
             }
 
             if (s.Velocity.y <= 0f)
@@ -173,7 +319,76 @@ namespace ItHunts.Movement
 
             s.Position = probe.Position;
             s.Grounded = grounded;
+            s.OnWall = onWall;
             s.GroundNormal = grounded ? groundNormal : Vector3.up;
+        }
+
+        /// <summary>
+        /// Termine le dash : vitesse horizontale = la plus grande entre celle d'avant et dashExitSpeed, dans la
+        /// direction du dash ; puis courte période sans friction au sol. Mémorise les chiffres pour le debug.
+        /// </summary>
+        private static void EndDash(ref MovementState s, MovementSettings cfg, ICollisionProbe probe, int graceTicks)
+        {
+            float exit = s.DashExitTarget;
+            s.Velocity = new Vector3(s.DashDir.x * exit, s.Velocity.y, s.DashDir.z * exit);
+            s.DashTicksLeft = 0;
+            s.DashEndTick = s.Tick;
+            s.DashGraceUntilTick = s.Tick + 1 + graceTicks;
+            Vector3 moved = probe.Position - s.DashStartPosition;
+            s.LastDashDistance = new Vector2(moved.x, moved.z).magnitude;
+            s.LastDashEndSpeed = exit;
+        }
+
+        /// <summary>
+        /// Dash-jump : un saut au sol pendant un dash parti du sol, ou au plus dashJumpWindow après sa fin, donne
+        /// dashJumpSpeedGain (plafonné) par rapport à la vitesse d'avant le dash, au lieu de dashSpeedGain. Une seule
+        /// fois par dash. Mémorise le résultat (réussi, ou raté avec le retard) pour le debug.
+        /// </summary>
+        private static void TryDashJump(ref MovementState s, MovementSettings cfg, int windowTicks)
+        {
+            if (!s.DashStartedGrounded || s.LastDashTick == MovementState.NeverTick || s.LastDashJumpTick >= s.LastDashTick)
+                return;
+            int sinceEnd = s.Tick - s.DashEndTick;
+            if (sinceEnd > windowTicks + 36)                 // trop loin du dash pour compter comme une tentative
+                return;
+
+            s.LastDashJumpTick = s.Tick;
+            s.LastDashJumpSpeedBefore = s.DashSpeedBefore;
+            if (sinceEnd <= windowTicks)
+            {
+                var h = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
+                float target = Mathf.Max(h.magnitude,
+                    MovementMath.CappedGain(s.DashSpeedBefore, cfg.dashJumpSpeedGain, cfg.movementGainCap));
+                Vector3 dir = h.sqrMagnitude > 1e-6f ? h.normalized : s.DashDir;
+                s.Velocity = new Vector3(dir.x * target, s.Velocity.y, dir.z * target);
+                s.LastDashJumpSuccess = true;
+                s.LastDashJumpLateTicks = 0;
+            }
+            else
+            {
+                s.LastDashJumpSuccess = false;
+                s.LastDashJumpLateTicks = sinceEnd - windowTicks;
+            }
+
+            s.LastDashJumpSpeedAfter = new Vector2(s.Velocity.x, s.Velocity.z).magnitude;
+        }
+
+        /// <summary>Partie commune à tous les sauts : consommer l'appui, se relever, passer en l'air.</summary>
+        private static void StartJump(ref MovementState s, in MovementInput input, MovementSettings cfg, bool freshPress)
+        {
+            if (freshPress)
+                s.LastConsumedJumpPressTick = input.JumpPressedTick;
+            s.LastGroundedTick = MovementState.NeverTick;   // pas de second saut via le coyote time
+            s.LastJumpTick = s.Tick;
+            s.JumpRising = true;
+            s.Crouched = false;                              // on se relève pour sauter (canStand vérifié)
+            s.Mode = MovementMode.Air;
+            if (!input.JumpHeld)
+            {
+                // Appui déjà relâché avant le tick (tape très brève) : petit saut.
+                s.Velocity.y *= cfg.jumpCutMultiplier;
+                s.JumpRising = false;
+            }
         }
 
         /// <summary>Au sol sans sauter : entrée et sortie de glissade, accroupi, relevé.</summary>
@@ -202,7 +417,8 @@ namespace ItHunts.Movement
                 if (s.Tick - s.LastSlideBoostTick >= slideBoostTicks && horizontalSpeed > 1e-3f)
                 {
                     var dir = new Vector3(s.Velocity.x, 0f, s.Velocity.z) / horizontalSpeed;
-                    s.Velocity += dir * cfg.slideBoost;
+                    float boosted = MovementMath.CappedGain(horizontalSpeed, cfg.slideBoost, cfg.movementGainCap);
+                    s.Velocity += dir * (boosted - horizontalSpeed);   // bonus plafonné (plafond commun des gains)
                     s.LastSlideBoostTick = s.Tick;
                 }
 

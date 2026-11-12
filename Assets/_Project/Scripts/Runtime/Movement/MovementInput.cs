@@ -23,6 +23,13 @@ namespace ItHunts.Movement
         /// <summary>Bouton de glissade / accroupi maintenu.</summary>
         public bool SlideHeld;
 
-        public static MovementInput Neutral => new MovementInput { JumpPressedTick = MovementState.NeverTick };
+        /// <summary>Tick du dernier appui de dash (0 ou MovementState.NeverTick si aucun ; les ticks commencent à 1).</summary>
+        public int DashPressedTick;
+
+        public static MovementInput Neutral => new MovementInput
+        {
+            JumpPressedTick = MovementState.NeverTick,
+            DashPressedTick = MovementState.NeverTick,
+        };
     }
 }

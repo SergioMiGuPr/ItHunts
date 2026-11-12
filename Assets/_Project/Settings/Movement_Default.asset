@@ -19,6 +19,7 @@ MonoBehaviour:
   airAcceleration: 10
   airWishSpeedCap: 1
   airControl: 0.15
+  airControlMaxAngle: 100
   maxJumps: 2
   airJumpHeight: 1.6
   autoBunnyHop: 1
@@ -33,6 +34,36 @@ MonoBehaviour:
   crouchHeight: 0.9
   crouchEyeHeight: 0.75
   crouchSpeed: 3.5
+  wallSlideMaxFallSpeed: 3
+  wallSlideInputTolerance: 75
+  wallSlideMinSpeed: 3
+  wallRunSpeedStart: 8
+  wallRunSpeedFull: 15
+  wallRunMaxFallSpeed: 0.5
+  wallStickSpeed: 1
+  wallJumpKick: 7.5
+  wallJumpHeight: 1.8
+  wallJumpForwardBias: 0.5
+  wallJumpSpeedBonus: 1
+  wallCoyoteTime: 0.1
+  wallJumpSteerLock: 0.15
+  allowSameWallJump: 0
+  wallRefillsJumps: 1
+  wallRefillsCharges: 0
+  movementCharges: 3
+  chargeRechargeTimeGround: 1
+  chargeRechargeTimeAir: 3
+  dashDistance: 6.5
+  dashDuration: 0.3
+  dashProfile: 0
+  dashSpeedGain: 1
+  dashJumpWindow: 0.15
+  dashJumpSpeedGain: 3
+  dashExitSpeed: 12
+  dashCooldown: 0.3
+  dashBuffer: 0.3
+  dashFrictionGrace: 0.2
+  movementGainCap: 20
   maxHorizontalSpeed: 50
   gravity: 20
   fallGravityMultiplier: 1.5

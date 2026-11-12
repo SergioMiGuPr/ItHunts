@@ -29,7 +29,44 @@ pas le CharacterController.
 - [x] Les sauts se rechargent en retouchant le sol. *(MovementTests › SautsMultiples_RechargesAuSol)*
 - [x] Tomber d'un bord sans sauter laisse seulement le saut en l'air. *(MovementTests › SautsMultiples_TomberDUnBordLaisseLeSeulSautEnLAir)*
 - [x] La vitesse horizontale est plafonnée à 50 m/s. *(MovementTests › Securite_VitesseHorizontalePlafonnee)*
-- [ ] Les sauts se rechargent au contact d'un mur. *(pas encore : branché avec la détection des murs)*
+- [x] Les sauts se rechargent au contact d'un mur (un saut en l'air redevient disponible après un double saut). *(MovementTests › Mur_LeContactRechargeLesSauts)*
+- [x] Wall slide : en poussant contre un mur en l'air, la chute plafonne à 3 m/s. *(MovementTests › WallSlide_LimiteLaChuteA3 ; et Play Mode 2026-11-11 contre le mur de 20 m : −3.00 m/s, état WallSlide)*
+- [x] Wall slide : la vitesse le long du mur (12 m/s) est conservée, rien n'entre dans le mur. *(MovementTests › WallSlide_ConserveLaVitesseLeLongDuMur)*
+- [x] Sans pousser vers le mur, pas de wall slide : chute normale. *(MovementTests › WallSlide_SansPousserOnTombeNormalement)*
+- [x] Wall jump : 7.5 m/s loin du mur, élan le long du mur conservé, sans consommer de saut. *(MovementTests › WallJump_ImpulsionLoinDuMurEnGardantLElan ; Play Mode : impulsion jusqu'au mur opposé à 5 m)*
+- [x] Pas de contrôle en l'air pendant les 0.15 s qui suivent un wall jump, puis il revient. *(MovementTests › WallJump_VerrouDeDirectionPendant015s)*
+- [x] Wall-coyote : wall jump accepté 6 ticks après avoir quitté le mur, refusé à 7. *(MovementTests › WallJump_WallCoyoteAccepte6Ticks, WallJump_WallCoyoteRefuse7Ticks)*
+- [x] Pas deux wall jumps de suite sur le même mur ; un autre mur, puis le premier, sont acceptés. *(MovementTests › WallJump_PasDeuxFoisDeSuiteLeMemeMur)*
+- [x] Dans une cheminée de 3 m, quatre wall jumps alternés font monter de plus de 2 m. *(MovementTests › WallJump_OnMonteDansUneChemineeDe3m ; murs factices)*
+- [x] Wall jump : 1.8 m de hauteur. *(MovementTests › WallJump_MonteDe18m ; Play Mode 2026-11-12 contre le mur de 200 m : 1.80 m)*
+- [x] Wall jump : direction entre la normale et l'avant selon `wallJumpForwardBias` (0, 0.5, 1). *(MovementTests › WallJump_DirectionMelangeNormaleEtCamera)*
+- [x] Wall jump caméra face au mur : on s'éloigne du mur et on avance le long de la trajectoire. *(MovementTests › WallJump_CameraFaceAuMur_PasVersLeMur)*
+- [x] Wall jump : vitesse horizontale ≥ vitesse d'avant + 1 m/s, quelle que soit la caméra. *(MovementTests › WallJump_VitesseConserveePlusBonus ; Play Mode : 15.00 → 20.98 m/s)*
+- [x] Wall slide sans perte, caméra à 20° vers le mur, W seul. *(MovementTests › WallSlide_SansPerteAvecLaCameraVersLeMur ; Play Mode 2026-11-12 : 15.00 → 15.00 m/s en 1 s, contre 13.78 avant)*
+- [x] Wall slide actif sans pousser quand on longe le mur à 10 m/s, sans perte. *(MovementTests › WallSlide_SActiveSansPousserQuandOnLongeLeMur ; Play Mode : W seul caméra le long du mur, 15.00 → 15.00 m/s, contre 7.50 avant)*
+- [x] Tolérance d'angle de l'entrée : 60° accroche, 85° non. *(MovementTests › WallSlide_ToleranceDAngleDeLEntree)*
+- [x] Wall run : à 15 m/s le long du mur, chute ≤ 0.5 m/s ; à l'arrêt, 3 m/s. *(MovementTests › WallRun_ChuteRalentieAHauteVitesse)*
+- [x] Le mur ne recharge pas les charges de mouvement (sauf option). *(MovementTests › Mur_NeRechargePasLesChargesParDefaut)*
+- [x] Charges : 3 au départ ; saut au sol gratuit, saut en l'air 1 charge ; rien sans charge ; recharge 1 s au sol, 3 s en l'air. *(MovementTests › Charges_*)*
+- [x] Dash : 14 m/s vers l'avant sans entrée, dans la direction de l'entrée sinon ; une vitesse plus haute est redirigée sans perte ; annule la chute ; 0.25 s entre deux dashs ; en l'air : saut + deux dashs puis plus rien. *(MovementTests › Dash_*, Charges_EnLAirSautPuisDeuxDashs_PuisPlusRien ; Play Mode : dash au sol 14.00 m/s, 3 → 2 charges)*
+- [x] Dash : 11 ticks (0.18 s), 6.5 m, sortie à 12 m/s depuis l'arrêt. *(MovementTests › Dash_DureDistanceEtVitesseDeSortie_AuSol ; Play Mode 2026-11-12 : 35.5 m/s pendant, 12.0 m/s à 0.2 s, 10.0 m en 0.5 s ; avant : 14 → 7.5 m/s, 4.2 m)*
+- [x] Dash en l'air : altitude constante pendant le dash. *(MovementTests › Dash_EnLAirNiGraviteNiChutePendantLeDash ; Play Mode : chute de 1.7 m en 0.5 s contre 4.0 m avant)*
+- [x] Pas de chute brutale à la sortie au sol (≥ 12 m/s 0.1 s après). *(MovementTests › Dash_PasDeChuteBrutaleALaSortieAuSol)*
+- [x] 8 directions : direction à moins de 0.5° de l'entrée, 6.5 m. *(MovementTests › Dash_HuitDirections(0..7) ; Play Mode : 8/8 identiques, 0° d'écart)*
+- [x] En l'air à 20 m/s : plus rapide pendant le dash, puis 20 m/s gardés et redirigés. *(MovementTests › Dash_EnLAirAHauteVitesse_PlusRapidePendantPuisVitesseDAvant ; Play Mode : 20 → 35.5 m/s, contre 20 → 20 avant)*
+- [x] Enchaînements : un appui pendant un dash part dès la fin du délai ; 3 charges, le 4e appui est refusé. *(MovementTests › Dash_EnchainementsMemorisesEtCharges ; Play Mode : 3/3 avec des appuis espacés de 0.15 s ou plus, 2/3 à 0.05-0.10 s car un seul appui reste en attente ; avant : 1/3 à 0.05 s, 2/3 à 0.10-0.15 s)*
+- [x] Un saut pendant le dash le termine avec la vitesse de sortie. *(MovementTests › Dash_UnSautTermineLeDash)*
+- [x] Gain du wall jump plafonné à 20 m/s ; au-delà, vitesse conservée. *(MovementTests › WallJump_GainPlafonneA20(19, 25))*
+- [x] Profil progressif : pic sous 32 m/s, baisse à chaque tick, pas de marche à la sortie ; 6.5 m. *(MovementTests › Dash_ProfilProgressif_PicPlusBasEtSansCassure ; Play Mode 2026-11-12 : 30.3 → 14.0 m/s par pas d'≈ 1 m/s, puis 12.0 ; 6.50 m)*
+- [x] Profil constant réglable. *(MovementTests › Dash_ProfilConstantReglable)*
+- [x] Dash au sol : +1 m/s plafonné à 20, sortie ≥ 12 m/s. *(MovementTests › Dash_AuSolGagneUnMetreParSeconde(10, 15, 19.5, 22) ; Play Mode : 10 → 12, 15 → 16, 19.5 → 20, 22 → 22)*
+- [x] Dash en l'air dans 4 directions : vitesse exactement conservée et redirigée, sans chute pendant le dash. *(MovementTests › Dash_EnLAirAucunGainEtRedirection(0, 2, 4, 6) ; Play Mode : 15.00 m/s dans les 4 directions, pic transitoire 27.6 m/s, 0.00 m de chute)*
+- [x] Dash-jump réussi pendant le dash ou juste après : +3 m/s ; plafonné à 20. *(MovementTests › DashJump_ReussiPendantLeDash, DashJump_ReussiJusteApresLeDash, DashJump_PlafonneA20 ; Play Mode : 15 → 18, 19 → 20, 22 → 22)*
+- [x] Dash-jump raté hors fenêtre : pas de +3, retard affiché. *(MovementTests › DashJump_RateHorsFenetre ; Play Mode : « raté +117 ms »)*
+- [x] Pas de dash-jump en l'air. *(MovementTests › DashJump_PasEnLAir)*
+- [ ] Le HUD des charges s'affiche sous le viseur. *(pas vérifié à l'écran : pas de capture d'écran par la CLI ; composant présent sur le prefab et sur l'instance de la scène)*
+- [x] Le ressenti des murs et du dash. *(playtest de l'utilisateur, 2026-11-12 : « le mouvement de base est validé »)*
+- [x] Le bonus de glissade est plafonné par le plafond commun (+2 jusqu'à 20 m/s, rien au-delà). *(MovementTests › Glissade_BonusPlafonneParLePlafondCommun(17, 19, 25))*
 - [x] Entrer en glissade à 7.5 m/s donne +2 m/s et baisse la capsule à 0.9 m. *(MovementTests › Glissade_EntreeDonneLeBonusEtBaisseLaCapsule)*
 - [x] Sous 6 m/s, la touche accroupit ; la marche accroupie plafonne à 3.5 m/s. *(MovementTests › Glissade_SousLaVitesseMinimaleOnSAccroupit)*
 - [x] Le bonus de glissade ne revient qu'après 0.8 s. *(MovementTests › Glissade_LeBonusARechargeDe08s)*
@@ -150,6 +187,19 @@ Glissade : Ctrl gauche ou C (B / Rond à la manette), **maintenue**. Le debug af
 6. Verticalité : monter de 2 m en 2 m avec le double saut jusqu'à 16 m.
 7. Lisibilité générale : la lumière et les couleurs suffisent-elles à 100 m et plus ?
 
+## Playtest — dash v3 et dash-jump (checklist courte)
+
+1. **Dash à l'arrêt :** poussée forte qui s'amortit en douceur (≈ 30 m/s → 12 m/s sur 0.3 s),
+   sans marche brutale à la fin.
+2. **Dash au sol en course :** la vitesse de sortie vaut la vitesse d'avant + 1 m/s (debug
+   « Dernier dash »), au moins 12 m/s.
+3. **Dash-jump :** sauter pendant le dash au sol ou juste après (0.15 s) : debug « Dash-jump :
+   RÉUSSI », +3 m/s. Trop tard : « raté, trop tard de N ms ». La fenêtre te semble-t-elle juste ?
+4. **Dash en l'air :** dans toutes les directions, ta vitesse ressort identique, juste redirigée.
+5. **Plafond :** au-dessus de 20 m/s, ni le dash ni le dash-jump ni le wall jump n'ajoutent de
+   vitesse ; elle est conservée.
+6. **HUD :** les 3 segments sous le viseur se vident et se rechargent.
+
 ## History
 
 - 2026-11-11 : tests de l'étape 1.
@@ -157,3 +207,7 @@ Glissade : Ctrl gauche ou C (B / Rond à la manette), **maintenue**. Le debug af
 - 2026-11-11 : tests de la glissade et de l'accroupi.
 - 2026-11-11 : tests de conservation de l'élan, de durée et du passage bas (D-013).
 - 2026-11-11 : vérifications de la scène agrandie.
+- 2026-11-11 : tests du wall slide et du wall jump.
+- 2026-11-12 : murs v2, charges et dash.
+- 2026-11-12 : dash v2, plafond du wall jump, HUD.
+- 2026-11-12 : dash v3, dash-jump, plafond commun.

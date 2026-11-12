@@ -78,6 +78,7 @@ namespace ItHunts.Player
                 input.JumpHeld = _reader.JumpHeld;
                 input.JumpPressedTick = _reader.JumpPressedTick;
                 input.SlideHeld = _reader.SlideHeld;
+                input.DashPressedTick = _reader.DashPressedTick;
             }
 
             MovementMotor.Step(ref _state, input, settings, Time.fixedDeltaTime, _probe);
@@ -97,6 +98,7 @@ namespace ItHunts.Player
             int tick = _state.Tick;
             int consumed = _state.LastConsumedJumpPressTick;
             _probe.SetHeight(settings.capsuleHeight);
+            _probe.ResetContacts();
             _state = MovementState.Create(position);
             _state.Tick = tick;
             _state.LastConsumedJumpPressTick = consumed;
@@ -116,6 +118,8 @@ namespace ItHunts.Player
                 _controller.stepOffset = Mathf.Min(settings.stepOffset, settings.crouchHeight);
             _controller.minMoveDistance = 0f;
         }
+
+        private void OnControllerColliderHit(ControllerColliderHit hit) => _probe?.ReportHit(hit.normal);
 
         private void OnDrawGizmos()
         {

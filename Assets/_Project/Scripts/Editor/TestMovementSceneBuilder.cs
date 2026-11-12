@@ -1,5 +1,6 @@
 using System.IO;
 using ItHunts.Debugging;
+using ItHunts.Hud;
 using ItHunts.Input;
 using ItHunts.Player;
 using ItHunts.Settings;
@@ -34,6 +35,18 @@ namespace ItHunts.EditorTools
                     "Les modifications faites à la main dans ces deux fichiers seront perdues.\n" +
                     "Les réglages (Movement_Default, Camera_Default) sont conservés.", "Reconstruire", "Annuler"))
                 Debug.Log(Build(overwrite: true));
+        }
+
+        /// <summary>Reconstruit seulement le prefab joueur (la scène garde son instance, liée au prefab).</summary>
+        public static string RebuildPlayerPrefab()
+        {
+            var movement = LoadOrCreate<MovementSettings>(MovementPath);
+            var camera = LoadOrCreate<CameraSettings>(CameraPath);
+            var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsPath);
+            if (actions == null)
+                return $"ERREUR : {ActionsPath} introuvable.";
+            BuildPlayerPrefab(movement, camera, actions);
+            return $"OK : {PlayerPrefabPath} reconstruit.";
         }
 
         /// <summary>Point d'entrée (aussi pour la CLI). Renvoie un résumé.</summary>
@@ -129,6 +142,7 @@ namespace ItHunts.EditorTools
                 var look = root.AddComponent<PlayerLook>();
                 root.AddComponent<MovementDebugOverlay>();
                 root.AddComponent<DebugTeleporter>();
+                root.AddComponent<MovementHud>();
 
                 SetRef(motor, "settings", movement);
                 SetRef(look, "settings", cameraSettings);

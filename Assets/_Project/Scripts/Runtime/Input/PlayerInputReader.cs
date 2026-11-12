@@ -23,6 +23,7 @@ namespace ItHunts.Input
         private InputAction _lookGamepad;
         private InputAction _jump;
         private InputAction _slide;
+        private InputAction _dash;
         private InputAction _toggleDebug;
         private InputAction _pause;
 
@@ -37,6 +38,7 @@ namespace ItHunts.Input
         public bool JumpHeld { get; private set; }
         public int JumpPressedTick { get; private set; } = MovementState.NeverTick;
         public bool SlideHeld { get; private set; }
+        public int DashPressedTick { get; private set; } = MovementState.NeverTick;
         public bool ToggleDebugPressed { get; private set; }
         public bool PausePressed { get; private set; }
 
@@ -54,6 +56,7 @@ namespace ItHunts.Input
             _lookGamepad = actions.FindAction("Player/LookGamepad", throwIfNotFound: true);
             _jump = actions.FindAction("Player/Jump", throwIfNotFound: true);
             _slide = actions.FindAction("Player/Slide", throwIfNotFound: true);
+            _dash = actions.FindAction("Player/Dash", throwIfNotFound: true);
             _toggleDebug = actions.FindAction("Player/ToggleDebug", throwIfNotFound: true);
             _pause = actions.FindAction("Player/Pause", throwIfNotFound: true);
         }
@@ -67,6 +70,8 @@ namespace ItHunts.Input
             if (_jump.WasPressedThisFrame())
                 JumpPressedTick = _motor != null ? _motor.NextTick : 0;
             SlideHeld = _slide.IsPressed();
+            if (_dash.WasPressedThisFrame())
+                DashPressedTick = _motor != null ? _motor.NextTick : 0;
             ToggleDebugPressed = _toggleDebug.WasPressedThisFrame();
             PausePressed = _pause.WasPressedThisFrame();
         }
