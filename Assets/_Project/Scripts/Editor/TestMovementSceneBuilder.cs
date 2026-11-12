@@ -1,4 +1,5 @@
 using System.IO;
+using ItHunts.Audio;
 using ItHunts.Debugging;
 using ItHunts.Hud;
 using ItHunts.Input;
@@ -10,6 +11,8 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace ItHunts.EditorTools
 {
@@ -26,6 +29,8 @@ namespace ItHunts.EditorTools
         private const string MovementPath = SettingsDir + "/Movement_Default.asset";
         private const string CameraPath = SettingsDir + "/Camera_Default.asset";
         private const string MagnetismPath = SettingsDir + "/Magnetism_Default.asset";
+        private const string FeedbackPath = SettingsDir + "/MagnetismFeedback_Default.asset";
+        private const string PostProcessPath = SettingsDir + "/PostProcess_TestMovement.asset";
         private const string PlayerPrefabPath = PrefabDir + "/Player.prefab";
         private const string ScenePath = "Assets/Scenes/Test_Movement.unity";
 
@@ -45,10 +50,11 @@ namespace ItHunts.EditorTools
             var movement = LoadOrCreate<MovementSettings>(MovementPath);
             var camera = LoadOrCreate<CameraSettings>(CameraPath);
             var magnetism = LoadOrCreate<MagnetismOrbSettings>(MagnetismPath);
+            var feedback = LoadOrCreate<MagnetismFeedbackSettings>(FeedbackPath);
             var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsPath);
             if (actions == null)
                 return $"ERREUR : {ActionsPath} introuvable.";
-            BuildPlayerPrefab(movement, camera, magnetism, actions);
+            BuildPlayerPrefab(movement, camera, magnetism, feedback, actions);
             return $"OK : {PlayerPrefabPath} reconstruit.";
         }
 
@@ -63,13 +69,14 @@ namespace ItHunts.EditorTools
             var movement = LoadOrCreate<MovementSettings>(MovementPath);
             var camera = LoadOrCreate<CameraSettings>(CameraPath);
             var magnetism = LoadOrCreate<MagnetismOrbSettings>(MagnetismPath);
+            var feedback = LoadOrCreate<MagnetismFeedbackSettings>(FeedbackPath);
             var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsPath);
             if (actions == null)
                 return $"ERREUR : {ActionsPath} introuvable.";
 
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefabPath);
             if (prefab == null || overwrite)
-                prefab = BuildPlayerPrefab(movement, camera, magnetism, actions);
+                prefab = BuildPlayerPrefab(movement, camera, magnetism, feedback, actions);
 
             if (File.Exists(ScenePath) && !overwrite)
                 return $"OK (scène existante conservée : {ScenePath}). Pas fixe = {Time.fixedDeltaTime:0.#####} s.";
@@ -98,7 +105,7 @@ namespace ItHunts.EditorTools
         // ---------- Prefab joueur ----------
 
         private static GameObject BuildPlayerPrefab(MovementSettings movement, CameraSettings cameraSettings,
-            MagnetismOrbSettings magnetism, InputActionAsset actions)
+            MagnetismOrbSettings magnetism, MagnetismFeedbackSettings feedback, InputActionAsset actions)
         {
             var root = new GameObject("Player");
             try
@@ -123,6 +130,7 @@ namespace ItHunts.EditorTools
                 unityCamera.farClipPlane = 1000f;
                 unityCamera.clearFlags = CameraClearFlags.SolidColor;
                 unityCamera.backgroundColor = new Color(0.04f, 0.04f, 0.06f);
+                unityCamera.GetUniversalAdditionalCameraData().renderPostProcessing = true;   // bloom (lueurs)
                 camGo.AddComponent<CinemachineBrain>();
                 camGo.AddComponent<AudioListener>();
 
@@ -154,6 +162,8 @@ namespace ItHunts.EditorTools
                 Material markerMat = UnlitMat("Orb_Marker", "Universal Render Pipeline/Unlit", Color.white);
                 Renderer aimMarker = Marker("Marque de répulsion (visée)", root.transform, 0.35f, markerMat);
                 Renderer impactMarker = Marker("Marque de répulsion (impact)", root.transform, 0.6f, markerMat);
+                Renderer anchorMarker = Marker("Ancre de traction", root.transform, 0.3f, markerMat);
+                Renderer tractionFlash = Marker("Éclat de traction", root.transform, 0.5f, markerMat);
 
                 var vcamGo = new GameObject("CinemachineCamera");
                 vcamGo.transform.SetParent(rig.transform, false);
@@ -177,6 +187,7 @@ namespace ItHunts.EditorTools
                 root.AddComponent<DebugTeleporter>();
                 root.AddComponent<MovementHud>();
                 var orbView = root.AddComponent<MagnetismOrbView>();
+                var audio = root.AddComponent<MagnetismAudio>();
 
                 SetRef(motor, "settings", movement);
                 SetRef(motor, "magnetism", magnetism);
@@ -184,6 +195,11 @@ namespace ItHunts.EditorTools
                 SetRef(orbView, "line", line);
                 SetRef(orbView, "aimMarker", aimMarker);
                 SetRef(orbView, "impactMarker", impactMarker);
+                SetRef(orbView, "anchorMarker", anchorMarker);
+                SetRef(orbView, "tractionFlash", tractionFlash);
+                SetRef(orbView, "settings", feedback);
+                SetRef(audio, "settings", feedback);
+                SetRef(root.GetComponent<MovementHud>(), "feedback", feedback);
                 SetRef(look, "settings", cameraSettings);
                 SetRef(look, "viewRig", rig.transform);
                 SetRef(look, "virtualCamera", vcam);
@@ -246,6 +262,12 @@ namespace ItHunts.EditorTools
             Material platformMat = Mat("Greybox_Platform", new Color(0.32f, 0.42f, 0.55f));
             Material rampMat = Mat("Greybox_Ramp", new Color(0.55f, 0.42f, 0.3f));
             Material wallMat = Mat("Greybox_Wall", new Color(0.3f, 0.3f, 0.34f));
+
+            // Post-process : bloom à seuil 1, seules les couleurs HDR (orbe, traits, marques) brillent.
+            var volumeGo = new GameObject("Post-process (bloom)");
+            var volume = volumeGo.AddComponent<Volume>();
+            volume.isGlobal = true;
+            volume.sharedProfile = LoadOrCreatePostProcess();
 
             var level = new GameObject("Level").transform;
 
@@ -637,6 +659,32 @@ namespace ItHunts.EditorTools
             mat.SetColor("_BaseColor", color);
             EditorUtility.SetDirty(mat);
             return mat;
+        }
+
+        /// <summary>Profil de post-process de la scène de test (créé une fois, ensuite conservé comme les réglages).</summary>
+        private static VolumeProfile LoadOrCreatePostProcess()
+        {
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(PostProcessPath);
+            if (profile == null)
+            {
+                profile = ScriptableObject.CreateInstance<VolumeProfile>();
+                AssetDatabase.CreateAsset(profile, PostProcessPath);
+            }
+
+            if (!profile.TryGet(out Bloom bloom))
+            {
+                bloom = profile.Add<Bloom>(true);
+                bloom.name = "Bloom";
+                AssetDatabase.AddObjectToAsset(bloom, profile);
+                bloom.threshold.Override(1f);
+                bloom.intensity.Override(1.2f);
+                bloom.scatter.Override(0.65f);
+                EditorUtility.SetDirty(bloom);
+                EditorUtility.SetDirty(profile);
+                AssetDatabase.SaveAssets();
+            }
+
+            return profile;
         }
 
         private static Material UnlitMat(string name, string shaderName, Color color)

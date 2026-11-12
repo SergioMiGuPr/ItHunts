@@ -159,6 +159,8 @@ namespace ItHunts.Orbs
 
                     m.Tracting = true;
                     m.AttractCharges -= 1f;
+                    m.LastTractionStartTick = tick;
+                    m.TractionNormal = h.Normal;
                     m.LastMode = MagnetMode.Attraction;
                     m.LastTractionStartSpeed = s.Velocity.magnitude;
                     m.LastTractionPeakSpeed = m.LastTractionStartSpeed;

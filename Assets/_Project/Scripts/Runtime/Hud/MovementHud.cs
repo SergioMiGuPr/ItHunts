@@ -9,7 +9,9 @@ namespace ItHunts.Hud
     /// <summary>
     /// HUD minimal toujours visible, sous le viseur :
     /// - rangée 1 : charges de mouvement (saut en l'air, dash) ;
-    /// - rangée 2 : charges d'attraction (bleu) puis la répulsion (orange : pleine, ou remplissage et temps restant).
+    /// - rangée 2 : charges d'attraction (bleu) puis la répulsion (orange : pleine, ou remplissage et temps restant) ;
+    ///   le groupe d'un mode refusé clignote en rouge ;
+    /// - viseur : anneau bleu quand une traction est possible, anneau orange quand la répulsion l'est.
     /// Segments pleins, vides, ou en cours de recharge. Dessiné dans la zone de la caméra du joueur (prêt pour l'écran
     /// partagé). Version greybox en IMGUI ; le vrai HUD viendra à l'étape 5.
     /// </summary>
@@ -17,8 +19,8 @@ namespace ItHunts.Hud
     {
         [SerializeField] private Color filledColor = new Color(0.35f, 0.85f, 1f, 0.95f);
         [SerializeField] private Color rechargeColor = new Color(0.35f, 0.85f, 1f, 0.45f);
-        [SerializeField] private Color attractColor = new Color(0.25f, 0.45f, 1f, 0.95f);
-        [SerializeField] private Color repelColor = new Color(1f, 0.55f, 0.1f, 0.95f);
+        [Tooltip("Couleurs de l'attraction, de la répulsion et du refus, anneaux du viseur, clignotement.")]
+        [SerializeField] private MagnetismFeedbackSettings feedback;
         [SerializeField] private Color emptyColor = new Color(0f, 0f, 0f, 0.55f);
         [SerializeField] private Color crosshairColor = new Color(1f, 1f, 1f, 0.85f);
         [SerializeField, Min(1f)] private float segmentWidth = 22f;
@@ -31,6 +33,8 @@ namespace ItHunts.Hud
         private PlayerMotor _motor;
         private Camera _camera;
         private GUIStyle _timeStyle;
+        private Texture2D _attractRing, _repelRing;
+        private float _attractRingKey = -1f, _repelRingKey = -1f;
 
         private void Awake()
         {
@@ -49,6 +53,7 @@ namespace ItHunts.Hud
             var center = new Vector2(pixels.x + pixels.width * 0.5f, Screen.height - (pixels.y + pixels.height * 0.5f));
 
             Fill(new Rect(center.x - 2f, center.y - 2f, 4f, 4f), crosshairColor);
+            DrawRings(center);
 
             // Rangée 1 : charges de mouvement.
             float y = center.y + offsetBelowCrosshair;
@@ -56,7 +61,7 @@ namespace ItHunts.Hud
             if (count > 0)
             {
                 float total = Width(count);
-                Segments(center.x - total * 0.5f, y, count, Mathf.Max(0f, _motor.State.Charges), filledColor, rechargeColor);
+                Segments(center.x - total * 0.5f, y, count, Mathf.Max(0f, _motor.State.Charges), filledColor, rechargeColor, emptyColor);
             }
 
             // Rangée 2 : attraction (charges) et répulsion (charge unique).
@@ -64,20 +69,30 @@ namespace ItHunts.Hud
             if (mc == null)
                 return;
             MagnetismState m = _motor.Magnetism;
+            Color attractColor = Opaque(feedback != null ? feedback.attractColor : new Color(0.25f, 0.45f, 1f));
+            Color repelColor = Opaque(feedback != null ? feedback.repelColor : new Color(1f, 0.55f, 0.1f));
+            bool attractBlink = Blink(m, MagnetMode.Attraction);
+            bool repelBlink = Blink(m, MagnetMode.Repulsion);
+            if (attractBlink)
+                attractColor = feedback.refusalColor;
+            if (repelBlink)
+                repelColor = feedback.refusalColor;
             y += segmentHeight + rowGap;
             int attract = mc.attractCharges;
             float row = Width(attract) + groupGap + segmentWidth;
             float x = center.x - row * 0.5f;
             Color attractRecharge = attractColor;
             attractRecharge.a *= 0.45f;
-            Segments(x, y, attract, m.AttractCharges < 0f ? attract : m.AttractCharges, attractColor, attractRecharge);
+            Segments(x, y, attract, m.AttractCharges < 0f ? attract : m.AttractCharges, attractColor, attractRecharge,
+                attractBlink ? feedback.refusalColor : emptyColor);
 
             float repelX = x + Width(attract) + groupGap;
             float remaining = RepelRemaining(m, mc);
             float fill = mc.repelCooldown > 0f ? 1f - remaining / mc.repelCooldown : 1f;
             Color repelRecharge = repelColor;
             repelRecharge.a *= 0.45f;
-            Segments(repelX, y, 1, remaining > 0f ? Mathf.Clamp01(fill) : 1f, repelColor, repelRecharge);
+            Segments(repelX, y, 1, remaining > 0f ? Mathf.Clamp01(fill) : 1f, repelColor, repelRecharge,
+                repelBlink ? feedback.refusalColor : emptyColor);
 
             if (remaining > 0f)
             {
@@ -85,6 +100,72 @@ namespace ItHunts.Hud
                 _timeStyle.normal.textColor = repelColor;
                 GUI.Label(new Rect(repelX + segmentWidth + 4f, y - 6f, 60f, 18f), $"{remaining:0.0} s", _timeStyle);
             }
+        }
+
+        private static Color Opaque(Color c) => new Color(c.r, c.g, c.b, 0.95f);
+
+        private bool Blink(in MagnetismState m, MagnetMode mode) =>
+            feedback != null && MagnetismFeedback.RefusalBlinkOn(m, mode, _motor.State.Tick, Time.fixedDeltaTime,
+                feedback.refusalFlashDuration, feedback.refusalBlinkPeriod);
+
+        /// <summary>Anneaux du viseur : bleu (traction possible) à l'intérieur, orange (répulsion possible) autour.</summary>
+        private void DrawRings(Vector2 center)
+        {
+            if (feedback == null || _motor.MagnetismSettings == null)
+                return;
+            MagnetismState m = _motor.Magnetism;
+            if (MagnetismFeedback.CanAttract(m))
+                DrawRing(center, Ring(ref _attractRing, ref _attractRingKey, feedback.attractRingRadius), Opaque(feedback.attractColor));
+            if (MagnetismFeedback.CanRepel(m))
+                DrawRing(center, Ring(ref _repelRing, ref _repelRingKey, feedback.repelRingRadius), Opaque(feedback.repelColor));
+        }
+
+        private static void DrawRing(Vector2 center, Texture2D tex, Color color)
+        {
+            Color previous = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(new Rect(center.x - tex.width * 0.5f, center.y - tex.height * 0.5f, tex.width, tex.height), tex);
+            GUI.color = previous;
+        }
+
+        /// <summary>Texture d'anneau anticrénelée, refaite seulement si le rayon ou l'épaisseur change.</summary>
+        private Texture2D Ring(ref Texture2D tex, ref float key, float radius)
+        {
+            float thickness = feedback.ringThickness;
+            float k = radius * 1000f + thickness;
+            if (tex != null && Mathf.Approximately(key, k))
+                return tex;
+            if (tex != null)
+                Destroy(tex);
+            int size = Mathf.CeilToInt((radius + thickness) * 2f) + 4;
+            tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp,
+                hideFlags = HideFlags.DontSave,
+            };
+            var pixels = new Color32[size * size];
+            float c = (size - 1) * 0.5f;
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float d = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c));
+                float a = Mathf.Clamp01(thickness * 0.5f + 0.5f - Mathf.Abs(d - radius));
+                pixels[y * size + x] = new Color32(255, 255, 255, (byte)(a * 255f));
+            }
+
+            tex.SetPixels32(pixels);
+            tex.Apply();
+            key = k;
+            return tex;
+        }
+
+        private void OnDestroy()
+        {
+            if (_attractRing != null)
+                Destroy(_attractRing);
+            if (_repelRing != null)
+                Destroy(_repelRing);
         }
 
         /// <summary>Temps restant avant que la répulsion soit de nouveau prête (s).</summary>
@@ -98,12 +179,12 @@ namespace ItHunts.Hud
 
         private float Width(int count) => count * segmentWidth + (count - 1) * segmentGap;
 
-        private void Segments(float x, float y, int count, float value, Color full, Color partial)
+        private void Segments(float x, float y, int count, float value, Color full, Color partial, Color empty)
         {
             for (int i = 0; i < count; i++)
             {
                 var rect = new Rect(x + i * (segmentWidth + segmentGap), y, segmentWidth, segmentHeight);
-                Fill(rect, emptyColor);
+                Fill(rect, empty);
                 float fill = Mathf.Clamp01(value - i);
                 if (fill >= 1f)
                     Fill(rect, full);

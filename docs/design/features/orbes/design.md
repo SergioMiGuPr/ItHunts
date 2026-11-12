@@ -49,6 +49,18 @@ l'arme », « le mouvement est la survie ».
 8. **Dégâts par amélioration :** une amélioration peut donner des dégâts directs à une orbe
    (par exemple l'onde de répulsion) ou un bonus aux objets lancés. Ces dégâts s'ajoutent à
    ceux de l'environnement, sans les remplacer.
+9. **Retour du magnétisme (greybox) :**
+   - **Lueur** (bloom) : l'orbe, le trait de traction, l'ancre au point de traction et les marques
+     brillent ; le décor non. Les surfaces ne brillent pas : toutes répondent au magnétisme.
+   - **Viseur** : un anneau bleu quand une traction est possible (surface à portée, une charge
+     d'attraction), un anneau orange autour quand la répulsion l'est (surface à portée, charge prête).
+   - **Éclats** : bleu au point d'ancrage au début d'une traction, orange au point d'impact d'une
+     répulsion. Les marques gardent la même taille à l'écran au loin.
+   - **Refus** : le groupe concerné du HUD (bleu ou orange) clignote en rouge 0.3 s, avec un double bip.
+   - **Sons provisoires** (synthétisés, 2D pour le joueur local ; vrais sons à l'étape direction
+     artistique, mêmes événements) : « zip » au début de la traction,
+     bourdonnement pendant la traction dont la hauteur monte avec la vitesse, clic à la fin, coup sourd
+     et souffle à la répulsion, double bip au refus, tintement quand une charge revient.
 
 ## Valeurs
 
@@ -69,6 +81,9 @@ la télékinésie). Les charges de mouvement sont dans `MovementSettings`. Valeu
 | Mémorisation d'un appui pendant la recharge | 0.1 | s | |
 | Durée de l'état « En usage » de la répulsion (retour visuel) | 0.15 | s | |
 | Sans friction au sol après une répulsion | 0.2 | s | |
+| Clignotement du refus / période | 0.3 / 0.1 | s | |
+| Bourdonnement : hauteur à l'arrêt → à 40 m/s | 0.8 → 2 | × 110 Hz | |
+| Bloom de la scène de test : seuil / intensité | 1 / 1.2 | — | lisibilité à pleine vitesse |
 | Rayon de l'onde de répulsion / poussée | 4 / 12 | m / m/s | |
 | Vitesse d'impact mini contre un mur / dégâts | 6 / 5 | m/s / PV par m/s | |
 | Portée de la télékinésie | 15 | m | |
@@ -114,5 +129,7 @@ la télékinésie). Les charges de mouvement sont dans `MovementSettings`. Valeu
   la vitesse opposée, plafond commun, surfaces magnétiques seulement, deux boutons (D-020).
 - 2026-11-12 : après playtest : traction continue, toute surface, sans charges, recharges propres,
   aucune perte d'élan, orbe visible (D-021).
+- 2026-11-12 : retour visuel et sonore : lueur, viseur à deux anneaux, éclats, refus en rouge, sons synthétisés
+  (choix 1a 2a 3a ; réglages dans `MagnetismFeedbackSettings`).
 - 2026-11-12 : après le playtest v2 : 3 charges d'attraction (1 toutes les 3 s), répulsion unique
   (40 m, 5 s), marquage de la répulsion, HUD des charges d'attraction et de la répulsion (D-021 mise à jour).

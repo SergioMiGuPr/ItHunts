@@ -4,34 +4,40 @@
 
 ## Étape en cours
 
-**3 — Orbe de magnétisme**, en deux temps.
+**4 — Orbe de télékinésie et échange des orbes** (prochaine étape, pas encore commencée) : attraper et
+lancer des objets physiques (endurance propre), objets interactifs qui brillent, échange instantané
+entre les deux orbes. Partir de `docs/design/features/orbes/design.md` ; proposer d'abord un plan.
 
-1. **Cœur** — **fait et validé en playtest (v3, 2026-11-12)** : traction linéaire continue (clic gauche / RT maintenu, 60 m, 80 m/s² jusqu'à 30 m/s,
-   2.5 s max) sur **3 charges d'attraction** (1 toutes les 3 s), répulsion instantanée (clic droit / LT)
-   à **charge unique** (40 m, 5 s), toute surface, aucune charge de mouvement, aucune perte d'élan,
-   traction hors plafond commun ; marquage de la répulsion ; HUD des charges d'attraction et de la
-   répulsion ; orbe visible simple et trait de traction ; zone Magnétisme (F10) et grande salle de 45 m
-   (F11). 141 tests ; mesuré en Play Mode ; HUD vérifié par capture de la vue Game. Checklist :
-   `docs/design/features/orbes/testing.md`.
-2. **Retour visuel et sonore** — **prochaine étape** : lueur (bloom), viseur coloré par mode, éclat
-   au point, refus visible, sons provisoires synthétisés. Proposer d'abord un plan.
-
-L'étape 2 (mouvement de base) est **terminée et validée en playtest** (2026-11-12).
+L'étape 3 (orbe de magnétisme) est **terminée et validée en playtest** (2026-11-12).
 
 ## Feuille de route
 
 Ordre de CLAUDE.md, une étape validée en playtest avant la suivante :
-3. Magnétisme (en cours) → 4. Télékinésie et échange des orbes → 5. Vue FPS et HUD →
+3. Magnétisme (fait) → **4. Télékinésie et échange des orbes** → 5. Vue FPS et HUD →
 **5 bis. Artefacts** (système générique : tirage au hasard, pas de doublon en coop, main gauche ; puis
 le barillet, D-022 ; avant ou avec les ennemis) → 6. Ennemis et vagues → 7. Âmes et économie →
-8. Run complète → 9. Écran partagé → 10. Direction artistique → 11. Coop en ligne → 12. Build.
+8. Run complète → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
+ci-dessous) → 11. Coop en ligne → 12. Build.
+
+**Sons provisoires :** les sons actuels sont synthétisés par le code (`ProceduralSfx`). Ils seront
+remplacés par de vrais sons à l'étape 10 (skill `audio-design`), avec la même liste d'événements :
+début de traction, bourdonnement de traction (hauteur selon la vitesse), fin de traction,
+répulsion, refus, charge revenue / répulsion prête.
 
 ## Fait
 
-- 2026-11-12 — **Orbe de magnétisme, cœur (étape 3, partie 1), validé en playtest (v3).** Détail :
-  `docs/design/features/orbes/` (design, implementation, testing). Trois itérations : impulsion sur
-  surfaces magnétiques (D-020) → traction continue sur toute surface, sans charges de mouvement (D-021)
-  → 3 charges d'attraction et répulsion unique (D-021 mise à jour). Artefacts documentés (D-022).
+- 2026-11-12 — **Orbe de magnétisme (étape 3), terminée et validée en playtest.**
+  - Partie 1, cœur (v3) : traction linéaire continue (clic gauche / RT maintenu, 60 m, 80 m/s² jusqu'à
+    30 m/s, 2.5 s max) sur 3 charges d'attraction (1 toutes les 3 s), répulsion instantanée (clic droit
+    / LT) à charge unique (40 m, 5 s), toute surface, aucune charge de mouvement, aucune perte d'élan,
+    traction hors plafond commun ; HUD des charges ; zone Magnétisme (F10) et grande salle de 45 m (F11).
+  - Partie 2, retour visuel et sonore : bloom à seuil 1, lueur de l'orbe, du trait, de l'ancre et des
+    éclats ; viseur à deux anneaux ; refus en rouge dans le HUD ; sons synthétisés provisoires ;
+    réglages dans `MagnetismFeedback_Default`.
+  - 155 tests ; mesures en Play Mode ; captures de la vue Game. Détail : `docs/design/features/orbes/`.
+  - Trois itérations du cœur : impulsion sur surfaces magnétiques (D-020) → traction continue sur toute
+    surface, sans charges de mouvement (D-021) → 3 charges d'attraction et répulsion unique (D-021 mise
+    à jour). Artefacts documentés (D-022).
 
 - 2026-11-11 — Vérification de l'environnement (étape 0) :
   - Structure OK : Assets/, Packages/, ProjectSettings/ ; kit à la racine (29 skills,
@@ -114,6 +120,9 @@ Magnétisme validé le 2026-11-12 (v3) avec `Assets/_Project/Settings/Magnetism_
 - **Commun :** toute surface ; aucune charge de mouvement ; mémorisation d'un appui 0.1 s.
 
 ## Problèmes connus / à faire
+
+- **Sons provisoires** (magnétisme) : synthétisés par le code, à remplacer à l'étape 10 (skill
+  `audio-design`) en gardant les mêmes événements (début de traction, bourdonnement de traction (hauteur selon la vitesse), fin de traction, répulsion, refus, charge revenue / répulsion prête).
 
 - **À traiter avec le traqueur :** un bon joueur va presque 3 × plus vite que lui (26 m/s contre
   9-11 m/s) ; pistes notées dans `docs/design/features/boss-traqueur/design.md`.

@@ -64,6 +64,10 @@ namespace ItHunts.Orbs
         /// <summary>La répulsion peut s'appliquer au point visé (surface à portée de la répulsion).</summary>
         public bool RepelInRange;
 
+        /// <summary>Dernière traction : tick de départ et normale de la surface au point d'ancrage (retour visuel).</summary>
+        public int LastTractionStartTick;
+        public Vector3 TractionNormal;
+
         /// <summary>Dernière traction (debug) : vitesses au départ, maximale et à la fin, durée, raison de la fin.</summary>
         public float LastTractionStartSpeed;
         public float LastTractionPeakSpeed;
@@ -99,6 +103,8 @@ namespace ItHunts.Orbs
             AimPoint = Vector3.zero,
             AimNormal = Vector3.up,
             RepelInRange = false,
+            LastTractionStartTick = MovementState.NeverTick,
+            TractionNormal = Vector3.up,
             LastTractionStartSpeed = 0f,
             LastTractionPeakSpeed = 0f,
             LastTractionEndSpeed = 0f,

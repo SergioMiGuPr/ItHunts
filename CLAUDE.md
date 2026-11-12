@@ -161,6 +161,7 @@ jusqu'à l'étape 10.
 8. **Run complète** : enchaînement des salles, boss, changement de zone, mort et relance.
 9. **Écran partagé local à 2 joueurs** pour tester la coop.
 10. **Direction artistique** : guide de style, shader cel-shading et contours, lumières, puis
-    assets via Blender et Tripo.
+    assets via Blender et Tripo. **Vrais sons** (skill `audio-design`) à la place des sons
+    synthétisés provisoires (`ProceduralSfx`), avec la même liste d'événements.
 11. **Coop en ligne de 1 à 4.**
 12. **Build** et publication.

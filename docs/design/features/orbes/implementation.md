@@ -54,13 +54,26 @@ dépend de la scène.
 | `Assets/_Project/Scripts/Runtime/Movement/MovementMotor.cs` | état Traction |
 | `Assets/_Project/Scripts/Runtime/Settings/MagnetismOrbSettings.cs` | réglages (`Assets/_Project/Settings/Magnetism_Default.asset`) |
 | `Assets/_Project/Tests/EditMode/MagnetismTests.cs` | 32 tests (sol et visée factices) |
-| `Assets/_Project/Scripts/Runtime/Hud/MovementHud.cs` | charges de mouvement, d'attraction et répulsion |
+| `Assets/_Project/Scripts/Runtime/Hud/MovementHud.cs` | charges de mouvement, d'attraction et répulsion ; anneaux du viseur ; refus |
+| `Assets/_Project/Scripts/Runtime/Orbs/MagnetismFeedback.cs` | règles du viseur et du clignotement |
+| `Assets/_Project/Scripts/Runtime/Audio/ProceduralSfx.cs`, `MagnetismAudio.cs` | sons synthétisés et leur déclenchement |
+| `Assets/_Project/Scripts/Runtime/Settings/MagnetismFeedbackSettings.cs` | réglages du retour |
+| `Assets/_Project/Tests/EditMode/MagnetismFeedbackTests.cs` | 14 tests (viseur, refus, sons, bloom, prefab) |
 
 ## Build steps
 
 1. **Magnétisme, cœur** — fait (2026-11-12) ; v2 après playtest (D-021) : traction continue, toute
    surface, sans charges de mouvement, aucune perte d'élan, orbe visible simple ; v3 : charges
    d'attraction, répulsion unique, marquage et HUD ; validé en playtest.
-2. **Magnétisme, retour visuel et sonore** — à faire : lueur, viseur coloré par mode, éclat au point,
-   refus visible, sons provisoires.
+2. **Magnétisme, retour visuel et sonore** — fait et validé (2026-11-12) ; sons provisoires, remplacés à
+   l'étape direction artistique (mêmes événements) :
+   - réglages `MagnetismFeedbackSettings` (`Assets/_Project/Settings/MagnetismFeedback_Default.asset`) ;
+   - lueur : post-process activé sur la caméra du joueur, Volume global avec bloom à seuil 1 dans
+     `Test_Movement` (`Assets/_Project/Settings/PostProcess_TestMovement.asset`) ; couleurs HDR ;
+   - `MagnetismOrbView` : ancre et éclat de traction, éclat de répulsion, marques à taille constante à
+     l'écran au-delà de 8 m ;
+   - `MovementHud` : anneaux du viseur (textures générées), clignotement rouge du groupe refusé ;
+     règles dans `MagnetismFeedback` (testables) ;
+   - `ProceduralSfx` (sons synthétisés) et `MagnetismAudio` (détection des changements d'état à chaque
+     tick, bourdonnement en boucle dont `pitch` suit la vitesse).
 3. **Télékinésie et échange des orbes** — étape 4.

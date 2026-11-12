@@ -27,22 +27,32 @@ utilisent le vrai CharacterController et la vraie physique (entrées injectées,
 - [x] États de l'orbe : Prête → EnUsage → Recharge → Prête, pour chaque mode. *(MagnetismTests › Etats_PreteEnUsageRecharge)*
 - [x] Orbe visible (couleurs, recharge, trait), ressenti de la traction, charges et répulsion. *(playtest de l'utilisateur, 2026-11-12 : « tout est bon »)*
 
-## Playtest — magnétisme v3 (checklist courte)
+Retour visuel et sonore (partie 2) :
 
-F10 zone Magnétisme, F11 grande salle. HUD sous le viseur : 1re rangée charges de mouvement,
-2e rangée charges d'attraction (bleu) et répulsion (orange).
+- [x] Anneau bleu seulement si une traction est possible (surface à portée, charge entière, pas déjà en traction) ; anneau orange seulement si la répulsion l'est. *(`Assets/_Project/Tests/EditMode/MagnetismFeedbackTests.cs` › AnneauBleu_TractionPossible, AnneauOrange_RepulsionPossible)*
+- [x] Refus : le groupe du mode refusé clignote en rouge 0.3 s, l'autre non ; branché sur un vrai refus de l'orbe. *(MagnetismFeedbackTests › Refus_ClignoteEnRouge03s_SeulementLeModeRefuse, Refus_ReelDeLOrbe_FaitClignoterLeGroupe ; capture : groupe bleu en rouge)*
+- [x] Sons synthétisés non vides, durées attendues, sans saturation ; bourdonnement bouclé sans claquement ; en jeu, il joue pendant la traction (hauteur 1.64 à 28 m/s). *(MagnetismFeedbackTests › Sons_NonVidesEtDansLesBornes, Bourdonnement_BoucleSansClaquement, Sons_DeviennentDesAudioClips ; Play Mode 2026-11-12)*
+- [x] Bloom à seuil 1 dans la scène de test, post-process activé sur la caméra du joueur, réglages du retour assignés. *(MagnetismFeedbackTests › Bloom_ConfigureDansLaSceneDeTest, PrefabJoueur_PostProcessEtRetourBranches)*
+- [x] Lueur de l'orbe et du trait, ancre visible à 45 m, éclat orange, anneau orange au viseur. *(captures de la vue Game, 2026-11-12)*
+- [x] Ressenti : lisibilité à pleine vitesse, sons supportables. *(playtest de l'utilisateur, 2026-11-12 : « c'est bon » ; sons provisoires)*
 
-1. **Charges d'attraction :** 3 tractions de suite, la 4e est refusée ; une charge revient toutes les
-   3 s (HUD bleu). Le rythme te semble-t-il juste ?
-2. **Répulsion :** un seul usage, puis 5 s de recharge (HUD orange avec le temps restant) ; un second
-   appui pendant la recharge ne fait rien.
-3. **Portée et marquage :** le disque orange apparaît au viseur sur toute surface à moins de 40 m (terne
-   en recharge) ; une marque s'étend au point d'impact quand tu repousses.
-4. **Ensemble :** grande salle, enchaîne traction, relâchement, saut en l'air, répulsion : l'ensemble
-   est-il encore fort sans être abusé ?
+## Playtest — magnétisme partie 2, retour visuel et sonore (checklist courte)
+
+F11 grande salle, F10 zone Magnétisme. Active le son de la fenêtre Game.
+
+1. **Viseur :** l'anneau bleu s'allume quand une surface est à 60 m et qu'il te reste une charge
+   d'attraction ; l'anneau orange quand une surface est à 40 m et que la répulsion est prête.
+2. **Traction :** éclat bleu au point, ancre qui pulse tant que tu tires, trait lumineux ; « zip »,
+   bourdonnement qui monte avec la vitesse, clic au relâchement.
+3. **Répulsion :** éclat orange au point d'impact, coup sourd ; tintement quand elle est de nouveau prête.
+4. **Refus :** sans charge d'attraction ou pendant la recharge de la répulsion, le groupe du HUD clignote
+   en rouge avec un double bip.
+5. **Lisibilité :** la lueur t'aide-t-elle à pleine vitesse, ou gêne-t-elle ? Les sons sont-ils trop
+   présents ? (Tout se règle dans `MagnetismFeedback_Default`.)
 
 ## History
 
 - 2026-11-12 : magnétisme, partie 1.
 - 2026-11-12 : v2 après playtest (D-021).
 - 2026-11-12 : v3 : charges d'attraction, répulsion unique, marquage, HUD.
+- 2026-11-12 : partie 2, retour visuel et sonore.
