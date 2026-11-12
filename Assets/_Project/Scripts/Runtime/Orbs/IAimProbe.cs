@@ -8,6 +8,9 @@ namespace ItHunts.Orbs
         public Vector3 Point;
         public Vector3 Normal;
         public float Distance;
+
+        /// <summary>La surface touchée est un ennemi : la répulsion y part (onde), jamais la traction.</summary>
+        public bool Enemy;
     }
 
     /// <summary>

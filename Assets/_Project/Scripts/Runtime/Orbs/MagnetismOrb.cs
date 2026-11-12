@@ -48,6 +48,7 @@ namespace ItHunts.Orbs
             Vector3 aimDir = AimDirection(input.Yaw, input.Pitch);
             bool hit = aim.Raycast(eye, aimDir, cfg.attractRange, out AimHit h);
             m.AimHit = hit;
+            m.AimOnEnemy = hit && h.Enemy;
             m.AimDistance = hit ? h.Distance : 0f;
             m.AimPoint = hit ? h.Point : Vector3.zero;
             m.AimNormal = hit ? h.Normal : Vector3.up;
@@ -139,8 +140,9 @@ namespace ItHunts.Orbs
                 {
                     m.LastConsumedAttractPressTick = input.AttractPressedTick;   // déjà relâché : rien
                 }
-                else if (!hit)
+                else if (!hit || h.Enemy)
                 {
+                    // Jamais de traction vers un ennemi (D-021).
                     Refuse(ref m, tick, MagnetMode.Attraction, MagnetRefusal.RienAPortee, ref m.LastConsumedAttractPressTick, input.AttractPressedTick);
                 }
                 else

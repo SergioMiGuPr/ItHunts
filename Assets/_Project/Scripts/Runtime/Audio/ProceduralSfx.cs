@@ -105,6 +105,88 @@ namespace ItHunts.Audio
             return Normalize(s, 0.5f);
         }
 
+        /// <summary>
+        /// Impact d'un objet sur un ennemi : coup sourd (140 → 60 Hz) et craquement (bruit bref). La hauteur se règle
+        /// avec AudioSource.pitch (objet lourd : plus grave).
+        /// </summary>
+        public static float[] ImpactHit()
+        {
+            float duration = 0.25f;
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(23);
+            float phase = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float f = Mathf.Lerp(140f, 60f, t / duration);
+                phase += 2f * Mathf.PI * f / SampleRate;
+                float thump = Mathf.Sin(phase) * Mathf.Exp(-t * 18f);
+                float crack = (float)(rng.NextDouble() * 2.0 - 1.0) * Mathf.Exp(-t * 60f);
+                s[i] = thump + 0.6f * crack;
+            }
+
+            return Normalize(s, 0.9f);
+        }
+
+        /// <summary>Ennemi tué : chute de hauteur (600 → 120 Hz) et souffle bref.</summary>
+        public static float[] Kill()
+        {
+            float duration = 0.45f;
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(31);
+            float phase = 0f, low = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float u = t / duration;
+                float f = Mathf.Lerp(600f, 120f, Mathf.Sqrt(u));
+                phase += 2f * Mathf.PI * f / SampleRate;
+                float env = Mathf.Min(1f, t / 0.005f) * (1f - u);
+                float noise = (float)(rng.NextDouble() * 2.0 - 1.0);
+                low += (noise - low) * 0.15f;
+                s[i] = env * (0.8f * Mathf.Sin(phase) + 0.3f * Mathf.Sign(Mathf.Sin(phase))) + 1.5f * low * Mathf.Exp(-t * 10f);
+            }
+
+            return Normalize(s, 0.9f);
+        }
+
+        /// <summary>Objet cassé : craquement (bruit en rafales) et choc grave bref.</summary>
+        public static float[] Break()
+        {
+            float duration = 0.35f;
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(41);
+            float phase = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float noise = (float)(rng.NextDouble() * 2.0 - 1.0);
+                float bursts = 0.5f + 0.5f * Mathf.Sign(Mathf.Sin(2f * Mathf.PI * 38f * t));   // éclats successifs
+                phase += 2f * Mathf.PI * Mathf.Lerp(110f, 50f, t / duration) / SampleRate;
+                s[i] = noise * bursts * Mathf.Exp(-t * 11f) + 0.8f * Mathf.Sin(phase) * Mathf.Exp(-t * 25f);
+            }
+
+            return Normalize(s, 0.9f);
+        }
+
+        /// <summary>Ennemi étourdi : gazouillis (trois notes aiguës qui tournent).</summary>
+        public static float[] Stun()
+        {
+            float duration = 0.5f;
+            float[] s = new float[Samples(duration)];
+            float phase = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float f = 1400f + 300f * Mathf.Sin(2f * Mathf.PI * 9f * t);
+                phase += 2f * Mathf.PI * f / SampleRate;
+                float env = Mathf.Min(1f, t / 0.01f) * (1f - t / duration);
+                s[i] = env * Mathf.Sin(phase) * (0.6f + 0.4f * Mathf.Sin(2f * Mathf.PI * 6f * t));
+            }
+
+            return Normalize(s, 0.7f);
+        }
+
         public static AudioClip ToClip(string name, float[] samples)
         {
             var clip = AudioClip.Create(name, samples.Length, 1, SampleRate, false);

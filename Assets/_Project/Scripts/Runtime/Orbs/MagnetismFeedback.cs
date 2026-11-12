@@ -10,7 +10,7 @@ namespace ItHunts.Orbs
     public static class MagnetismFeedback
     {
         /// <summary>Anneau bleu : une traction peut démarrer (surface à portée de l'attraction et une charge).</summary>
-        public static bool CanAttract(in MagnetismState m) => m.AimHit && !m.Tracting && m.AttractCharges >= 1f;
+        public static bool CanAttract(in MagnetismState m) => m.AimHit && !m.AimOnEnemy && !m.Tracting && m.AttractCharges >= 1f;
 
         /// <summary>Anneau orange : la répulsion peut s'appliquer (surface à portée de la répulsion, charge prête).</summary>
         public static bool CanRepel(in MagnetismState m) => m.RepelInRange && m.RepelStatus == OrbStatus.Prete;

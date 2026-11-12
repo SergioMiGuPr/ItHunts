@@ -129,18 +129,27 @@ namespace ItHunts.Player
             {
                 _grabProbe.Mask = telekinesis.aimMask;
                 _grabProbe.IgnoreId = _tk.HeldId;
+                _grabProbe.Settings = telekinesis;
                 command = TelekinesisOrb.Step(ref _tk, _state, input, telekinesis, settings, dt, _grabProbe);
             }
 
+            // Yeux au début du tick : c'est de là que le joueur voyait la scène au moment du clic (le rayon du lancer en
+            // part ; partir des yeux après le mouvement décalait l'impact d'un tick de déplacement, 0.13 m à 7.5 m/s).
+            Vector3 eyeAtClick = MagnetismOrb.EyePosition(_state, settings);
             MovementMotor.Step(ref _state, input, settings, dt, _probe);
             _currentPosition = transform.position;
+
+            // Répulsion partie ce tick : onde au point visé (objets et ennemis repoussés, D-027).
+            if (magnetism != null && _magnet.LastRepelTick == _state.Tick)
+                ItHunts.Combat.RepulsionWave.Apply(_magnet.LastRepelPoint, magnetism,
+                    _holder != null && _holder.Held != null ? _holder.Held.Body : null);
 
             if (HasTelekinesis)
             {
                 Vector3 eye = MagnetismOrb.EyePosition(_state, settings);
                 Vector3 eyeVelocity = (eye - _lastEye) / dt;     // déplacement réel des yeux ce tick (collisions, accroupi)
                 Vector3 aimDir = MagnetismOrb.AimDirection(input.Yaw, input.Pitch);
-                if (!_holder.Apply(command, telekinesis, eye, _state.Velocity))
+                if (!_holder.Apply(command, telekinesis, eyeAtClick, _state.Velocity))
                     TelekinesisOrb.NotifyLost(ref _tk, _state.Tick);
                 if (_tk.Holding && !_holder.Drive(telekinesis, eye, aimDir, eyeVelocity, dt))
                     TelekinesisOrb.NotifyLost(ref _tk, _state.Tick);

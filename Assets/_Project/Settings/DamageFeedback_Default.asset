@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2612d8b5af0ed584aadfac280127ff71, type: 3}
+  m_Name: DamageFeedback_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.DamageFeedbackSettings
+  smallColor: {r: 1, g: 1, b: 1, a: 1}
+  mediumColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  bigColor: {r: 1, g: 0.25, b: 0.15, a: 1}
+  killColor: {r: 1, g: 0.1, b: 0.1, a: 1}
+  numberDuration: 1
+  numberRise: 1.2
+  numberBaseSize: 18
+  numberSizePerDamage: 0.15
+  numberMaxSize: 40
+  healthBarDistance: 45
+  healthBarWidth: 60
+  healthBarHeight: 6
+  flashDuration: 0.25
+  flashBaseSize: 0.4
+  flashSizePerDamage: 0.02
+  flashMaxSize: 2.5
+  flashIntensity: 4
+  targetFlashDuration: 0.1
+  targetFlashIntensity: 2
+  areaColor: {r: 1, g: 0.6, b: 0.15, a: 1}
+  areaRingDuration: 0.35
+  areaRingIntensity: 2.5
+  debrisCount: 6
+  debrisLifetime: 1.2
+  debrisSpeed: 5
+  stunColor: {r: 1, g: 0.9, b: 0.2, a: 1}
+  stunGlowIntensity: 1.5
+  durabilityPipSize: 7
+  durabilityFull: {r: 0.65, g: 0.4, b: 1, a: 0.95}
+  durabilityUsed: {r: 0, g: 0, b: 0, a: 0.6}
+  hitVolume: 0.9
+  killVolume: 1
+  breakVolume: 0.9
+  stunVolume: 0.8
+  hitPitchLight: 1.5
+  hitPitchHeavy: 0.7
+  soundMinDistance: 5
+  soundMaxDistance: 80

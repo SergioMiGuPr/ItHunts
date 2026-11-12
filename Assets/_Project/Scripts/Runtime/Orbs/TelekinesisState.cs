@@ -38,6 +38,9 @@ namespace ItHunts.Orbs
         public float Mass;
         public float Distance;
         public Vector3 Point;
+
+        /// <summary>Angle entre le viseur et l'objet (degrés) : 0 si le rayon exact le touche.</summary>
+        public float Angle;
     }
 
     /// <summary>
@@ -64,6 +67,9 @@ namespace ItHunts.Orbs
         public int AimId;
         public bool AimTooHeavy;
         public float AimDistance;
+
+        /// <summary>Angle du viseur à l'objet sélectionné (0 : touché par le rayon exact ; sinon, aide à la visée).</summary>
+        public float AimAngle;
 
         /// <summary>Dernier objet lancé (retour visuel) et dernière action.</summary>
         public int LastThrownId;

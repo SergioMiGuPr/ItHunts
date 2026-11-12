@@ -61,6 +61,9 @@ namespace ItHunts.Orbs
         public Vector3 AimPoint;
         public Vector3 AimNormal;
 
+        /// <summary>Le point visé est sur un ennemi : pas de traction (la répulsion reste possible).</summary>
+        public bool AimOnEnemy;
+
         /// <summary>La répulsion peut s'appliquer au point visé (surface à portée de la répulsion).</summary>
         public bool RepelInRange;
 

@@ -134,7 +134,8 @@ namespace ItHunts.Debugging
             };
             Grabbable aimed = t.AimHit ? Grabbable.Find(t.AimId) : null;
             string aim = aimed == null ? $"rien d'attrapable (≤ {tc.range:0} m)"
-                : $"{aimed.name} ({aimed.Mass:0} kg{(t.AimTooHeavy ? ", TROP LOURD" : "")}) à {t.AimDistance:0.0} m";
+                : $"{aimed.name} ({aimed.Mass:0} kg{(t.AimTooHeavy ? ", TROP LOURD" : "")}) à {t.AimDistance:0.0} m" +
+                  (t.AimAngle > 0f ? $", aide {t.AimAngle:0.0}° / cône {GrabAssist.ConeAngle(tc, t.AimDistance):0.0}°" : ", visée exacte");
             _text.AppendLine($"Télékinésie : {status}   Visée : {aim}");
             Grabbable held = _motor.Holder != null ? _motor.Holder.Held : null;
             if (held != null)

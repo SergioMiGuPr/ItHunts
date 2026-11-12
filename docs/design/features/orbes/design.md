@@ -49,18 +49,46 @@ l'arme », « le mouvement est la survie ».
    pas** : elle revient 5 s après chaque usage ; un appui juste avant est mémorisé un court instant.
    **Marquage :** quand une surface est à portée, un disque orange marque au viseur le point où la
    répulsion s'appliquera (terne pendant la recharge) ; à l'usage, une marque s'étend puis s'efface au
-   point d'impact. Au point visé, une **onde** bouscule les ennemis dans son rayon. Un ennemi qui
-   percute un mur au-dessus d'une vitesse d'impact prend des dégâts proportionnels. **Sans effet
-   sur le boss.**
-5. **Attraper (télékinésie, violet) :** F / X attrape l'objet visé (à portée, sous la
-   masse maximale) : il **vole jusqu'au joueur** (vitesse d'approche, il ralentit en arrivant), puis
+   point d'impact. **Onde (D-027)** : au point visé (surface ou ennemi), une onde de **4 m** repousse,
+   en plus de propulser le joueur, les objets déplaçables par la télékinésie et les ennemis, loin du point
+   et un peu vers le haut : **16 m/s** pour un objet de 15 kg ou un ennemi de 80 kg, de ×0.35 (lourd) à
+   ×1.3 (léger) selon la masse, moitié moins au bord. Un objet accroché (lustre) est décroché et tombe
+   droit. Jamais l'objet tenu ni les joueurs. **Étourdissement** : un ennemi repoussé qui percute un mur
+   ou un obstacle solide à **6 m/s** ou plus est **étourdi 1.5 s** : il ne bouge plus (le factice mobile
+   s'arrête), trois étoiles tournent au-dessus de sa tête, il luit en jaune, gazouillis. Un ennemi
+   étourdi pourra être attrapé par la télékinésie (prévu pour la goule : étape des ennemis). Plus tard :
+   des dégâts quand il percute le mur. **Sans effet sur le boss.**
+5. **Attraper (télékinésie, violet) :** F / X attrape l'objet sélectionné (à portée, sous la
+   masse maximale). **Aide à la visée (D-026)** : un objet est sélectionné s'il est vu dans un **cône** autour du
+   viseur, de **8°** (demi-angle) jusqu'à 5 m, puis de plus en plus étroit jusqu'à **3° à 60 m** ; parmi plusieurs
+   objets dans le cône, le plus proche **du viseur** (pas du joueur) ; jamais à travers un mur, ni derrière, ni loin
+   sur le côté ; un objet trop lourd n'est sélectionné qu'au rayon exact (pour le montrer en rouge). L'objet
+   sélectionné brille vivement en pulsant, avec l'anneau violet au viseur, avant l'appui. Une fois attrapé, il **vole jusqu'au joueur** (vitesse d'approche, il ralentit en arrivant), puis
    **reste tenu sans maintenir** la touche et flotte devant le joueur, un peu sous
    la visée ; il bute sur les murs au lieu de les traverser et ne touche jamais son porteur. **F de
    nouveau le relâche** : il est posé doucement. Un objet coincé loin du point de maintien est
    lâché. Plus tard : un petit ennemi, un projectile ennemi ; la goule seulement **étourdie**.
 6. **Lancer (télékinésie, vert) :** clic gauche / RT : l'objet part vers ce que vise le viseur,
-   à la vitesse de lancer **plus la vitesse du joueur** (lancer en pleine course frappe plus fort,
-   D-023). Ses dégâts dépendent de sa masse et de sa vitesse d'impact (partie 2). Après un lancer, une
+   à la vitesse de lancer, **toujours exactement vers le point sous le viseur** au moment du clic (D-027) :
+   rayon depuis les yeux au début du tick, direction depuis la position réelle de l'objet. La vitesse du
+   joueur ne change jamais la direction : seule sa part dans la direction du lancer s'ajoute, si elle est
+   positive (lancer en courant vers la cible frappe plus fort, D-023). **Tir tendu (D-025)** : pas de gravité pendant 0.5 s (≈ 15 m à l'arrêt, 20 m en course) ou jusqu'au
+   premier choc, puis gravité normale.
+   **Dégâts (D-025)** : tout impact d'un objet attrapable sur un ennemi blesse au-dessus d'un seuil : dégâts =
+   **masse × (vitesse d'impact − 8 m/s) × 0.1** (vitesse relative au contact). Ça vaut pour un objet lancé, un
+   rebond, une chute et un objet tenu qu'on percute. **Chute** (impact surtout vertical, objet au-dessus de la
+   cible) : seuil de **3 m/s**. Un même objet ne blesse la même cible qu'une fois toutes les 0.3 s. Les objets ne
+   blessent jamais les joueurs. Retour : chiffre de dégâts flottant (blanc, jaune au-dessus de 25, rouge au-dessus
+   de 60, « K.O. » à la mort), barre de PV au-dessus de la cible, éclat au point d'impact, éclair blanc sur la
+   cible, son 3D de coup (plus grave pour un objet lourd) et de mort.
+   **Zone (D-027)** : au premier impact d'un objet lancé (au-dessus du seuil), les ennemis autour prennent des
+   dégâts de zone : rayon **1 m + 0.06 m par kg** (5 kg : 1.3 m, 25 kg : 2.5 m, 40 kg : 3.4 m), **60 %** des dégâts
+   d'impact au centre, **25 %** de ça au bord, jamais à travers un mur ; l'ennemi touché de plein fouet ne les prend
+   pas en plus. Cercle orange bref au sol. **Durabilité** : un objet tient **1 lancer jusqu'à 5 kg, 2 jusqu'à 15 kg,
+   3 jusqu'à 25 kg, 5 au-delà** (réglable par objet) ; un lancer compte à son premier impact au-dessus du seuil ; le
+   dernier le casse : éclat, débris, son, puis il disparaît (dans la scène de test, il revient à sa place après 4 s).
+   Repère : une rangée de carrés au-dessus de l'objet tenu (pleins : lancers restants). **Lustre** : il se casse au
+   premier impact, lancé ou tombé, avec une zone de **4 m**. Après un lancer, une
    courte recharge (0.3 s) avant d'attraper de nouveau ; c'est la seule limite (pas d'endurance). Sans objet
    en main, le clic gauche ne fait rien : il est réservé à l'artefact (étape 5 bis). Un projectile ennemi renvoyé blesse son tireur (plus tard).
    **Retour (greybox) :** objets attrapables qui brillent (faiblement de loin, plus à portée, vivement
@@ -123,6 +151,20 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
 | Objet lâché s'il reste coincé à plus de / pendant | 4 / 0.3 | m / s | |
 | Poser : vitesse max de l'objet | 4 | m/s | |
 | Le lancer ajoute la vitesse du joueur | oui | — | mesuré : 43.5 m/s lancé à 15 m/s |
+| Tir tendu : sans gravité après un lancer | 0.5 | s | au-delà de 15 m, l'objet retombe (1.8 m à 30 m) |
+| Gravité des objets | 20 | m/s² | comme le joueur (D-027) |
+| Zone : rayon de base / par kg | 1 / 0.06 | m / m par kg | |
+| Zone : dégâts au centre / au bord | 60 / 25 | % des dégâts d'impact / % du centre | |
+| Durabilité : jusqu'à 5 / 15 / 25 kg / au-delà | 1 / 2 / 3 / 5 | lancers | |
+| Lustre : zone | 4 | m | casse au premier impact |
+| Onde de répulsion : rayon | 4 | m | |
+| Onde : vitesse (objet de 15 kg / ennemi de 80 kg), facteur de masse, bord | 16 / 16, 0.35 à 1.3, 50 % | m/s | |
+| Étourdissement : vitesse d'impact / durée | 6 / 1.5 | m/s / s | |
+| Ennemi factice : masse / retour au poste | 80 / 2 s puis 3 m/s | kg | |
+| Aide à la visée : cône de près / jusqu'à / à 60 m | 8 / 5 / 3 | ° / m / ° | mesuré : écart toléré 1.8 m à 10 m, 3.5 m à 30 m, 3.6 m à 60 m |
+| Dégâts d'impact : seuil / seuil de chute / facteur | 8 / 3 / 0.1 | m/s / m/s / par kg et m/s | caisse de 25 kg : 55 à l'arrêt, ≈ 80 en course |
+| Intervalle entre deux coups d'un objet sur une cible | 0.3 | s | |
+| Ennemi factice : PV / réapparition / vitesse du mobile | 100 / 3 / 6 | PV / s / m/s | |
 | Durée d'étourdissement de la goule | 1.5 | s | fenêtre du combo |
 | Rayon de collecte des âmes | 6 | m | |
 
@@ -146,11 +188,21 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
 - Objet tenu à grande vitesse : il garde sa place devant le joueur (mesuré : 0.00 m d'écart en traction
   à 30 m/s, 0.05 m en bunny hop à 20 m/s en virage) ; contre un mur, il bute.
 - Lancer pendant une traction : la traction continue ; l'objet part avec la vitesse du joueur en plus.
+- Traction ou répulsion visée sur un ennemi : refusée (l'ennemi arrête le rayon sans offrir de surface).
+- Objet tenu qu'on fait percuter un ennemi (traction, course) : il blesse comme un objet lancé.
+- Les objets tombent à 20 m/s², comme le joueur (D-027).
+- Objet gros visé au ras du sol : son centre va vers le point visé, donc il touche le sol un peu avant.
+- Onde visée sur un lustre : il est décroché et tombe droit ; un ennemi à moins de 4 m du lustre est aussi
+  repoussé (dans la scène de test, le lustre pend à 7.6 m, 5.8 m au-dessus du factice).
 - Mort ou téléportation en tenant un objet : l'objet tombe avec sa vitesse actuelle.
 
 ## Questions ouvertes
 
 - [ASSUMPTION] L'objet tenu ne bloque pas les projectiles (pas de bouclier).
+- Objet tenu qui percute un ennemi : faut-il le garder (bélier en traction) ? À juger en playtest.
+- Tir tendu de 0.5 s : avec la gravité à 20 m/s², l'objet retombe de 1.8 m à 30 m. Passer à 1 s (droit jusqu'à
+  30 m à l'arrêt) ?
+- Dégâts quand un ennemi repoussé percute un mur (prévus au design, pas encore faits).
 - Toutes les actions en même temps : faut-il limiter les combos (par exemple, un lancer pendant une
   traction) ? Pour l'instant non ; à juger en playtest.
 - Rester en l'air : 3 tractions de suite, puis 1 toutes les 4 s, et 1 répulsion toutes les 5 s. À
@@ -181,3 +233,7 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
   simultanées sur des touches séparées (A, clic droit, F, clic gauche ; RB, LT, X, RT), couleur de l'orbe selon
   l'action, plus d'endurance, attraction toutes les 4 s ; l'objet tenu ne prend plus un tick d'avance à grande
   vitesse.
+- 2026-11-12 : partie 2 : dégâts d'impact (masse × vitesse au-dessus du seuil), tir tendu, seuil de chute, ennemis
+  factices, chiffres de dégâts, éclats et sons (D-025) ; aide à la visée de la prise en cône (D-026).
+- 2026-11-12 : après le playtest de la partie 2 (D-027) : lancer toujours vers le viseur, gravité des objets à
+  20 m/s², dégâts de zone, durabilité, lustre fragile, onde de répulsion, étourdissement.

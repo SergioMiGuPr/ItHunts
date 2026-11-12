@@ -258,14 +258,26 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Lancer_VitesseDuJoueurAjoutee()
+        public void Lancer_DirectionToujoursCelleDuViseur_SeuleLaPartUtileDeLaVitesseSAjoute()
         {
-            var player = new Vector3(15f, 0f, 0f);
-            Vector3 v = TelekinesisOrb.ThrowVelocity(new Vector3(0f, 0f, 2f), player, _cfg);
-            Assert.That(Vector3.Distance(v, new Vector3(15f, 0f, _cfg.throwSpeed)), Is.LessThan(1e-3f), "30 m/s visés + vitesse du joueur");
+            Vector3 aim = new Vector3(0f, 0f, 2f);
+            // Course de côté : la direction ne change pas, rien ne s'ajoute.
+            Vector3 v = TelekinesisOrb.ThrowVelocity(aim, new Vector3(15f, 0f, 0f), _cfg);
+            Assert.That(Vector3.Angle(v, aim), Is.LessThan(1e-3f), "jamais dévié");
+            Assert.That(v.magnitude, Is.EqualTo(_cfg.throwSpeed).Within(1e-3f));
+            // Course vers la cible : la vitesse s'ajoute.
+            v = TelekinesisOrb.ThrowVelocity(aim, new Vector3(0f, 0f, 15f), _cfg);
+            Assert.That(v.magnitude, Is.EqualTo(_cfg.throwSpeed + 15f).Within(1e-3f), "plus fort en courant vers la cible");
+            // En diagonale : seule la part dans l'axe du lancer.
+            v = TelekinesisOrb.ThrowVelocity(aim, new Vector3(10f, 4f, 10f), _cfg);
+            Assert.That(Vector3.Angle(v, aim), Is.LessThan(1e-3f));
+            Assert.That(v.magnitude, Is.EqualTo(_cfg.throwSpeed + 10f).Within(1e-3f));
+            // En s'éloignant de la cible : pas de perte.
+            v = TelekinesisOrb.ThrowVelocity(aim, new Vector3(0f, 0f, -15f), _cfg);
+            Assert.That(v.magnitude, Is.EqualTo(_cfg.throwSpeed).Within(1e-3f), "jamais moins que la vitesse de lancer");
             _cfg.inheritPlayerVelocity = false;
-            v = TelekinesisOrb.ThrowVelocity(new Vector3(0f, 0f, 2f), player, _cfg);
-            Assert.That(Vector3.Distance(v, new Vector3(0f, 0f, _cfg.throwSpeed)), Is.LessThan(1e-3f));
+            v = TelekinesisOrb.ThrowVelocity(aim, new Vector3(0f, 0f, 15f), _cfg);
+            Assert.That(v.magnitude, Is.EqualTo(_cfg.throwSpeed).Within(1e-3f));
         }
 
         [Test]
@@ -417,6 +429,43 @@ namespace ItHunts.Tests
             // Aucune touche n'est partagée entre deux actions.
             var all = map.bindings.Where(b => !b.isComposite).GroupBy(b => b.path).Where(g => g.Select(b => b.action).Distinct().Count() > 1);
             Assert.That(all.Select(g => g.Key), Is.Empty);
+        }
+
+        // ---------- Aide à la visée : cône ----------
+
+        [Test]
+        public void Aide_ConeSelonLaDistance()
+        {
+            Assert.That(_cfg.aimAssist, Is.True);
+            Assert.That(GrabAssist.ConeAngle(_cfg, 2f), Is.EqualTo(8f).Within(1e-3f), "8° de près");
+            Assert.That(GrabAssist.ConeAngle(_cfg, 5f), Is.EqualTo(8f).Within(1e-3f));
+            Assert.That(GrabAssist.ConeAngle(_cfg, 60f), Is.EqualTo(3f).Within(1e-3f), "3° à 60 m");
+            Assert.That(GrabAssist.ConeAngle(_cfg, 32.5f), Is.EqualTo(5.5f).Within(1e-3f), "linéaire entre les deux");
+            Assert.That(GrabAssist.InCone(_cfg, 2.9f, 60f), Is.True);
+            Assert.That(GrabAssist.InCone(_cfg, 3.1f, 60f), Is.False);
+            Assert.That(GrabAssist.InCone(_cfg, 1f, 61f), Is.False, "hors de portée");
+            Assert.That(GrabAssist.AngleTo(Vector3.zero, Vector3.forward, Vector3.back), Is.EqualTo(180f).Within(1e-3f), "derrière");
+            _cfg.aimAssist = false;
+            Assert.That(GrabAssist.ConeAngle(_cfg, 10f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void Aide_ReglagesParDefaut()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<TelekinesisOrbSettings>("Assets/_Project/Settings/Telekinesis_Default.asset");
+            Assert.That(asset, Is.Not.Null);
+            Assert.That(asset.aimAssist, Is.True);
+            Assert.That(asset.assistNearAngle, Is.EqualTo(8f));
+            Assert.That(asset.assistNearDistance, Is.EqualTo(5f));
+            Assert.That(asset.assistFarAngle, Is.EqualTo(3f));
+        }
+
+        [Test]
+        public void Aide_AngleDeLObjetSelectionneRetenu()
+        {
+            _grab.HasTarget = true;
+            Step(MovementInput.Neutral);
+            Assert.That(_t.AimAngle, Is.EqualTo(0f));
         }
     }
 }

@@ -4,24 +4,29 @@
 
 ## Étape en cours
 
-**4 — Télékinésie, puis une seule orbe** (D-023, puis D-024), en deux temps.
+**4 — Télékinésie, une seule orbe, dégâts** (D-023, D-024, D-025, D-026).
 
-1. **Cœur** — fait.
-   - Partie 1 (D-023) : attraper, tenir, poser, lancer (30 m/s + vitesse du joueur), objets qui brillent,
-     zone Télékinésie (F12) : caisses de 5 à 60 kg, tonneaux, pile, lustre accroché. Playtest du
-     2026-11-12 : retour de design ci-dessous. Dégâts selon la vitesse pas encore testés (pas d'ennemis).
-   - **Une seule orbe (D-024), fait le 2026-11-12, playtest en attente :** plus d'échange ni d'orbe
-     active ; les quatre actions en même temps, chacune sur sa touche : **A** (AZERTY) maintenu =
-     traction, **clic droit** = répulsion, **F** = attraper / relâcher, **clic gauche** = lancer (sans
-     objet : réservé à l'artefact) ; manette **RB**, **LT**, **X**, **RT**. Couleur de l'orbe selon
-     l'action (lancer > répulsion > traction > objet tenu). **Plus d'endurance** (seul le délai de 0.3 s
-     après un lancer). Attraction : **1 charge toutes les 4 s**. La visée du magnétisme ignore l'objet
-     tenu. **Défaut corrigé :** l'objet tenu prenait un tick d'avance à grande vitesse (0.47 m à
-     40 m/s) ; mesuré en Play Mode avec le vrai joueur : 0.000 m en traction à 30 m/s, 0.05 m en bunny
-     hop à 20 m/s. 181 tests. Checklist : `docs/design/features/orbes/testing.md` (« une seule orbe »).
-2. **Dégâts et cibles** — **prochaine étape après ce playtest** : dégâts = masse × vitesse d'impact ×
-   facteur au-dessus d'un seuil, ennemis factices avec PV et chiffres de dégâts, éclats et sons
-   provisoires.
+1. **Cœur et orbe unique** — **fait et validé en playtest** (2026-11-12), commit `5a8d454`. Retour : la prise à
+   distance en mouvement était trop dure → aide à la visée.
+2. **Aide à la visée de la prise (D-026)** — fait le 2026-11-12, **playtest en attente** : cône de 8° jusqu'à 5 m,
+   3° à 60 m, le plus proche du viseur, jamais à travers un mur ; l'objet sélectionné pulse. Mesuré : écart toléré
+   1.8 m à 10 m, 3.5 m à 30 m, 3.6 m à 60 m (0.4 m sans aide) ; en bunny hop à 20 m/s, caisse sélectionnée 86 à
+   100 % du temps (17 à 71 % sans).
+3. **Partie 2, dégâts (D-025)** — fait le 2026-11-12, **playtest en attente** (avec l'aide à la visée) : dégâts =
+   masse × (vitesse d'impact − 8 m/s) × 0.1 pour tout impact sur un ennemi, seuil de 3 m/s pour une chute, tir
+   tendu (sans gravité 0.5 s), 3 factices fixes et 1 mobile (100 PV, réapparition 3 s), chiffres de dégâts, barre de
+   PV, éclats, sons provisoires ; jamais de dégâts aux joueurs ; pas de magnétisme sur un ennemi. Mesuré en Play
+   Mode : 55 dégâts (25 kg à 10 et 20 m), 79.6 en course, 13.8 pour une chute de 4 m. 203 tests (1 non concluant à
+   dessein : collision vérifiée en Play Mode). Checklist unique : `docs/design/features/orbes/testing.md`.
+   **Playtest du 2026-11-12 :** dégâts bons ; gravité des objets à 20 m/s² ; lancer de travers en mouvement → D-027.
+4. **Après ce playtest (D-027)** — fait et **validé en playtest** le 2026-11-12 (visée du lancer en mouvement,
+   répulsion et étourdissement contre un mur) : lancer toujours vers le
+   viseur (cause : toute la vitesse du joueur s'ajoutait ; écart en traction 10.3 m → 0.15 m à 30 m), gravité des
+   objets à 20 m/s², dégâts de zone, durabilité selon la masse (1 / 2 / 3 / 5 lancers), lustre fragile (zone 4 m),
+   répulsion en onde (4 m) qui repousse objets et ennemis, étourdissement 1.5 s contre un mur à 6 m/s ou plus.
+   215 tests (1 non concluant à dessein). Checklist : `docs/design/features/orbes/testing.md`.
+5. **Étape 4 terminée.** Ensuite : **étape 5, vue FPS et HUD** (plan envoyé à l'utilisateur, en attente de sa
+   réponse avant de coder).
 
 **Note pour plus tard (lustre) :** le lustre doit pouvoir tomber **à distance** — traction sèche, objet
 lancé dessus, ou chaîne visée — pour s'en servir contre les ennemis et contre le boss final (combat
@@ -32,11 +37,18 @@ L'étape 3 (orbe de magnétisme) est **terminée et validée en playtest** (2026
 ## Feuille de route
 
 Ordre de CLAUDE.md, une étape validée en playtest avant la suivante :
-3. Magnétisme (fait) → **4. Télékinésie, une seule orbe** → 5. Vue FPS et HUD →
+3. Magnétisme (fait) → **4. Télékinésie, une seule orbe, dégâts** → 5. Vue FPS et HUD →
 **5 bis. Artefacts** (système générique : tirage au hasard, pas de doublon en coop, main gauche ; puis
 le barillet, D-022 ; avant ou avec les ennemis) → 6. Ennemis et vagues → 7. Âmes et économie →
 8. Run complète → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
 ci-dessous) → 11. Coop en ligne → 12. Build.
+
+**Piste parallèle : direction artistique (étape 10)**, menée par une deuxième personne depuis le 2026-11-12 :
+branche `art` du même dépôt, uniquement `Assets/Art/` et `docs/art/` (plus sa ligne du manifeste), ses propres
+scènes, fusion par pull request (règles dans CLAUDE.md, « Piste DA en parallèle »). Pipeline : Higgsfield (image
+concept → Tripo P2 ou Tripo H3.1 multivues → Meshy pour le squelette et l'animation) → Blender → Unity ; droits
+commerciaux vérifiés et notés au manifeste. Mesures, budgets, style et livraison : `docs/art/ART-HANDOFF.md` (à
+tenir à jour quand un réglage qui y figure change). Première livraison attendue : le guide de style.
 
 **Sons provisoires :** les sons actuels sont synthétisés par le code (`ProceduralSfx`). Ils seront
 remplacés par de vrais sons à l'étape 10 (skill `audio-design`), avec la même liste d'événements :
@@ -141,7 +153,43 @@ Magnétisme validé le 2026-11-12 (v3) avec `Assets/_Project/Settings/Magnetism_
 - **Répulsion :** 14 m/s, portée 40 m, charge unique rechargée en 5 s ; gain dans le plafond commun.
 - **Commun :** toute surface ; aucune charge de mouvement ; mémorisation d'un appui 0.1 s.
 
+Télékinésie et orbe unique validées le 2026-11-12 (D-024 à D-027), `Telekinesis_Default.asset`,
+`Magnetism_Default.asset`, `Damage_Default.asset`, `TrainingDummy_Default.asset` :
+
+- **Visée du lancer :** toujours vers le point sous le viseur au clic (rayon depuis les yeux au début du tick) ;
+  vitesse de lancer 30 m/s, plus la part de la vitesse du joueur dans la direction du lancer (jamais négative).
+  Mesuré : écart latéral au plus 0.11 m à 10, 20 et 30 m, à l'arrêt, de côté, en bunny hop et en traction.
+- **Tir tendu :** sans gravité pendant 0.5 s (≈ 15 m) ou jusqu'au premier choc ; gravité des objets 20 m/s².
+- **Onde de répulsion :** rayon 4 m ; 16 m/s pour un objet de 15 kg ou un ennemi de 80 kg, facteur de masse de 0.35
+  à 1.3, 50 % au bord, montée 0.25 ; un objet accroché est décroché et tombe droit.
+- **Étourdissement contre un mur :** à partir de 6 m/s d'impact, 1.5 s ; mesuré : 10.3 et 12.3 m/s → étourdi.
+- Aussi en place (non revus un à un en playtest) : aide à la visée de la prise (8° → 3° à 60 m), dégâts d'impact
+  (masse × (vitesse − 8) × 0.1, seuil de chute 3 m/s), zone (1 m + 0.06 m/kg, 60 % / 25 %), durabilité
+  (1 / 2 / 3 / 5 lancers), lustre fragile (zone 4 m).
+
 ## Problèmes connus / à faire
+
+- **Point ouvert, à rééquilibrer après des runs complètes (pas avant) :** plafond du bonus de vitesse au lancer
+  (20 m/s par défaut). **Attention : ce plafond n'existe pas encore dans le code** ; aujourd'hui, la part de la
+  vitesse du joueur dans la direction du lancer s'ajoute sans limite (`TelekinesisOrb.ThrowVelocity`). À ajouter
+  (réglage `TelekinesisOrbSettings`, 20 m/s), puis à régler plus tard.
+- **À revérifier au prochain playtest :**
+  - gravité des objets à 20 m/s² (en place, D-027) ;
+  - exclusion du traqueur de la répulsion, de l'étourdissement et des dégâts de zone : **le traqueur n'existe pas
+    encore** (étape des ennemis) ; à prévoir dans `RepulsionWave`, `EnemyBody` et `ImpactDamager.ApplyArea` quand il
+    arrivera (GDD : intuable, insensible à la répulsion) ;
+  - immunité de 2 s après un étourdissement : **pas encore codée** (aujourd'hui, un ennemi peut être ré-étourdi dès la
+    fin du précédent) ; à ajouter dans `EnemyBody` (réglage `TrainingDummySettings`, 2 s).
+
+- **Gravité :** objets à 20 m/s² comme le joueur (D-027). Unity n'enregistre pas `Physics.gravity` changée par
+  la CLI : modifier `ProjectSettings/DynamicsManager.asset` et la valeur en mémoire.
+- **Proposé :** tir tendu de 1 s au lieu de 0.5 s (avec la gravité à 20, l'objet retombe de 1.8 m à 30 m).
+- **Objet tenu qui percute un ennemi** : il blesse (« tout impact »), effet bélier en traction : à juger en playtest.
+- **Mesures en Play Mode :** choisir les points de départ sur le sol de la scène (au sud de la zone Télékinésie,
+  au-delà de z = −40, il n'y a plus de sol). Les messages de collision (`OnCollisionEnter`) ne partent pas en mode
+  édition : les dégâts réels se vérifient en Play Mode.
+- **Ne pas recompiler pendant le Play Mode** d'une mesure (la recompilation attend et la CLI expire) : arrêter le
+  Play Mode d'abord (`unity command editor.playmode stop`).
 
 - **Écran partagé (étape 9) :** la lueur des objets attrapables suit un seul joueur (celui dont la vue
   est mise à jour en dernier) ; à rendre propre à chaque caméra.

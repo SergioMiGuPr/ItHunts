@@ -1,5 +1,6 @@
 using System.IO;
 using ItHunts.Audio;
+using ItHunts.Combat;
 using ItHunts.Debugging;
 using ItHunts.Hud;
 using ItHunts.Input;
@@ -32,6 +33,9 @@ namespace ItHunts.EditorTools
         private const string FeedbackPath = SettingsDir + "/MagnetismFeedback_Default.asset";
         private const string TelekinesisPath = SettingsDir + "/Telekinesis_Default.asset";
         private const string TkFeedbackPath = SettingsDir + "/TelekinesisFeedback_Default.asset";
+        private const string DamagePath = SettingsDir + "/Damage_Default.asset";
+        private const string DummyPath = SettingsDir + "/TrainingDummy_Default.asset";
+        private const string DamageFeedbackPath = SettingsDir + "/DamageFeedback_Default.asset";
         private const string PostProcessPath = SettingsDir + "/PostProcess_TestMovement.asset";
         private const string PlayerPrefabPath = PrefabDir + "/Player.prefab";
         private const string ScenePath = "Assets/Scenes/Test_Movement.unity";
@@ -219,6 +223,8 @@ namespace ItHunts.EditorTools
                 var orbView = root.AddComponent<MagnetismOrbView>();
                 var audio = root.AddComponent<MagnetismAudio>();
                 var tkView = root.AddComponent<TelekinesisView>();
+                var damageNumbers = root.AddComponent<DamageNumbersHud>();
+                SetRef(damageNumbers, "settings", LoadOrCreate<DamageFeedbackSettings>(DamageFeedbackPath));
 
                 SetRef(motor, "settings", movement);
                 SetRef(motor, "magnetism", magnetism);
@@ -690,10 +696,14 @@ namespace ItHunts.EditorTools
                     new Vector3(-95f + k * 0.55f + row * 0.275f, 0.25f + row * 0.5f, -15f), Vector3.one * 0.5f, 5f, crateMat, false);
 
             // Portique et lustre accroché.
-            Box("Portique - pilier ouest", area, new Vector3(-82f, 3f, -12f), new Vector3(0.6f, 6f, 0.6f), blockMat);
-            Box("Portique - pilier est", area, new Vector3(-68f, 3f, -12f), new Vector3(0.6f, 6f, 0.6f), blockMat);
-            Box("Portique - poutre", area, new Vector3(-75f, 6.2f, -12f), new Vector3(15f, 0.4f, 0.6f), blockMat);
-            GrabbableBox("Lustre (accroché)", area, new Vector3(-75f, 5.6f, -12f), new Vector3(1.6f, 0.3f, 1.6f), 25f, crateMat, true);
+            // Portique de 8 m : le lustre pend à 7.6 m, à 5.8 m au-dessus du factice placé dessous, hors de l'onde de
+            // répulsion (4 m) qui le décroche.
+            Box("Portique - pilier ouest", area, new Vector3(-82f, 4f, -12f), new Vector3(0.6f, 8f, 0.6f), blockMat);
+            Box("Portique - pilier est", area, new Vector3(-68f, 4f, -12f), new Vector3(0.6f, 8f, 0.6f), blockMat);
+            Box("Portique - poutre", area, new Vector3(-75f, 8.2f, -12f), new Vector3(15f, 0.4f, 0.6f), blockMat);
+            GrabbableBox("Lustre (accroché)", area, new Vector3(-75f, 7.6f, -12f), new Vector3(1.6f, 0.3f, 1.6f), 25f, crateMat, true);
+
+            BuildTrainingDummies(area);
 
             Box("Repère portée 15 m (depuis le départ)", area, new Vector3(-75f, 0.012f, -20f), new Vector3(50f, 0.02f, 0.3f), lineMat, collider: false);
         }
@@ -708,6 +718,66 @@ namespace ItHunts.EditorTools
             go.transform.localScale = size;
             go.GetComponent<MeshRenderer>().sharedMaterial = mat;
             MakeGrabbable(go, mass, anchored);
+            return go;
+        }
+
+        /// <summary>
+        /// Ennemis factices (D-025) : 3 fixes (dont un sous le lustre) et 1 mobile en allers-retours devant le mur de
+        /// la grande salle ; 100 PV, réapparition après 3 s (TrainingDummy_Default). Retour des dégâts (éclats, sons)
+        /// dans un objet de la scène.
+        /// </summary>
+        private static void BuildTrainingDummies(Transform area)
+        {
+            var dummySettings = LoadOrCreate<TrainingDummySettings>(DummyPath);
+            Material dummyMat = GrabbableMat("Greybox_Dummy", new Color(0.55f, 0.2f, 0.18f));
+            var root = new GameObject("Ennemis factices").transform;
+            root.SetParent(area, false);
+            (string name, Vector3 position)[] fixedDummies =
+            {
+                ("Factice fixe (18 m)", new Vector3(-64f, 0f, -17f)),
+                ("Factice fixe sous le lustre", new Vector3(-75f, 0f, -12f)),
+                ("Factice fixe (30 m)", new Vector3(-88f, 0f, -9f)),
+            };
+            foreach ((string name, Vector3 position) in fixedDummies)
+                Dummy(name, root, position, dummyMat, dummySettings, moving: false);
+            GameObject mover = Dummy("Factice mobile (allers-retours de 36 m)", root, new Vector3(-94f, 0f, -4f), dummyMat,
+                dummySettings, moving: true);
+            var so = new SerializedObject(mover.GetComponent<TrainingDummyMover>());
+            so.FindProperty("travel").vector3Value = new Vector3(36f, 0f, 0f);
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            var feedbackGo = new GameObject("Retour des dégâts");
+            feedbackGo.transform.SetParent(area, false);
+            var feedback = feedbackGo.AddComponent<DamageFeedback>();
+            SetRef(feedback, "settings", LoadOrCreate<DamageFeedbackSettings>(DamageFeedbackPath));
+            SetRef(feedback, "flashMaterial", UnlitMat("Damage_Flash", "Universal Render Pipeline/Unlit", Color.white));
+        }
+
+        /// <summary>Mannequin : capsule de 1.8 m × 0.8 m (taille du joueur), posée au sol.</summary>
+        private static GameObject Dummy(string name, Transform parent, Vector3 feet, Material mat, TrainingDummySettings settings,
+            bool moving)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            go.name = name;
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = feet + Vector3.up * 0.9f;
+            go.transform.localScale = new Vector3(0.8f, 0.9f, 0.8f);
+            go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            GameObjectUtility.SetStaticEditorFlags(go, 0);
+            var body = go.AddComponent<Rigidbody>();
+            body.isKinematic = true;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+            var enemy = go.AddComponent<EnemyBody>();
+            SetRef(enemy, "settings", settings);
+            SetRef(go.AddComponent<Damageable>(), "settings", settings);
+            if (moving)
+            {
+                SetRef(go.AddComponent<TrainingDummyMover>(), "settings", settings);
+                var so = new SerializedObject(enemy);
+                so.FindProperty("returnHome").boolValue = false;        // le trajet le ramène
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+
             return go;
         }
 
@@ -730,13 +800,19 @@ namespace ItHunts.EditorTools
             body.mass = mass;
             body.interpolation = RigidbodyInterpolation.Interpolate;
             go.AddComponent<Grabbable>();
+            SetRef(go.AddComponent<ImpactDamager>(), "settings", LoadOrCreate<DamageSettings>(DamagePath));
+            var so = new SerializedObject(go.GetComponent<Grabbable>());
+            so.FindProperty("respawnAfterBreak").floatValue = 4f;      // scène de test : il revient après s'être cassé
             if (anchored)
             {
-                var so = new SerializedObject(go.GetComponent<Grabbable>());
+                // Lustre : accroché, fragile (cassé au premier impact, lancé ou tombé), grande zone de dégâts.
                 so.FindProperty("startsAnchored").boolValue = true;
-                so.ApplyModifiedPropertiesWithoutUndo();
+                so.FindProperty("breaksOnAnyImpact").boolValue = true;
+                so.FindProperty("splashRadiusOverride").floatValue = 4f;
                 body.isKinematic = true;
             }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         /// <summary>Matériau Lit avec émission activée (la lueur est réglée par objet, par MaterialPropertyBlock).</summary>

@@ -45,6 +45,23 @@ namespace ItHunts.Settings
         [Min(0f)] public float repelCooldown = 5f;
         [Tooltip("Durée de l'état « En usage » après une répulsion (s) : retour visuel.")]
         [Min(0f)] public float repelUseDuration = 0.15f;
+        [Header("Répulsion : onde au point visé (D-027)")]
+        [Tooltip("Rayon de l'onde (m) : elle repousse les objets déplaçables et les ennemis, en plus de propulser le joueur.")]
+        [Min(0f)] public float waveRadius = 4f;
+        [Tooltip("Vitesse donnée à un objet de masse de référence (m/s), loin du point ; plus faible pour un objet lourd.")]
+        [Min(0f)] public float waveObjectSpeed = 16f;
+        [Min(0.1f)] public float waveObjectReferenceMass = 15f;
+        [Tooltip("Vitesse donnée à un ennemi de masse de référence (m/s).")]
+        [Min(0f)] public float waveEnemySpeed = 16f;
+        [Min(0.1f)] public float waveEnemyReferenceMass = 80f;
+        [Tooltip("Facteur de masse (référence / masse) borné entre ces valeurs : un objet léger part au plus 1.3 fois plus " +
+                 "vite, un objet très lourd au moins 0.35 fois.")]
+        [Min(0f)] public float waveMassScaleMin = 0.35f;
+        [Min(0f)] public float waveMassScaleMax = 1.3f;
+        [Tooltip("Au bord de l'onde, part de la vitesse du centre (décroissance linéaire).")]
+        [Range(0f, 1f)] public float waveEdgeShare = 0.5f;
+        [Tooltip("Part de montée ajoutée à la direction de poussée (les objets décollent un peu).")]
+        [Range(0f, 1f)] public float waveLift = 0.25f;
         [Tooltip("Au sol, pas de friction pendant ce temps après une répulsion (s).")]
         [Min(0f)] public float groundFrictionGrace = 0.2f;
     }

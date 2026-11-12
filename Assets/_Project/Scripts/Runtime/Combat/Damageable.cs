@@ -1,0 +1,127 @@
+using System.Collections.Generic;
+using ItHunts.Settings;
+using UnityEngine;
+
+namespace ItHunts.Combat
+{
+    /// <summary>
+    /// Cible qui prend des dégâts (ennemi factice pour l'instant ; les vrais ennemis à l'étape 6). Points de vie dans un
+    /// HealthState copiable ; à sa mort, elle disparaît (rendus et collisions coupés) et réapparaît après le délai si
+    /// respawns est coché. Le magnétisme ne s'accroche jamais à elle (PhysicsAimProbe). Registre des cibles de la scène
+    /// (objets du monde, pas des joueurs).
+    /// </summary>
+    [DisallowMultipleComponent]
+    public sealed class Damageable : MonoBehaviour
+    {
+        [SerializeField] private TrainingDummySettings settings;
+        [Tooltip("Réapparaît après settings.respawnDelay (ennemi factice).")]
+        [SerializeField] private bool respawns = true;
+        [Tooltip("Couleur et intensité de la lueur pendant l'étourdissement.")]
+        [SerializeField] private Color stunColor = new Color(1f, 0.9f, 0.2f);
+        [SerializeField, Min(0f)] private float stunGlowIntensity = 1.5f;
+
+        private static readonly List<Damageable> AllList = new List<Damageable>();
+        private static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
+
+        private HealthState _health;
+        private Renderer[] _renderers;
+        private Collider[] _colliders;
+        private MaterialPropertyBlock _block;
+        private float _flashUntil = float.NegativeInfinity;
+        private Color _flashColor;
+        private EnemyBody _body;
+
+        public static IReadOnlyList<Damageable> All => AllList;
+        public HealthState Health => _health;
+        public bool Dead => _health.Dead;
+        public int Id => GetInstanceID();
+
+        /// <summary>Corps (recul, étourdissement) ; null pour une cible fixe.</summary>
+        public EnemyBody Body => _body;
+        public bool Stunned => _body != null && _body.Stunned;
+
+        public Collider MainCollider => _colliders != null && _colliders.Length > 0 ? _colliders[0] : null;
+
+        public Vector3 Center => MainCollider != null ? MainCollider.bounds.center : transform.position + Vector3.up;
+
+        /// <summary>Haut de la cible (barre de PV, chiffres de dégâts).</summary>
+        public Vector3 Top
+        {
+            get
+            {
+                if (_colliders == null || _colliders.Length == 0 || _colliders[0] == null)
+                    return transform.position + Vector3.up * 2f;
+                Bounds b = _colliders[0].bounds;
+                return new Vector3(b.center.x, b.max.y, b.center.z);
+            }
+        }
+
+        private void Awake() => Init();
+
+        /// <summary>Prépare la cible (appelé par Awake ; aussi par les tests, sans cycle de vie en mode édition).</summary>
+        public void Init()
+        {
+            _renderers = GetComponentsInChildren<Renderer>();
+            _colliders = GetComponentsInChildren<Collider>();
+            _block = new MaterialPropertyBlock();
+            _body = GetComponent<EnemyBody>();
+            _health = HealthState.Create(settings != null ? settings.maxHealth : 100f);
+        }
+
+        private void OnEnable()
+        {
+            if (!AllList.Contains(this))
+                AllList.Add(this);
+        }
+
+        private void OnDisable() => AllList.Remove(this);
+
+        /// <summary>Retire des PV ; renvoie les dégâts réellement pris.</summary>
+        public float ApplyDamage(float damage, float time, out bool killed)
+        {
+            if (_renderers == null)
+                Init();
+            float taken = HealthState.Apply(ref _health, damage, time, out killed);
+            if (killed)
+                SetAlive(false);
+            return taken;
+        }
+
+        /// <summary>Éclair d'émission sur la cible (coup reçu).</summary>
+        public void Flash(Color color, float duration)
+        {
+            _flashColor = color;
+            _flashUntil = Time.time + duration;
+        }
+
+        private void Update()
+        {
+            if (_health.Dead && respawns && HealthState.TryRespawn(ref _health, Time.time, settings != null ? settings.respawnDelay : 3f))
+            {
+                if (_body != null)
+                    _body.ResetToHome();
+                SetAlive(true);
+            }
+
+            if (_renderers == null)
+                return;
+            Color glow = Time.time < _flashUntil ? _flashColor
+                : Stunned ? stunColor * (stunGlowIntensity * (0.6f + 0.4f * Mathf.Sin(Time.time * 18f)))
+                : Color.black;
+            _block.SetColor(EmissionId, glow);
+            foreach (Renderer r in _renderers)
+                if (r != null)
+                    r.SetPropertyBlock(_block);
+        }
+
+        private void SetAlive(bool alive)
+        {
+            foreach (Collider c in _colliders)
+                if (c != null)
+                    c.enabled = alive;
+            foreach (Renderer r in _renderers)
+                if (r != null)
+                    r.enabled = alive;
+        }
+    }
+}

@@ -8,12 +8,24 @@ namespace ItHunts.Orbs
     /// masse est celle du Rigidbody. Un objet « accroché » (lustre) reste figé jusqu'à ce qu'on l'attrape. Il brille
     /// (émission) selon ce que le joueur peut en faire : la couleur est choisie par TelekinesisView.
     /// Registre des objets de la scène (pas un singleton de joueur : ce sont des objets du monde).
+    /// Durabilité (D-027) : il tient un nombre de lancers selon sa masse (ou imposé ici), puis se casse à l'impact
+    /// (débris, éclat, son) ; dans la scène de test, il réapparaît à sa place après respawnAfterBreak.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public sealed class Grabbable : MonoBehaviour
     {
         [Tooltip("Figé (cinématique) jusqu'à ce qu'on l'attrape : objet suspendu ou accroché.")]
         [SerializeField] private bool startsAnchored;
+
+        [Header("Durabilité et zone (0 : selon la masse, DamageSettings)")]
+        [Tooltip("Nombre de lancers tenus avant de se casser (0 : selon la masse).")]
+        [SerializeField, Min(0)] private int durabilityOverride;
+        [Tooltip("Se casse au premier impact au-dessus du seuil de chute, lancé ou tombé (lustre).")]
+        [SerializeField] private bool breaksOnAnyImpact;
+        [Tooltip("Rayon de la zone de dégâts à l'impact (m ; 0 : selon la masse).")]
+        [SerializeField, Min(0f)] private float splashRadiusOverride;
+        [Tooltip("Réapparaît à sa place ce temps après s'être cassé (s ; 0 : jamais). Scène de test.")]
+        [SerializeField, Min(0f)] private float respawnAfterBreak;
 
         private static readonly List<Grabbable> AllList = new List<Grabbable>();
         private static readonly Dictionary<int, Grabbable> ById = new Dictionary<int, Grabbable>();
@@ -27,11 +39,36 @@ namespace ItHunts.Orbs
         public Rigidbody Body { get; private set; }
         public Collider[] Colliders => _colliders;
         public int Id => GetInstanceID();
-        public float Mass => Body != null ? Body.mass : 0f;
+        public float Mass => Body != null ? Body.mass : TryGetComponent(out Rigidbody rb) ? rb.mass : 0f;
         public bool Anchored { get; private set; }
+
+        /// <summary>Tenu par la télékinésie.</summary>
+        public bool Held { get; private set; }
+
+        /// <summary>Tir tendu en cours : sans gravité jusqu'à ce temps (Time.time) ou jusqu'au premier choc.</summary>
+        public bool InStraightFlight { get; private set; }
+        private float _straightFlightUntil;
 
         /// <summary>Temps (Time.time) du dernier lancer : lueur verte qui s'éteint.</summary>
         public float ThrownAt { get; private set; } = float.NegativeInfinity;
+
+        public int DurabilityOverride => durabilityOverride;
+        public bool BreaksOnAnyImpact => breaksOnAnyImpact;
+        public float SplashRadiusOverride => splashRadiusOverride;
+
+        /// <summary>Lancers encore tenus (négatif : pas encore initialisé par ImpactDamager) et durabilité de départ.</summary>
+        public int ThrowsLeft { get; private set; } = -1;
+        public int MaxDurability { get; private set; } = -1;
+
+        /// <summary>Lancé et pas encore touché quoi que ce soit : son premier impact compte (zone, durabilité).</summary>
+        public bool ThrowArmed { get; private set; }
+
+        /// <summary>Cassé : invisible et sans collision, en attente de réapparition.</summary>
+        public bool Broken { get; private set; }
+
+        private float _brokenAt;
+        private Vector3 _homePosition;
+        private Quaternion _homeRotation;
 
         public static Grabbable Find(int id) => ById.TryGetValue(id, out Grabbable g) ? g : null;
 
@@ -45,6 +82,108 @@ namespace ItHunts.Orbs
             Anchored = startsAnchored;
             if (Anchored)
                 Body.isKinematic = true;
+            _homePosition = transform.position;
+            _homeRotation = transform.rotation;
+        }
+
+        /// <summary>Fixe la durabilité de départ (une seule fois, par ImpactDamager qui connaît les réglages).</summary>
+        public void InitDurability(int durability)
+        {
+            if (MaxDurability > 0)
+                return;
+            MaxDurability = Mathf.Max(1, durability);
+            ThrowsLeft = MaxDurability;
+        }
+
+        /// <summary>Premier impact d'un lancer : vrai une seule fois par lancer (puis le lancer est « désarmé »).</summary>
+        public bool TakeThrowImpact()
+        {
+            if (!ThrowArmed)
+                return false;
+            ThrowArmed = false;
+            return true;
+        }
+
+        /// <summary>Un lancer de plus encaissé ; vrai s'il n'en reste plus (l'objet doit se casser).</summary>
+        public bool ConsumeDurability()
+        {
+            if (ThrowsLeft < 0)
+                return false;
+            ThrowsLeft = Mathf.Max(0, ThrowsLeft - 1);
+            return ThrowsLeft == 0;
+        }
+
+        /// <summary>Décroché par une onde de répulsion (lustre) : il tombe.</summary>
+        public void Unanchor()
+        {
+            if (!Anchored || Held)
+                return;
+            Anchored = false;
+            Body.isKinematic = false;
+            Body.useGravity = true;
+        }
+
+        /// <summary>
+        /// Se casse : éclat, débris et son (AreaEvents.Broken, retour dans DamageFeedback), puis disparaît ; réapparaît à
+        /// sa place après respawnAfterBreak si ce délai est réglé.
+        /// </summary>
+        public void Break()
+        {
+            if (Broken || Held)
+                return;
+            Broken = true;
+            _brokenAt = Time.time;
+            ThrowArmed = false;
+            InStraightFlight = false;
+            Color color = _renderers.Length > 0 && _renderers[0] != null && _renderers[0].sharedMaterial != null
+                ? _renderers[0].sharedMaterial.color
+                : Color.gray;
+            Bounds b = _colliders.Length > 0 && _colliders[0] != null ? _colliders[0].bounds : new Bounds(transform.position, Vector3.one * 0.5f);
+            ItHunts.Combat.AreaEvents.RaiseBroken(new ItHunts.Combat.BreakEvent
+            {
+                Point = b.center,
+                Size = b.size,
+                Velocity = Body.isKinematic ? Vector3.zero : Body.linearVelocity,
+                Color = color,
+            });
+            if (!Body.isKinematic)
+            {
+                Body.linearVelocity = Vector3.zero;
+                Body.angularVelocity = Vector3.zero;
+            }
+
+            Body.isKinematic = true;
+            SetPresent(false);
+        }
+
+        private void Update()
+        {
+            if (Broken && respawnAfterBreak > 0f && Time.time - _brokenAt >= respawnAfterBreak)
+                Respawn();
+        }
+
+        private void Respawn()
+        {
+            Broken = false;
+            transform.SetPositionAndRotation(_homePosition, _homeRotation);
+            Body.position = _homePosition;
+            Body.rotation = _homeRotation;
+            Anchored = startsAnchored;
+            Body.isKinematic = Anchored;
+            Body.useGravity = true;
+            if (MaxDurability > 0)
+                ThrowsLeft = MaxDurability;
+            SetPresent(true);
+        }
+
+        private void SetPresent(bool present)
+        {
+            foreach (Collider c in _colliders)
+                if (c != null)
+                    c.enabled = present;
+            foreach (Renderer r in _renderers)
+                if (r != null)
+                    r.enabled = present;
         }
 
         private void OnEnable()
@@ -62,18 +201,47 @@ namespace ItHunts.Orbs
         /// <summary>Attrapé : libéré s'il était accroché, sans gravité, suit le point de maintien.</summary>
         public void OnGrabbed()
         {
+            Held = true;
+            ThrowArmed = false;
+            InStraightFlight = false;
             Anchored = false;
             Body.isKinematic = false;
             Body.useGravity = false;
             Body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         }
 
-        /// <summary>Relâché (posé, lâché ou lancé) : gravité normale.</summary>
-        public void OnReleased(bool thrown)
+        /// <summary>
+        /// Relâché (posé, lâché ou lancé) : gravité normale ; lancé avec noGravityFor &gt; 0 : tir tendu, sans gravité
+        /// pendant ce temps ou jusqu'au premier choc (D-025).
+        /// </summary>
+        public void OnReleased(bool thrown, float noGravityFor = 0f)
         {
-            Body.useGravity = true;
+            Held = false;
+            ThrowArmed = thrown;
+            InStraightFlight = thrown && noGravityFor > 0f;
+            _straightFlightUntil = Time.time + noGravityFor;
+            Body.useGravity = !InStraightFlight;
             if (thrown)
                 ThrownAt = Time.time;
+        }
+
+        private void FixedUpdate()
+        {
+            if (InStraightFlight && Time.time >= _straightFlightUntil)
+                EndStraightFlight();
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            if (InStraightFlight)
+                EndStraightFlight();
+        }
+
+        private void EndStraightFlight()
+        {
+            InStraightFlight = false;
+            if (!Held)
+                Body.useGravity = true;
         }
 
         /// <summary>Couleur d'émission (HDR) de tous ses rendus.</summary>

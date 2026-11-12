@@ -74,6 +74,26 @@ aplats, textures peintes à la main…) au lieu de citer les noms des œuvres. L
 détaillé se fait à l'étape DA (voir l'ordre de travail). Images d'inspiration de l'utilisateur :
 `docs/design/references-visuelles/`.
 
+### Piste DA en parallèle (deuxième personne)
+
+Une deuxième personne mène l'étape 10 (direction artistique) **en même temps** que le reste.
+- **Même dépôt GitHub, branche `art`**, fusion dans `main` **par pull request** seulement.
+- L'artiste travaille **uniquement dans `Assets/Art/` et `docs/art/`** (plus sa ligne dans
+  `docs/assets/MANIFEST.md`), avec **ses propres scènes** (`Assets/Art/Scenes/`). Il ne touche ni à
+  `Assets/_Project/` ni à `Assets/Scenes/Test_Movement.unity`.
+- Réciproquement, sur `main`, ne modifie pas `Assets/Art/` ni `docs/art/` (sauf `docs/art/ART-HANDOFF.md`,
+  tenu à jour par toi quand un réglage qui y figure change : tailles, hauteurs, portées, objets).
+- Les réglages partagés (`ProjectSettings/`, `Packages/`, renderer URP dans `Assets/Settings/`) se changent
+  sur `main` : l'artiste les demande dans sa PR. Même version d'Unity des deux côtés.
+- Avant de fusionner une PR `art` : vérifier qu'elle ne touche que son périmètre, que le projet compile, que
+  les tests passent et que chaque asset a sa ligne au manifeste (droits commerciaux compris).
+- **Pipeline d'assets** (connecteur **Higgsfield**) : image concept dans le style → **Tripo P2** (image vers
+  3D, GLB/FBX, polygones limités, `auto_size`) ou **Tripo H3.1 multivues** pour les personnages → **Meshy**
+  pour le squelette et l'animation des créatures → **nettoyage dans Blender** (échelle, pivot, polygones,
+  UV) → import Unity. Mesures, budgets, style et règles de livraison : `docs/art/ART-HANDOFF.md`.
+  **Vérifier les droits d'usage commercial** (forfait Higgsfield, conditions de Tripo et de Meshy) et noter
+  le contenu généré par IA (déclaration Steam) dans le manifeste.
+
 ## Outils connectés
 
 - **Plugin officiel Unity** (skills préfixés par `/`, Unity CLI) : crée et modifie scènes,
@@ -87,8 +107,8 @@ détaillé se fait à l'étape DA (voir l'ordre de travail). Images d'inspiratio
 
 ## Règles
 
-1. **Demande avant d'agir** sur tout ce qui coûte ou ne s'annule pas : une génération Tripo
-   (annonce le nombre de modèles et demande un oui), un `execute_blender_code` sur un fichier
+1. **Demande avant d'agir** sur tout ce qui coûte ou ne s'annule pas : une génération Tripo ou
+   Higgsfield (annonce le nombre de modèles et demande un oui), un push ou une fusion de PR, un `execute_blender_code` sur un fichier
    `.blend` non sauvegardé, l'installation d'un package, un build, un commit.
 2. **Petites étapes vérifiées.** Après chaque fonctionnalité : compilation sans erreur (logs
    Unity), tests EditMode/PlayMode quand c'est testable (calculs de vitesse, charges, recharge,
@@ -100,7 +120,7 @@ détaillé se fait à l'étape DA (voir l'ordre de travail). Images d'inspiratio
 4. **Debug visible** : un affichage activable (vitesse horizontale, état du joueur, charges,
    recharges) pour que l'utilisateur puisse décrire précisément ce qu'il ressent.
 5. **Assets.** Chaque modèle a une entrée dans `docs/assets/MANIFEST.md` (source, outil, licence,
-   échelle, pivot, triangles). Vérifie échelle (1 unité = 1 m), pivot, orientation et nombre de
+   droits commerciaux vérifiés, échelle, pivot, triangles). Vérifie échelle (1 unité = 1 m), pivot, orientation et nombre de
    triangles avant d'importer. Exporte en FBX ou glTF dans `Assets/Art/Models/`.
 6. **Les skills sont des guides, pas des ordres.** Certains citent des skills d'autres moteurs
    (`godot-*`, `roblox-*`, `unreal-*`…) qui ne sont pas installés : ignore ces renvois.
@@ -162,8 +182,10 @@ jusqu'à l'étape 10.
    premières améliorations.
 8. **Run complète** : enchaînement des salles, boss, changement de zone, mort et relance.
 9. **Écran partagé local à 2 joueurs** pour tester la coop.
-10. **Direction artistique** : guide de style, shader cel-shading et contours, lumières, puis
-    assets via Blender et Tripo. **Vrais sons** (skill `audio-design`) à la place des sons
+10. **Direction artistique** — **piste parallèle**, menée par une deuxième personne sur la
+    branche `art` (voir « Piste DA en parallèle ») : guide de style, shader cel-shading et contours,
+    lumières, puis assets via Higgsfield (Tripo, Meshy) et Blender. Côté `main` : réglages partagés
+    demandés par l'artiste, intégration des assets dans les prefabs du jeu, `ART-HANDOFF.md` à jour. **Vrais sons** (skill `audio-design`) à la place des sons
     synthétisés provisoires (`ProceduralSfx`), avec la même liste d'événements.
 11. **Coop en ligne de 1 à 4.**
 12. **Build** et publication.

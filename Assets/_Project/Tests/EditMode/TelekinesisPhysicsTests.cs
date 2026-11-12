@@ -221,5 +221,100 @@ namespace ItHunts.Tests
             Assert.That(probe.Raycast(Vector3.zero, Vector3.forward, 60f, out hit), Is.True);
             Assert.That(hit.Distance, Is.EqualTo(19.5f).Within(0.01f), "tenue, la caisse est ignorée : le mur derrière");
         }
+
+        // ---------- Aide à la visée (attraper) ----------
+
+        private static readonly Vector3 Eye = new Vector3(0f, 1.6f, 0f);
+
+        /// <summary>Caisse figée (cinématique) dont le centre est à cette distance devant et ce décalage latéral (m).</summary>
+        private Grabbable StillCrate(float forward, float lateral, float mass = 25f)
+        {
+            Grabbable g = Crate(Eye + new Vector3(lateral, 0f, forward), mass);
+            g.Body.isKinematic = true;
+            return g;
+        }
+
+        private GameObject Wall(Vector3 center, Vector3 size)
+        {
+            GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            SceneManager.MoveGameObjectToScene(wall, _scene);
+            wall.transform.position = center;
+            wall.transform.localScale = size;
+            return wall;
+        }
+
+        private bool Select(out GrabCandidate c, Vector3? aim = null)
+        {
+            Physics.SyncTransforms();
+            _scene.GetPhysicsScene().Simulate(Dt);
+            var probe = new PhysicsGrabProbe(~0, null) { Settings = _cfg, Scene = _scene.GetPhysicsScene() };
+            return probe.FindGrabbable(Eye, aim ?? Vector3.forward, _cfg.range, out c);
+        }
+
+        [Test]
+        public void Aide_SelectionneUnObjetDansLeCone_PasAuDela()
+        {
+            // À 10 m, le cône vaut 7.5° ; la caisse fait 0.9 m : son bord est à 2.6° de moins que son centre.
+            Grabbable inside = StillCrate(10f, 10f * Mathf.Tan(9f * Mathf.Deg2Rad));     // centre à 9°, bord à ≈ 6.4°
+            Assert.That(Select(out GrabCandidate c), Is.True, "dans le cône");
+            Assert.That(c.Id, Is.EqualTo(inside.Id));
+            Assert.That(c.Angle, Is.GreaterThan(0f).And.LessThan(GrabAssist.ConeAngle(_cfg, c.Distance)));
+
+            inside.transform.position = Eye + new Vector3(10f * Mathf.Tan(13f * Mathf.Deg2Rad), 0f, 10f);   // bord à ≈ 10.5°
+            Assert.That(Select(out _), Is.False, "hors du cône");
+
+            _cfg.aimAssist = false;
+            inside.transform.position = Eye + new Vector3(10f * Mathf.Tan(5f * Mathf.Deg2Rad), 0f, 10f);
+            Assert.That(Select(out _), Is.False, "aide coupée : rayon exact seulement");
+        }
+
+        [Test]
+        public void Aide_LePlusProcheDuViseur_PasLePlusProcheDuJoueur()
+        {
+            Grabbable near = StillCrate(4f, 0.9f);       // à 4 m, bord à ≈ 7.2° du viseur (dans le cône de 8°)
+            Grabbable far = StillCrate(20f, 0.6f);       // à 20 m, bord à ≈ 0.4° du viseur
+            Assert.That(Select(out GrabCandidate c), Is.True);
+            Assert.That(c.Id, Is.EqualTo(far.Id), "le plus proche du viseur");
+            Assert.That(near, Is.Not.Null);
+        }
+
+        [Test]
+        public void Aide_JamaisATraversUnMur()
+        {
+            StillCrate(15f, 0.8f);
+            Wall(Eye + new Vector3(0f, 0f, 8f), new Vector3(6f, 6f, 0.5f));
+            Assert.That(Select(out _), Is.False, "caisse cachée par un mur");
+        }
+
+        [Test]
+        public void Aide_ObjetVisibleACoteDUnMurViseDevant()
+        {
+            // Le viseur touche un muret à 6 m, la caisse est visible juste au-dessus : l'aide la prend.
+            Grabbable crate = StillCrate(12f, 0f);
+            crate.transform.position = Eye + new Vector3(0f, 1.2f, 12f);
+            Wall(Eye + new Vector3(0f, -0.5f, 6f), new Vector3(4f, 1.4f, 0.3f));
+            Assert.That(Select(out GrabCandidate c), Is.True);
+            Assert.That(c.Id, Is.EqualTo(crate.Id));
+        }
+
+        [Test]
+        public void Aide_PasDerriereNiLoinSurLeCote()
+        {
+            StillCrate(-5f, 0f);                         // derrière
+            StillCrate(0.5f, 6f);                        // sur le côté, à 85°
+            StillCrate(30f, 30f);                        // à 45°, loin
+            Assert.That(Select(out _), Is.False);
+        }
+
+        [Test]
+        public void Aide_PasPourLesObjetsTropLourds_MaisLeRayonExactLesMontre()
+        {
+            Grabbable heavy = StillCrate(10f, 0.9f, mass: 60f);                         // hors du rayon, dans le cône
+            Assert.That(Select(out _), Is.False, "l'aide ignore les objets trop lourds");
+            heavy.transform.position = Eye + new Vector3(0f, 0f, 10f);                  // sur le rayon exact
+            Assert.That(Select(out GrabCandidate c), Is.True);
+            Assert.That(c.Id, Is.EqualTo(heavy.Id));
+            Assert.That(c.Angle, Is.EqualTo(0f), "rayon exact");
+        }
     }
 }

@@ -22,6 +22,10 @@ namespace ItHunts.Settings
         [Min(0f)] public float glowInRange = 0.35f;
         [Tooltip("Objet visé et attrapable.")]
         [Min(0f)] public float glowAimed = 1.6f;
+        [Tooltip("Objet sélectionné (visé ou pris par l'aide à la visée) : pulsation de sa lueur (part de glowAimed) et " +
+                 "fréquence (Hz), pour le repérer avant d'appuyer sur F.")]
+        [Range(0f, 1f)] public float aimedPulse = 0.3f;
+        [Min(0f)] public float aimedPulseFrequency = 4f;
         [Tooltip("Objet tenu.")]
         [Min(0f)] public float glowHeld = 1.2f;
         [Tooltip("Objet visé mais trop lourd (rouge terne).")]

@@ -6,7 +6,8 @@ namespace ItHunts.Orbs
 {
     /// <summary>
     /// Retour visuel de la télékinésie (greybox), réglé par TelekinesisFeedbackSettings :
-    /// - lueur des objets attrapables : faible de loin (repérables), plus forte à portée, vive quand ils sont visés,
+    /// - lueur des objets attrapables : faible de loin (repérables), plus forte à portée, vive et pulsée quand ils sont
+    ///   sélectionnés (visés, ou pris par l'aide à la visée),
     ///   rouge terne s'ils sont trop lourds, violette quand ils sont tenus, verte qui s'éteint après un lancer ;
     /// - trait violet de l'orbe à l'objet tenu (la couleur de l'orbe elle-même : MagnetismOrbView, règle OrbLook).
     /// Sur la racine du joueur. En écran partagé, la lueur des objets suivra le joueur 1 (à revoir à l'étape 9).
@@ -51,7 +52,10 @@ namespace ItHunts.Orbs
                 else if (sinceThrow < settings.thrownGlowDuration)
                     glow = settings.throwColor * Mathf.Lerp(settings.glowThrown, settings.glowIdle, sinceThrow / settings.thrownGlowDuration);
                 else if (t.AimHit && t.AimId == g.Id)
-                    glow = t.AimTooHeavy ? settings.tooHeavyColor * settings.glowTooHeavy : settings.grabColor * settings.glowAimed;
+                    glow = t.AimTooHeavy
+                        ? settings.tooHeavyColor * settings.glowTooHeavy
+                        : settings.grabColor * (settings.glowAimed *
+                                                (1f + settings.aimedPulse * Mathf.Sin(Time.time * settings.aimedPulseFrequency * 2f * Mathf.PI)));
                 else if (g.Mass > cfg.maxMass)
                     glow = settings.tooHeavyColor * settings.glowIdle;
                 else if (Vector3.Distance(eye, g.Body.position) <= cfg.range)

@@ -30,6 +30,7 @@ namespace ItHunts.Orbs
             t.AimId = hit ? c.Id : 0;
             t.AimTooHeavy = hit && c.Mass > cfg.maxMass;
             t.AimDistance = hit ? c.Distance : 0f;
+            t.AimAngle = hit ? c.Angle : 0f;
 
             var cmd = new TelekinesisCommand { Kind = TelekinesisCommandKind.Aucune };
             bool cooling = t.LastThrowTick != MovementState.NeverTick && tick - t.LastThrowTick < cooldownTicks;
@@ -107,13 +108,17 @@ namespace ItHunts.Orbs
         public static bool CanThrow(in TelekinesisState t) => t.Holding;
 
         /// <summary>
-        /// Vitesse d'un lancer : throwSpeed dans la direction voulue, plus la vitesse du joueur si inheritPlayerVelocity
-        /// (lancer en pleine course frappe plus fort).
+        /// Vitesse d'un lancer, toujours exactement dans la direction voulue (de l'objet vers le point sous le viseur) :
+        /// throwSpeed, plus la part de la vitesse du joueur dans cette direction si elle est positive et si
+        /// inheritPlayerVelocity (lancer en pleine course frappe plus fort). Le reste de la vitesse du joueur est ignoré :
+        /// il ne dévie jamais l'objet (avant correction, toute la vitesse était ajoutée : 7 m d'écart à 30 m en course de
+        /// côté, 10 m en traction).
         /// </summary>
         public static Vector3 ThrowVelocity(Vector3 direction, Vector3 playerVelocity, TelekinesisOrbSettings cfg)
         {
-            Vector3 v = direction.normalized * cfg.throwSpeed;
-            return cfg.inheritPlayerVelocity ? v + playerVelocity : v;
+            Vector3 dir = direction.normalized;
+            float bonus = cfg.inheritPlayerVelocity ? Mathf.Max(0f, Vector3.Dot(playerVelocity, dir)) : 0f;
+            return dir * (cfg.throwSpeed + bonus);
         }
 
         private static TelekinesisCommand Release(ref TelekinesisState t, int tick, TelekinesisCommandKind kind)

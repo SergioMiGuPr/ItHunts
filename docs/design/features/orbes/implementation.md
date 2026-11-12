@@ -66,6 +66,9 @@ dépend de la scène.
 | `Assets/_Project/Scripts/Runtime/Settings/MagnetismFeedbackSettings.cs` | réglages du retour |
 | `Assets/_Project/Tests/EditMode/MagnetismFeedbackTests.cs` | 14 tests (viseur, refus, sons, bloom, prefab) |
 | `Assets/_Project/Scripts/Runtime/Orbs/OrbLook.cs` | couleur de l'orbe unique selon l'action (D-024) |
+| `Assets/_Project/Scripts/Runtime/Orbs/GrabAssist.cs` | aide à la visée de la prise (D-026) |
+| `Assets/_Project/Scripts/Runtime/Combat/` | dégâts d'impact, cibles, factices, retour des coups (D-025) |
+| `Assets/_Project/Tests/EditMode/CombatTests.cs` | 25 tests (formule, chute, PV, intervalle, coup, tir tendu, visée sur un ennemi, zone, durabilité, lustre, onde, étourdissement, scène, sons, réglages) |
 | `Assets/_Project/Scripts/Runtime/Orbs/TelekinesisOrb.cs`, `TelekinesisState.cs` | logique de la télékinésie |
 | `Assets/_Project/Scripts/Runtime/Orbs/TelekinesisHolder.cs` | côté physique, rayon de visée |
 | `Assets/_Project/Scripts/Runtime/Orbs/Grabbable.cs`, `TelekinesisView.cs` | objets attrapables, retour visuel |
@@ -123,4 +126,48 @@ dépend de la scène.
      30 m/s, 0.05 m en bunny hop à 20 m/s en virage de 30°/s ;
    - attraction : 1 charge toutes les 4 s (`Magnetism_Default.asset`).
    - Ordre d'un tick dans `PlayerMotor` : magnétisme → télékinésie → mouvement → côté physique.
-4. **Télékinésie, partie 2** — à faire : dégâts des objets lancés, ennemis factices, éclats et sons.
+3 ter. **Aide à la visée de la prise (D-026)** — fait (2026-11-12) :
+   - `GrabAssist` (calculs purs : demi-angle du cône selon la distance, angle d'un point, tolérance latérale) ;
+   - `PhysicsGrabProbe` : rayon exact d'abord (même trop lourd), sinon chaque collider des `Grabbable.All` : point
+     le plus proche du rayon de visée (`Collider.ClosestPoint`, deux passes), angle, cône, puis ligne de vue (le
+     premier collider touché vers ce point doit être le sien) ; garde le plus petit angle ; `Scene` réglable (tests) ;
+   - `GrabCandidate.Angle`, `TelekinesisState.AimAngle` (debug F3 : « aide 4.2° / cône 7.5° ») ;
+   - `TelekinesisView` : lueur de l'objet sélectionné qui pulse (`aimedPulse`, `aimedPulseFrequency`).
+4. **Télékinésie, partie 2 (D-025)** — fait (2026-11-12), playtest en attente :
+   - `Assets/_Project/Scripts/Runtime/Combat/` : `ImpactDamage` (formule, palier, chute), `HitCooldown`, `HealthState`
+     (PV copiables), `DamageEvents` (canal des coups), `Damageable` (cible, registre, mort et réapparition,
+     éclair), `ImpactDamager` (sur chaque objet attrapable : `OnCollisionEnter` → `TryDamage`), `TrainingDummyMover`,
+     `DamageFeedback` (objet de la scène : éclats en réserve, sons 3D), `DamageNumbersHud` (sur le joueur : chiffres et
+     barres de PV pour sa caméra) ;
+   - réglages `DamageSettings`, `TrainingDummySettings`, `DamageFeedbackSettings` (`Damage_Default`,
+     `TrainingDummy_Default`, `DamageFeedback_Default`) ;
+   - tir tendu : `Grabbable.OnReleased(thrown, noGravityFor)`, fin au premier choc ou après `throwNoGravityTime` ;
+   - `PhysicsAimProbe` : un `Damageable` arrête le rayon sans surface (pas de traction ni de répulsion sur un ennemi) ;
+   - `ProceduralSfx.ImpactHit`, `ProceduralSfx.Kill` ;
+   - scène : 3 factices fixes et 1 mobile dans la zone Télékinésie, `ImpactDamager` sur tous les objets attrapables.
+   - Les messages de collision ne partent pas en mode édition (`PhysicsScene.Simulate`) : la vraie collision est
+     vérifiée en Play Mode (test EditMode « non concluant » à dessein).
+   - Réseau (étape 11) : les dégâts se calculeront là où la physique fait autorité (serveur).
+4 bis. **Après le playtest de la partie 2 (D-027)** — fait (2026-11-12), playtest en attente :
+   - **Lancer de travers en mouvement, cause :** `TelekinesisOrb.ThrowVelocity` ajoutait toute la vitesse du joueur
+     au lancer (déviation de 14° à 7.5 m/s de côté, plus en traction), et le rayon du clic partait des yeux après le
+     mouvement du tick (un tick d'avance sur l'image vue). Corrigé : seule la part de la vitesse dans la direction du
+     lancer s'ajoute (`Mathf.Max(0, Dot)`), et `PlayerMotor` passe à `TelekinesisHolder.Apply` les yeux du début du
+     tick (`eyeAtClick`). Mesures avant / après : tableau dans testing.md ;
+   - gravité des objets : `ProjectSettings/DynamicsManager.asset`, 20 m/s² ;
+   - `AreaEffects` (pur) : rayon et dégâts de zone, durabilité selon la masse, vitesse et direction de l'onde,
+     seuil d'étourdissement ; `AreaEvents` (zone, objet cassé, étourdi) ;
+   - `ImpactDamager.HandleImpact` : coup direct, puis au premier impact d'un lancer (`Grabbable.TakeThrowImpact`) ou à
+     tout impact pour un objet fragile : `ApplyArea` (ligne de vue par raycast) et durabilité ; durabilité fixée au
+     `Start` (la masse doit être lue après `Grabbable.Awake`) ;
+   - `Grabbable` : `InitDurability`, `ConsumeDurability`, `Break` (débris par `DamageFeedback`), réapparition
+     (`respawnAfterBreak`), réglages par objet (`durabilityOverride`, `breaksOnAnyImpact`, `splashRadiusOverride`),
+     `Unanchor` ;
+   - `RepulsionWave.Apply`, appelée par `PlayerMotor` au tick de la répulsion (`LastRepelTick == State.Tick`) ;
+   - `AimHit.Enemy`, `MagnetismState.AimOnEnemy` : la traction est refusée sur un ennemi, la répulsion part ;
+   - `EnemyBody` (factices) : corps cinématique, recul (gravité, freinage, `SweepTest`), étourdissement contre un
+     obstacle solide (pas contre un joueur), retour au poste ; `TrainingDummyMover` s'arrête quand il est occupé et
+     rejoint son trajet ; `Damageable` luit en jaune pendant l'étourdissement ;
+   - `DamageFeedback` : cercles de zone et d'onde, débris, étoiles, sons `ProceduralSfx.Break` et `Stun` ;
+     `DamageNumbersHud` : carrés de durabilité au-dessus de l'objet tenu ;
+   - scène : portique remonté (lustre à 7.6 m), factices repoussables, objets qui reviennent 4 s après s'être cassés.

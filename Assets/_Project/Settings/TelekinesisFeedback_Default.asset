@@ -18,6 +18,8 @@ MonoBehaviour:
   glowIdle: 0.08
   glowInRange: 0.35
   glowAimed: 1.6
+  aimedPulse: 0.3
+  aimedPulseFrequency: 4
   glowHeld: 1.2
   glowTooHeavy: 0.5
   thrownGlowDuration: 1

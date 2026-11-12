@@ -6,6 +6,7 @@ namespace ItHunts.Orbs
     /// Rayon de visée avec la physique Unity. Les déclencheurs (triggers) et les colliders du joueur lui-même
     /// (sa capsule, que le rayon peut toucher de l'intérieur) sont ignorés, ainsi que l'objet qu'il tient par télékinésie
     /// (orbe unique, D-024 : sinon une traction en tenant une caisse viserait la caisse ou verrait sa ligne de vue coupée).
+    /// Un ennemi (Damageable) arrête le rayon et le signale (AimHit.Enemy) : pas de traction sur lui, la répulsion oui.
     /// </summary>
     public sealed class PhysicsAimProbe : IAimProbe
     {
@@ -45,7 +46,9 @@ namespace ItHunts.Orbs
             if (best < 0)
                 return false;
             RaycastHit h = _hits[best];
-            hit = new AimHit { Point = h.point, Normal = h.normal, Distance = h.distance };
+            // Un ennemi arrête le rayon et le signale : la traction ne s'y accroche jamais, la répulsion y part (onde).
+            bool enemy = h.collider.GetComponentInParent<ItHunts.Combat.Damageable>() != null;
+            hit = new AimHit { Point = h.point, Normal = h.normal, Distance = h.distance, Enemy = enemy };
             return true;
         }
     }

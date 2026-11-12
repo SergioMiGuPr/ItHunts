@@ -873,6 +873,7 @@ GameObject:
   - component: {fileID: 1006166116496734906}
   - component: {fileID: 6004529481872613043}
   - component: {fileID: 6444298653853191021}
+  - component: {fileID: 8623513571843615663}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -1100,6 +1101,19 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: 3aacf22bbc43a74438de970bb8cd7638, type: 2}
   orbRenderer: {fileID: 2120912395945380332}
   line: {fileID: 3882523780979044985}
+--- !u!114 &8623513571843615663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4554349776337732255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22a301bdf8534954f8681ac2b50c2330, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Combat.DamageNumbersHud
+  settings: {fileID: 11400000, guid: b4ce419fb469f28479b09b2861e17393, type: 2}
 --- !u!1 &6093231452389037007
 GameObject:
   m_ObjectHideFlags: 0

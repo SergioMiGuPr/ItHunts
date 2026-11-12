@@ -57,24 +57,68 @@ Une seule orbe (D-024) :
 - [x] L'objet tenu reste devant le joueur à grande vitesse. Avec de vrais corps et des trajectoires synthétiques : écart 0.000 m en traction de 0 à 30 m/s et à 40 m/s, 0.15 m en bunny hop à 20 et 26 m/s en virage de 90°/s (retard dû à la rotation de la vue). *(TelekinesisPhysicsTests › Physique_ObjetTenu_TractionDe0a30ms_ResteDevant, Physique_ObjetTenu_TractionA40ms_ResteDevant, Physique_ObjetTenu_BunnyHopA20ms_ResteDevant, Physique_ObjetTenu_BunnyHopA26ms_ResteDevant)* Avec le vrai joueur en Play Mode (touches F, A, Z et espace simulées dans l'Input System) : caisse de 25 kg tenue, **traction à 30 m/s : 0.000 m** (0.55 m juste après une rotation brusque de la vue de 30°, 0.07 m 0.2 s plus tard) ; **bunny hop à 20 m/s en virage de 30°/s : 0.05 m**, sauts et atterrissages compris ; contre un mur, la caisse bute (2 à 3 m d'écart, voulu). Avant correction, l'objet prenait un tick d'avance (0.47 m à 40 m/s). *(Play Mode, 2026-11-12)*
 - [ ] Ressenti : combos traction + objet, lisibilité de la couleur de l'orbe et des anneaux, commandes. *(playtest)*
 
-## Playtest — une seule orbe (checklist courte)
+- [x] Playtest orbe unique : tout est bon, sauf la prise à distance en mouvement → aide à la visée (D-026). *(playtest de l'utilisateur, 2026-11-12)*
 
-Commandes : **A** maintenu = traction ; **clic droit** = répulsion ; **F** = attraper / relâcher ; **clic
-gauche** = lancer. Manette : RB, LT, X, RT. F3 : debug (commandes et derniers appuis). F12 : zone
-Télékinésie ; F11 : grande salle.
+Aide à la visée de la prise (D-026) :
 
-1. **Commandes :** chaque touche fait son action, et seulement elle ; la molette, Y et les touches 1 et 2 ne
-   font plus rien ; le clic gauche sans objet ne fait rien.
-2. **Combo :** attrape une caisse (F), tracte-toi vers le haut du mur de la grande salle (A), lance la caisse en
-   arrivant (clic gauche) : la caisse reste devant toi pendant la traction, sans trembler ni prendre d'avance ?
-3. **Bunny hop et course :** même chose en bunny hop et en dash, en tournant : la caisse suit bien ?
-4. **Couleur de l'orbe :** bleu en traction (même en tenant un objet), orange à la répulsion, violet en tenant,
-   éclair vert au lancer. Lisible à pleine vitesse ?
-5. **Viseur :** anneaux bleu et orange, et un troisième à l'extérieur (violet : attrapable, vert : lancer
-   possible, rouge : refus, par exemple sur la caisse de 60 kg).
-6. **Plus d'endurance :** enchaîne attraper et lancer sans limite, à part le court délai après un lancer ; plus
-   de barre violette.
-7. **Attraction :** les charges bleues reviennent en 4 s chacune : trop lent, trop rapide ?
+- [x] Cône : 8° jusqu'à 5 m, 3° à 60 m, linéaire entre les deux ; coupé si `aimAssist` est décoché. *(`Assets/_Project/Tests/EditMode/TelekinesisTests.cs` › Aide_ConeSelonLaDistance, Aide_ReglagesParDefaut)*
+- [x] Sélection dans le cône et pas au-delà ; le plus proche du viseur, pas du joueur ; jamais à travers un mur ; un objet visible au-dessus d'un muret visé est pris ; ni derrière ni loin sur le côté ; objets trop lourds seulement au rayon exact. *(`Assets/_Project/Tests/EditMode/TelekinesisPhysicsTests.cs` › Aide_SelectionneUnObjetDansLeCone_PasAuDela, Aide_LePlusProcheDuViseur_PasLePlusProcheDuJoueur, Aide_JamaisATraversUnMur, Aide_ObjetVisibleACoteDUnMurViseDevant, Aide_PasDerriereNiLoinSurLeCote, Aide_PasPourLesObjetsTropLourds_MaisLeRayonExactLesMontre)*
+- [x] Mesuré en Play Mode (caisse de 25 kg, vraies touches simulées), écart toléré entre le viseur et le centre de la caisse, avec / sans aide : **10 m : 10.3° (1.8 m) / 2.6° (0.45 m)** ; **30 m : 6.6° (3.5 m) / 0.8° (0.4 m)** ; **59 m : 3.5° (3.6 m) / 0.4° (0.4 m)**. Prise réelle avec F à 80 % de l'écart toléré : réussie aux trois distances. **En bunny hop à 20 m/s**, visée qui oscille de ±3° : caisse sélectionnée **100 % / 71 %** du temps à 10 m, **93 % / 29 %** à 30 m, **86 % / 17 %** à 59 m ; F pressé avec 2.5° d'erreur : pris aux trois distances avec l'aide, seulement à 10 m sans. *(Play Mode, 2026-11-12)*
+
+Dégâts, partie 2 (D-025) :
+
+- [x] Formule : 25 kg à 30 m/s = 55, à 45 m/s = 92.5 ; 5 kg à 30 m/s = 11 ; rien au seuil de 8 m/s ; paliers 25 et 60. *(`Assets/_Project/Tests/EditMode/CombatTests.cs` › Degats_MasseFoisVitesseAuDessusDuSeuil, Degats_Paliers, Reglages_ParDefaut)*
+- [x] Chute : seuil de 3 m/s si l'impact est surtout vertical et l'objet au-dessus (25 kg tombée de 4 m ≈ 14.6). *(CombatTests › Chute_SeuilPlusBas, Chute_ReconnueSeulementSiVerticaleEtObjetAuDessus)*
+- [x] PV : dégâts pris = PV restants, mort une seule fois, plus de dégâts mort, réapparition après 3 s ; un même objet ne blesse la même cible qu'une fois toutes les 0.3 s ; chaque coup est publié. *(CombatTests › PV_DegatsMortUneFoisPuisReapparition, Intervalle_UnCoupParObjetEtParCible, Coup_RetireLesPV_PublieLeCoup_RespecteLIntervalle)*
+- [x] Tir tendu : sans gravité après un lancer, gravité ensuite ; tout de suite après une pose. *(CombatTests › TirTendu_SansGraviteApresUnLancer_PasApresUnePose)*
+- [x] Le magnétisme ne s'accroche jamais à un ennemi. *(CombatTests › Magnetisme_NeSAccrochePasAUnEnnemi ; Play Mode : traction visée sur un factice refusée, « rien à portée »)*
+- [x] Scène : 4 factices (dont 1 mobile), retour des dégâts, `ImpactDamager` sur chaque objet attrapable ; chiffres de dégâts sur le prefab joueur ; sons non vides. *(CombatTests › Scene_EnnemisFacticesEtObjetsQuiBlessent, Sons_ImpactEtMort_NonVidesSansSaturation)*
+- [x] Vrais lancers en Play Mode (F puis clic gauche simulés) sur un factice fixe : 25 kg à 10 m et 20 m → **55 dégâts à 30.0 m/s** ; 5 kg à 10 m et 20 m → **11** ; 25 kg lancée en course (11 m/s) → **79.6 à 39.8 m/s** ; à 29 m → **42.5 à 25 m/s** (le tir tendu s'arrête à 15 m, la caisse retombe) ; caisse de 25 kg tombée de 4 m → **13.8 à 8.5 m/s** (chute) ; mort puis réapparition entre 2.5 et 3.2 s ; factice mobile à 6 m/s. Avant le tir tendu : à 20 m, la caisse touchait le sol d'abord (24.8 m/s) et la caisse de 5 kg ratait à 10 m. *(Play Mode, 2026-11-12)*
+- [ ] Ressenti : aide à la visée, dégâts, retour des coups. *(playtest)*
+
+- [x] Playtest aide à la visée et partie 2 : dégâts bons, gravité des objets à 20 m/s² ; à corriger : lancer de travers en mouvement → D-027. *(playtest de l'utilisateur, 2026-11-12)*
+
+Après le playtest de la partie 2 (D-027) :
+
+- [x] Lancer : la direction est toujours celle du viseur ; seule la part de la vitesse du joueur dans cette direction s'ajoute, jamais en négatif. *(`Assets/_Project/Tests/EditMode/TelekinesisTests.cs` › Lancer_DirectionToujoursCelleDuViseur_SeuleLaPartUtileDeLaVitesseSAjoute)*
+- [x] Écart entre le point sous le viseur au clic et le point d'impact sur un mur, caisse de 25 kg, en Play Mode (vraies touches simulées). **Avant** (vitesse du joueur ajoutée en entier, gravité 9.81) / **après** (part utile seulement, rayon depuis les yeux du début du tick, gravité 20) : *(Play Mode, 2026-11-12)*
+
+  | Situation | 10 m | 20 m | 30 m |
+  |---|---|---|---|
+  | À l'arrêt | 0.06 → 0.06 m | 0.05 → 0.10 m | 0.89 → 1.82 m (vertical : retombée après le tir tendu) |
+  | Course de côté (7.5 m/s) | **2.01 → 0.07 m** | **4.50 → 0.10 m** | **7.06 → 1.82 m** (latéral 7.00 → 0.00) |
+  | Bunny hop (20 m/s, vers la cible) | 0.06 → 0.03 m | 0.20 → 0.01 m | 2.46 → 0.01 m (lancer à 50 m/s) |
+  | Traction (20 m/s, en diagonale) | **5.70 → 0.13 m** | **8.66 → 0.06 m** | **10.30 → 0.15 m** |
+
+  Écart latéral restant : au plus 0.11 m. Étape intermédiaire (part utile seulement, rayon depuis les yeux après le mouvement) : 0.13 m de côté et 0.2 à 0.4 m en traction, soit un tick de déplacement.
+- [x] Gravité des objets à 20 m/s². *(`Assets/_Project/Tests/EditMode/CombatTests.cs` › Lancer_RayonDuClicDepuisLesYeuxDuDebutDuTick_ReglagesD027)*
+- [x] Zone : rayon 1.3 / 2.5 / 3.4 m (5 / 25 / 40 kg), 4 m imposé ; 60 % au centre, 25 % de ça au bord, rien au-delà. *(CombatTests › Zone_RayonSelonLaMasse_DegatsDegressifs)*
+- [x] Durabilité : 1 / 2 / 3 / 3 / 5 lancers (5 / 15 / 20 / 25 / 40 kg), imposée par objet ; la petite caisse casse au premier lancer avec sa zone (l'ennemi proche touché, pas le lointain) ; 25 kg casse au 3e ; un rebond, une chute non lancée ou un lancer sous le seuil ne comptent pas ; le lustre casse en tombant, zone de 4 m. *(CombatTests › Durabilite_SelonLaMasse, Durabilite_PetiteCaisseCasseeAuPremierLancer_AvecZone, Durabilite_CaisseDe25kg_TroisLancers_LeTroisiemeLaCasse, Durabilite_UnLancerNeCompteQuUneFois_EtPasLesChocsNonLances, Lustre_CasseAuPremierImpactMemeTombe_ZoneDe4m)*
+- [x] Onde : 16 m/s (15 kg ou ennemi de 80 kg au centre), 20.8 (5 kg), 5.6 (60 kg), moitié au bord, rien au-delà de 4 m, jamais vers le bas ; elle repousse objets et ennemis, décroche le lustre sans le pousser, épargne l'objet tenu. *(CombatTests › Onde_VitesseSelonMasseEtDistance, Onde_RepousseObjetsEtEnnemis_DecrocheLeLustre_PasLObjetTenu)*
+- [x] Étourdissement : repoussé à 12 m/s contre un mur, étourdi (sans le traverser), prêt pour la prise ; à 4 m/s, non. *(CombatTests › Etourdi_SiLEnnemiPercuteUnMurAssezVite, PasEtourdi_SiLEnnemiArriveTropLentement)*
+- [x] Visée du magnétisme sur un ennemi : signalée ; pas de traction (ni d'anneau bleu), la répulsion part. *(CombatTests › Magnetisme_VisseeSurUnEnnemi_Signalee, Magnetisme_PasDeTractionVersUnEnnemi_MaisLaRepulsionOui)*
+- [x] En Play Mode (2026-11-12) : caisse de 25 kg sur un factice → **55** direct et **20.6 de zone** sur le voisin à 1.6 m ; durabilité 3/3 → 2/3 → 1/3 → cassée au 3e lancer ; caisse de 5 kg cassée au premier, revenue après 4 s ; onde sur le factice mobile → **12.3 m/s**, projeté contre le mur, **étourdi 1.5 s** ; factice fixe repoussé contre le mur à **10.3 m/s** → étourdi, libéré après 1.5 s ; lustre décroché par l'onde → tombe droit, **30 dégâts de chute** à 15 m/s sur le factice dessous, casse, zone de 4 m. Corrigé pendant ces mesures : durabilité lue avant la masse (1 lancer pour tout), lustre poussé de côté par l'onde, lustre trop bas (le factice dessous était dans l'onde).
+- [x] Ressenti : visée du lancer en mouvement, répulsion (onde) et étourdissement contre un mur validés. *(playtest de l'utilisateur, 2026-11-12)*
+
+## Playtest — lancer, zone, durabilité, onde (checklist courte)
+
+Commandes : A traction, clic droit répulsion (onde), F attraper / relâcher, clic gauche lancer. F12 : zone
+Télékinésie (3 factices fixes, 1 mobile, lustre sous le portique de 8 m).
+
+1. **Lancer en mouvement :** en course de côté, en bunny hop et en traction, la caisse part pile où vise le viseur à
+   10 et 20 m (à 30 m, elle retombe un peu après 15 m). En courant vers la cible, elle frappe plus fort.
+2. **Zone :** une caisse sur un factice blesse aussi un factice voisin (chiffre plus petit) ; cercle orange au sol ;
+   rien à travers un mur.
+3. **Durabilité :** en tenant une caisse, des carrés au-dessus d'elle (5 kg : 1, 15 kg : 2, 25 kg : 3, 40 kg : 5) ;
+   un carré s'éteint à chaque lancer ; au dernier, elle se casse (éclat, débris, son) et revient 4 s plus tard.
+4. **Lustre :** vise-le avec la répulsion : il se décroche et tombe sur le factice dessous (≈ 30 dégâts + zone de
+   4 m), et se casse. Lancé, il se casse aussi au premier impact.
+5. **Onde :** répulsion au sol près d'un factice ou de caisses : ils sont repoussés (les lourds moins), cercle bref ;
+   tu es toujours propulsé.
+6. **Étourdissement :** repousse un factice contre un mur (le mobile passe devant le mur de la grande salle) :
+   étoiles, lueur jaune, son ; il ne bouge plus pendant 1.5 s ; le mobile s'arrête puis rejoint son trajet.
+7. **Garde-fous :** la traction refuse toujours un factice (pas d'anneau bleu) ; tes objets ne te blessent jamais.
+8. **Gravité à 20 m/s² :** les objets tombent plus vite qu'avant. Est-ce que ça te convient ?
 
 ## History
 
@@ -84,3 +128,5 @@ Télékinésie ; F11 : grande salle.
 - 2026-11-12 : partie 2, retour visuel et sonore.
 - 2026-11-12 : télékinésie et échange, partie 1.
 - 2026-11-12 : une seule orbe (D-024) : actions simultanées, couleur selon l'action, sans endurance, attraction en 4 s ; objet tenu sans avance à grande vitesse.
+- 2026-11-12 : aide à la visée de la prise (D-026) ; dégâts d'impact, tir tendu, chutes, ennemis factices (D-025).
+- 2026-11-12 : D-027 : lancer vers le viseur (mesures avant / après), gravité 20, zone, durabilité, onde, étourdissement.

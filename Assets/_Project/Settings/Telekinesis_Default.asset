@@ -17,6 +17,10 @@ MonoBehaviour:
   aimMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  aimAssist: 1
+  assistNearAngle: 8
+  assistNearDistance: 5
+  assistFarAngle: 3
   pressBuffer: 0.1
   cooldown: 0.3
   holdDistance: 2.5
@@ -27,5 +31,6 @@ MonoBehaviour:
   breakTime: 0.3
   placeMaxSpeed: 4
   throwSpeed: 30
+  throwNoGravityTime: 0.5
   inheritPlayerVelocity: 1
   ignoreHolderAfterRelease: 0.4

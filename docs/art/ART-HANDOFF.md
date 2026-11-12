@@ -1,0 +1,202 @@
+# ItHunts : dossier de mesures et de livraison pour l'artiste
+
+**Mis à jour :** 2026-11-12 · Tiré des réglages réels du jeu (`Assets/_Project/Settings/*.asset`) et de la scène
+de test `Test_Movement`. Quand un réglage change, ce document est mis à jour par le côté code (branche `main`).
+
+Ce dossier dit **à quelle taille** construire le monde et les objets, **dans quel style**, et **comment les
+livrer**. Les mesures viennent du contrôleur du joueur : un décor qui les ignore casse le mouvement, qui est le
+cœur du jeu.
+
+## 1. Organisation du travail
+
+- **Dépôt :** même dépôt GitHub (`SergioMiGuPr/ItHunts`), branche **`art`**. Fusion dans `main` **par pull
+  request** uniquement.
+- **Ton périmètre :** `Assets/Art/` (modèles, textures, matériaux, shaders, scènes de présentation) et
+  `docs/art/`, plus ta ligne dans `docs/assets/MANIFEST.md` pour chaque asset.
+- **Hors périmètre :** `Assets/_Project/` (code, réglages, prefabs du jeu) et `Assets/Scenes/Test_Movement.unity`.
+  Tu travailles dans **tes propres scènes** (`Assets/Art/Scenes/`).
+- **Réglages partagés** (`ProjectSettings/`, `Packages/`, renderer URP dans `Assets/Settings/`) : n'y touche pas
+  directement. Décris le changement voulu (par exemple : ajouter une passe de contours au renderer URP) dans la
+  PR ou dans un ticket ; il est fait sur `main`.
+- **Unity 6000.3.28f1** exactement (même version que `main`), URP. Les gros fichiers (FBX, GLB, PNG, PSD, blend…)
+  passent par **Git LFS** (déjà configuré dans `.gitattributes`). Le quota LFS gratuit de GitHub est petit (de
+  l'ordre de 1 Go de stockage) : pas de fichiers de travail inutiles dans le dépôt.
+- Ne renomme ni ne déplace un fichier sans son `.meta` (Unity y garde l'identifiant de l'asset).
+
+## 2. Le joueur
+
+| Mesure | Valeur | Ce que ça implique |
+|---|---|---|
+| Hauteur de la capsule | **1.8 m** | passage debout : prévoir **≥ 2.2 m** sous plafond (saut compris : 3 m+) |
+| Rayon de la capsule | **0.4 m** (0.8 m de large) | couloir praticable ≥ 1.2 m ; **confortable à pleine vitesse : ≥ 3 m** |
+| Hauteur des yeux | **1.6 m** | cadre des vues, hauteur des rambardes (≤ 1.1 m pour ne pas boucher la vue) |
+| Glissade / accroupi : capsule | **0.9 m**, yeux à **0.75 m** | passage bas glissable : **≥ 1.0 m** (testé à 1.1 m) |
+| Marche franchie sans sauter | **0.3 m** | marches d'escalier ≤ 0.3 m ; au-delà, c'est un saut |
+| Pente praticable | **≤ 45°** | au-delà, on glisse ; une glissade en pente accélère |
+
+Le joueur ne voit que **ses mains et l'orbe** (vue première personne). L'orbe est en bas à droite de la vue.
+
+## 3. Mouvement : hauteurs et distances
+
+Valeurs théoriques calculées sur les réglages (gravité 20 m/s², chute ×1.5), à l'arrêt du contrôle aérien ; en
+jeu, un bon joueur va plus loin.
+
+| Capacité | Mesure | Repère pour le décor |
+|---|---|---|
+| Course | **7.5 m/s** | |
+| Vitesse max des gains (glissade, saut, dash, répulsion) | **20 m/s** | ; bunny hop mesuré jusqu'à **26 m/s** |
+| Saut | **1.3 m** | rebord atteint au sol : ≤ 1.3 m |
+| Double saut (2e saut en l'air) | **+1.6 m**, soit **≈ 2.9 m** au total | rebord atteignable sans aide : ≤ 2.9 m ; un mur de **3 m+** bloque vraiment |
+| Saut en course | **≈ 4.9 m** | trou franchissable par tous |
+| Saut + double saut en course | **≈ 9 m** | |
+| Dash (au sol ou en l'air) | **6.5 m** en 0.3 s | s'ajoute aux sauts |
+| Bunny hop à 20 m/s | **≈ 13 m** par saut | les arènes doivent être **longues** (lignes de 50 m+) |
+| Wall jump | **1.8 m** de haut, poussée de 7.5 m/s | murs de wall slide : **≥ 6 m** de haut, longs |
+| Écarts entre murs testés (wall jump d'un mur à l'autre) | **3 m** (cheminée de 30 m), **6 m**, **10 m** | 3 m : on monte en zigzag ; 10 m : limite confortable |
+
+**Terrain d'essai déjà testé** (scène `Test_Movement`, greybox) :
+
+- blocs de 0.5, 1, 1.3, 1.5 et 2 m ; rampes de 15°, 30°, 45° et 50° (trop raide) ; longues pentes de 10° à 30° ;
+- trous de 2 à 7 m (plateformes de 2 m) ; écarts de 8 à 22 m (plateformes de 4 m) ; escalier de plateformes de
+  2 m en 2 m jusqu'à 16 m ;
+- couloir de glissade de 4 m de large et 50 m de long, avec passage bas à 1.1 m ;
+- paires de murs de 20 m de haut à 6 m et 10 m d'écart ; mur seul de 200 m × 15 m ; cheminée de 3 m × 30 m ;
+- grande salle de 50 × 50 m et 45 m de haut, porte de 8 m.
+
+## 4. L'orbe : portées
+
+L'orbe a deux pouvoirs, utilisables en même temps.
+
+| Pouvoir | Portée | Repère pour le décor |
+|---|---|---|
+| **Traction** (le joueur est tiré en ligne droite vers un point visé, **toute surface**) | **60 m**, jusqu'à 30 m/s | salles de **30 à 50 m** de haut possibles ; points d'accroche visibles en hauteur |
+| **Répulsion** (rocket jump depuis une surface) | **40 m** ; saut de **5 m** (7.6 m avec un saut juste avant) | |
+| **Télékinésie** (attraper puis lancer un objet) | **60 m** ; aide à la visée : cône de 8° de près, 3° à 60 m | **chaque arène fournit des objets à lancer**, visibles de loin |
+| Objet tenu | flotte à **2.5 m** devant les yeux, **0.35 m** sous la visée | objets tenus ≤ **1.3 m** pour ne pas boucher la vue |
+| Lancer | **30 m/s** + la vitesse du joueur ; **droit sur ≈ 15 m** (tir tendu), puis l'objet retombe | lignes de tir dégagées de 15 à 20 m dans les arènes |
+| Ennemis factices (greybox) | capsule de **1.8 × 0.8 m** | gabarit provisoire, en attendant la goule |
+
+## 5. Objets attrapables (props interactifs)
+
+Masse **maximale attrapable : 40 kg** (au-delà, l'objet brille en rouge terne et refuse). Tailles actuelles de la
+greybox, à garder comme gabarit :
+
+| Objet | Taille | Masse |
+|---|---|---|
+| Petite caisse | cube de 0.5 m | 5 kg |
+| Caisse moyenne | cube de 0.7 m | 15 kg |
+| Caisse | cube de 0.9 m | 25 kg |
+| Grosse caisse | cube de 1.1 m | 40 kg (max) |
+| Caisse trop lourde | cube de 1.3 m | 60 kg |
+| Tonneau | Ø 0.6 m × 0.9 m | 20 kg |
+| Lustre (suspendu ; tombe quand on l'attrape ou qu'une onde de répulsion le décroche ; se casse au premier impact) | 1.6 × 0.3 × 1.6 m, suspendu à ≈ 7.6 m | 25 kg |
+
+- **Silhouette proche d'une forme simple** (boîte, cylindre, capsule) : la collision est une forme simple ajoutée
+  dans Unity. Pour une forme complexe, fournis en plus un **maillage de collision convexe** très bas
+  (`<Asset>_Collider`, < 100 triangles).
+- La masse se lit à l'œil : plus gros et plus « plein » = plus lourd. Les objets trop lourds doivent avoir l'air
+  massifs (métal, pierre).
+- Le jeu fait **briller** ces objets (émission pilotée par le code, voir § 7).
+- Les objets **se cassent** après 1 à 5 lancers selon leur masse (le lustre au premier choc) : prévoir à terme des
+  morceaux cassés (pour l'instant, débris en cubes greybox). Ils tombent à **20 m/s²**, comme le joueur.
+- Un lustre doit pendre **à plus de 4 m au-dessus** de la hauteur d'une tête d'ennemi (rayon de l'onde qui le
+  décroche).
+
+## 6. Budgets proposés (à valider ensemble)
+
+Triangles par asset (LOD0) et textures. Rendu peint à la main : on mise sur la texture de couleur (base color) et
+les contours, peu sur les normal maps.
+
+| Catégorie | Triangles (LOD0) | Textures | LOD |
+|---|---|---|---|
+| Mains + orbe (vue FPS) | 15 000 – 20 000 | 2048 | non |
+| Petits props attrapables (caisses, pots) | 500 – 2 000 | 512 – 1024 | non |
+| Props moyens (tonneau, lustre, statue) | 2 000 – 6 000 | 1024 | LOD1 à 50 % |
+| Pièces de décor modulaires (murs, arches, piliers) | 500 – 5 000 | trim sheets 1024 – 2048 partagées | LOD1 si > 3 000 |
+| Goule (ennemi au sol) | 15 000 – 25 000 | 2048 | LOD1, LOD2 |
+| Volant | 8 000 – 15 000 | 1024 – 2048 | LOD1 |
+| Boss traqueur (géant) | 40 000 – 60 000 | 2 × 2048 ou 4096 | LOD1, LOD2 |
+| Scène entière visible | ≈ 1 – 2 millions | | |
+
+Densité de texels visée : **≈ 256 – 512 px/m** pour le décor et les props (style peint, détails lisibles à
+pleine vitesse plutôt que fins).
+
+## 7. Style
+
+Mélange de deux techniques de rendu : **bande dessinée encrée** et **peinture dramatique**. Dans les prompts et
+le guide de style, **décris les traits**, ne cite pas de jeu ou de série.
+
+- **Contours** épais et sombres autour des silhouettes et des grandes arêtes (passe de contours dans le renderer).
+- **Cel-shading** : ombres en **2 ou 3 aplats** nets, pas de dégradé doux.
+- **Textures peintes à la main** : coups de pinceau visibles, hachures dans les creux, couleurs un peu
+  saturées ; pas de photo-texture.
+- **Lumière dramatique et colorée** : décor **très sombre** (caves et châteaux), nombreuses sources de lumière
+  chaudes (torches, braseros), contre-jours colorés.
+- **Échelle humaine mais large** : salles et couloirs assez larges pour traverser à 20 m/s (§ 3).
+- **Tout ce qui est interactif brille.** Les couleurs saturées suivantes sont **réservées au jeu** ; évite-les en
+  grandes surfaces dans le décor :
+
+  | Couleur | Sens |
+  |---|---|
+  | Bleu | traction (orbe, trait, ancre) |
+  | Orange | répulsion |
+  | Violet | télékinésie : objet visé ou tenu |
+  | Vert | objet lancé |
+  | Rouge | refus, objet trop lourd |
+
+  **Technique :** le code fixe la couleur d'émission (`_EmissionColor`) des objets attrapables. Leur matériau doit
+  avoir l'**émission activée** et une **carte d'émission** (masque) qui dit *où* ils brillent (arêtes, runes,
+  cerclages), la couleur vient du jeu.
+
+Images d'inspiration : `docs/design/references-visuelles/`. Le guide de style détaillé (`docs/art/STYLE-GUIDE.md`)
+est la première livraison attendue.
+
+## 8. Pipeline de création (connecteur Higgsfield)
+
+Chaque génération coûte des crédits : **annonce le nombre de modèles avant de lancer**. Les noms des modèles et
+leurs options sont à vérifier dans le connecteur au moment de s'en servir.
+
+1. **Image concept** dans le style (§ 7), vue de face ou trois-quarts, fond neutre, une seule pièce par image.
+2. **Image → 3D :**
+   - props et décor : **Tripo P2** (image vers 3D, export GLB ou FBX), **nombre de polygones limité** au budget du
+     § 6, **auto_size** activé ;
+   - personnages et créatures : **Tripo H3.1** en **multivues** (face, profil, dos) pour une forme cohérente.
+3. **Squelette et animations des créatures :** **Meshy** (rigging et animation).
+4. **Nettoyage dans Blender** : échelle (1 unité = 1 m), pivot, orientation, réduction des polygones, UV propres
+   (pas de chevauchement pour les textures uniques), transformations appliquées, retouche des textures peintes.
+5. **Import Unity** dans `Assets/Art/Models/…`, contrôle dans une scène de présentation, à côté d'un mannequin de
+   1.8 m et d'une caisse de 0.9 m.
+6. **Une ligne par asset dans `docs/assets/MANIFEST.md`** : source, outil et modèle utilisés, licence, échelle
+   vérifiée, pivot, triangles, droits vérifiés.
+
+**Droits d'usage commercial, à vérifier avant d'intégrer quoi que ce soit au jeu :**
+
+- les conditions du forfait Higgsfield utilisé, et celles de chaque modèle appelé (Tripo, Meshy) : usage
+  commercial autorisé, propriété des sorties, obligation de mention ;
+- certains forfaits gratuits imposent une licence ouverte avec attribution, ou interdisent l'usage commercial ;
+- **Steam** demande de déclarer le contenu généré par IA : garde la trace de ce qui est généré (colonne « Source /
+  outil » du manifeste) ;
+- note dans le manifeste la date et le forfait au moment de la génération.
+
+## 9. Règles de livraison
+
+- **Formats :** FBX (préféré pour les personnages animés) ou GLB ; textures **PNG** (TGA ou EXR si besoin) ;
+  fichiers source (`.blend`, `.psd`) dans `Assets/Art/Source/` seulement s'ils sont utiles à d'autres.
+- **Échelle :** 1 unité = 1 m, facteur d'échelle 1 à l'import, transformations appliquées.
+- **Axes :** dans Unity, Y vers le haut et l'avant de l'objet vers +Z, rotation (0, 0, 0) à l'import. Depuis
+  Blender : exporter avec *Apply Transform* (FBX) ou en glTF, puis **vérifier dans Unity** (rotation nulle, objet
+  debout, face vers +Z) ; corriger dans Blender plutôt que dans Unity.
+- **Pivot :**
+  - props posés au sol et décor : **au centre de la base** ;
+  - objets suspendus (lustre) : **au point d'accroche** (en haut) ;
+  - personnages et créatures : **entre les pieds**, au sol ;
+  - pièces modulaires : à un coin, sur une grille de **1 m** (ou 0.5 m pour les petites pièces).
+- **Nommage :**
+  - `SM_` maillage statique, `SK_` maillage animé, `M_` matériau, `A_` animation (`A_Goule_Course`) ;
+  - textures `T_<Asset>_<Type>` avec `BaseColor`, `Normal`, `Emission` (masque de lueur), `Mask` ;
+  - LOD : `_LOD0`, `_LOD1`… ; collision : `<Asset>_Collider` ;
+  - pas d'espaces ni d'accents dans les noms de fichiers.
+- **Dossiers :** `Assets/Art/Models/<Catégorie>/<Asset>/` (catégories : `Props`, `Decor`, `Creatures`, `FPS`),
+  `Assets/Art/Materials/`, `Assets/Art/Shaders/`, `Assets/Art/Scenes/`.
+- **Vérifier avant la PR :** échelle à côté du mannequin, pivot, orientation, triangles dans le budget, matériaux
+  URP (pas de shader manquant, rose), ligne du manifeste remplie.

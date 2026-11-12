@@ -19,6 +19,17 @@ namespace ItHunts.Settings
         [Min(0f)] public float maxMass = 40f;
         [Tooltip("Calques touchés par le rayon de visée et le rayon qui oriente le lancer.")]
         public LayerMask aimMask = ~0;
+        [Header("Aide à la visée (attraper)")]
+        [Tooltip("Sélectionne l'objet attrapable vu dans un cône autour du viseur au lieu d'un rayon exact. Jamais à " +
+                 "travers un mur ; le plus proche du viseur l'emporte.")]
+        public bool aimAssist = true;
+        [Tooltip("Demi-angle du cône de près (degrés), jusqu'à assistNearDistance.")]
+        [Range(0f, 30f)] public float assistNearAngle = 8f;
+        [Tooltip("Distance (m) jusqu'à laquelle le cône garde son angle de près ; il se resserre ensuite jusqu'à la portée.")]
+        [Min(0f)] public float assistNearDistance = 5f;
+        [Tooltip("Demi-angle du cône à la portée (degrés).")]
+        [Range(0f, 30f)] public float assistFarAngle = 3f;
+
         [Tooltip("Un appui pendant la recharge est mémorisé ce temps (s).")]
         [Min(0f)] public float pressBuffer = 0.1f;
 
@@ -47,7 +58,11 @@ namespace ItHunts.Settings
         [Header("Lancer")]
         [Tooltip("Vitesse du lancer (m/s), dans la direction visée.")]
         [Min(0f)] public float throwSpeed = 30f;
-        [Tooltip("Ajoute la vitesse du joueur au lancer : lancer en pleine course frappe plus fort.")]
+        [Tooltip("Tir tendu (D-025) : pas de gravité pendant ce temps après un lancer (s), ou jusqu'au premier choc ; " +
+                 "l'objet va où vise le viseur. 0.5 s : ≈ 15 m à l'arrêt, 20 m en course.")]
+        [Min(0f)] public float throwNoGravityTime = 0.5f;
+        [Tooltip("Ajoute la part de la vitesse du joueur dans la direction du lancer (si elle est positive) : lancer en " +
+                 "pleine course frappe plus fort. Le reste est ignoré : la direction reste celle du viseur.")]
         public bool inheritPlayerVelocity = true;
         [Tooltip("Pendant ce temps après un lancer ou un lâcher (s), l'objet ne touche pas son lanceur.")]
         [Min(0f)] public float ignoreHolderAfterRelease = 0.4f;
