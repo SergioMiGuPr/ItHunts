@@ -21,9 +21,15 @@ namespace ItHunts.Orbs
         /// </summary>
         public static bool RefusalBlinkOn(in MagnetismState m, MagnetMode mode, int tick, float dt, float duration, float period)
         {
-            if (m.LastRefusalTick == MovementState.NeverTick || m.LastRefusalMode != mode || period <= 0f)
+            return m.LastRefusalMode == mode && BlinkOn(m.LastRefusalTick, tick, dt, duration, period);
+        }
+
+        /// <summary>Clignotement après un refus survenu au tick <paramref name="refusalTick"/> (toute orbe).</summary>
+        public static bool BlinkOn(int refusalTick, int tick, float dt, float duration, float period)
+        {
+            if (refusalTick == MovementState.NeverTick || period <= 0f)
                 return false;
-            float t = (tick - m.LastRefusalTick) * dt;
+            float t = (tick - refusalTick) * dt;
             if (t < 0f || t >= duration)
                 return false;
             return Mathf.Repeat(t, period) < period * 0.5f;

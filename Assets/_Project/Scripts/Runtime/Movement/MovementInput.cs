@@ -29,11 +29,21 @@ namespace ItHunts.Movement
         /// <summary>Tick du dernier appui de dash (0 ou MovementState.NeverTick si aucun ; les ticks commencent à 1).</summary>
         public int DashPressedTick;
 
-        /// <summary>Tick du dernier appui d'attraction (traction) / de répulsion de l'orbe de magnétisme (0 ou moins : aucun).</summary>
+        /// <summary>
+        /// Boutons de l'orbe active (clic gauche / RT, clic droit / LT) : attraction / répulsion pour le magnétisme,
+        /// attraper-poser / lancer pour la télékinésie. Tick du dernier appui (0 ou moins : aucun).
+        /// </summary>
         public int AttractPressedTick;
 
         /// <summary>Bouton d'attraction maintenu (la traction dure tant qu'il est tenu).</summary>
         public bool AttractHeld;
+
+        /// <summary>Échange des orbes : tick du dernier appui de bascule (molette, Y) ; choix direct (touches 1 et 2).</summary>
+        public int OrbSwapPressedTick;
+        public int OrbSelectPressedTick;
+
+        /// <summary>Orbe demandée par le dernier choix direct : 1 = magnétisme, 2 = télékinésie.</summary>
+        public byte OrbSelect;
         public int RepelPressedTick;
 
         public static MovementInput Neutral => new MovementInput
@@ -42,6 +52,8 @@ namespace ItHunts.Movement
             DashPressedTick = MovementState.NeverTick,
             AttractPressedTick = MovementState.NeverTick,
             RepelPressedTick = MovementState.NeverTick,
+            OrbSwapPressedTick = MovementState.NeverTick,
+            OrbSelectPressedTick = MovementState.NeverTick,
         };
     }
 }

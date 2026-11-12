@@ -11,7 +11,8 @@ namespace ItHunts.Hud
     /// - rangée 1 : charges de mouvement (saut en l'air, dash) ;
     /// - rangée 2 : charges d'attraction (bleu) puis la répulsion (orange : pleine, ou remplissage et temps restant) ;
     ///   le groupe d'un mode refusé clignote en rouge ;
-    /// - viseur : anneau bleu quand une traction est possible, anneau orange quand la répulsion l'est.
+    /// - rangée 3 : endurance de la télékinésie (violet) ; l'orbe inactive est atténuée, son nom est écrit dessous ;
+    /// - viseur : anneaux de l'orbe active (magnétisme : bleu et orange ; télékinésie : violet et vert).
     /// Segments pleins, vides, ou en cours de recharge. Dessiné dans la zone de la caméra du joueur (prêt pour l'écran
     /// partagé). Version greybox en IMGUI ; le vrai HUD viendra à l'étape 5.
     /// </summary>
@@ -21,6 +22,10 @@ namespace ItHunts.Hud
         [SerializeField] private Color rechargeColor = new Color(0.35f, 0.85f, 1f, 0.45f);
         [Tooltip("Couleurs de l'attraction, de la répulsion et du refus, anneaux du viseur, clignotement.")]
         [SerializeField] private MagnetismFeedbackSettings feedback;
+        [Tooltip("Couleurs de la télékinésie (endurance, anneaux violet et vert).")]
+        [SerializeField] private TelekinesisFeedbackSettings tkFeedback;
+        [Tooltip("Opacité de la rangée de l'orbe inactive.")]
+        [SerializeField, Range(0f, 1f)] private float inactiveAlpha = 0.35f;
         [SerializeField] private Color emptyColor = new Color(0f, 0f, 0f, 0.55f);
         [SerializeField] private Color crosshairColor = new Color(1f, 1f, 1f, 0.85f);
         [SerializeField, Min(1f)] private float segmentWidth = 22f;
@@ -33,8 +38,9 @@ namespace ItHunts.Hud
         private PlayerMotor _motor;
         private Camera _camera;
         private GUIStyle _timeStyle;
-        private Texture2D _attractRing, _repelRing;
-        private float _attractRingKey = -1f, _repelRingKey = -1f;
+        private GUIStyle _labelStyle;
+        private readonly System.Collections.Generic.Dictionary<Vector2, Texture2D> _rings =
+            new System.Collections.Generic.Dictionary<Vector2, Texture2D>();
 
         private void Awake()
         {
@@ -64,10 +70,30 @@ namespace ItHunts.Hud
                 Segments(center.x - total * 0.5f, y, count, Mathf.Max(0f, _motor.State.Charges), filledColor, rechargeColor, emptyColor);
             }
 
-            // Rangée 2 : attraction (charges) et répulsion (charge unique).
+            // Rangée 2 : magnétisme ; rangée 3 : endurance de la télékinésie. L'orbe inactive est atténuée.
+            bool magnetActive = _motor.ActiveOrb == ActiveOrb.Magnetisme;
+            float rowWidth = 0f;
+            y += segmentHeight + rowGap;
+            if (_motor.MagnetismSettings != null)
+                rowWidth = DrawMagnetismRow(center, y, magnetActive ? 1f : inactiveAlpha);
+            if (_motor.TelekinesisSettings != null && _motor.StaminaSettings != null)
+            {
+                y += segmentHeight + rowGap;
+                DrawStaminaRow(center, y, rowWidth > 0f ? rowWidth : Width(3), magnetActive ? inactiveAlpha : 1f);
+            }
+
+            // Orbe active, en toutes lettres.
+            _labelStyle ??= new GUIStyle(GUI.skin.label) { fontSize = 11, alignment = TextAnchor.UpperCenter, fontStyle = FontStyle.Bold };
+            _labelStyle.normal.textColor = magnetActive
+                ? Opaque(feedback != null ? feedback.attractColor : Color.cyan)
+                : Opaque(tkFeedback != null ? tkFeedback.grabColor : Color.magenta);
+            GUI.Label(new Rect(center.x - 80f, y + segmentHeight + 3f, 160f, 16f), magnetActive ? "MAGNÉTISME" : "TÉLÉKINÉSIE", _labelStyle);
+        }
+
+        /// <summary>Charges d'attraction (bleu) puis répulsion (orange, temps restant) ; renvoie la largeur de la rangée.</summary>
+        private float DrawMagnetismRow(Vector2 center, float y, float alpha)
+        {
             MagnetismOrbSettings mc = _motor.MagnetismSettings;
-            if (mc == null)
-                return;
             MagnetismState m = _motor.Magnetism;
             Color attractColor = Opaque(feedback != null ? feedback.attractColor : new Color(0.25f, 0.45f, 1f));
             Color repelColor = Opaque(feedback != null ? feedback.repelColor : new Color(1f, 0.55f, 0.1f));
@@ -77,14 +103,18 @@ namespace ItHunts.Hud
                 attractColor = feedback.refusalColor;
             if (repelBlink)
                 repelColor = feedback.refusalColor;
-            y += segmentHeight + rowGap;
+            attractColor.a *= alpha;
+            repelColor.a *= alpha;
+            Color empty = emptyColor;
+            empty.a *= alpha;
+
             int attract = mc.attractCharges;
             float row = Width(attract) + groupGap + segmentWidth;
             float x = center.x - row * 0.5f;
             Color attractRecharge = attractColor;
             attractRecharge.a *= 0.45f;
             Segments(x, y, attract, m.AttractCharges < 0f ? attract : m.AttractCharges, attractColor, attractRecharge,
-                attractBlink ? feedback.refusalColor : emptyColor);
+                attractBlink ? feedback.refusalColor : empty);
 
             float repelX = x + Width(attract) + groupGap;
             float remaining = RepelRemaining(m, mc);
@@ -92,7 +122,7 @@ namespace ItHunts.Hud
             Color repelRecharge = repelColor;
             repelRecharge.a *= 0.45f;
             Segments(repelX, y, 1, remaining > 0f ? Mathf.Clamp01(fill) : 1f, repelColor, repelRecharge,
-                repelBlink ? feedback.refusalColor : emptyColor);
+                repelBlink ? feedback.refusalColor : empty);
 
             if (remaining > 0f)
             {
@@ -100,6 +130,25 @@ namespace ItHunts.Hud
                 _timeStyle.normal.textColor = repelColor;
                 GUI.Label(new Rect(repelX + segmentWidth + 4f, y - 6f, 60f, 18f), $"{remaining:0.0} s", _timeStyle);
             }
+
+            return row;
+        }
+
+        /// <summary>Barre d'endurance de la télékinésie (violet) ; clignote en rouge après un refus de la télékinésie.</summary>
+        private void DrawStaminaRow(Vector2 center, float y, float width, float alpha)
+        {
+            TelekinesisState t = _motor.Telekinesis;
+            float max = _motor.StaminaSettings.max;
+            float value = t.Stamina < 0f ? max : t.Stamina;
+            bool blink = feedback != null && MagnetismFeedback.BlinkOn(t.LastRefusalTick, _motor.State.Tick, Time.fixedDeltaTime,
+                feedback.refusalFlashDuration, feedback.refusalBlinkPeriod);
+            Color bar = Opaque(tkFeedback != null ? tkFeedback.staminaColor : new Color(0.65f, 0.35f, 1f));
+            Color empty = blink ? feedback.refusalColor : emptyColor;
+            bar.a *= alpha;
+            empty.a *= alpha;
+            var rect = new Rect(center.x - width * 0.5f, y, width, segmentHeight);
+            Fill(rect, empty);
+            Fill(new Rect(rect.x, rect.y, rect.width * Mathf.Clamp01(value / max), rect.height), bar);
         }
 
         private static Color Opaque(Color c) => new Color(c.r, c.g, c.b, 0.95f);
@@ -108,16 +157,33 @@ namespace ItHunts.Hud
             feedback != null && MagnetismFeedback.RefusalBlinkOn(m, mode, _motor.State.Tick, Time.fixedDeltaTime,
                 feedback.refusalFlashDuration, feedback.refusalBlinkPeriod);
 
-        /// <summary>Anneaux du viseur : bleu (traction possible) à l'intérieur, orange (répulsion possible) autour.</summary>
+        /// <summary>
+        /// Anneaux du viseur de l'orbe active : magnétisme (bleu : traction possible ; orange : répulsion possible),
+        /// télékinésie (violet : objet visé attrapable ; vert : lancer possible).
+        /// </summary>
         private void DrawRings(Vector2 center)
         {
-            if (feedback == null || _motor.MagnetismSettings == null)
+            if (feedback == null)
                 return;
-            MagnetismState m = _motor.Magnetism;
-            if (MagnetismFeedback.CanAttract(m))
-                DrawRing(center, Ring(ref _attractRing, ref _attractRingKey, feedback.attractRingRadius), Opaque(feedback.attractColor));
-            if (MagnetismFeedback.CanRepel(m))
-                DrawRing(center, Ring(ref _repelRing, ref _repelRingKey, feedback.repelRingRadius), Opaque(feedback.repelColor));
+            if (_motor.ActiveOrb == ActiveOrb.Magnetisme)
+            {
+                if (_motor.MagnetismSettings == null)
+                    return;
+                MagnetismState m = _motor.Magnetism;
+                if (MagnetismFeedback.CanAttract(m))
+                    DrawRing(center, Ring(feedback.attractRingRadius), Opaque(feedback.attractColor));
+                if (MagnetismFeedback.CanRepel(m))
+                    DrawRing(center, Ring(feedback.repelRingRadius), Opaque(feedback.repelColor));
+                return;
+            }
+
+            if (tkFeedback == null || _motor.TelekinesisSettings == null)
+                return;
+            TelekinesisState t = _motor.Telekinesis;
+            if (TelekinesisOrb.CanGrab(t, _motor.TelekinesisSettings, _motor.State.Tick, Time.fixedDeltaTime))
+                DrawRing(center, Ring(tkFeedback.grabRingRadius), Opaque(tkFeedback.grabColor));
+            if (TelekinesisOrb.CanThrow(t, _motor.TelekinesisSettings))
+                DrawRing(center, Ring(tkFeedback.throwRingRadius), Opaque(tkFeedback.throwColor));
         }
 
         private static void DrawRing(Vector2 center, Texture2D tex, Color color)
@@ -128,17 +194,15 @@ namespace ItHunts.Hud
             GUI.color = previous;
         }
 
-        /// <summary>Texture d'anneau anticrénelée, refaite seulement si le rayon ou l'épaisseur change.</summary>
-        private Texture2D Ring(ref Texture2D tex, ref float key, float radius)
+        /// <summary>Texture d'anneau anticrénelée, une par rayon et épaisseur.</summary>
+        private Texture2D Ring(float radius)
         {
             float thickness = feedback.ringThickness;
-            float k = radius * 1000f + thickness;
-            if (tex != null && Mathf.Approximately(key, k))
-                return tex;
-            if (tex != null)
-                Destroy(tex);
+            var key = new Vector2(radius, thickness);
+            if (_rings.TryGetValue(key, out Texture2D cached) && cached != null)
+                return cached;
             int size = Mathf.CeilToInt((radius + thickness) * 2f) + 4;
-            tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
             {
                 filterMode = FilterMode.Bilinear,
                 wrapMode = TextureWrapMode.Clamp,
@@ -156,16 +220,16 @@ namespace ItHunts.Hud
 
             tex.SetPixels32(pixels);
             tex.Apply();
-            key = k;
+            _rings[key] = tex;
             return tex;
         }
 
         private void OnDestroy()
         {
-            if (_attractRing != null)
-                Destroy(_attractRing);
-            if (_repelRing != null)
-                Destroy(_repelRing);
+            foreach (Texture2D tex in _rings.Values)
+                if (tex != null)
+                    Destroy(tex);
+            _rings.Clear();
         }
 
         /// <summary>Temps restant avant que la répulsion soit de nouveau prête (s).</summary>

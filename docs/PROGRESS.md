@@ -4,9 +4,29 @@
 
 ## Étape en cours
 
-**4 — Orbe de télékinésie et échange des orbes** (prochaine étape, pas encore commencée) : attraper et
-lancer des objets physiques (endurance propre), objets interactifs qui brillent, échange instantané
-entre les deux orbes. Partir de `docs/design/features/orbes/design.md` ; proposer d'abord un plan.
+**4 — Orbe de télékinésie et échange des orbes**, en deux temps (choix 1a 2a 3a 4a 5a, D-023).
+
+1. **Cœur** — fait ; **playtest de la partie 1 non terminé.**
+   - Contenu : échange (molette / Y, touches 1 et 2) ; attraper (clic gauche / RT : l'objet vole jusqu'au
+     joueur à 40 m/s au plus, portée 60 m, puis reste tenu sans maintenir), poser (nouveau clic gauche),
+     lancer (clic droit / LT, 30 m/s + vitesse du joueur) ; endurance 100 (10 / 15, +25/s après 0.8 s) ;
+     recharge 0.3 s après un lancer ; objets attrapables qui brillent ; HUD (endurance, orbe active,
+     anneaux violet et vert) ; commandes de l'orbe active au debug (F3) ; zone Télékinésie (F12) :
+     caisses de 5 à 60 kg, tonneaux, pile, lustre accroché. 174 tests ; vérifié en Play Mode avec de
+     vraies entrées (Input System simulé). Checklist : `docs/design/features/orbes/testing.md`.
+   - **Bug de prise des objets corrigé** (ils ne bougeaient pas : simulation physique restée en mode
+     Script après une mesure, voir « Problèmes connus ») et **vérifié rapidement en jeu** par
+     l'utilisateur : les objets viennent bien devant lui (2026-11-12).
+   - **Reste à vérifier en playtest :** objets qui brillent ; objet lointain (vitesse d'approche
+     40 m/s) ; caisse tenue en mouvement ; lancer à l'arrêt et en course ; poser et lustre ; endurance ;
+     échange d'orbe.
+2. **Dégâts et cibles** — **prochaine étape après ce playtest** : dégâts = masse × vitesse d'impact ×
+   facteur au-dessus d'un seuil, ennemis factices avec PV et chiffres de dégâts, éclats et sons
+   provisoires.
+
+**Note pour plus tard (lustre) :** le lustre doit pouvoir tomber **à distance** — traction sèche, objet
+lancé dessus, ou chaîne visée — pour s'en servir contre les ennemis et contre le boss final (combat
+final par l'environnement, D-008). Aujourd'hui, il ne se décroche qu'en l'attrapant.
 
 L'étape 3 (orbe de magnétisme) est **terminée et validée en playtest** (2026-11-12).
 
@@ -76,7 +96,7 @@ répulsion, refus, charge revenue / répulsion prête.
 
 ## Décisions
 
-Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-022).
+Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-023).
 
 - Moteur : Unity 6.3 LTS (6000.3.28f1), URP.
 - Vue première personne, deux orbes (magnétisme, télékinésie), roguelite.
@@ -121,6 +141,11 @@ Magnétisme validé le 2026-11-12 (v3) avec `Assets/_Project/Settings/Magnetism_
 
 ## Problèmes connus / à faire
 
+- **Écran partagé (étape 9) :** la lueur des objets attrapables suit un seul joueur (celui dont la vue
+  est mise à jour en dernier) ; à rendre propre à chaque caméra.
+- **Réseau (étape 11) :** les objets lancés sont des corps dynamiques locaux ; le serveur devra faire
+  autorité dessus (voir CLAUDE.md).
+
 - **Sons provisoires** (magnétisme) : synthétisés par le code, à remplacer à l'étape 10 (skill
   `audio-design`) en gardant les mêmes événements (début de traction, bourdonnement de traction (hauteur selon la vitesse), fin de traction, répulsion, refus, charge revenue / répulsion prête).
 
@@ -140,6 +165,12 @@ Magnétisme validé le 2026-11-12 (v3) avec `Assets/_Project/Settings/Magnetism_
 - Mesures en Play Mode par la CLI : tous les ticks s'enchaînent dans une seule image ; il faut un
   `Physics.Simulate` entre deux ticks (mode de simulation `Script` le temps de la mesure), sinon la
   capsule retombe sur une copie figée d'elle-même à son point de départ.
+  **Toujours remettre `Physics.simulationMode = FixedUpdate` dans un `finally`** : un script de mesure
+  qui a planté l'avait laissé en `Script`, et les objets de la télékinésie ne bougeaient plus pendant
+  le playtest (2026-11-12). `PlayerMotor` avertit maintenant au lancement si ce n'est pas `FixedUpdate`.
+- Vraies entrées en Play Mode par la CLI : `InputSystem.settings.backgroundBehavior = IgnoreFocus` et
+  `editorInputBehaviorInPlayMode = AllDeviceInputAlwaysGoesToGameView`, puis `InputSystem.QueueStateEvent`
+  (souris, clavier), appui et relâchement sur deux images ; journal par coroutine lu dans un second eval.
 - Pas fixe passé à 60 Hz (`ProjectSettings/TimeManager.asset`).
 - Unity est réglé sur « recompiler et continuer à jouer » : une recompilation pendant le Play
   Mode provoque des NullReferenceException (état du joueur perdu). Proposé : « recompiler à la

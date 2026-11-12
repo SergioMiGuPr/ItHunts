@@ -36,19 +36,38 @@ Retour visuel et sonore (partie 2) :
 - [x] Lueur de l'orbe et du trait, ancre visible à 45 m, éclat orange, anneau orange au viseur. *(captures de la vue Game, 2026-11-12)*
 - [x] Ressenti : lisibilité à pleine vitesse, sons supportables. *(playtest de l'utilisateur, 2026-11-12 : « c'est bon » ; sons provisoires)*
 
-## Playtest — magnétisme partie 2, retour visuel et sonore (checklist courte)
+Télékinésie et échange (étape 4, partie 1) :
 
-F11 grande salle, F10 zone Magnétisme. Active le son de la fenêtre Game.
+- [x] Échange : la molette ou Y bascule, 1 et 2 choisissent ; seule l'orbe active reçoit les boutons. *(`Assets/_Project/Tests/EditMode/TelekinesisTests.cs` › Echange_BasculeEtChoixDirect, TelekinesieActive_LeMagnetismeNeRecoitPasLesBoutons, MagnetismeActif_LaTelekinesieNeRecoitPasLesBoutons)*
+- [x] Échanger arrête la traction sans perte d'élan et lâche l'objet tenu. *(TelekinesisTests › Echange_ArreteLaTraction_SansPerte, Echange_LacheLObjetTenu ; Play Mode : commande « lâcher », gravité rétablie)*
+- [x] Attraper coûte 10 et l'objet reste tenu sans maintenir ; refus : trop lourd, rien, hors de portée, pas d'endurance. *(TelekinesisTests › Attraper_Coute10_ObjetTenuSansMaintenir, Attraper_Refus_TropLourd_Rien_PasDEndurance, Attraper_HorsDePortee_Refuse ; Play Mode : caisse de 60 kg refusée)*
+- [x] Poser (nouveau clic gauche) est gratuit ; lancer coûte 15, refusé sans endurance (l'objet reste tenu) ou sans rien en main. *(TelekinesisTests › Poser_NouveauClicGauche, Lancer_Coute15_EtRelacheLObjet, Lancer_SansEndurance_GardeLObjet, Lancer_RienEnMain_Refuse)*
+- [x] Le lancer ajoute la vitesse du joueur. *(TelekinesisTests › Lancer_VitesseDuJoueurAjoutee ; Play Mode : 30.0 m/s à l'arrêt, 43.5 m/s lancé à 15 m/s)*
+- [x] Recharge de 0.3 s après un lancer, avec mémorisation de l'appui ; endurance : rien pendant 0.8 s, puis +25/s, plafond 100. *(TelekinesisTests › Recharge_ApresUnLancer, Endurance_RegenereApresLeDelai)*
+- [x] Tenir : l'objet rejoint le point de maintien (écart 0.00 m) et le suit en course à 15 m/s (écart max 0.22 m) ; il ne touche pas le porteur ; contre un mur, il bute sans traverser ; attrapé à 12 m, il n'est pas lâché en chemin ; le lustre accroché tombe une fois posé. *(Play Mode, 2026-11-12)*
+- [x] Retour : objet tenu violet, trait violet, orbe violette, anneau vert, barre d'endurance, nom de l'orbe active. *(capture de la vue Game, 2026-11-12)*
+- [x] Avec de vraies entrées (touche 2 puis clic gauche simulés dans l'Input System) : l'appui est reçu, l'objet passe en « tenu », sans gravité, vole à 40 m/s et rejoint le point de maintien : à 7 m, écart 0.18 m après 0.1 s puis 0.00 m ; à 55 m, 51.2 → 3.2 m en 1.2 s, 0.00 m à 1.6 s. *(Play Mode, 2026-11-12 ; avant correction, la caisse recevait 37.5 m/s sans bouger : simulation physique restée en mode Script après une mesure)*
+- [x] Avec de vrais corps (scène isolée) : un objet attrapé à 10 m et à 55 m vole jusqu'au point de maintien sans dépasser la vitesse d'approche, puis y reste. *(`Assets/_Project/Tests/EditMode/TelekinesisPhysicsTests.cs` › Physique_ObjetA10m_VientEtResteAuPointDeMaintien, Physique_ObjetA55m_VientEtResteAuPointDeMaintien)*
+- [ ] Ressenti : tenir, lancer, échanger à pleine vitesse. *(playtest)*
 
-1. **Viseur :** l'anneau bleu s'allume quand une surface est à 60 m et qu'il te reste une charge
-   d'attraction ; l'anneau orange quand une surface est à 40 m et que la répulsion est prête.
-2. **Traction :** éclat bleu au point, ancre qui pulse tant que tu tires, trait lumineux ; « zip »,
-   bourdonnement qui monte avec la vitesse, clic au relâchement.
-3. **Répulsion :** éclat orange au point d'impact, coup sourd ; tintement quand elle est de nouveau prête.
-4. **Refus :** sans charge d'attraction ou pendant la recharge de la répulsion, le groupe du HUD clignote
-   en rouge avec un double bip.
-5. **Lisibilité :** la lueur t'aide-t-elle à pleine vitesse, ou gêne-t-elle ? Les sons sont-ils trop
-   présents ? (Tout se règle dans `MagnetismFeedback_Default`.)
+## Playtest — télékinésie et échange, partie 1 (checklist courte)
+
+F12 zone Télékinésie. Molette ou Y : échanger ; 1 / 2 : choisir. Télékinésie active : clic gauche / RT
+attrape (puis pose), clic droit / LT lance.
+
+0. **Commandes :** le debug (F3) écrit ce que fait chaque bouton avec l'orbe active et le dernier appui
+   reçu.
+1. **Repérer :** les objets attrapables brillent faiblement de loin, plus fort à moins de 60 m, vivement
+   quand tu les vises (anneau violet) ; la caisse de 60 kg brille en rouge terne et est refusée.
+2. **Tenir :** attrape une caisse, de près puis de loin (elle vole jusqu'à toi à 40 m/s), cours, saute,
+   tracte-toi : elle suit sans te gêner ? Cache-t-elle
+   trop la vue (distance et hauteur réglables dans `Telekinesis_Default`) ?
+3. **Lancer :** à l'arrêt puis en pleine course (plus fort) ; vise le mur de la grande salle.
+4. **Poser et lustre :** un nouveau clic gauche pose l'objet ; attrape le lustre accroché au portique.
+5. **Endurance :** barre violette (10 pour attraper, 15 pour lancer, remonte après 0.8 s) ; refus en
+   rouge.
+6. **Échange :** en tenant un objet, change d'orbe : il tombe ; en pleine traction, change d'orbe : tu
+   gardes ton élan.
 
 ## History
 
@@ -56,3 +75,4 @@ F11 grande salle, F10 zone Magnétisme. Active le son de la fenêtre Game.
 - 2026-11-12 : v2 après playtest (D-021).
 - 2026-11-12 : v3 : charges d'attraction, répulsion unique, marquage, HUD.
 - 2026-11-12 : partie 2, retour visuel et sonore.
+- 2026-11-12 : télékinésie et échange, partie 1.

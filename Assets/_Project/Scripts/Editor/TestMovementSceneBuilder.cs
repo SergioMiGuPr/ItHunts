@@ -30,6 +30,9 @@ namespace ItHunts.EditorTools
         private const string CameraPath = SettingsDir + "/Camera_Default.asset";
         private const string MagnetismPath = SettingsDir + "/Magnetism_Default.asset";
         private const string FeedbackPath = SettingsDir + "/MagnetismFeedback_Default.asset";
+        private const string TelekinesisPath = SettingsDir + "/Telekinesis_Default.asset";
+        private const string StaminaPath = SettingsDir + "/Stamina_Default.asset";
+        private const string TkFeedbackPath = SettingsDir + "/TelekinesisFeedback_Default.asset";
         private const string PostProcessPath = SettingsDir + "/PostProcess_TestMovement.asset";
         private const string PlayerPrefabPath = PrefabDir + "/Player.prefab";
         private const string ScenePath = "Assets/Scenes/Test_Movement.unity";
@@ -51,10 +54,16 @@ namespace ItHunts.EditorTools
             var camera = LoadOrCreate<CameraSettings>(CameraPath);
             var magnetism = LoadOrCreate<MagnetismOrbSettings>(MagnetismPath);
             var feedback = LoadOrCreate<MagnetismFeedbackSettings>(FeedbackPath);
+            var tk = new TelekinesisAssets
+            {
+                Orb = LoadOrCreate<TelekinesisOrbSettings>(TelekinesisPath),
+                Stamina = LoadOrCreate<StaminaSettings>(StaminaPath),
+                Feedback = LoadOrCreate<TelekinesisFeedbackSettings>(TkFeedbackPath),
+            };
             var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsPath);
             if (actions == null)
                 return $"ERREUR : {ActionsPath} introuvable.";
-            BuildPlayerPrefab(movement, camera, magnetism, feedback, actions);
+            BuildPlayerPrefab(movement, camera, magnetism, feedback, tk, actions);
             return $"OK : {PlayerPrefabPath} reconstruit.";
         }
 
@@ -70,13 +79,19 @@ namespace ItHunts.EditorTools
             var camera = LoadOrCreate<CameraSettings>(CameraPath);
             var magnetism = LoadOrCreate<MagnetismOrbSettings>(MagnetismPath);
             var feedback = LoadOrCreate<MagnetismFeedbackSettings>(FeedbackPath);
+            var tk = new TelekinesisAssets
+            {
+                Orb = LoadOrCreate<TelekinesisOrbSettings>(TelekinesisPath),
+                Stamina = LoadOrCreate<StaminaSettings>(StaminaPath),
+                Feedback = LoadOrCreate<TelekinesisFeedbackSettings>(TkFeedbackPath),
+            };
             var actions = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ActionsPath);
             if (actions == null)
                 return $"ERREUR : {ActionsPath} introuvable.";
 
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefabPath);
             if (prefab == null || overwrite)
-                prefab = BuildPlayerPrefab(movement, camera, magnetism, feedback, actions);
+                prefab = BuildPlayerPrefab(movement, camera, magnetism, feedback, tk, actions);
 
             if (File.Exists(ScenePath) && !overwrite)
                 return $"OK (scène existante conservée : {ScenePath}). Pas fixe = {Time.fixedDeltaTime:0.#####} s.";
@@ -104,8 +119,15 @@ namespace ItHunts.EditorTools
 
         // ---------- Prefab joueur ----------
 
+        private struct TelekinesisAssets
+        {
+            public TelekinesisOrbSettings Orb;
+            public StaminaSettings Stamina;
+            public TelekinesisFeedbackSettings Feedback;
+        }
+
         private static GameObject BuildPlayerPrefab(MovementSettings movement, CameraSettings cameraSettings,
-            MagnetismOrbSettings magnetism, MagnetismFeedbackSettings feedback, InputActionAsset actions)
+            MagnetismOrbSettings magnetism, MagnetismFeedbackSettings feedback, TelekinesisAssets tk, InputActionAsset actions)
         {
             var root = new GameObject("Player");
             try
@@ -158,6 +180,18 @@ namespace ItHunts.EditorTools
                 line.receiveShadows = false;
                 line.enabled = false;
 
+                var tkLineGo = new GameObject("Trait de télékinésie");
+                tkLineGo.transform.SetParent(camGo.transform, false);
+                var tkLine = tkLineGo.AddComponent<LineRenderer>();
+                tkLine.useWorldSpace = true;
+                tkLine.positionCount = 2;
+                tkLine.startWidth = 0.03f;
+                tkLine.endWidth = 0.05f;
+                tkLine.sharedMaterial = line.sharedMaterial;
+                tkLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                tkLine.receiveShadows = false;
+                tkLine.enabled = false;
+
                 // Marquage de la répulsion : point visé et impact (placés dans le monde à chaque image).
                 Material markerMat = UnlitMat("Orb_Marker", "Universal Render Pipeline/Unlit", Color.white);
                 Renderer aimMarker = Marker("Marque de répulsion (visée)", root.transform, 0.35f, markerMat);
@@ -188,6 +222,7 @@ namespace ItHunts.EditorTools
                 root.AddComponent<MovementHud>();
                 var orbView = root.AddComponent<MagnetismOrbView>();
                 var audio = root.AddComponent<MagnetismAudio>();
+                var tkView = root.AddComponent<TelekinesisView>();
 
                 SetRef(motor, "settings", movement);
                 SetRef(motor, "magnetism", magnetism);
@@ -200,6 +235,12 @@ namespace ItHunts.EditorTools
                 SetRef(orbView, "settings", feedback);
                 SetRef(audio, "settings", feedback);
                 SetRef(root.GetComponent<MovementHud>(), "feedback", feedback);
+                SetRef(root.GetComponent<MovementHud>(), "tkFeedback", tk.Feedback);
+                SetRef(motor, "telekinesis", tk.Orb);
+                SetRef(motor, "stamina", tk.Stamina);
+                SetRef(tkView, "settings", tk.Feedback);
+                SetRef(tkView, "orbRenderer", orbRenderer);
+                SetRef(tkView, "line", tkLine);
                 SetRef(look, "settings", cameraSettings);
                 SetRef(look, "viewRig", rig.transform);
                 SetRef(look, "virtualCamera", vcam);
@@ -327,6 +368,7 @@ namespace ItHunts.EditorTools
             Material magneticMat = Mat("Greybox_Magnetic", new Color(0.15f, 0.45f, 1f));
             BuildMagnetismArea(level, magneticMat, platformMat, rampMat, wallMat, lineMat, landmarkMat);
             BuildGreatHall(level, wallMat, platformMat, magneticMat, lineMat);
+            BuildTelekinesisArea(level, blockMat, lineMat);
             BuildTeleportPoints();
 
             // Joueur.
@@ -348,6 +390,7 @@ namespace ItHunts.EditorTools
         //   x −100..100, z 305..355 : écarts larges et verticalité
         //   x   45..95,  z −30..60  : magnétisme (cibles en bleu, mais toute surface répond)
         //   x −100..−50, z   0..50  : grande salle de 45 m de haut (portée de la traction)
+        //   x −100..−50, z −38..−5  : télékinésie (objets à attraper et lancer, lustre suspendu)
 
         private const float GroundMinX = -200f, GroundMaxX = 200f, GroundMinZ = -40f, GroundMaxZ = 360f;
 
@@ -382,7 +425,7 @@ namespace ItHunts.EditorTools
             Box("Mur O", walls, new Vector3(GroundMinX - 0.5f, h * 0.5f, cz), new Vector3(1f, h, sizeZ), wallMat);
         }
 
-        /// <summary>Points de téléportation de debug : F4 départ, F5 à F11 zones (position des pieds, yaw).</summary>
+        /// <summary>Points de téléportation de debug : F4 départ, F5 à F12 zones (position des pieds, yaw).</summary>
         private static void BuildTeleportPoints()
         {
             var root = new GameObject("Points de téléportation (debug)");
@@ -397,6 +440,7 @@ namespace ItHunts.EditorTools
                 ("Écarts larges et verticalité", new Vector3(-99f, 4f, 315f), 90f),
                 ("Magnétisme", new Vector3(60f, 0f, -30f), 0f),
                 ("Grande salle 45 m", new Vector3(-56f, 0f, 25f), -90f),
+                ("Télékinésie", new Vector3(-75f, 0f, -35f), 0f),
             };
             points.points = new DebugTeleportPoints.Point[defs.Length];
             for (int i = 0; i < defs.Length; i++)
@@ -616,6 +660,98 @@ namespace ItHunts.EditorTools
                 light.color = new Color(1f, 0.9f, 0.75f);
                 light.shadows = LightShadows.None;
             }
+        }
+
+        /// <summary>
+        /// Zone de la télékinésie (x −100..−50, z −38..−5), départ F12 en (−75, 0, −35) face au nord. Le mur sud de la
+        /// grande salle sert de mur de tir. Caisses de 5, 15, 25, 40 kg et une de 60 kg (trop lourde), tonneaux de
+        /// 20 kg, pile de petites caisses, portique avec un lustre accroché (figé jusqu'à ce qu'on l'attrape), repère de
+        /// portée à 15 m du départ.
+        /// </summary>
+        private static void BuildTelekinesisArea(Transform level, Material blockMat, Material lineMat)
+        {
+            var area = new GameObject("Télékinésie").transform;
+            area.SetParent(level, false);
+            Material crateMat = GrabbableMat("Greybox_Grabbable", new Color(0.55f, 0.42f, 0.28f));
+            Material heavyMat = GrabbableMat("Greybox_Grabbable_Lourd", new Color(0.35f, 0.3f, 0.28f));
+
+            (float mass, float size)[] crates = { (5f, 0.5f), (15f, 0.7f), (25f, 0.9f), (40f, 1.1f), (60f, 1.3f) };
+            for (int i = 0; i < crates.Length; i++)
+            {
+                (float mass, float size) = crates[i];
+                GrabbableBox($"Caisse {mass} kg{(mass > 40f ? " (trop lourde)" : "")}", area,
+                    new Vector3(-90f + i * 6f, size * 0.5f, -24f), Vector3.one * size, mass, mass > 40f ? heavyMat : crateMat, false);
+            }
+
+            for (int i = 0; i < 3; i++)
+                GrabbableBarrel($"Tonneau 20 kg ({i + 1})", area, new Vector3(-60f + i * 2f, 0.45f, -24f), 20f, crateMat);
+
+            // Pile de petites caisses (5 kg) : 3 + 2 + 1.
+            int n = 0;
+            for (int row = 0; row < 3; row++)
+            for (int k = 0; k < 3 - row; k++)
+                GrabbableBox($"Petite caisse ({++n})", area,
+                    new Vector3(-95f + k * 0.55f + row * 0.275f, 0.25f + row * 0.5f, -15f), Vector3.one * 0.5f, 5f, crateMat, false);
+
+            // Portique et lustre accroché.
+            Box("Portique - pilier ouest", area, new Vector3(-82f, 3f, -12f), new Vector3(0.6f, 6f, 0.6f), blockMat);
+            Box("Portique - pilier est", area, new Vector3(-68f, 3f, -12f), new Vector3(0.6f, 6f, 0.6f), blockMat);
+            Box("Portique - poutre", area, new Vector3(-75f, 6.2f, -12f), new Vector3(15f, 0.4f, 0.6f), blockMat);
+            GrabbableBox("Lustre (accroché)", area, new Vector3(-75f, 5.6f, -12f), new Vector3(1.6f, 0.3f, 1.6f), 25f, crateMat, true);
+
+            Box("Repère portée 15 m (depuis le départ)", area, new Vector3(-75f, 0.012f, -20f), new Vector3(50f, 0.02f, 0.3f), lineMat, collider: false);
+        }
+
+        private static GameObject GrabbableBox(string name, Transform parent, Vector3 center, Vector3 size, float mass,
+            Material mat, bool anchored)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = name;
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = center;
+            go.transform.localScale = size;
+            go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            MakeGrabbable(go, mass, anchored);
+            return go;
+        }
+
+        private static void GrabbableBarrel(string name, Transform parent, Vector3 center, float mass, Material mat)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            go.name = name;
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = center;
+            go.transform.localScale = new Vector3(0.6f, 0.45f, 0.6f);
+            go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            MakeGrabbable(go, mass, false);
+        }
+
+        /// <summary>Corps dynamique attrapable (jamais statique : il bouge).</summary>
+        private static void MakeGrabbable(GameObject go, float mass, bool anchored)
+        {
+            GameObjectUtility.SetStaticEditorFlags(go, 0);
+            var body = go.AddComponent<Rigidbody>();
+            body.mass = mass;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+            go.AddComponent<Grabbable>();
+            if (anchored)
+            {
+                var so = new SerializedObject(go.GetComponent<Grabbable>());
+                so.FindProperty("startsAnchored").boolValue = true;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                body.isKinematic = true;
+            }
+        }
+
+        /// <summary>Matériau Lit avec émission activée (la lueur est réglée par objet, par MaterialPropertyBlock).</summary>
+        private static Material GrabbableMat(string name, Color color)
+        {
+            Material mat = Mat(name, color);
+            mat.EnableKeyword("_EMISSION");
+            mat.SetColor("_EmissionColor", Color.black);
+            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            EditorUtility.SetDirty(mat);
+            return mat;
         }
 
         private static void Ramp(string name, Transform parent, float x, float zBottom, float angle, float length,

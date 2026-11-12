@@ -26,6 +26,12 @@ namespace ItHunts.Input
         private InputAction _dash;
         private InputAction _attract;
         private InputAction _repel;
+        private InputAction _swapOrb;
+        private InputAction _swapOrbScroll;
+        private InputAction _selectOrb1;
+        private InputAction _selectOrb2;
+        private float _lastScrollSwapTime = float.NegativeInfinity;
+        private const float ScrollSwapInterval = 0.15f;
         private InputAction _toggleDebug;
         private InputAction _pause;
 
@@ -43,6 +49,9 @@ namespace ItHunts.Input
         public int DashPressedTick { get; private set; } = MovementState.NeverTick;
         public int AttractPressedTick { get; private set; } = MovementState.NeverTick;
         public bool AttractHeld { get; private set; }
+        public int OrbSwapPressedTick { get; private set; } = MovementState.NeverTick;
+        public int OrbSelectPressedTick { get; private set; } = MovementState.NeverTick;
+        public byte OrbSelect { get; private set; }
         public int RepelPressedTick { get; private set; } = MovementState.NeverTick;
         public bool ToggleDebugPressed { get; private set; }
         public bool PausePressed { get; private set; }
@@ -64,6 +73,10 @@ namespace ItHunts.Input
             _dash = actions.FindAction("Player/Dash", throwIfNotFound: true);
             _attract = actions.FindAction("Player/Attract", throwIfNotFound: true);
             _repel = actions.FindAction("Player/Repel", throwIfNotFound: true);
+            _swapOrb = actions.FindAction("Player/SwapOrb", throwIfNotFound: true);
+            _swapOrbScroll = actions.FindAction("Player/SwapOrbScroll", throwIfNotFound: true);
+            _selectOrb1 = actions.FindAction("Player/SelectOrb1", throwIfNotFound: true);
+            _selectOrb2 = actions.FindAction("Player/SelectOrb2", throwIfNotFound: true);
             _toggleDebug = actions.FindAction("Player/ToggleDebug", throwIfNotFound: true);
             _pause = actions.FindAction("Player/Pause", throwIfNotFound: true);
         }
@@ -84,6 +97,27 @@ namespace ItHunts.Input
             if (_attract.WasPressedThisFrame() && aimReady)
                 AttractPressedTick = _motor != null ? _motor.NextTick : 0;
             AttractHeld = _attract.IsPressed() && aimReady;
+
+            // Échange des orbes : Y ou un cran de molette (dans les deux sens) ; touches 1 et 2 pour choisir.
+            int next = _motor != null ? _motor.NextTick : 0;
+            // (Molette : un échange par geste ; un défilement continu sur un pavé tactile n'en fait pas plusieurs.)
+            bool scrolled = Mathf.Abs(_swapOrbScroll.ReadValue<float>()) > 0.01f;
+            if (scrolled && Time.unscaledTime - _lastScrollSwapTime < ScrollSwapInterval)
+                scrolled = false;
+            if (scrolled)
+                _lastScrollSwapTime = Time.unscaledTime;
+            if (_swapOrb.WasPressedThisFrame() || scrolled)
+                OrbSwapPressedTick = next;
+            if (_selectOrb1.WasPressedThisFrame())
+            {
+                OrbSelectPressedTick = next;
+                OrbSelect = 1;
+            }
+            else if (_selectOrb2.WasPressedThisFrame())
+            {
+                OrbSelectPressedTick = next;
+                OrbSelect = 2;
+            }
             if (_repel.WasPressedThisFrame() && aimReady)
                 RepelPressedTick = _motor != null ? _motor.NextTick : 0;
             ToggleDebugPressed = _toggleDebug.WasPressedThisFrame();

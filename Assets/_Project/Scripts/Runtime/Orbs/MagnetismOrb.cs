@@ -186,6 +186,13 @@ namespace ItHunts.Orbs
                 : OrbStatus.Prete;
         }
 
+        /// <summary>Arrête la traction en cours (échange d'orbe) ; la vitesse reste telle quelle.</summary>
+        public static void StopTraction(ref MagnetismState m, ref MovementState s, int tick, TractionEnd reason)
+        {
+            if (m.Tracting)
+                EndTraction(ref m, ref s, tick, reason);
+        }
+
         /// <summary>Position des yeux (le rayon et la traction partent de là).</summary>
         public static Vector3 EyePosition(in MovementState s, MovementSettings move) =>
             s.Position + Vector3.up * (s.Crouched ? move.crouchEyeHeight : move.eyeHeight);

@@ -59,6 +59,13 @@ dépend de la scène.
 | `Assets/_Project/Scripts/Runtime/Audio/ProceduralSfx.cs`, `MagnetismAudio.cs` | sons synthétisés et leur déclenchement |
 | `Assets/_Project/Scripts/Runtime/Settings/MagnetismFeedbackSettings.cs` | réglages du retour |
 | `Assets/_Project/Tests/EditMode/MagnetismFeedbackTests.cs` | 14 tests (viseur, refus, sons, bloom, prefab) |
+| `Assets/_Project/Scripts/Runtime/Orbs/OrbSelection.cs` | échange des orbes |
+| `Assets/_Project/Scripts/Runtime/Orbs/TelekinesisOrb.cs`, `TelekinesisState.cs` | logique de la télékinésie |
+| `Assets/_Project/Scripts/Runtime/Orbs/TelekinesisHolder.cs` | côté physique, rayon de visée |
+| `Assets/_Project/Scripts/Runtime/Orbs/Grabbable.cs`, `TelekinesisView.cs` | objets attrapables, retour visuel |
+| `Assets/_Project/Scripts/Runtime/Settings/TelekinesisOrbSettings.cs`, `StaminaSettings.cs`, `TelekinesisFeedbackSettings.cs` | réglages |
+| `Assets/_Project/Tests/EditMode/TelekinesisTests.cs` | 17 tests (échange, attraper, poser, lancer, endurance, recharge) |
+| `Assets/_Project/Tests/EditMode/TelekinesisPhysicsTests.cs` | 2 tests avec de vrais corps dans une scène isolée (l'objet vient au point de maintien) |
 
 ## Build steps
 
@@ -76,4 +83,20 @@ dépend de la scène.
      règles dans `MagnetismFeedback` (testables) ;
    - `ProceduralSfx` (sons synthétisés) et `MagnetismAudio` (détection des changements d'état à chaque
      tick, bourdonnement en boucle dont `pitch` suit la vitesse).
-3. **Télékinésie et échange des orbes** — étape 4.
+3. **Télékinésie et échange des orbes, partie 1** — fait (2026-11-12, D-023), playtest en attente :
+   - `OrbSelection` (état copiable `OrbSelectionState`) : bascule et choix direct ; la seule orbe active
+     reçoit les boutons (`OrbSelection.WithoutOrbButtons`) ; l'échange arrête la traction
+     (`MagnetismOrb.StopTraction`, `TractionEnd.Echange`) et lâche l'objet tenu ;
+   - `TelekinesisOrb` (logique pure, état `TelekinesisState`) : endurance, coûts, recharge après un lancer,
+     refus ; renvoie une commande (attraper, lancer, poser, lâcher) ;
+   - `TelekinesisHolder` (côté physique) : applique la commande aux `Rigidbody`, fait suivre le point de
+     maintien en vitesse (vitesse du joueur + correction plafonnée par la vitesse d'approche), ignore la
+     collision avec le porteur,
+     lancer vers le point visé par le viseur ; `PhysicsGrabProbe` : rayon de visée ;
+   - `Grabbable` : objet attrapable (masse du Rigidbody, accroché ou non, lueur par émission) ;
+   - `TelekinesisView` : lueur des objets, orbe violette ou verte, trait ; HUD : barre d'endurance,
+     orbe active, anneaux violet et vert ; debug F3 ; zone Télékinésie (F12).
+   - Ordre d'un tick dans `PlayerMotor` : échange → magnétisme → télékinésie → mouvement → côté physique.
+   - `PlayerMotor` avertit au lancement si la physique n'est pas en `SimulationMode.FixedUpdate` (sinon les
+     objets ne bougent pas).
+4. **Télékinésie, partie 2** — à faire : dégâts des objets lancés, ennemis factices, éclats et sons.

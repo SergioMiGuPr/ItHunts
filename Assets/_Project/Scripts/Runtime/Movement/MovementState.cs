@@ -25,6 +25,7 @@ namespace ItHunts.Movement
         Dash,
         Repulsion,
         Bloquee,
+        Echange,
     }
 
     /// <summary>

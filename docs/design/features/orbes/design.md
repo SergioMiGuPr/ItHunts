@@ -10,8 +10,10 @@ l'arme », « le mouvement est la survie ».
 
 ## Règles
 
-1. **Échange :** une touche (molette au clavier-souris, un bouton à la manette), sans recharge.
-   Échanger lâche l'objet tenu.
+1. **Échange :** instantané, sans recharge : la molette (un cran, dans les deux sens) ou Y à la
+   manette bascule ; les touches 1 (magnétisme) et 2 (télékinésie) choisissent directement. Les mêmes
+   boutons servent à l'orbe active. Échanger lâche l'objet tenu (avec sa vitesse) et arrête la
+   traction (sans perte d'élan). Le HUD atténue l'orbe inactive et écrit le nom de l'orbe active (D-023).
 2. **États de chaque orbe :** Prête → EnUsage → Recharge → Prête (pour le magnétisme, un état par
    mode). Coût : le **magnétisme** n'utilise **aucune charge de mouvement** (D-021) : l'attraction a
    ses propres **charges d'attraction**, la répulsion une **charge unique** ; la **télékinésie**
@@ -40,11 +42,20 @@ l'arme », « le mouvement est la survie ».
    point d'impact. Au point visé, une **onde** bouscule les ennemis dans son rayon. Un ennemi qui
    percute un mur au-dessus d'une vitesse d'impact prend des dégâts proportionnels. **Sans effet
    sur le boss.**
-5. **Attraper (télékinésie, mode 1) :** un rayon attrape un objet, un petit ennemi (sous la masse
-   maximale) ou un projectile ennemi. La goule n'est attrapable qu'**étourdie**. L'objet tenu
-   flotte devant le joueur.
-6. **Lancer (télékinésie, mode 2) :** l'objet part dans la direction de visée ; ses dégâts
-   dépendent de sa masse et de sa vitesse d'impact. Un projectile ennemi renvoyé blesse son tireur.
+5. **Attraper (télékinésie, mode 1, violet) :** un clic gauche / RT attrape l'objet visé (à portée, sous la
+   masse maximale) : il **vole jusqu'au joueur** (vitesse d'approche, il ralentit en arrivant), puis
+   **reste tenu sans maintenir** le bouton et flotte devant le joueur, un peu sous
+   la visée ; il bute sur les murs au lieu de les traverser et ne touche jamais son porteur. Un
+   **nouveau clic gauche le pose** doucement (gratuit). Un objet coincé loin du point de maintien est
+   lâché. Plus tard : un petit ennemi, un projectile ennemi ; la goule seulement **étourdie**.
+6. **Lancer (télékinésie, mode 2, vert) :** clic droit / LT : l'objet part vers ce que vise le viseur,
+   à la vitesse de lancer **plus la vitesse du joueur** (lancer en pleine course frappe plus fort,
+   D-023). Ses dégâts dépendent de sa masse et de sa vitesse d'impact (partie 2). Après un lancer, une
+   courte recharge avant d'attraper de nouveau. Un projectile ennemi renvoyé blesse son tireur (plus tard).
+   **Retour (greybox) :** objets attrapables qui brillent (faiblement de loin, plus à portée, vivement
+   quand ils sont visés, rouge terne s'ils sont trop lourds, violet tenus, vert une fois lancés) ; orbe
+   violette (verte au lancer) ; trait violet vers l'objet tenu ; anneaux du viseur violet (attrapable)
+   et vert (lancer possible) ; barre d'endurance violette qui clignote en rouge au refus.
 7. **Âmes :** chaque orbe aspire automatiquement les âmes dans un rayon autour d'elle.
 8. **Dégâts par amélioration :** une amélioration peut donner des dégâts directs à une orbe
    (par exemple l'onde de répulsion) ou un bonus aux objets lancés. Ces dégâts s'ajoutent à
@@ -86,11 +97,16 @@ la télékinésie). Les charges de mouvement sont dans `MovementSettings`. Valeu
 | Bloom de la scène de test : seuil / intensité | 1 / 1.2 | — | lisibilité à pleine vitesse |
 | Rayon de l'onde de répulsion / poussée | 4 / 12 | m / m/s | |
 | Vitesse d'impact mini contre un mur / dégâts | 6 / 5 | m/s / PV par m/s | |
-| Portée de la télékinésie | 15 | m | |
+| Portée de la télékinésie | 60 | m | à peu près celle de l'attraction |
 | Masse maximale attrapable | 40 | kg | quels ennemis sont « petits » |
 | Vitesse de lancer | 30 | m/s | |
 | Coût attraper / lancer | 10 / 15 | pts | |
-| Recharge télékinésie | 0.3 | s | |
+| Recharge télékinésie (après un lancer, avant d'attraper) | 0.3 | s | |
+| Point de maintien : distance / sous la visée | 2.5 / 0.35 | m | l'objet tenu cache-t-il trop la vue ? |
+| Rattrapage du point de maintien : gain / vitesse d'approche | 18 / 40 | /s / m/s | un objet à 55 m arrive en ≈ 1.35 s |
+| Objet lâché s'il reste coincé à plus de / pendant | 4 / 0.3 | m / s | |
+| Poser : vitesse max de l'objet | 4 | m/s | |
+| Le lancer ajoute la vitesse du joueur | oui | — | mesuré : 43.5 m/s lancé à 15 m/s |
 | Durée d'étourdissement de la goule | 1.5 | s | fenêtre du combo |
 | Rayon de collecte des âmes | 6 | m | |
 
@@ -118,6 +134,8 @@ la télékinésie). Les charges de mouvement sont dans `MovementSettings`. Valeu
   revoir en playtest, notamment face au traqueur.
 - Une traction vers le bas plus rapide que 35 m/s est ramenée à la chute max dès qu'elle s'arrête.
 - L'onde de répulsion (ennemis bousculés) attend les ennemis (étape 6).
+- Lustre : le faire tomber **à distance** (traction sèche, objet lancé dessus, ou chaîne visée) pour
+  l'utiliser contre les ennemis et le boss final ; aujourd'hui, il ne se décroche qu'en l'attrapant.
 
 ## History
 
@@ -129,6 +147,9 @@ la télékinésie). Les charges de mouvement sont dans `MovementSettings`. Valeu
   la vitesse opposée, plafond commun, surfaces magnétiques seulement, deux boutons (D-020).
 - 2026-11-12 : après playtest : traction continue, toute surface, sans charges, recharges propres,
   aucune perte d'élan, orbe visible (D-021).
+- 2026-11-12 : télékinésie et échange, partie 1 (D-023) : attraper, tenir, poser, lancer, endurance, objets
+  qui brillent, HUD.
+- 2026-11-12 : après playtest : portée 60 m, vitesse d'approche 40 m/s.
 - 2026-11-12 : retour visuel et sonore : lueur, viseur à deux anneaux, éclats, refus en rouge, sons synthétisés
   (choix 1a 2a 3a ; réglages dans `MagnetismFeedbackSettings`).
 - 2026-11-12 : après le playtest v2 : 3 charges d'attraction (1 toutes les 3 s), répulsion unique

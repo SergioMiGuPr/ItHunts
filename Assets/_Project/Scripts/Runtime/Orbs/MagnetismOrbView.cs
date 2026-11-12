@@ -86,9 +86,11 @@ namespace ItHunts.Orbs
 
             MagnetismState m = _motor.Magnetism;
             MovementState s = _motor.State;
-            UpdateOrb(m);
+            bool active = _motor.ActiveOrb == ActiveOrb.Magnetisme;
+            if (active)
+                UpdateOrb(m);                   // sinon, la couleur de l'orbe vient de TelekinesisView
             UpdateTraction(m, s);
-            UpdateRepel(m);
+            UpdateRepel(m, active);
         }
 
         private void UpdateOrb(in MagnetismState m)
@@ -155,11 +157,11 @@ namespace ItHunts.Orbs
             Animate(_attractFlash, settings.attractColor, settings.tractionFlashDuration, settings.tractionFlashGrowth);
         }
 
-        private void UpdateRepel(in MagnetismState m)
+        private void UpdateRepel(in MagnetismState m, bool active)
         {
             if (aimMarker != null)
             {
-                bool show = m.RepelInRange;
+                bool show = active && m.RepelInRange;
                 aimMarker.enabled = show;
                 if (show)
                 {

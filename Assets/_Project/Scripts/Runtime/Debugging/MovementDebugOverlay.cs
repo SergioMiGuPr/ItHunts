@@ -120,6 +120,47 @@ namespace ItHunts.Debugging
                                  }));
         }
 
+        private void AppendTelekinesis(in MovementState s, float dt)
+        {
+            TelekinesisOrbSettings tc = _motor.TelekinesisSettings;
+            StaminaSettings st = _motor.StaminaSettings;
+            if (tc == null || st == null)
+                return;
+            TelekinesisState t = _motor.Telekinesis;
+            string status = t.Status switch
+            {
+                OrbStatus.EnUsage => "TIENT UN OBJET",
+                OrbStatus.Recharge => "recharge",
+                _ => "prête",
+            };
+            Grabbable aimed = t.AimHit ? Grabbable.Find(t.AimId) : null;
+            string aim = aimed == null ? $"rien d'attrapable (≤ {tc.range:0} m)"
+                : $"{aimed.name} ({aimed.Mass:0} kg{(t.AimTooHeavy ? ", TROP LOURD" : "")}) à {t.AimDistance:0.0} m";
+            _text.AppendLine($"Télékinésie : {status}, endurance {Mathf.Max(0f, t.Stamina):0}/{st.max:0}   Visée : {aim}");
+            Grabbable held = _motor.Holder != null ? _motor.Holder.Held : null;
+            if (held != null)
+            {
+                Vector3 hold = TelekinesisHolder.HoldPoint(tc, MagnetismOrb.EyePosition(s, _motor.Settings),
+                    _look != null ? MagnetismOrb.AimDirection(_look.Yaw, _look.Pitch) : Vector3.forward);
+                _text.AppendLine($"Tenu : {held.name} ({held.Mass:0} kg), écart au point de maintien {Vector3.Distance(hold, held.Body.position):0.00} m");
+            }
+            else if (t.LastAction == TelekinesisCommandKind.Lancer && _motor.Holder != null)
+            {
+                _text.AppendLine($"Dernier lancer : {_motor.Holder.LastThrowVelocity.magnitude:0.0} m/s");
+            }
+
+            if (t.LastRefusalTick != MovementState.NeverTick && (s.Tick - t.LastRefusalTick) * dt < 2f)
+                _text.AppendLine("Refusé (télékinésie) : " + t.LastRefusal switch
+                {
+                    TelekinesisRefusal.RienAttrapable => "rien d'attrapable",
+                    TelekinesisRefusal.TropLourd => "trop lourd",
+                    TelekinesisRefusal.PasDEndurance => "pas assez d'endurance",
+                    TelekinesisRefusal.Recharge => "en recharge",
+                    TelekinesisRefusal.RienEnMain => "rien en main",
+                    _ => "?",
+                });
+        }
+
         private static string EndLabel(TractionEnd end) => end switch
         {
             TractionEnd.Relache => "relâché",
@@ -130,6 +171,7 @@ namespace ItHunts.Debugging
             TractionEnd.Dash => "dash",
             TractionEnd.Repulsion => "répulsion",
             TractionEnd.Bloquee => "bloquée par un obstacle",
+            TractionEnd.Echange => "échange d'orbe",
             _ => "—",
         };
 
@@ -205,7 +247,24 @@ namespace ItHunts.Debugging
                 _text.AppendLine(s.LastDashJumpSuccess
                     ? $"Dash-jump : RÉUSSI  {s.LastDashJumpSpeedBefore:0.0} → {s.LastDashJumpSpeedAfter:0.0} m/s"
                     : $"Dash-jump : raté, trop tard de {s.LastDashJumpLateTicks * dt * 1000f:0} ms (fenêtre {cfg.dashJumpWindow * 1000f:0} ms)");
+            if (_motor.TelekinesisSettings != null)
+            {
+                bool magnet = _motor.ActiveOrb == ActiveOrb.Magnetisme;
+                _text.AppendLine($"Orbe active : {(magnet ? "MAGNÉTISME" : "TÉLÉKINÉSIE")}   (molette / Y : échanger ; 1 / 2 : choisir)");
+                _text.AppendLine(magnet
+                    ? "Commandes : clic gauche / RT maintenu = traction ; clic droit / LT = répulsion"
+                    : "Commandes : clic gauche / RT = attraper (et poser si un objet est tenu) ; clic droit / LT = lancer");
+                if (_reader != null)
+                {
+                    int sinceLeft = s.Tick - _reader.AttractPressedTick, sinceRight = s.Tick - _reader.RepelPressedTick;
+                    string last = _reader.AttractPressedTick > 0 && (sinceLeft <= sinceRight || _reader.RepelPressedTick <= 0)
+                        ? $"clic gauche / RT il y a {Mathf.Max(0, sinceLeft) * dt:0.0} s"
+                        : _reader.RepelPressedTick > 0 ? $"clic droit / LT il y a {Mathf.Max(0, sinceRight) * dt:0.0} s" : "—";
+                    _text.AppendLine($"Dernier appui reçu : {last}   (tenu : {(_reader.AttractHeld ? "oui" : "non")})");
+                }
+            }
             AppendMagnetism(s, dt);
+            AppendTelekinesis(s, dt);
             _text.AppendLine($"Sauts restants : {Mathf.Max(0, cfg.maxJumps - s.JumpsUsed)}/{cfg.maxJumps}   " +
                              $"Auto-bhop : {(cfg.autoBunnyHop ? "oui" : "non")}   Contrôle aérien : {cfg.airControl:0.00}");
             _text.AppendLine(_seenJumpTick == MovementState.NeverTick
@@ -213,8 +272,8 @@ namespace ItHunts.Debugging
                 : $"Dernier saut : {_speedAtLastJump:0.00} m/s (gain {_lastJumpGain:+0.00;-0.00;0.00})");
             if (_teleporter != null)
                 _text.AppendLine(string.IsNullOrEmpty(_teleporter.LastLabel)
-                    ? "Téléport : F4 départ, F5 ouvert, F6 ligne droite, F7 pentes, F8 murs, F9 écarts, F10 magnétisme, F11 grande salle"
-                    : $"Téléport : {_teleporter.LastLabel}   (F4 départ, F5 à F11 zones)");
+                    ? "Téléport : F4 départ, F5 ouvert, F6 ligne droite, F7 pentes, F8 murs, F9 écarts, F10 magnétisme, F11 grande salle, F12 télékinésie"
+                    : $"Téléport : {_teleporter.LastLabel}   (F4 départ, F5 à F12 zones)");
             _text.Append($"Tick : {s.Tick} ({Mathf.RoundToInt(1f / dt)} Hz)");
             if (_look != null)
                 _text.Append($"   FOV : {_look.CurrentFov:0.0}°");

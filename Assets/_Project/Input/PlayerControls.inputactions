@@ -78,6 +78,42 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "SwapOrb",
+                    "type": "Button",
+                    "id": "43fd0c7f-05b6-46e8-afd1-7788e431c5cb",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SwapOrbScroll",
+                    "type": "Value",
+                    "id": "1ab7766e-acb4-434d-b54b-54f1b18ec677",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SelectOrb1",
+                    "type": "Button",
+                    "id": "96da85bb-1d29-4d5e-a337-29adfd222d93",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SelectOrb2",
+                    "type": "Button",
+                    "id": "c7336c0a-d539-4e02-8e9d-403168ad21fd",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "ToggleDebug",
                     "type": "Button",
                     "id": "b5aa5c3a-a3b7-4c50-8ece-fff40333e368",
@@ -402,6 +438,50 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Repel",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7b440fb1-f62a-4675-8161-044ee023c010",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "SwapOrb",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5064bd07-dcd8-4c53-ac98-2befd0d3cf8d",
+                    "path": "<Mouse>/scroll/y",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "SwapOrbScroll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a0f9820d-0332-4cb8-b886-674fba63ca01",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "SelectOrb1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d3786dd4-90db-4d11-b008-5eefbb81c582",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "SelectOrb2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
