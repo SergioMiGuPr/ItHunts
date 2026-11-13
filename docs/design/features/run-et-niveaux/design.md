@@ -41,7 +41,9 @@ Le traqueur est lâché à 3 min et la porte de sortie se déverrouille à 10 mi
 7. **Marchand de l'artefact (D-050).** Il se trouve dans chaque salle de départ :
    - chaque joueur voit ses propres offres : 3 améliorations du barillet tirées au hasard ;
    - après un achat, ses 3 offres sont tirées de nouveau ;
-   - le prix monte de **25 %** par achat, par joueur.
+   - le prix monte de **25 %** par achat, par joueur ;
+   - **4e offre fixe : le soin** (+40 PV pour 35 âmes, réglable dans `Economy_Default`), seul moyen de se soigner pendant
+     une zone (après le playtest de l'étape 8).
 
    Les 5 améliorations du barillet sont provisoires : balles +2, dégâts +30 %, cadence +25 %, rechargement −35 %,
    portée +25 m. Les coffres gardent les 7 améliorations de stats. Le marchand placé au hasard est retiré.
@@ -104,7 +106,7 @@ Le traqueur est lâché à 3 min et la porte de sortie se déverrouille à 10 mi
 - **Avant la sortie de la salle de départ, aucune vague ne tourne**, nulle part sur la carte, et pas seulement dans la salle.
 - **La porte de sortie se paie une fois pour tous**, au prix fixe de 200 âmes, sans hausse.
 - **Pendant le combat de boss, les vagues s'arrêtent.** Les pièges ne blessent pas les joueurs.
-- **Le marchand ne vend plus de soin** et tire de nouveau ses 3 offres après chaque achat.
+- Le marchand tire de nouveau ses 3 offres après chaque achat ; le soin compte comme un achat au marchand (hausse de 25 %).
 - **Multiplicateurs de Moyenne et de Difficile** (×1.4, ×1.25…) : provisoires.
 - **Le niveau 1 est une grille régulière** : retirer des couloirs et varier les salles, les hauteurs et les canaux ne
   suffit pas à casser cette régularité ; c'est à reprendre au level design.

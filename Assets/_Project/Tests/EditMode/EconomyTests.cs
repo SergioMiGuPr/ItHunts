@@ -327,5 +327,32 @@ namespace ItHunts.Tests
             Assert.That(label.TextFor(b), Is.EqualTo("Coffre\n30 âmes"), "fermé pour b, avec son prix");
             Assert.That(chest.Prompt(b), Is.EqualTo("ouvrir le coffre (30 âmes)"));
         }
+    
+        [Test]
+        public void MarchandDeLArtefact_TroisOffresEtLeSoinEnQuatrieme()
+        {
+            var go = new GameObject("Marchand (test)");
+            try
+            {
+                var m = go.AddComponent<ArtifactMerchant>();
+                var so = new SerializedObject(m);
+                so.FindProperty("settings").objectReferenceValue = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
+                so.FindProperty("pool").objectReferenceValue = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_Barillet.asset");
+                so.ApplyModifiedPropertiesWithoutUndo();
+                m.Stock(42);
+                var offers = m.OffersFor(42);
+                Assert.That(offers.Count, Is.EqualTo(4), "3 améliorations du barillet + le soin");
+                Assert.That(offers.Take(3).All(o => o.Upgrade != null && o.Upgrade.kind.ToString().EndsWith("Barillet")), Is.True);
+                Assert.That(offers[3].Upgrade, Is.Null);
+                Assert.That(offers[3].Heal, Is.EqualTo(40f), "soin +40 PV (D-050 révisée)");
+                Assert.That(offers[3].Price, Is.EqualTo(35));
+                Assert.That(offers.All(o => o.RestrictedTo == 42), Is.True, "offres de ce joueur seulement");
+                m.ResetMerchant();
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
     }
 }

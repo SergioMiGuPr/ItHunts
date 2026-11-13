@@ -10,7 +10,8 @@ namespace ItHunts.Economy
     /// Marchand de la salle de départ (D-050) : améliorations de l'artefact (barillet pour l'instant). Chaque joueur voit ses
     /// propres offres (3 tirées au hasard dans le pool, avec la seed de la run) ; il en achète une, ses offres sont tirées de
     /// nouveau. Prix de base de chaque amélioration, plus la hausse par achat du marchand (par joueur, EconomySettings).
-    /// Les coffres donnent les améliorations de stats ; le marchand placé au hasard (D-043) n'est plus utilisé.
+    /// Les coffres donnent les améliorations de stats ; le marchand placé au hasard (D-043) n'est plus utilisé. 4e offre fixe :
+    /// le soin (+40 PV, 35 âmes).
     /// </summary>
     public sealed class ArtifactMerchant : MonoBehaviour
     {
@@ -20,6 +21,8 @@ namespace ItHunts.Economy
         [SerializeField] private Material orbMaterial;
         [Tooltip("Nombre d'offres par joueur.")]
         [Min(1)] [SerializeField] private int offers = 3;
+        [Tooltip("Offre de soin en plus (prix et PV dans EconomySettings).")]
+        [SerializeField] private bool withHeal = true;
 
         private readonly Dictionary<int, List<OfferOrb>> _offers = new Dictionary<int, List<OfferOrb>>();
         private int _draws;
@@ -74,6 +77,22 @@ namespace ItHunts.Economy
                     Stock(p.PlayerId);                                    // nouveau choix parmi 3, prix plus haut
                 };
                 list.Add(orb);
+            }
+
+            // 4e offre fixe : le soin (+40 PV pour 35 âmes, EconomySettings) ; seul moyen de se soigner pendant une zone.
+            if (withHeal)
+            {
+                float hx = (idx.Length - (idx.Length - 1) * 0.5f) * 2.4f;
+                Vector3 hat = transform.position + transform.forward * 1.6f + transform.right * hx + Vector3.up * 1.6f;
+                OfferOrb heal = OfferOrb.Create(transform, hat, null, settings != null ? settings.healPrice : 35,
+                    settings != null ? settings.healAmount : 40f, playerId, range, orbMaterial);
+                heal.Pricing = settings;
+                heal.TakenBy += (o, p) =>
+                {
+                    Purchases++;
+                    Stock(p.PlayerId);
+                };
+                list.Add(heal);
             }
         }
     }
