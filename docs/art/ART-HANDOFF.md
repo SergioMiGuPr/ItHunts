@@ -316,3 +316,28 @@ leurs options sont à vérifier dans le connecteur au moment de s'en servir.
   `Assets/Art/Materials/`, `Assets/Art/Shaders/`, `Assets/Art/Scenes/`.
 - **Vérifier avant la PR :** échelle à côté du mannequin, pivot, orientation, triangles dans le budget, matériaux
   URP (pas de shader manquant, rose), ligne du manifeste remplie.
+
+## Étape 8 : niveau 1, arène, menus (D-048 à D-053)
+
+- **Niveau 1 (`Level_01`, copie retravaillée ; `Level_01_Base` régénérée par le constructeur) :**
+  - **Grille :** 7 × 7 salles à 120 m d'écart, soit 800 × 785 m. Salles de 46 à 66 m de côté, carrefours de 20 m ;
+    plafonds de 36 m (salles) et 24 m (carrefours) ; niveau haut à +16 m.
+  - **Couloirs :** 14 × 19 m (16 m en pente). Ponts et poutres : dessous à 10 m.
+  - **Corniches :** 11 m, pleines jusqu'au sol.
+  - **Canaux d'égout :** 6 m de large, 4 m de profondeur, eau à 1.2 m sous le sol. Grand pont de 14 m, petit pont de 4 m.
+  - **Muret des coffres :** 3 m de haut.
+  - **Plateformes non magnétiques :** 4 × 4 m, de 2.5 à 6.5 m, écarts de 3 m ; matériau à rayures sans lueur, à garder
+    lisible à la DA (ne jamais les faire briller comme les cibles de traction).
+- **Sortie :**
+  - **Grande porte :** 10 × 10 m, rouge verrouillée, orange payable.
+  - **Escaliers :** 20 marches de 0.4 × 1.6 m, 10 m de large.
+  - **Palier :** 12 m.
+- **Arène du combat de boss :**
+  - **Dimensions :** 80 × 80 m, 30 m de haut.
+  - **Herse :** piliers de 28 m, passage de 10 m, grille de 10 × 12 m ; poche ouest fermée jusqu'au plafond.
+  - **Fosse :** 18 m de large, 8 m de profondeur, sur toute la profondeur de l'arène ; tablier du pont de 12 m.
+  - **Lustre géant :** 12 × 12 m, à 24 m, avec un treuil sur le mur nord.
+  - **Lisibilité :** cibles de 1.4 m qui brillent (orange), zones de pièges en orange au sol.
+- **Salle de départ :** marchand de l'artefact (silhouette violette de 2.2 m, enseigne) ; 3 orbes d'offre par joueur.
+- **Menus et minimap :** greybox IMGUI (`MainMenu`, écran de fin, minimap en haut à gauche), à refaire à l'étape 10 ;
+  aucun menu ne met le jeu en pause.

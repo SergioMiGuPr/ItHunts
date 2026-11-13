@@ -77,3 +77,5 @@ d'amélioration parmi 3), le marchand (améliorations et soin) et la porte de la
 - 2026-11-13 : designed et construit (étape 7, D-043).
 - 2026-11-13 : playtest validé ; coffre seulement avec E / Y ; hausse du prix à chaque achat (0 %).
 - 2026-11-13 : âmes gagnées en commun, dépensées individuellement (D-007 révisée) ; coffres par joueur.
+
+- 2026-11-13 : le marchand placé au hasard est retiré ; marchand de l'artefact dans la salle de départ (D-050, [run et niveaux](../run-et-niveaux/design.md)).

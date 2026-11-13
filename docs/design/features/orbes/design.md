@@ -270,3 +270,5 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
 - 2026-11-12 : traction plafonnée à 18 m/s, sans jamais freiner (D-036).
 - 2026-11-12 : recharge d'une charge d'attraction à 6 s (D-036).
 - 2026-11-13 : 2 charges d'attraction au lieu de 3, pour ne pas trop s'appuyer sur la traction (D-036 mise à jour).
+
+- 2026-11-13 : surfaces non magnétiques (D-051) : la traction ne s'y accroche pas (refus en rouge, charge gardée), la répulsion oui ([run et niveaux](../run-et-niveaux/design.md)).
