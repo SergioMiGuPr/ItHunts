@@ -164,7 +164,7 @@ namespace ItHunts.Enemies
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
             if (_zone == null)
                 _zone = FindFirstObjectByType<ZoneState>();
-            if (_zone == null || _zone.Settings == null || _zone.Finished || !_zone.Started)
+            if (_zone == null || _zone.Settings == null || _zone.Finished || !_zone.Started || _zone.BossFightActive)
                 return;                                                  // salle de départ (D-048) : rien avant la première sortie
             float now = Time.time, elapsed = _zone.Elapsed, timer = _zone.Settings.timer;
 

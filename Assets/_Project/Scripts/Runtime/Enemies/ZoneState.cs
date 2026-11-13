@@ -38,6 +38,9 @@ namespace ItHunts.Enemies
         public bool RunOver { get; private set; }
         /// <summary>Le timer vient de démarrer (premier joueur sorti de la salle de départ).</summary>
         public static event System.Action<ZoneState> TimerStarted;
+        /// <summary>Combat de boss en cours (D-049) : les vagues s'arrêtent.</summary>
+        public bool BossFightActive { get; set; }
+
         /// <summary>Remplacé par le combat de boss (D-049) : vrai s'il prend la main à la sortie.</summary>
         public System.Func<PlayerHealth, bool> ExitHandler { get; set; }
         public float GraceLeft => settings != null ? Mathf.Max(0f, settings.gracePeriod - Elapsed) : 0f;
@@ -214,6 +217,7 @@ namespace ItHunts.Enemies
             Elapsed = 0f;
             Finished = false;
             Started = false;
+            BossFightActive = false;
             Won = false;
             RunOver = false;
             Resets++;
@@ -260,6 +264,8 @@ namespace ItHunts.Enemies
                 m.Place();
             foreach (ItHunts.Economy.ArtifactMerchant m in FindObjectsByType<ItHunts.Economy.ArtifactMerchant>(FindObjectsSortMode.None))
                 m.ResetMerchant();
+            foreach (BossFight b in FindObjectsByType<BossFight>(FindObjectsSortMode.None))
+                b.ResetFight();
             if (MapDiscovery.Current != null)
                 MapDiscovery.Current.Clear();                            // brouillard de guerre (D-053)
             foreach (ExitDoor d in FindObjectsByType<ExitDoor>(FindObjectsSortMode.None))

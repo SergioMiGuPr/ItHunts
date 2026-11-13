@@ -487,13 +487,13 @@ namespace ItHunts.Tests
             try
             {
                 MazeGraph g = scene.GetRootGameObjects().Select(r => r.GetComponentInChildren<MazeGraph>()).First(x => x != null);
-                Assert.That(g.NodeCount, Is.EqualTo(10));
-                Assert.That(g.EdgeCount, Is.EqualTo(13));
+                Assert.That(g.NodeCount, Is.EqualTo(11), "10 intersections et l'arène du combat de boss (D-049)");
+                Assert.That(g.EdgeCount, Is.EqualTo(14));
                 int deadEnds = 0;
                 for (int e = 0; e < g.EdgeCount; e++)
                     if (!g.EdgeInLoop(e))
                         deadEnds++;
-                Assert.That(deadEnds, Is.EqualTo(1), "seul le repaire est un cul-de-sac");
+                Assert.That(deadEnds, Is.EqualTo(2), "seuls le repaire et l'arène (par les escaliers de sortie) sont des culs-de-sac");
             }
             finally
             {

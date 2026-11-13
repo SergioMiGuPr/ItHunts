@@ -165,6 +165,9 @@ namespace ItHunts.EditorTools
         {
             // Sortie (D-048) : grande porte dans le mur nord de la salle de sortie, escaliers, palier de sortie.
             Vector3 exitAt = ExitStairs(Nodes[_exitNode]);
+            Bounds arena = BossArena(exitAt);                             // combat de boss (D-049), derrière le palier
+            navMin = Vector3.Min(navMin, arena.min);
+            navMax = Vector3.Max(navMax, arena.max);
 
             // Graphe du labyrinthe (règle de Pac-Man du traqueur).
             var graph = new GameObject("Graphe du labyrinthe").AddComponent<MazeGraph>();
@@ -423,7 +426,7 @@ namespace ItHunts.EditorTools
             Piece("Escaliers de sortie : mur ouest", new Vector3(x - w / 2f - T / 2f, yWall / 2f, z0 + len / 2f), new Vector3(T, yWall, len), _wall, walkable: false);
             Piece("Escaliers de sortie : mur est", new Vector3(x + w / 2f + T / 2f, yWall / 2f, z0 + len / 2f), new Vector3(T, yWall, len), _wall, walkable: false);
             Piece("Escaliers de sortie : plafond", new Vector3(x, yWall + 0.5f, z0 + len / 2f), new Vector3(w + 2f * T, 1f, len), _ceiling, walkable: false);
-            Piece("Escaliers de sortie : mur du fond", new Vector3(x, yWall / 2f, zEnd + T / 2f), new Vector3(w + 2f * T, yWall, T), _wall, walkable: false);
+            // Pas de mur du fond : le palier s'ouvre sur l'arène du combat de boss (D-049).
             for (int i = 0; i < 3; i++)
                 Lamp($"Escaliers de sortie : lumière {i + 1}", new Vector3(x, y0 + rise * steps * (i + 1) / 3f + 6f, z0 + len * (i + 0.5f) / 3f),
                     new Color(1f, 0.75f, 0.45f), 4f, 22f);

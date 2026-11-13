@@ -81,6 +81,26 @@ namespace ItHunts.Tests
             Assert.That(h.maxHealth, Is.EqualTo(150f));
         }
     
+        [Test]
+        public void Piege_RateSansCombat_SeReArme()
+        {
+            var go = new GameObject("Piège (test)");
+            try
+            {
+                var trap = go.AddComponent<BossTrap>();
+                Assert.That(trap.Fire(), Is.False, "pas de combat : coup raté");
+                Assert.That(trap.Sprung, Is.False);
+                Assert.That(trap.Misses, Is.EqualTo(1));
+                Assert.That(trap.Down, Is.True);
+                trap.ResetTrap();
+                Assert.That(trap.Down || trap.Misses > 0, Is.False, "remise à zéro : armé");
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
         private static int CountScript(string scenePath, string scriptPath)
         {
             string guid = AssetDatabase.AssetPathToGUID(scriptPath);
@@ -104,6 +124,9 @@ namespace ItHunts.Tests
             Assert.That(CountScript(basePath, rt + "Economy/Chest.cs"), Is.GreaterThanOrEqualTo(12));
             Assert.That(CountScript(basePath, rt + "Enemies/SpawnPoint.cs"), Is.GreaterThan(500));
             Assert.That(File.ReadAllText(basePath).Contains("kind: 2"), Is.True, "une salle de départ (RoomKind.Depart)");
+            Assert.That(CountScript(basePath, rt + "Level/BossFight.cs"), Is.EqualTo(1), "arène du combat de boss (D-049)");
+            Assert.That(CountScript(basePath, rt + "Level/BossTrap.cs"), Is.EqualTo(3), "herse, pont, lustre");
+            Assert.That(CountScript(basePath, rt + "Level/MapDiscovery.cs"), Is.EqualTo(1), "minimap (D-053)");
             Assert.That(System.Array.Exists(EditorBuildSettings.scenes, sc => sc.path == copy), Is.True, "Level_01 dans le build (la run la charge)");
             Assert.That(EditorBuildSettings.scenes[0].path, Is.EqualTo("Assets/Scenes/MainMenu.unity"), "le menu d'abord");
         }

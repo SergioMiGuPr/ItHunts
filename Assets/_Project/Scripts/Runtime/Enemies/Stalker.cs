@@ -216,9 +216,40 @@ namespace ItHunts.Enemies
                 _move.AgentType = _nav.StalkerAgent;
         }
 
+        private float _staggerUntil;
+
+        /// <summary>Sonné par un piège du combat de boss (D-049) : il ne bouge ni n'attaque pendant ce temps.</summary>
+        public bool Staggered => Time.time < _staggerUntil;
+
+        public void Stagger(float seconds) => _staggerUntil = Mathf.Max(_staggerUntil, Time.time + seconds);
+
+        /// <summary>Le pose ailleurs (entrée de l'arène du combat de boss) : sans prise ni attaque en cours, sans chemin.</summary>
+        public void WarpTo(Vector3 feet, Quaternion rotation)
+        {
+            transform.SetPositionAndRotation(feet, rotation);
+            _rb.position = feet;
+            _move.Clear();
+            _move.Heading = rotation * Vector3.forward;
+            _grab = GrabPhase.Aucune;
+            Planted = false;
+            _grabOpening = null;
+            _over = OverheadPhase.Aucune;
+            _back = BackhandPhase.Aucune;
+            _inNode = _lastNode = -1;
+            GoalNode = ArrivedFrom = -1;
+            _trackEdge = -1;
+            _hasDest = false;
+            _retargetAt = 0f;
+            _nextDecision = 0f;
+            if (grabMarker != null)
+                grabMarker.gameObject.SetActive(false);
+            PoseArm(RestHand(), 0f);
+        }
+
         /// <summary>Remise à zéro de la zone : au repaire, sans cible, pointe rechargée.</summary>
         public void ResetState()
         {
+            _staggerUntil = 0f;
             transform.SetPositionAndRotation(_home, _homeRotation);
             _rb.position = _home;
             _move.Clear();
@@ -268,6 +299,11 @@ namespace ItHunts.Enemies
             bool enraged = _zone != null && _zone.Enraged;
             Vector3 pos = _rb.position;
             UpdateCrouch(pos, dt);
+            if (Staggered)
+            {
+                WantedSpeed = 0f;
+                return;                                                  // sonné par un piège (D-049)
+            }
 
             if (grace)
             {
