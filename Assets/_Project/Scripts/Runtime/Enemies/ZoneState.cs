@@ -260,6 +260,8 @@ namespace ItHunts.Enemies
                 m.Place();
             foreach (ItHunts.Economy.ArtifactMerchant m in FindObjectsByType<ItHunts.Economy.ArtifactMerchant>(FindObjectsSortMode.None))
                 m.ResetMerchant();
+            if (MapDiscovery.Current != null)
+                MapDiscovery.Current.Clear();                            // brouillard de guerre (D-053)
             foreach (ExitDoor d in FindObjectsByType<ExitDoor>(FindObjectsSortMode.None))
                 d.ResetDoor();
             ImpactDamager.ResetCooldowns();
