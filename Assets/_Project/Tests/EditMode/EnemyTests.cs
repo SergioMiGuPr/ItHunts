@@ -214,20 +214,28 @@ namespace ItHunts.Tests
         public void Zone_GraceTimerEnrage()
         {
             var s = Asset<ZoneSettings>();
-            Assert.That(s.timer, Is.EqualTo(240f), "4 min en test");
-            Assert.That(s.gracePeriod, Is.EqualTo(15f));
+            Assert.That(s.timer, Is.EqualTo(900f), "15 min (D-048)");
+            Assert.That(s.gracePeriod, Is.EqualTo(180f), "traqueur lâché à 3 min (D-048)");
             var go = new GameObject("Zone (test)");
             _objects.Add(go);
             var z = go.AddComponent<ZoneState>();
             typeof(ZoneState).GetField("settings", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(z, s);
             FieldInfo elapsed = typeof(ZoneState).GetField("<Elapsed>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
-            elapsed.SetValue(z, 10f);
+            FieldInfo started = typeof(ZoneState).GetField("<Started>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+            elapsed.SetValue(z, 1000f);
+            Assert.That(z.InGrace && !z.Enraged && !z.ExitUnlocked, Is.True, "timer pas démarré (salle de départ) : rien ne se passe");
+            started.SetValue(z, true);
+            elapsed.SetValue(z, 179f);
             Assert.That(z.InGrace, Is.True);
             Assert.That(z.Enraged, Is.False);
-            elapsed.SetValue(z, 16f);
+            elapsed.SetValue(z, 181f);
             Assert.That(z.InGrace, Is.False);
-            Assert.That(z.TimeLeft, Is.EqualTo(224f));
-            elapsed.SetValue(z, 240f);
+            Assert.That(z.TimeLeft, Is.EqualTo(719f));
+            elapsed.SetValue(z, 599f);
+            Assert.That(z.ExitUnlocked, Is.False);
+            elapsed.SetValue(z, 600f);
+            Assert.That(z.ExitUnlocked, Is.True, "porte de sortie à 10 min");
+            elapsed.SetValue(z, 900f);
             Assert.That(z.Enraged, Is.True, "à 0 : traqueur enragé");
             Assert.That(z.TimeLeft, Is.EqualTo(0f));
             PlayerHealth.ZoneHandlesDeath = false;
@@ -345,7 +353,7 @@ namespace ItHunts.Tests
             var m = AssetDatabase.LoadAssetAtPath<MagnetismOrbSettings>("Assets/_Project/Settings/Magnetism_Default.asset");
             Assert.That(m.tractionSpeed, Is.EqualTo(18f), "traction plafonnée à 18 m/s (D-036)");
             var z = AssetDatabase.LoadAssetAtPath<ZoneSettings>("Assets/_Project/Settings/Zone_Test.asset");
-            Assert.That(z.timer, Is.EqualTo(240f));
+            Assert.That(z.timer, Is.EqualTo(900f));
         }
 
         private static int CountScript(string scenePath, string scriptPath)

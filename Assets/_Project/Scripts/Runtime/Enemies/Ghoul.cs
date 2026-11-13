@@ -131,6 +131,7 @@ namespace ItHunts.Enemies
 
         public void ResetState()
         {
+            _move.SpeedScale = ItHunts.Level.RunSession.EnemySpeed;   // difficulté (D-048)
             transform.SetPositionAndRotation(_home, _homeRotation);
             if (_rb != null)
                 _rb.position = _home;

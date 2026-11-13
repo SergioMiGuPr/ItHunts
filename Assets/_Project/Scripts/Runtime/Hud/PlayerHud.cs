@@ -423,6 +423,12 @@ namespace ItHunts.Hud
             UpdateWorld();
         }
 
+        private static string Clock(float seconds)
+        {
+            int s = Mathf.CeilToInt(seconds);
+            return $"{s / 60}:{s % 60:00}";
+        }
+
         /// <summary>Timer de la zone (coin haut droite), traqueur enragé (sous le timer), message central (mort, sortie).</summary>
         private void UpdateZone(float now)
         {
@@ -437,7 +443,16 @@ namespace ItHunts.Hud
             }
 
             int left = Mathf.CeilToInt(_zone.TimeLeft);
-            _timerText.text = _zone.InGrace ? $"grâce {Mathf.CeilToInt(_zone.GraceLeft)} s   {left / 60}:{left % 60:00}" : $"{left / 60}:{left % 60:00}";
+            // D-048 : avant la sortie de la salle de départ, le timer attend ; ensuite, prochains événements (traqueur, sortie).
+            if (!_zone.Started)
+                _timerText.text = $"{left / 60}:{left % 60:00}\n<size={Mathf.RoundToInt(_timerText.fontSize * 0.45f)}>sors de la salle de départ</size>";
+            else
+            {
+                string next = _zone.InGrace ? $"traqueur dans {Clock(_zone.GraceLeft)}"
+                    : !_zone.ExitUnlocked ? $"sortie dans {Clock(_zone.ExitUnlockLeft)}"
+                    : !_zone.Enraged ? "sortie ouverte" : string.Empty;
+                _timerText.text = next.Length > 0 ? $"{left / 60}:{left % 60:00}\n<size={Mathf.RoundToInt(_timerText.fontSize * 0.45f)}>{next}</size>" : $"{left / 60}:{left % 60:00}";
+            }
             _timerText.color = _zone.Enraged ? new Color(1f, 0.25f, 0.2f) : left <= 30 ? new Color(1f, 0.7f, 0.3f) : Color.white;
             _stalkerText.text = _zone.Enraged ? "TRAQUEUR ENRAGÉ" : string.Empty;
             // D-038 : plus il accélère, plus l'indication pulse fort ; éclat d'une seconde à chaque palier.

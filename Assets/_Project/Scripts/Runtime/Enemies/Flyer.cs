@@ -131,6 +131,7 @@ namespace ItHunts.Enemies
         /// <summary>Remise à zéro de la zone : à sa place, en attente, entier.</summary>
         public void ResetState()
         {
+            _path.SpeedScale = ItHunts.Level.RunSession.EnemySpeed;   // difficulté (D-048)
             _burst = false;
             _wasHeld = false;
             Hunting = Aggroed = false;

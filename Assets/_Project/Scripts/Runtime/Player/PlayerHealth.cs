@@ -119,6 +119,7 @@ namespace ItHunts.Player
         {
             if (damage <= 0f || _health.Dead)
                 return false;
+            damage *= ItHunts.Level.RunSession.EnemyDamage;                 // difficulté (D-048)
             float taken = HealthState.Apply(ref _health, damage, time, out bool killed);
             if (taken <= 0f)
                 return false;

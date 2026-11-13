@@ -131,17 +131,8 @@ namespace ItHunts.EditorTools
             Halls();
             CorridorFeatures();
 
-            // Sortie verte au fond de la salle NE (la plus loin du départ).
-            Node ne = Nodes[8];
-            Vector3 exitAt = ne.C + new Vector3(12f, 0f, 8f);
-            Material exitMat = UnlitMat("Arena_Exit", "Universal Render Pipeline/Unlit", new Color(0.3f, 3f, 0.8f));
-            GameObject exit = Box("Sortie", _level, exitAt + Vector3.up * 0.05f, new Vector3(5f, 0.1f, 5f), exitMat, collider: false);
-            var trigger = exit.AddComponent<BoxCollider>();
-            trigger.isTrigger = true;
-            trigger.center = new Vector3(0f, 12f, 0f);
-            trigger.size = new Vector3(1f, 24f, 1f);
-            exit.AddComponent<ZoneExit>();
-            Lamp("Lumière de la sortie", exitAt + Vector3.up * 3f, new Color(0.3f, 1f, 0.5f), 4f, 15f);
+            // Sortie (D-048) : grande porte dans le mur nord de la salle NE (la plus loin du départ), escaliers, palier de sortie.
+            ExitStairs(Nodes[8]);
 
             // Graphe du labyrinthe (règle de Pac-Man du traqueur).
             var graph = new GameObject("Graphe du labyrinthe").AddComponent<MazeGraph>();
@@ -310,6 +301,9 @@ namespace ItHunts.EditorTools
             for (int i = 0; i < links.GetLength(0); i++)
                 Edges.Add(new Vector2Int(links[i, 0], links[i, 1]));
 
+            // Porte de sortie (D-048) : ouverture de 10 × 10 m au milieu du mur nord de la salle NE.
+            AddOpening(8, SideN, new Opening(Nodes[8].C.x - ExitDoorWidth / 2f, Nodes[8].C.x + ExitDoorWidth / 2f, U, U + ExitDoorHeight));
+
             // Ouvertures des couloirs dans les murs des intersections.
             float h = L.corridorHeight;
             for (int e = 0; e < Edges.Count; e++)
@@ -322,6 +316,57 @@ namespace ItHunts.EditorTools
                 if (!IsLairEdge(e))
                     AddOpening(Edges[e].y, sb, new Opening(along - w / 2f, along + w / 2f, b.C.y, b.C.y + h));
             }
+        }
+
+        private const float ExitDoorWidth = 10f, ExitDoorHeight = 10f;
+
+        /// <summary>
+        /// Sortie du niveau (D-048) : grande porte (rouge verrouillée, orange payable) dans le mur nord de la salle, escaliers de
+        /// 20 marches (8 m de montée sur 32 m), palier avec le déclencheur de sortie. Le combat de boss (D-049) se branche derrière.
+        /// </summary>
+        private static Vector3 ExitStairs(Node n)
+        {
+            float x = n.C.x, z0 = n.C.z + n.HalfZ + T, y0 = n.C.y, w = ExitDoorWidth;
+            Material locked = GrabbableMat("Exit_Door_Locked", new Color(0.35f, 0.08f, 0.06f));
+            locked.SetColor("_EmissionColor", new Color(1.4f, 0.1f, 0.05f));
+            Material open = GrabbableMat("Exit_Door_Unlocked", new Color(0.45f, 0.25f, 0.08f));
+            open.SetColor("_EmissionColor", new Color(2.2f, 1.1f, 0.2f));
+            GameObject door = Box("Porte de sortie", _level, new Vector3(x, y0 + ExitDoorHeight / 2f, z0 - T / 2f), new Vector3(w + 0.4f, ExitDoorHeight, T + 0.6f), locked);
+            GameObjectUtility.SetStaticEditorFlags(door, 0);
+            var exitDoor = door.AddComponent<ItHunts.Level.ExitDoor>();
+            SetRef(exitDoor, "unlockedMaterial", open);
+            Lamp("Porte de sortie : lumière", new Vector3(x, y0 + ExitDoorHeight + 2f, z0 - 4f), new Color(1f, 0.4f, 0.2f), 4f, 20f);
+
+            const int steps = 20;
+            const float rise = 0.4f, depth = 1.6f, headroom = 14f;
+            float zTop = z0 + steps * depth, yTop = y0 + steps * rise, landing = 12f;
+            for (int i = 0; i < steps; i++)
+            {
+                float top = y0 + rise * (i + 1);
+                Piece($"Escaliers de sortie : marche {i + 1}", new Vector3(x, top / 2f, z0 + depth * (i + 0.5f)), new Vector3(w, top, depth), _bridge);
+            }
+
+            Piece("Escaliers de sortie : palier", new Vector3(x, yTop / 2f, zTop + landing / 2f), new Vector3(w, yTop, landing), _floor);
+            float zEnd = zTop + landing, len = zEnd - z0, yWall = yTop + headroom;
+            Piece("Escaliers de sortie : mur ouest", new Vector3(x - w / 2f - T / 2f, yWall / 2f, z0 + len / 2f), new Vector3(T, yWall, len), _wall, walkable: false);
+            Piece("Escaliers de sortie : mur est", new Vector3(x + w / 2f + T / 2f, yWall / 2f, z0 + len / 2f), new Vector3(T, yWall, len), _wall, walkable: false);
+            Piece("Escaliers de sortie : plafond", new Vector3(x, yWall + 0.5f, z0 + len / 2f), new Vector3(w + 2f * T, 1f, len), _ceiling, walkable: false);
+            Piece("Escaliers de sortie : mur du fond", new Vector3(x, yWall / 2f, zEnd + T / 2f), new Vector3(w + 2f * T, yWall, T), _wall, walkable: false);
+            for (int i = 0; i < 3; i++)
+                Lamp($"Escaliers de sortie : lumière {i + 1}", new Vector3(x, y0 + rise * steps * (i + 1) / 3f + 6f, z0 + len * (i + 0.5f) / 3f),
+                    new Color(1f, 0.75f, 0.45f), 4f, 22f);
+
+            // Palier : déclencheur de sortie (combat de boss ensuite, D-049).
+            Material exitMat = UnlitMat("Arena_Exit", "Universal Render Pipeline/Unlit", new Color(0.3f, 3f, 0.8f));
+            Vector3 exitAt = new Vector3(x, yTop, zTop + landing / 2f);
+            GameObject exit = Box("Sortie (haut des escaliers)", _level, exitAt + Vector3.up * 0.05f, new Vector3(6f, 0.1f, 6f), exitMat, collider: false);
+            var trigger = exit.AddComponent<BoxCollider>();
+            trigger.isTrigger = true;
+            trigger.center = new Vector3(0f, 12f, 0f);                 // boîte aplatie (0.1 m) : 6 × 2.4 × 6 m dans le monde
+            trigger.size = new Vector3(1f, 24f, 1f);
+            exit.AddComponent<ZoneExit>();
+            Lamp("Lumière de la sortie", exitAt + Vector3.up * 3f, new Color(0.3f, 1f, 0.5f), 4f, 15f);
+            return exitAt;
         }
 
         /// <summary>Couloir en pente (deux niveaux) : plus large, une voie en pente et une voie au sol qui finit au pied d'un mur.</summary>
@@ -420,7 +465,8 @@ namespace ItHunts.EditorTools
             WallLine($"{n.Name} : mur est", false, c.x + hx + T / 2f, c.z - hz, c.z + hz, 0f, top, Openings(i, SideE));
             if (!lair)                                                   // le repaire s'ouvre dans le mur est du carrefour E
                 WallLine($"{n.Name} : mur ouest", false, c.x - hx - T / 2f, c.z - hz, c.z + hz, 0f, top, Openings(i, SideW));
-            RoomVolumeAt(n.Name, new Vector3(c.x, y + n.Ceil / 2f, c.z), Quaternion.identity, new Vector3(2f * hx, n.Ceil, 2f * hz));
+            RoomVolumeAt(n.Name, new Vector3(c.x, y + n.Ceil / 2f, c.z), Quaternion.identity, new Vector3(2f * hx, n.Ceil, 2f * hz),
+                i == 0 ? RoomKind.Depart : RoomKind.Salle);                  // SO : salle de départ (D-048)
 
             if (lair)
             {

@@ -124,6 +124,13 @@ namespace ItHunts.Player
             if (_reader == null)
                 return;
 
+            if (MenuOpen)
+            {
+                if (Cursor.lockState == CursorLockMode.Locked)
+                    SetCursorLocked(false);
+                return;
+            }
+
             if (_reader.PausePressed)
             {
                 SetCursorLocked(Cursor.lockState != CursorLockMode.Locked && !_reader.UsingGamepad);
@@ -136,6 +143,9 @@ namespace ItHunts.Player
                 && mouse != null && mouse.leftButton.wasPressedThisFrame)
                 SetCursorLocked(true);
         }
+
+        /// <summary>Un menu (écran de fin, marchand…) a besoin de la souris : le curseur reste libre.</summary>
+        public static bool MenuOpen { get; set; }
 
         private static void SetCursorLocked(bool locked)
         {
