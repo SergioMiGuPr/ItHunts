@@ -113,6 +113,8 @@ namespace ItHunts.Enemies
                     d.Revive();
             foreach (Ghoul gh in FindObjectsByType<Ghoul>(FindObjectsSortMode.None))
                 gh.ResetState();
+            foreach (Flyer fl in FindObjectsByType<Flyer>(FindObjectsSortMode.None))
+                fl.ResetState();
             foreach (Stalker st in FindObjectsByType<Stalker>(FindObjectsSortMode.None))
                 st.ResetState();
             ImpactDamager.ResetCooldowns();

@@ -47,7 +47,7 @@ pas le CharacterController.
 - [x] Tolérance d'angle de l'entrée : 60° accroche, 85° non. *(MovementTests › WallSlide_ToleranceDAngleDeLEntree)*
 - [x] Wall run : à 15 m/s le long du mur, chute ≤ 0.5 m/s ; à l'arrêt, 3 m/s. *(MovementTests › WallRun_ChuteRalentieAHauteVitesse)*
 - [x] Le mur ne recharge pas les charges de mouvement (sauf option). *(MovementTests › Mur_NeRechargePasLesChargesParDefaut)*
-- [x] Charges : 3 au départ ; saut au sol gratuit, saut en l'air 1 charge ; rien sans charge ; recharge 1 s au sol, 3 s en l'air. *(MovementTests › Charges_*)*
+- [x] Charges : 3 au départ ; saut au sol gratuit, saut en l'air 1 charge ; rien sans charge ; recharge 2 s au sol, 4 s en l'air (+1 s le 2026-11-13, dash et saut en l'air ralentis tous les deux). *(MovementTests › Charges_*)*
 - [x] Dash : 14 m/s vers l'avant sans entrée, dans la direction de l'entrée sinon ; une vitesse plus haute est redirigée sans perte ; annule la chute ; 0.25 s entre deux dashs ; en l'air : saut + deux dashs puis plus rien. *(MovementTests › Dash_*, Charges_EnLAirSautPuisDeuxDashs_PuisPlusRien ; Play Mode : dash au sol 14.00 m/s, 3 → 2 charges)*
 - [x] Dash : 11 ticks (0.18 s), 6.5 m, sortie à 12 m/s depuis l'arrêt. *(MovementTests › Dash_DureDistanceEtVitesseDeSortie_AuSol ; Play Mode 2026-11-12 : 35.5 m/s pendant, 12.0 m/s à 0.2 s, 10.0 m en 0.5 s ; avant : 14 → 7.5 m/s, 4.2 m)*
 - [x] Dash en l'air : altitude constante pendant le dash. *(MovementTests › Dash_EnLAirNiGraviteNiChutePendantLeDash ; Play Mode : chute de 1.7 m en 0.5 s contre 4.0 m avant)*

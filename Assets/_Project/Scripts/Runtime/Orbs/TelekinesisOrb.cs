@@ -35,7 +35,7 @@ namespace ItHunts.Orbs
             var cmd = new TelekinesisCommand { Kind = TelekinesisCommandKind.Aucune };
 
             // Ennemi tenu : il se libère seul au bout du temps réglé (D-030).
-            int enemyHoldTicks = MovementSettings.SecondsToTicks(cfg.enemyHoldDuration, dt);
+            int enemyHoldTicks = MovementSettings.SecondsToTicks(t.HeldHoldSeconds > 0f ? t.HeldHoldSeconds : cfg.enemyHoldDuration, dt);
             if (t.Holding && t.HeldIsEnemy && tick - t.GrabTick >= enemyHoldTicks)
                 cmd = Release(ref t, tick, TelekinesisCommandKind.Lacher);
 
@@ -66,6 +66,7 @@ namespace ItHunts.Orbs
                     t.HeldId = c.Id;
                     t.GrabTick = tick;
                     t.HeldIsEnemy = c.Enemy;
+                    t.HeldHoldSeconds = c.Enemy ? c.HoldSeconds : 0f;
                     t.LastAction = TelekinesisCommandKind.Attraper;
                     t.LastActionTick = tick;
                     t.LastConsumedGrabPressTick = input.GrabPressedTick;

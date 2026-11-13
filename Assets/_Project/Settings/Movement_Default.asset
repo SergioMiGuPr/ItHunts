@@ -51,8 +51,8 @@ MonoBehaviour:
   wallRefillsJumps: 1
   wallRefillsCharges: 0
   movementCharges: 3
-  chargeRechargeTimeGround: 1
-  chargeRechargeTimeAir: 3
+  chargeRechargeTimeGround: 2
+  chargeRechargeTimeAir: 4
   dashDistance: 6.5
   dashDuration: 0.3
   dashProfile: 0

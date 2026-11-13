@@ -17,6 +17,9 @@ namespace ItHunts.Combat
         [SerializeField] private EnemySettings settings;
         [Tooltip("Revient seul à son poste après un recul (non : c'est TrainingDummyMover qui le ramène sur son trajet).")]
         [SerializeField] private bool returnHome = true;
+        [Tooltip("Dégâts contre un mur même s'il est déjà étourdi (volant qui tombe après une répulsion, D-040), une fois par recul.")]
+        [SerializeField] private bool wallDamageWhileStunned;
+        private bool _wallHitThisKnock;
 
         private const float Skin = 0.03f;
         private const float RestSpeed = 0.2f;
@@ -105,6 +108,7 @@ namespace ItHunts.Combat
 
             _velocity += velocity;
             _knocked = _velocity.sqrMagnitude > RestSpeed * RestSpeed;
+            _wallHitThisKnock = false;
         }
 
         /// <summary>
@@ -199,6 +203,17 @@ namespace ItHunts.Combat
             Step(Time.fixedDeltaTime);
         }
 
+        /// <summary>Volant relâché (pas lancé) : il reprend aussitôt son vol (corps cinématique), sans retomber.</summary>
+        public void EndFlight()
+        {
+            _inFlight = false;
+            _knocked = false;
+            _velocity = Vector3.zero;
+            _body.linearVelocity = Vector3.zero;
+            _body.isKinematic = true;
+            _body.constraints = RigidbodyConstraints.None;
+        }
+
         /// <summary>Un pas de recul (public pour les tests en scène isolée).</summary>
         public void Step(float dt)
         {
@@ -235,8 +250,16 @@ namespace ItHunts.Combat
                     float into = -Vector3.Dot(_velocity, n);
                     bool wall = n.y < 0.5f;
                     bool solid = hit.collider.GetComponent<CharacterController>() == null;
-                    if (wall && solid && settings != null && AreaEffects.Stuns(into, settings) && Stun(into))
-                        LastWallDamage = ApplyWallDamage(into, hit.point);   // une fois par impact, pas pendant l'immunité
+                    if (wall && solid && settings != null && AreaEffects.Stuns(into, settings))
+                    {
+                        if (Stun(into))
+                            LastWallDamage = ApplyWallDamage(into, hit.point);   // une fois par impact, pas pendant l'immunité
+                        else if (wallDamageWhileStunned && Stunned && !_wallHitThisKnock)
+                        {
+                            _wallHitThisKnock = true;
+                            LastWallDamage = ApplyWallDamage(into, hit.point);
+                        }
+                    }
                     if (into > 0f)
                         _velocity += n * into;                         // glisse le long de l'obstacle, sans rebond
                 }

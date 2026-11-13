@@ -654,6 +654,135 @@ namespace ItHunts.Tests
             return (d, body, g);
         }
 
+        private (Damageable d, FlyerSettings f) FlyerDummy(Vector3 feet, bool fragile = true)
+        {
+            var f = ScriptableObject.CreateInstance<FlyerSettings>();
+            f.maxHealth = 25f;
+            f.mass = 8f;
+            f.dieOnProjectileHit = fragile;
+            (Damageable d, EnemyBody body, _) = GrabbableDummy(feet);
+            foreach (Object o in new Object[] { d, body })
+            {
+                var so = new SerializedObject(o);
+                so.FindProperty("settings").objectReferenceValue = f;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            body.Init();
+            d.Init();
+            return (d, f);
+        }
+
+        [Test]
+        public void Volant_MeurtAuPremierImpactDeProjectile_PasParUneZone()
+        {
+            var made = new System.Collections.Generic.List<Object>();
+            try
+            {
+                // Objet lancé ou repoussé, ennemi lancé : un impact de 0.8 PV (8 kg à 9 m/s) le tue quand même.
+                (Damageable a, FlyerSettings fa) = FlyerDummy(new Vector3(0f, 0f, 5f));
+                made.Add(fa);
+                Assert.That(a.Health.Current, Is.EqualTo(25f));
+                Assert.That(ImpactDamager.TryDamage(a, 1, 8f, 9f, a.Center, _cfg, 0f, out DamageEvent e), Is.True);
+                Assert.That(a.Dead, Is.True, "un impact de projectile, quels que soient les dégâts");
+                Assert.That(e.Killed, Is.True);
+
+                // Zone (éclatement d'un volant, zone d'un objet) : dégâts ordinaires.
+                (Damageable b, FlyerSettings fb) = FlyerDummy(new Vector3(3f, 0f, 5f));
+                made.Add(fb);
+                ImpactDamager.ApplyDirect(b, 2, 5f, 10f, 8f, b.Center, 0f, lethal: false);
+                Assert.That(b.Dead, Is.False, "une zone ne le tue pas d'un coup");
+                Assert.That(b.Health.Current, Is.EqualTo(20f).Within(1e-3f));
+
+                // Dégâts contre un mur (ApplyDirect par défaut) : mortels.
+                ImpactDamager.ApplyDirect(b, 3, 1f, 7f, 8f, b.Center, 1f);
+                Assert.That(b.Dead, Is.True, "dégâts contre un mur : il meurt");
+
+                // Réglage coupé : dégâts ordinaires ; ennemi ordinaire : jamais.
+                (Damageable c, FlyerSettings fc) = FlyerDummy(new Vector3(6f, 0f, 5f), fragile: false);
+                made.Add(fc);
+                ImpactDamager.TryDamage(c, 4, 8f, 9f, c.Center, _cfg, 0f, out _);
+                Assert.That(c.Dead, Is.False, "réglage coupé : 0.8 PV seulement");
+                Damageable ghoul = Dummy(new Vector3(-3f, 0f, 5f));
+                Assert.That(ghoul.ProjectileDamage(5f), Is.EqualTo(5f), "autres ennemis : inchangé");
+                Assert.That(c.ProjectileDamage(0f), Is.EqualTo(0f), "pas d'impact, pas de mort");
+            }
+            finally
+            {
+                foreach (Object o in made)
+                    Object.DestroyImmediate(o);
+            }
+        }
+
+        [Test]
+        public void Volant_UneBalleLeTue_AilesComprises()
+        {
+            var barrel = ScriptableObject.CreateInstance<BarrelSettings>();   // ItHunts.Settings
+            FlyerSettings f = null;
+            try
+            {
+                (Damageable d, FlyerSettings fs) = FlyerDummy(new Vector3(0f, 0f, 10f));
+                f = fs;
+                Assert.That(barrel.damage, Is.LessThan(25f), "une balle fait moins que ses PV");
+                // Aile : déclencheur avec zone de touche, à 1 m sur le côté.
+                var wing = new GameObject("Aile (zone de touche)");
+                wing.transform.SetParent(d.transform, false);
+                wing.transform.position = d.transform.position + Vector3.right * 1.2f;
+                var box = wing.AddComponent<BoxCollider>();
+                box.isTrigger = true;
+                box.size = new Vector3(0.9f, 0.1f, 0.5f);
+                wing.AddComponent<Hitbox>();
+                // Déclencheur ordinaire (pas une zone de touche) : la balle le traverse.
+                var other = new GameObject("Déclencheur ordinaire");
+                SceneManager.MoveGameObjectToScene(other, _scene);
+                other.transform.position = new Vector3(-1.2f, 0.9f, 6f);
+                other.AddComponent<BoxCollider>().isTrigger = true;
+                Physics.SyncTransforms();
+                PhysicsScene physics = _scene.GetPhysicsScene();
+                var eye = new Vector3(-1.2f, 0.9f, 0f);
+                ItHunts.Artifacts.BarrelShot s = ItHunts.Artifacts.BarrelShooter.Fire(eye, Vector3.forward, barrel, null, 1, 0f, 1, physics);
+                Assert.That(s.Kind, Is.EqualTo(ItHunts.Artifacts.BarrelHitKind.Rien).Or.EqualTo(ItHunts.Artifacts.BarrelHitKind.Surface), "déclencheur ordinaire traversé");
+                Assert.That(s.Collider == null || s.Collider.gameObject != other, Is.True);
+
+                Vector3 wingEye = new Vector3(1.2f, 0.9f, 0f);
+                s = ItHunts.Artifacts.BarrelShooter.Fire(wingEye, wing.transform.position - wingEye, barrel, null, 1, 0f, 2, physics);
+                Assert.That(s.Kind, Is.EqualTo(ItHunts.Artifacts.BarrelHitKind.Ennemi), "l'aile est touchée");
+                Assert.That(s.Killed, Is.True, "une balle de 12 tue le volant de 25 PV");
+                Assert.That(d.Dead, Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(barrel);
+                if (f != null)
+                    Object.DestroyImmediate(f);
+            }
+        }
+
+        [Test]
+        public void Volant_AttrapableATouteHeure_LibereAuBoutDe2s()
+        {
+            var tk = ScriptableObject.CreateInstance<TelekinesisOrbSettings>();
+            try
+            {
+                (_, EnemyBody body, Grabbable g) = GrabbableDummy(new Vector3(0f, 0f, 6f));
+                Assert.That(body.Stunned, Is.False);
+                Assert.That(g.CanBeGrabbedNow, Is.False, "ennemi ordinaire : seulement étourdi");
+                var so = new SerializedObject(g);
+                so.FindProperty("grabbableAnytime").boolValue = true;
+                so.FindProperty("holdDurationOverride").floatValue = 2f;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(g.CanBeGrabbedNow, Is.True, "volant (D-040) : à tout moment, sans étourdissement");
+                Assert.That(g.HoldDuration(tk), Is.EqualTo(2f), "il se libère au bout de 2 s");
+                so.FindProperty("holdDurationOverride").floatValue = 0f;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(g.HoldDuration(tk), Is.EqualTo(tk.enemyHoldDuration), "sans réglage propre : celui de la télékinésie");
+            }
+            finally
+            {
+                Object.DestroyImmediate(tk);
+            }
+        }
+
         [Test]
         public void Prise_SeulUnEnnemiEtourdi_JamaisLeTraqueur()
         {

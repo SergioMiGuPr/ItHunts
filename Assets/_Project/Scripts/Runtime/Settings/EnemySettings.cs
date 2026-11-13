@@ -34,5 +34,11 @@ namespace ItHunts.Settings
         [Tooltip("Retour au poste après un recul (factices) : attente (s) puis vitesse de marche (m/s).")]
         [Min(0f)] public float returnHomeDelay = 2f;
         [Min(0f)] public float returnHomeSpeed = 3f;
+
+        /// <summary>
+        /// Meurt au premier impact de projectile (balle, objet lancé ou repoussé, ennemi lancé, dégâts contre un mur), quels que
+        /// soient les dégâts ; jamais par une zone ni par l'onde de répulsion seule. Faux par défaut ; le volant le règle (D-040).
+        /// </summary>
+        public virtual bool DiesOnProjectileHit => false;
     }
 }

@@ -41,6 +41,8 @@ namespace ItHunts.Enemies
         [Tooltip("Bras et main gauches (posés par le code) : au repos le long du corps, levés pour le geste au-dessus de la tête.")]
         [SerializeField] private Transform leftArm;
         [SerializeField] private Transform leftHand;
+        [Tooltip("Zone rouge au sol du revers (D-039, piste a), cachée sinon.")]
+        [SerializeField] private Renderer backhandZone;
 
         /// <summary>Affiche le point prédit (la page 3 du debug l'allume).</summary>
         public static bool ShowDebugMarker { get; set; }
@@ -87,6 +89,24 @@ namespace ItHunts.Enemies
         }
 
         public OverheadPhase Overhead => _over;
+
+        /// <summary>Revers de la main gauche pendant la main plantée (D-039, piste a).</summary>
+        public enum BackhandPhase : byte
+        {
+            Aucune,
+            Annonce,
+            Coup,
+        }
+
+        private BackhandPhase _back;
+        private float _backStart;
+        private bool _backUsed;
+        private bool _wasPlanted;
+        private float _plantedSince;
+        private Vector3 _backDir = Vector3.left;
+        public BackhandPhase Backhand => _back;
+        public int BackhandAttempts { get; private set; }
+        public int BackhandKills { get; private set; }
 
         /// <summary>Main plantée au sol après une prise ratée (D-039).</summary>
         public bool Planted { get; private set; }
@@ -223,6 +243,8 @@ namespace ItHunts.Enemies
             EnragedTier = 0;
             TimeOnTarget = 0f;
             _over = OverheadPhase.Aucune;
+            _back = BackhandPhase.Aucune;
+            _backUsed = false;
             _overReadyAt = 0f;
             _overTarget = null;
             ApplyCrouch();
@@ -317,14 +339,14 @@ namespace ItHunts.Enemies
             WantedSpeed = EnemyMath.StalkerSpeed(Mode, _burst.Active(now) && !Planted, playerSpeed, settings, rampBase);   // main plantée : pas de pointe
             if (Crouching)
                 WantedSpeed *= settings.crouchSpeedFactor;
-            if (_grab != GrabPhase.Aucune)
-                WantedSpeed *= settings.grabMoveFactor;
+            WantedSpeed *= EnemyMath.GrabMoveFactor(_grab != GrabPhase.Aucune, Planted, settings);   // main plantée : il continue (piste b)
             if (_hasDest && Flat(_dest - pos) < 1f)
                 WantedSpeed = 0f;
             MoveTo(_move.Step(pos, WantedSpeed, settings.acceleration, settings.turnRate * (Planted ? settings.plantedTurnFactor : 1f), dt));
             CountUTurns(enraged);
             UpdateGrab(now);
             UpdateOverhead(now, dt);
+            UpdateBackhand(now);
 
             // Contact du corps, des bras ou des mains = mort, quels que soient les PV (D-037).
             foreach (PlayerHealth p in PlayerHealth.All)
@@ -933,6 +955,89 @@ namespace ItHunts.Enemies
         private Vector3 LeftShoulder => _rb.position + Vector3.up * ShoulderHeight - transform.right * (settings.width * 0.4f);
         private Vector3 LeftRestHand() => LeftShoulder + Vector3.down * (ShoulderHeight * 0.45f) + transform.forward * 1.5f;
         private float HeadTop => _rb.position.y + Height;
+
+        /// <summary>
+        /// Revers (D-039, piste a) : pendant la main plantée, un joueur à portée (backhandReach du bord du corps) déclenche une fois
+        /// une annonce courte (zone rouge au sol, main gauche tendue vers lui), puis un coup mortel dans toute la zone.
+        /// </summary>
+        private void UpdateBackhand(float now)
+        {
+            if (Planted && !_wasPlanted)
+                _plantedSince = now;
+            _wasPlanted = Planted;
+            if (!Planted && _back == BackhandPhase.Aucune)
+                _backUsed = false;
+            if (!settings.backhandEnabled)
+                _back = BackhandPhase.Aucune;
+            switch (_back)
+            {
+                case BackhandPhase.Aucune:
+                    if (!settings.backhandEnabled || !Planted || _backUsed || now - _plantedSince < settings.backhandDelay)
+                        break;
+                    foreach (PlayerHealth p in PlayerHealth.All)
+                    {
+                        if (p == null || p.Dead || !EnemyMath.InBackhandZone(_rb.position, Radius, p.transform.position, settings))
+                            continue;
+                        _back = BackhandPhase.Annonce;
+                        _backStart = now;
+                        _backUsed = true;
+                        _backDir = FlatDir(p.transform.position - _rb.position);
+                        BackhandAttempts++;
+                        break;
+                    }
+
+                    break;
+
+                case BackhandPhase.Annonce:
+                    if (now - _backStart >= settings.backhandTelegraph)
+                    {
+                        _back = BackhandPhase.Coup;
+                        _backStart = now;
+                    }
+
+                    break;
+
+                case BackhandPhase.Coup:
+                    foreach (PlayerHealth p in PlayerHealth.All)
+                    {
+                        if (p == null || p.Dead || !EnemyMath.InBackhandZone(_rb.position, Radius, p.transform.position, settings))
+                            continue;
+                        if (StalkerStrike.Hit(p, now))
+                        {
+                            Kills++;
+                            BackhandKills++;
+                        }
+                    }
+
+                    if (now - _backStart >= settings.backhandSweep)
+                        _back = BackhandPhase.Aucune;
+                    break;
+            }
+
+            if (backhandZone != null)
+            {
+                bool show = _back != BackhandPhase.Aucune;
+                if (backhandZone.enabled != show)
+                    backhandZone.enabled = show;
+                if (show)
+                {
+                    float d = 2f * (Radius + settings.backhandReach);
+                    Transform z = backhandZone.transform;
+                    z.position = _rb.position + Vector3.up * 0.05f;
+                    Vector3 parent = z.parent != null ? z.parent.lossyScale : Vector3.one;
+                    z.localScale = new Vector3(d / Mathf.Max(0.01f, parent.x), _back == BackhandPhase.Coup ? 0.03f : 0.01f, d / Mathf.Max(0.01f, parent.z));
+                }
+            }
+
+            // Main gauche : tendue vers le côté visé (annonce), puis balayée devant lui (coup) ; le geste au-dessus de la tête l'emporte.
+            if (_back == BackhandPhase.Coup && _over == OverheadPhase.Aucune)
+            {
+                float sweep = Mathf.Clamp01((now - _backStart) / settings.backhandSweep);
+                Vector3 dir = Quaternion.AngleAxis(-120f * sweep, Vector3.up) * _backDir;
+                Vector3 target = _rb.position + Vector3.up * 1.5f + dir * (Radius + settings.backhandReach * 0.6f);
+                PoseLimb(leftArm, leftHand, LeftShoulder, ClampReach(LeftShoulder, target), Quaternion.LookRotation(dir, Vector3.up));
+            }
+        }
 
         /// <summary>Cylindre surveillé : rayon overheadRadius, de overheadMinHeight (baissé compris) à overheadAboveHead au-dessus de la tête.</summary>
         public bool InOverheadZone(Vector3 feet, Vector3 velocity) =>

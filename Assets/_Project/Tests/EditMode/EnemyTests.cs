@@ -374,6 +374,8 @@ namespace ItHunts.Tests
             Assert.That(Regex.Matches(text, @"m_Name: Main gauche").Count, Is.EqualTo(1), "deux mains (geste au-dessus de la tête)");
             Assert.That(CountScript(scene, dir + "StalkerShortcut.cs"), Is.EqualTo(0), "plus de grilles réservées (D-035)");
             Assert.That(text.Contains("petite porte"), Is.False, "plus de tunnels bas de 4 × 4 m");
+            Assert.That(CountScript(scene, dir + "Flyer.cs"), Is.EqualTo(5 * 4), "4 volants par grande salle (D-040)");
+            Assert.That(Regex.Matches(text, @"m_Name: ""?Volant (SO|SE|C|NO|NE) ").Count, Is.EqualTo(20), "volants dans les grandes salles seulement, aucun dans les couloirs");
             Assert.That(Regex.Matches(text, @"m_Name: (Caisse|Bloc lourd)").Count, Is.GreaterThanOrEqualTo(5 * 15), "au moins 15 objets par grande salle");
             Assert.That(Regex.IsMatch(text, @"ItHunts\.Enemies\.ZoneState\s+settings: \{fileID: 0\}"), Is.False, "la zone a ses réglages");
             Assert.That(Regex.IsMatch(text, @"ItHunts\.Enemies\.Stalker\s+settings: \{fileID: 0\}"), Is.False, "le traqueur a ses réglages");
@@ -488,12 +490,70 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Volant_ValeursEtEclatement()
+        {
+            var f = AssetDatabase.LoadAssetAtPath<FlyerSettings>("Assets/_Project/Settings/Flyer_Default.asset");
+            Assert.That(f, Is.Not.Null);
+            Assert.That(new[] { f.maxHealth, f.mass, f.flySpeed, f.diveSpeed, f.diveDamage, f.diveTelegraph, f.diveCooldown, f.stunDuration },
+                Is.EqualTo(new[] { 25f, 8f, 6f, 14f, 8f, 0.4f, 3f, 1.5f }));
+            Assert.That(new[] { f.orbitHeight, f.orbitRadius, f.burstRadius, f.burstDamage, f.burstEdgeShare }, Is.EqualTo(new[] { 8f, 8f, 3f, 30f, 0.25f }));
+            Assert.That(new[] { f.maxHunting, f.maxHuntingTotal }, Is.EqualTo(new[] { 8, 12 }));
+            Assert.That(f.dieOnProjectileHit, Is.True, "meurt au premier impact de projectile (activé par défaut)");
+            Assert.That(f.diveTurnRate, Is.EqualTo(80f), "piqué : virage limité à 80°/s (90 touchait 38 % des joueurs qui courent, objectif 25 à 35 %)");
+            Assert.That(f.diveLead, Is.EqualTo(0f), "piqué : il vise où est le joueur (mesuré : 0.3 touchait 68 % des joueurs qui courent)");
+            // Virage du piqué : au plus l'angle donné, vitesse gardée.
+            Vector3 v = EnemyMath.TurnTowards(new Vector3(0f, 0f, 14f), Vector3.right, 45f, 14f);
+            Assert.That(Vector3.Angle(Vector3.forward, v), Is.EqualTo(45f).Within(0.01f));
+            Assert.That(v.magnitude, Is.EqualTo(14f).Within(1e-3f));
+            v = EnemyMath.TurnTowards(new Vector3(0f, 0f, 14f), new Vector3(0.1f, 0f, 1f), 45f, 14f);
+            Assert.That(Vector3.Angle(new Vector3(0.1f, 0f, 1f), v), Is.LessThan(0.01f), "petit écart : rattrapé d'un coup");
+            Assert.That(new[] { f.aggroSightRange, f.aggroProximity, f.aggroLoseDistance, f.aggroLoseTime }, Is.EqualTo(new[] { 20f, 8f, 50f, 5f }));
+            // Éclatement : 30 au centre, le quart au bord, linéaire, rien au-delà.
+            Assert.That(EnemyMath.BurstDamage(0f, 3f, 30f, 0.25f), Is.EqualTo(30f));
+            Assert.That(EnemyMath.BurstDamage(1.5f, 3f, 30f, 0.25f), Is.EqualTo(18.75f).Within(1e-4f));
+            Assert.That(EnemyMath.BurstDamage(3f, 3f, 30f, 0.25f), Is.EqualTo(7.5f).Within(1e-4f));
+            Assert.That(EnemyMath.BurstDamage(3.01f, 3f, 30f, 0.25f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void MainPlantee_LeCorpsGardeSaVitesse_PriseOrdinaireRalentie()
+        {
+            var c = ScriptableObject.CreateInstance<StalkerSettings>();
+            try
+            {
+                Assert.That(EnemyMath.GrabMoveFactor(false, false, c), Is.EqualTo(1f), "sans prise : vitesse normale");
+                Assert.That(EnemyMath.GrabMoveFactor(true, false, c), Is.EqualTo(0.3f), "annonce et descente : ×0.3");
+                Assert.That(EnemyMath.GrabMoveFactor(true, true, c), Is.EqualTo(1f), "main plantée (piste b) : il continue à sa vitesse");
+                c.plantedMoveFactor = 0.5f;
+                Assert.That(EnemyMath.GrabMoveFactor(true, true, c), Is.EqualTo(0.5f), "réglable");
+
+                // Revers de la main gauche (piste a) : 7 m depuis le bord du corps (rayon 3.5), 12 m de haut, après 0.5 s.
+                Assert.That(new[] { c.backhandReach, c.backhandHeight, c.backhandDelay, c.backhandTelegraph, c.backhandSweep },
+                    Is.EqualTo(new[] { 7f, 12f, 0.5f, 0.2f, 0.25f }));
+                Assert.That(c.backhandEnabled, Is.True);
+                Vector3 feet = Vector3.zero;
+                Assert.That(EnemyMath.InBackhandZone(feet, 3.5f, new Vector3(10.4f, 0f, 0f), c), Is.True, "à 6.9 m du bord");
+                Assert.That(EnemyMath.InBackhandZone(feet, 3.5f, new Vector3(0f, 0f, -10.6f), c), Is.False, "à 7.1 m du bord");
+                Assert.That(EnemyMath.InBackhandZone(feet, 3.5f, new Vector3(5f, 12.5f, 0f), c), Is.False, "au-dessus de 12 m");
+                var asset = AssetDatabase.LoadAssetAtPath<StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
+                Assert.That(asset.backhandReach, Is.EqualTo(7f), "asset : portée réglée sur la mesure");
+            }
+            finally
+            {
+                Object.DestroyImmediate(c);
+            }
+        }
+
+        [Test]
         public void MainPlantee_ApresUnePriseRatee_PasApresUnePriseReussie()
         {
             var c = ScriptableObject.CreateInstance<StalkerSettings>();
             try
             {
                 Assert.That(new[] { c.plantedDuration, c.plantedTurnFactor, c.grabCooldown }, Is.EqualTo(new[] { 1.5f, 0.4f, 2.5f }));
+                var asset = AssetDatabase.LoadAssetAtPath<StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
+                Assert.That(new[] { asset.plantedDuration, asset.plantedTurnFactor, asset.plantedMoveFactor }, Is.EqualTo(new[] { 1.5f, 0.4f, 1f }),
+                    "asset : 1.5 s, rotation ×0.4, corps à sa vitesse normale (piste b)");
                 float missed = EnemyMath.GrabHoldTime(false, c, out bool plantedMiss);
                 Assert.That(plantedMiss, Is.True, "prise ratée : main plantée");
                 Assert.That(missed, Is.EqualTo(1.5f));

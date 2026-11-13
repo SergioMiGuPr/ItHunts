@@ -44,6 +44,9 @@ namespace ItHunts.Orbs
 
         /// <summary>Ennemi étourdi (D-030) : pas de limite de masse ; tenu, il se libère seul.</summary>
         public bool Enemy;
+
+        /// <summary>Ennemi : temps avant de se libérer (s ; 0 : celui de la télékinésie).</summary>
+        public float HoldSeconds;
     }
 
     /// <summary>
@@ -63,6 +66,9 @@ namespace ItHunts.Orbs
 
         /// <summary>L'objet tenu est un ennemi étourdi : il se libère seul au bout de enemyHoldDuration.</summary>
         public bool HeldIsEnemy;
+
+        /// <summary>Ennemi tenu : son temps avant de se libérer (s ; 0 : enemyHoldDuration).</summary>
+        public float HeldHoldSeconds;
 
         /// <summary>Appuis déjà consommés : attraper / relâcher (F), lancer (clic gauche).</summary>
         public int LastConsumedGrabPressTick;

@@ -399,6 +399,28 @@ namespace ItHunts.Debugging
             if (alive > 0)
                 _text.AppendLine($"Goules : {alive} en vie, {ItHunts.Enemies.Ghoul.HuntingCount} en chasse (dont {ItHunts.Enemies.Ghoul.HuntingCount - ItHunts.Enemies.Ghoul.PackCount} réveillées par l'aggro), {onWall} sur un mur, {leaping} en bond ; la plus proche à {Mathf.Sqrt(nearestD):0.0} m : " +
                                  $"{nearest.Mode}, {nearest.Speed:0.0} m/s, bond {(nearest.LeapCooldownRemaining > 0f ? $"dans {nearest.LeapCooldownRemaining:0.0} s" : "prêt")}");
+            // Volants : résumé et le plus proche.
+            int flyers = 0, diving = 0;
+            ItHunts.Enemies.Flyer nearFlyer = null;
+            float nearFlyerD = float.PositiveInfinity;
+            foreach (ItHunts.Enemies.Flyer fl in ItHunts.Enemies.Flyer.All)
+            {
+                if (fl == null || fl.Dead)
+                    continue;
+                flyers++;
+                if (fl.Mode == ItHunts.Enemies.FlyerMode.Annonce || fl.Mode == ItHunts.Enemies.FlyerMode.Pique)
+                    diving++;
+                float d = (fl.transform.position - transform.position).sqrMagnitude;
+                if (d < nearFlyerD)
+                {
+                    nearFlyerD = d;
+                    nearFlyer = fl;
+                }
+            }
+
+            if (flyers > 0)
+                _text.AppendLine($"Volants : {flyers} en vie, {ItHunts.Enemies.Flyer.HuntingCount} en chasse (dont {ItHunts.Enemies.Flyer.HuntingCount - ItHunts.Enemies.Flyer.PackCount} par l'aggro), " +
+                                 $"{diving} en piqué ; le plus proche à {Mathf.Sqrt(nearFlyerD):0.0} m : {nearFlyer.Mode}, piqués {nearFlyer.Dives} (touchés {nearFlyer.DiveHits})");
             var zone = FindFirstObjectByType<ItHunts.Enemies.ZoneState>();
             if (zone != null)
                 _text.AppendLine($"Zone : {zone.Elapsed:0} s écoulées, {(zone.InGrace ? $"grâce {zone.GraceLeft:0} s, " : "")}" +

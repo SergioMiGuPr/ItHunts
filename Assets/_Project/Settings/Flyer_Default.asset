@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0fa7b5830e88aa45bc0af7735cea2c5, type: 3}
+  m_Name: Flyer_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.FlyerSettings
+  maxHealth: 25
+  respawnDelay: 0
+  mass: 8
+  gravity: 20
+  groundFriction: 15
+  stunImpactSpeed: 6
+  stunDuration: 1.5
+  wallDamagePerSpeed: 5
+  wallDamageMax: 40
+  stunImmunity: 2
+  returnHomeDelay: 2
+  returnHomeSpeed: 3
+  flySpeed: 6
+  acceleration: 20
+  orbitHeight: 8
+  orbitRadius: 8
+  travelSpeed: 9
+  radius: 0.4
+  dieOnProjectileHit: 1
+  diveRange: 16
+  diveTelegraph: 0.4
+  diveSpeed: 14
+  diveMaxTime: 1.5
+  diveTurnRate: 80
+  diveLead: 0
+  diveCooldown: 3
+  diveDamage: 8
+  divePush: 3
+  contactRange: 0.3
+  burstRadius: 3
+  burstDamage: 30
+  burstEdgeShare: 0.25
+  burstMinSpeed: 4
+  maxHunting: 8
+  aggroSightRange: 20
+  aggroProximity: 8
+  maxHuntingTotal: 12
+  aggroLoseDistance: 50
+  aggroLoseTime: 5
+  eyeColor: {r: 3, g: 2, b: 0.4, a: 1}
+  telegraphColor: {r: 4, g: 0.4, b: 0.2, a: 1}

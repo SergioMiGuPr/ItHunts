@@ -59,6 +59,8 @@ namespace ItHunts.EditorTools
         [Header("Ennemis et objets")]
         [Range(0, 12)] public int ghoulsPerHall = 8;
         [Range(0, 6)] public int ghoulsPerCorridor = 3;
+        [Tooltip("Volants par grande salle (3 à 4) ; aucun dans les couloirs (D-040).")]
+        [Range(0, 8)] public int flyersPerHall = 4;
         [Tooltip("Objets à lancer par grande salle (caisses, blocs lourds), plus un lustre.")]
         [Range(0, 30)] public int propsPerHall = 16;
 

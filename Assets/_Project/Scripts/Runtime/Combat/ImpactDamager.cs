@@ -131,7 +131,7 @@ namespace ItHunts.Combat
                 if (target != null && g.PushDangerous(time, cfg.pushedDangerTime))
                 {
                     float damage = ImpactDamage.Compute(g.Mass, speed, cfg, falling) * cfg.pushedDamageMultiplier;
-                    if (ApplyRaw(target, g.Id, damage, speed, g.Mass, point, falling, false, cfg, time, out _) && g.ConsumeDurability())
+                    if (ApplyRaw(target, g.Id, damage, speed, g.Mass, point, falling, false, cfg, time, out _, lethal: true) && g.ConsumeDurability())
                         g.Break();
                     return;
                 }
@@ -146,7 +146,7 @@ namespace ItHunts.Combat
             // Ennemi lancé (D-030) : il subit lui aussi les dégâts de chaque impact pendant son vol, mur compris.
             if (g.IsEnemy && g.Damageable != null && g.EnemyBody != null && g.EnemyBody.InFlight)
                 ApplyRaw(g.Damageable, ~g.Id, ImpactDamage.Compute(g.Mass, speed, cfg, falling), speed, g.Mass, point, falling,
-                    false, cfg, time, out _);
+                    false, cfg, time, out _);   // pas mortel d'un coup : un volant lancé éclate (Flyer), il ne meurt pas avant
 
             bool thrownImpact = g.TakeThrowImpact() && speed >= cfg.speedThreshold;
             bool fragileImpact = g.BreaksOnAnyImpact && !g.Held && speed >= cfg.fallSpeedThreshold;
@@ -240,7 +240,8 @@ namespace ItHunts.Combat
         private static bool InSight(Grabbable source, Damageable target, Vector3 point) =>
             InSight(source, target.transform, target.Center, point);
 
-        private static bool InSight(Grabbable source, Transform targetRoot, Vector3 targetCenter, Vector3 point)
+        /// <summary>Rien de solide entre le point et le centre de la cible (hors la source et la cible) : zones de dégâts.</summary>
+        public static bool InSight(Grabbable source, Transform targetRoot, Vector3 targetCenter, Vector3 point)
         {
             Vector3 to = targetCenter - point;
             float length = to.magnitude;
@@ -271,14 +272,14 @@ namespace ItHunts.Combat
         /// coup. Les paliers viennent des réglages de la cible (son ImpactDamager), sinon « petit ».
         /// </summary>
         public static bool ApplyDirect(Damageable target, int sourceId, float damage, float speed, float mass, Vector3 point,
-            float time)
+            float time, bool lethal = true)
         {
             if (target == null || damage <= 0f)
                 return false;
             var damager = target.GetComponent<ImpactDamager>();
             if (damager != null && damager.Settings != null)
-                return ApplyRaw(target, sourceId, damage, speed, mass, point, false, false, damager.Settings, time, out _);
-            float taken = target.ApplyDamage(damage, time, out bool killed);
+                return ApplyRaw(target, sourceId, damage, speed, mass, point, false, !lethal, damager.Settings, time, out _, lethal);
+            float taken = target.ApplyDamage(lethal ? target.ProjectileDamage(damage) : damage, time, out bool killed);
             if (taken <= 0f)
                 return false;
             DamageEvents.Raise(new DamageEvent
@@ -297,18 +298,19 @@ namespace ItHunts.Combat
             DamageSettings cfg, float time, out DamageEvent e, bool falling = false)
         {
             float damage = ImpactDamage.Compute(mass, impactSpeed, cfg, falling);
-            return ApplyRaw(target, sourceId, damage, impactSpeed, mass, point, falling, false, cfg, time, out e);
+            return ApplyRaw(target, sourceId, damage, impactSpeed, mass, point, falling, false, cfg, time, out e, lethal: true);
         }
 
         private static bool ApplyRaw(Damageable target, int sourceId, float damage, float impactSpeed, float mass, Vector3 point,
-            bool falling, bool area, DamageSettings cfg, float time, out DamageEvent e)
+            bool falling, bool area, DamageSettings cfg, float time, out DamageEvent e, bool lethal = false)
         {
             e = default;
             if (target == null || target.Dead)
                 return false;
             if (damage <= 0f || !Cooldown.TryHit(sourceId, target.Id, time, cfg.perTargetCooldown))
                 return false;
-            float taken = target.ApplyDamage(damage, time, out bool killed);
+            // Impact de projectile (pas une zone) : une cible fragile (volant, D-040) meurt d'un coup.
+            float taken = target.ApplyDamage(lethal && !area ? target.ProjectileDamage(damage) : damage, time, out bool killed);
             if (taken <= 0f)
                 return false;
             e = new DamageEvent

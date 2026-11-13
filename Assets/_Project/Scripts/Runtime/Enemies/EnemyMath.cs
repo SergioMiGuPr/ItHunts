@@ -181,6 +181,48 @@ namespace ItHunts.Enemies
         /// <paramref name="maxSpeed"/>, réglée pour retomber un peu au-delà du point (overshoot, m).
         /// </summary>
         /// <summary>
+        /// Éclatement d'un volant lancé (D-040) : dégâts à cette distance du point d'impact, du centre (burstDamage) au bord
+        /// (burstDamage × edgeShare) en ligne droite ; 0 au-delà du rayon.
+        /// </summary>
+        public static float BurstDamage(float distance, float radius, float center, float edgeShare)
+        {
+            if (radius <= 0f || distance > radius)
+                return 0f;
+            return center * Mathf.Lerp(1f, edgeShare, Mathf.Clamp01(distance / radius));
+        }
+
+        /// <summary>
+        /// Piqué du volant (D-040) : tourne la vitesse vers la direction voulue d'au plus maxDegrees, à la vitesse donnée.
+        /// </summary>
+        public static Vector3 TurnTowards(Vector3 velocity, Vector3 wanted, float maxDegrees, float speed)
+        {
+            if (wanted.sqrMagnitude < 1e-6f)
+                return velocity.normalized * speed;
+            if (velocity.sqrMagnitude < 1e-6f)
+                return wanted.normalized * speed;
+            return Vector3.RotateTowards(velocity.normalized, wanted.normalized, maxDegrees * Mathf.Deg2Rad, 0f) * speed;
+        }
+
+        /// <summary>
+        /// Revers (D-039, piste a) : le joueur (pieds) est-il dans la zone, à backhandReach du bord du corps à l'horizontale et
+        /// pas plus haut que backhandHeight au-dessus de ses pieds ?
+        /// </summary>
+        public static bool InBackhandZone(Vector3 stalkerFeet, float bodyRadius, Vector3 playerFeet, StalkerSettings cfg)
+        {
+            Vector3 flat = playerFeet - stalkerFeet;
+            float up = flat.y;
+            flat.y = 0f;
+            return flat.magnitude <= bodyRadius + cfg.backhandReach && up <= cfg.backhandHeight && up >= -2f;
+        }
+
+        /// <summary>
+        /// Vitesse du traqueur pendant une prise : grabMoveFactor ; main plantée (D-039, piste b) : plantedMoveFactor (1 : il
+        /// continue vers le joueur à sa vitesse normale) ; sans prise : 1.
+        /// </summary>
+        public static float GrabMoveFactor(bool grabbing, bool planted, StalkerSettings cfg) =>
+            !grabbing ? 1f : planted ? cfg.plantedMoveFactor : cfg.grabMoveFactor;
+
+        /// <summary>
         /// Après la descente de la main (D-039) : prise ratée (personne touché) → main plantée plantedDuration ; prise réussie →
         /// main au sol grabHold. La recharge (grabCooldown) part à la fin de ce temps dans les deux cas.
         /// </summary>

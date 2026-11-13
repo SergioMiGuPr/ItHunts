@@ -256,6 +256,9 @@ namespace ItHunts.Audio
         }
 
         /// <summary>Pas du traqueur : coup très grave (55 → 30 Hz) et frottement.</summary>
+        /// <summary>Cri aigu du volant qui annonce son piqué (provisoire, D-040).</summary>
+        public static float[] FlyerScreech() => Sweep(0.35f, 2600f, 1300f, attack: 0.01f, harmonic: 0.45f);
+
         public static float[] StalkerStep()
         {
             float duration = 0.5f;

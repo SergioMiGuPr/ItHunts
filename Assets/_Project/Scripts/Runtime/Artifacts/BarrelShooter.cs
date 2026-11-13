@@ -51,13 +51,15 @@ namespace ItHunts.Artifacts
                 Kind = BarrelHitKind.Rien, ShooterId = shooterId,
             };
             PhysicsScene physics = scene ?? Physics.defaultPhysicsScene;
-            int count = physics.Raycast(eye, dir, Hits, cfg.range, cfg.hitMask, QueryTriggerInteraction.Ignore);
+            int count = physics.Raycast(eye, dir, Hits, cfg.range, cfg.hitMask, QueryTriggerInteraction.Collide);
             Array.Sort(Hits, 0, count, Comparer.Instance);
             for (int i = 0; i < count; i++)
             {
                 RaycastHit h = Hits[i];
                 if (h.collider == null || (shooter != null && h.collider.transform.IsChildOf(shooter)))
                     continue;
+                if (h.collider.isTrigger && h.collider.GetComponent<Hitbox>() == null)
+                    continue;                                            // déclencheurs ignorés, sauf les zones de touche (ailes)
                 shot.Point = h.point;
                 shot.Normal = h.normal;
                 shot.Distance = h.distance;
@@ -74,7 +76,7 @@ namespace ItHunts.Artifacts
                     }
 
                     shot.Kind = BarrelHitKind.Ennemi;
-                    float taken = enemy.ApplyDamage(cfg.damage, time, out bool killed);
+                    float taken = enemy.ApplyDamage(enemy.ProjectileDamage(cfg.damage), time, out bool killed);   // volant : un coup
                     shot.Damage = taken;
                     shot.Killed = killed;
                     if (taken > 0f)

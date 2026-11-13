@@ -416,7 +416,7 @@ namespace ItHunts.Tests
             _state.Charges = 1f;
             for (int i = 0; i < 60; i++)
                 Step(MovementInput.Neutral);
-            Assert.That(_state.Charges, Is.EqualTo(2f).Within(0.02f), "au sol : 1 charge par seconde");
+            Assert.That(_state.Charges, Is.EqualTo(1.5f).Within(0.02f), "au sol : 1 charge en 2 s");
 
             TearDown();                                   // repartir d'un état neuf (le TearDown final reste celui de NUnit)
             SetUp();
@@ -424,7 +424,34 @@ namespace ItHunts.Tests
             _state.Charges = 1f;
             for (int i = 0; i < 60; i++)
                 Step(MovementInput.Neutral);
-            Assert.That(_state.Charges, Is.EqualTo(1f + 1f / 3f).Within(0.02f), "en l'air : 1 charge en 3 s");
+            Assert.That(_state.Charges, Is.EqualTo(1.25f).Within(0.02f), "en l'air : 1 charge en 4 s");
+        }
+
+        [Test]
+        public void Charges_RechargeDe1sDePlus_DashEtSautEnLAirRalentisTousLesDeux()
+        {
+            var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<MovementSettings>("Assets/_Project/Settings/Movement_Default.asset");
+            Assert.That(new[] { asset.chargeRechargeTimeGround, asset.chargeRechargeTimeAir }, Is.EqualTo(new[] { 2f, 4f }),
+                "recharge d'une charge : 1 → 2 s au sol, 3 → 4 s en l'air");
+            Assert.That(new[] { _cfg.chargeRechargeTimeGround, _cfg.chargeRechargeTimeAir }, Is.EqualTo(new[] { 2f, 4f }));
+
+            // Saut en l'air : il prend une charge de la même réserve que le dash, qui revient en 4 s en l'air.
+            InAirSinceLongAgo(Vector3.zero);
+            _probe.Position = new Vector3(0f, 1000f, 0f);             // 4 s de chute sans toucher le sol
+            _state.Charges = 1f;
+            Step(new MovementInput { JumpHeld = true, JumpPressedTick = _state.Tick + 1, DashPressedTick = MovementState.NeverTick });
+            Assert.That(_state.LastJumpTick, Is.EqualTo(_state.Tick), "saut en l'air");
+            Assert.That(_state.Charges, Is.EqualTo(Dt / 4f).Within(1e-3f), "une charge prise");
+            Step(DashNow(_state.Tick + 1));
+            Assert.That(_state.LastDashTick, Is.EqualTo(MovementState.NeverTick), "plus de charge pour le dash : réserve commune");
+            int ticks = 0;
+            while (_state.Charges < 1f && ticks < 1000)
+            {
+                Step(MovementInput.Neutral);
+                ticks++;
+            }
+
+            Assert.That((ticks + 2) * Dt, Is.EqualTo(4f).Within(0.05f), "la charge revient en 4 s en l'air (3 s avant)");
         }
 
         private int DashTicks => MovementSettings.SecondsToTicks(_cfg.dashDuration, Dt);

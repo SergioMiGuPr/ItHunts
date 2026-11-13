@@ -30,6 +30,10 @@ namespace ItHunts.Orbs
         [Header("Ennemi (D-030)")]
         [Tooltip("Ennemi : attrapable seulement s'il est étourdi, sans limite de masse ni durabilité.")]
         [SerializeField] private bool isEnemy;
+        [Tooltip("Ennemi attrapable à tout moment, sans être étourdi (volant, D-040).")]
+        [SerializeField] private bool grabbableAnytime;
+        [Tooltip("Ennemi tenu : il se libère au bout de ce temps (s ; 0 : enemyHoldDuration de la télékinésie).")]
+        [SerializeField, Min(0f)] private float holdDurationOverride;
 
         private static readonly List<Grabbable> AllList = new List<Grabbable>();
         private static readonly Dictionary<int, Grabbable> ById = new Dictionary<int, Grabbable>();
@@ -71,7 +75,16 @@ namespace ItHunts.Orbs
         /// seulement s'il est étourdi, vivant et pas le traqueur.
         /// </summary>
         public bool CanBeGrabbedNow =>
-            !Broken && !Held && (!isEnemy || (EnemyBody != null && EnemyBody.Stunned && Damageable != null && !Damageable.Dead && !Damageable.ImmuneToOrbs));
+            !Broken && !Held && (!isEnemy || (EnemyBody != null && (EnemyBody.Stunned || grabbableAnytime) && Damageable != null
+                                              && !Damageable.Dead && !Damageable.ImmuneToOrbs));
+
+        public bool GrabbableAnytime => grabbableAnytime;
+
+        /// <summary>Temps avant qu'un ennemi tenu se libère (son réglage, sinon celui de la télékinésie).</summary>
+        public float HoldDuration(ItHunts.Settings.TelekinesisOrbSettings cfg) =>
+            holdDurationOverride > 0f ? holdDurationOverride : cfg.enemyHoldDuration;
+
+        public float HoldDurationOverride => holdDurationOverride;
 
         /// <summary>Peut rester tenu : un ennemi mort est lâché.</summary>
         public bool CanStayHeld => !Broken && (Damageable == null || !Damageable.Dead);

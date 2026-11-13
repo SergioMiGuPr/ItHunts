@@ -35,6 +35,7 @@
 - [x] En Play Mode, **passage à côté de lui** dans une grande salle (salles temporaires de 40 et 80 m, il est au centre en Chasse, le joueur le contourne par un côté jusqu'au bord opposé ; 20 essais par cas) : sans réaction, **0/120** ; avec un dash 0.38–0.48 s après le début de chaque annonce de prise : salle de 40 m **0/20** en course, bunny hop et traction ; salle de 80 m **3/20 en course, 1/20 en bunny hop, 0/20 en traction**. Morts : par la main (pendant la descente de la prise) ou le corps. Joueur scripté simple (une ligne droite le long du mur). *(Play Mode, 2026-11-12)*
 - [x] Main plantée après une prise ratée (1.5 s, rotation ×0.4), pas après une prise réussie (grabHold), recharge 2.5 s. *(EnemyTests › MainPlantee_ApresUnePriseRatee_PasApresUnePriseReussie)*
 - [x] En Play Mode, **passage à côté avec la main plantée** (le joueur provoque une prise à 9 m devant et 7 m de côté, l'esquive par un dash de côté 0.38–0.48 s après le début de l'annonce, puis passe le long du mur ; 20 essais par cas) : **salle de 80 m** : course 0/20 (tuée par le bras ou la main plantés), **bunny hop 20/20, traction 20/20** ; **salle de 40 m** : course 0/20 (rattrapée au corps), **bunny hop 3/20, traction 20/20** ; **couloir de 14 m** : **0/60** (course, bunny hop, traction). *(Play Mode, 2026-11-12)*
+- [x] En Play Mode, **main plantée à ×0.6** (même joueur scripté) : salle de 80 m : course 0/20, bunny hop 20/20, traction 20/20 ; salle de 40 m : course 0/20, bunny hop 5/20, **traction 20/20** ; couloir 0/60. Rotation ×0.8 puis ×1 : traction en 40 m toujours 20/20, salle de 80 m toujours 20/20. *(Play Mode, 2026-11-13)*
 - [ ] Ressenti : taille, tension de la traque, lisibilité et équité de la prise, abris, tremblement. *(playtest)*
 
 ## Playtest — labyrinthe (D-035 à D-037)
@@ -65,10 +66,13 @@ au sud-ouest (SO), sortie verte au nord-est, en haut (+16 m) ; repaire à l'est.
 10. **Enragé qui accélère (D-038)** : reste longtemps sur la même fuite : il accélère toutes les 10, 10, 5 et 5 s (page 3 :
     temps sur la cible, palier ; HUD qui pulse plus fort, grondement). Combien de temps tiens-tu en bunny hop ?
 11. **Main plantée (D-039)** : dans une grande salle, laisse-le tenter une prise, esquive (dash de côté juste avant que la main
-    tombe) : sa main reste plantée 1.5 s (poussière, lueur qui s'éteint, page 3 : « Main plantée : OUI ») ; passe à côté de lui
-    pendant ce temps (bunny hop ou traction). Salle de 80 m : faisable ? Salle de 40 m : trop facile en traction ? Couloir :
-    impossible ? Le geste des mains levées reste là si tu passes par-dessus.
+    tombe) : sa main reste plantée 1.5 s (poussière, lueur qui s'éteint, page 3 : « Main plantée : OUI » ; rotation ×0.4) ; il
+    **continue d'avancer vers toi** à sa vitesse normale, et si tu restes à moins de 7 m de son corps, **revers** : zone rouge au
+    sol 0.2 s, puis coup mortel. Passe à côté de lui en bunny hop ou en traction. Salle de 80 m : faisable ? Salle de 40 m :
+    fermée (mesuré 0/20) ? Couloir : impossible ? Le revers se voit-il à temps ?
 12. **Enragé** (timer 4 min) : il peut faire demi-tour ; la boucle ne suffit plus. Mort : remise à zéro de la zone.
+
+- [x] Main plantée, pistes (b) + (a) (rotation ×0.4, corps à vitesse normale, revers de 7 m, délai 0.5 s, annonce 0.2 s) : salle de 80 m **20/20** en bunny hop et en traction (0/20 en course) ; salle de 40 m **0/20** en course, bunny hop et traction ; couloir 0/60. *(Play Mode, 2026-11-13 ; EnemyTests › MainPlantee_*)*
 
 ## History
 

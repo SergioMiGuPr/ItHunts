@@ -96,6 +96,22 @@ namespace ItHunts.Settings
                  "ralentie (part de la vitesse de rotation), pas de pointe. Le corps et la main plantée tuent toujours au contact.")]
         [Min(0f)] public float plantedDuration = 1.5f;
         [Range(0.05f, 1f)] public float plantedTurnFactor = 0.4f;
+        [Tooltip("Main plantée (D-039, piste b) : part de sa vitesse normale gardée par le corps, qui continue vers le joueur " +
+                 "(1 : vitesse normale ; grabMoveFactor pendant une prise ordinaire).")]
+        [Range(0f, 1f)] public float plantedMoveFactor = 1f;
+        [Header("Revers de la main gauche (D-039, piste a)")]
+        [Tooltip("Pendant la main plantée, un joueur à portée déclenche un revers (une fois par main plantée) : annonce courte (zone " +
+                 "rouge au sol), puis coup mortel sur toute la zone.")]
+        public bool backhandEnabled = true;
+        [Tooltip("Portée du revers (m), à l'horizontale depuis le bord de son corps ; hauteur couverte au-dessus de ses pieds (m).")]
+        [Min(0f)] public float backhandReach = 7f;
+        [Min(0f)] public float backhandHeight = 12f;
+        [Tooltip("Délai après le début de la main plantée avant que le revers puisse partir (s) : le joueur qui vient d'esquiver a ce temps pour s'éloigner.")]
+        [Min(0f)] public float backhandDelay = 0.5f;
+        [Tooltip("Annonce (s) puis durée du coup (s), mortel dans toute la zone.")]
+        [Min(0f)] public float backhandTelegraph = 0.2f;
+        [Min(0.02f)] public float backhandSweep = 0.25f;
+
         [Tooltip("Pendant une prise, il ralentit à cette part de sa vitesse.")]
         [Range(0f, 1f)] public float grabMoveFactor = 0.3f;
         [Tooltip("Taille de la main (m, largeur × épaisseur × longueur) : la zone de prise est la main elle-même, posée sur " +

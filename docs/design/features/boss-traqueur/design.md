@@ -30,7 +30,10 @@ Piliers : « le mouvement est la survie », « risque contre butin » (D-002). D
    (un double saut passe au-dessus). Pendant une prise, il ralentit (30 %).
 4 bis. **Main plantée (D-039) :** après une **prise ratée** (la main ne touche personne), sa main **reste plantée au sol
    1.5 s**, bien visible (nuage de poussière, lueur rouge qui s'éteint) : pas de nouvelle prise, rotation ralentie (×0.4), pas
-   de pointe ; le corps et la main plantée tuent toujours au contact ; le geste des mains au-dessus de la tête reste possible.
+   de pointe, mais **son corps continue vers le joueur à sa vitesse normale** (piste b) ; **revers de la main gauche** (piste a) :
+   0.5 s après le début de la main plantée, un joueur à **7 m** ou moins du bord de son corps (jusqu'à 12 m de haut) déclenche une
+   fois une annonce de **0.2 s** (zone rouge au sol, `Zone du revers`), puis un coup mortel de 0.25 s dans toute la zone ; le corps
+   et les mains tuent toujours au contact ; le geste des mains au-dessus de la tête reste possible.
    C'est la fenêtre pour **le contourner dans une grande salle** (provoquer une prise, l'esquiver, passer à côté). Après une
    prise réussie, recharge de 2.5 s comme avant.
 5. **Contact (D-037) :** son corps est solide pour le joueur et pour les objets ; **tout contact avec son corps, ses bras ou
@@ -80,7 +83,8 @@ course 7.5 m/s, plafond des gains 20 m/s, bunny hop 18 à 26 m/s, traction 18 m/
 | Mains levées : annonce, zone mortelle, recharge, vitesse des mains, écart | 0.2, 1, 1.5, 45, 3 | s, s, s, m/s, m | quasi impossible à passer |
 | Enragé : paliers (temps sur la cible → vitesse de base), montée, maximum | 0 → 11, 10 → 13, 20 → 15, 25 → 16.5, 30 → 18 ; 1 s ; 18 | s → m/s | la fuite en Enragé a une fin |
 | Épaisseur des bras | 1.5 | m | mortels au contact |
-| Main plantée après une prise ratée : durée, rotation | 1.5, ×0.4 | s | fenêtre pour le contourner |
+| Main plantée après une prise ratée : durée, rotation, vitesse du corps | 1.5, ×0.4, ×1 | s | fenêtre pour le contourner (grande salle seulement) |
+| Revers (main plantée) : portée depuis le bord du corps, hauteur, délai, annonce, coup | 7, 12, 0.5, 0.2, 0.25 | m, m, s, s, s | salle de 40 m fermée, 80 m ouverte |
 | Dégagement de la main au-dessus de la cible | 4.5 | m | |
 | Visée corrigée avant la descente | 0.15 | s | |
 | Portée dans une pièce (depuis l'ouverture) ; penché au bord | 15 ; +2.5 | m | |
@@ -115,10 +119,11 @@ course 7.5 m/s, plafond des gains 20 m/s, bunny hop 18 à 26 m/s, traction 18 m/
 
 ## Questions ouvertes
 
-- **Passer à côté de lui** (D-037, D-039), mesuré avec la main plantée (prise provoquée, esquivée, puis passage) : salle de
-  80 m 20/20 en bunny hop et en traction, 0/20 en course ; salle de 40 m 3/20 en bunny hop mais **20/20 en traction** (plus facile
-  que voulu) ; couloir 0/60. Pistes si la traction rend la salle de 40 m trop sûre : main plantée plus courte (1 s), ou rotation
-  moins ralentie (×0.6), ou traction impossible tant que la main plantée est à moins de 10 m de la ligne visée.
+- **Passer à côté de lui** (D-037, D-039) : réglé le 2026-11-13 par les pistes (b) puis (a). Mesures (20 essais) : (b) seule :
+  40 m toujours 20/20 en traction ; (b) + revers de 15 m : 80 m 0/20 (trop fort, même avec 0.5 s de délai) ; portée 6 m : 40 m
+  11/20 en traction ; **7 m (retenu) : 40 m 0/20, 80 m 20/20 en bunny hop et en traction**, couloir 0/60 ; 8 m : 80 m traction
+  17/20 ; 9 m : 3/20. À juger au playtest : le revers est-il lisible (zone rouge 0.2 s) ? La salle de 40 m doit-elle rester
+  fermée en bunny hop aussi (0/20) ?
 - Déroulé exact du combat final (phases, points faibles).
 - [ASSUMPTION] Temps de grâce de 60 s au début de chaque zone.
 - Prise à la main : la visée corrigée (0.15 s) suffit-elle à la rendre moins facile ? À juger au playtest.

@@ -31,6 +31,7 @@ namespace ItHunts.EditorTools
         private const string ScenePath = "Assets/Scenes/Test_Arena.unity";
         private const string LayoutPath = SettingsDir + "/Editor/ArenaLayout_Test.asset";
         private const string GhoulPath = SettingsDir + "/Ghoul_Default.asset";
+        private const string FlyerPath = SettingsDir + "/Flyer_Default.asset";
         private const string StalkerPath = SettingsDir + "/Stalker_Default.asset";
         private const string ZonePath = SettingsDir + "/Zone_Test.asset";
         private const string PoolPath = SettingsDir + "/ArtifactPool_Default.asset";
@@ -41,6 +42,8 @@ namespace ItHunts.EditorTools
         private static ArenaLayoutSettings L;
         private static Material _floor, _wall, _ceiling, _platform, _ramp, _wallRun, _magnetic, _crate, _heavy, _ghoulSkin, _bridge, _room;
         private static GhoulSettings _ghoul;
+        private static FlyerSettings _flyer;
+        private static int _flyerCount;
         private static Transform _level, _ghouls;
         private static int _crateCount, _ghoulCount;
 
@@ -86,6 +89,7 @@ namespace ItHunts.EditorTools
             // Rechargés après NewScene : la nouvelle scène décharge les assets chargés avant.
             L = LoadOrCreate<ArenaLayoutSettings>(LayoutPath);
             _ghoul = LoadOrCreate<GhoulSettings>(GhoulPath);
+            _flyer = LoadOrCreate<FlyerSettings>(FlyerPath);
             var stalkerSettings = LoadOrCreate<StalkerSettings>(StalkerPath);
             var zoneSettings = LoadOrCreate<ZoneSettings>(ZonePath);
             Materials();
@@ -102,7 +106,7 @@ namespace ItHunts.EditorTools
             volume.sharedProfile = LoadOrCreatePostProcess();
             _level = new GameObject("Niveau").transform;
             _ghouls = new GameObject("Goules").transform;
-            _crateCount = _ghoulCount = 0;
+            _crateCount = _ghoulCount = _flyerCount = 0;
 
             DefineMaze();
             DefineRooms(out List<RoomDef> rooms);
@@ -175,7 +179,7 @@ namespace ItHunts.EditorTools
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddSceneToBuild(ScenePath);
             return $"OK : {ScenePath} (labyrinthe {Nodes.Count} intersections, {Edges.Count} couloirs, {_ghoulCount} goules, " +
-                   $"{_crateCount} objets ; murs grimpables trouvés au lancement)";
+                   $"{_flyerCount} volants, {_crateCount} objets ; murs grimpables trouvés au lancement)";
         }
 
         /// <summary>Valeurs du traqueur géant (D-034, D-035) et de la goule sur les assets existants.</summary>
@@ -188,6 +192,17 @@ namespace ItHunts.EditorTools
                 g.mass = 50f;
                 g.respawnDelay = 0f;
                 EditorUtility.SetDirty(g);
+            }
+
+            var f = LoadOrCreate<FlyerSettings>(FlyerPath);
+            if (f.maxHealth == 100f && f.mass == 80f)
+            {
+                // Volant (D-033, D-040) : 25 PV, 8 kg, ne réapparaît pas seul.
+                f.maxHealth = 25f;
+                f.mass = 8f;
+                f.respawnDelay = 0f;
+                f.stunDuration = 1.5f;
+                EditorUtility.SetDirty(f);
             }
 
             var s = LoadOrCreate<StalkerSettings>(StalkerPath);
@@ -751,6 +766,12 @@ namespace ItHunts.EditorTools
                 }
 
             Lustre(n.Name, n.C + lustre, n.C.y + n.Ceil, parent);
+            // Volants : dans les grandes salles seulement, à 12 m du sol, répartis (D-040).
+            for (int i = 0; i < L.flyersPerHall; i++)
+            {
+                float a = (i + 0.5f) / Mathf.Max(1, L.flyersPerHall) * Mathf.PI * 2f;
+                BuildFlyer(n.C + new Vector3(Mathf.Cos(a) * n.Half * 0.45f, 12f, Mathf.Sin(a) * n.Half * 0.45f), $"{n.Name} {i + 1}");
+            }
             for (int i = 0; i < Mathf.Min(L.ghoulsPerHall, ghoulSpots.Length); i++)
                 BuildGhoul(n.C + new Vector3(ghoulSpots[i].x, 0f, ghoulSpots[i].y), Quaternion.Euler(0f, i * 47f, 0f), $"{n.Name} {i + 1}");
         }
@@ -853,6 +874,75 @@ namespace ItHunts.EditorTools
         }
 
         /// <summary>
+        /// Volant greybox (D-040) : corps de 0.6 m, deux ailes de 0.9 m qui battent, yeux jaunes, lueur rouge d'annonce du
+        /// piqué ; sphère de collision de 0.4 m ; attrapable à tout moment (Grabbable ennemi, libéré au bout de 2 s), blessé par
+        /// les impacts (ImpactDamager), repoussé et étourdi (EnemyBody, dégâts contre un mur même étourdi).
+        /// </summary>
+        private static void BuildFlyer(Vector3 at, string label)
+        {
+            _flyerCount++;
+            var root = new GameObject($"Volant {label}");
+            root.transform.SetParent(_ghouls, false);
+            root.transform.position = at;
+            var rb = root.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.mass = _flyer.mass;
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            var sphere = root.AddComponent<SphereCollider>();
+            sphere.radius = _flyer.radius;
+            Material skin = GrabbableMat("Greybox_Flyer", new Color(0.22f, 0.16f, 0.2f));
+            var visual = new GameObject("Corps (visuel)").transform;
+            visual.SetParent(root.transform, false);
+            Part(PrimitiveType.Sphere, "Corps", visual, Vector3.zero, new Vector3(0.6f, 0.45f, 0.8f), Vector3.zero, skin);
+            Material eyes = UnlitMat("Flyer_Eyes", "Universal Render Pipeline/Unlit", _flyer.eyeColor);
+            Part(PrimitiveType.Sphere, "Oeil gauche", visual, new Vector3(-0.12f, 0.08f, 0.36f), Vector3.one * 0.08f, Vector3.zero, eyes);
+            Part(PrimitiveType.Sphere, "Oeil droit", visual, new Vector3(0.12f, 0.08f, 0.36f), Vector3.one * 0.08f, Vector3.zero, eyes);
+            Transform Wing(string name, float side)
+            {
+                var pivot = new GameObject(name).transform;
+                pivot.SetParent(visual, false);
+                pivot.localPosition = new Vector3(side * 0.25f, 0.05f, 0f);
+                Part(PrimitiveType.Cube, $"{name} (membrane)", pivot, new Vector3(side * 0.45f, 0f, 0f), new Vector3(0.9f, 0.04f, 0.5f), Vector3.zero, skin);
+                // Zone de touche de l'aile (déclencheur, suit le battement) : les balles et les projectiles la touchent (D-040).
+                var membrane = pivot.Find($"{name} (membrane)");
+                var box = membrane.gameObject.AddComponent<BoxCollider>();
+                box.isTrigger = true;
+                box.size = new Vector3(1f, 2.5f, 1.1f);                 // 0.9 × 0.1 × 0.55 m
+                membrane.gameObject.AddComponent<ItHunts.Combat.Hitbox>();
+                return pivot;
+            }
+
+            Transform left = Wing("Aile gauche", -1f), right = Wing("Aile droite", 1f);
+            Material warn = UnlitMat("Flyer_Telegraph", "Universal Render Pipeline/Unlit", _flyer.telegraphColor);
+            Part(PrimitiveType.Sphere, "Annonce du piqué", root.transform, Vector3.zero, Vector3.one * 1.1f, Vector3.zero, warn);
+            Renderer telegraph = root.transform.Find("Annonce du piqué").GetComponent<Renderer>();
+            var grab = root.AddComponent<Grabbable>();
+            var gso = new SerializedObject(grab);
+            gso.FindProperty("isEnemy").boolValue = true;
+            gso.FindProperty("grabbableAnytime").boolValue = true;
+            gso.FindProperty("holdDurationOverride").floatValue = 2f;
+            gso.ApplyModifiedPropertiesWithoutUndo();
+            SetRef(root.AddComponent<ImpactDamager>(), "settings", LoadOrCreate<DamageSettings>(DamagePath));
+            var body = root.AddComponent<EnemyBody>();
+            SetRef(body, "settings", _flyer);
+            var bso = new SerializedObject(body);
+            bso.FindProperty("returnHome").boolValue = false;
+            bso.FindProperty("wallDamageWhileStunned").boolValue = true;
+            bso.ApplyModifiedPropertiesWithoutUndo();
+            var dmg = root.AddComponent<Damageable>();
+            SetRef(dmg, "settings", _flyer);
+            var dso = new SerializedObject(dmg);
+            dso.FindProperty("respawns").boolValue = false;
+            dso.ApplyModifiedPropertiesWithoutUndo();
+            var flyer = root.AddComponent<Flyer>();
+            SetRef(flyer, "settings", _flyer);
+            SetRef(flyer, "visual", visual);
+            SetRef(flyer, "wingLeft", left);
+            SetRef(flyer, "wingRight", right);
+            SetRef(flyer, "telegraph", telegraph);
+        }
+
+        /// <summary>
         /// Traqueur géant (D-034) : 7 m de large, 14 m de haut ; corps (jambes, torse, tête, yeux rouges) sous un objet qui
         /// se baisse sous les ponts (D-035) ; bras droit (boîte étirée de l'épaule à la main) et main de 4 × 2.2 × 4.5 m dont
         /// la BoxCollider (déclencheur) est la zone de prise ; repère rouge (lueur) et ombre de la zone visée. Corps solide
@@ -920,7 +1010,6 @@ namespace ItHunts.EditorTools
             // Main plantée après une prise ratée (D-039) : nuage de poussière au sol, caché sinon.
             Material dustMat = Mat("Stalker_Dust", new Color(0.45f, 0.4f, 0.36f));
             Part(PrimitiveType.Cylinder, "Poussière", marker, new Vector3(0f, 0.3f, 0f), new Vector3(s.handSize.x * 1.3f, 0.3f, s.handSize.z * 1.3f), Vector3.zero, dustMat);
-            Object.DestroyImmediate(marker.Find("Poussière").GetComponent<Collider>());
             marker.Find("Poussière").gameObject.SetActive(false);
             marker.gameObject.SetActive(false);
 
@@ -939,6 +1028,12 @@ namespace ItHunts.EditorTools
             SetRef(stalker, "grabMarker", marker);
             SetRef(stalker, "leftArm", leftArm.transform);
             SetRef(stalker, "leftHand", leftHand.transform);
+            // Revers de la main gauche (D-039, piste a) : zone rouge au sol, posée et agrandie par le code, cachée sinon.
+            float backD = 2f * (s.width * 0.5f + s.backhandReach);
+            Part(PrimitiveType.Cylinder, "Zone du revers (traqueur)", _level, feet + Vector3.up * 0.05f, new Vector3(backD, 0.01f, backD), Vector3.zero, red);
+            var backZone = _level.Find("Zone du revers (traqueur)").GetComponent<MeshRenderer>();
+            backZone.enabled = false;
+            SetRef(stalker, "backhandZone", backZone);
             GameObject predicted = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             predicted.name = "Point prédit du traqueur (debug)";
             Object.DestroyImmediate(predicted.GetComponent<Collider>());

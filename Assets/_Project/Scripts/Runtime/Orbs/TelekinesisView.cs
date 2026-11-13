@@ -54,7 +54,7 @@ namespace ItHunts.Orbs
                     continue;                                            // ennemi : sa lueur vient de Damageable (étourdi, coups)
                 Color glow;
                 if (g.IsEnemy && g.Id == t.HeldId
-                    && Time.time >= g.HeldSince + cfg.enemyHoldDuration - cfg.enemyStruggleWarning)
+                    && Time.time >= g.HeldSince + g.HoldDuration(cfg) - cfg.enemyStruggleWarning)
                 {
                     // Il va se libérer : il clignote (violet / blanc).
                     bool on = Mathf.Repeat(Time.time * 12f, 1f) < 0.5f;

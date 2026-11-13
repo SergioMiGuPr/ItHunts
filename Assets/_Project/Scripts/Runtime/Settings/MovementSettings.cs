@@ -117,9 +117,9 @@ namespace ItHunts.Settings
                  "Les améliorations pourront l'augmenter.")]
         [Min(0)] public int movementCharges = 3;
         [Tooltip("Temps (s) pour recharger une charge au sol.")]
-        [Min(0.01f)] public float chargeRechargeTimeGround = 1f;
+        [Min(0.01f)] public float chargeRechargeTimeGround = 2f;
         [Tooltip("Temps (s) pour recharger une charge en l'air.")]
-        [Min(0.01f)] public float chargeRechargeTimeAir = 3f;
+        [Min(0.01f)] public float chargeRechargeTimeAir = 4f;
         [Tooltip("Distance parcourue pendant un dash (m), à l'arrêt.")]
         [Min(0f)] public float dashDistance = 6.5f;
         [Tooltip("Durée du dash (s) : ni friction ni gravité pendant ce temps.")]

@@ -87,6 +87,20 @@ namespace ItHunts.Combat
 
         private void OnDisable() => AllList.Remove(this);
 
+        /// <summary>Meurt au premier impact de projectile (volant, D-040) : réglage de son asset.</summary>
+        public bool DiesOnProjectileHit => !immuneToOrbs && settings != null && settings.DiesOnProjectileHit;
+
+        /// <summary>
+        /// Dégâts d'un impact de projectile (balle, objet lancé ou repoussé, ennemi lancé, mur) : tous ses PV si la cible meurt au
+        /// premier impact, sinon les dégâts donnés. Jamais pour une zone (l'appelant ne l'utilise pas).
+        /// </summary>
+        public float ProjectileDamage(float damage)
+        {
+            if (_renderers == null)
+                Init();
+            return damage > 0f && DiesOnProjectileHit ? Mathf.Max(damage, _health.Current) : damage;
+        }
+
         /// <summary>Retire des PV ; renvoie les dégâts réellement pris.</summary>
         public float ApplyDamage(float damage, float time, out bool killed)
         {

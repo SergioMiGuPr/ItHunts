@@ -43,7 +43,8 @@ namespace ItHunts.Orbs
                 Grabbable g = hit.collider.attachedRigidbody != null ? hit.collider.attachedRigidbody.GetComponent<Grabbable>() : null;
                 if (g != null && g.isActiveAndEnabled && g.Id != IgnoreId && g.CanBeGrabbedNow)
                 {
-                    candidate = new GrabCandidate { Id = g.Id, Mass = g.Mass, Distance = hit.distance, Point = hit.point, Angle = 0f, Enemy = g.IsEnemy };
+                    candidate = new GrabCandidate { Id = g.Id, Mass = g.Mass, Distance = hit.distance, Point = hit.point, Angle = 0f, Enemy = g.IsEnemy,
+                        HoldSeconds = g.HoldDurationOverride };
                     return true;
                 }
 
@@ -80,7 +81,8 @@ namespace ItHunts.Orbs
                     if (!Visible(g, col, origin, point))
                         continue;
                     bestAngle = angle;
-                    best = new GrabCandidate { Id = g.Id, Mass = g.Mass, Distance = distance, Point = point, Angle = angle, Enemy = g.IsEnemy };
+                    best = new GrabCandidate { Id = g.Id, Mass = g.Mass, Distance = distance, Point = point, Angle = angle, Enemy = g.IsEnemy,
+                        HoldSeconds = g.HoldDurationOverride };
                     found = true;
                 }
             }
@@ -258,7 +260,7 @@ namespace ItHunts.Orbs
 
             Vector3 holdPoint = HoldPoint(cfg, eye, aimDir);
             // Ennemi tenu qui va se libérer : il se débat.
-            if (Held.IsEnemy && Time.time >= Held.HeldSince + cfg.enemyHoldDuration - cfg.enemyStruggleWarning)
+            if (Held.IsEnemy && Time.time >= Held.HeldSince + Held.HoldDuration(cfg) - cfg.enemyStruggleWarning)
                 holdPoint += Random.insideUnitSphere * cfg.enemyStruggleShake;
             Vector3 error = holdPoint - eyeVelocity * dt - Held.Body.position;                    // écart avant ce tick
             Vector3 correction = Vector3.ClampMagnitude(error * cfg.holdGain, cfg.approachSpeed);   // vole vers le point, ralentit en arrivant

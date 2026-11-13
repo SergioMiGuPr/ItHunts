@@ -71,7 +71,8 @@ est la survie ».
     améliorations pourront l'augmenter), partagée par le **saut en l'air** et le **dash** : 1 charge
     chacun. Le magnétisme ne les utilise pas : il a ses propres recharges (D-021). Le saut au
     sol et le wall jump sont gratuits. Les charges se rechargent une par une avec le temps, **plus
-    vite au sol** qu'en l'air. Sans charge, l'action est refusée (son et HUD). La télékinésie a sa
+    vite au sol** qu'en l'air (**2 s au sol, 4 s en l'air** depuis le 2026-11-13, +1 s chacune ; le saut en
+    l'air, qui puise dans la même réserve, revient donc moins vite lui aussi). Sans charge, l'action est refusée (son et HUD). La télékinésie a sa
     propre jauge d'endurance ([orbes](../orbes/design.md)).
     - **Dash** (Maj gauche ; bouton d'épaule gauche à la manette) : direction de l'entrée par
       rapport à la caméra (vers l'avant de la caméra sans entrée). Il **dure** un court instant,
@@ -113,7 +114,7 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 | Plafond de sécurité de la vitesse horizontale | 50 | m/s | ne doit jamais se sentir en jeu |
 | Seuil d'angle du contrôle aérien | 100 | ° | pas de demi-tour forcé (D-014) |
 | Charges de mouvement | 3 | charges | réglable (améliorations) |
-| Recharge d'une charge au sol / en l'air | 1.0 / 3.0 | s | [ASSUMPTION] rythme des enchaînements |
+| Recharge d'une charge au sol / en l'air | 2.0 / 4.0 | s | +1 s le 2026-11-13 (avant : 1.0 / 3.0) : dash moins spammable ; ralentit aussi le saut en l'air (même réserve) |
 | Distance d'un dash (à l'arrêt) | 6.5 | m | |
 | Durée d'un dash | 0.3 | s (18 ticks) | sans friction ni gravité |
 | Profil du dash | progressif | — | à l'arrêt : pic 30.3 m/s, baisse d'≈ 1 m/s par tick jusqu'à 12 |
@@ -190,6 +191,8 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 
 ## History
 
+- 2026-11-13 : recharge d'une charge de mouvement +1 s (sol 1 → 2 s, air 3 → 4 s, réglable : `Movement_Default`) ; dash et saut
+  en l'air partagent la réserve, les deux sont ralentis.
 - 2026-11-11 : designed.
 - 2026-11-11 : glissade sans coût d'endurance (D-010).
 - 2026-11-11 : playtest de l'étape 1 ; ajout du contrôle aérien, de l'auto-bunny hop, des sauts

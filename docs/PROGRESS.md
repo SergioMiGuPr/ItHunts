@@ -117,7 +117,26 @@
        en bunny hop mais 20/20 en traction (plus facile que voulu, pistes dans boss-traqueur/design.md), couloir 0/60. Mur de
        16 m : 6.2 s contre 9.8 s par la pente. 280 tests (1 non concluant à dessein). **Main plantée : playtest en attente.**
      - Commit et push sur `main` : étape 6, blocs 1 à 5 (D-033 à D-039).
-5. Goule sur les murs (fait et validé, D-035, D-037, D-038) · **6. Volant : plan envoyé, en attente de réponse** · 7. Vagues.
+5. Goule sur les murs (fait et validé, D-035, D-037, D-038).
+6. **Volant** (D-040) — fait le 2026-11-13, **commité sur `main` sans playtest complet (accord de l'utilisateur)** : poursuite (8 en chasse,
+   aggro jusqu'à 12), ronde 8 m, piqué annoncé 0.4 s à 14 m/s (8 PV), attrapable à tout moment et libéré au bout de 2 s,
+   éclatement de 3 m (30 → 7.5) quand il est lancé, chute étourdie après une répulsion, 4 par grande salle. Mesuré : prise
+   en vol 120/120, 3 goules : 66 dégâts (combo répulsion → prise → lancer : 72 en 1.72 s), piqué esquivé 20/20, coût 0.18 ms.
+   Main plantée passée à ×0.6 : la salle de 40 m reste à 20/20 en traction (×0.8 et ×1 aussi) → pistes proposées.
+   282 tests (1 non concluant à dessein). Checklist : `docs/design/features/volant/testing.md`.
+   - **Corrections du 2026-11-13, sans playtest** (vérifiées au prochain : checklist F12 de `volant/testing.md`) :
+     - **Volant tué au premier impact de projectile** (`dieOnProjectileHit`) : balle, objet lancé ou repoussé, ennemi lancé, mur ;
+       pas par une zone ni par l'onde seule. **Zone de touche** : ailes en déclencheurs `Hitbox` (les balles touchent désormais les
+       déclencheurs qui ont un `Hitbox`, et eux seuls). Mesuré : 200/200 points du modèle, 0/120 à côté ; une balle le tue à 10, 30
+       et 60 m (bunny hop 60/60).
+     - **Piqué à visée corrigée** : 80°/s (90 demandé : 38 % en course), sans avance (`diveLead` 0 ; 0.3 : 68 %) ; course 32/100,
+       bunny hop 0/50, traction 50/50 ; dash tard 0/20 touché, dash pendant l'annonce ou tôt 20/20 touché.
+     - **Dash** : recharge d'une charge +1 s (sol 1 → 2 s, air 3 → 4 s, D-015 mise à jour), saut en l'air ralenti aussi.
+     - **Main plantée** (D-039) : piste (b) (corps à vitesse normale, rotation ×0.4) insuffisante (40 m traction 20/20), puis piste
+       (a) : **revers de la main gauche** (7 m du bord du corps, délai 0.5 s, annonce 0.2 s, coup 0.25 s). Mesuré : 80 m 20/20 en
+       bunny hop et en traction, 40 m 0/20, couloir 0/60.
+     - 286 tests (1 non concluant à dessein).
+7. Vagues — à faire (plan court envoyé, en attente de réponse).
 
 **Notes pour plus tard (ne pas coder maintenant) :**
 - **Bloc 7, vagues :** le nombre de goules augmente avec le temps passé dans la zone : peu au début, de plus en plus
@@ -237,7 +256,8 @@ et `Camera_Default.asset` (la note de conception en fait foi) :
 - **Murs :** wall slide (chute 3 m/s, 0.5 m/s en wall run de 8 à 15 m/s, tolérance 75°, dès 3 m/s
   le long du mur) ; wall jump 1.8 m, impulsion 7.5 m/s, direction 0.5, bonus +1 m/s, wall-coyote
   0.1 s, verrou 0.15 s ; le mur recharge les sauts, pas les charges.
-- **Charges et dash :** 3 charges, recharge 1 s au sol et 3 s en l'air ; dash 6.5 m en 0.3 s
+- **Charges et dash :** 3 charges, recharge 1 s au sol et 3 s en l'air (**2 s et 4 s depuis le 2026-11-13**, D-015 mise à jour,
+  à revoir au playtest) ; dash 6.5 m en 0.3 s
   (profil progressif), sortie ≥ 12 m/s, +1 m/s au sol, aucun gain en l'air, dash-jump +3 m/s
   (fenêtre 0.15 s), délai 0.3 s, mémorisation 0.3 s, 0.2 s sans friction après.
 - **Plafonds :** gains 20 m/s ; sécurité 50 m/s. Pic mesuré en bunny hop : 26 m/s.
@@ -284,6 +304,9 @@ Télékinésie et orbe unique validées le 2026-11-12 (D-024 à D-027), `Telekin
   l'utilisateur (2026-11-12), recharge d'une charge passée à 6 s.
 - **Goules (D-035) :** bond d'en haut esquivable seulement pendant le vol ; salles hautes atteintes par les pentes (pas
   de mur direct du sol vers +16 m : ajoutés par D-037) ; 76 goules, 25 en chasse au plus (D-037).
+- **Mesures du volant :** dans une salle de mesure temporaire (140 × 140 m, loin du labyrinthe) ; les coins de la salle SE supposés
+  au départ étaient hors du sol (le joueur tombait). Un script qui désactive des objets (traqueur, volants) les rend introuvables pour
+  le script suivant : chercher avec `FindObjectsInactive.Include` ou relancer le Play Mode.
 - **Mesures dans le labyrinthe :** un traqueur qui démarre au milieu d'une intersection prend son dos comme couloir
   d'arrivée (corrigé) ; la traction a une portée de 60 m (viser plus près dans les scripts).
 - **`ProjectSettings/NavMeshAreas.asset` :** chaque Play de Test_Arena avance `m_LastAgentTypeID` (types d'agent créés

@@ -36,6 +36,27 @@ MonoBehaviour:
   followPlayerSpeedShare: 0
   acceleration: 12
   turnRate: 180
+  enragedRampTimes:
+  - 0
+  - 10
+  - 20
+  - 25
+  - 30
+  enragedRampSpeeds:
+  - 11
+  - 13
+  - 15
+  - 16.5
+  - 18
+  enragedRampBlend: 1
+  maxSpeed: 18
+  allowUTurnWhenEnraged: 1
+  approachDistance: 35
+  approachAngle: 200
+  nodeArrivalDistance: 9
+  retargetInterval: 5
+  crouchMinHeight: 9
+  crouchSpeedFactor: 0.6
   predictionHorizon: 0.8
   repathInterval: 0.2
   sightRange: 60
@@ -55,8 +76,31 @@ MonoBehaviour:
   grabSlam: 0.12
   grabHold: 0.35
   grabCooldown: 2.5
+  plantedDuration: 1.5
+  plantedTurnFactor: 0.4
+  plantedMoveFactor: 1
+  backhandEnabled: 1
+  backhandReach: 7
+  backhandHeight: 12
+  backhandDelay: 0.5
+  backhandTelegraph: 0.2
+  backhandSweep: 0.25
   grabMoveFactor: 0.3
   handSize: {x: 4, y: 2.2, z: 4.5}
+  overheadRadius: 10
+  overheadMinHeight: 7
+  overheadAboveHead: 12
+  overheadPrediction: 0.6
+  overheadTelegraph: 0.2
+  overheadDuration: 1
+  overheadCooldown: 1.5
+  overheadHandSpeed: 45
+  overheadHandSpread: 3
+  armThickness: 1.5
+  handClearance: 4.5
+  grabReaim: 0.15
+  roomReach: 15
+  edgeLean: 2.5
   cutOffHorizon: 3
   attackRange: 0.3
   width: 7
