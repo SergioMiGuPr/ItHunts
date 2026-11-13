@@ -70,9 +70,12 @@ namespace ItHunts.Tests
             Assert.That(new[] { e.chestPrice, e.lockedDoorPrice, e.healPrice, e.choiceCount, e.merchantOffers }, Is.EqualTo(new[] { 30, 50, 35, 3, 3 }));
             Assert.That(e.healAmount, Is.EqualTo(40f));
             var pool = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_Default.asset");
-            Assert.That(pool.upgrades.Count, Is.EqualTo(8), "8 premières améliorations");
+            Assert.That(pool.upgrades.Count, Is.EqualTo(7), "7 améliorations de stats dans les coffres (le barillet passe au marchand, D-050)");
             Assert.That(pool.upgrades.All(u => u != null && !string.IsNullOrEmpty(u.description) && !u.description.Contains("\n")), Is.True, "une ligne chacune");
-            Assert.That(pool.upgrades.Select(u => u.kind).Distinct().Count(), Is.EqualTo(8), "une par effet");
+            Assert.That(pool.upgrades.Select(u => u.kind).Distinct().Count(), Is.EqualTo(7), "une par effet");
+            var barrel = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_Barillet.asset");
+            Assert.That(barrel.upgrades.Count, Is.EqualTo(5), "5 améliorations du barillet, provisoires (D-050)");
+            Assert.That(barrel.upgrades.All(u => u.kind.ToString().EndsWith("Barillet")), Is.True);
             Assert.That(pool.upgrades.All(u => u.merchantPrice >= 40 && u.merchantPrice <= 80), Is.True, "prix au marchand 40 à 80");
             var ghoul = AssetDatabase.LoadAssetAtPath<GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");
             var flyer = AssetDatabase.LoadAssetAtPath<FlyerSettings>("Assets/_Project/Settings/Flyer_Default.asset");
@@ -128,7 +131,7 @@ namespace ItHunts.Tests
         public void HausseDuPrix_ParAchatParJoueurEtParCategorie()
         {
             var e = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
-            Assert.That(new[] { e.chestPriceIncrease, e.merchantPriceIncrease, e.doorPriceIncrease }, Is.EqualTo(new[] { 0f, 0f, 0f }), "0 % pour l'instant");
+            Assert.That(new[] { e.chestPriceIncrease, e.merchantPriceIncrease, e.doorPriceIncrease }, Is.EqualTo(new[] { 0f, 25f, 0f }), "marchand de l artefact : +25 % par achat (D-050), le reste à 0 %");
             Assert.That(SoulMath.RaisedPrice(30, 0f, 5), Is.EqualTo(30), "0 % : prix fixe");
             Assert.That(SoulMath.RaisedPrice(30, 20f, 1), Is.EqualTo(36));
             Assert.That(SoulMath.RaisedPrice(30, 20f, 2), Is.EqualTo(43), "composée : 30 × 1,2²");

@@ -92,7 +92,7 @@ namespace ItHunts.Hud
         public void Draw(string title, string text, float width = 520f)
         {
             Styles();
-            float h = 64f + (string.IsNullOrEmpty(text) ? 0f : _text.CalcHeight(new GUIContent(text), width) + 16f) + Items.Count * 50f;
+            float h = 64f + (string.IsNullOrEmpty(text) ? 0f : _text.CalcHeight(new GUIContent(text), width) + 16f) + Items.Count * 58f;
             var area = new Rect((Screen.width - width) / 2f, Mathf.Max(20f, (Screen.height - h) / 2f), width, h);
             GUI.color = new Color(0f, 0f, 0f, 0.75f);
             GUI.DrawTexture(new Rect(area.x - 24f, area.y - 20f, area.width + 48f, area.height + 40f), Texture2D.whiteTexture);

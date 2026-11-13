@@ -258,6 +258,8 @@ namespace ItHunts.Enemies
                 d.SetOpen(false);
             foreach (ItHunts.Economy.Merchant m in FindObjectsByType<ItHunts.Economy.Merchant>(FindObjectsSortMode.None))
                 m.Place();
+            foreach (ItHunts.Economy.ArtifactMerchant m in FindObjectsByType<ItHunts.Economy.ArtifactMerchant>(FindObjectsSortMode.None))
+                m.ResetMerchant();
             foreach (ExitDoor d in FindObjectsByType<ExitDoor>(FindObjectsSortMode.None))
                 d.ResetDoor();
             ImpactDamager.ResetCooldowns();

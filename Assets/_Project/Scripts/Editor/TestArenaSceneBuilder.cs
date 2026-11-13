@@ -38,6 +38,7 @@ namespace ItHunts.EditorTools
         private const string EconomyPath = SettingsDir + "/Economy_Default.asset";
         private const string UpgradePoolPath = SettingsDir + "/UpgradePool_Default.asset";
         private const string UpgradesDir = SettingsDir + "/Upgrades";
+        private const string BarrelPoolPath = SettingsDir + "/UpgradePool_Barillet.asset";
         private static EconomySettings _economy;
         private static Material _offerOrb;
         private const string StalkerPath = SettingsDir + "/Stalker_Default.asset";
@@ -767,10 +768,51 @@ namespace ItHunts.EditorTools
             pool.upgrades.Add(Upgrade("Upgrade_Projectiles", "Projectiles lourds", "Objets lancés ou repoussés : +25 % de dégâts.", "x1.25", new Color(2f, 0.6f, 3f), UpgradeKind.DegatsObjetsLances, 0.25f, 70));
             pool.upgrades.Add(Upgrade("Upgrade_Repulsion", "Onde blessante", "La répulsion blesse les ennemis touchés (10 PV).", "10", new Color(3.2f, 1.3f, 0.3f), UpgradeKind.DegatsRepulsion, 10f, 60));
             pool.upgrades.Add(Upgrade("Upgrade_PV", "Cœur solide", "+25 PV max (et 25 PV tout de suite).", "PV+", new Color(3.2f, 0.4f, 0.4f), UpgradeKind.PvMax, 25f, 50));
-            pool.upgrades.Add(Upgrade("Upgrade_Barillet", "Barillet garni", "+2 balles au barillet.", "+2", new Color(3f, 2.5f, 0.4f), UpgradeKind.BallesBarillet, 2f, 50));
             pool.upgrades.Add(Upgrade("Upgrade_Aspiration", "Aspiration", "Les âmes viennent à l'orbe 50 % plus vite.", ">>", new Color(1.2f, 2.6f, 3.2f), UpgradeKind.AspirationAmes, 0.5f, 40));
             EditorUtility.SetDirty(pool);
             return pool;
+        }
+
+        /// <summary>Améliorations du barillet (D-050, provisoires) : vendues par le marchand de la salle de départ.</summary>
+        public static UpgradePool BarrelPoolAsset()
+        {
+            if (!AssetDatabase.IsValidFolder(UpgradesDir))
+                AssetDatabase.CreateFolder(SettingsDir, "Upgrades");
+            var pool = LoadOrCreate<UpgradePool>(BarrelPoolPath);
+            pool.upgrades.Clear();
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet", "Barillet garni", "+2 balles au barillet.", "+2", new Color(3f, 2.5f, 0.4f), UpgradeKind.BallesBarillet, 2f, 50));
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Degats", "Balles lourdes", "Balles du barillet : +30 % de dégâts.", "x1.3", new Color(3.2f, 0.9f, 0.3f), UpgradeKind.DegatsBarillet, 0.3f, 60));
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Cadence", "Gâchette vive", "Tir du barillet 25 % plus rapide.", ">>>", new Color(3f, 1.8f, 0.3f), UpgradeKind.CadenceBarillet, 0.25f, 55));
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Rechargement", "Rechargement éclair", "Rechargement du barillet 35 % plus court.", "R", new Color(2.6f, 2.6f, 0.6f), UpgradeKind.RechargementBarillet, 0.35f, 45));
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Portee", "Long canon", "Portée du barillet +25 m.", "+25", new Color(2.2f, 2.8f, 0.8f), UpgradeKind.PorteeBarillet, 25f, 40));
+            EditorUtility.SetDirty(pool);
+            return pool;
+        }
+
+        /// <summary>Marchand de l'artefact dans la salle de départ (D-050) : silhouette violette, enseigne, offres par joueur.</summary>
+        public static void BuildArtifactMerchant(Transform parent, Vector3 at, Quaternion rotation, EconomySettings economy, Material orb)
+        {
+            var root = new GameObject("Marchand de l'artefact (salle de départ)");
+            root.transform.SetParent(parent, false);
+            root.transform.SetPositionAndRotation(at, rotation);
+            Material robe = GrabbableMat("Economy_Merchant", new Color(0.2f, 0.12f, 0.25f));
+            robe.SetColor("_EmissionColor", new Color(0.8f, 0.3f, 1.2f));
+            GameObject figure = Box("Marchand (silhouette)", root.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.9f, 2.2f, 0.9f), robe);
+            GameObjectUtility.SetStaticEditorFlags(figure, 0);
+            GameObject sign = Box("Enseigne", root.transform, new Vector3(0f, 2.9f, 0f), new Vector3(1.6f, 0.4f, 0.1f),
+                UnlitMat("Economy_Merchant_Sign", "Universal Render Pipeline/Unlit", new Color(2.5f, 1f, 3f)), collider: false);
+            GameObjectUtility.SetStaticEditorFlags(sign, 0);
+            var m = root.AddComponent<ArtifactMerchant>();
+            SetRef(m, "settings", economy);
+            SetRef(m, "pool", BarrelPoolAsset());
+            SetRef(m, "orbMaterial", orb);
+            var l = new GameObject("Lumière du marchand").AddComponent<Light>();
+            l.transform.SetParent(root.transform, false);
+            l.transform.localPosition = new Vector3(0f, 4f, 1.5f);
+            l.type = LightType.Point;
+            l.color = new Color(0.8f, 0.4f, 1f);
+            l.intensity = 3f;
+            l.range = 12f;
         }
 
         /// <summary>Asset d'amélioration : créé avec ces valeurs s'il n'existe pas (sinon gardé tel quel, réglages compris).</summary>
@@ -831,33 +873,10 @@ namespace ItHunts.EditorTools
             BuildChest("Coffre : salle C", Nodes[4].C + new Vector3(10f, 0f, -12f), Quaternion.Euler(0f, 180f, 0f), -1);
             BuildChest("Coffre : salle SE", Nodes[2].C + new Vector3(-12f, 0f, 10f), Quaternion.Euler(0f, 90f, 0f), -1);
 
-            var merchantRoot = new GameObject("Marchand");
-            merchantRoot.transform.SetParent(_level, false);
-            Material robe = GrabbableMat("Economy_Merchant", new Color(0.2f, 0.12f, 0.25f));
-            robe.SetColor("_EmissionColor", new Color(0.8f, 0.3f, 1.2f));
-            GameObject figure = Box("Marchand (silhouette)", merchantRoot.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.9f, 2.2f, 0.9f), robe);
-            GameObjectUtility.SetStaticEditorFlags(figure, 0);
-            GameObject sign = Box("Enseigne", merchantRoot.transform, new Vector3(0f, 2.9f, 0f), new Vector3(1.6f, 0.4f, 0.1f),
-                UnlitMat("Economy_Merchant_Sign", "Universal Render Pipeline/Unlit", new Color(2.5f, 1f, 3f)), collider: false);
-            GameObjectUtility.SetStaticEditorFlags(sign, 0);
-            var merchant = merchantRoot.AddComponent<Merchant>();
-            SetRef(merchant, "settings", _economy);
-            SetRef(merchant, "orbMaterial", _offerOrb);
-            int[] spotNodes = { 1, 3, 5, 7, 6 };
-            var mso = new SerializedObject(merchant);
-            SerializedProperty spots = mso.FindProperty("spots");
-            spots.arraySize = spotNodes.Length;
-            for (int i = 0; i < spotNodes.Length; i++)
-            {
-                Node n = Nodes[spotNodes[i]];
-                var spot = new GameObject($"Emplacement du marchand {i + 1} : {n.Name}").transform;
-                spot.SetParent(merchantRoot.transform.parent, false);
-                Vector3 at = n.C + new Vector3(n.Half * 0.5f, 0f, n.HalfZ * 0.5f);
-                spot.SetPositionAndRotation(at, Quaternion.LookRotation(new Vector3(n.C.x - at.x, 0f, n.C.z - at.z).normalized, Vector3.up));
-                spots.GetArrayElementAtIndex(i).objectReferenceValue = spot;
-            }
-
-            mso.ApplyModifiedPropertiesWithoutUndo();
+            // Marchand de l'artefact dans la salle de départ SO (D-050), face au départ des joueurs.
+            Node sw0 = Nodes[0];
+            Vector3 mAt = sw0.C + new Vector3(4f, 0f, 6f);
+            BuildArtifactMerchant(_level, mAt, Quaternion.LookRotation(new Vector3(-12f, 0f, -10f) - new Vector3(4f, 0f, 6f), Vector3.up), _economy, _offerOrb);
         }
 
         private static Vector3 Abs(Vector3 v) => new Vector3(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));

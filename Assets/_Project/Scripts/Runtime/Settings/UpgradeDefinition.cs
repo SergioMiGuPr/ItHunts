@@ -14,6 +14,11 @@ namespace ItHunts.Settings
         PvMax,                  // +amount PV max (et autant de PV tout de suite)
         BallesBarillet,         // +amount balles au barillet
         AspirationAmes,         // vitesse d'aspiration des âmes × (1 + amount)
+        // Améliorations de l'artefact (barillet), vendues par le marchand de la salle de départ (D-050) ; provisoires.
+        DegatsBarillet,         // dégâts d'une balle × (1 + amount)
+        CadenceBarillet,        // intervalle entre deux tirs × (1 − amount)
+        RechargementBarillet,   // temps de rechargement × (1 − amount)
+        PorteeBarillet,         // portée + amount m
     }
 
     /// <summary>
