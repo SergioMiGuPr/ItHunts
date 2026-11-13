@@ -29,6 +29,8 @@ namespace ItHunts.Input
         private InputAction _grab;
         private InputAction _throw;
         private InputAction _reload;
+        private InputAction _interact;
+        private ItHunts.Economy.PlayerInteractor _interactor;
         private InputAction _toggleDebug;
         private InputAction _pause;
 
@@ -74,6 +76,10 @@ namespace ItHunts.Input
             _grab = actions.FindAction("Player/Grab", throwIfNotFound: true);
             _throw = actions.FindAction("Player/Throw", throwIfNotFound: true);
             _reload = actions.FindAction("Player/Reload", throwIfNotFound: true);
+            _interact = actions.FindAction("Player/Interact", throwIfNotFound: false);
+            _interactor = GetComponent<ItHunts.Economy.PlayerInteractor>();
+            if (_interactor == null)
+                _interactor = gameObject.AddComponent<ItHunts.Economy.PlayerInteractor>();   // coffres, marchand, porte (D-043)
             _toggleDebug = actions.FindAction("Player/ToggleDebug", throwIfNotFound: true);
             _pause = actions.FindAction("Player/Pause", throwIfNotFound: true);
         }
@@ -99,12 +105,21 @@ namespace ItHunts.Input
             if (_repel.WasPressedThisFrame() && aimReady)
                 RepelPressedTick = next;
             RepelHeld = _repel.IsPressed() && aimReady;
+            // E / Y : utiliser l'objet visé (D-043). F sur une orbe de choix ou d'offre : la prendre (pas la télékinésie).
+            bool focus = _interactor != null && _interactor.HasFocus;
+            if (_interact != null && _interact.WasPressedThisFrame() && focus)
+                _interactor.Press();
             if (_grab.WasPressedThisFrame() && aimReady)
-                GrabPressedTick = next;
+            {
+                if (_interactor != null && _interactor.WantsGrab)
+                    _interactor.Press();
+                else
+                    GrabPressedTick = next;
+            }
             if (_throw.WasPressedThisFrame() && aimReady)
                 ThrowPressedTick = next;                      // lancer si l'orbe tient un objet, sinon tir de l'artefact
-            if (_reload.WasPressedThisFrame() && aimReady)
-                ReloadPressedTick = next;                     // R / Y : recharger l'artefact
+            if (_reload.WasPressedThisFrame() && aimReady && !(UsingGamepad && focus))
+                ReloadPressedTick = next;                     // R / Y : recharger l'artefact (Y visant un objet : il l'utilise)
             ToggleDebugPressed = _toggleDebug.WasPressedThisFrame();
             PausePressed = _pause.WasPressedThisFrame();
         }

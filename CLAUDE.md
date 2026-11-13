@@ -179,11 +179,11 @@ jusqu'à l'étape 10.
 5 bis. **Artefacts** : système générique (1 artefact tiré au hasard par joueur et par run, pas de
    doublon en coop, un emplacement en main gauche), puis le **barillet** comme premier artefact
    (`docs/design/features/artefacts/design.md`). Avant ou avec les ennemis et les vagues.
-6. **Ennemis et vagues** dans une arène test ; dégâts des objets lancés. Avec le **traqueur**, le boss qui rôde
-   (`docs/design/features/boss-traqueur/design.md`) : il **rôde**, **tue en un coup**, devient **enragé à la fin du
-   timer** et il est **intuable** : exclu de la répulsion, de l'étourdissement, des dégâts de zone, des balles et de la
-   prise (drapeau `Damageable.ImmuneToOrbs`, déjà respecté par ces systèmes). Vitesse du traqueur et vitesse de la
-   traction se règlent ensemble (la traction n'a pas de plafond).
+6. **Ennemis et vagues** dans une arène test ; dégâts des objets lancés. Avec le **traqueur**, le boss
+   (`docs/design/features/boss-traqueur/design.md`) : il **poursuit en permanence**, façon Pac-Man (D-035), **tue en un
+   coup**, devient **enragé à la fin du timer** et il est **intuable** : exclu de la répulsion, de l'étourdissement, des
+   dégâts de zone, des balles et de la prise (drapeau `Damageable.ImmuneToOrbs`, déjà respecté par ces systèmes). Vitesse
+   du traqueur et vitesse de la traction se règlent ensemble : la traction est **plafonnée à 18 m/s** (D-036).
 7. **Âmes et économie** : collecte autour de l'orbe, coffre, marchand, salle verrouillée,
    premières améliorations.
 8. **Run complète** : enchaînement des salles, boss, changement de zone, mort et relance.

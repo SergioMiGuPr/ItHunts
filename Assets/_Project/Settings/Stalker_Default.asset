@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Stalker_Default
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.StalkerSettings
   maxHealth: 1
+  soulValue: 0
   respawnDelay: 0
   mass: 1000
   gravity: 20
@@ -24,6 +25,10 @@ MonoBehaviour:
   stunImmunity: 2
   returnHomeDelay: 2
   returnHomeSpeed: 3
+  targetSwitchMargin: 15
+  targetGiveUpDistance: 60
+  targetSwitchCooldown: 3
+  lullRetreatDistance: 10
   roamSpeed: 3
   alertSpeed: 6
   chaseSpeed: 9

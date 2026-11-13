@@ -427,9 +427,11 @@ namespace ItHunts.Tests
             foreach (string removed in new[] { "SwapOrb", "SwapOrbScroll", "SelectOrb1", "SelectOrb2" })
                 Assert.That(map.FindAction(removed), Is.Null, $"{removed} supprimé");
 
-            // Aucune touche n'est partagée entre deux actions.
+            // Interaction (D-043) : E / Y. Y est partagé avec la recharge du barillet, par choix : un objet visé (coffre, marchand,
+            // porte, orbe) passe avant la recharge (PlayerInputReader). Aucune autre touche n'est partagée.
+            Assert.That(Paths("Interact"), Is.EqualTo("<Gamepad>/buttonNorth <Keyboard>/e"));
             var all = map.bindings.Where(b => !b.isComposite).GroupBy(b => b.path).Where(g => g.Select(b => b.action).Distinct().Count() > 1);
-            Assert.That(all.Select(g => g.Key), Is.Empty);
+            Assert.That(all.Select(g => g.Key), Is.EquivalentTo(new[] { "<Gamepad>/buttonNorth" }), "seul Y : recharger ou interagir selon le contexte");
         }
 
         // ---------- Aide à la visée : cône ----------

@@ -44,6 +44,18 @@ namespace ItHunts.Player
         public MovementSettings Settings => settings;
         public MagnetismState Magnetism => _magnet;
         public MagnetismOrbSettings MagnetismSettings => magnetism;
+
+        /// <summary>
+        /// Améliorations (D-043) : réglages propres à ce joueur (copies modifiées des assets partagés). Les assets eux-mêmes ne
+        /// changent pas ; un réglage modifié en Play Mode sur l'asset ne touche plus ce joueur après sa première amélioration.
+        /// </summary>
+        public void UseSettings(MovementSettings movement, MagnetismOrbSettings magnet)
+        {
+            if (movement != null)
+                settings = movement;
+            if (magnet != null)
+                magnetism = magnet;
+        }
         public TelekinesisState Telekinesis => _tk;
         public TelekinesisOrbSettings TelekinesisSettings => telekinesis;
         public TelekinesisHolder Holder => _holder;

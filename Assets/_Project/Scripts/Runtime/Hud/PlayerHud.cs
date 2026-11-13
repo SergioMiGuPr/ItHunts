@@ -61,7 +61,10 @@ namespace ItHunts.Hud
         private RectTransform _center;
         private ItHunts.Enemies.ZoneState _zone;
         private ItHunts.Enemies.Stalker _stalker;
-        private Text _timerText, _stalkerText, _zoneMessage, _waveText;
+        private Text _timerText, _stalkerText, _zoneMessage, _waveText, _soulsText, _promptText;
+        private float _refusedAt = float.NegativeInfinity, _soulsGainAt = float.NegativeInfinity;
+        private AudioClip _refusalClip;
+        private ItHunts.Economy.PlayerInteractor _interactor;
 
         private struct Number
         {
@@ -214,7 +217,14 @@ namespace ItHunts.Hud
             _waveText = NewText("Pic de vague", _root, new Vector2(0f, -90f), new Vector2(600f, 50f), 30, TextAnchor.MiddleCenter);
             _waveText.rectTransform.anchorMin = _waveText.rectTransform.anchorMax = new Vector2(0.5f, 1f);
             _waveText.fontStyle = FontStyle.Bold;
-            foreach (Text t in new[] { _timerText, _stalkerText, _zoneMessage, _waveText })
+            // Âmes (D-043) : coin haut gauche ; aide d'interaction sous le viseur (E / Y).
+            _soulsText = NewText("Âmes", SoulsCorner, Vector2.zero, new Vector2(240f, 60f), 34, TextAnchor.MiddleLeft);
+            _soulsText.fontStyle = FontStyle.Bold;
+            _promptText = NewText("Aide d'interaction", _root, new Vector2(0f, -150f), new Vector2(1100f, 44f), 24, TextAnchor.MiddleCenter);
+            _promptText.rectTransform.anchorMin = _promptText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            ItHunts.Artifacts.RunState.Refused += OnRefused;
+            ItHunts.Artifacts.RunState.SoulsChanged += OnSoulsChanged;
+            foreach (Text t in new[] { _timerText, _stalkerText, _zoneMessage, _waveText, _soulsText, _promptText })
             {
                 var sh = t.gameObject.AddComponent<Shadow>();
                 sh.effectColor = new Color(0f, 0f, 0f, 0.8f);
@@ -407,6 +417,7 @@ namespace ItHunts.Hud
             }
 
             UpdateZone(now);
+            UpdateSouls(now);
             UpdateAmmo(tick, now, dt, fixedDt);
             UpdatePlayerHealth(now);
             UpdateWorld();
@@ -456,6 +467,50 @@ namespace ItHunts.Hud
         }
 
         private ItHunts.Enemies.WaveDirector _waves;
+
+        private void OnDestroy()
+        {
+            ItHunts.Artifacts.RunState.Refused -= OnRefused;
+            ItHunts.Artifacts.RunState.SoulsChanged -= OnSoulsChanged;
+        }
+
+        private void OnRefused(int playerId)
+        {
+            if (_health == null || playerId != _health.PlayerId)
+                return;
+            _refusedAt = Time.time;
+            if (_refusalClip == null)
+                _refusalClip = ItHunts.Audio.ProceduralSfx.ToClip("Refus (âmes)", ItHunts.Audio.ProceduralSfx.Refusal());
+            AudioSource.PlayClipAtPoint(_refusalClip, _health.transform.position + Vector3.up, 0.7f);
+        }
+
+        private void OnSoulsChanged(int playerId, int total, int delta)
+        {
+            if (_health != null && playerId == _health.PlayerId && delta > 0)
+                _soulsGainAt = Time.time;
+        }
+
+        /// <summary>Âmes (rouge un instant si un achat est refusé, plus clair à chaque gain) et aide d'interaction.</summary>
+        private void UpdateSouls(float now)
+        {
+            if (_soulsText == null || _health == null)
+                return;
+            var run = ItHunts.Artifacts.RunState.Current;
+            int souls = run != null ? run.Souls(_health.PlayerId) : 0;
+            _soulsText.text = $"Âmes  {souls}";
+            float refused = Mathf.Clamp01(1f - (now - _refusedAt) / 0.8f);
+            float gain = Mathf.Clamp01(1f - (now - _soulsGainAt) / 0.3f);
+            Color normal = Color.Lerp(new Color(0.55f, 0.95f, 1f), Color.white, gain);
+            _soulsText.color = refused > 0f ? Color.Lerp(normal, new Color(1f, 0.2f, 0.15f), refused) : normal;
+            _soulsText.rectTransform.localScale = Vector3.one * (1f + 0.25f * refused + 0.08f * gain);
+            if (_interactor == null)
+                _interactor = GetComponent<ItHunts.Economy.PlayerInteractor>();
+            var reader = GetComponent<ItHunts.Input.PlayerInputReader>();
+            string key = reader != null && reader.UsingGamepad ? "Y" : "E";
+            var focus = _interactor != null ? _interactor.Focus : null;
+            _promptText.text = focus != null ? $"{key} : {focus.Prompt(_health)}" : string.Empty;
+            _promptText.color = refused > 0f ? Color.Lerp(Color.white, new Color(1f, 0.25f, 0.2f), refused) : Color.white;
+        }
 
         /// <summary>Munitions du barillet : un segment par munition ; en rechargement, ils se remplissent ; grisés si inactif.</summary>
         private void UpdateAmmo(int tick, float now, float dt, float fixedDt)

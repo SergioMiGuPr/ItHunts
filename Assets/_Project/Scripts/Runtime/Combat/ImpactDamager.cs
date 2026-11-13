@@ -134,7 +134,7 @@ namespace ItHunts.Combat
             {
                 if (target != null && g.PushDangerous(time, cfg.pushedDangerTime))
                 {
-                    float damage = ImpactDamage.Compute(g.Mass, speed, cfg, falling) * cfg.pushedDamageMultiplier;
+                    float damage = ImpactDamage.Compute(g.Mass, speed, cfg, falling) * cfg.pushedDamageMultiplier * OwnerMultiplier(g);
                     if (ApplyRaw(target, g.Id, damage, speed, g.Mass, point, falling, false, cfg, time, out _, lethal: true) && g.ConsumeDurability())
                         g.Break();
                     return;
@@ -145,7 +145,8 @@ namespace ItHunts.Combat
             }
 
             if (target != null)
-                TryDamage(target, g.Id, g.Mass, speed, point, cfg, time, out _, falling);
+                ApplyRaw(target, g.Id, ImpactDamage.Compute(g.Mass, speed, cfg, falling) * OwnerMultiplier(g), speed, g.Mass, point,
+                    falling, false, cfg, time, out _, lethal: true);
 
             // Ennemi lancé (D-030) : il subit lui aussi les dégâts de chaque impact pendant son vol, mur compris.
             if (g.IsEnemy && g.Damageable != null && g.EnemyBody != null && g.EnemyBody.InFlight)
@@ -157,7 +158,7 @@ namespace ItHunts.Combat
             if (!thrownImpact && !fragileImpact)
                 return;
 
-            float impactDamage = ImpactDamage.Compute(g.Mass, speed, cfg, falling || !thrownImpact);
+            float impactDamage = ImpactDamage.Compute(g.Mass, speed, cfg, falling || !thrownImpact) * OwnerMultiplier(g);
             float radius = AreaEffects.SplashRadius(g.Mass, cfg, g.SplashRadiusOverride);
             ApplyArea(g, target, point, radius, impactDamage, speed, cfg, time, player);
 
@@ -167,6 +168,15 @@ namespace ItHunts.Combat
             if (breaks)
                 g.Break();
         }
+
+        /// <summary>
+        /// Amélioration « dégâts des objets lancés » (D-043) du joueur qui a lancé ou repoussé l'objet (pas pour un ennemi lancé).
+        /// Branchée par l'économie (Economy.PlayerUpgrades) ; 1 sans amélioration.
+        /// </summary>
+        public static System.Func<int, float> OwnerDamageMultiplier;
+
+        private static float OwnerMultiplier(Grabbable g) =>
+            g == null || g.IsEnemy || g.LastOwnerId == 0 || OwnerDamageMultiplier == null ? 1f : OwnerDamageMultiplier(g.LastOwnerId);
 
         /// <summary>
         /// Tir ami (D-032) : un objet qui percute un joueur le blesse comme un ennemi s'il est dangereux (lancé, tenu, ennemi
@@ -218,6 +228,8 @@ namespace ItHunts.Combat
                 float damage = AreaEffects.SplashDamage(impactDamage, distance, radius, cfg);
                 if (damage <= 0f || !InSight(source, d, point))
                     continue;
+                if (source != null)
+                    d.NoteAttacker(source.LastOwnerId);                  // âmes (D-043) : le lanceur y est pour quelque chose
                 ApplyRaw(d, source != null ? source.Id : 0, damage, speed, source != null ? source.Mass : 0f, closest, false, true,
                     cfg, time, out _);
             }

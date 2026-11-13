@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70fe9a4a0a4eb1e4e8c70822507d9f2d, type: 3}
+  m_Name: Economy_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.EconomySettings
+  soulLifetime: 30
+  soulBlinkTime: 5
+  collectRadius: 8
+  pullSpeed: 25
+  collectDistance: 0.7
+  shareRadius: 40
+  involvementWindow: 5
+  enragedMultiplier: 2
+  scatterSpeed: 4
+  soulSize: 0.25
+  soulColor: {r: 0.4, g: 2.6, b: 3.2, a: 1}
+  chestPrice: 30
+  lockedDoorPrice: 50
+  healPrice: 35
+  healAmount: 40
+  chestPriceIncrease: 0
+  merchantPriceIncrease: 0
+  doorPriceIncrease: 0
+  choiceCount: 3
+  choiceLifetime: 30
+  merchantOffers: 3
+  interactRange: 4
+  orbInteractRange: 8
+  interactAngle: 12

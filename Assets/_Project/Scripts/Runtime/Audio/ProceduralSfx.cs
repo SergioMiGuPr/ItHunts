@@ -317,6 +317,9 @@ namespace ItHunts.Audio
             return Normalize(s, 0.9f);
         }
 
+        /// <summary>Âme ramassée (D-043) : petit tintement clair qui monte (1400 → 2100 Hz), 0.08 s.</summary>
+        public static float[] SoulPickup() => Sweep(0.08f, 1400f, 2100f, attack: 0.003f, harmonic: 0.2f);
+
         /// <summary>Pic de vague (D-041) : cor grave qui monte (90 → 150 Hz), 0.9 s, deux voix.</summary>
         public static float[] WaveHorn()
         {

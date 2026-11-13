@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Flyer_Default
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.FlyerSettings
   maxHealth: 25
+  soulValue: 2
   respawnDelay: 0
   mass: 8
   gravity: 20
@@ -24,6 +25,10 @@ MonoBehaviour:
   stunImmunity: 2
   returnHomeDelay: 2
   returnHomeSpeed: 3
+  targetSwitchMargin: 15
+  targetGiveUpDistance: 60
+  targetSwitchCooldown: 3
+  lullRetreatDistance: 10
   flySpeed: 6
   acceleration: 20
   orbitHeight: 8
@@ -31,6 +36,7 @@ MonoBehaviour:
   travelSpeed: 9
   radius: 0.4
   dieOnProjectileHit: 1
+  pushedContactKillTime: 1.5
   diveRange: 16
   diveTelegraph: 0.4
   diveSpeed: 14

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3acb984585714184b9f2883f6df4009f, type: 3}
+  m_Name: UpgradePool_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradePool
+  upgrades:
+  - {fileID: 11400000, guid: 8fe6842dd42756047a45974e63ef80ba, type: 2}
+  - {fileID: 11400000, guid: b2c471e5e50d26a48ba15f523da4ce39, type: 2}
+  - {fileID: 11400000, guid: 546f4b2e014b60240a66e93345001817, type: 2}
+  - {fileID: 11400000, guid: ed168600d4239364e90c834ae610377f, type: 2}
+  - {fileID: 11400000, guid: 3e84a9176114a3d4a97b75bd8b31cbd8, type: 2}
+  - {fileID: 11400000, guid: 2065ed9c70964fa44a1bb47d2fe7385c, type: 2}
+  - {fileID: 11400000, guid: e642a43a44ec1fe448c424e5daf13033, type: 2}
+  - {fileID: 11400000, guid: fdd414373f62cfa428a93f182ff813b9, type: 2}

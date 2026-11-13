@@ -119,6 +119,16 @@ namespace ItHunts.Enemies
                 st.ResetState();
             foreach (WaveDirector w in FindObjectsByType<WaveDirector>(FindObjectsSortMode.None))
                 w.ResetAll();                                            // vagues (D-041) : la réserve rentre, départ reposé
+            // Économie (D-043) : éclats au sol effacés, coffres refermés, portes reverrouillées, marchand replacé. Les âmes et les
+            // améliorations des joueurs restent (la vraie mort, qui termine la run, vient à l'étape 8).
+            foreach (ItHunts.Economy.SoulSystem s in FindObjectsByType<ItHunts.Economy.SoulSystem>(FindObjectsSortMode.None))
+                s.Clear();
+            foreach (ItHunts.Economy.Chest c in FindObjectsByType<ItHunts.Economy.Chest>(FindObjectsSortMode.None))
+                c.ResetChest();
+            foreach (ItHunts.Economy.LockedDoor d in FindObjectsByType<ItHunts.Economy.LockedDoor>(FindObjectsSortMode.None))
+                d.SetOpen(false);
+            foreach (ItHunts.Economy.Merchant m in FindObjectsByType<ItHunts.Economy.Merchant>(FindObjectsSortMode.None))
+                m.Place();
             ImpactDamager.ResetCooldowns();
         }
     }

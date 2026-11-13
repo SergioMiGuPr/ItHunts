@@ -36,6 +36,10 @@ namespace ItHunts.Combat
         private ItHunts.Orbs.Grabbable _grabbable;
 
         public static IReadOnlyList<Damageable> All => AllList;
+
+        /// <summary>Une cible meurt (âmes, D-043).</summary>
+        public static event System.Action<Damageable> Died;
+        public EnemySettings Settings => settings;
         public HealthState Health => _health;
         public bool Dead => _health.Dead;
         public int Id => GetInstanceID();
@@ -123,7 +127,10 @@ namespace ItHunts.Combat
                 return 0f;                                              // le traqueur est intuable
             float taken = HealthState.Apply(ref _health, damage, time, out killed);
             if (killed)
+            {
                 SetAlive(false);
+                Died?.Invoke(this);
+            }
             return taken;
         }
 

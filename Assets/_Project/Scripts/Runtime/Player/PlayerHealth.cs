@@ -83,7 +83,7 @@ namespace ItHunts.Player
         {
             _motor = GetComponent<PlayerMotor>();
             _controller = GetComponent<CharacterController>();
-            _health = HealthState.Create(settings != null ? settings.maxHealth : 100f);
+            _health = HealthState.Create((settings != null ? settings.maxHealth : 100f) + MaxHealthBonus);
         }
 
         /// <summary>Réglages (tests).</summary>
@@ -138,7 +138,30 @@ namespace ItHunts.Player
         }
 
         /// <summary>Tous les PV, vivant (remise à zéro de la zone).</summary>
-        public void Restore() => _health = HealthState.Create(settings != null ? settings.maxHealth : 100f);
+        public void Restore() => _health = HealthState.Create((settings != null ? settings.maxHealth : 100f) + MaxHealthBonus);
+
+        /// <summary>Amélioration « PV max » (D-043) : bonus de PV max, gagné aussi tout de suite.</summary>
+        public float MaxHealthBonus { get; private set; }
+
+        public void SetMaxHealthBonus(float bonus)
+        {
+            float delta = bonus - MaxHealthBonus;
+            MaxHealthBonus = bonus;
+            _health.Max += delta;
+            if (!_health.Dead)
+                _health.Current = Mathf.Clamp(_health.Current + delta, 0f, _health.Max);
+        }
+
+        /// <summary>Soin (marchand) : rend des PV, jamais au-delà du max.</summary>
+        public void Heal(float amount)
+        {
+            if (_health.Dead || amount <= 0f)
+                return;
+            _health.Current = Mathf.Min(_health.Max, _health.Current + amount);
+        }
+
+        public float CurrentHealth => _health.Current;
+        public float MaxHealth => _health.Max;
 
         private void Raise(int attacker, float taken, Vector3 point, bool killed, float time)
         {

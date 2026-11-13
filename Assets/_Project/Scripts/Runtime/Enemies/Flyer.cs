@@ -719,6 +719,8 @@ namespace ItHunts.Enemies
                 if (damage <= 0f || !ImpactDamager.InSight(_grab, d.transform, d.Center, point))
                     continue;
                 float before = d.Health.Current;
+                if (_grab != null)
+                    d.NoteAttacker(_grab.LastOwnerId);                   // âmes (D-043) : son lanceur y est pour quelque chose
                 ImpactDamager.ApplyDirect(d, sourceId, damage, speed, settings.mass, closest, time, lethal: false);   // zone
                 total += before - d.Health.Current;
             }

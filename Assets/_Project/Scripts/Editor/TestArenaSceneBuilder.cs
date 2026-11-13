@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ItHunts.Artifacts;
 using ItHunts.Combat;
+using ItHunts.Economy;
 using ItHunts.Enemies;
 using ItHunts.Orbs;
 using ItHunts.Settings;
@@ -33,6 +34,11 @@ namespace ItHunts.EditorTools
         private const string GhoulPath = SettingsDir + "/Ghoul_Default.asset";
         private const string FlyerPath = SettingsDir + "/Flyer_Default.asset";
         private const string WavesPath = SettingsDir + "/Waves_Default.asset";
+        private const string EconomyPath = SettingsDir + "/Economy_Default.asset";
+        private const string UpgradePoolPath = SettingsDir + "/UpgradePool_Default.asset";
+        private const string UpgradesDir = SettingsDir + "/Upgrades";
+        private static EconomySettings _economy;
+        private static Material _offerOrb;
         private const string StalkerPath = SettingsDir + "/Stalker_Default.asset";
         private const string ZonePath = SettingsDir + "/Zone_Test.asset";
         private const string PoolPath = SettingsDir + "/ArtifactPool_Default.asset";
@@ -110,6 +116,8 @@ namespace ItHunts.EditorTools
             _spawns = new GameObject("Points d'apparition (vagues)").transform;
             _crateCount = _ghoulCount = _flyerCount = _spawnCount = 0;
 
+            _economy = LoadOrCreate<EconomySettings>(EconomyPath);
+            _offerOrb = UnlitMat("Economy_Offer_Orb", "Universal Render Pipeline/Unlit", new Color(1f, 0.8f, 0.3f));
             DefineMaze();
             DefineRooms(out List<RoomDef> rooms);
             for (int i = 0; i < Nodes.Count; i++)
@@ -167,7 +175,10 @@ namespace ItHunts.EditorTools
             var zone = new GameObject("État de la zone").AddComponent<ZoneState>();
             SetRef(zone, "settings", zoneSettings);
             SetRef(zone, "playerStart", start);
-            SetRef(new GameObject("État de la run").AddComponent<RunState>(), "pool", LoadOrCreate<ArtifactPool>(PoolPath));
+            var runState = new GameObject("État de la run").AddComponent<RunState>();
+            SetRef(runState, "pool", LoadOrCreate<ArtifactPool>(PoolPath));
+            SetRef(runState, "upgrades", UpgradePoolAsset());
+            EconomyContent();
             var feedback = new GameObject("Retour des dégâts").AddComponent<DamageFeedback>();
             SetRef(feedback, "settings", LoadOrCreate<DamageFeedbackSettings>(DamageFeedbackPath));
             SetRef(feedback, "flashMaterial", UnlitMat("Damage_Flash", "Universal Render Pipeline/Unlit", Color.white));
@@ -649,6 +660,132 @@ namespace ItHunts.EditorTools
             list.GetArrayElementAtIndex(1).objectReferenceValue = window;
             so.ApplyModifiedPropertiesWithoutUndo();
             Crate(inner + Vector3.up * y + along * 3f, 15f, root.transform);
+
+            // Salle verrouillée (D-043) : la pièce NE ; porte payante (E / Y), fenêtre à barreaux, coffre gratuit dedans.
+            if (r.Name == "Pièce NE")
+            {
+                Material doorMat = GrabbableMat("Economy_Locked_Door", new Color(0.35f, 0.22f, 0.12f));
+                GameObject block = Box($"{r.Name} : porte verrouillée", _level, wallPlane + Vector3.up * (y + L.roomDoorHeight / 2f),
+                    Abs(along) * (L.roomDoorWidth + 0.2f) + Abs(into) * (T + 0.2f) + Vector3.up * L.roomDoorHeight, doorMat);
+                block.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_EmissionColor", new Color(1.2f, 0.6f, 0.15f));
+                GameObject bars = Box($"{r.Name} : barreaux de la fenêtre", _level, wallPlane + along * (L.roomSize * 0.3f) + Vector3.up * (y + 2.55f),
+                    Abs(along) * 3.2f + Abs(into) * (T + 0.2f) + Vector3.up * 1.7f, _wall);
+                var locked = block.AddComponent<LockedDoor>();
+                SetRef(locked, "settings", _economy);
+                var lso = new SerializedObject(locked);
+                SerializedProperty also = lso.FindProperty("alsoBlocking");
+                also.arraySize = 1;
+                also.GetArrayElementAtIndex(0).objectReferenceValue = bars;
+                lso.ApplyModifiedPropertiesWithoutUndo();
+                BuildChest($"{r.Name} : coffre gratuit", inner + Vector3.up * y - along * 3f, Quaternion.LookRotation(-into, Vector3.up), 0);
+            }
+        }
+
+        // ---------- Économie (étape 7, D-043) ----------
+
+        private static UpgradePool UpgradePoolAsset()
+        {
+            if (!AssetDatabase.IsValidFolder(UpgradesDir))
+                AssetDatabase.CreateFolder(SettingsDir, "Upgrades");
+            var pool = LoadOrCreate<UpgradePool>(UpgradePoolPath);
+            pool.upgrades.Clear();
+            pool.upgrades.Add(Upgrade("Upgrade_Charge", "Charge en plus", "+1 charge de mouvement (dash, saut en l'air).", "+1", new Color(0.4f, 2.4f, 3f), UpgradeKind.ChargeDeMouvement, 1f, 70));
+            pool.upgrades.Add(Upgrade("Upgrade_Traction", "Traction rapide", "Une charge de traction revient 1 s plus vite.", "-1s", new Color(0.3f, 0.9f, 3.2f), UpgradeKind.RechargeTraction, 1f, 60));
+            pool.upgrades.Add(Upgrade("Upgrade_Collecte", "Grande orbe", "Rayon de collecte des âmes +50 %.", "R+", new Color(0.3f, 3f, 2.2f), UpgradeKind.RayonDeCollecte, 0.5f, 40));
+            pool.upgrades.Add(Upgrade("Upgrade_Projectiles", "Projectiles lourds", "Objets lancés ou repoussés : +25 % de dégâts.", "x1.25", new Color(2f, 0.6f, 3f), UpgradeKind.DegatsObjetsLances, 0.25f, 70));
+            pool.upgrades.Add(Upgrade("Upgrade_Repulsion", "Onde blessante", "La répulsion blesse les ennemis touchés (10 PV).", "10", new Color(3.2f, 1.3f, 0.3f), UpgradeKind.DegatsRepulsion, 10f, 60));
+            pool.upgrades.Add(Upgrade("Upgrade_PV", "Cœur solide", "+25 PV max (et 25 PV tout de suite).", "PV+", new Color(3.2f, 0.4f, 0.4f), UpgradeKind.PvMax, 25f, 50));
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet", "Barillet garni", "+2 balles au barillet.", "+2", new Color(3f, 2.5f, 0.4f), UpgradeKind.BallesBarillet, 2f, 50));
+            pool.upgrades.Add(Upgrade("Upgrade_Aspiration", "Aspiration", "Les âmes viennent à l'orbe 50 % plus vite.", ">>", new Color(1.2f, 2.6f, 3.2f), UpgradeKind.AspirationAmes, 0.5f, 40));
+            EditorUtility.SetDirty(pool);
+            return pool;
+        }
+
+        /// <summary>Asset d'amélioration : créé avec ces valeurs s'il n'existe pas (sinon gardé tel quel, réglages compris).</summary>
+        private static UpgradeDefinition Upgrade(string file, string name, string description, string icon, Color color, UpgradeKind kind,
+            float amount, int price)
+        {
+            string path = $"{UpgradesDir}/{file}.asset";
+            var u = AssetDatabase.LoadAssetAtPath<UpgradeDefinition>(path);
+            if (u != null)
+                return u;
+            u = ScriptableObject.CreateInstance<UpgradeDefinition>();
+            u.displayName = name;
+            u.description = description;
+            u.iconSymbol = icon;
+            u.color = color;
+            u.kind = kind;
+            u.amount = amount;
+            u.merchantPrice = price;
+            AssetDatabase.CreateAsset(u, path);
+            return u;
+        }
+
+        /// <summary>Coffre greybox : caisse sombre à liseré lumineux, couvercle (caché à l'ouverture) ; prix -1 : celui des réglages.</summary>
+        private static void BuildChest(string name, Vector3 feet, Quaternion rotation, int price)
+        {
+            var root = new GameObject(name);
+            root.transform.SetParent(_level, false);
+            root.transform.SetPositionAndRotation(feet, rotation);
+            Material wood = GrabbableMat("Economy_Chest", new Color(0.3f, 0.2f, 0.1f));
+            wood.SetColor("_EmissionColor", new Color(0.9f, 0.6f, 0.15f));
+            GameObject body = Box("Caisse du coffre", root.transform, new Vector3(0f, 0.4f, 0f), new Vector3(1.4f, 0.8f, 0.9f), wood, collider: false);
+            GameObjectUtility.SetStaticEditorFlags(body, 0);
+            var box = root.AddComponent<BoxCollider>();                 // sur la racine : le coffre reçoit les chocs des objets lancés
+            box.center = new Vector3(0f, 0.45f, 0f);
+            box.size = new Vector3(1.4f, 0.9f, 0.9f);
+            Material glow = UnlitMat("Economy_Chest_Glow", "Universal Render Pipeline/Unlit", new Color(3f, 2f, 0.5f));
+            GameObject lid = Box("Couvercle", root.transform, new Vector3(0f, 0.9f, 0f), new Vector3(1.5f, 0.2f, 1f), glow, collider: false);
+            GameObjectUtility.SetStaticEditorFlags(lid, 0);
+            var chest = root.AddComponent<Chest>();
+            SetRef(chest, "settings", _economy);
+            SetRef(chest, "lid", lid.transform);
+            SetRef(chest, "orbMaterial", _offerOrb);
+            var so = new SerializedObject(chest);
+            so.FindProperty("price").intValue = price;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>Âmes, coffres, marchand (5 emplacements possibles, tirés avec la seed de la run).</summary>
+        private static void EconomyContent()
+        {
+            var souls = new GameObject("Âmes (éclats)").AddComponent<SoulSystem>();
+            SetRef(souls, "settings", _economy);
+            Material soulMat = UnlitMat("Economy_Soul", "Universal Render Pipeline/Unlit", _economy.soulColor);
+            soulMat.enableInstancing = true;
+            EditorUtility.SetDirty(soulMat);
+            SetRef(souls, "soulMaterial", soulMat);
+
+            BuildChest("Coffre : salle C", Nodes[4].C + new Vector3(10f, 0f, -12f), Quaternion.Euler(0f, 180f, 0f), -1);
+            BuildChest("Coffre : salle SE", Nodes[2].C + new Vector3(-12f, 0f, 10f), Quaternion.Euler(0f, 90f, 0f), -1);
+
+            var merchantRoot = new GameObject("Marchand");
+            merchantRoot.transform.SetParent(_level, false);
+            Material robe = GrabbableMat("Economy_Merchant", new Color(0.2f, 0.12f, 0.25f));
+            robe.SetColor("_EmissionColor", new Color(0.8f, 0.3f, 1.2f));
+            GameObject figure = Box("Marchand (silhouette)", merchantRoot.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.9f, 2.2f, 0.9f), robe);
+            GameObjectUtility.SetStaticEditorFlags(figure, 0);
+            GameObject sign = Box("Enseigne", merchantRoot.transform, new Vector3(0f, 2.9f, 0f), new Vector3(1.6f, 0.4f, 0.1f),
+                UnlitMat("Economy_Merchant_Sign", "Universal Render Pipeline/Unlit", new Color(2.5f, 1f, 3f)), collider: false);
+            GameObjectUtility.SetStaticEditorFlags(sign, 0);
+            var merchant = merchantRoot.AddComponent<Merchant>();
+            SetRef(merchant, "settings", _economy);
+            SetRef(merchant, "orbMaterial", _offerOrb);
+            int[] spotNodes = { 1, 3, 5, 7, 6 };
+            var mso = new SerializedObject(merchant);
+            SerializedProperty spots = mso.FindProperty("spots");
+            spots.arraySize = spotNodes.Length;
+            for (int i = 0; i < spotNodes.Length; i++)
+            {
+                Node n = Nodes[spotNodes[i]];
+                var spot = new GameObject($"Emplacement du marchand {i + 1} : {n.Name}").transform;
+                spot.SetParent(merchantRoot.transform.parent, false);
+                Vector3 at = n.C + new Vector3(n.Half * 0.5f, 0f, n.HalfZ * 0.5f);
+                spot.SetPositionAndRotation(at, Quaternion.LookRotation(new Vector3(n.C.x - at.x, 0f, n.C.z - at.z).normalized, Vector3.up));
+                spots.GetArrayElementAtIndex(i).objectReferenceValue = spot;
+            }
+
+            mso.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static Vector3 Abs(Vector3 v) => new Vector3(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));

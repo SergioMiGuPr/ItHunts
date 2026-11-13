@@ -78,11 +78,19 @@ namespace ItHunts.Combat
                 if (speed <= 0f || !Visible(physics, eye, point, d.Body.Rigidbody, owner))
                     continue;
                 d.Body.Push(AreaEffects.WavePushDirection(eye, d.Center, cfg) * speed);
+                int ownerId = ItHunts.Player.PlayerHealth.IdOf(owner);
+                d.NoteAttacker(ownerId);                                 // coop et âmes : ce joueur y est pour quelque chose
+                float direct = RepelDamageFor != null ? RepelDamageFor(ownerId) : 0f;
+                if (direct > 0f)
+                    ImpactDamager.ApplyDirect(d, -ownerId - 11, direct, speed, 0f, point, Time.time, lethal: false);   // D-008
                 pushed++;
             }
 
             return pushed;
         }
+
+        /// <summary>Amélioration « dégâts de la répulsion » (D-043, D-008) : PV retirés par l'onde, par joueur (0 sans).</summary>
+        public static System.Func<int, float> RepelDamageFor;
 
         /// <summary>
         /// Répulsion maintenue (D-029), un tick : chaque cible visible dans le cône reçoit une poussée continue dans l'axe du

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Ghoul_Default
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.GhoulSettings
   maxHealth: 60
+  soulValue: 3
   respawnDelay: 0
   mass: 50
   gravity: 20
@@ -24,6 +25,10 @@ MonoBehaviour:
   stunImmunity: 2
   returnHomeDelay: 2
   returnHomeSpeed: 3
+  targetSwitchMargin: 15
+  targetGiveUpDistance: 60
+  targetSwitchCooldown: 3
+  lullRetreatDistance: 10
   runSpeed: 10
   acceleration: 40
   turnRate: 720
@@ -32,6 +37,17 @@ MonoBehaviour:
   sightAngle: 160
   leashDistance: 40
   forgetTime: 4
+  targetInterval: 1
+  maxHunting: 25
+  aggroSightRange: 20
+  aggroProximity: 8
+  maxHuntingTotal: 40
+  aggroLoseDistance: 50
+  aggroLoseTime: 5
+  encircleRadius: 6
+  encircleDirectDistance: 10
+  climbSpeed: 7
+  dropSpeed: 12
   contactDamage: 15
   contactInterval: 1
   contactRange: 0.35

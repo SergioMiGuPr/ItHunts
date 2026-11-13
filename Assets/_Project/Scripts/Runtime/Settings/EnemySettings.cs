@@ -10,6 +10,8 @@ namespace ItHunts.Settings
     {
         [Header("PV")]
         [Min(1f)] public float maxHealth = 100f;
+        [Tooltip("Âmes à sa mort (D-043) : goule 3, volant 2 ; 0 : aucune (factices, traqueur).")]
+        [Min(0)] public int soulValue;
         [Tooltip("Réapparition après la mort (s), avec tous ses PV (factices ; les ennemis d'une zone ne réapparaissent pas).")]
         [Min(0f)] public float respawnDelay = 3f;
 

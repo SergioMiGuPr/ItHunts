@@ -4,9 +4,22 @@
 
 ## Étape en cours
 
+**Étape 7 terminée** (2026-11-13) : âmes et économie (D-043), **validée en playtest** (collecte, refus, marchand, coffres,
+choix des améliorations ; salle verrouillée non testée, la mesure suffit). Après le playtest : coffre seulement avec E / Y ;
+hausse du prix à chaque achat (%, par joueur, coffres / marchand / portes, 0 % pour l'instant). Commit et push sur `main`.
+- Éclats d'âme (goule 3, volant 2, traqueur 0 ; ×2 en Enragé à la mort ; seulement si un joueur y est pour quelque chose dans
+  les 5 s ; ramassés par l'orbe à 8 m, 25 m/s ; 30 s au sol, clignotent les 5 dernières) ; compteur dans le HUD, refus en rouge.
+- Interaction **E / Y** (Y : interagir si un objet est visé, sinon recharger le barillet) ; coffres (30 âmes) à **3 orbes de
+  choix en monde** (F ou E) ; marchand placé avec la seed (3 améliorations + soin) ; salle verrouillée (pièce NE, 50 âmes, coffre
+  gratuit) ; 8 premières améliorations (assets, description d'une ligne).
+- Mesuré : zone de 4 min, course 280 âmes ramassées, **209 perdues (43 %)**, bunny hop 314, **50 perdues (14 %)**, premier
+  coffre payable vers 60 s ; collecte à 18 m/s (bunny hop 20/20, traction 12–14/19) ; coût 0.06 ms.
+- **Unity :** la caméra d'un joueur n'est ni sous son prefab ni marquée MainCamera (Cinemachine, écran partagé) : la retrouver par
+  `PlayerInput.camera` (`Interactables.PlayerOfCamera`, `CameraOf`).
+
 **Étape 6 terminée** (2026-11-13) : ennemis, traqueur, volant, vagues, accalmie et coop des vagues, validés en playtest (le
 choix de cible en coop et l'accalmie seront revus au prochain playtest, checklist F12 de `vagues/testing.md`). Commit et push
-sur `main`. **Prochaine : étape 7, âmes et économie** (plan court envoyé, en attente de réponse).
+sur `main`.
 
 **4 — Télékinésie, une seule orbe, dégâts** (D-023 à D-027) — terminée.
 
@@ -162,7 +175,7 @@ sur `main`. **Prochaine : étape 7, âmes et économie** (plan court envoyé, en
      concluant à dessein). **À revoir au prochain playtest** : accalmie, choix de cible (F12).
 
 **Notes pour plus tard (ne pas coder maintenant) :**
-- **Étape 7, âmes :** multiplicateur d'âmes ×2 en Enragé (D-009), à coder à l'étape 7.
+- **Étape 8, marchand :** un marchand en plus dans la zone de départ sûre des zones 2 et 3 (D-043).
 - **Étape 8 (D-042 proposée, ne pas coder avant) :**
   - zone de départ sûre : aucun ennemi tant que les joueurs n'en sont pas sortis ;
   - le timer ne démarre que quand le premier joueur sort de la zone de départ ;
@@ -184,7 +197,7 @@ L'étape 3 (orbe de magnétisme) est **terminée et validée en playtest** (2026
 Ordre de CLAUDE.md, une étape validée en playtest avant la suivante :
 3. Magnétisme (fait) → 4. Télékinésie, une seule orbe, dégâts (fait) → 5. Vue FPS et HUD (fait) →
 **5 bis. Artefacts** (fait, D-032) → **6. Ennemis et vagues, avec le traqueur** (fait, D-033 à D-041) → **7. Âmes et
-économie** (prochaine) →
+économie** (fait, D-043) →
 8. Run complète → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
 ci-dessous) → 11. Coop en ligne → 12. Build.
 

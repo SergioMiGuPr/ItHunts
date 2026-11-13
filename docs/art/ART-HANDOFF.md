@@ -204,6 +204,16 @@ long du corps, levée au-dessus de la tête pendant l'annonce, abattue sur la ci
   lisent à pleine vitesse (éclairage en grille, panneaux bleus de traction, murs de course plus clairs) ; la sortie est
   verte.
 
+## 5 quater. Âmes et économie (étape 7, D-043)
+
+| Élément | Mesure | Lueur et lisibilité |
+|---|---|---|
+| Éclat d'âme | sphère de **0.25 m**, flotte un peu au sol, file vers l'orbe (25 m/s) | **cyan très lumineux** (HDR ≈ 0.4 / 2.6 / 3.2, bloom) ; clignote ses 5 dernières secondes ; visible seulement par son joueur |
+| Coffre | caisse de **1.4 × 0.8 × 0.9 m** (collision sur tout le volume) + couvercle **1.5 × 0.2 × 1 m** (caché à l'ouverture) | liseré **orangé** (émission), couvercle **doré lumineux** (HDR ≈ 3 / 2 / 0.5) ; texte « Coffre / 30 âmes » à 1.7 m |
+| Orbes de choix (coffre) | sphères de **0.55 m**, à **2.2 m** au-dessus du coffre (celle du milieu 0.6 m plus haut), espacées de **2.4 m** ; flottent (±0.12 m) et tournent | couleur de l'amélioration (HDR) ; **icône puis nom, deux lignes de 0.28 m**, toujours face à l'écran, **lisibles à 10 m** (vérifié par une capture) |
+| Marchand | silhouette de **0.9 × 2.2 m** + enseigne **1.6 × 0.4 m** à 2.9 m | robe **violette** (émission), enseigne violette lumineuse ; 4 orbes d'offre à 1.6 m de haut (une sur deux 0.6 m plus haut), **1.6 m devant lui**, espacées de 2.4 m, avec leur prix |
+| Porte de la salle verrouillée | **3 × 3 m** (l'ouverture de la pièce), barreaux sur la fenêtre (3 × 1.5 m) | bois sombre à **lueur orangée** ; texte « Salle verrouillée / 50 âmes » |
+
 ## 6. Budgets proposés (à valider ensemble)
 
 Triangles par asset (LOD0) et textures. Rendu peint à la main : on mise sur la texture de couleur (base color) et
