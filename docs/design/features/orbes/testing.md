@@ -141,6 +141,8 @@ Dégâts contre un mur et objets repoussés (D-031) :
 - [x] En Play Mode (vrais clics droits, 2026-11-12) : factice repoussé contre le mur de la grande salle, à 1.5 m devant le mur, joueur à **2 m : impact 22.3 m/s → 40 PV** (plafond) ; **7 m : 18.2 m/s → 40 PV** ; **13.8 m : 12.9 m/s → 34.7 PV**. Caisse de 15 kg repoussée sur un factice placé à 15.5 m (hors du cône) : **à 2 m, arrivée à 10.9 m/s → 2.2 PV** ; **à 7 m, 11.1 m/s → 2.3 PV** (elle ralentit en glissant au sol) ; un lancer de durabilité perdu à chaque fois. Lustre visé par en dessous à 5.9 m : décroché, 30 PV sur le factice dessous, cassé. *(Play Mode, 2026-11-12)*
 - [ ] Ressenti : dégâts contre un mur, objets repoussés. *(playtest)*
 
+- [x] Traction : 2 charges (D-036 mise à jour), 6 s par charge, 2.5 s, 18 m/s. *(`RoomVolumeTests.cs` › Reglages_Traction2Charges_Murs85PourcentEt18 ; `MagnetismTests.cs` › Attraction_UneChargeParTraction_SansDelaiEntreDeux ; Play Mode : 2 / 2 au départ, 2026-11-13)*
+
 ## Playtest — lancer, zone, durabilité, onde (checklist courte)
 
 Commandes : A traction, clic droit répulsion (onde), F attraper / relâcher, clic gauche lancer. F12 : zone

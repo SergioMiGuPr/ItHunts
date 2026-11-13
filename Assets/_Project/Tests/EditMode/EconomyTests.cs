@@ -30,6 +30,8 @@ namespace ItHunts.Tests
                         Invoke(d, "OnDisable");
                     foreach (var s in go.GetComponents<SoulSystem>())
                         Invoke(s, "OnDisable");
+                    foreach (var c in go.GetComponents<Chest>())
+                        Invoke(c, "OnDisable");
                 }
 
                 if (o != null)
@@ -63,8 +65,8 @@ namespace ItHunts.Tests
         {
             var e = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
             Assert.That(e, Is.Not.Null);
-            Assert.That(new[] { e.soulLifetime, e.soulBlinkTime, e.collectRadius, e.pullSpeed, e.shareRadius, e.involvementWindow, e.enragedMultiplier },
-                Is.EqualTo(new[] { 30f, 5f, 8f, 25f, 40f, 5f, 2f }));
+            Assert.That(new[] { e.soulLifetime, e.soulBlinkTime, e.collectRadius, e.pullSpeed, e.involvementWindow, e.enragedMultiplier },
+                Is.EqualTo(new[] { 30f, 5f, 8f, 25f, 5f, 2f }));
             Assert.That(new[] { e.chestPrice, e.lockedDoorPrice, e.healPrice, e.choiceCount, e.merchantOffers }, Is.EqualTo(new[] { 30, 50, 35, 3, 3 }));
             Assert.That(e.healAmount, Is.EqualTo(40f));
             var pool = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_Default.asset");
@@ -112,7 +114,7 @@ namespace ItHunts.Tests
                 Assert.That(run.TrySpend(5, 30), Is.True);
                 Assert.That(run.Souls(5), Is.EqualTo(5));
                 Assert.That(run.TrySpend(5, 0), Is.True, "coffre gratuit");
-                Assert.That(run.Souls(9), Is.EqualTo(0), "âmes individuelles");
+                Assert.That(run.Souls(9), Is.EqualTo(0), "réserves individuelles : chacun dépense la sienne");
                 Assert.That(SoulMath.CanAfford(50, 50), Is.True);
                 Assert.That(SoulMath.CanAfford(49, 50), Is.False);
             }
@@ -160,28 +162,40 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void MortsSansJoueur_EtAttributionEnCoop()
+        public void MortsSansJoueur_DelaiDe5s()
         {
             Assert.That(SoulMath.Involved(0, 10f, 10f, 5f), Is.False, "personne n'y est pour rien");
             Assert.That(SoulMath.Involved(7, 4.9f, 10f, 5f), Is.False, "il y a plus de 5 s");
             Assert.That(SoulMath.Involved(7, 5.5f, 10f, 5f), Is.True);
-            var players = new List<Vector3> { new Vector3(10f, 0f, 0f), new Vector3(50f, 0f, 0f), new Vector3(0f, 0f, 30f) };
-            Assert.That(SoulMath.Recipients(Vector3.zero, players, new List<bool> { true, true, true }, 40f), Is.EqualTo(new[] { 0, 2 }));
-            Assert.That(SoulMath.Recipients(Vector3.zero, players, new List<bool> { true, true, false }, 40f), Is.EqualTo(new[] { 0 }), "un joueur mort ne reçoit rien");
         }
 
-        [Test]
-        public void EclatsIndividuels_SeulementSiUnJoueurYEstPourQuelqueChose()
+        private SoulSystem Souls()
         {
             var e = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
-            var ghoulCfg = AssetDatabase.LoadAssetAtPath<GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");
-            PlayerHealth near = Player(new Vector3(10f, 0f, 0f)), far = Player(new Vector3(60f, 0f, 0f));
             var sgo = Track(new GameObject("Âmes (test)"));
             var souls = sgo.AddComponent<SoulSystem>();
             var so = new SerializedObject(souls);
             so.FindProperty("settings").objectReferenceValue = e;
             so.ApplyModifiedPropertiesWithoutUndo();
             Invoke(souls, "OnEnable");
+            return souls;
+        }
+
+        private RunState Run(int seed = 42)
+        {
+            var pool = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_Default.asset");
+            var run = Track(new GameObject("Run (test)")).AddComponent<RunState>();
+            run.Configure(null, seed, pool);
+            Assert.That(RunState.Current, Is.EqualTo(run));
+            return run;
+        }
+
+        [Test]
+        public void EclatsCommuns_SeulementSiUnJoueurYEstPourQuelqueChose()
+        {
+            var ghoulCfg = AssetDatabase.LoadAssetAtPath<GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");
+            PlayerHealth near = Player(new Vector3(10f, 0f, 0f)), far = Player(new Vector3(60f, 0f, 0f));
+            SoulSystem souls = Souls();
 
             Damageable Enemy()
             {
@@ -203,9 +217,112 @@ namespace ItHunts.Tests
             Damageable hit = Enemy();
             hit.NoteAttacker(far.PlayerId);                              // le joueur lointain l'a touchée (balle)
             hit.ApplyDamage(1000f, Time.time, out _);
-            Assert.That(souls.CountFor(near.PlayerId), Is.EqualTo(3), "le joueur à moins de 40 m reçoit ses 3 éclats");
-            Assert.That(souls.CountFor(far.PlayerId), Is.EqualTo(0), "à 60 m : rien, même s'il a tiré");
-            Assert.That(souls.Count, Is.EqualTo(3), "chacun ses éclats, personne ne vole ceux d'un autre");
+            Assert.That(souls.Count, Is.EqualTo(3), "3 éclats communs, une seule fois (plus d'éclats par joueur)");
+            Assert.That(souls.Spawned, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Coop_GagneesEnCommun_DepenseesIndividuellement_MortExclu()
+        {
+            RunState run = Run();
+            PlayerHealth a = Player(new Vector3(0f, 0f, 0f)), b = Player(new Vector3(200f, 0f, 0f)), c = Player(new Vector3(-200f, 0f, 0f));
+            c.Kill(Vector3.zero, 0f);
+            SoulSystem souls = Souls();
+            souls.Spawn(new Vector3(3f, 1.2f, 0f), 5, 0f);               // à 3 m de l'orbe de a, loin de b
+            for (int i = 0; i < 120 && souls.Count > 0; i++)
+                souls.Step(i / 60f, 1f / 60f);
+            Assert.That(souls.Count, Is.EqualTo(0), "l'orbe de a les a ramassés");
+            Assert.That(souls.CollectedBy(a.PlayerId), Is.EqualTo(5));
+            Assert.That(run.Souls(a.PlayerId), Is.EqualTo(5), "celui qui ramasse reçoit ses âmes");
+            Assert.That(run.Souls(b.PlayerId), Is.EqualTo(5), "l'allié loin reçoit autant : gagnées en commun");
+            Assert.That(run.Souls(c.PlayerId), Is.EqualTo(0), "un joueur mort au moment de la collecte ne reçoit rien");
+            Assert.That(run.TrySpend(a.PlayerId, 5), Is.True);
+            Assert.That(run.Souls(b.PlayerId), Is.EqualTo(5), "dépensées individuellement : la réserve de b ne bouge pas");
+
+            souls.Spawn(new Vector3(200f, 1.2f, 2f), 2, 1f);             // près de b : n'importe quelle orbe ramasse
+            for (int i = 0; i < 120 && souls.Count > 0; i++)
+                souls.Step(1f + i / 60f, 1f / 60f);
+            Assert.That(souls.CollectedBy(b.PlayerId), Is.EqualTo(2));
+            Assert.That(run.Souls(a.PlayerId), Is.EqualTo(2));
+            Assert.That(run.Souls(b.PlayerId), Is.EqualTo(7));
+
+            souls.Spawn(new Vector3(100f, 1.2f, 0f), 1, 2f);             // loin de tous : perdu au bout de 30 s
+            souls.Step(2f + 29.9f, 1f / 60f);
+            Assert.That(souls.Count, Is.EqualTo(1));
+            souls.Step(2f + 30.1f, 1f / 60f);
+            Assert.That(souls.Count, Is.EqualTo(0));
+            Assert.That(souls.Lost, Is.EqualTo(1));
+        }
+
+        private Chest MakeChest(int price)
+        {
+            var e = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
+            var go = Track(new GameObject("Coffre (test)"));
+            var chest = go.AddComponent<Chest>();
+            var so = new SerializedObject(chest);
+            so.FindProperty("settings").objectReferenceValue = e;
+            so.FindProperty("price").intValue = price;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            Invoke(chest, "Awake");
+            return chest;
+        }
+
+        [Test]
+        public void Coffre_ParJoueur_UneFoisChacun_SonPropreChoix()
+        {
+            RunState run = Run();
+            PlayerHealth a = Player(new Vector3(0f, 0f, -2f)), b = Player(new Vector3(1f, 0f, -2f));
+            run.AddSouls(a.PlayerId, 100);
+            run.AddSouls(b.PlayerId, 20);
+            Chest chest = MakeChest(-1);
+            Assert.That(chest.Available(a) && chest.Available(b), Is.True);
+
+            Assert.That(chest.TryOpen(a), Is.True, "a paie 30");
+            Assert.That(run.Souls(a.PlayerId), Is.EqualTo(70));
+            Assert.That(chest.OpenedFor(a.PlayerId), Is.True);
+            Assert.That(chest.OpenedFor(b.PlayerId), Is.False, "toujours fermé pour b");
+            Assert.That(chest.ChoicesFor(a.PlayerId).Count, Is.EqualTo(3), "3 orbes pour a");
+            Assert.That(chest.ChoicesFor(a.PlayerId).All(o => o.RestrictedTo == a.PlayerId && !o.Available(b)), Is.True, "b ne peut pas les prendre");
+            Assert.That(chest.ChoicesFor(a.PlayerId).All(o => o.GetComponent<ViewerOnly>().PlayerId == a.PlayerId), Is.True, "vues par a seul");
+            Assert.That(chest.Available(a), Is.False, "une fois par joueur");
+            Assert.That(chest.TryOpen(a), Is.False);
+            Assert.That(run.Souls(a.PlayerId), Is.EqualTo(70), "rien n'est retiré");
+
+            Assert.That(chest.TryOpen(b), Is.False, "b n'a que 20 âmes : refus");
+            Assert.That(chest.Available(b), Is.True, "il pourra l'ouvrir plus tard");
+            run.AddSouls(b.PlayerId, 10);
+            Assert.That(chest.TryOpen(b), Is.True, "ouvert pour b aussi");
+            Assert.That(chest.ChoicesFor(b.PlayerId).Count, Is.EqualTo(3), "son propre choix parmi 3");
+            Assert.That(chest.ChoicesFor(a.PlayerId).Count, Is.EqualTo(3), "le choix de a n'a pas bougé");
+            Assert.That(chest.OpenCount, Is.EqualTo(2));
+
+            OfferOrb take = chest.ChoicesFor(a.PlayerId)[1];
+            UpgradeDefinition up = take.Upgrade;
+            take.Interact(a);
+            Assert.That(chest.ChosenBy(a.PlayerId), Is.True);
+            Assert.That(chest.ChoicesFor(a.PlayerId).Count, Is.EqualTo(0), "les deux autres de a disparaissent");
+            Assert.That(chest.ChoicesFor(b.PlayerId).Count, Is.EqualTo(3), "celles de b restent");
+            Assert.That(run.UpgradesOf(a.PlayerId), Has.Member(up));
+            Assert.That(run.UpgradesOf(b.PlayerId), Is.Empty);
+
+            chest.ResetChest();
+            Assert.That(chest.OpenCount, Is.EqualTo(0), "remise à zéro de la zone : fermé pour tous");
+            Assert.That(chest.Available(a), Is.True);
+        }
+
+        [Test]
+        public void Coffre_TexteParJoueur_OuvertPourToiOuSonPrix()
+        {
+            RunState run = Run();
+            PlayerHealth a = Player(Vector3.zero), b = Player(Vector3.right);
+            run.AddSouls(a.PlayerId, 50);
+            Chest chest = MakeChest(-1);
+            WorldLabel label = chest.GetComponentInChildren<WorldLabel>();
+            Assert.That(label.TextFor(a), Is.EqualTo("Coffre\n30 âmes"));
+            chest.TryOpen(a);
+            Assert.That(label.TextFor(a), Is.EqualTo("Coffre\nouvert"), "ouvert pour a");
+            Assert.That(label.TextFor(b), Is.EqualTo("Coffre\n30 âmes"), "fermé pour b, avec son prix");
+            Assert.That(chest.Prompt(b), Is.EqualTo("ouvrir le coffre (30 âmes)"));
         }
     }
 }

@@ -62,7 +62,9 @@ est la survie ».
 11. **Wall jump (D-016) :** depuis le mur (ou dans un court délai après l'avoir quitté) : saut
    plus haut, et impulsion **ajoutée à la vitesse acquise** dans une direction qui **mélange la
    normale du mur et l'avant** (caméra sans sa part vers le mur, sinon trajectoire). La vitesse
-   horizontale après le saut est au moins celle d'avant + un petit bonus. Pas deux wall jumps de
+   horizontale après le saut est au moins celle d'avant + un petit bonus. **Sur un mur (D-044)**, l'impulsion, le bonus
+   et le gain du strafe le long du mur (wall slide, wall run) sont **réduits de 15 %** et **s'arrêtent à 18 m/s** (au lieu
+   de 20) ; un joueur déjà plus rapide garde sa vitesse. Pas deux wall jumps de
    suite sur le même mur sans toucher le sol ou un autre mur. Nouvel appui obligatoire (maintenir
    ne suffit pas) ; ne consomme pas de saut. Priorité : saut au sol (coyote compris), puis wall
    jump, puis saut en l'air. Pendant le verrou de direction, aucun contrôle en l'air.
@@ -86,8 +88,8 @@ est la survie ».
     - **Dash-jump** (au sol seulement) : un saut pendant un dash parti du sol, ou juste après sa fin
       (fenêtre), donne **+3 m/s** par rapport à la vitesse d'avant le dash, au lieu de +1. Le debug
       affiche « réussi » ou « raté, trop tard de N ms ».
-    - **Plafond commun des gains** : wall jump, dash au sol, dash-jump et bonus de glissade
-      n'ajoutent de la vitesse qu'en dessous de 20 m/s ; au-delà, la vitesse est conservée sans gain.
+    - **Plafond commun des gains** : dash au sol, dash-jump et bonus de glissade
+      n'ajoutent de la vitesse qu'en dessous de 20 m/s (les murs s'arrêtent à 18 m/s, D-044) ; au-delà, la vitesse est conservée sans gain.
       La répulsion du magnétisme suit aussi ce plafond. **Exception : la traction du magnétisme** n'y
       est pas soumise (seul le plafond de sécurité de 50 m/s reste, D-021).
       Un saut pendant le dash le termine (vitesse de sortie). Délai entre deux débuts de dash ; un
@@ -125,7 +127,9 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 | Délai entre deux débuts de dash | 0.3 | s | jamais avant la fin du dash précédent |
 | Mémorisation de l'appui de dash | 0.3 | s | enchaînements |
 | Sans friction au sol après un dash | 0.2 | s | pas de chute brutale à 7.5 m/s |
-| Plafond commun des gains (wall jump, dash au sol, dash-jump, bonus de glissade, répulsion) | 20 | m/s | au-delà : vitesse conservée, pas de gain ; la traction n'y est pas soumise |
+| Plafond commun des gains (dash au sol, dash-jump, bonus de glissade, répulsion) | 20 | m/s | au-delà : vitesse conservée, pas de gain ; traction et murs ont leur plafond de 18 m/s |
+| Murs : part du gain gardée (wall jump, strafe en wall slide / wall run) | 0.85 | — | −15 % (D-044) |
+| Murs : plafond des gains | 18 | m/s | comme la traction (D-036) ; rien ne freine au-delà |
 | Gravité | 20 | m/s² | sensation de poids |
 | Multiplicateur de gravité en chute | 1.5 | × | chute nerveuse, pas brutale |
 | Vitesse de chute max | 35 | m/s | chutes longues |
@@ -145,7 +149,7 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 | Hauteur des yeux en glissade et accroupi | 0.75 | m | [ASSUMPTION] |
 | Vitesse accroupi | 3.5 | m/s | [ASSUMPTION] |
 | Chute max en wall slide | 3 | m/s | |
-| Wall jump : impulsion ajoutée | 7.5 | m/s | |
+| Wall jump : impulsion ajoutée | 7.5 | m/s | 6.4 m/s effectifs avec le −15 % des murs (D-044) |
 | Wall jump : hauteur | 1.8 | m | relevée de 1.05 à 1.8 m après playtest (→ 8.5 m/s) |
 | Wall jump : direction (0 = loin du mur, 1 = vers l'avant) | 0.5 | — | |
 | Wall jump : bonus de vitesse minimal | 1 | m/s | vitesse après ≥ vitesse avant + bonus |
@@ -212,3 +216,4 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
   (+3 m/s, fenêtre 0.15 s), plafond commun des gains à 20 m/s (D-018).
 - 2026-11-12 : bonus de glissade soumis au plafond commun (D-019). Mouvement de base validé en playtest.
 - 2026-11-12 : le magnétisme quitte les charges ; état Traction ; exception au plafond commun pour la traction (D-021).
+- 2026-11-13 : murs : gain −15 % et plafonné à 18 m/s, rien ne freine un joueur plus rapide (D-044).

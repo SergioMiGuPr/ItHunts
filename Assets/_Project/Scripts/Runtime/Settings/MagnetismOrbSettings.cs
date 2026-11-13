@@ -30,7 +30,7 @@ namespace ItHunts.Settings
         [Tooltip("La traction s'arrête à cette distance du point visé (m, depuis les yeux).")]
         [Min(0f)] public float tractionArrivalDistance = 1f;
         [Tooltip("Charges d'attraction (séparées des charges de mouvement) : 1 traction = 1 charge.")]
-        [Min(1)] public int attractCharges = 3;
+        [Min(1)] public int attractCharges = 2;
         [Tooltip("Temps de recharge d'une charge d'attraction (s, 6 depuis D-036) ; elles reviennent une par une.")]
         [Min(0.05f)] public float attractChargeRechargeTime = 6f;
 

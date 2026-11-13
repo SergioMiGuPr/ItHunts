@@ -45,6 +45,8 @@ MonoBehaviour:
   wallJumpHeight: 1.8
   wallJumpForwardBias: 0.5
   wallJumpSpeedBonus: 1
+  wallGainScale: 0.85
+  wallGainCap: 18
   wallCoyoteTime: 0.1
   wallJumpSteerLock: 0.15
   allowSameWallJump: 0

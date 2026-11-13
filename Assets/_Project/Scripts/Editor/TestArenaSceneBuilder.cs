@@ -3,6 +3,7 @@ using ItHunts.Artifacts;
 using ItHunts.Combat;
 using ItHunts.Economy;
 using ItHunts.Enemies;
+using ItHunts.Level;
 using ItHunts.Orbs;
 using ItHunts.Settings;
 using UnityEditor;
@@ -419,6 +420,7 @@ namespace ItHunts.EditorTools
             WallLine($"{n.Name} : mur est", false, c.x + hx + T / 2f, c.z - hz, c.z + hz, 0f, top, Openings(i, SideE));
             if (!lair)                                                   // le repaire s'ouvre dans le mur est du carrefour E
                 WallLine($"{n.Name} : mur ouest", false, c.x - hx - T / 2f, c.z - hz, c.z + hz, 0f, top, Openings(i, SideW));
+            RoomVolumeAt(n.Name, new Vector3(c.x, y + n.Ceil / 2f, c.z), Quaternion.identity, new Vector3(2f * hx, n.Ceil, 2f * hz));
 
             if (lair)
             {
@@ -439,6 +441,17 @@ namespace ItHunts.EditorTools
                 Lamp($"{n.Name} : lumière {a * 3 + b + 1}", c + new Vector3(fx * hx, n.Ceil * 0.75f, fz * hz),
                     (a + b) % 2 == 0 ? new Color(1f, 0.78f, 0.55f) : new Color(0.75f, 0.82f, 1f), L.lightIntensity, L.lightRange);
             }
+        }
+
+        /// <summary>Volume de salle (D-045) : pas d'apparition d'ennemi dans la salle d'un joueur ; à poser de même à la main.</summary>
+        private static RoomVolume RoomVolumeAt(string name, Vector3 center, Quaternion rotation, Vector3 size, RoomKind kind = RoomKind.Salle)
+        {
+            var go = new GameObject($"Volume de salle : {name}");
+            go.transform.SetParent(_level, false);
+            go.transform.SetPositionAndRotation(center, rotation);
+            RoomVolume v = go.AddComponent<RoomVolume>();
+            v.Configure(name, size, kind);
+            return v;
         }
 
         /// <summary>Extrémités d'un couloir (faces des deux intersections), à plat, et ses sols.</summary>
@@ -512,6 +525,18 @@ namespace ItHunts.EditorTools
                 CorridorOpenings.TryGetValue((e, +1), out List<Opening> plus) ? plus : null);
             WallLine($"{name} : mur {(alongX ? "sud" : "ouest")}", alongX, sideCoord - w / 2f - T / 2f, from, to, yLow > 0.1f ? 0f : yLow, yTop,
                 CorridorOpenings.TryGetValue((e, -1), out List<Opening> minus) ? minus : null);
+
+            // Volumes des tronçons (D-047) : environ corridorSegmentLength chacun, du sol (pente comprise) au plafond.
+            int segments = Mathf.Max(1, Mathf.CeilToInt(len / L.corridorSegmentLength - 0.05f));   // tronçons de 40 m au plus
+            for (int i = 0; i < segments; i++)
+            {
+                Vector3 p0 = CorridorPoint(e, (float)i / segments), p1 = CorridorPoint(e, (i + 1f) / segments);
+                float y0 = Mathf.Min(p0.y, p1.y), y1 = Mathf.Max(p0.y, p1.y) + h;
+                Vector3 c = (p0 + p1) * 0.5f;
+                float segLen = len / segments;
+                RoomVolumeAt($"{name}, tronçon {i + 1}/{segments}", new Vector3(c.x, (y0 + y1) * 0.5f, c.z), Quaternion.identity,
+                    alongX ? new Vector3(segLen, y1 - y0, w) : new Vector3(w, y1 - y0, segLen), RoomKind.Couloir);
+            }
 
             int lamps = Mathf.Max(1, Mathf.RoundToInt(len / 25f));
             for (int i = 0; i < lamps; i++)
@@ -645,6 +670,7 @@ namespace ItHunts.EditorTools
             root.transform.SetParent(_level, false);
             root.transform.SetPositionAndRotation(inner + Vector3.up * (y + H / 2f), Quaternion.LookRotation(into, Vector3.up));
             var room = root.AddComponent<ReachRoom>();
+            root.AddComponent<RoomVolume>().Configure(r.Name, new Vector3(R, H, R));
             Vector3 wallPlane = face - into * (T / 2f);
             var door = new GameObject("Ouverture : porte").transform;
             door.SetParent(root.transform, false);

@@ -10,11 +10,12 @@ using UnityEngine.Rendering;
 namespace ItHunts.Economy
 {
     /// <summary>
-    /// Éclats d'âme (étape 7, D-043), objet de la scène : à la mort d'un ennemi auquel un joueur a pris part dans les 5 dernières
-    /// secondes, chaque joueur à moins de 40 m reçoit ses propres éclats (valeur de l'ennemi, ×2 en Enragé au moment de la mort),
-    /// visibles par lui seul (dessinés pour sa caméra) et que seule son orbe ramasse. Les éclats tombent, l'orbe les attire dans
-    /// son rayon de collecte ; au bout de 30 s, ils disparaissent (clignotement les 5 dernières). Le traqueur ne donne jamais d'âmes.
-    /// Réseau (étape 11) : création, attribution et collecte sur l'autorité (personne ne vole les âmes d'un autre).
+    /// Éclats d'âme (étape 7, D-043 ; D-007 révisée), objet de la scène : à la mort d'un ennemi auquel un joueur a pris part dans
+    /// les 5 dernières secondes, ses éclats tombent (valeur de l'ennemi, ×2 en Enragé au moment de la mort). **Âmes gagnées en
+    /// commun, dépensées individuellement :** un éclat est commun (visible par tous) et n'importe quelle orbe le ramasse (la plus
+    /// proche dans son rayon de collecte) ; chaque joueur vivant reçoit alors 1 âme dans sa propre réserve. Au bout de 30 s au sol,
+    /// un éclat disparaît (clignotement les 5 dernières). Le traqueur ne donne jamais d'âmes.
+    /// Réseau (étape 11) : création, collecte et gain sur l'autorité.
     /// </summary>
     public sealed class SoulSystem : MonoBehaviour
     {
@@ -26,20 +27,15 @@ namespace ItHunts.Economy
 
         private struct Shard
         {
-            public int Owner;
+            public int Collector;                                        // joueur dont l'orbe l'attire (0 : au sol)
             public Vector3 Position, Velocity;
             public float Born, FloorY;
-            public bool Pulled;
         }
 
         private readonly List<Shard> _shards = new List<Shard>();
         private readonly Matrix4x4[] _matrices = new Matrix4x4[1023];
-        private readonly Dictionary<int, int> _lost = new Dictionary<int, int>();
-        private readonly Dictionary<int, int> _collected = new Dictionary<int, int>();
-        private readonly Dictionary<int, int> _spawned = new Dictionary<int, int>();
-        private readonly List<Vector3> _pos = new List<Vector3>();
-        private readonly List<bool> _alive = new List<bool>();
-        private readonly List<PlayerHealth> _players = new List<PlayerHealth>();
+        private readonly Dictionary<int, int> _collectedBy = new Dictionary<int, int>();
+        private readonly List<PlayerHealth> _alive = new List<PlayerHealth>();
         private Mesh _mesh;
         private ZoneState _zone;
         private System.Random _rng = new System.Random(3);
@@ -47,24 +43,23 @@ namespace ItHunts.Economy
         private float _nextPickupSound;
 
         public EconomySettings Settings => settings;
+        /// <summary>Éclats au sol ou attirés.</summary>
         public int Count => _shards.Count;
-        public int Lost(int playerId) => _lost.TryGetValue(playerId, out int n) ? n : 0;
-        public int Collected(int playerId) => _collected.TryGetValue(playerId, out int n) ? n : 0;
-        public int SpawnedFor(int playerId) => _spawned.TryGetValue(playerId, out int n) ? n : 0;
-        public int CountFor(int playerId)
-        {
-            int n = 0;
-            foreach (Shard s in _shards)
-                if (s.Owner == playerId)
-                    n++;
-            return n;
-        }
+        /// <summary>Éclats tombés, ramassés, perdus (au bout de 30 s) depuis la dernière remise à zéro des compteurs.</summary>
+        public int Spawned { get; private set; }
+        public int Collected { get; private set; }
+        public int Lost { get; private set; }
+        /// <summary>Éclats ramassés par l'orbe de ce joueur (chaque joueur vivant en a reçu autant d'âmes).</summary>
+        public int CollectedBy(int playerId) => _collectedBy.TryGetValue(playerId, out int n) ? n : 0;
 
         private void Awake()
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             _mesh = go.GetComponent<MeshFilter>().sharedMesh;
-            Destroy(go);
+            if (Application.isPlaying)
+                Destroy(go);
+            else
+                DestroyImmediate(go);
             _pickup = ItHunts.Audio.ProceduralSfx.ToClip("Âme ramassée", ItHunts.Audio.ProceduralSfx.SoulPickup());
         }
 
@@ -92,6 +87,13 @@ namespace ItHunts.Economy
         /// <summary>Remise à zéro (zone) : plus d'éclats au sol.</summary>
         public void Clear() => _shards.Clear();
 
+        /// <summary>Compteurs à zéro (mesures).</summary>
+        public void ResetStats()
+        {
+            Spawned = Collected = Lost = 0;
+            _collectedBy.Clear();
+        }
+
         private void OnDied(Damageable d)
         {
             if (settings == null || d == null || d.ImmuneToOrbs || d.Settings == null || d.Settings.soulValue <= 0)
@@ -102,73 +104,95 @@ namespace ItHunts.Economy
             if (_zone == null)
                 _zone = FindFirstObjectByType<ZoneState>();
             int souls = SoulMath.SoulsAtDeath(d.Settings.soulValue, _zone != null && _zone.Enraged, settings.enragedMultiplier);
-            SpawnFor(d.Center, souls, now);
+            Spawn(d.Center, souls, now);
         }
 
-        /// <summary>Éclats pour chaque joueur vivant à moins de shareRadius (mesures, tests, debug).</summary>
-        public void SpawnFor(Vector3 at, int souls, float now)
+        /// <summary>souls éclats communs tombent ici (mort d'un ennemi ; mesures, tests, debug).</summary>
+        public void Spawn(Vector3 at, int souls, float now)
         {
-            _players.Clear();
-            _pos.Clear();
-            _alive.Clear();
-            foreach (PlayerHealth p in PlayerHealth.All)
-                if (p != null)
-                {
-                    _players.Add(p);
-                    _pos.Add(p.transform.position);
-                    _alive.Add(!p.Dead);
-                }
-
+            if (settings == null || souls <= 0)
+                return;
             float floor = at.y - 1f;
             if (Physics.Raycast(at + Vector3.up * 0.5f, Vector3.down, out RaycastHit hit, 40f, ~0, QueryTriggerInteraction.Ignore))
                 floor = hit.point.y;
-            foreach (int i in SoulMath.Recipients(at, _pos, _alive, settings.shareRadius))
+            for (int k = 0; k < souls; k++)
             {
-                int owner = _players[i].PlayerId;
-                for (int k = 0; k < souls; k++)
-                {
-                    float a = (float)_rng.NextDouble() * Mathf.PI * 2f;
-                    var v = new Vector3(Mathf.Cos(a), 1.2f + (float)_rng.NextDouble(), Mathf.Sin(a)) * settings.scatterSpeed * 0.6f;
-                    _shards.Add(new Shard { Owner = owner, Position = at, Velocity = v, Born = now, FloorY = floor + settings.soulSize * 0.6f });
-                }
-
-                _spawned[owner] = SpawnedFor(owner) + souls;
+                float a = (float)_rng.NextDouble() * Mathf.PI * 2f;
+                var v = new Vector3(Mathf.Cos(a), 1.2f + (float)_rng.NextDouble(), Mathf.Sin(a)) * settings.scatterSpeed * 0.6f;
+                _shards.Add(new Shard { Position = at, Velocity = v, Born = now, FloorY = floor + settings.soulSize * 0.6f });
             }
+
+            Spawned += souls;
         }
 
-        private void FixedUpdate()
+        /// <summary>Rayon de collecte et vitesse d'aspiration de l'orbe de ce joueur (avec ses améliorations).</summary>
+        private void Reach(PlayerHealth p, out float radius, out float pull)
+        {
+            PlayerUpgrades up = p.GetComponent<PlayerUpgrades>();
+            radius = settings.collectRadius * (1f + (up != null ? up.CollectRadiusBonus : 0f));
+            pull = settings.pullSpeed * (1f + (up != null ? up.PullSpeedBonus : 0f));
+        }
+
+        private void FixedUpdate() => Step(Time.time, Time.fixedDeltaTime);
+
+        /// <summary>Un pas (public pour les tests) : chute, attraction par l'orbe la plus proche, collecte, disparition.</summary>
+        public void Step(float now, float dt)
         {
             if (settings == null || _shards.Count == 0)
                 return;
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
-            float now = Time.time, dt = Time.fixedDeltaTime;
+            _alive.Clear();
+            foreach (PlayerHealth p in PlayerHealth.All)
+                if (p != null && !p.Dead)
+                    _alive.Add(p);
             RunState run = RunState.Current;
             for (int i = _shards.Count - 1; i >= 0; i--)
             {
                 Shard s = _shards[i];
-                if (now - s.Born >= settings.soulLifetime)
+                if (s.Collector == 0 && now - s.Born >= settings.soulLifetime)
                 {
-                    _lost[s.Owner] = Lost(s.Owner) + 1;
+                    Lost++;
                     _shards.RemoveAt(i);
                     continue;
                 }
 
-                PlayerHealth p = PlayerHealth.Find(s.Owner);
-                Vector3 orb = p != null ? OrbOf(p) : s.Position;
-                PlayerUpgrades up = p != null ? p.GetComponent<PlayerUpgrades>() : null;
-                float radius = settings.collectRadius * (1f + (up != null ? up.CollectRadiusBonus : 0f));
-                float pull = settings.pullSpeed * (1f + (up != null ? up.PullSpeedBonus : 0f));
-                float d = Vector3.Distance(s.Position, orb);
-                if (p != null && !p.Dead && (s.Pulled || d <= radius))
+                // Orbe qui l'attire : celle qui l'a déjà pris (tant que son joueur vit), sinon la plus proche dans son rayon.
+                PlayerHealth collector = s.Collector != 0 ? PlayerHealth.Find(s.Collector) : null;
+                if (collector != null && collector.Dead)
+                    collector = null;
+                float pull = 0f;
+                if (collector != null)
+                    Reach(collector, out _, out pull);
+                else
                 {
-                    s.Pulled = true;                                     // attiré : il suit l'orbe jusqu'au bout
+                    float best = float.PositiveInfinity;
+                    foreach (PlayerHealth p in _alive)
+                    {
+                        Reach(p, out float r, out float sp);
+                        float d = Vector3.Distance(s.Position, OrbOf(p));
+                        if (d <= r && d < best)
+                        {
+                            best = d;
+                            collector = p;
+                            pull = sp;
+                        }
+                    }
+                }
+
+                if (collector != null)
+                {
+                    s.Collector = collector.PlayerId;                    // attiré : il suit cette orbe jusqu'au bout
+                    Vector3 orb = OrbOf(collector);
                     s.Position = Vector3.MoveTowards(s.Position, orb, pull * dt);
                     if (Vector3.Distance(s.Position, orb) <= settings.collectDistance)
                     {
+                        // Gagnées en commun (D-007 révisée) : chaque joueur vivant reçoit 1 âme dans sa propre réserve.
                         if (run != null)
-                            run.AddSouls(s.Owner, 1);
-                        _collected[s.Owner] = Collected(s.Owner) + 1;
-                        if (_pickup != null && now >= _nextPickupSound)
+                            foreach (PlayerHealth p in _alive)
+                                run.AddSouls(p.PlayerId, 1);
+                        Collected++;
+                        _collectedBy[collector.PlayerId] = CollectedBy(collector.PlayerId) + 1;
+                        if (_pickup != null && now >= _nextPickupSound && Application.isPlaying)
                         {
                             _nextPickupSound = now + 0.06f;
                             AudioSource.PlayClipAtPoint(_pickup, orb, 0.35f);
@@ -180,6 +204,7 @@ namespace ItHunts.Economy
                 }
                 else
                 {
+                    s.Collector = 0;                                     // son joueur est mort : il retombe
                     s.Velocity.y -= 20f * dt;
                     s.Position += s.Velocity * dt;
                     if (s.Position.y <= s.FloorY)
@@ -196,21 +221,20 @@ namespace ItHunts.Economy
         /// <summary>L'orbe du joueur (dans sa main droite, devant ses yeux).</summary>
         public static Vector3 OrbOf(PlayerHealth p) => p.transform.position + Vector3.up * 1.2f;
 
-        /// <summary>Dessine pour chaque caméra seulement les éclats de son joueur (âmes individuelles, D-007).</summary>
+        /// <summary>Dessine les éclats (communs) pour chaque caméra du jeu.</summary>
         private void Draw(ScriptableRenderContext context, Camera cam)
         {
             if (settings == null || soulMaterial == null || _mesh == null || _shards.Count == 0 || cam == null)
                 return;
-            PlayerHealth owner = Interactables.PlayerOfCamera(cam);   // seulement la caméra du monde de ce joueur
-            if (owner == null)
+            if (cam.cameraType != CameraType.Game && cam.cameraType != CameraType.SceneView)
                 return;
-            int id = owner.PlayerId, n = 0;
+            int n = 0;
             float now = Time.time, size = settings.soulSize;
             foreach (Shard s in _shards)
             {
-                if (s.Owner != id || !SoulMath.BlinkVisible(now - s.Born, settings))
+                if (s.Collector == 0 && !SoulMath.BlinkVisible(now - s.Born, settings))
                     continue;
-                float bob = s.Pulled ? 0f : Mathf.Sin((now - s.Born) * 3f + s.Born) * 0.08f;
+                float bob = s.Collector != 0 ? 0f : Mathf.Sin((now - s.Born) * 3f + s.Born) * 0.08f;
                 _matrices[n++] = Matrix4x4.TRS(s.Position + Vector3.up * bob, Quaternion.identity, Vector3.one * size);
                 if (n >= _matrices.Length)
                     break;

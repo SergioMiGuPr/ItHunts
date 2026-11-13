@@ -36,6 +36,9 @@ namespace ItHunts.EditorTools
                  "pied d'un mur de la hauteur du niveau haut (les goules le grimpent) ; le reste est la pente (au moins 7 m pour lui).")]
         [Range(14f, 20f)] public float slopeCorridorWidth = 16f;
         [Range(2f, 9f)] public float cliffLaneWidth = 8f;
+        [Tooltip("Longueur maximale d'un tronçon de couloir (m, D-047) : un volume par tronçon ; aucun ennemi n'apparaît dans le " +
+                 "tronçon d'un joueur ni dans les tronçons voisins.")]
+        [Range(15f, 100f)] public float corridorSegmentLength = 40f;
 
         [Header("Ponts, corniches et poutres (le traqueur se baisse dessous)")]
         [Tooltip("Dessous des ponts et des poutres (m) : au-dessus de la hauteur minimale de passage du traqueur (9 m).")]

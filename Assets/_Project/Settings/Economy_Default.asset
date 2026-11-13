@@ -17,7 +17,6 @@ MonoBehaviour:
   collectRadius: 8
   pullSpeed: 25
   collectDistance: 0.7
-  shareRadius: 40
   involvementWindow: 5
   enragedMultiplier: 2
   scatterSpeed: 4

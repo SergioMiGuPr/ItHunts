@@ -88,6 +88,10 @@ pas le CharacterController.
 - [ ] Les touches et la manette pilotent bien le joueur. *(pas prouvé : l'éditeur ignore le clavier simulé quand la fenêtre Game n'a pas le focus ; playtest de l'utilisateur)*
 - [ ] Le ressenti de la course et du saut est bon au clavier-souris et à la manette. *(playtest de l'utilisateur)*
 
+- [x] Murs (D-044) : impulsion et bonus du wall jump −15 %, élan gardé ; gain du strafe le long du mur −15 %, plafonné à 18 m/s ; déjà plus vite : gardée, pas de frein ; perte non touchée. *(`MovementTests.cs` › WallJump_GainPlafonneA18_RienNeFreine, WallJump_GainReduitDe15Pourcent, MurStrafe_GainReduitEtPlafonne_PerteIntacte ; `RoomVolumeTests.cs` › Reglages_Traction2Charges_Murs85PourcentEt18)*
+- [x] En Play Mode (Test_Movement, couloir de 700 m à deux murs de 30 m, écarts de 5, 7 et 9 m, 30 wall jumps au plus, saut tenu au sol entre deux murs) : **vitesse max 20.0 m/s avant, 18.0 m/s après** ; après chaque wall jump (écart 5 m, côté seul) : avant 7.5 / 14.3 / 17.8 / 20.0…, après 7.5 / 13.2 / 16.2 / 18.0… ; lancé à 22 m/s : les wall jumps gardent 22 m/s (pas de frein). *(Play Mode, 2026-11-13)*
+- [ ] Ressenti des murs à −15 % et 18 m/s. *(playtest)*
+
 ## Playtest — étape 1 (course et saut)
 
 **Préparation.** Ouvrir `Assets/Scenes/Test_Movement.unity`, lancer Play, **cliquer dans la

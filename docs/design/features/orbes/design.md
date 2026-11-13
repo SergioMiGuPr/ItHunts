@@ -38,8 +38,8 @@ l'arme », « le mouvement est la survie ».
    Quand le point est plus haut, la chute n'est pas comptée. Fin de la traction, avec toute la vitesse et la direction du
    moment : **relâchement**, **arrivée** au point, **ligne de vue coupée**, **durée max**, **saut**
    (le saut part aussitôt), **dash**, **répulsion**, ou obstacle qui bloque. **Chaque traction coûte
-   1 charge d'attraction** (3 charges, séparées des charges de mouvement) ; elles reviennent une par
-   une, **1 toutes les 4 s** (D-024). Pas d'autre délai entre deux tractions. Tenir un objet ne gêne pas
+   1 charge d'attraction** (**2 charges**, D-036, séparées des charges de mouvement) ; elles reviennent une par
+   une, **1 toutes les 6 s** (D-036). Pas d'autre délai entre deux tractions. Tenir un objet ne gêne pas
    la traction : la visée ignore l'objet tenu.
 4. **Répulsion (magnétisme, mode 2) :** appui (clic droit ou LT), **impulsion instantanée** à
    l'opposé du point visé, sur **n'importe quelle surface** (rocket jump). La **vitesse horizontale ne
@@ -150,7 +150,7 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
 | Accélération / vitesse de traction (plafond) | 80 / 18 | m/s² / m/s | 18 m/s en 0.23 s ; 30 avant D-036 |
 | Durée max d'une traction | 2.5 | s | à 18 m/s, ≈ 43 m par traction : à rallonger ? |
 | Arrivée au point | 1 | m | |
-| Charges d'attraction / recharge d'une charge | 3 / 6 | charges / s | une par une ; séparées des charges de mouvement ; 6 s depuis D-036 (4 avant) |
+| Charges d'attraction / recharge d'une charge | 2 / 6 | charges / s | une par une ; séparées des charges de mouvement ; 6 s depuis D-036 (4 avant) ; 2 depuis le 2026-11-13 (3 avant) |
 | Impulsion / portée de la répulsion | 14 / 40 | m/s / m | hauteur du rocket jump (mesuré : 5.0 m ; 7.6 m avec un saut juste avant) |
 | Recharge de la répulsion (charge unique, sans cumul) | 5 | s | |
 | Mémorisation d'un appui pendant la recharge | 0.1 | s | |
@@ -269,3 +269,4 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
 - 2026-11-12 : dégâts contre un mur d'un ennemi repoussé et objets repoussés qui blessent (D-031).
 - 2026-11-12 : traction plafonnée à 18 m/s, sans jamais freiner (D-036).
 - 2026-11-12 : recharge d'une charge d'attraction à 6 s (D-036).
+- 2026-11-13 : 2 charges d'attraction au lieu de 3, pour ne pas trop s'appuyer sur la traction (D-036 mise à jour).

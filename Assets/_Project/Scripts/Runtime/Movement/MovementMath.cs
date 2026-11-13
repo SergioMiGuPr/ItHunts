@@ -138,10 +138,12 @@ namespace ItHunts.Movement
         /// <summary>
         /// Vitesse après un wall jump : l'impulsion (kick) s'ajoute à la vitesse acquise, dans une direction qui
         /// mélange la normale du mur (bias 0) et l'avant (bias 1 : caméra sans sa part vers le mur, sinon
-        /// trajectoire le long du mur). Vitesse horizontale finale ≥ vitesse d'avant + bonus.
+        /// trajectoire le long du mur). Vitesse horizontale finale ≥ vitesse d'avant + bonus. L'impulsion et le bonus sont réduits
+        /// par gainScale (D-044 : −15 %), l'élan acquis est gardé tel quel ; le gain ne monte pas au-delà de bonusCap, et rien ne
+        /// freine un joueur déjà plus rapide.
         /// </summary>
         public static Vector3 WallJumpVelocity(Vector3 velocity, Vector3 wallNormal, float yawDegrees, float forwardBias,
-            float kick, float speedBonus, float jumpVelocity, float bonusCap = float.PositiveInfinity)
+            float kick, float speedBonus, float jumpVelocity, float bonusCap = float.PositiveInfinity, float gainScale = 1f)
         {
             var h = new Vector3(velocity.x, 0f, velocity.z);
             float speedBefore = h.magnitude;
@@ -159,17 +161,32 @@ namespace ItHunts.Movement
 
             Vector3 dir = wallNormal * (1f - forwardBias) + forward * forwardBias;
             dir = dir.sqrMagnitude > 1e-4f ? dir.normalized : wallNormal;
-            h += dir * kick;
+            h += dir * (kick * gainScale);                     // impulsion réduite sur un mur (D-044)
 
             // Gain plafonné : au-delà de bonusCap, la vitesse est conservée mais plus augmentée.
             float limit = Mathf.Max(speedBefore, bonusCap);
-            float minSpeed = Mathf.Min(speedBefore + speedBonus, limit);
+            float minSpeed = Mathf.Min(speedBefore + speedBonus * gainScale, limit);
             if (h.magnitude < minSpeed)
                 h = h.sqrMagnitude > 1e-6f ? h.normalized * minSpeed : dir * minSpeed;
             if (h.magnitude > limit)
                 h = h.normalized * limit;
 
             return new Vector3(h.x, Mathf.Max(velocity.y, jumpVelocity), h.z);
+        }
+
+        /// <summary>
+        /// Gain de vitesse sur un mur (strafe le long du mur en wall slide / wall run, D-044) : la part gagnée depuis speedBefore
+        /// est réduite par scale et s'arrête à cap ; une perte n'est pas touchée, et un joueur déjà au-delà de cap garde sa vitesse.
+        /// </summary>
+        public static Vector3 WallGain(Vector3 velocity, float speedBefore, float scale, float cap)
+        {
+            var h = new Vector3(velocity.x, 0f, velocity.z);
+            float speed = h.magnitude;
+            if (speed <= speedBefore || speed < 1e-6f)
+                return velocity;
+            float target = speedBefore >= cap ? speedBefore : Mathf.Min(speedBefore + (speed - speedBefore) * scale, cap);
+            h *= target / speed;
+            return new Vector3(h.x, velocity.y, h.z);
         }
 
         /// <summary>Gain de vitesse plafonné : rien au-delà de cap, et jamais au-dessus de cap en gagnant.</summary>

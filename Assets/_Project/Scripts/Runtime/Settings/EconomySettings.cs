@@ -13,12 +13,11 @@ namespace ItHunts.Settings
         [Tooltip("Durée de vie d'un éclat au sol (s) ; il clignote pendant les dernières secondes, puis disparaît (perdu).")]
         [Min(1f)] public float soulLifetime = 30f;
         [Min(0f)] public float soulBlinkTime = 5f;
-        [Tooltip("L'orbe attire les éclats de son joueur à moins de ce rayon (m), à cette vitesse (m/s) ; ramassé à ce contact (m).")]
+        [Tooltip("Une orbe attire les éclats (communs) à moins de ce rayon (m), à cette vitesse (m/s) ; ramassé à ce contact (m) : " +
+                 "chaque joueur vivant reçoit alors 1 âme (D-007 révisée).")]
         [Min(0f)] public float collectRadius = 8f;
         [Min(0.1f)] public float pullSpeed = 25f;
         [Min(0.05f)] public float collectDistance = 0.7f;
-        [Tooltip("Coop (D-007) : chaque joueur à moins de ce rayon de l'ennemi tué reçoit ses propres éclats (m).")]
-        [Min(0f)] public float shareRadius = 40f;
         [Tooltip("Mort sans joueur : des âmes seulement si un joueur y est pour quelque chose dans ce délai (s).")]
         [Min(0f)] public float involvementWindow = 5f;
         [Tooltip("Multiplicateur d'âmes en Enragé (D-009), appliqué au moment où l'ennemi meurt.")]

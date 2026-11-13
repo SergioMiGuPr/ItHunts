@@ -732,12 +732,42 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void WallJump_GainPlafonneA20([Values(19f, 25f)] float alongWallSpeed)
+        public void WallJump_GainPlafonneA18_RienNeFreine([Values(17f, 19f, 25f)] float alongWallSpeed)
         {
+            Assert.That(_cfg.wallGainCap, Is.EqualTo(18f), "plafond des murs (D-044), pas le plafond commun de 20");
             WallJumpFrom(alongWallSpeed, yaw: 0f);
-            float expected = Mathf.Max(alongWallSpeed, _cfg.movementGainCap);
+            float expected = Mathf.Max(alongWallSpeed, _cfg.wallGainCap);
             Assert.That(_state.HorizontalSpeed, Is.EqualTo(expected).Within(0.05f),
-                alongWallSpeed < _cfg.movementGainCap ? "gain jusqu'à 20 m/s" : "au-delà : vitesse conservée, pas de gain");
+                alongWallSpeed < _cfg.wallGainCap ? "gain jusqu'à 18 m/s" : "au-delà : vitesse conservée, pas de gain, pas de frein");
+        }
+
+        [Test]
+        public void WallJump_GainReduitDe15Pourcent()
+        {
+            Assert.That(_cfg.wallGainScale, Is.EqualTo(0.85f));
+            var v = new Vector3(0f, 0f, 8f);
+            Vector3 full = MovementMath.WallJumpVelocity(v, Vector3.left, 0f, _cfg.wallJumpForwardBias, _cfg.wallJumpKick,
+                _cfg.wallJumpSpeedBonus, _cfg.WallJumpVelocity, float.PositiveInfinity, 1f);
+            Vector3 reduced = MovementMath.WallJumpVelocity(v, Vector3.left, 0f, _cfg.wallJumpForwardBias, _cfg.wallJumpKick,
+                _cfg.wallJumpSpeedBonus, _cfg.WallJumpVelocity, float.PositiveInfinity, 0.85f);
+            float gainFull = new Vector2(full.x, full.z).magnitude - 8f, gainReduced = new Vector2(reduced.x, reduced.z).magnitude - 8f;
+            Assert.That(gainFull, Is.GreaterThan(1f));
+            Assert.That(gainReduced, Is.LessThan(gainFull * 0.9f).And.GreaterThan(gainFull * 0.75f), "gain réduit d'environ 15 %");
+            Assert.That(reduced.z, Is.GreaterThanOrEqualTo(8f), "l'élan le long du mur est gardé : rien ne freine");
+            Vector3 still = MovementMath.WallJumpVelocity(Vector3.zero, Vector3.left, 0f, _cfg.wallJumpForwardBias, _cfg.wallJumpKick,
+                0f, _cfg.WallJumpVelocity, float.PositiveInfinity, 0.85f);
+            Assert.That(new Vector2(still.x, still.z).magnitude, Is.EqualTo(_cfg.wallJumpKick * 0.85f).Within(1e-3f), "impulsion −15 %");
+        }
+
+        [Test]
+        public void MurStrafe_GainReduitEtPlafonne_PerteIntacte()
+        {
+            Assert.That(new Vector2(MovementMath.WallGain(new Vector3(0f, -1f, 12f), 10f, 0.85f, 18f).x, MovementMath.WallGain(new Vector3(0f, -1f, 12f), 10f, 0.85f, 18f).z).magnitude,
+                Is.EqualTo(11.7f).Within(1e-3f), "10 → 12 : on garde 85 % du gain");
+            Assert.That(MovementMath.WallGain(new Vector3(0f, -1f, 12f), 10f, 0.85f, 18f).y, Is.EqualTo(-1f), "vitesse verticale intacte");
+            Assert.That(MovementMath.WallGain(new Vector3(0f, 0f, 20f), 17.5f, 0.85f, 18f).z, Is.EqualTo(18f).Within(1e-3f), "plafond à 18");
+            Assert.That(MovementMath.WallGain(new Vector3(0f, 0f, 21f), 19f, 0.85f, 18f).z, Is.EqualTo(19f).Within(1e-3f), "déjà au-delà : gardée, sans gain");
+            Assert.That(MovementMath.WallGain(new Vector3(0f, 0f, 9f), 10f, 0.85f, 18f).z, Is.EqualTo(9f).Within(1e-3f), "une perte n'est pas touchée");
         }
 
         // --- Contrôle aérien (W seul, yaw 0 = regarder vers +z) ---
@@ -1019,7 +1049,7 @@ namespace ItHunts.Tests
             int jumpsUsed = _state.JumpsUsed;
             Step(Push(1f, press: _state.Tick + 1, held: true));
             Assert.That(_state.LastJumpTick, Is.EqualTo(_state.Tick));
-            Assert.That(_state.Velocity.x, Is.EqualTo(-_cfg.wallJumpKick).Within(1e-3f), "loin du mur");
+            Assert.That(_state.Velocity.x, Is.EqualTo(-Kick).Within(1e-3f), "loin du mur");
             Assert.That(_state.Velocity.z, Is.EqualTo(12f).Within(1e-3f), "élan le long du mur conservé");
             Assert.That(_state.Velocity.y, Is.GreaterThan(5f));
             Assert.That(_state.JumpsUsed, Is.EqualTo(jumpsUsed), "le wall jump ne consomme pas de saut");
@@ -1038,12 +1068,12 @@ namespace ItHunts.Tests
             while (_state.Tick < jumpTick + lockTicks - 1)
             {
                 Step(Push(1f, press, held: true));       // on pousse vers le mur : ignoré pendant le verrou
-                Assert.That(_state.Velocity.x, Is.EqualTo(-_cfg.wallJumpKick).Within(1e-3f), $"tick {_state.Tick - jumpTick}");
+                Assert.That(_state.Velocity.x, Is.EqualTo(-Kick).Within(1e-3f), $"tick {_state.Tick - jumpTick}");
             }
 
             Step(Push(1f, press, held: true));
             Step(Push(1f, press, held: true));
-            Assert.That(_state.Velocity.x, Is.GreaterThan(-_cfg.wallJumpKick + 1e-3f), "contrôle rendu après le verrou");
+            Assert.That(_state.Velocity.x, Is.GreaterThan(-Kick + 1e-3f), "contrôle rendu après le verrou");
         }
 
         private bool WallJumpAfterLeavingWall(int ticksAfterContact)
@@ -1058,7 +1088,7 @@ namespace ItHunts.Tests
                 Step(MovementInput.Neutral);
             int before = _state.LastJumpTick;
             Step(new MovementInput { JumpHeld = true, JumpPressedTick = _state.Tick + 1 });
-            return _state.LastJumpTick != before && _state.Velocity.x < -_cfg.wallJumpKick + 0.01f;
+            return _state.LastJumpTick != before && _state.Velocity.x < -Kick + 0.01f;
         }
 
         [Test]
@@ -1123,6 +1153,9 @@ namespace ItHunts.Tests
 
         // --- Corrections des murs après playtest ---
 
+        /// <summary>Impulsion réelle d'un wall jump : wallJumpKick réduite de 15 % sur un mur (D-044).</summary>
+        private float Kick => _cfg.wallJumpKick * _cfg.wallGainScale;
+
         private void WallJumpFrom(float alongWallSpeed, float yaw)
         {
             HangOnWallA(alongWallSpeed);
@@ -1160,7 +1193,7 @@ namespace ItHunts.Tests
             var h = new Vector3(_state.Velocity.x, 0f, _state.Velocity.z);
             var expected = (new Vector3(-1f, 0f, 0f) * (1f - bias) + Vector3.forward * bias).normalized;
             Assert.That(Vector3.Angle(h, expected), Is.LessThan(1f), $"bias {bias}");
-            Assert.That(h.magnitude, Is.EqualTo(_cfg.wallJumpKick).Within(1e-3f));
+            Assert.That(h.magnitude, Is.EqualTo(Kick).Within(1e-3f));
         }
 
         [Test]
@@ -1175,7 +1208,7 @@ namespace ItHunts.Tests
         public void WallJump_VitesseConserveePlusBonus([Values(0f, 90f, 180f)] float yaw)
         {
             WallJumpFrom(alongWallSpeed: 15f, yaw: yaw);                      // yaw 180 : caméra à contre-sens
-            Assert.That(_state.HorizontalSpeed, Is.GreaterThanOrEqualTo(15f + _cfg.wallJumpSpeedBonus - 1e-3f));
+            Assert.That(_state.HorizontalSpeed, Is.GreaterThanOrEqualTo(15f + _cfg.wallJumpSpeedBonus * _cfg.wallGainScale - 1e-3f));
         }
 
         [Test]

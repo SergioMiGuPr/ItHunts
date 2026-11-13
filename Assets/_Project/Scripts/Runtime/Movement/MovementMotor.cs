@@ -131,7 +131,7 @@ namespace ItHunts.Movement
                 // Impulsion AJOUTÉE à la vitesse acquise, dans une direction qui mélange la normale du mur et
                 // l'avant (caméra, sinon trajectoire) ; jamais moins vite qu'avant (+ bonus).
                 s.Velocity = MovementMath.WallJumpVelocity(s.Velocity, s.LastWallNormal, input.Yaw, cfg.wallJumpForwardBias,
-                    cfg.wallJumpKick, cfg.wallJumpSpeedBonus, cfg.WallJumpVelocity, cfg.movementGainCap);
+                    cfg.wallJumpKick, cfg.wallJumpSpeedBonus, cfg.WallJumpVelocity, cfg.wallGainCap, cfg.wallGainScale);
                 s.LastWallJumpId = s.LastWallId;
                 s.LastWallTick = MovementState.NeverTick;        // pas de second wall jump via le wall-coyote
                 s.SteerLockUntilTick = s.Tick + steerLockTicks;
@@ -253,8 +253,12 @@ namespace ItHunts.Movement
             }
 
             // Accroché au mur : la part de vitesse qui entre dans le mur est reportée le long du mur, sans perte.
+            // Gain le long du mur (strafe) réduit et plafonné à wallGainCap (D-044).
             if (wallAttached && !dashed)
+            {
                 s.Velocity = MovementMath.ProjectAlongWall(s.Velocity, wallNormal, speedBeforeHorizontal);
+                s.Velocity = MovementMath.WallGain(s.Velocity, speedBeforeHorizontal, cfg.wallGainScale, cfg.wallGainCap);
+            }
 
             s.Velocity = MovementMath.ClampHorizontal(s.Velocity, cfg.maxHorizontalSpeed);
 

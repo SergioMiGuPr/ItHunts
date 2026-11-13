@@ -12,7 +12,7 @@ namespace ItHunts.Economy
         Porte
     }
 
-    /// <summary>Calculs de l'économie (D-043), purs pour les tests : âmes à la mort, attribution en coop, prix, tirages.</summary>
+    /// <summary>Calculs de l'économie (D-043), purs pour les tests : âmes à la mort, prix, tirages.</summary>
     public static class SoulMath
     {
         /// <summary>
@@ -25,16 +25,6 @@ namespace ItHunts.Economy
         /// <summary>Âmes d'un ennemi à sa mort : sa valeur, × le multiplicateur en Enragé (au moment de la mort), arrondi.</summary>
         public static int SoulsAtDeath(int value, bool enraged, float enragedMultiplier) =>
             value <= 0 ? 0 : Mathf.RoundToInt(value * (enraged ? enragedMultiplier : 1f));
-
-        /// <summary>Coop (D-007) : index des joueurs (vivants) à moins de radius du point de la mort ; chacun reçoit ses éclats.</summary>
-        public static List<int> Recipients(Vector3 death, IReadOnlyList<Vector3> players, IReadOnlyList<bool> alive, float radius)
-        {
-            var r = new List<int>();
-            for (int i = 0; i < players.Count; i++)
-                if ((alive == null || alive[i]) && Vector3.Distance(death, players[i]) <= radius)
-                    r.Add(i);
-            return r;
-        }
 
         /// <summary>
         /// Prix après purchases achats de ce joueur dans la même catégorie : chaque achat le monte de increasePercent % (composé),

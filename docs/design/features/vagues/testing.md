@@ -26,6 +26,11 @@
 - [x] En Play Mode, **choix de cible** (une goule, 2 joueurs à 20 m de part et d'autre, 60 s) : immobiles, **1 changement** (le joueur 1 avait été repoussé à 39 m, l'autre à 23 m : changement voulu) ; un joueur qui tourne autour d'elle (rayon 20 m, un tour en 12 s) : **0 changement**. Aucune oscillation. *(Play Mode, 2026-11-13)*
 - [ ] Ressenti : montée de la pression, lisibilité des pics, accalmies, apparitions jamais « dans le dos ». *(playtest)*
 
+- [x] Salles (D-045) : même salle qu'un joueur interdite, couloir permis, salle tournée, alcôve dans une salle. *(`RoomVolumeTests.cs` › JamaisDansLaSalleDUnJoueur_CouloirPermis, SalleTourneeEtSalleDansUneSalle)*
+- [x] Tronçons de couloir (D-047) : son tronçon et les voisins interdits, deux tronçons plus loin permis, salle au bout permise. *(`RoomVolumeTests.cs` › Couloir_TronconDuJoueurEtVoisinsInterdits_PlusLoinPermis)*
+- [ ] Playtest : reste immobile au milieu d'un long couloir pendant un pic : aucun ennemi n'apparaît à moins d'un tronçon (environ 40 à 80 m) ; ils arrivent des deux bouts.
+- [x] En Play Mode (Test_Arena, 16 volumes de salle ; joueur immortel immobile au centre de la salle C, temps de zone 5 min, ennemis tués toutes les 8 s, traqueur coupé, 90 s) : **sans volumes, 69 apparitions sur 184 dans sa salle ; avec, 0 sur 146** (il y est resté tout le temps). Dans un autre essai où les goules l'avaient poussé dans un couloir, 14 apparitions ont eu lieu dans la salle C pendant son absence ; à chaque apparition, aucun joueur n'était dans la salle. *(Play Mode, 2026-11-13)*
+
 ## Checklist F12 — vagues (Test_Arena)
 
 Page 3 du debug (F3) : ligne « Vagues » (pic ou accalmie et temps restant, goules et volants présents / voulus, à

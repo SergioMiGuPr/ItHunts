@@ -26,7 +26,10 @@ ennemis apparaissent hors de la vue des joueurs, sur des points d'apparition pos
    en hauteur pour les volants ; au level design, on en pose à la main (trous, grilles, nids) **sans code** : un objet vide avec
    le composant, type goule ou volant. À chaque apparition, un point du bon type est choisi **hors de la vue de tous les
    joueurs** (hors du champ de vision, ou caché par le décor), **à 25 m au moins de chaque joueur et à 80 m au plus du plus
-   proche**, et pas utilisé dans les 2 dernières secondes.
+   proche**, et pas utilisé dans les 2 dernières secondes. **Jamais dans une salle où se trouve un joueur (D-045)** : chaque
+   salle a un **volume de salle** (`RoomVolume`, posé par le constructeur, et à la main au level design) ; vérifié au choix du
+   point et à la fin de l'annonce (un joueur entré pendant l'annonce l'annule). **Couloirs (D-047)** : découpés en tronçons de
+   40 m au plus, chacun avec son volume ; jamais dans le tronçon d'un joueur **ni dans les tronçons voisins**.
 5. **Annonce :** une lueur orange au sol au point choisi pendant **0.6 s**, puis l'ennemi apparaît (en attente ou en chasse
    selon les plafonds). Au début de la zone, la population de départ est posée d'un coup, hors de vue, sans annonce.
 6. **Ennemis tués :** ils ne reviennent pas par les apparitions normales ; le nombre voulu **se reconstitue lentement**, au
@@ -88,3 +91,5 @@ ennemis apparaissent hors de la vue des joueurs, sur des points d'apparition pos
 - 2026-11-13 : designed et construit (bloc 7, D-041).
 - 2026-11-13 : playtest validé ; accalmie (plafond de chasse à 60 %, recul), coop (multiplicateur, parts, tour de rôle), choix de
   cible.
+- 2026-11-13 : jamais d'apparition dans la salle d'un joueur, volumes de salle (D-045).
+- 2026-11-13 : tronçons de couloir de 40 m, ni le tronçon du joueur ni les voisins (D-047).

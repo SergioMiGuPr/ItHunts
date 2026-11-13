@@ -101,6 +101,12 @@ namespace ItHunts.Settings
         [Tooltip("Après un wall jump, vitesse horizontale au moins égale à celle d'avant + ce bonus (m/s).")]
         [Min(0f)] public float wallJumpSpeedBonus = 1f;
 
+        [Tooltip("Part du gain de vitesse gardée sur un mur : wall jump (impulsion et bonus) et strafe le long du mur en wall slide / " +
+                 "wall run. 0.85 = −15 % (D-044).")]
+        [Range(0f, 1f)] public float wallGainScale = 0.85f;
+        [Tooltip("Les gains de vitesse sur un mur s'arrêtent à cette vitesse (m/s), comme la traction (D-036), au lieu du plafond " +
+                 "commun ; au-delà, la vitesse est conservée sans gain : rien ne freine un joueur déjà plus rapide.")]
+        [Min(0f)] public float wallGainCap = 18f;
         [Tooltip("Délai (s) après avoir quitté un mur pendant lequel le wall jump reste possible.")]
         [Min(0f)] public float wallCoyoteTime = 0.10f;
         [Tooltip("Durée (s) sans contrôle en l'air après un wall jump, pour ne pas annuler l'impulsion.")]

@@ -11,7 +11,7 @@ namespace ItHunts.Enemies
     /// Vagues d'une zone (bloc 7, D-041), objet de la scène (pas du joueur) : il fait apparaître les goules et les volants de la
     /// réserve (inactifs, créés par le constructeur) pour suivre le nombre voulu (WaveMath : tendance selon le temps de la zone,
     /// pics annoncés et accalmies, Enragé). Apparition : un point d'apparition (SpawnPoint) hors de la vue de tous les joueurs,
-    /// entre minDistance et maxDistance, annoncé par une lueur au sol, puis l'ennemi apparaît. Un ennemi tué retourne dans la
+    /// jamais dans la salle d'un joueur (RoomVolume, D-045), entre minDistance et maxDistance, annoncé par une lueur au sol, puis l'ennemi apparaît. Un ennemi tué retourne dans la
     /// réserve ; il est remplacé lentement (refillInterval), en plus des apparitions normales. Les plafonds de chasse suivent la
     /// tendance. Réseau (étape 11) : tout ceci tourne sur l'autorité.
     /// </summary>
@@ -88,6 +88,8 @@ namespace ItHunts.Enemies
         public int Refills => _ghouls.Refills + _flyers.Refills;
         public int Kills => _ghouls.Kills + _flyers.Kills;
         public int SpawnFailures { get; private set; }
+        /// <summary>Apparitions annulées : un joueur est entré dans la salle du point pendant l'annonce (D-045).</summary>
+        public int SpawnsCancelled { get; private set; }
         public float NextSpawnIn => Mathf.Max(0f, Mathf.Min(_ghouls.NextSpawn, _flyers.NextSpawn) - Time.time);
         public int GhoulPoolSize => _ghouls.Members.Count;
         /// <summary>Coop : multiplicateur du moment (joueurs vivants).</summary>
@@ -352,6 +354,12 @@ namespace ItHunts.Enemies
                 _pending.RemoveAt(i);
                 if (p.Marker != null)
                     p.Marker.SetActive(false);
+                if (ItHunts.Level.RoomVolume.SharesRoomWithAny(p.Point.transform.position, _players))
+                {
+                    SpawnsCancelled++;                                   // un joueur est entré dans la salle pendant l'annonce (D-045)
+                    continue;
+                }
+
                 Activate(p.Member, p.Point);
                 p.Kind.Owner[p.Member] = p.OwnerId;
                 Spawned?.Invoke(p.Point.transform.position, p.Kind.Type);
@@ -407,7 +415,8 @@ namespace ItHunts.Enemies
             _candidates.Clear();
             foreach (SpawnPoint p in SpawnPoint.All)
                 if (p != null && p.Accepts(kind) && now - p.LastUsed > 2f
-                    && WaveMath.DistanceOkFor(p.transform.position, _players, forPlayer, settings.minDistance, settings.maxDistance))
+                    && WaveMath.DistanceOkFor(p.transform.position, _players, forPlayer, settings.minDistance, settings.maxDistance)
+                    && !ItHunts.Level.RoomVolume.SharesRoomWithAny(p.transform.position, _players))   // jamais dans la salle d'un joueur (D-045)
                     _candidates.Add(p);
             for (int i = _candidates.Count - 1; i > 0; i--)
             {

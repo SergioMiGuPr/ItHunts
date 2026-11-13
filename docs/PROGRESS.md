@@ -4,6 +4,65 @@
 
 ## Étape en cours
 
+**Après le playtest de l'étape 7 (partie 2)** — fait et **validé en playtest** le 2026-11-13 ; bloc 0 (tronçons de couloir,
+D-047) ajouté ensuite, commité et poussé sur `main` :
+- **Tronçons de couloir (D-047) :** volumes de type Couloir, 40 m au plus (`corridorSegmentLength`), 24 dans Test_Arena ; pas
+  d'apparition dans le tronçon d'un joueur ni les voisins. Mesuré (joueur au milieu d'un tronçon, 90 s, distance minimale à 0) :
+  **28 + 27 apparitions sans tronçons, 0 + 0 avec**.
+- **Traction : 2 charges** au lieu de 3 (réglable), 6 s par charge, 2.5 s, 18 m/s inchangés (D-036 mise à jour).
+- **Murs (D-044) :** impulsion et bonus du wall jump, et gain du strafe le long du mur, **−15 %** (`wallGainScale` 0.85) et
+  arrêtés à **18 m/s** (`wallGainCap`) au lieu de 20 ; l'élan acquis est gardé, rien ne freine un joueur plus rapide. Mesuré
+  (couloir à deux murs, 30 wall jumps) : vitesse max **20.0 → 18.0 m/s** ; lancé à 22 m/s : 22 m/s gardés.
+- **Âmes en coop (D-007 et D-043 révisées) :** gagnées en commun, dépensées individuellement : éclats communs, n'importe quelle
+  orbe ramasse, chaque joueur vivant reçoit 1 âme par éclat ; plus d'éclats par joueur (réglage `shareRadius` retiré).
+- **Coffres par joueur :** une ouverture par joueur, en payant, avec son propre choix parmi 3 (orbes vues par lui seul,
+  `ViewerOnly`) ; couvercle et texte par caméra (« Coffre / ouvert » pour qui l'a ouvert).
+- **Salles (D-045) :** `RoomVolume` (16 dans Test_Arena : salles, carrefours, repaire, pièces fermées ; à poser à la main au
+  level design) ; jamais d'apparition dans la salle d'un joueur (au choix du point et à la fin de l'annonce). Mesuré : joueur au
+  centre de la salle C, 90 s : **69 apparitions sur 184 dans sa salle sans volumes, 0 sur 146 avec**.
+- 316 tests (1 non concluant à dessein). Checklist : `docs/design/features/ames/testing.md` (« après le playtest (partie 2) »).
+- **Réseau (étape 11) :** collecte et gain des âmes, ouvertures de coffre et choix sur l'autorité ; les orbes de choix
+  n'existent que chez leur joueur.
+
+**Étape 8 — run complète (D-046)** : vision de l'utilisateur du 2026-11-13 ; **plan court envoyé, attendre sa réponse avant
+de coder**. On fait seulement le niveau 1, mais la structure doit être prête pour la suite.
+- **Run :** une seule run du début à la fin : niveau 1 (cave du château), niveau 2, niveau 3, combat final (D-008 : tué
+  seulement par l'environnement). **Difficultés :** Facile = niveau 1 (fin après son combat de boss) ; Moyenne = niveaux 1 et 2
+  (ennemis plus forts) ; Difficile = niveaux 1, 2, 3, fuite devant le boss, combat final (encore plus forts). Stats des ennemis
+  par difficulté dans un asset. **Seule Facile est jouable pour l'instant.**
+- **Niveau :** salle de départ (tous les joueurs y apparaissent ; ni ennemi ni traqueur n'y apparaît ou n'y entre tant qu'aucun
+  joueur n'en est sorti ; redevient normale à la première sortie, qui démarre le timer). Un **marchand dans chaque salle de
+  départ** : améliorations de l'artefact (choix parmi 3 tirées au hasard, prix qui monte à chaque achat) ; les **coffres**
+  donnent les améliorations de stats ; le marchand placé au hasard (D-043) est **supprimé**. Traqueur lâché à **3 min**.
+  **Sortie** : grande porte verrouillée, déverrouillée à **10 min**, puis payée en âmes (prix à équilibrer), vers des escaliers
+  qui montent au niveau suivant. **Timer de 15 min** (D-042) depuis la sortie de la salle de départ, puis Enragé (×2 âmes,
+  D-009) : entre 10 et 15 min on part tranquille, après c'est le risque. **Combat de boss** contre le traqueur à la fin de
+  chaque niveau, sans vraiment le tuer mais qu'il faut gagner, puis début du niveau suivant (forme : 2 ou 3 options à
+  proposer). **PV du joueur** : 100 provisoires, à fixer.
+- **Level design du niveau 1** (greybox, assets à la DA) : carte entière beaucoup plus grande que Test_Arena, salles plus
+  travaillées, pas vide mais de la place pour bouger ; coffres dans le décor, derrière des obstacles ; **mini-zones de
+  parcours sur surfaces non magnétiques** (la traction ne s'y accroche pas ; seuls endroits où l'on contourne le traqueur ;
+  ailleurs on ne peut pas, ex. pentes avec du vide sur le côté) → réglage « surface non magnétique » par surface ; hauteurs
+  permises si remplies de tous les côtés (objets, décor, ponts entre salles) ; ambiance cave de château, peut-être égouts et
+  eau ; **minimap avec brouillard de guerre** (salles découvertes en les visitant ; coffres, marchand, salle verrouillée,
+  sortie, salle de départ affichés une fois découverts ; en coop, alliés visibles et découvertes partagées ; version greybox).
+- **Menus (greybox) :** menu principal (personnage : 1 seul ; difficulté : Facile seule ; Lancer le niveau 1 ; accès direct à
+  Test_Movement et Test_Arena) ; inviter un ami, multijoueur, paramètres, touches : présents mais grisés.
+- **Mort et fin de partie :** écran de mort, réanimation par un allié (D-007 : non réanimé = retour à la zone suivante),
+  spectateur d'un allié vivant, écran de fin si le dernier joueur vivant meurt ; en solo : mort = écran de fin, puis menu.
+- **Questions à trancher avec l'utilisateur :** forme du combat de boss, égouts et eau, taille de la carte, PV du joueur, prix
+  de la porte de sortie.
+
+**Notes pour plus tard (ne pas coder) :**
+- **Équilibrage complet** quand le niveau 1 entier sera jouable avec la DA : nombre d'ennemis, revenus en âmes (environ 280 en
+  4 min aujourd'hui) contre prix des coffres, du marchand et de la porte, timer.
+- **Améliorations :** les 8 actuelles sont provisoires et seront entièrement revues ; le système générique reste.
+- **Étape 10 (DA), à refaire selon la direction artistique :** retour visuel et sonore des âmes, présentation des améliorations,
+  menus du coffre et du marchand avec descriptions détaillées, minimap, HUD, menu principal. Menus inspirés de Ravenswatch et de
+  Dead by Daylight pour la structure et l'ergonomie, dans le style du jeu (cel-shading, contours encrés, rendu peint, lumière
+  dramatique). **Contrainte : aucun menu ne met le jeu en pause** (coop en ligne).
+- **Niveaux 2, 3 et zone finale :** structure prête, contenu plus tard.
+
 **Étape 7 terminée** (2026-11-13) : âmes et économie (D-043), **validée en playtest** (collecte, refus, marchand, coffres,
 choix des améliorations ; salle verrouillée non testée, la mesure suffit). Après le playtest : coffre seulement avec E / Y ;
 hausse du prix à chaque achat (%, par joueur, coffres / marchand / portes, 0 % pour l'instant). Commit et push sur `main`.
@@ -198,7 +257,7 @@ Ordre de CLAUDE.md, une étape validée en playtest avant la suivante :
 3. Magnétisme (fait) → 4. Télékinésie, une seule orbe, dégâts (fait) → 5. Vue FPS et HUD (fait) →
 **5 bis. Artefacts** (fait, D-032) → **6. Ennemis et vagues, avec le traqueur** (fait, D-033 à D-041) → **7. Âmes et
 économie** (fait, D-043) →
-8. Run complète → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
+**8. Run complète** (vision D-046, plan en attente de validation) → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
 ci-dessous) → 11. Coop en ligne → 12. Build.
 
 **Piste parallèle : direction artistique (étape 10)**, menée par une deuxième personne depuis le 2026-11-12 :

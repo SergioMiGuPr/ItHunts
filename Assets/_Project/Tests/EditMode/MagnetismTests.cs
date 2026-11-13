@@ -310,7 +310,7 @@ namespace ItHunts.Tests
         [Test]
         public void Attraction_UneChargeParTraction_SansDelaiEntreDeux()
         {
-            Assert.That(_m.AttractCharges, Is.EqualTo(_cfg.attractCharges).Within(1e-3f), "3 charges au départ");
+            Assert.That(_m.AttractCharges, Is.EqualTo(_cfg.attractCharges).Within(1e-3f), "2 charges au départ (D-036)");
             QuickTraction();
             Assert.That(_m.AttractCharges, Is.EqualTo(_cfg.attractCharges - 1f).Within(0.05f));
             Step(PressAttract(new Vector3(0f, 25f, 25f)));            // tout de suite après le relâchement

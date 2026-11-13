@@ -37,7 +37,7 @@ namespace ItHunts.Economy
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             go.name = upgrade != null ? $"Orbe : {upgrade.displayName}" : "Orbe : soin";
-            UnityEngine.Object.Destroy(go.GetComponent<Collider>());
+            Interactables.Discard(go.GetComponent<Collider>());
             go.transform.SetParent(parent, true);
             go.transform.position = at;
             go.transform.localScale = Vector3.one * 0.55f;
@@ -51,6 +51,8 @@ namespace ItHunts.Economy
             }
 
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            if (restrictedTo != 0)
+                go.AddComponent<ViewerOnly>().PlayerId = restrictedTo;  // choix d'un coffre : vu par ce joueur seul
             var orb = go.AddComponent<OfferOrb>();
             orb.Upgrade = upgrade;
             orb.Price = price;
@@ -105,7 +107,7 @@ namespace ItHunts.Economy
             if (Heal > 0f)
                 p.Heal(Heal);
             TakenBy?.Invoke(this, p);
-            Destroy(gameObject);
+            Interactables.Discard(gameObject);
         }
     }
 }

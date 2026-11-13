@@ -42,6 +42,17 @@ namespace ItHunts.Economy
             return cam.GetComponentInParent<PlayerHealth>();
         }
 
+        /// <summary>Détruit un objet (orbe prise, collider) : en jeu à la fin de l'image, hors jeu (tests EditMode) tout de suite.</summary>
+        public static void Discard(Object o)
+        {
+            if (o == null)
+                return;
+            if (Application.isPlaying)
+                Object.Destroy(o);
+            else
+                Object.DestroyImmediate(o);
+        }
+
         /// <summary>Caméra du monde d'un joueur.</summary>
         public static Camera CameraOf(PlayerHealth p)
         {

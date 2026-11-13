@@ -56,7 +56,7 @@ jeu, un bon joueur va plus loin.
 | Saut + double saut en course | **≈ 9 m** | |
 | Dash (au sol ou en l'air) | **6.5 m** en 0.3 s | s'ajoute aux sauts |
 | Bunny hop à 20 m/s | **≈ 13 m** par saut | les arènes doivent être **longues** (lignes de 50 m+) |
-| Wall jump | **1.8 m** de haut, poussée de 7.5 m/s | murs de wall slide : **≥ 6 m** de haut, longs |
+| Wall jump | **1.8 m** de haut, poussée de 7.5 m/s (**6.4 m/s** effectifs : −15 % sur les murs, gains arrêtés à **18 m/s**, D-044) | murs de wall slide : **≥ 6 m** de haut, longs |
 | Écarts entre murs testés (wall jump d'un mur à l'autre) | **3 m** (cheminée de 30 m), **6 m**, **10 m** | 3 m : on monte en zigzag ; 10 m : limite confortable |
 
 **Terrain d'essai déjà testé** (scène `Test_Movement`, greybox) :
@@ -198,6 +198,10 @@ long du corps, levée au-dessus de la tête pendant l'annonce, abattue sur la ci
 
 - **Plus d'abris (D-035) :** tout point où l'on tient debout doit rester à portée de sa main (15 m depuis l'épaule, ou
   15 m depuis l'ouverture d'une pièce). Pas de recoin sous un objet bas, pas de pièce plus profonde que 15 m.
+- **Volumes de salle (D-045, D-047) :** chaque salle de vos scènes de niveau reçoit un objet vide avec le composant
+  `RoomVolume` (une boîte du sol au plafond, type Salle) ; chaque couloir, un volume de type Couloir par **tronçon de 40 m au
+  plus**. Aucun ennemi n'apparaît dans la salle ou le tronçon d'un joueur (ni dans les tronçons voisins), et la minimap s'en
+  sert.
 - **Murs grimpables des goules :** faces avant des corniches et murs sous les ponts des couloirs (composant
   `ClimbLink`) ; les garder dégagés.
 - **Lisibilité :** la goule et le traqueur doivent rester visibles dans le noir (yeux, silhouette) ; les volumes se
@@ -208,9 +212,9 @@ long du corps, levée au-dessus de la tête pendant l'annonce, abattue sur la ci
 
 | Élément | Mesure | Lueur et lisibilité |
 |---|---|---|
-| Éclat d'âme | sphère de **0.25 m**, flotte un peu au sol, file vers l'orbe (25 m/s) | **cyan très lumineux** (HDR ≈ 0.4 / 2.6 / 3.2, bloom) ; clignote ses 5 dernières secondes ; visible seulement par son joueur |
-| Coffre | caisse de **1.4 × 0.8 × 0.9 m** (collision sur tout le volume) + couvercle **1.5 × 0.2 × 1 m** (caché à l'ouverture) | liseré **orangé** (émission), couvercle **doré lumineux** (HDR ≈ 3 / 2 / 0.5) ; texte « Coffre / 30 âmes » à 1.7 m |
-| Orbes de choix (coffre) | sphères de **0.55 m**, à **2.2 m** au-dessus du coffre (celle du milieu 0.6 m plus haut), espacées de **2.4 m** ; flottent (±0.12 m) et tournent | couleur de l'amélioration (HDR) ; **icône puis nom, deux lignes de 0.28 m**, toujours face à l'écran, **lisibles à 10 m** (vérifié par une capture) |
+| Éclat d'âme | sphère de **0.25 m**, flotte un peu au sol, file vers l'orbe (25 m/s) | **cyan très lumineux** (HDR ≈ 0.4 / 2.6 / 3.2, bloom) ; clignote ses 5 dernières secondes ; **commun** : visible par tous les joueurs |
+| Coffre | caisse de **1.4 × 0.8 × 0.9 m** (collision sur tout le volume) + couvercle **1.5 × 0.2 × 1 m** (caché, **pour chaque joueur**, quand il l'a ouvert : un modèle avec couvercle séparé) | liseré **orangé** (émission), couvercle **doré lumineux** (HDR ≈ 3 / 2 / 0.5) ; texte « Coffre / 30 âmes » à 1.7 m, « Coffre / ouvert » pour qui l'a ouvert |
+| Orbes de choix (coffre) | sphères de **0.55 m**, à **2.2 m** au-dessus du coffre (celle du milieu 0.6 m plus haut), espacées de **2.4 m** ; flottent (±0.12 m) et tournent | couleur de l'amélioration (HDR) ; **icône puis nom, deux lignes de 0.28 m**, toujours face à l'écran, **lisibles à 10 m** (vérifié par une capture) ; **visibles seulement par le joueur qui a ouvert le coffre** (deux joueurs : deux jeux d'orbes au même endroit) |
 | Marchand | silhouette de **0.9 × 2.2 m** + enseigne **1.6 × 0.4 m** à 2.9 m | robe **violette** (émission), enseigne violette lumineuse ; 4 orbes d'offre à 1.6 m de haut (une sur deux 0.6 m plus haut), **1.6 m devant lui**, espacées de 2.4 m, avec leur prix |
 | Porte de la salle verrouillée | **3 × 3 m** (l'ouverture de la pièce), barreaux sur la fenêtre (3 × 1.5 m) | bois sombre à **lueur orangée** ; texte « Salle verrouillée / 50 âmes » |
 
