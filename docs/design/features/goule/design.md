@@ -1,6 +1,6 @@
 # Goule
 
-**Status:** in progress · **Updated:** 2026-11-12 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md)
+**Status:** implemented · **Updated:** 2026-11-12 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md)
 
 Ennemi de base de la zone 1 (BRIEF, D-033) : une créature basse qui rampe très vite, bondit sur le joueur, grimpe aux
 murs et bondit depuis le mur. Elle oblige à bouger et se tue surtout avec l'environnement : objets lancés, mur après
@@ -9,7 +9,9 @@ une répulsion, prise quand elle est étourdie, lustre. Elle sait toujours où s
 ## Règles
 
 1. **Poursuite permanente (D-035) :** plus de vue ni de poste : elle va vers le joueur **le plus proche par le chemin**
-   (revu chaque seconde), même s'il est derrière elle, et ne lâche jamais.
+   (revu chaque seconde), même s'il est derrière elle, et ne lâche jamais. **Cible en coop (D-041)** : au départ, le joueur le plus proche par le chemin ; ensuite il **garde sa cible** et ne change que si l'autre joueur est plus proche d'au moins **15 m** (ou si sa cible est à plus de **60 m**), et au moins **3 s** après son dernier changement ; **immédiat** si sa cible meurt, ou si un autre joueur le blesse, l'attrape ou le lance (il se retourne contre lui). Un joueur mort ne compte pas.
+   **Accalmie des vagues :** en trop, elle repasse en attente et recule d'environ 10 m ; elle repart si le joueur repasse dans
+   sa zone d'aggro, ou au pic suivant.
 2. **Encerclement :** loin du joueur (plus de 10 m), chaque goule vise un point décalé autour de lui (rayon 6 m, angle
    propre à chacune) : elles arrivent de plusieurs côtés au lieu de faire la queue. Près de lui, droit dessus.
    Au sol, 10 m/s (la course à 7.5 m/s ne la sème pas ; le bunny hop ou la traction, si).
@@ -46,7 +48,8 @@ une répulsion, prise quand elle est étourdie, lustre. Elle sait toujours où s
 |---|---|---|---|
 | PV / masse | 60 / 50 | PV / kg | une caisse de 25 kg lancée (55) + une balle ; 5 balles |
 | Vitesse au sol, accélération, rotation | 10, 40, 720 | m/s, m/s², °/s | |
-| Choix de la cible | le plus proche par le chemin, chaque seconde | | |
+| Choix de la cible | le plus proche par le chemin, chaque seconde ; coop : marge 15 m, abandon 60 m, délai 3 s | | pas d'hésitation |
+| Accalmie : recul | 10 | m | |
 | Encerclement : rayon, droit dessus en dessous de | 6, 10 | m | |
 | Murs : montée, descente | 7, 12 | m/s | |
 | Goules en chasse au même moment | 25 | | les autres attendent |
@@ -78,3 +81,4 @@ une répulsion, prise quand elle est étourdie, lustre. Elle sait toujours où s
 - 2026-11-12 : poursuite permanente, encerclement, murs et bond d'en haut (D-035).
 - 2026-11-12 : murs de 16 m vers le niveau haut, murs grimpables partout, plafond de 25 goules en chasse (D-037).
 - 2026-11-12 : aggro (plafond total 40), murs grimpables automatiques (D-038).
+- 2026-11-13 : apparaît par les vagues ; accalmie (recul) ; choix de cible en coop (D-041).

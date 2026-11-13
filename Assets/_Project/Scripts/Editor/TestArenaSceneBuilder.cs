@@ -32,6 +32,7 @@ namespace ItHunts.EditorTools
         private const string LayoutPath = SettingsDir + "/Editor/ArenaLayout_Test.asset";
         private const string GhoulPath = SettingsDir + "/Ghoul_Default.asset";
         private const string FlyerPath = SettingsDir + "/Flyer_Default.asset";
+        private const string WavesPath = SettingsDir + "/Waves_Default.asset";
         private const string StalkerPath = SettingsDir + "/Stalker_Default.asset";
         private const string ZonePath = SettingsDir + "/Zone_Test.asset";
         private const string PoolPath = SettingsDir + "/ArtifactPool_Default.asset";
@@ -45,7 +46,8 @@ namespace ItHunts.EditorTools
         private static FlyerSettings _flyer;
         private static int _flyerCount;
         private static Transform _level, _ghouls;
-        private static int _crateCount, _ghoulCount;
+        private static int _crateCount, _ghoulCount, _spawnCount;
+        private static Transform _spawns;
 
         private struct Node
         {
@@ -105,8 +107,8 @@ namespace ItHunts.EditorTools
             volume.isGlobal = true;
             volume.sharedProfile = LoadOrCreatePostProcess();
             _level = new GameObject("Niveau").transform;
-            _ghouls = new GameObject("Goules").transform;
-            _crateCount = _ghoulCount = _flyerCount = 0;
+            _spawns = new GameObject("Points d'apparition (vagues)").transform;
+            _crateCount = _ghoulCount = _flyerCount = _spawnCount = 0;
 
             DefineMaze();
             DefineRooms(out List<RoomDef> rooms);
@@ -174,12 +176,32 @@ namespace ItHunts.EditorTools
             Node lair = Nodes[9];
             BuildStalker(stalkerSettings, lair.C + new Vector3(lair.Half * 0.3f, 0f, 0f));
 
+            // Vagues (D-041) : réserve de goules et de volants inactifs (sous le niveau), réutilisés par le directeur des vagues.
+            var waves = LoadOrCreate<WaveSettings>(WavesPath);
+            var ghoulPool = new GameObject("Réserve des vagues : goules").transform;
+            var flyerPool = new GameObject("Réserve des vagues : volants").transform;
+            _ghouls = ghoulPool;
+            for (int i = 0; i < waves.ghoulPool; i++)
+                BuildGhoul(new Vector3(i * 2f, -60f, 0f), Quaternion.identity, $"(réserve) {i + 1}");
+            _ghouls = flyerPool;
+            for (int i = 0; i < waves.flyerPool; i++)
+                BuildFlyer(new Vector3(i * 2f, -60f, 10f), $"(réserve) {i + 1}");
+            foreach (Transform t in ghoulPool)
+                t.gameObject.SetActive(false);
+            foreach (Transform t in flyerPool)
+                t.gameObject.SetActive(false);
+            var director = new GameObject("Vagues (directeur)").AddComponent<WaveDirector>();
+            SetRef(director, "settings", waves);
+            SetRef(director, "ghoulPool", ghoulPool);
+            SetRef(director, "flyerPool", flyerPool);
+            SetRef(director, "telegraphMaterial", UnlitMat("Wave_Spawn_Telegraph", "Universal Render Pipeline/Unlit", new Color(3f, 0.6f, 0.15f)));
+
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
             player.transform.SetPositionAndRotation(start.position, start.rotation);
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddSceneToBuild(ScenePath);
-            return $"OK : {ScenePath} (labyrinthe {Nodes.Count} intersections, {Edges.Count} couloirs, {_ghoulCount} goules, " +
-                   $"{_flyerCount} volants, {_crateCount} objets ; murs grimpables trouvés au lancement)";
+            return $"OK : {ScenePath} (labyrinthe {Nodes.Count} intersections, {Edges.Count} couloirs, {_spawnCount} points d'apparition, " +
+                   $"réserve de {_ghoulCount} goules et {_flyerCount} volants, {_crateCount} objets ; murs grimpables trouvés au lancement)";
         }
 
         /// <summary>Valeurs du traqueur géant (D-034, D-035) et de la goule sur les assets existants.</summary>
@@ -492,7 +514,14 @@ namespace ItHunts.EditorTools
             {
                 float t = (i + 1f) / (L.ghoulsPerCorridor + 1f);
                 float side = IsSlope(e) ? (Width(e) - L.cliffLaneWidth) / 2f : (i % 2 == 0 ? 1f : -1f) * 3f;   // pente : sur la voie en pente
-                BuildGhoul(CorridorPoint(e, t, side), Quaternion.Euler(0f, i * 90f, 0f), $"{name} {i + 1}");
+                SpawnPointAt(CorridorPoint(e, t, side), Quaternion.Euler(0f, i * 90f, 0f), SpawnKinds.Goule, $"goule, {name} {i + 1}");
+            }
+
+            // Volants : en hauteur au milieu du couloir (D-041).
+            for (int i = 0; i < L.flyersPerCorridor; i++)
+            {
+                float t = (i + 1f) / (L.flyersPerCorridor + 1f);
+                SpawnPointAt(CorridorPoint(e, t) + Vector3.up * (h - 5f), Quaternion.identity, SpawnKinds.Volant, $"volant, {name} {i + 1}");
             }
         }
 
@@ -770,10 +799,10 @@ namespace ItHunts.EditorTools
             for (int i = 0; i < L.flyersPerHall; i++)
             {
                 float a = (i + 0.5f) / Mathf.Max(1, L.flyersPerHall) * Mathf.PI * 2f;
-                BuildFlyer(n.C + new Vector3(Mathf.Cos(a) * n.Half * 0.45f, 12f, Mathf.Sin(a) * n.Half * 0.45f), $"{n.Name} {i + 1}");
+                SpawnPointAt(n.C + new Vector3(Mathf.Cos(a) * n.Half * 0.45f, 12f, Mathf.Sin(a) * n.Half * 0.45f), Quaternion.identity, SpawnKinds.Volant, $"volant, {n.Name} {i + 1}");
             }
             for (int i = 0; i < Mathf.Min(L.ghoulsPerHall, ghoulSpots.Length); i++)
-                BuildGhoul(n.C + new Vector3(ghoulSpots[i].x, 0f, ghoulSpots[i].y), Quaternion.Euler(0f, i * 47f, 0f), $"{n.Name} {i + 1}");
+                SpawnPointAt(n.C + new Vector3(ghoulSpots[i].x, 0f, ghoulSpots[i].y), Quaternion.Euler(0f, i * 47f, 0f), SpawnKinds.Goule, $"goule, {n.Name} {i + 1}");
         }
 
         /// <summary>Poutres (dessous à 10 m) et ponts au-dessus des couloirs (les goules y montent par les murs).</summary>
@@ -822,6 +851,19 @@ namespace ItHunts.EditorTools
             go.GetComponent<MeshRenderer>().sharedMaterial = _crate;
             MakeGrabbable(go, 25f, true);
             Piece($"Chaîne du lustre : {name}", new Vector3(at.x, (at.y + ceiling) / 2f, at.z), new Vector3(0.15f, ceiling - at.y, 0.15f), _wall, walkable: false, collider: false);
+        }
+
+        /// <summary>Point d'apparition des vagues (D-041) : objet vide avec SpawnPoint (on peut en poser à la main de la même façon).</summary>
+        private static void SpawnPointAt(Vector3 at, Quaternion rotation, SpawnKinds kinds, string label)
+        {
+            _spawnCount++;
+            var go = new GameObject($"Apparition : {label}");
+            go.transform.SetParent(_spawns, false);
+            go.transform.SetPositionAndRotation(at, rotation);
+            var sp = go.AddComponent<SpawnPoint>();
+            var so = new SerializedObject(sp);
+            so.FindProperty("kinds").intValue = (int)kinds;
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         /// <summary>

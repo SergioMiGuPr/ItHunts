@@ -399,6 +399,13 @@ namespace ItHunts.Debugging
             if (alive > 0)
                 _text.AppendLine($"Goules : {alive} en vie, {ItHunts.Enemies.Ghoul.HuntingCount} en chasse (dont {ItHunts.Enemies.Ghoul.HuntingCount - ItHunts.Enemies.Ghoul.PackCount} réveillées par l'aggro), {onWall} sur un mur, {leaping} en bond ; la plus proche à {Mathf.Sqrt(nearestD):0.0} m : " +
                                  $"{nearest.Mode}, {nearest.Speed:0.0} m/s, bond {(nearest.LeapCooldownRemaining > 0f ? $"dans {nearest.LeapCooldownRemaining:0.0} s" : "prêt")}");
+            // Vagues (D-041) : phase, voulus / présents, dette, apparitions.
+            var waves = FindFirstObjectByType<ItHunts.Enemies.WaveDirector>();
+            if (waves != null)
+                _text.AppendLine($"Vagues : {(waves.InPeak ? $"PIC {waves.PeakIndex}" : "accalmie")} ({waves.PhaseLeft:0} s) ; goules {waves.PresentGhouls}/{waves.WantedGhouls} " +
+                                 $"(tendance {waves.GhoulLevel:0}, à reconstituer {waves.GhoulDebt}), volants {waves.PresentFlyers}/{waves.WantedFlyers} (à reconstituer {waves.FlyerDebt}) ; " +
+                                 $"en annonce {waves.PendingCount}, prochaine dans {waves.NextSpawnIn:0.0} s ; apparitions {waves.Spawns}, tués {waves.Kills}, échecs {waves.SpawnFailures}");
+
             // Volants : résumé et le plus proche.
             int flyers = 0, diving = 0;
             ItHunts.Enemies.Flyer nearFlyer = null;

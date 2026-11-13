@@ -4,6 +4,10 @@
 
 ## Étape en cours
 
+**Étape 6 terminée** (2026-11-13) : ennemis, traqueur, volant, vagues, accalmie et coop des vagues, validés en playtest (le
+choix de cible en coop et l'accalmie seront revus au prochain playtest, checklist F12 de `vagues/testing.md`). Commit et push
+sur `main`. **Prochaine : étape 7, âmes et économie** (plan court envoyé, en attente de réponse).
+
 **4 — Télékinésie, une seule orbe, dégâts** (D-023 à D-027) — terminée.
 
 1. **Cœur et orbe unique** — **fait et validé en playtest** (2026-11-12), commit `5a8d454`. Retour : la prise à
@@ -57,7 +61,7 @@
   Télékinésie (cibles à 10, 30 et 60 m). 255 tests (1 non concluant à dessein). Checklist :
   `docs/design/features/artefacts/testing.md`.
 
-**6 — Ennemis, vagues et traqueur** (D-033), ordre de l'utilisateur (D-011 d'abord) :
+**6 — Ennemis, vagues et traqueur** (D-033 à D-041) — **terminée** (2026-11-13), ordre de l'utilisateur (D-011 d'abord) :
 1. **Base commune et coups des ennemis** — fait (2026-11-12) : `EnemySettings` (base des factices, de la goule et du
    traqueur), `EnemyLocomotion` (NavMesh, pas fixe, sans NavMeshAgent), `EnemySenses`, `NoiseEvents`,
    `PlayerHealth.TakeEnemyDamage` / `Kill`, poussée sans ralentissement.
@@ -136,13 +140,38 @@
        (a) : **revers de la main gauche** (7 m du bord du corps, délai 0.5 s, annonce 0.2 s, coup 0.25 s). Mesuré : 80 m 20/20 en
        bunny hop et en traction, 40 m 0/20, couloir 0/60.
      - 286 tests (1 non concluant à dessein).
-7. Vagues — à faire (plan court envoyé, en attente de réponse).
+   - **Ajustements du 2026-11-13 (sans commit, playtest en attente)** : volant repoussé, **tout choc contre un mur ou le sol pendant
+     1.5 s le tue** (`pushedContactKillTime`), mesuré 20/20 contre un mur et 20/20 contre le sol (les 2 échecs sur 5 venaient du
+     script : répulsion en recharge) ; piqué en traction : 50/50 touché sans réaction, **0/50 avec un dash tard**.
+7. **Vagues** (D-041) — fait et **validé en playtest** le 2026-11-13 (volant, dash, main plantée, piqué, vagues : difficulté
+   gardée pour les tests) : tendance en part du timer
+   (goules 10 → 60, 80 en Enragé ; volants 2 → 16, 20), pics de 20 s annoncés (cor, « VAGUE n ») et accalmies de 15 s à 60 %,
+   apparitions 3 → 1 s (0.5 s en Enragé) sur 108 points (`SpawnPoint`, posables à la main), hors de vue, 25 à 80 m, lueur 0.6 s ;
+   tués reconstitués 1 toutes les 4 s ; plafonds de chasse selon la tendance ; réserve de 80 goules et 20 volants, plus aucun ennemi
+   posé à la main. Mesuré : points 108/108 valides, aucune apparition vue ni sous 25 m, coût au pic **0.78 ms** par pas fixe
+   (80 goules, 20 volants). 294 tests (1 non concluant à dessein). Checklist : `docs/design/features/vagues/testing.md`.
+   **Étape 7 (âmes) : multiplicateur ×2 en Enragé (D-009).**
+   - **Après ce playtest (D-041 mise à jour)** : **accalmie** : plafond de chasse (sans l'aggro) à 60 %, les ennemis en trop (les
+     plus loin) repassent en attente, reculent d'environ 10 m et ne poursuivent plus, sauf si le joueur repasse dans leur zone
+     d'aggro ; au pic suivant, ils reprennent (mesuré : 15 → 12 en chasse, 22 au pic suivant, personne ne disparaît). **Coop** :
+     × (1 + 0.5 par joueur vivant en plus), une part par joueur, apparitions à tour de rôle, à 25 m au moins de chacun (mesuré :
+     25.0 m au plus près à 2 joueurs ensemble, 27.2 m séparés de 150 m ; 4 joueurs : 9 à 11 apparus pour chacun). **Choix de
+     cible** (goule, volant) : il garde sa cible ; change si l'autre est plus près de 15 m ou si la cible est à plus de 60 m, 3 s
+     au moins après le dernier changement ; immédiat si la cible meurt, ou si un autre joueur le blesse ou le lance (mesuré :
+     1 changement en 60 s à égale distance, dû à un joueur repoussé, 0 avec un joueur qui tourne autour). 299 tests (1 non
+     concluant à dessein). **À revoir au prochain playtest** : accalmie, choix de cible (F12).
 
 **Notes pour plus tard (ne pas coder maintenant) :**
-- **Bloc 7, vagues :** le nombre de goules augmente avec le temps passé dans la zone : peu au début, de plus en plus
-  jusqu'au timer, plus encore en Enragé (le plafond de goules en chasse, D-037, pourra suivre la même courbe).
-- **Étape 8 et level design :** point de départ de la zone plus sûr (moins d'ennemis à proximité, loin du repaire du
-  traqueur). Test_Arena reste un banc d'essai ; le vrai level design viendra plus tard.
+- **Étape 7, âmes :** multiplicateur d'âmes ×2 en Enragé (D-009), à coder à l'étape 7.
+- **Étape 8 (D-042 proposée, ne pas coder avant) :**
+  - zone de départ sûre : aucun ennemi tant que les joueurs n'en sont pas sortis ;
+  - le timer ne démarre que quand le premier joueur sort de la zone de départ ;
+  - timer d'une vraie zone : 15 min au lieu de 20 (D-003 et D-010 mises à jour) ;
+  - le traqueur sort de son repaire au bout de 3 min (au lieu de 60 s de grâce) ;
+  - la vraie carte sera plus grande que Test_Arena ;
+  - en test, Test_Arena garde ses réglages actuels (4 min, grâce de 15 s).
+- **Level design :** Test_Arena reste un banc d'essai ; points d'apparition à poser à la main (trous, grilles, nids). Réserve
+  des vagues (80 / 20) trop petite pour la coop à 4 (×2.5) : à agrandir à l'étape 9 ou 11.
 
 **Note pour plus tard (lustre) :** le lustre doit pouvoir tomber **à distance** — traction sèche, objet
 lancé dessus, ou chaîne visée — pour s'en servir contre les ennemis et contre le boss final (combat
@@ -154,9 +183,8 @@ L'étape 3 (orbe de magnétisme) est **terminée et validée en playtest** (2026
 
 Ordre de CLAUDE.md, une étape validée en playtest avant la suivante :
 3. Magnétisme (fait) → 4. Télékinésie, une seule orbe, dégâts (fait) → 5. Vue FPS et HUD (fait) →
-**5 bis. Artefacts** (fait, playtest en attente, D-032) → **6. Ennemis et vagues, avec le traqueur** (rôde, tue en un
-coup, enragé à la fin du timer, intuable : exclu de la répulsion, de l'étourdissement, des dégâts de zone, des balles
-et de la prise) → 7. Âmes et économie →
+**5 bis. Artefacts** (fait, D-032) → **6. Ennemis et vagues, avec le traqueur** (fait, D-033 à D-041) → **7. Âmes et
+économie** (prochaine) →
 8. Run complète → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
 ci-dessous) → 11. Coop en ligne → 12. Build.
 
@@ -244,6 +272,17 @@ Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-023).
 
 ## Valeurs de réglage validées en playtest
 
+Étape 6 validée le 2026-11-13 (assets `Ghoul_Default`, `Flyer_Default`, `Stalker_Default`, `Waves_Default`, `Zone_Test`) :
+
+- **Goule :** 10 m/s, bond annoncé 0.3 s, contact 15 PV/s, 25 en chasse (40 avec l'aggro : 20 m en vue, 8 m), murs grimpables.
+- **Volant :** 25 PV, tué au premier impact de projectile, choc mortel 1.5 s après une répulsion, ronde 8 × 8 m, piqué annoncé
+  0.4 s à 14 m/s (8 PV, virage 80°/s, sans avance), attrapable à tout moment (libéré en 2 s), éclatement 3 m (30 → 7.5).
+- **Traqueur :** prise à la main (15 m, annonce 0.5 s, recharge 2.5 s), mains levées, Enragé qui accélère (11 → 18 m/s en 30 s),
+  main plantée 1.5 s (rotation ×0.4, corps à vitesse normale, revers de 7 m après 0.5 s, annonce 0.2 s).
+- **Charges de mouvement :** recharge 2 s au sol, 4 s en l'air.
+- **Vagues :** goules 10 / 20 / 35 / 50 / 60 (Enragé 80), volants 2 / 4 / 8 / 12 / 16 (Enragé 20), pics de 20 s, accalmies de
+  15 s à 60 %, 3 → 1 s (0.5 s en Enragé), 25 à 80 m, annonce 0.6 s, reconstitution 1 toutes les 4 s.
+
 Mouvement de base validé le 2026-11-12 avec les valeurs de `Assets/_Project/Settings/Movement_Default.asset`
 et `Camera_Default.asset` (la note de conception en fait foi) :
 
@@ -287,6 +326,13 @@ Télékinésie et orbe unique validées le 2026-11-12 (D-024 à D-027), `Telekin
 
 ## Problèmes connus / à faire
 
+- **Équilibrage ouvert après l'étape 6 (difficulté actuelle gardée pour les tests, 2026-11-13) :**
+  - piqué du volant : 100 % de touches sur un joueur en traction sans réaction, 0 % en bunny hop ;
+  - survie mesurée (traqueur coupé) : en course, mort en 6 à 28 s ; en bunny hop, souvent vivant après 60 s ;
+  - population de départ faible (peu de points cachés à 25–80 m du départ) : à revoir avec la zone de départ (D-042) ;
+  - coop à 4 : nombre voulu au-delà de la réserve ;
+  - revers du traqueur (7 m) : salle de 40 m fermée même en bunny hop.
+
 - **Équilibrage ouvert, à traiter quand les goules et les volants auront leurs PV (pas avant) :**
   - dégâts d'un ennemi lancé : 176 pour 80 kg à 30 m/s (un factice de 100 PV meurt, sa cible aussi) ;
   - plafond du bonus de vitesse au lancer (20 m/s) ;
@@ -304,6 +350,12 @@ Télékinésie et orbe unique validées le 2026-11-12 (D-024 à D-027), `Telekin
   l'utilisateur (2026-11-12), recharge d'une charge passée à 6 s.
 - **Goules (D-035) :** bond d'en haut esquivable seulement pendant le vol ; salles hautes atteintes par les pentes (pas
   de mur direct du sol vers +16 m : ajoutés par D-037) ; 76 goules, 25 en chasse au plus (D-037).
+- **Réserve des vagues :** les ennemis inactifs de la réserve n'ont jamais eu d'`Awake` ; `ZoneState.ResetZone` les ranime
+  quand même (`EnemyBody.ResetToHome` s'initialise maintenant s'il le faut). Dans les mesures, un joueur « immortel » par
+  `hp.Restore()` à chaque image meurt quand même sous 70 goules : monter ses PV max le temps de la mesure.
+- **Unity CLI :** `editor.playmode start` peut répondre sans démarrer le Play Mode ; un script lancé alors tourne en mode édition
+  et modifie la scène (la reconstruire). Toujours attendre « playing True » avec `ping.cs`. Une recompilation peut aussi se faire
+  au début d'un Play Mode (« recompiler et continuer ») : relancer le Play Mode après.
 - **Mesures du volant :** dans une salle de mesure temporaire (140 × 140 m, loin du labyrinthe) ; les coins de la salle SE supposés
   au départ étaient hors du sol (le joueur tombait). Un script qui désactive des objets (traqueur, volants) les rend introuvables pour
   le script suivant : chercher avec `FindObjectsInactive.Include` ou relancer le Play Mode.

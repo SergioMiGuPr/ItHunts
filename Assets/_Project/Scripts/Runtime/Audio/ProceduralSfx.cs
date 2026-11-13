@@ -317,6 +317,24 @@ namespace ItHunts.Audio
             return Normalize(s, 0.9f);
         }
 
+        /// <summary>Pic de vague (D-041) : cor grave qui monte (90 → 150 Hz), 0.9 s, deux voix.</summary>
+        public static float[] WaveHorn()
+        {
+            float duration = 0.9f;
+            float[] s = new float[Samples(duration)];
+            float phase = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float u = t / duration;
+                phase += 2f * Mathf.PI * Mathf.Lerp(90f, 150f, Mathf.Sqrt(u)) / SampleRate;
+                float env = Mathf.Min(1f, t / 0.05f) * Mathf.Min(1f, (duration - t) / 0.25f);
+                s[i] = env * (Mathf.Sin(phase) + 0.6f * Mathf.Sin(phase * 1.5f) + 0.3f * Mathf.Sin(phase * 2f));
+            }
+
+            return Normalize(s, 0.9f);
+        }
+
         /// <summary>Nappe de tension en boucle (4 s) : deux graves légèrement désaccordés qui battent.</summary>
         public static float[] TensionDrone()
         {

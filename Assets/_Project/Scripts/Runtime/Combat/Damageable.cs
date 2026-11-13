@@ -87,6 +87,18 @@ namespace ItHunts.Combat
 
         private void OnDisable() => AllList.Remove(this);
 
+        /// <summary>Dernier joueur qui l'a blessé, lancé ou attrapé (coop, D-041 : il se retourne contre lui).</summary>
+        public int LastAttackerId { get; private set; }
+        public float LastAttackTime { get; private set; } = float.NegativeInfinity;
+
+        public void NoteAttacker(int playerId)
+        {
+            if (playerId == 0)
+                return;
+            LastAttackerId = playerId;
+            LastAttackTime = Time.time;
+        }
+
         /// <summary>Meurt au premier impact de projectile (volant, D-040) : réglage de son asset.</summary>
         public bool DiesOnProjectileHit => !immuneToOrbs && settings != null && settings.DiesOnProjectileHit;
 

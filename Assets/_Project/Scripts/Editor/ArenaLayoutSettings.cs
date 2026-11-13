@@ -57,10 +57,12 @@ namespace ItHunts.EditorTools
         [Min(15f)] public float lairHeight = 20f;
 
         [Header("Ennemis et objets")]
+        [Tooltip("Points d'apparition des goules (vagues, D-041) : par grande salle, par couloir.")]
         [Range(0, 12)] public int ghoulsPerHall = 8;
         [Range(0, 6)] public int ghoulsPerCorridor = 3;
-        [Tooltip("Volants par grande salle (3 à 4) ; aucun dans les couloirs (D-040).")]
+        [Tooltip("Points d'apparition des volants en hauteur (vagues, D-041) : par grande salle, par couloir.")]
         [Range(0, 8)] public int flyersPerHall = 4;
+        [Range(0, 4)] public int flyersPerCorridor = 1;
         [Tooltip("Objets à lancer par grande salle (caisses, blocs lourds), plus un lustre.")]
         [Range(0, 30)] public int propsPerHall = 16;
 

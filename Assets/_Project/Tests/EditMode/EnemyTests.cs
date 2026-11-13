@@ -367,15 +367,19 @@ namespace ItHunts.Tests
             Assert.That(CountScript(scene, dir + "ZoneExit.cs"), Is.EqualTo(1), "une sortie");
             Assert.That(CountScript(scene, dir + "MazeGraph.cs"), Is.EqualTo(1), "le graphe du labyrinthe");
             Assert.That(CountScript(scene, dir + "Stalker.cs"), Is.EqualTo(1), "le traqueur");
-            Assert.That(CountScript(scene, dir + "Ghoul.cs"), Is.GreaterThanOrEqualTo(5 * 8 + 12 * 3), "8 goules par grande salle, 3 par couloir");
+            // Vagues (D-041) : plus de goules ni de volants posés à la main ; une réserve inactive et des points d'apparition.
+            Assert.That(CountScript(scene, dir + "Ghoul.cs"), Is.EqualTo(80), "réserve de 80 goules");
+            Assert.That(CountScript(scene, dir + "Flyer.cs"), Is.EqualTo(20), "réserve de 20 volants");
+            Assert.That(Regex.Matches(text, @"m_Name: ""?Goule \(r(é|\\xE9)serve\)").Count, Is.EqualTo(80), "toutes dans la réserve");
+            Assert.That(CountScript(scene, dir + "WaveDirector.cs"), Is.EqualTo(1), "le directeur des vagues");
+            Assert.That(CountScript(scene, dir + "SpawnPoint.cs"), Is.GreaterThanOrEqualTo(5 * 8 + 12 * 3 + 5 * 4 + 12), "points d'apparition : salles, couloirs, en hauteur");
+            Assert.That(Regex.Matches(text, @"kinds: 2").Count, Is.GreaterThanOrEqualTo(5 * 4 + 12), "points des volants : salles et couloirs");
             Assert.That(CountScript(scene, dir + "ReachRoom.cs"), Is.EqualTo(6), "pièces fermées où il passe le bras");
             Assert.That(CountScript(scene, dir + "ClimbLink.cs"), Is.EqualTo(0), "plus de murs grimpables posés à la main : ZoneNavMesh les trouve (D-038)");
             Assert.That(Regex.Matches(text, @"voie au sol").Count, Is.EqualTo(3), "une voie au sol (et son mur de 16 m) par couloir en pente");
             Assert.That(Regex.Matches(text, @"m_Name: Main gauche").Count, Is.EqualTo(1), "deux mains (geste au-dessus de la tête)");
             Assert.That(CountScript(scene, dir + "StalkerShortcut.cs"), Is.EqualTo(0), "plus de grilles réservées (D-035)");
             Assert.That(text.Contains("petite porte"), Is.False, "plus de tunnels bas de 4 × 4 m");
-            Assert.That(CountScript(scene, dir + "Flyer.cs"), Is.EqualTo(5 * 4), "4 volants par grande salle (D-040)");
-            Assert.That(Regex.Matches(text, @"m_Name: ""?Volant (SO|SE|C|NO|NE) ").Count, Is.EqualTo(20), "volants dans les grandes salles seulement, aucun dans les couloirs");
             Assert.That(Regex.Matches(text, @"m_Name: (Caisse|Bloc lourd)").Count, Is.GreaterThanOrEqualTo(5 * 15), "au moins 15 objets par grande salle");
             Assert.That(Regex.IsMatch(text, @"ItHunts\.Enemies\.ZoneState\s+settings: \{fileID: 0\}"), Is.False, "la zone a ses réglages");
             Assert.That(Regex.IsMatch(text, @"ItHunts\.Enemies\.Stalker\s+settings: \{fileID: 0\}"), Is.False, "le traqueur a ses réglages");

@@ -27,7 +27,7 @@
 | `Assets/_Project/Scripts/Runtime/Enemies/Flyer.cs` | cerveau, vol, piqué, éclatement |
 | `Assets/_Project/Scripts/Runtime/Settings/FlyerSettings.cs` | réglages (`Flyer_Default`) |
 | `Assets/_Project/Scripts/Runtime/Orbs/Grabbable.cs`, `TelekinesisOrb.cs`, `TelekinesisHolder.cs` | prise à tout moment, libération au bout de 2 s |
-| `Assets/_Project/Scripts/Runtime/Combat/EnemyBody.cs` | chute étourdie, dégâts contre un mur, reprise du vol |
+| `Assets/_Project/Scripts/Runtime/Combat/EnemyBody.cs` | chute étourdie, dégâts contre un mur, choc mortel après une répulsion (`PushedContactLethal`), reprise du vol |
 | `Assets/_Project/Scripts/Runtime/Combat/Hitbox.cs` | zone de touche des ailes (déclencheur) : balles et projectiles |
 | `Assets/_Project/Scripts/Runtime/Combat/Damageable.cs`, `ImpactDamager.cs`, `Artifacts/BarrelShooter.cs` | mort au premier impact de projectile (`ProjectileDamage`, jamais pour une zone) |
 | `Assets/_Project/Tests/EditMode/EnemyTests.cs`, `CombatTests.cs` | valeurs, éclatement, prise à tout moment, scène |

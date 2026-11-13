@@ -20,6 +20,14 @@ namespace ItHunts.Combat
         [Tooltip("Dégâts contre un mur même s'il est déjà étourdi (volant qui tombe après une répulsion, D-040), une fois par recul.")]
         [SerializeField] private bool wallDamageWhileStunned;
         private bool _wallHitThisKnock;
+        private float _pushedAt = float.NegativeInfinity;
+
+        /// <summary>Morts par un choc contre un mur ou le sol juste après une répulsion (volant, D-040 ; debug, mesures).</summary>
+        public int PushedContactKills { get; private set; }
+
+        /// <summary>Dans la fenêtre qui suit une répulsion où tout choc le tue (volant) ?</summary>
+        public bool PushedContactLethal => settings != null && settings.PushedContactKillTime > 0f
+                                           && Time.time - _pushedAt <= settings.PushedContactKillTime;
 
         private const float Skin = 0.03f;
         private const float RestSpeed = 0.2f;
@@ -77,6 +85,26 @@ namespace ItHunts.Combat
             return before - _damageable.Health.Current;
         }
 
+        /// <summary>
+        /// Choc juste après une répulsion (volant, D-040) : il meurt, quelle que soit la vitesse ; les dégâts passent par le
+        /// chemin habituel (chiffres, son). Vrai s'il est mort.
+        /// </summary>
+        private bool KillOnContact(float speed, Vector3 point)
+        {
+            if (_damageable == null || _damageable.Dead || _damageable.ImmuneToOrbs)
+                return false;
+            ImpactDamager.ApplyDirect(_damageable, -GetInstanceID() - 2, _damageable.Health.Current, speed, Mass, point, Time.time);
+            if (!_damageable.Dead)
+                _damageable.ApplyDamage(_damageable.Health.Current, Time.time, out _);
+            if (!_damageable.Dead)
+                return false;
+            PushedContactKills++;
+            LastWallDamage = 0f;
+            _knocked = false;
+            _velocity = Vector3.zero;
+            return true;
+        }
+
         /// <summary>Dernier étourdissement : vitesse d'impact contre l'obstacle (debug, mesures).</summary>
         public float LastStunImpactSpeed { get; private set; }
 
@@ -95,6 +123,14 @@ namespace ItHunts.Combat
             _damageable = GetComponent<Damageable>();
         }
 
+        /// <summary>Nouvelle place de départ (vagues, D-041 : un ennemi réutilisé apparaît ailleurs).</summary>
+        public void SetHome(Vector3 home)
+        {
+            if (_body == null)
+                Init();
+            _home = home;
+        }
+
         /// <summary>Ajoute une vitesse de recul (onde de répulsion).</summary>
         public void Push(Vector3 velocity)
         {
@@ -109,6 +145,7 @@ namespace ItHunts.Combat
             _velocity += velocity;
             _knocked = _velocity.sqrMagnitude > RestSpeed * RestSpeed;
             _wallHitThisKnock = false;
+            _pushedAt = Time.time;
         }
 
         /// <summary>
@@ -130,8 +167,11 @@ namespace ItHunts.Combat
         /// <summary>Réapparition : à son poste, immobile, pas étourdi.</summary>
         public void ResetToHome()
         {
+            if (_body == null)
+                Init();                                                  // réserve des vagues : jamais activé (pas d'Awake)
             _velocity = Vector3.zero;
             _knocked = false;
+            _pushedAt = float.NegativeInfinity;
             _stunnedUntil = float.NegativeInfinity;
             _immuneUntil = float.NegativeInfinity;
             _inFlight = false;
@@ -225,6 +265,8 @@ namespace ItHunts.Combat
 
             float gravity = settings != null ? settings.gravity : 20f;
             bool grounded = Grounded(out float groundY);
+            if (grounded && _velocity.y < 0f && PushedContactLethal && KillOnContact(-_velocity.y, _body.position))
+                return;                                                  // volant repoussé qui touche le sol
             if (!grounded)
                 _velocity.y -= gravity * dt;
             else if (_velocity.y <= 0f)
@@ -250,6 +292,8 @@ namespace ItHunts.Combat
                     float into = -Vector3.Dot(_velocity, n);
                     bool wall = n.y < 0.5f;
                     bool solid = hit.collider.GetComponent<CharacterController>() == null;
+                    if (solid && !hit.collider.isTrigger && hit.collider.attachedRigidbody == null && PushedContactLethal && KillOnContact(Mathf.Max(0f, -Vector3.Dot(_velocity, n)), hit.point))
+                        return;                                          // volant repoussé : mur, sol ou plafond, quelle que soit la vitesse
                     if (wall && solid && settings != null && AreaEffects.Stuns(into, settings))
                     {
                         if (Stun(into))

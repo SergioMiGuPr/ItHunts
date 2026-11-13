@@ -51,6 +51,17 @@ namespace ItHunts.Player
         public PlayerMotor Motor => _motor;
 
         public int PlayerId => gameObject.GetInstanceID();
+
+        /// <summary>Joueur de cet identifiant (null s'il n'existe plus).</summary>
+        public static PlayerHealth Find(int playerId)
+        {
+            if (playerId == 0)
+                return null;
+            foreach (PlayerHealth p in All)
+                if (p != null && p.PlayerId == playerId)
+                    return p;
+            return null;
+        }
         public HealthState Health => _health;
         public CoopSettings Coop => coop;
         public Collider Collider => _controller;

@@ -61,7 +61,7 @@ namespace ItHunts.Hud
         private RectTransform _center;
         private ItHunts.Enemies.ZoneState _zone;
         private ItHunts.Enemies.Stalker _stalker;
-        private Text _timerText, _stalkerText, _zoneMessage;
+        private Text _timerText, _stalkerText, _zoneMessage, _waveText;
 
         private struct Number
         {
@@ -210,7 +210,11 @@ namespace ItHunts.Hud
             _stalkerText.fontStyle = FontStyle.Bold;
             _zoneMessage = NewText("Message de zone", _root, new Vector2(0f, 120f), new Vector2(900f, 60f), 36, TextAnchor.MiddleCenter);
             _zoneMessage.rectTransform.anchorMin = _zoneMessage.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-            foreach (Text t in new[] { _timerText, _stalkerText, _zoneMessage })
+            // Pic de vague (D-041) : indication brève en haut, au centre.
+            _waveText = NewText("Pic de vague", _root, new Vector2(0f, -90f), new Vector2(600f, 50f), 30, TextAnchor.MiddleCenter);
+            _waveText.rectTransform.anchorMin = _waveText.rectTransform.anchorMax = new Vector2(0.5f, 1f);
+            _waveText.fontStyle = FontStyle.Bold;
+            foreach (Text t in new[] { _timerText, _stalkerText, _zoneMessage, _waveText })
             {
                 var sh = t.gameObject.AddComponent<Shadow>();
                 sh.effectColor = new Color(0f, 0f, 0f, 0.8f);
@@ -434,7 +438,24 @@ namespace ItHunts.Hud
             _stalkerText.color = new Color(1f, 0.2f + 0.6f * flash, 0.15f + 0.5f * flash, Mathf.Lerp(0.6f - 0.08f * tier, 1f, pulse));
             _stalkerText.rectTransform.localScale = Vector3.one * (1f + 0.04f * tier * pulse + 0.35f * flash);
             _zoneMessage.text = _zone.Message ?? string.Empty;
+            if (_waveText != null)
+            {
+                if (_waves == null)
+                    _waves = FindFirstObjectByType<ItHunts.Enemies.WaveDirector>();
+                float show = _waves != null && _waves.Settings != null ? _waves.Settings.peakAnnounceTime : 1.5f;
+                float since = now - ItHunts.Enemies.WaveDirector.LastPeakTime;
+                bool on = _waves != null && since >= 0f && since < show;
+                _waveText.text = on ? $"VAGUE {_waves.PeakIndex}" : string.Empty;
+                if (on)
+                {
+                    float a = Mathf.Clamp01((show - since) / 0.4f);
+                    _waveText.color = new Color(1f, 0.55f, 0.2f, a);
+                    _waveText.rectTransform.localScale = Vector3.one * (1f + 0.25f * Mathf.Clamp01(1f - since / 0.25f));
+                }
+            }
         }
+
+        private ItHunts.Enemies.WaveDirector _waves;
 
         /// <summary>Munitions du barillet : un segment par munition ; en rechargement, ils se remplissent ; grisés si inactif.</summary>
         private void UpdateAmmo(int tick, float now, float dt, float fixedDt)

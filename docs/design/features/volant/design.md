@@ -1,6 +1,6 @@
 # Volant
 
-**Status:** in progress · **Updated:** 2026-11-13 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md)
+**Status:** implemented · **Updated:** 2026-11-13 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md)
 
 Petit ennemi volant de la zone 1 (BRIEF, D-033, D-040), assez léger pour être attrapé et lancé : il harcèle le joueur en
 piqué, et devient un projectile qui éclate. Il fait de chaque grande salle une arme, même sans caisses. Bloc 6 de l'étape 6.
@@ -10,7 +10,8 @@ piqué, et devient un projectile qui éclate. Il fait de chaque grande salle une
 1. **Poursuite :** il sait toujours où sont les joueurs ; **8 volants en chasse** au plus, les autres attendent (ils planent
    sur place) et prennent le relais (le plus proche) ; un volant en attente se réveille par **l'aggro** des goules (joueur
    vu à 20 m, ou à 8 m sans le voir), jusqu'à **12 en chasse au total** ; réveillé ainsi, il se rendort si le joueur reste à
-   plus de 50 m pendant 5 s, sauf si une place se libère.
+   plus de 50 m pendant 5 s, sauf si une place se libère. **Cible en coop (D-041)** : au départ, le joueur le plus proche par le chemin au sol ; ensuite il **garde sa cible** et ne change que si l'autre joueur est plus proche d'au moins **15 m** (ou si sa cible est à plus de **60 m**), et au moins **3 s** après son dernier changement ; **immédiat** si sa cible meurt, ou si un autre joueur le blesse, l'attrape ou le lance (il se retourne contre lui). Un joueur mort ne compte pas.
+   Accalmie des vagues : en trop, il repasse en attente et recule d'environ 10 m.
 2. **Ronde :** il tourne au-dessus du joueur, **8 m de haut, 8 m de rayon, 6 m/s** (sous un plafond bas : 1.5 m sous le
    plafond) ; quand un mur le sépare du joueur, il suit le chemin des goules (NavMesh) à hauteur de vol.
 3. **Piqué :** recharge prête et joueur en vue à moins de 16 m : **cri et lueur rouge (0.4 s)**, puis il fonce à **14 m/s**
@@ -22,14 +23,15 @@ piqué, et devient un projectile qui éclate. Il fait de chaque grande salle une
 5. **Lancé, il éclate** au premier impact : **zone de 3 m, 30 dégâts au centre, le quart au bord** (linéaire), **jamais à
    travers un mur**, même cercle au sol que les objets ; **tir ami appliqué** (au nom du joueur qui l'a lancé) ; en plus des
    dégâts d'impact habituels ; **il meurt**.
-6. **Repoussé** (répulsion) : il **tombe au sol, étourdi 1.5 s**, facile à attraper ; s'il percute un mur en tombant, il prend
-   les dégâts contre un mur habituels (D-031).
+6. **Repoussé** (répulsion) : il **tombe au sol, étourdi 1.5 s**, facile à attraper ; **tout choc contre un mur ou le sol
+   pendant les 1.5 s qui suivent la répulsion le tue**, quelle que soit la vitesse (le seuil de 6 m/s ne s'applique pas à lui ;
+   `pushedContactKillTime`).
 7. **Fragile :** 25 PV, et **il meurt au premier impact de projectile**, quels que soient les dégâts : balle (barillet compris),
    objet lancé ou repoussé, ennemi lancé, dégâts contre un mur (réglage `dieOnProjectileHit`, activé). Pas par une zone (éclatement
    d'un autre volant, zone d'un objet), ni par l'onde de répulsion seule (il tombe étourdi). **Zone de touche sur le modèle** :
    sphère du corps et une boîte par aile (déclencheurs `Hitbox` qui suivent le battement : les balles et les projectiles les
    touchent, la physique ne change pas). Le traqueur l'ignore.
-8. **Placement :** **4 par grande salle**, aucun dans les couloirs (réglable : `ArenaLayout_Test.flyersPerHall`).
+8. **Placement :** par les **vagues** (D-041) : points d'apparition en hauteur, 4 par grande salle et 1 par couloir.
 
 ## Valeurs
 
@@ -63,8 +65,8 @@ piqué, et devient un projectile qui éclate. Il fait de chaque grande salle une
 
 - Piqué (réglé le 2026-11-13) : virage de 80°/s au lieu de 90 (90 : 38 % de touches en course), sans avance (0.3 : 68 %).
   En traction (ligne droite), il touche 100 % du temps sans esquive, en bunny hop 0 % : à juger au playtest.
-- Répulsion contre un mur : tué 3 fois sur 5 dans la mesure (les deux autres fois, pas de dégâts contre le mur relevés ; cause
-  non vérifiée, sans doute un impact sous 6 m/s).
+- Répulsion contre un mur : réglé (choc mortel pendant 1.5 s) ; les 2 échecs sur 5 venaient du script de mesure (répulsion encore
+  en recharge, volant pas repoussé).
 - Nombre et répartition par vagues (bloc 7).
 
 ## History
@@ -72,3 +74,5 @@ piqué, et devient un projectile qui éclate. Il fait de chaque grande salle une
 - 2026-11-12 : designed (D-033).
 - 2026-11-13 : construit (bloc 6, D-040).
 - 2026-11-13 : tué au premier impact de projectile, zone de touche des ailes, piqué à visée corrigée (80°/s).
+- 2026-11-13 : choc mortel contre un mur ou le sol pendant 1.5 s après une répulsion ; apparaît par les vagues (D-041).
+- 2026-11-13 : accalmie (recul), choix de cible en coop (D-041).

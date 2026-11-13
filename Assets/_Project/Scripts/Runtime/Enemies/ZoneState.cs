@@ -117,6 +117,8 @@ namespace ItHunts.Enemies
                 fl.ResetState();
             foreach (Stalker st in FindObjectsByType<Stalker>(FindObjectsSortMode.None))
                 st.ResetState();
+            foreach (WaveDirector w in FindObjectsByType<WaveDirector>(FindObjectsSortMode.None))
+                w.ResetAll();                                            // vagues (D-041) : la réserve rentre, départ reposé
             ImpactDamager.ResetCooldowns();
         }
     }

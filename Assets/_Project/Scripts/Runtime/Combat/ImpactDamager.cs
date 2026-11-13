@@ -120,6 +120,10 @@ namespace ItHunts.Combat
                 return;
             float speed = relativeVelocity.magnitude;
             bool falling = ImpactDamage.IsFall(relativeVelocity, g.transform.position, point, cfg);
+            if (target != null && !g.Held)
+                target.NoteAttacker(g.LastOwnerId);                      // coop : objet ou ennemi lancé par ce joueur (D-041)
+            if (g.IsEnemy && g.Damageable != null)
+                g.Damageable.NoteAttacker(g.LastOwnerId);                // l'ennemi lancé se retourne contre son lanceur
             if (player != null)
                 HurtPlayer(g, player, speed, falling, point, cfg, time);
 

@@ -715,6 +715,30 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Volant_RepousseChocMortelPendant15s_GouleJamais()
+        {
+            (Damageable d, FlyerSettings f) = FlyerDummy(new Vector3(0f, 0f, 5f));
+            try
+            {
+                Assert.That(f.pushedContactKillTime, Is.EqualTo(1.5f), "1.5 s après la répulsion");
+                EnemyBody body = d.Body;
+                Assert.That(body.PushedContactLethal, Is.False, "pas repoussé : un choc ne le tue pas");
+                body.Push(new Vector3(2f, 0f, 0f));                       // 2 m/s : bien sous le seuil de 6 m/s
+                Assert.That(body.PushedContactLethal, Is.True, "repoussé : tout choc le tue, quelle que soit la vitesse");
+                f.pushedContactKillTime = 0f;
+                Assert.That(body.PushedContactLethal, Is.False, "réglage coupé");
+                (Damageable g, EnemyBody gb, _) = GrabbableDummy(new Vector3(4f, 0f, 5f));
+                gb.Push(new Vector3(2f, 0f, 0f));
+                Assert.That(gb.PushedContactLethal, Is.False, "goule ou factice : jamais");
+                Assert.That(g.Dead, Is.False);
+            }
+            finally
+            {
+                Object.DestroyImmediate(f);
+            }
+        }
+
+        [Test]
         public void Volant_UneBalleLeTue_AilesComprises()
         {
             var barrel = ScriptableObject.CreateInstance<BarrelSettings>();   // ItHunts.Settings

@@ -204,6 +204,30 @@ namespace ItHunts.Enemies
         }
 
         /// <summary>
+        /// Coop (D-041) : changer de cible pour l'autre joueur ? Seulement après targetSwitchCooldown depuis le dernier changement,
+        /// et si l'autre est plus proche d'au moins targetSwitchMargin, ou si la cible est à plus de targetGiveUpDistance (et
+        /// l'autre plus proche qu'elle). Longueurs par le chemin.
+        /// </summary>
+        public static bool ShouldSwitchTarget(float currentLength, float otherLength, float sinceLastSwitch, EnemySettings cfg)
+        {
+            if (sinceLastSwitch < cfg.targetSwitchCooldown)
+                return false;
+            if (otherLength <= currentLength - cfg.targetSwitchMargin)
+                return true;
+            return currentLength > cfg.targetGiveUpDistance && otherLength < currentLength;
+        }
+
+        /// <summary>Accalmie (D-041) : point de recul, à distance du joueur le plus proche, à l'horizontale.</summary>
+        public static Vector3 RetreatPoint(Vector3 position, Vector3 player, float distance)
+        {
+            Vector3 away = position - player;
+            away.y = 0f;
+            if (away.sqrMagnitude < 0.01f)
+                away = Vector3.forward;
+            return position + away.normalized * distance;
+        }
+
+        /// <summary>
         /// Revers (D-039, piste a) : le joueur (pieds) est-il dans la zone, à backhandReach du bord du corps à l'horizontale et
         /// pas plus haut que backhandHeight au-dessus de ses pieds ?
         /// </summary>

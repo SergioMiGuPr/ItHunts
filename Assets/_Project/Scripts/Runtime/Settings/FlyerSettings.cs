@@ -26,6 +26,9 @@ namespace ItHunts.Settings
         [Tooltip("Meurt au premier impact de projectile, quels que soient les dégâts : balle, objet lancé ou repoussé, ennemi " +
                  "lancé, dégâts contre un mur. L'onde de répulsion seule ne le tue pas (il tombe étourdi), une zone non plus.")]
         public bool dieOnProjectileHit = true;
+        [Tooltip("Après une répulsion, tout choc contre un mur ou le sol pendant ce temps (s) le tue, quelle que soit la vitesse " +
+                 "(le seuil de 6 m/s ne s'applique pas à lui). 0 : désactivé.")]
+        [Min(0f)] public float pushedContactKillTime = 1.5f;
 
         [Header("Piqué")]
         [Tooltip("Il pique quand le joueur est en ligne de vue à moins de cette distance (m) et que sa recharge est finie.")]
@@ -70,6 +73,7 @@ namespace ItHunts.Settings
         [ColorUsage(false, true)] public Color telegraphColor = new Color(4f, 0.4f, 0.2f);
 
         public override bool DiesOnProjectileHit => dieOnProjectileHit;
+        public override float PushedContactKillTime => pushedContactKillTime;
 
         /// <summary>Valeurs du volant sur la base commune (PV, masse, étourdissement).</summary>
         private void Reset()

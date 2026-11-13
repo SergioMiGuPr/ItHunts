@@ -35,10 +35,29 @@ namespace ItHunts.Settings
         [Min(0f)] public float returnHomeDelay = 2f;
         [Min(0f)] public float returnHomeSpeed = 3f;
 
+        [Header("Cible en coop (D-041)")]
+        [Tooltip("Il garde sa cible ; il ne change pour un autre joueur que s'il est plus proche d'au moins cette marge (m, par le " +
+                 "chemin), ou si sa cible est à plus de targetGiveUpDistance (m), et au moins targetSwitchCooldown (s) après le " +
+                 "dernier changement. Immédiat si sa cible meurt, ou si un autre joueur le blesse ou le lance.")]
+        [Min(0f)] public float targetSwitchMargin = 15f;
+        [Min(0f)] public float targetGiveUpDistance = 60f;
+        [Min(0f)] public float targetSwitchCooldown = 3f;
+
+        [Header("Accalmie (D-041)")]
+        [Tooltip("Pendant une accalmie, un ennemi en trop repasse en attente et recule de cette distance (m) loin du joueur ; il ne " +
+                 "repart que si le joueur repasse dans sa zone d'aggro, ou au pic suivant.")]
+        [Min(0f)] public float lullRetreatDistance = 10f;
+
         /// <summary>
         /// Meurt au premier impact de projectile (balle, objet lancé ou repoussé, ennemi lancé, dégâts contre un mur), quels que
         /// soient les dégâts ; jamais par une zone ni par l'onde de répulsion seule. Faux par défaut ; le volant le règle (D-040).
         /// </summary>
         public virtual bool DiesOnProjectileHit => false;
+
+        /// <summary>
+        /// Après une répulsion, tout choc contre un mur ou le sol pendant ce temps (s) le tue, quelle que soit la vitesse (le seuil
+        /// d'étourdissement ne compte pas). 0 : jamais (goules, factices) ; le volant le règle (D-040).
+        /// </summary>
+        public virtual float PushedContactKillTime => 0f;
     }
 }

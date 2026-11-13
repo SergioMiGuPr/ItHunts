@@ -76,6 +76,7 @@ namespace ItHunts.Artifacts
                     }
 
                     shot.Kind = BarrelHitKind.Ennemi;
+                    enemy.NoteAttacker(shooterId);                       // coop : il se retourne contre le tireur (D-041)
                     float taken = enemy.ApplyDamage(enemy.ProjectileDamage(cfg.damage), time, out bool killed);   // volant : un coup
                     shot.Damage = taken;
                     shot.Killed = killed;
