@@ -322,6 +322,45 @@ namespace ItHunts.EditorTools
         private const float ExitDoorWidth = 10f, ExitDoorHeight = 10f;
 
         /// <summary>
+        /// Matériau greybox des surfaces non magnétiques (D-051) : pierre gris pâle à rayures diagonales sombres, sans lueur (les
+        /// cibles de traction sont bleues et brillent ; celles-ci, jamais).
+        /// </summary>
+        public static Material NonMagneticMat()
+        {
+            const string texPath = MaterialDir + "/NonMagnetic_Stripes.png";
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texPath);
+            if (tex == null)
+            {
+                var t = new Texture2D(64, 64, TextureFormat.RGBA32, false);
+                for (int y = 0; y < 64; y++)
+                for (int x = 0; x < 64; x++)
+                    t.SetPixel(x, y, ((x + y) / 8) % 2 == 0 ? new Color(0.78f, 0.76f, 0.72f) : new Color(0.42f, 0.4f, 0.38f));
+                System.IO.File.WriteAllBytes(texPath, t.EncodeToPNG());
+                Object.DestroyImmediate(t);
+                AssetDatabase.ImportAsset(texPath);
+                tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texPath);
+            }
+
+            Material m = Mat("Greybox_NonMagnetic", Color.white);
+            m.SetTexture("_BaseMap", tex);
+            m.SetTextureScale("_BaseMap", new Vector2(4f, 4f));
+            m.DisableKeyword("_EMISSION");
+            m.SetColor("_EmissionColor", Color.black);
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
+        /// <summary>Pièce non magnétique (D-051) : la traction ne s'y accroche pas.</summary>
+        public static GameObject NonMagneticPiece(string name, Transform parent, Vector3 center, Vector3 size, bool walkable = true)
+        {
+            GameObject go = Box($"Non magnétique : {name}", parent, center, size, NonMagneticMat());
+            go.AddComponent<ItHunts.Orbs.NonMagneticSurface>();
+            if (!walkable)
+                go.AddComponent<NotWalkable>();
+            return go;
+        }
+
+        /// <summary>
         /// Sortie du niveau (D-048) : grande porte (rouge verrouillée, orange payable) dans le mur nord de la salle, escaliers de
         /// 20 marches (8 m de montée sur 32 m), palier avec le déclencheur de sortie. Le combat de boss (D-049) se branche derrière.
         /// </summary>
@@ -876,6 +915,7 @@ namespace ItHunts.EditorTools
             // Marchand de l'artefact dans la salle de départ SO (D-050), face au départ des joueurs.
             Node sw0 = Nodes[0];
             Vector3 mAt = sw0.C + new Vector3(4f, 0f, 6f);
+            NonMagneticPiece("mur d'essai (salle de départ)", _level, sw0.C + new Vector3(-20f, 6f, 14f), new Vector3(1f, 12f, 14f), walkable: false);
             BuildArtifactMerchant(_level, mAt, Quaternion.LookRotation(new Vector3(-12f, 0f, -10f) - new Vector3(4f, 0f, 6f), Vector3.up), _economy, _offerOrb);
         }
 

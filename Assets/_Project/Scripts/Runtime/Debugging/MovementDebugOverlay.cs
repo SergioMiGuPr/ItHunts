@@ -127,6 +127,7 @@ namespace ItHunts.Debugging
                                  {
                                      MagnetRefusal.PasDeCharge => "plus de charge d'attraction",
                                      MagnetRefusal.Recharge => "en recharge",
+                                     MagnetRefusal.NonMagnetique => "surface non magnétique",
                                      _ => "rien à portée",
                                  }));
         }
