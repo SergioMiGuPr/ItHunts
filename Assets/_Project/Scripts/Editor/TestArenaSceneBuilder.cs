@@ -28,7 +28,7 @@ namespace ItHunts.EditorTools
     /// traqueur se baisse dessous), corniches à 11 m ; 6 pièces fermées (portes de 3 m, fenêtres) où il passe le bras.
     /// Règle du traqueur : tout point où l'on tient debout est à portée de sa main (mesuré en Play Mode).
     /// </summary>
-    public static class TestArenaSceneBuilder
+    public static partial class TestArenaSceneBuilder
     {
         private const string ScenePath = "Assets/Scenes/Test_Arena.unity";
         private const string LayoutPath = SettingsDir + "/Editor/ArenaLayout_Test.asset";
@@ -83,6 +83,8 @@ namespace ItHunts.EditorTools
         private static readonly List<Vector2Int> Edges = new List<Vector2Int>();
         private static readonly Dictionary<(int, int), List<Opening>> NodeOpenings = new Dictionary<(int, int), List<Opening>>();
         private static readonly Dictionary<(int, int), List<Opening>> CorridorOpenings = new Dictionary<(int, int), List<Opening>>();
+        /// <summary>Canaux d'égout (D-052) : salle → (milieu du canal en z relatif au centre, largeur).</summary>
+        private static readonly Dictionary<int, Vector2> Canals = new Dictionary<int, Vector2>();
 
         [MenuItem("ItHunts/Reconstruire la scène Test_Arena (labyrinthe)")]
         private static void BuildFromMenu() => Debug.Log(Build());
@@ -92,16 +94,48 @@ namespace ItHunts.EditorTools
             var playerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefabPath);
             if (playerPrefab == null)
                 return "Prefab joueur absent : lancer d'abord ItHunts > Reconstruire le prefab joueur et la scène Test_Movement.";
+            var scene = BeginScene(LayoutPath, out StalkerSettings stalkerSettings);
+            _startNode = 0;
+            _exitNode = 8;
+            _lairNode = 9;
+            DefineMaze();
+            DefineRooms(out List<RoomDef> rooms);
+            for (int i = 0; i < Nodes.Count; i++)
+                BuildNode(i);
+            for (int e = 0; e < Edges.Count; e++)
+                if (!IsLairEdge(e))
+                    Corridor(e);
+            foreach (RoomDef r in rooms)
+                BuildRoom(r);
+            Halls();
+            CorridorFeatures();
+            EconomyContent();
+
+            float S = L.gridSpacing;
+            Vector3 min = new Vector3(-S - 50f, -5f, -S - 50f), max = new Vector3(S + 50f, L.upperLevel + L.hallCeiling + 10f, S + 50f);
+            Node sw = Nodes[0];
+            FinishScene(stalkerSettings, LoadOrCreate<ZoneSettings>(ZonePath), min, max,
+                sw.C + new Vector3(-12f, 0f, -10f), Quaternion.Euler(0f, 45f, 0f), playerPrefab);
+            EditorSceneManager.SaveScene(scene, ScenePath);
+            AddSceneToBuild(ScenePath);
+            return $"OK : {ScenePath} (labyrinthe {Nodes.Count} intersections, {Edges.Count} couloirs, {_spawnCount} points d'apparition, " +
+                   $"réserve de {_ghoulCount} goules et {_flyerCount} volants, {_crateCount} objets ; murs grimpables trouvés au lancement)";
+        }
+
+        /// <summary>Indices des nœuds : salle de départ, salle de la sortie, repaire du traqueur (cul-de-sac).</summary>
+        private static int _startNode, _exitNode, _lairNode;
+
+        /// <summary>Nouvelle scène : réglages, matériaux, lumière d'ambiance, post-process, racines du niveau.</summary>
+        private static UnityEngine.SceneManagement.Scene BeginScene(string layoutPath, out StalkerSettings stalkerSettings)
+        {
             EnsureFolder(SettingsDir + "/Editor");
             InitDefaults();
-
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             // Rechargés après NewScene : la nouvelle scène décharge les assets chargés avant.
-            L = LoadOrCreate<ArenaLayoutSettings>(LayoutPath);
+            L = LoadOrCreate<ArenaLayoutSettings>(layoutPath);
             _ghoul = LoadOrCreate<GhoulSettings>(GhoulPath);
             _flyer = LoadOrCreate<FlyerSettings>(FlyerPath);
-            var stalkerSettings = LoadOrCreate<StalkerSettings>(StalkerPath);
-            var zoneSettings = LoadOrCreate<ZoneSettings>(ZonePath);
+            stalkerSettings = LoadOrCreate<StalkerSettings>(StalkerPath);
             Materials();
 
             RenderSettings.ambientMode = AmbientMode.Flat;
@@ -117,23 +151,20 @@ namespace ItHunts.EditorTools
             _level = new GameObject("Niveau").transform;
             _spawns = new GameObject("Points d'apparition (vagues)").transform;
             _crateCount = _ghoulCount = _flyerCount = _spawnCount = 0;
-
             _economy = LoadOrCreate<EconomySettings>(EconomyPath);
             _offerOrb = UnlitMat("Economy_Offer_Orb", "Universal Render Pipeline/Unlit", new Color(1f, 0.8f, 0.3f));
-            DefineMaze();
-            DefineRooms(out List<RoomDef> rooms);
-            for (int i = 0; i < Nodes.Count; i++)
-                BuildNode(i);
-            for (int e = 0; e < Edges.Count; e++)
-                if (!IsLairEdge(e))
-                    Corridor(e);
-            foreach (RoomDef r in rooms)
-                BuildRoom(r);
-            Halls();
-            CorridorFeatures();
+            return scene;
+        }
 
-            // Sortie (D-048) : grande porte dans le mur nord de la salle NE (la plus loin du départ), escaliers, palier de sortie.
-            ExitStairs(Nodes[8]);
+        /// <summary>
+        /// Fin commune : sortie et escaliers, graphe du labyrinthe, NavMesh, zone, run, retour des dégâts, traqueur dans son
+        /// repaire, réserve des vagues, joueur au départ.
+        /// </summary>
+        private static Vector3 FinishScene(StalkerSettings stalkerSettings, ZoneSettings zoneSettings, Vector3 navMin, Vector3 navMax,
+            Vector3 startAt, Quaternion startRotation, GameObject playerPrefab)
+        {
+            // Sortie (D-048) : grande porte dans le mur nord de la salle de sortie, escaliers, palier de sortie.
+            Vector3 exitAt = ExitStairs(Nodes[_exitNode]);
 
             // Graphe du labyrinthe (règle de Pac-Man du traqueur).
             var graph = new GameObject("Graphe du labyrinthe").AddComponent<MazeGraph>();
@@ -150,34 +181,29 @@ namespace ItHunts.EditorTools
             graph.Configure(names, centers, halves, Edges.ToArray());
             EditorUtility.SetDirty(graph);
 
-            // NavMesh, zone, run, retour des dégâts.
-            float S = L.gridSpacing;
             var nav = new GameObject("NavMesh de la zone").AddComponent<ZoneNavMesh>();
-            Vector3 min = new Vector3(-S - 50f, -5f, -S - 50f), max = new Vector3(S + 50f, L.upperLevel + L.hallCeiling + 10f, S + 50f);
-            nav.transform.position = (min + max) * 0.5f;
+            nav.transform.position = (navMin + navMax) * 0.5f;
             var nso = new SerializedObject(nav);
-            nso.FindProperty("size").vector3Value = max - min;
+            nso.FindProperty("size").vector3Value = navMax - navMin;
             nso.FindProperty("stalkerRadius").floatValue = stalkerSettings.width * 0.5f;
             nso.FindProperty("stalkerHeight").floatValue = stalkerSettings.crouchMinHeight;   // il se baisse jusqu'à 9 m
             nso.FindProperty("smallVoxel").floatValue = 0.2f;                                  // portes de 3 m : 0.2 m suffit
             nso.FindProperty("stalkerVoxel").floatValue = 0.3f;                                // voies de 8 m des pentes : 1 m de NavMesh pour lui
             nso.ApplyModifiedPropertiesWithoutUndo();
-            Node sw = Nodes[0];
             var start = new GameObject("Départ des joueurs").transform;
-            start.SetPositionAndRotation(sw.C + new Vector3(-12f, 0f, -10f), Quaternion.Euler(0f, 45f, 0f));
+            start.SetPositionAndRotation(startAt, startRotation);
             var zone = new GameObject("État de la zone").AddComponent<ZoneState>();
             SetRef(zone, "settings", zoneSettings);
             SetRef(zone, "playerStart", start);
             var runState = new GameObject("État de la run").AddComponent<RunState>();
             SetRef(runState, "pool", LoadOrCreate<ArtifactPool>(PoolPath));
             SetRef(runState, "upgrades", UpgradePoolAsset());
-            EconomyContent();
             var feedback = new GameObject("Retour des dégâts").AddComponent<DamageFeedback>();
             SetRef(feedback, "settings", LoadOrCreate<DamageFeedbackSettings>(DamageFeedbackPath));
             SetRef(feedback, "flashMaterial", UnlitMat("Damage_Flash", "Universal Render Pipeline/Unlit", Color.white));
             SetRef(feedback, "lineMaterial", UnlitMat("Orb_Line", "Universal Render Pipeline/Particles/Unlit", Color.white));
 
-            Node lair = Nodes[9];
+            Node lair = Nodes[_lairNode];
             BuildStalker(stalkerSettings, lair.C + new Vector3(lair.Half * 0.3f, 0f, 0f));
 
             // Vagues (D-041) : réserve de goules et de volants inactifs (sous le niveau), réutilisés par le directeur des vagues.
@@ -202,10 +228,7 @@ namespace ItHunts.EditorTools
 
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
             player.transform.SetPositionAndRotation(start.position, start.rotation);
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            AddSceneToBuild(ScenePath);
-            return $"OK : {ScenePath} (labyrinthe {Nodes.Count} intersections, {Edges.Count} couloirs, {_spawnCount} points d'apparition, " +
-                   $"réserve de {_ghoulCount} goules et {_flyerCount} volants, {_crateCount} objets ; murs grimpables trouvés au lancement)";
+            return exitAt;
         }
 
         /// <summary>Valeurs du traqueur géant (D-034, D-035) et de la goule sur les assets existants.</summary>
@@ -283,6 +306,7 @@ namespace ItHunts.EditorTools
             Edges.Clear();
             NodeOpenings.Clear();
             CorridorOpenings.Clear();
+            Canals.Clear();
             float S = L.gridSpacing, U = L.upperLevel, X = L.crossingSize * 0.5f, CC = L.crossingCeiling, HC = L.hallCeiling;
             AddNode("SO (départ)", new Vector3(-S, 0f, -S), L.startHallSize * 0.5f, HC, true);           // 0
             AddNode("S (carrefour)", new Vector3(0f, 0f, -S), X, CC, false);                              // 1
@@ -303,7 +327,7 @@ namespace ItHunts.EditorTools
                 Edges.Add(new Vector2Int(links[i, 0], links[i, 1]));
 
             // Porte de sortie (D-048) : ouverture de 10 × 10 m au milieu du mur nord de la salle NE.
-            AddOpening(8, SideN, new Opening(Nodes[8].C.x - ExitDoorWidth / 2f, Nodes[8].C.x + ExitDoorWidth / 2f, U, U + ExitDoorHeight));
+            AddExitOpening(8);
 
             // Ouvertures des couloirs dans les murs des intersections.
             float h = L.corridorHeight;
@@ -320,6 +344,13 @@ namespace ItHunts.EditorTools
         }
 
         private const float ExitDoorWidth = 10f, ExitDoorHeight = 10f;
+
+        /// <summary>Porte de sortie (D-048) : ouverture de 10 × 10 m au milieu du mur nord de la salle (côté nord libre).</summary>
+        private static void AddExitOpening(int node)
+        {
+            Node n = Nodes[node];
+            AddOpening(node, SideN, new Opening(n.C.x - ExitDoorWidth / 2f, n.C.x + ExitDoorWidth / 2f, n.C.y, n.C.y + ExitDoorHeight));
+        }
 
         /// <summary>
         /// Matériau greybox des surfaces non magnétiques (D-051) : pierre gris pâle à rayures diagonales sombres, sans lueur (les
@@ -417,7 +448,7 @@ namespace ItHunts.EditorTools
         private static void AddNode(string name, Vector3 c, float half, float ceil, bool hall) =>
             Nodes.Add(new Node { Name = name, C = c, Half = half, HalfZ = half, Ceil = ceil, Hall = hall });
 
-        private static bool IsLairEdge(int e) => Edges[e].y == 9;
+        private static bool IsLairEdge(int e) => Edges[e].y == _lairNode;
 
         private static int SideOf(Vector3 d) =>
             Mathf.Abs(d.x) > Mathf.Abs(d.z) ? (d.x > 0f ? SideE : SideW) : (d.z > 0f ? SideN : SideS);
@@ -494,19 +525,21 @@ namespace ItHunts.EditorTools
             Node n = Nodes[i];
             float hx = n.Half, hz = n.HalfZ, y = n.C.y, top = y + n.Ceil;
             Vector3 c = n.C;
-            if (y > 0.1f)
+            if (Canals.TryGetValue(i, out Vector2 cut))
+                CanalFloor(n, cut.x, cut.y);
+            else if (y > 0.1f)
                 Piece($"{n.Name} : sol (bloc de {y:0} m)", new Vector3(c.x, y / 2f, c.z), new Vector3(2f * hx, y, 2f * hz), _floor);
             else
                 Piece($"{n.Name} : sol", new Vector3(c.x, -0.5f, c.z), new Vector3(2f * hx + 2f * T, 1f, 2f * hz + 2f * T), _floor);
             Piece($"{n.Name} : plafond", new Vector3(c.x, top + 0.5f, c.z), new Vector3(2f * hx + 2f * T, 1f, 2f * hz + 2f * T), _ceiling, walkable: false);
-            bool lair = i == 9;
+            bool lair = i == _lairNode;
             WallLine($"{n.Name} : mur nord", true, c.z + hz + T / 2f, c.x - hx - T, c.x + hx + T, 0f, top, Openings(i, SideN));
             WallLine($"{n.Name} : mur sud", true, c.z - hz - T / 2f, c.x - hx - T, c.x + hx + T, 0f, top, Openings(i, SideS));
             WallLine($"{n.Name} : mur est", false, c.x + hx + T / 2f, c.z - hz, c.z + hz, 0f, top, Openings(i, SideE));
             if (!lair)                                                   // le repaire s'ouvre dans le mur est du carrefour E
                 WallLine($"{n.Name} : mur ouest", false, c.x - hx - T / 2f, c.z - hz, c.z + hz, 0f, top, Openings(i, SideW));
             RoomVolumeAt(n.Name, new Vector3(c.x, y + n.Ceil / 2f, c.z), Quaternion.identity, new Vector3(2f * hx, n.Ceil, 2f * hz),
-                i == 0 ? RoomKind.Depart : RoomKind.Salle);                  // SO : salle de départ (D-048)
+                i == _startNode ? RoomKind.Depart : lair ? RoomKind.Salle : RoomKind.Salle);   // salle de départ (D-048)
 
             if (lair)
             {
@@ -670,6 +703,7 @@ namespace ItHunts.EditorTools
             public int Edge;        // … ou un couloir (côté +1 / −1)
             public int Side;
             public float Along;     // centre de la porte le long du mur
+            public bool Locked;     // salle verrouillée (D-043) : porte payante, coffre gratuit dedans
         }
 
         private static void DefineRooms(out List<RoomDef> rooms)
@@ -680,11 +714,17 @@ namespace ItHunts.EditorTools
                 new RoomDef { Name = "Pièce SO", Node = 0, Edge = -1, Side = SideW, Along = -S },
                 new RoomDef { Name = "Pièce SE", Node = 2, Edge = -1, Side = SideS, Along = S },
                 new RoomDef { Name = "Pièce NO", Node = 6, Edge = -1, Side = SideN, Along = -S },
-                new RoomDef { Name = "Pièce NE", Node = 8, Edge = -1, Side = SideE, Along = S },
+                new RoomDef { Name = "Pièce NE", Node = 8, Edge = -1, Side = SideE, Along = S, Locked = true },
                 new RoomDef { Name = "Pièce du couloir S – SE", Node = -1, Edge = 1, Side = -1, Along = S * 0.4f },
                 new RoomDef { Name = "Pièce du couloir O – C", Node = -1, Edge = 2, Side = +1, Along = -S * 0.61f },
             };
 
+            AddRoomOpenings(rooms);
+        }
+
+        /// <summary>Porte et fenêtre de chaque pièce dans le mur de son hôte (salle ou couloir).</summary>
+        private static void AddRoomOpenings(List<RoomDef> rooms)
+        {
             float dw = L.roomDoorWidth, dh = L.roomDoorHeight;
             foreach (RoomDef r in rooms)
             {
@@ -774,7 +814,7 @@ namespace ItHunts.EditorTools
             Crate(inner + Vector3.up * y + along * 3f, 15f, root.transform);
 
             // Salle verrouillée (D-043) : la pièce NE ; porte payante (E / Y), fenêtre à barreaux, coffre gratuit dedans.
-            if (r.Name == "Pièce NE")
+            if (r.Locked)
             {
                 Material doorMat = GrabbableMat("Economy_Locked_Door", new Color(0.35f, 0.22f, 0.12f));
                 GameObject block = Box($"{r.Name} : porte verrouillée", _level, wallPlane + Vector3.up * (y + L.roomDoorHeight / 2f),

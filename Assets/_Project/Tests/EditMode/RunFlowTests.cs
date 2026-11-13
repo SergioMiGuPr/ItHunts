@@ -1,3 +1,5 @@
+using System.IO;
+using System.Text.RegularExpressions;
 using ItHunts.Level;
 using ItHunts.Settings;
 using NUnit.Framework;
@@ -77,6 +79,33 @@ namespace ItHunts.Tests
             Assert.That(z.timerWaitsForStartRoom && z.deathEndsRun, Is.True);
             var h = AssetDatabase.LoadAssetAtPath<PlayerHealthSettings>("Assets/_Project/Settings/PlayerHealth_Default.asset");
             Assert.That(h.maxHealth, Is.EqualTo(150f));
+        }
+    
+        private static int CountScript(string scenePath, string scriptPath)
+        {
+            string guid = AssetDatabase.AssetPathToGUID(scriptPath);
+            Assert.That(guid, Is.Not.Empty, scriptPath);
+            return Regex.Matches(File.ReadAllText(scenePath), $@"m_Script: \{{fileID: 11500000, guid: {guid}").Count;
+        }
+
+        [Test]
+        public void Scene_Niveau1_Base_EtCopieRetravaillee()
+        {
+            const string basePath = "Assets/Scenes/Level_01_Base.unity", copy = "Assets/Scenes/Level_01.unity";
+            Assert.That(File.Exists(basePath), Is.True, "lancer ItHunts > Générer le niveau 1");
+            Assert.That(File.Exists(copy), Is.True, "copie à retravailler, jamais écrasée par le constructeur");
+            const string rt = "Assets/_Project/Scripts/Runtime/";
+            Assert.That(CountScript(basePath, rt + "Level/RoomVolume.cs"), Is.GreaterThan(150), "un volume par salle et par tronçon");
+            Assert.That(CountScript(basePath, rt + "Level/ExitDoor.cs"), Is.EqualTo(1));
+            Assert.That(CountScript(basePath, rt + "Economy/ArtifactMerchant.cs"), Is.EqualTo(1));
+            Assert.That(CountScript(basePath, rt + "Economy/Merchant.cs"), Is.EqualTo(0), "plus de marchand placé au hasard (D-050)");
+            Assert.That(CountScript(basePath, rt + "Level/DeepWater.cs"), Is.GreaterThanOrEqualTo(5), "canaux d'égout (D-052)");
+            Assert.That(CountScript(basePath, rt + "Orbs/NonMagneticSurface.cs"), Is.GreaterThanOrEqualTo(20), "zones de parcours (D-051)");
+            Assert.That(CountScript(basePath, rt + "Economy/Chest.cs"), Is.GreaterThanOrEqualTo(12));
+            Assert.That(CountScript(basePath, rt + "Enemies/SpawnPoint.cs"), Is.GreaterThan(500));
+            Assert.That(File.ReadAllText(basePath).Contains("kind: 2"), Is.True, "une salle de départ (RoomKind.Depart)");
+            Assert.That(System.Array.Exists(EditorBuildSettings.scenes, sc => sc.path == copy), Is.True, "Level_01 dans le build (la run la charge)");
+            Assert.That(EditorBuildSettings.scenes[0].path, Is.EqualTo("Assets/Scenes/MainMenu.unity"), "le menu d'abord");
         }
     }
 }

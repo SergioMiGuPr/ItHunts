@@ -127,6 +127,18 @@ namespace ItHunts.Player
             return true;
         }
 
+        /// <summary>Dégâts du décor (chute dans un canal, D-052) : pas de multiplicateur de difficulté. Vrai si des PV ont été retirés.</summary>
+        public bool TakeEnvironmentDamage(float damage, Vector3 point, float time)
+        {
+            if (damage <= 0f || _health.Dead)
+                return false;
+            float taken = HealthState.Apply(ref _health, damage, time, out bool killed);
+            if (taken <= 0f)
+                return false;
+            Raise(EnemyAttacker, taken, point, killed, time);
+            return true;
+        }
+
         /// <summary>Tué net, quels que soient ses PV (coup du traqueur). Vrai s'il était vivant.</summary>
         public bool Kill(Vector3 point, float time)
         {
