@@ -47,6 +47,7 @@ namespace ItHunts.Level
             };
             diff.Change = d => _difficulty = run == null || run.difficulties.Count == 0 ? 0 : (_difficulty + d + run.difficulties.Count) % run.difficulties.Count;
             _menu.Add("Lancer la run (niveau 1)", Launch);
+            _menu.Add("Playtest : combat de boss", LaunchBossFight);
             _menu.Add("Test_Movement (banc d'essai)", () => Direct(movementScene));
             _menu.Add("Test_Arena (labyrinthe)", () => Direct(arenaScene));
             GreyboxMenu.Item coop = _menu.Add("Joueur 2 (écran partagé)", null);
@@ -78,6 +79,26 @@ namespace ItHunts.Level
             {
                 RunSession.End();
                 _status = $"Scène « {scene} » absente du build (lancer le constructeur du niveau 1).";
+            }
+        }
+
+        /// <summary>Playtest : le niveau 1 en Facile, directement dans l'arène du combat de boss (traqueur, pièges, leviers).</summary>
+        private void LaunchBossFight()
+        {
+            int easy = run != null ? run.difficulties.FindIndex(d => d.playable) : -1;
+            string scene = easy >= 0 ? RunSession.Begin(run, easy, _character) : null;
+            if (scene == null)
+            {
+                _status = "Pas de niveau jouable pour le combat de boss.";
+                return;
+            }
+
+            RunSession.BossPlaytest = true;
+            if (!RunSession.Load(scene))
+            {
+                RunSession.BossPlaytest = false;
+                RunSession.End();
+                _status = $"Scène « {scene} » absente du build.";
             }
         }
 

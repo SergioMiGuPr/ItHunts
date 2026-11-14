@@ -39,6 +39,12 @@ namespace ItHunts.Level
 
         private void Start()
         {
+            if (RunSession.BossPlaytest)
+            {
+                RunSession.BossPlaytest = false;                         // une seule fois (Rejouer refait le niveau normal)
+                StartCoroutine(DebugBeginWhenReady());
+            }
+
             _zone = FindFirstObjectByType<ZoneState>();
             _stalker = FindFirstObjectByType<Stalker>(FindObjectsInactive.Include);
             if (_zone != null)
@@ -85,6 +91,30 @@ namespace ItHunts.Level
                 _stalker.WarpTo(stalkerEntry.position, stalkerEntry.rotation);
                 _stalker.Stagger(1.5f);                                  // il entre, rugit, puis charge
             }
+        }
+
+        /// <summary>
+        /// Playtest et debug (Page bas) : le combat commence tout de suite. Timer avancé jusqu'à l'ouverture de la sortie (le
+        /// traqueur est lâché, comme en vraie partie), une fois le NavMesh construit.
+        /// </summary>
+        public void DebugBegin()
+        {
+            if (Active || Won)
+                return;
+            StartCoroutine(DebugBeginWhenReady());
+        }
+
+        private System.Collections.IEnumerator DebugBeginWhenReady()
+        {
+            ZoneNavMesh nav = FindFirstObjectByType<ZoneNavMesh>();
+            while (nav != null && !nav.Built)
+                yield return null;
+            yield return null;
+            ZoneState zone = _zone != null ? _zone : FindFirstObjectByType<ZoneState>();
+            if (zone != null && zone.Settings != null)
+                zone.DebugAdvance(Mathf.Max(0f, zone.Settings.exitUnlockAt - zone.Elapsed));
+            if (!Active && !Won)
+                Begin();
         }
 
         public bool StalkerIn(Bounds zone) => _stalker != null && zone.Contains(_stalker.transform.position + Vector3.up);
