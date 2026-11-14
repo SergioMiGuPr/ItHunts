@@ -31,6 +31,9 @@ namespace ItHunts.Enemies
         public bool InGrace => settings != null && (!Started || Elapsed < settings.gracePeriod);
         /// <summary>Le timer tourne : un joueur est sorti de la salle de départ (D-048).</summary>
         public bool Started { get; private set; }
+        /// <summary>Avant la première sortie de la salle de départ, rien ne bouge sur la carte (habitants compris).</summary>
+        public static bool Asleep { get; private set; }
+
         public bool ExitUnlocked => settings != null && Started && Elapsed >= settings.exitUnlockAt;
         public float ExitUnlockLeft => settings != null ? Mathf.Max(0f, settings.exitUnlockAt - Elapsed) : 0f;
         /// <summary>Niveau gagné (combat de boss ou sortie) ; écran de fin affiché ou niveau suivant en chargement.</summary>
@@ -52,7 +55,11 @@ namespace ItHunts.Enemies
 
         private void Awake() => PlayerHealth.ZoneHandlesDeath = true;
 
-        private void OnDestroy() => PlayerHealth.ZoneHandlesDeath = false;
+        private void OnDestroy()
+        {
+            PlayerHealth.ZoneHandlesDeath = false;
+            Asleep = false;
+        }
 
         private void OnEnable() => PlayerHealth.Died += OnDied;
         private void OnDisable() => PlayerHealth.Died -= OnDied;
@@ -63,6 +70,7 @@ namespace ItHunts.Enemies
         {
             if (!Started && !Finished)
                 TryStart();
+            Asleep = !Started && settings != null && settings.timerWaitsForStartRoom;
             if (Started && !Finished && float.IsPositiveInfinity(_resetAt))
                 Elapsed += Time.fixedDeltaTime;
             if (Time.time >= _resetAt)

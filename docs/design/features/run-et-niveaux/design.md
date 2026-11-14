@@ -86,6 +86,21 @@ Le traqueur est lâché à 3 min et la porte de sortie se déverrouille à 10 mi
     - Une fois découverts, les points clés s'affichent : coffres (gris une fois ouverts par ce joueur), marchand, salle
       verrouillée, sortie (rouge, puis verte), départ.
     - Les alliés apparaissent en bleu.
+13. **Population (après le playtest de l'étape 8).**
+    - **Habitants :** en plus des vagues, chaque grande salle (pas la salle de départ) a dès le départ 2 à 5 goules selon sa
+      taille, plus 1 à 2 volants si elle est au niveau haut. Ils attendent, avec l'aggro habituelle. Tués, ils ne reviennent
+      pas avant la remise à zéro.
+    - **Avant la première sortie,** rien ne bouge sur la carte (`ZoneState.Asleep`).
+    - **Vagues :** le nombre voulu suit la surface de la carte : × surface / 36 300 m² (Test_Arena), borné entre 0.5 et 2.5.
+      Le niveau 1 (214 816 m²) est à ×2.5. Les plafonds de chasse ne changent pas, et la réserve des vagues suit la même
+      échelle.
+    - **Mesure** (traversée de 15 min, temps ×5, allers-retours départ ↔ sortie à 7.5 m/s) :
+      - 164 habitants ;
+      - ennemis vivants : 191 à 1 min, 251 à 6 min, 344 à 14 min ;
+      - 7 à 38 goules en chasse ;
+      - **0 grande salle sur 40 sans ennemi** ;
+      - **0 salle vide à l'entrée** sur 46 traversées.
+    - Réglages : `LevelLayout_Level01` (habitants), `Waves_Default` (surface).
 12. **Tronçons de couloir (D-047).** Ils font 40 m au plus. Aucun ennemi n'apparaît dans le tronçon d'un joueur ni dans les
     tronçons voisins.
 

@@ -63,8 +63,17 @@ namespace ItHunts.Settings
                  "l'ennemi × tendance du moment / tendance à la fin du timer (Enragé : au-dessus).")]
         public bool scaleHuntingCaps = true;
 
+        [Header("Taille de la carte (étape 8, après playtest)")]
+        [Tooltip("Le nombre voulu suit la surface de la carte (somme du sol des volumes de salle et de tronçon) : × surface / " +
+                 "referenceArea, borné par maxAreaScale. Les plafonds de chasse ne changent pas.")]
+        public bool scaleWithMapArea = true;
+        [Tooltip("Surface de référence (m²) : celle de Test_Arena (36 254 m² mesurés), où la courbe a été réglée.")]
+        [Min(1000f)] public float referenceArea = 36300f;
+        [Range(0.25f, 6f)] public float minAreaScale = 0.5f;
+        [Range(0.25f, 6f)] public float maxAreaScale = 2.5f;
+
         [Header("Réserve (scène)")]
-        [Tooltip("Goules et volants créés par le constructeur de scène, inactifs, réutilisés par les vagues.")]
+        [Tooltip("Goules et volants créés par le constructeur de scène, inactifs, réutilisés par les vagues (× l'échelle de surface).")]
         [Min(0)] public int ghoulPool = 80;
         [Min(0)] public int flyerPool = 20;
     }

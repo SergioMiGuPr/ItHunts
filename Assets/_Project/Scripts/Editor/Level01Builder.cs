@@ -76,6 +76,7 @@ namespace ItHunts.EditorTools
                 if (i != _lairNode && Nodes[i].Hall)
                     HallInterior(i, chestHalls.Contains(i), parkourHalls.Contains(i));
             Level01CorridorFeatures();
+            Residents();
 
             var souls = new GameObject("Âmes (éclats)").AddComponent<SoulSystem>();
             SetRef(souls, "settings", _economy);
@@ -115,7 +116,7 @@ namespace ItHunts.EditorTools
             int halls = 0, crossings = 0, upper = 0;
             foreach (Node n in Nodes)
             {
-                if (n.Name.StartsWith("Repaire"))
+                if (n.Name.StartsWith("Repaire") || n.Name.StartsWith("Arène"))
                     continue;
                 if (n.Hall) halls++; else crossings++;
                 if (n.C.y > 0.1f) upper++;
@@ -124,10 +125,73 @@ namespace ItHunts.EditorTools
             Vector2 size = new Vector2(max.x - min.x - 60f, max.z - min.z - 60f);
             Level01Summary = $"{halls} salles et {crossings} carrefours ({upper} en hauteur), {Edges.Count - 1} couloirs, {rooms.Count} pièces fermées, " +
                              $"{_chestCount} coffres, {_canalCount} canaux, {_parkourCount} zones de parcours, {_spawnCount} points d'apparition, " +
+                             $"{_residentGhouls} goules et {_residentFlyers} volants habitants, " +
                              $"{Object.FindObjectsByType<RoomVolume>(FindObjectsSortMode.None).Length} volumes ; emprise {size.x:0} × {size.y:0} m";
             return $"OK : {Level01BasePath} ({Level01Summary}) ; " +
                    (copied ? $"{Level01Path} créée (copie à retravailler)." : $"{Level01Path} existe déjà : pas touchée.");
         }
+
+        private static int _residentGhouls, _residentFlyers;
+
+        /// <summary>
+        /// Habitants (étape 8, après playtest) : dans chaque grande salle (pas la salle de départ), 2 à 5 goules selon sa taille,
+        /// et 1 à 2 volants dans les salles du niveau haut ; en attente avec l'aggro habituelle ; tués, ils ne reviennent pas.
+        /// </summary>
+        private static void Residents()
+        {
+            var root = new GameObject("Habitants des salles").transform;
+            _ghouls = root;
+            _residentGhouls = _residentFlyers = 0;
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                Node n = Nodes[i];
+                if (!n.Hall || i == _startNode || i == _lairNode || n.Name.StartsWith("Arène"))
+                    continue;
+                float t = Mathf.InverseLerp(P.hallMin, P.hallMax, n.Half * 2f);
+                int g = Mathf.RoundToInt(Mathf.Lerp(P.residentGhoulsMin, P.residentGhoulsMax, t));
+                Vector3[] spots = ResidentSpots(i);
+                for (int k = 0; k < g; k++)
+                {
+                    Vector3 p = spots[k % spots.Length];
+                    BuildGhoul(p, Quaternion.Euler(0f, _rng.Next(360), 0f), $"habitante, {n.Name} {k + 1}");
+                    _residentGhouls++;
+                }
+
+                if (n.C.y > 0.1f)
+                {
+                    int f = _rng.Next(P.residentFlyersMin, P.residentFlyersMax + 1);
+                    for (int k = 0; k < f; k++)
+                    {
+                        BuildFlyer(n.C + new Vector3((k - 0.5f) * n.Half * 0.5f, 12f, n.HalfZ * 0.2f), $"habitant, {n.Name} {k + 1}");
+                        _residentFlyers++;
+                    }
+                }
+            }
+        }
+
+        /// <summary>Emplacements des habitants : marqueurs du module (ResidentSpot), sinon un cercle au sol libre.</summary>
+        private static Vector3[] ResidentSpots(int node)
+        {
+            Node n = Nodes[node];
+            var list = new List<Vector3>();
+            if (ModuleSpots.TryGetValue(node, out List<Vector3> fromModule))
+                list.AddRange(fromModule);
+            if (list.Count == 0)
+                for (int k = 0; k < 8; k++)
+                {
+                    float a = k / 8f * Mathf.PI * 2f + 0.2f;
+                    Vector3 p = n.C + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * n.Half * 0.45f;
+                    if (!Physics.CheckSphere(p + Vector3.up * 0.8f, 0.6f, ~0, QueryTriggerInteraction.Ignore))
+                        list.Add(p);
+                }
+
+            if (list.Count == 0)
+                list.Add(n.C);
+            return list.ToArray();
+        }
+
+        /// <summary>Emplacements des habitants posés par les modules de salle (salle → points au sol).</summary>
+        private static readonly Dictionary<int, List<Vector3>> ModuleSpots = new Dictionary<int, List<Vector3>>();
 
         /// <summary>Palier de sortie du dernier niveau généré (arène du combat de boss derrière).</summary>
         public static Vector3 LastExitLanding { get; private set; }
@@ -142,6 +206,7 @@ namespace ItHunts.EditorTools
             CorridorOpenings.Clear();
             Canals.Clear();
             RoomHalls.Clear();
+            ModuleSpots.Clear();
             int cols = P.columns, rws = P.rows;
             float sp = P.spacing, x0 = -(cols - 1) * sp * 0.5f, z0 = -(rws - 1) * sp * 0.5f;
             _startNode = 0;

@@ -158,8 +158,8 @@ namespace ItHunts.Enemies
 
         private void FixedUpdate()
         {
-            if (settings == null || Dead)
-                return;
+            if (settings == null || Dead || ZoneState.Asleep)
+                return;                                                    // salle de départ pas encore quittée (D-048)
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
             float now = Time.time, dt = Time.fixedDeltaTime;
             if (_nav == null)

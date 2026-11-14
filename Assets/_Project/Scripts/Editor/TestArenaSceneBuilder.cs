@@ -212,13 +212,17 @@ namespace ItHunts.EditorTools
 
             // Vagues (D-041) : réserve de goules et de volants inactifs (sous le niveau), réutilisés par le directeur des vagues.
             var waves = LoadOrCreate<WaveSettings>(WavesPath);
+            // Réserve à la taille de la carte (densité par surface, étape 8) : × la même échelle que le nombre voulu.
+            float areaScale = WaveDirector.AreaScaleFor(WaveDirector.MeasureMapArea(), waves);
+            int ghoulReserve = Mathf.CeilToInt(waves.ghoulPool * Mathf.Max(1f, areaScale));
+            int flyerReserve = Mathf.CeilToInt(waves.flyerPool * Mathf.Max(1f, areaScale));
             var ghoulPool = new GameObject("Réserve des vagues : goules").transform;
             var flyerPool = new GameObject("Réserve des vagues : volants").transform;
             _ghouls = ghoulPool;
-            for (int i = 0; i < waves.ghoulPool; i++)
+            for (int i = 0; i < ghoulReserve; i++)
                 BuildGhoul(new Vector3(i * 2f, -60f, 0f), Quaternion.identity, $"(réserve) {i + 1}");
             _ghouls = flyerPool;
-            for (int i = 0; i < waves.flyerPool; i++)
+            for (int i = 0; i < flyerReserve; i++)
                 BuildFlyer(new Vector3(i * 2f, -60f, 10f), $"(réserve) {i + 1}");
             foreach (Transform t in ghoulPool)
                 t.gameObject.SetActive(false);

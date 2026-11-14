@@ -29,6 +29,15 @@ namespace ItHunts.EditorTools
         [Tooltip("Part des couloirs de la grille retirés (chaque salle garde au moins 2 couloirs : boucles, pas de cul-de-sac).")]
         [Range(0f, 0.4f)] public float removedCorridorShare = 0.2f;
 
+        [Header("Habitants (étape 8, après playtest)")]
+        [Tooltip("Goules posées dans chaque grande salle dès le départ (en attente, aggro habituelle), selon sa taille : le " +
+                 "minimum pour la plus petite, le maximum pour la plus grande. Tuées, elles ne reviennent pas avant la remise à zéro.")]
+        [Range(0, 10)] public int residentGhoulsMin = 2;
+        [Range(0, 10)] public int residentGhoulsMax = 5;
+        [Tooltip("Volants posés dans les salles du niveau haut.")]
+        [Range(0, 5)] public int residentFlyersMin = 1;
+        [Range(0, 5)] public int residentFlyersMax = 2;
+
         [Header("Contenu")]
         [Tooltip("Coffres placés dans le décor, derrière des obstacles.")]
         [Range(0, 40)] public int chests = 14;

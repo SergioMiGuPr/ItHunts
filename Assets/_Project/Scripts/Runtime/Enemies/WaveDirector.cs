@@ -157,10 +157,31 @@ namespace ItHunts.Enemies
             _rng = new System.Random((run != null ? run.Seed : 1) * 7919 + (_zone != null ? _zone.Resets : 0));
         }
 
+        /// <summary>Surface de la carte (m², sol des volumes) et multiplicateur du nombre voulu qui en découle.</summary>
+        public float MapArea { get; private set; }
+        public float AreaScale { get; private set; } = 1f;
+
+        /// <summary>Surface de la carte : somme du sol des volumes de salle et de tronçon (le recouvrement est négligé).</summary>
+        public static float MeasureMapArea()
+        {
+            float a = 0f;
+            foreach (ItHunts.Level.RoomVolume r in FindObjectsByType<ItHunts.Level.RoomVolume>(FindObjectsSortMode.None))
+                a += r.Size.x * r.Size.z;
+            return a;
+        }
+
+        public static float AreaScaleFor(float area, WaveSettings s) =>
+            s == null || !s.scaleWithMapArea ? 1f : Mathf.Clamp(area / Mathf.Max(1f, s.referenceArea), s.minAreaScale, s.maxAreaScale);
+
         private void FixedUpdate()
         {
             if (settings == null)
                 return;
+            if (MapArea <= 0f)
+            {
+                MapArea = MeasureMapArea();
+                AreaScale = AreaScaleFor(MapArea, settings);
+            }
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
             if (_zone == null)
                 _zone = FindFirstObjectByType<ZoneState>();
@@ -193,8 +214,8 @@ namespace ItHunts.Enemies
             PlayerMultiplier = WaveMath.PlayerMultiplier(_players.Count, settings) * ItHunts.Level.RunSession.EnemyCount;   // difficulté (D-048)
             float ghoulBase = WaveMath.Level(elapsed, timer, settings.ghoulTrend, settings.ghoulEnraged, settings);
             float flyerBase = WaveMath.Level(elapsed, timer, settings.flyerTrend, settings.flyerEnraged, settings);
-            _ghouls.Level = ghoulBase * PlayerMultiplier;
-            _flyers.Level = flyerBase * PlayerMultiplier;
+            _ghouls.Level = ghoulBase * PlayerMultiplier * AreaScale;            // densité par surface (étape 8)
+            _flyers.Level = flyerBase * PlayerMultiplier * AreaScale;
             Ghoul.HuntingScale = WaveMath.HuntingScale(ghoulBase, settings.ghoulTrend, settings) * PlayerMultiplier;
             Flyer.HuntingScale = WaveMath.HuntingScale(flyerBase, settings.flyerTrend, settings) * PlayerMultiplier;
             Ghoul.PackShare = Flyer.PackShare = WaveMath.PackShare(InPeak, settings);
