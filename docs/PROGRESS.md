@@ -4,6 +4,62 @@
 
 ## Étape en cours
 
+**Étape 9 — écran partagé local à 2 joueurs (partie B), 2026-11-14, branche `etape-9` (créée depuis `etape-8`), sans push,
+playtest à deux en attente.** Fiche : `docs/design/features/coop-locale/` (design, implémentation, checklist). D-059.
+Commits : `c34f97f` (écran partagé, à terre, réanimation, spectateur), `1b04ff3` (lueurs par caméra).
+- **Rejoindre :** Start sur une manette, au menu ou en jeu ; clavier-souris + manette ou deux manettes ; joueur 1 verrouillé
+  sur son appareil.
+- **Écran :** gauche / droite par défaut, haut / bas en réglage. Chaque moitié a :
+  - son HUD, ses mains, la minimap commune ;
+  - son FOV adapté (×1.1 ou ×0.75) ;
+  - les lueurs de ce que le joueur vise ;
+  - la capsule de l'autre joueur.
+- **Correction trouvée en vérifiant :** les deux caméras virtuelles étaient sur le même canal, parce que le rig de vue est
+  détaché du joueur. La vue du joueur 1 suivait donc celle du joueur 2.
+- **À terre (D-007) :**
+  - relevé en 3 s à 2 m avec E / Y, retour à 50 PV ;
+  - spectateur après 30 s, vue de l'allié, retour à la zone suivante ;
+  - tous à terre ou morts : écran de fin ;
+  - le traqueur ignore les joueurs à terre, mais son coup met à terre.
+- **Tests :** 8 tests `CoopTests` ; 339 tests passent au total, 1 non concluant à dessein.
+- **Performance de l'écran partagé : objectif de 16.6 ms non atteint.**
+  - build : 17 à 18 ms au pic, contre 13.4 ms en solo ;
+  - éditeur : 39 ms (30 ms en solo) ;
+  - détail dans la fiche « testing ». Une torche sur deux n'éclaire plus dans les bases régénérées, mais pas dans Level_01.
+- **Level_01 :** recopiée plusieurs fois le 2026-11-14 (corrections des plaques, puis `SplitScreen`). **Ne plus la recopier**
+  (règle de l'utilisateur). Pour avoir la réduction des torches, régénérer la base et recopier soi-même.
+
+À valider (choix pris seul, étape 9) :
+- Facteurs de FOV : ×1.1 en gauche / droite, ×0.75 en haut / bas.
+- Start pour rejoindre, et non n'importe quel bouton.
+- Corps de l'autre joueur en capsule bleue ou orange.
+- Son : seul le joueur 1 entend (un seul auditeur).
+- Étiquette « À terre, maintiens E / Y » à 1.3 m au-dessus du joueur couché.
+- Spectateur : sa moitié reprend la vue de l'allié, mains comprises.
+- Pas de bouton pour quitter l'écran partagé.
+- Une torche sur deux sans lumière (bases et modules).
+
+Optimisations et nettoyage, par priorité (liste seulement, rien de codé) :
+1. **FixedUpdate de 1 600 scripts (4 à 6 ms) :**
+   - couper les `Grabbable` et `ImpactDamager` au repos (réveil au contact, à la prise ou dans le rayon d'un joueur) ;
+   - mettre en veille les ennemis loin de tout joueur.
+2. **Lumières (environ 3 ms en écran partagé) :**
+   - passer le renderer en Forward+ (culling des lumières par tuiles) ;
+   - ou cuire l'éclairage des torches fixes ;
+   - ou limiter les lumières temps réel à un rayon autour des joueurs.
+
+   Demande de réglage partagé : à faire sur `main`.
+3. **Occlusion culling** des salles (portes, couloirs), à cuire par niveau.
+4. **Distance de vue :** far clip de la caméra et de l'objectif Cinemachine à environ 250 m (−1 ms mesuré).
+5. **Affichage de debug (F3)** éteint par défaut dans les builds de joueurs (3 à 6 ms en IMGUI).
+6. **`DebugInvulnerable`** remis à false à l'entrée en Play Mode et dans le SetUp des tests (variable statique qui survit).
+7. **Combat de boss** trop court pour un joueur rapide (estimé 35 à 45 s) : leviers plus éloignés, ou un 3e levier.
+8. **Test_Arena :** remplacer les voies au sol à côté des pentes par des pentes sur toute la largeur, comme au niveau 1.
+9. **Nettoyage :**
+   - regrouper les `beginCameraRendering` (WorldLabel, ViewerOnly, Chest, SplitScreen, TelekinesisView) en un seul
+     répartiteur par caméra ;
+   - GUID de `Level_01.unity.meta` changé à chaque recopie (remis à l'ancien).
+
 **Après le playtest de l'étape 7 (partie 2)** — fait et **validé en playtest** le 2026-11-13 ; bloc 0 (tronçons de couloir,
 D-047) ajouté ensuite, commité et poussé sur `main` :
 - **Tronçons de couloir (D-047) :** volumes de type Couloir, 40 m au plus (`corridorSegmentLength`), 24 dans Test_Arena ; pas
@@ -334,7 +390,7 @@ Ordre de CLAUDE.md, une étape validée en playtest avant la suivante :
 3. Magnétisme (fait) → 4. Télékinésie, une seule orbe, dégâts (fait) → 5. Vue FPS et HUD (fait) →
 **5 bis. Artefacts** (fait, D-032) → **6. Ennemis et vagues, avec le traqueur** (fait, D-033 à D-041) → **7. Âmes et
 économie** (fait, D-043) →
-**8. Run complète** (blocs 1 à 6 codés sur `etape-8`, playtest en attente) → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
+**8. Run complète** (codée sur `etape-8`, corrections après playtest faites) → **9. Écran partagé** (codé sur `etape-9`, playtest en attente) → 10. Direction artistique (dont les **vrais sons**, voir
 ci-dessous) → 11. Coop en ligne → 12. Build.
 
 **Piste parallèle : direction artistique (étape 10)**, menée par une deuxième personne depuis le 2026-11-12 :
@@ -558,8 +614,7 @@ Télékinésie et orbe unique validées le 2026-11-12 (D-024 à D-027), `Telekin
 - **Ne pas recompiler pendant le Play Mode** d'une mesure (la recompilation attend et la CLI expire) : arrêter le
   Play Mode d'abord (`unity command editor.playmode stop`).
 
-- **Écran partagé (étape 9) :** la lueur des objets attrapables suit un seul joueur (celui dont la vue
-  est mise à jour en dernier) ; à rendre propre à chaque caméra.
+- **Écran partagé (étape 9) :** la lueur des objets attrapables est maintenant calculée par caméra (réglé le 2026-11-14).
 - **Réseau (étape 11) :** les objets lancés sont des corps dynamiques locaux ; le serveur devra faire
   autorité dessus (voir CLAUDE.md).
 
