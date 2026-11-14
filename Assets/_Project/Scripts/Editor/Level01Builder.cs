@@ -79,7 +79,6 @@ namespace ItHunts.EditorTools
                 FurnishAnnex(r, AnnexTypes.TryGetValue(r.Name, out string kind) ? kind : "réserve");
             }
 
-            BuildPassages();
             BuildGalleries(P.waterDamage);
             for (int e = 0; e < Edges.Count; e++)
                 if (!IsLairEdge(e))
@@ -94,6 +93,8 @@ namespace ItHunts.EditorTools
                 else if (Nodes[i].Hall)
                     HallInterior(i, false, false);                         // salle de départ (marchand)
             }
+
+            BuildPassages();                                               // après les modules : on vérifie la place devant
             Level01CorridorFeatures();
             Residents();
 
@@ -143,7 +144,7 @@ namespace ItHunts.EditorTools
 
             Vector2 size = new Vector2(max.x - min.x - 60f, max.z - min.z - 60f);
             Level01Summary = $"{halls} salles et {crossings} carrefours ({upper} en hauteur), {Edges.Count - 1} couloirs, {rooms.Count} pièces fermées, " +
-                             $"{_chestCount} coffres, {_canalCount} canaux, {_parkourCount} zones de parcours ({Galleries.Count} galeries), {Passages.Count} passages en hauteur, {_spawnCount} points d'apparition, " +
+                             $"{_chestCount} coffres, {_canalCount} canaux, {_parkourCount} zones de parcours ({Galleries.Count} galeries), {Passages.Count - _closedPassages} passages en hauteur ({_closedPassages} refermés : module devant), {_spawnCount} points d'apparition, " +
                              $"{_residentGhouls} goules et {_residentFlyers} volants habitants, {_decorCount} props de décor (salles en plus), " +
                              $"{Object.FindObjectsByType<RoomVolume>(FindObjectsSortMode.None).Length} volumes ; emprise {size.x:0} × {size.y:0} m";
             return $"OK : {Level01BasePath} ({Level01Summary}) ; " +

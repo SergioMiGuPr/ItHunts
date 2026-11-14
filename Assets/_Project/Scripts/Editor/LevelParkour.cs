@@ -32,6 +32,7 @@ namespace ItHunts.EditorTools
         }
 
         private static readonly List<PassageDef> Passages = new List<PassageDef>();
+        private static int _closedPassages;
         private static readonly List<GalleryDef> Galleries = new List<GalleryDef>();
         private const float DuctY = 4.5f, DuctH = 3f, DuctW = 3.5f, DuctLen = 8f, GalleryWidth = 20f;
 
@@ -129,6 +130,8 @@ namespace ItHunts.EditorTools
         {
             var root = new GameObject("Passages en hauteur (saut mural)").transform;
             root.SetParent(_level, false);
+            _closedPassages = 0;
+            Physics.SyncTransforms();
             foreach (PassageDef p in Passages)
             {
                 CorridorFrame(p.Edge, p.AtStart, out Vector3 face, out Vector3 axis, out Vector3 lat, out _, out float y, out _);
@@ -138,13 +141,32 @@ namespace ItHunts.EditorTools
                 Vector3 Size(float axLen, float latLen, float hgt) => Mathf.Abs(axis.x) > 0.5f ? new Vector3(axLen, hgt, latLen) : new Vector3(latLen, hgt, axLen);
                 float l0 = w / 2f + T, l1 = l0 + DuctW;
                 string nm = $"Passage {CorridorName(p.Edge)}";
+                // Place devant l'ouverture, côté salle (2.5 m de profondeur) : un étage ou une tour du module la bouche-t-il ?
+                Vector3 front = Pt(-1.5f, (l0 + l1) / 2f, DuctY + DuctH / 2f);
+                if (Physics.CheckBox(front, Size(2.6f, DuctW - 0.6f, DuctH - 0.8f) / 2f, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore))
+                {
+                    // Refermé : une plaque bouche l'ouverture du mur de la salle et celle du couloir.
+                    NMPiece($"{nm} : refermé (module devant)", root, Pt(T / 2f, (l0 + l1) / 2f, DuctY + DuctH / 2f), Size(T + 0.2f, DuctW, DuctH + 0.2f), walkable: false);
+                    NMPiece($"{nm} : refermé (côté couloir)", root, Pt(T + 5.5f, w / 2f + T / 2f, DuctY + DuctH / 2f), Size(3.2f, T + 0.2f, DuctH + 0.2f), walkable: false);
+                    _closedPassages++;
+                    continue;
+                }
                 Piece($"{nm} : sol", Pt(T + DuctLen / 2f, (l0 + l1) / 2f, DuctY - 0.25f), Size(DuctLen, DuctW, 0.5f), _platform);
                 Piece($"{nm} : plafond", Pt(T + DuctLen / 2f, (l0 + l1) / 2f, DuctY + DuctH + 0.25f), Size(DuctLen + 1f, DuctW + 1f, 0.5f), _ceiling, walkable: false);
                 Piece($"{nm} : mur extérieur", Pt(T + (DuctLen + 1f) / 2f, l1 + 0.5f, DuctY + DuctH / 2f), Size(DuctLen + 1f, 1f, DuctH + 1f), _wall, walkable: false);
                 Piece($"{nm} : mur du fond", Pt(T + DuctLen + 0.5f, (l0 + l1) / 2f, DuctY + DuctH / 2f), Size(1f, DuctW, DuctH + 1f), _wall, walkable: false);
                 // Murs non magnétiques autour des deux ouvertures (on y monte en saut mural, pas à la traction).
-                NMPiece($"{nm} : plaque (salle)", root, Pt(-0.08f, (l0 + l1) / 2f, (DuctY + DuctH + 1.5f) / 2f), Size(0.12f, DuctW + 5f, DuctY + DuctH + 1.5f), walkable: false);
-                NMPiece($"{nm} : plaque (couloir)", root, Pt(T + 5.5f, w / 2f - 0.08f, (DuctY + DuctH + 1.5f) / 2f), Size(7f, 0.12f, DuctY + DuctH + 1.5f), walkable: false);
+                // Plaques en cadre autour des ouvertures (dessous, dessus, côtés) : l'ouverture reste libre.
+                float lc = (l0 + l1) / 2f, top = DuctY + DuctH + 1.5f, side = 2.5f, open = DuctW - 0.5f;
+                NMPiece($"{nm} : plaque (salle)", root, Pt(-0.08f, lc, DuctY / 2f), Size(0.12f, open + 2f * side, DuctY), walkable: false);
+                NMPiece($"{nm} : plaque (salle) haut", root, Pt(-0.08f, lc, (DuctY + DuctH + top) / 2f), Size(0.12f, open + 2f * side, top - DuctY - DuctH), walkable: false);
+                NMPiece($"{nm} : plaque (salle) gauche", root, Pt(-0.08f, lc - (open + side) / 2f, DuctY + DuctH / 2f), Size(0.12f, side, DuctH), walkable: false);
+                NMPiece($"{nm} : plaque (salle) droite", root, Pt(-0.08f, lc + (open + side) / 2f, DuctY + DuctH / 2f), Size(0.12f, side, DuctH), walkable: false);
+                float ac = T + 5.5f;
+                NMPiece($"{nm} : plaque (couloir)", root, Pt(ac, w / 2f - 0.08f, DuctY / 2f), Size(9f, 0.12f, DuctY), walkable: false);
+                NMPiece($"{nm} : plaque (couloir) haut", root, Pt(ac, w / 2f - 0.08f, (DuctY + DuctH + top) / 2f), Size(9f, 0.12f, top - DuctY - DuctH), walkable: false);
+                NMPiece($"{nm} : plaque (couloir) avant", root, Pt(T + 2.75f, w / 2f - 0.08f, DuctY + DuctH / 2f), Size(2.5f, 0.12f, DuctH), walkable: false);
+                NMPiece($"{nm} : plaque (couloir) arrière", root, Pt(T + 8.25f, w / 2f - 0.08f, DuctY + DuctH / 2f), Size(2.5f, 0.12f, DuctH), walkable: false);
                 PropLibrary.Place("Lanterne", root, Pt(T + DuctLen / 2f, (l0 + l1) / 2f, DuctY + 1.6f), 0f);
                 PropLibrary.Place("Torche", root, Pt(T + 2f, w / 2f - 0.35f, DuctY - 1f), Mathf.Atan2(-latS.x, -latS.z) * Mathf.Rad2Deg);
             }
@@ -169,7 +191,14 @@ namespace ItHunts.EditorTools
                 NMPiece($"{nm} : bout 1", root, Pt(a0 - 0.5f, (l0 + l1) / 2f, (H - depth) / 2f), Size(1f, GalleryWidth, H + depth), walkable: false);
                 NMPiece($"{nm} : bout 2", root, Pt(a1 + 0.5f, (l0 + l1) / 2f, (H - depth) / 2f), Size(1f, GalleryWidth, H + depth), walkable: false);
                 NMPiece($"{nm} : plafond", root, Pt((a0 + a1) / 2f, (l0 + l1) / 2f, H + 0.5f), Size(a1 - a0 + 2f, GalleryWidth + 2f, 1f), walkable: false);
-                NMPiece($"{nm} : plaque du mur du couloir", root, Pt((a0 + a1) / 2f, l0 + 0.06f, (H - depth) / 2f), Size(a1 - a0, 0.12f, H + depth), walkable: false);
+                // Plaque côté galerie du mur du couloir, découpée autour des deux portes (axe 6..9 et len−9..len−6, 3.5 m de haut).
+                foreach ((float pa, float pb) in new[] { (a0, 6f), (9f, len - 9f), (len - 6f, a1) })
+                    NMPiece($"{nm} : plaque du mur du couloir", root, Pt((pa + pb) / 2f, l0 + 0.06f, (H - depth) / 2f), Size(pb - pa, 0.12f, H + depth), walkable: false);
+                foreach (float da in new[] { 7.5f, len - 7.5f })
+                {
+                    NMPiece($"{nm} : plaque au-dessus de la porte", root, Pt(da, l0 + 0.06f, (3.5f + H) / 2f), Size(3f, 0.12f, H - 3.5f), walkable: false);
+                    NMPiece($"{nm} : plaque sous la porte", root, Pt(da, l0 + 0.06f, -depth / 2f - 0.5f), Size(3f, 0.12f, depth - 1f), walkable: false);
+                }
                 Piece($"{nm} : fond du vide", Pt((a0 + a1) / 2f, (l0 + l1) / 2f, -depth - 0.5f), Size(a1 - a0, GalleryWidth, 1f), _ceiling, walkable: false);
 
                 // Paliers aux portes (à portée de sa main) et poutres.
