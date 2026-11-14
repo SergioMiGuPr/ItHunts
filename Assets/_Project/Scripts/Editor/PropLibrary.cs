@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using ItHunts.Orbs;
 using UnityEditor;
 using UnityEngine;
@@ -310,6 +311,8 @@ namespace ItHunts.EditorTools
                     break;
             }
 
+            Merge(root, d.Id);                                              // un seul rendu par prop (performance)
+
             if (!d.NoCollider)
             {
                 var box = root.AddComponent<BoxCollider>();
@@ -321,6 +324,61 @@ namespace ItHunts.EditorTools
                 if (c.GetComponent<Light>() == null)
                     GameObjectUtility.SetStaticEditorFlags(c.gameObject, StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccluderStatic | StaticEditorFlags.OccludeeStatic);
             return root;
+        }
+
+        /// <summary>
+        /// Fusionne les formes du prop en un seul maillage (un sous-maillage par matériau), enregistré dans Props/Meshes : un
+        /// seul rendu par prop au lieu de 3 à 30 (draw calls et culling ; mesuré dans le build de l'étape 8).
+        /// </summary>
+        private static void Merge(GameObject root, string id)
+        {
+            var parts = root.GetComponentsInChildren<MeshFilter>(true).Where(f => f.gameObject != root).ToList();
+            if (parts.Count == 0)
+                return;
+            var byMat = new Dictionary<Material, List<CombineInstance>>();
+            Matrix4x4 toRoot = root.transform.worldToLocalMatrix;
+            foreach (MeshFilter f in parts)
+            {
+                Material m = f.GetComponent<MeshRenderer>().sharedMaterial;
+                if (!byMat.TryGetValue(m, out List<CombineInstance> list))
+                    byMat[m] = list = new List<CombineInstance>();
+                list.Add(new CombineInstance { mesh = f.sharedMesh, transform = toRoot * f.transform.localToWorldMatrix });
+            }
+
+            var subs = new List<CombineInstance>();
+            var mats = new List<Material>();
+            foreach (var kv in byMat)
+            {
+                var sub = new Mesh();
+                sub.CombineMeshes(kv.Value.ToArray(), true, true);
+                subs.Add(new CombineInstance { mesh = sub, transform = Matrix4x4.identity });
+                mats.Add(kv.Key);
+            }
+
+            var mesh = new Mesh { name = $"Prop_{id}" };
+            mesh.CombineMeshes(subs.ToArray(), false, false);
+            mesh.RecalculateBounds();
+            foreach (CombineInstance c in subs)
+                Object.DestroyImmediate(c.mesh);
+            string dir = Dir + "/Meshes";
+            if (!AssetDatabase.IsValidFolder(dir))
+                AssetDatabase.CreateFolder(Dir, "Meshes");
+            string path = $"{dir}/Prop_{id}.asset";
+            var old = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+            if (old != null)
+            {
+                old.Clear();
+                EditorUtility.CopySerialized(mesh, old);
+                Object.DestroyImmediate(mesh);
+                mesh = old;
+            }
+            else
+                AssetDatabase.CreateAsset(mesh, path);
+
+            foreach (MeshFilter f in parts)
+                Object.DestroyImmediate(f.gameObject);
+            root.AddComponent<MeshFilter>().sharedMesh = mesh;
+            root.AddComponent<MeshRenderer>().sharedMaterials = mats.ToArray();
         }
 
         private static void AddLight(Transform t, Vector3 at, Color color, float intensity, float range)

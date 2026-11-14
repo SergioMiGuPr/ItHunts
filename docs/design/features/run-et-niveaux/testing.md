@@ -15,6 +15,22 @@
 - [x] En Play Mode, **marchand de l'artefact** : 3 offres par joueur ; 3 achats de suite à 40, 75 (60 + 25 %), 94 âmes ; barillet modifié (portée 60 → 85 m, dégâts 12 → 19.2). *(Play Mode, 2026-11-13)*
 - [x] En Play Mode, **niveau 1** : NavMesh en 0.9 s (deux NavMesh 0.45 s, 949 murs grimpables 0.46 s) ; départ → sortie 1 329 m ; main du traqueur : 0 point hors de portée sur 12 467 ; pic à 14 min : 25 goules et 15 volants, image 12.6 ms (éditeur). Canal : −20 PV, remontée sur la rive. *(Play Mode, 2026-11-13)*
 - [x] En Play Mode, **combat de boss** (joueur simulé qui attire) : 13.5 m/s gagné en 21.5 s, 18 m/s en 20.8 s, 7.5 m/s tué au 3e piège. *(Play Mode, 2026-11-13)*
+- [x] **Performance, build de développement Windows** (1920 × 1080, niveau 1 au pic de la fin, joueur au centre, 210 ennemis actifs, 1 923 lumières, ≈ 6 100 draw calls ; sonde `-ithunts-perf-level`) :
+
+  | Étape | Temps d'image médian | 95e centile | Images au-dessus de 16.6 ms |
+  |---|---|---|---|
+  | Départ, affichage de debug allumé | 18.7 ms | 30.4 ms | 813 / 974 |
+  | Minimap peinte dans une texture | 16.8 ms | 24.2 ms | 621 / 1121 |
+  | Affichage de debug (F3) coupé | 13.9 ms | 18.2 ms | 192 / 1402 |
+  | Props fusionnés en un seul maillage | **11.4 ms** | **16.1 ms** | **76 / 1710** |
+
+  - **Ce qui coûtait :** l'affichage de debug en IMGUI (environ 3 à 6 ms), la minimap qui redessinait 200 rectangles par image,
+    et les formes des props (un rendu par forme).
+  - **Optimisé :** la minimap peint ses salles dans une texture, refaite seulement quand une salle est découverte ; chaque prop
+    est un seul maillage avec un sous-maillage par matériau.
+  - **Le GPU** reste à 5 ms, et couper les 1 922 lumières ponctuelles ne fait gagner que 2 ms.
+  - **Reste**, à prévoir plus tard : environ 1 600 petits FixedUpdate (props attrapables, goules) soit 3.2 ms, et le culling
+    1.4 ms. *(build de développement, 2026-11-14)*
 - [ ] Ressenti : salle de départ, timers, porte, marchand, menus, niveau 1, minimap, combat. *(playtest)*
 
 ## Checklist de playtest

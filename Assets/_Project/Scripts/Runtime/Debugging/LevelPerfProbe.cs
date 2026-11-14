@@ -37,6 +37,7 @@ namespace ItHunts.Debugging
             }
 
             _split = args.Contains("-ithunts-perf-split");
+            Application.runInBackground = true;                          // la mesure continue sans le focus
             int i = System.Array.IndexOf(args, "-ithunts-perf-out");
             _outPath = i >= 0 && i + 1 < args.Length ? args[i + 1] : Path.Combine(Application.persistentDataPath, "perf_level.txt");
         }
@@ -82,13 +83,42 @@ namespace ItHunts.Debugging
             }
 
             yield return new WaitForSeconds(0.5f);
+            string[] args = System.Environment.GetCommandLineArgs();
+            string variant = "";
+            if (!args.Contains("-ithunts-perf-debug"))
+                foreach (MovementDebugOverlay o in FindObjectsByType<MovementDebugOverlay>(FindObjectsSortMode.None))
+                    o.enabled = false;                                   // affichage de debug (F3) coupé : on mesure le jeu
+            if (args.Contains("-ithunts-perf-nolights"))
+            {
+                int off = 0;
+                foreach (Light l in FindObjectsByType<Light>(FindObjectsSortMode.None))
+                    if (l.type == LightType.Point)
+                    {
+                        l.enabled = false;
+                        off++;
+                    }
+
+                variant += $" ; {off} lumières ponctuelles coupées";
+            }
+
+            int fi = System.Array.IndexOf(args, "-ithunts-perf-far");
+            if (fi >= 0 && fi + 1 < args.Length && float.TryParse(args[fi + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float far))
+            {
+                foreach (Camera cam in FindObjectsByType<Camera>(FindObjectsSortMode.None))
+                    cam.farClipPlane = Mathf.Min(cam.farClipPlane, far);
+                variant += $" ; distance d'affichage {far} m";
+            }
+
             if (zone != null)
                 zone.DebugAdvance(820f - zone.Elapsed);
-            Write($"Niveau {gameObject.scene.name}, {Screen.width}×{Screen.height}, {(_split ? "écran partagé à 2" : "1 joueur")} ; salle {mid.RoomName} ; timer avancé à 13:40 (pic de 13:40 à 14:00)");
+            Write($"Niveau {gameObject.scene.name}, {Screen.width}×{Screen.height}, {(_split ? "écran partagé à 2" : "1 joueur")} ; salle {mid.RoomName} ; timer avancé à 13:40 (pic de 13:40 à 14:00){variant}");
             yield return new WaitForSeconds(5f);
 
             var main = ProfilerRecorder.StartNew(ProfilerCategory.Internal, "Main Thread", 15);
-            var markers = new[] { "ItHunts.Ghoul", "ItHunts.Stalker", "ItHunts.Waves", "ItHunts.Flyer", "ItHunts.Souls", "ItHunts.PlayerHud" }
+            var markers = new[] { "ItHunts.Ghoul", "ItHunts.Stalker", "ItHunts.Waves", "ItHunts.Flyer", "ItHunts.Souls", "ItHunts.PlayerHud",
+                    "FixedUpdate.ScriptRunBehaviourFixedUpdate", "Update.ScriptRunBehaviourUpdate", "PreLateUpdate.ScriptRunBehaviourLateUpdate",
+                    "FixedUpdate.PhysicsFixedUpdate", "PostLateUpdate.FinishFrameRendering", "Camera.Render", "CullScriptable",
+                    "RenderPipelineManager.DoRenderLoop_Internal()", "UpdateRendererBoundingVolumes", "GUI.Repaint", "UGUI.Rendering.UpdateBatches" }
                 .Select(n => (n, ProfilerRecorder.StartNew(ProfilerCategory.Scripts, n, 15))).ToList();
             var physics = ProfilerRecorder.StartNew(ProfilerCategory.Physics, "Physics.Simulate", 15);
             var drawCalls = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Draw Calls Count", 15);

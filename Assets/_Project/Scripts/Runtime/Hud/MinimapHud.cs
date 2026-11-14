@@ -29,6 +29,47 @@ namespace ItHunts.Hud
 
         public bool FullMap { get; private set; }
 
+        // Performance (étape 8, après playtest : 7 ms d'IMGUI au pic) : les salles découvertes sont peintes dans une texture,
+        // refaite seulement quand une salle est découverte ; chaque image n'affiche que cette texture et quelques repères.
+        private Texture2D _mapTex;
+        private int _paintedKnown = -1;
+        private readonly List<bool> _markKnown = new List<bool>();
+        private const int TexSize = 512;
+
+        private void Paint(MapDiscovery fog)
+        {
+            if (_mapTex == null)
+            {
+                _mapTex = new Texture2D(TexSize, TexSize, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            }
+
+            var px = new Color32[TexSize * TexSize];
+            float sx = (TexSize - 2) / Mathf.Max(1f, _all.size.x), sz = (TexSize - 2) / Mathf.Max(1f, _all.size.z);
+            foreach (RoomVolume r in _volumes)
+            {
+                if (r == null || (fog != null && !fog.IsKnown(r)))
+                    continue;
+                Bounds b = r.WorldBounds();
+                bool high = b.min.y > 8f;
+                Color32 col = r.IsCorridor ? new Color(0.35f, 0.38f, 0.45f, 0.9f) : high ? new Color(0.55f, 0.6f, 0.75f, 0.9f) : new Color(0.45f, 0.48f, 0.58f, 0.9f);
+                if (r.Kind == RoomKind.Depart) col = new Color(0.6f, 0.6f, 0.35f, 0.9f);
+                int x0 = 1 + Mathf.Clamp(Mathf.FloorToInt((b.min.x - _all.min.x) * sx), 0, TexSize - 3);
+                int x1 = 1 + Mathf.Clamp(Mathf.CeilToInt((b.max.x - _all.min.x) * sx), 0, TexSize - 3);
+                int z0 = 1 + Mathf.Clamp(Mathf.FloorToInt((b.min.z - _all.min.z) * sz), 0, TexSize - 3);
+                int z1 = 1 + Mathf.Clamp(Mathf.CeilToInt((b.max.z - _all.min.z) * sz), 0, TexSize - 3);
+                for (int z = z0; z <= z1; z++)
+                for (int x = x0; x <= x1; x++)
+                    px[z * TexSize + x] = col;
+            }
+
+            _mapTex.SetPixels32(px);
+            _mapTex.Apply(false);
+            _markKnown.Clear();
+            foreach ((Vector3 at, Color _, string _, Object _) in _marks)
+                _markKnown.Add(fog == null || fog.IsKnownPoint(at + Vector3.up));
+            _paintedKnown = fog != null ? fog.KnownCount : 0;
+        }
+
         private void Refresh()
         {
             _volumes.Clear();
@@ -56,6 +97,12 @@ namespace ItHunts.Hud
             _refreshAt = Time.time + 5f;
         }
 
+        private void OnDestroy()
+        {
+            if (_mapTex != null)
+                Destroy(_mapTex);
+        }
+
         private void Update() => FullMap = Keyboard.current != null && Keyboard.current.tabKey.isPressed;
 
         private void OnGUI()
@@ -63,8 +110,14 @@ namespace ItHunts.Hud
             if (Event.current.type != EventType.Repaint || PlayerLook.MenuOpen)
                 return;
             if (Time.time >= _refreshAt || _volumes.Count == 0)
+            {
                 Refresh();
+                _paintedKnown = -1;
+            }
+
             MapDiscovery fog = MapDiscovery.Current;
+            if (_mapTex == null || (fog != null ? fog.KnownCount : 0) != _paintedKnown)
+                Paint(fog);
             foreach (PlayerHealth p in PlayerHealth.All)
             {
                 if (p == null)
@@ -91,21 +144,15 @@ namespace ItHunts.Hud
             Fill(box, new Color(0f, 0f, 0f, 0.6f));
             GUI.BeginClip(box);
             Vector2 o = box.position;
-            foreach (RoomVolume r in _volumes)
-            {
-                if (r == null || (fog != null && !fog.IsKnown(r)))
-                    continue;
-                Bounds b = r.WorldBounds();
-                Vector2 a = Map(new Vector3(b.min.x, 0f, b.max.z)) - o, z = Map(new Vector3(b.max.x, 0f, b.min.z)) - o;
-                bool high = b.min.y > 8f;
-                Color col = r.IsCorridor ? new Color(0.35f, 0.38f, 0.45f, 0.9f) : high ? new Color(0.55f, 0.6f, 0.75f, 0.9f) : new Color(0.45f, 0.48f, 0.58f, 0.9f);
-                if (r.Kind == RoomKind.Depart) col = new Color(0.6f, 0.6f, 0.35f, 0.9f);
-                Fill(new Rect(a.x, a.y, z.x - a.x, z.y - a.y), col);
-            }
+            // Salles découvertes : la fenêtre de la texture autour du centre (une seule image dessinée).
+            var uv = new Rect((c.x - metres / 2f - _all.min.x) / _all.size.x, (c.z - metres / 2f - _all.min.z) / _all.size.z,
+                metres / _all.size.x, metres / _all.size.z);
+            GUI.DrawTextureWithTexCoords(new Rect(0f, 0f, box.width, box.height), _mapTex, uv);
 
-            foreach ((Vector3 at, Color color, string label, Object owner) in _marks)
+            for (int i = 0; i < _marks.Count; i++)
             {
-                if (owner == null || (fog != null && !fog.IsKnownPoint(at + Vector3.up)))
+                (Vector3 at, Color color, string label, Object owner) = _marks[i];
+                if (owner == null || i >= _markKnown.Count || !_markKnown[i])
                     continue;
                 Color col = color;
                 if (owner is Chest ch && ch.OpenedFor(viewer.PlayerId)) col = new Color(0.5f, 0.5f, 0.5f);
