@@ -80,3 +80,5 @@ d'optimisations est dans PROGRESS.md.
 10. **Fin :** laisse tomber les deux joueurs. Écran de fin, Rejouer.
 11. **Traqueur :** un coup du traqueur met à terre (pas de mort directe tant que l'autre est debout).
 12. **Fluidité :** au pic de la fin du niveau, le jeu reste-t-il fluide à deux ? Note les endroits où ça saccade.
+13. **Menu pause :** chacun appuie sur Échap / Start : le menu s'ouvre dans sa moitié, se pilote avec son appareil, l'autre
+    joueur continue de jouer. Joueur 2 : « Quitter l'écran partagé », le joueur 1 reprend tout l'écran.

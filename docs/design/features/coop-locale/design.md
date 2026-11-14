@@ -1,6 +1,6 @@
 # Coop locale (écran partagé)
 
-**Status:** in progress · **Updated:** 2026-11-14 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md) · D-007, D-059
+**Status:** implemented · **Updated:** 2026-11-14 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md) · D-007, D-059
 
 ## Résumé
 
@@ -68,10 +68,12 @@ zone suivante. La partie se termine quand tous les joueurs sont à terre ou mort
 | `reviveRange` | 2 | distance pour relever (m) |
 | `reviveHealth` | 50 | PV au retour |
 
-## Questions ouvertes (à valider)
+10. **Menu pause** (Échap / Start), un par joueur, dans sa moitié et piloté par son seul appareil ; **le jeu continue**.
+    Entrées : Reprendre ; **Quitter l'écran partagé** (joueur 2 seulement : le joueur 1 reprend tout l'écran ; s'il était
+    à terre, il meurt, car plus personne ne peut le relever) ; Menu principal.
 
-- Facteurs de FOV (1.1 et 0.75) : choisis seul, à régler en playtest.
-- Start pour rejoindre (et non n'importe quel bouton), pour ne pas faire entrer un joueur par erreur.
-- Corps de l'autre joueur en capsule greybox, en attendant le vrai modèle (étape 10).
-- Le son ne suit que le joueur 1 (Unity n'a qu'un auditeur) ; un mixage par joueur viendra plus tard.
-- Un joueur qui quitte n'est pas géré (pas de bouton pour sortir de l'écran partagé).
+## Validé en playtest (2026-11-14)
+
+- FOV ×1.1 et ×0.75 ; Start pour rejoindre ; capsules pour les corps (en attendant le vrai modèle, étape 10) ; spectateur
+  avec les mains de l'allié.
+- Son du joueur 1 seulement : **provisoire** (Unity n'a qu'un auditeur ; un mixage par joueur viendra plus tard).

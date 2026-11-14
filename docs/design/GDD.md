@@ -66,7 +66,7 @@ bouger → trouver objets / ennemis → lancer, tuer → âmes → coffres, marc
 | Âmes et économie | implemented | MVP | Éclats d'âme individuels ramassés par l'orbe (8 m), ×2 en Enragé, coffres (choix parmi 3 orbes), marchand placé avec la seed, salle verrouillée, interaction E / Y (D-043) | [design](features/ames/design.md) |
 | Améliorations | implemented | MVP | 8 premières : charge en plus, traction rapide, rayon de collecte, objets lancés +25 %, répulsion blessante, PV max, balles, aspiration ; un asset chacune, tirées avec la seed (D-043) | [design](features/ameliorations/design.md) |
 | Vie et mort | idea | MVP | PV fixes, soins rares, bilan de fin de run et relance en un bouton | — |
-| Coop locale | in progress | MVP | Écran partagé à 2 (gauche / droite ou haut / bas), le 2e rejoint avec Start ; à terre au lieu de mort, relevé par un allié (E / Y 3 s à 2 m, 50 PV), spectateur après 30 s jusqu'à la zone suivante, fin quand tous sont à terre (D-059) | [design](features/coop-locale/design.md) |
+| Coop locale | implemented | MVP | Écran partagé à 2 (gauche / droite ou haut / bas), le 2e rejoint avec Start ; à terre au lieu de mort, relevé par un allié (E / Y 3 s à 2 m, 50 PV), spectateur après 30 s jusqu'à la zone suivante, fin quand tous sont à terre (D-059) | [design](features/coop-locale/design.md) |
 | HUD et debug | implemented | MVP | HUD uGUI par joueur autour du viseur, HUD discret, coins réservés (âmes, timer, traqueur) ; debug en trois pages | [design](features/vue-fps/design.md) |
 | Vue FPS | implemented | MVP | Mains greybox et orbe dans la paume droite, caméra des mains à FOV fixe, mouvement et gestes | [design](features/vue-fps/design.md) |
 | Méta-progression | idea | later | Déblocages achetés avec une part des âmes | — |

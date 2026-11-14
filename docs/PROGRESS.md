@@ -4,9 +4,17 @@
 
 ## Étape en cours
 
-**Étape 9 — écran partagé local à 2 joueurs (partie B), 2026-11-14, branche `etape-9` (créée depuis `etape-8`), sans push,
-playtest à deux en attente.** Fiche : `docs/design/features/coop-locale/` (design, implémentation, checklist). D-059.
-Commits : `c34f97f` (écran partagé, à terre, réanimation, spectateur), `1b04ff3` (lueurs par caméra).
+**Étapes 8 et 9 terminées pour le niveau 1 : validées en playtest le 2026-11-14 et fusionnées dans `main`.** Le playtest a
+validé l'ensemble, et la coop en écran partagé marche bien. Les corrections demandées après ce playtest se font sur la branche
+`correctifs-8-9` (voir plus bas).
+
+**Étape 9 — écran partagé local à 2 joueurs, terminée et validée en playtest (2026-11-14).** Fiche :
+`docs/design/features/coop-locale/` (design, implémentation, checklist). D-059.
+Commits :
+- `c34f97f` : écran partagé, à terre, réanimation, spectateur ;
+- `1b04ff3` : lueurs par caméra ;
+- avant la fusion : `5a7228c` (F3 éteint par défaut), `24fdaaf` (invulnérabilité de debug remise à zéro automatiquement),
+  `4a8622b` (menu pause par joueur, « Quitter l'écran partagé » pour le joueur 2).
 - **Rejoindre :** Start sur une manette, au menu ou en jeu ; clavier-souris + manette ou deux manettes ; joueur 1 verrouillé
   sur son appareil.
 - **Écran :** gauche / droite par défaut, haut / bas en réglage. Chaque moitié a :
@@ -21,7 +29,10 @@ Commits : `c34f97f` (écran partagé, à terre, réanimation, spectateur), `1b04
   - spectateur après 30 s, vue de l'allié, retour à la zone suivante ;
   - tous à terre ou morts : écran de fin ;
   - le traqueur ignore les joueurs à terre, mais son coup met à terre.
-- **Tests :** 8 tests `CoopTests` ; 339 tests passent au total, 1 non concluant à dessein.
+- **Menu pause** (Échap / Start), un par joueur, dans sa moitié, avec son seul appareil ; le jeu continue :
+  - entrées : Reprendre, Quitter l'écran partagé (joueur 2 seulement), Menu principal ;
+  - si le joueur 2 quitte alors que le joueur 1 est à terre, le joueur 1 meurt (personne pour le relever).
+- **Tests :** 10 tests `CoopTests` ; 341 tests passent au total, 1 non concluant à dessein.
 - **Performance de l'écran partagé : objectif de 16.6 ms non atteint.**
   - build : 17 à 18 ms au pic, contre 13.4 ms en solo ;
   - éditeur : 39 ms (30 ms en solo) ;
@@ -29,15 +40,15 @@ Commits : `c34f97f` (écran partagé, à terre, réanimation, spectateur), `1b04
 - **Level_01 :** recopiée plusieurs fois le 2026-11-14 (corrections des plaques, puis `SplitScreen`). **Ne plus la recopier**
   (règle de l'utilisateur). Pour avoir la réduction des torches, régénérer la base et recopier soi-même.
 
-À valider (choix pris seul, étape 9) :
-- Facteurs de FOV : ×1.1 en gauche / droite, ×0.75 en haut / bas.
-- Start pour rejoindre, et non n'importe quel bouton.
-- Corps de l'autre joueur en capsule bleue ou orange.
-- Son : seul le joueur 1 entend (un seul auditeur).
-- Étiquette « À terre, maintiens E / Y » à 1.3 m au-dessus du joueur couché.
-- Spectateur : sa moitié reprend la vue de l'allié, mains comprises.
-- Pas de bouton pour quitter l'écran partagé.
-- Une torche sur deux sans lumière (bases et modules).
+Validé en playtest le 2026-11-14 (choix pris seul à l'étape 9) :
+- FOV ×1.1 en gauche / droite, ×0.75 en haut / bas ;
+- Start pour rejoindre ;
+- capsules pour les corps ;
+- son seulement pour le joueur 1 (**provisoire**) ;
+- spectateur avec les mains de l'allié ;
+- une torche sur deux sans lumière.
+
+À valider : étiquette « À terre, maintiens E / Y » à 1.3 m au-dessus du joueur couché ; menu pause (pas de pause du jeu).
 
 Optimisations et nettoyage, par priorité (liste seulement, rien de codé) :
 1. **FixedUpdate de 1 600 scripts (4 à 6 ms) :**
@@ -51,8 +62,8 @@ Optimisations et nettoyage, par priorité (liste seulement, rien de codé) :
    Demande de réglage partagé : à faire sur `main`.
 3. **Occlusion culling** des salles (portes, couloirs), à cuire par niveau.
 4. **Distance de vue :** far clip de la caméra et de l'objectif Cinemachine à environ 250 m (−1 ms mesuré).
-5. **Affichage de debug (F3)** éteint par défaut dans les builds de joueurs (3 à 6 ms en IMGUI).
-6. **`DebugInvulnerable`** remis à false à l'entrée en Play Mode et dans le SetUp des tests (variable statique qui survit).
+5. ~~Affichage de debug (F3) éteint par défaut~~ : fait (`5a7228c`).
+6. ~~`DebugInvulnerable` remis à zéro automatiquement~~ : fait (`24fdaaf`).
 7. **Combat de boss** trop court pour un joueur rapide (estimé 35 à 45 s) : leviers plus éloignés, ou un 3e levier.
 8. **Test_Arena :** remplacer les voies au sol à côté des pentes par des pentes sur toute la largeur, comme au niveau 1.
 9. **Nettoyage :**
@@ -80,9 +91,8 @@ D-047) ajouté ensuite, commité et poussé sur `main` :
 - **Réseau (étape 11) :** collecte et gain des âmes, ouvertures de coffre et choix sur l'autorité ; les orbes de choix
   n'existent que chez leur joueur.
 
-**Étape 8 — corrections après le playtest (partie A), 2026-11-14, branche `etape-8`, sans push.** Le playtest a validé la
-salle verrouillée, les murs non magnétiques, l'écran de mort, la minimap, les menus et le marchand ; la porte de sortie et le
-combat de boss ne sont pas encore testés. Fait, un commit par point (`git log etape-8`) :
+**Étape 8 — corrections après le playtest (partie A), 2026-11-14, validées en playtest et fusionnées dans `main`.** Fait,
+un commit par point :
 - **Point 5, soin (`b58cced`) :** 4e offre fixe du marchand de départ, +40 PV pour 35 âmes.
 - **Point 1, population (D-054, `f662ae1`) :**
   - 2 à 5 goules par grande salle, 1 à 2 volants dans les salles hautes ; rien ne bouge avant la première sortie ;
@@ -107,18 +117,16 @@ combat de boss ne sont pas encore testés. Fait, un commit par point (`git log e
   - optimisé : minimap en texture, props fusionnés ;
   - reste : FixedUpdate de 1 600 scripts (3.2 ms), culling (1.4 ms).
 
-À valider (choix pris seul, partie A) :
-- **Pièces fermées et modules :**
-  - les pièces fermées sont sur les couloirs (les étages des modules bouchaient les portes) ;
-  - la salle de départ n'a pas de module ;
-  - voie centrale des couloirs à 8 m (le traqueur fait 7 m).
+Validé en playtest le 2026-11-14 (choix pris seul, partie A) : pièces fermées le long des couloirs ; salle de départ sans
+module ; voie centrale des couloirs à 8 m ; leviers à portée de main du traqueur. Affichage de debug (F3) éteint par défaut
+(`5a7228c`).
+
+Encore à valider (partie A) :
 - **Galeries :** paliers et poutres à portée de sa main ; Test_Arena garde sa voie au sol à côté des pentes.
 - **Combat de boss :**
   - probablement trop court pour un joueur rapide ;
   - herse : il faut appâter le traqueur près de l'arche ;
   - le soin compte comme un achat au marchand (+25 %).
-- **Affichage de debug (F3) :** allumé par défaut, il coûte 3 à 6 ms en IMGUI ; à éteindre par défaut dans les builds de
-  joueurs.
 
 **Étape 8 — blocs 1 à 6 codés le 2026-11-13, branche locale `etape-8` (un commit par bloc, pas de push), playtest en
 attente ; l'utilisateur fusionne après son playtest.** Fiche : `docs/design/features/run-et-niveaux/` (design, checklist).
@@ -390,7 +398,7 @@ Ordre de CLAUDE.md, une étape validée en playtest avant la suivante :
 3. Magnétisme (fait) → 4. Télékinésie, une seule orbe, dégâts (fait) → 5. Vue FPS et HUD (fait) →
 **5 bis. Artefacts** (fait, D-032) → **6. Ennemis et vagues, avec le traqueur** (fait, D-033 à D-041) → **7. Âmes et
 économie** (fait, D-043) →
-**8. Run complète** (codée sur `etape-8`, corrections après playtest faites) → **9. Écran partagé** (codé sur `etape-9`, playtest en attente) → 10. Direction artistique (dont les **vrais sons**, voir
+**8. Run complète** (faite pour le niveau 1, fusionnée le 2026-11-14) → **9. Écran partagé** (fait, fusionné le 2026-11-14) → 10. Direction artistique (dont les **vrais sons**, voir
 ci-dessous) → 11. Coop en ligne → 12. Build.
 
 **Piste parallèle : direction artistique (étape 10)**, menée par une deuxième personne depuis le 2026-11-12 :
