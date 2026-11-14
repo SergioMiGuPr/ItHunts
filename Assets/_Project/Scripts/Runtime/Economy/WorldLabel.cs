@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 namespace ItHunts.Economy
 {
     /// <summary>
-    /// Texte en monde (nom, icône, prix) qui fait face à la caméra (D-043) ; lisible à 10 m. Greybox : TextMesh et police
+    /// Texte en monde (nom, icône, prix) qui fait face à la caméra (D-043) ; lisible à 10 m, caché par le décor (TextMaterial). Greybox : TextMesh et police
     /// intégrée. Par caméra (écran partagé, coffres par joueur) : tourné vers chaque caméra, et son texte comme sa visibilité
     /// peuvent dépendre du joueur qui regarde (TextFor, VisibleFor ; caméra sans joueur : le texte de base). Un parent
     /// ViewerOnly le réserve à un joueur.
@@ -40,13 +40,37 @@ namespace ItHunts.Economy
             if (font != null)
             {
                 tm.font = font;
-                go.GetComponent<MeshRenderer>().sharedMaterial = font.material;
+                go.GetComponent<MeshRenderer>().sharedMaterial = TextMaterial(font);
             }
 
             label._text = tm;
             label._renderer = go.GetComponent<MeshRenderer>();
             label._base = text;
             return label;
+        }
+
+        private static Material _textMaterial;
+
+        /// <summary>
+        /// Matériau du texte : la police avec test de profondeur (shader ItHunts/WorldText, Resources/WorldText) : le décor
+        /// cache le texte (playtest des étapes 8 et 9). Sans lui, le matériau de la police (visible à travers les murs).
+        /// </summary>
+        public static Material TextMaterial(Font font)
+        {
+            if (_textMaterial == null)
+            {
+                Material template = Resources.Load<Material>("WorldText");
+                if (template == null || template.shader == null || !template.shader.isSupported)
+                    return font.material;
+                _textMaterial = new Material(template) { name = "WorldText (police)", mainTexture = font.material.mainTexture };
+                Font.textureRebuilt += f =>
+                {
+                    if (f == font && _textMaterial != null)
+                        _textMaterial.mainTexture = font.material.mainTexture;
+                };
+            }
+
+            return _textMaterial;
         }
 
         /// <summary>Texte de base (vu par une caméra sans joueur, ou quand TextFor est absent).</summary>

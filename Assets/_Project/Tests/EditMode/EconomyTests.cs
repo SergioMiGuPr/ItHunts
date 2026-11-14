@@ -354,5 +354,25 @@ namespace ItHunts.Tests
                 Object.DestroyImmediate(go);
             }
         }
+
+        [Test]
+        public void TexteEnMonde_CacheParLeDecor_TestDeProfondeur()
+        {
+            var parent = new GameObject("Porteur (test)");
+            try
+            {
+                WorldLabel label = WorldLabel.Create(parent.transform, Vector3.up * 2f, "Marchand", Color.white);
+                Material m = label.GetComponent<MeshRenderer>().sharedMaterial;
+                Assert.That(m.shader.name, Is.EqualTo("ItHunts/WorldText"), "shader avec test de profondeur (pas la police intégrée)");
+                Assert.That(m.mainTexture, Is.Not.Null, "texture de la police");
+                string shader = System.IO.File.ReadAllText("Assets/_Project/Shaders/WorldText.shader");
+                Assert.That(shader.Contains("ZTest LEqual"), Is.True, "caché par le décor");
+                Assert.That(label.GetComponent<TextMesh>().characterSize * 6.4f, Is.EqualTo(0.28f).Within(0.001f), "lignes de 0.28 m : lisible à 10 m");
+            }
+            finally
+            {
+                Object.DestroyImmediate(parent);
+            }
+        }
     }
 }
