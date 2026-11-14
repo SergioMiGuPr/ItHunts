@@ -101,6 +101,59 @@ Le traqueur est lâché à 3 min et la porte de sortie se déverrouille à 10 mi
       - **0 grande salle sur 40 sans ennemi** ;
       - **0 salle vide à l'entrée** sur 46 traversées.
     - Réglages : `LevelLayout_Level01` (habitants), `Waves_Default` (surface).
+14. **Modules de salle et décor (D-055).** Chaque grande salle du niveau 1 est un module fait à la main (prefab), choisi
+    par le générateur avec la graine. La taille de la salle est celle du module (48, 56 ou 64 m), et le module est tourné d'un
+    quart de tour au hasard.
+    - **Bibliothèque :** 13 modules de salle et 2 de carrefour :
+      - étages en anneau, galeries hautes, égouts, salle encombrée ;
+      - salle haute remplie (niveau haut), parcours (fosse) ;
+      - crypte, chapelle, armurerie, grand hall à colonnes, cuisine et réserve, salle de garde, prison ;
+      - carrefour à niches, carrefour encombré.
+    - **Contenu d'un module :** 44 à 96 props, des points d'apparition, des emplacements d'habitants et de coffres (derrière un
+      obstacle), des objets à lancer et des torches.
+    - **Pièces annexes :** une vingtaine, meublées, le long des couloirs (chambre, cellule, réserve, cuisine, armurerie,
+      chapelle, crypte), dont les salles verrouillées.
+    - **Décor des couloirs :** dans une bande de 3 m le long des murs (voie de 8 m au milieu), torches tous les 12 m.
+    - **Catalogue des props :** dans ART-HANDOFF.md.
+    - **Créer son propre module, sans code :**
+      1. Dans `Assets/_Project/Prefabs/Modules`, dupliquer un module (Ctrl+D) et lui donner un nom qui ne commence pas par
+         `Module_` (le constructeur ne recrée que ceux-là).
+      2. Sur la racine, régler le composant `RoomModule` : nom, salle ou carrefour, côté (48, 56, 64 ; 20 pour un carrefour),
+         niveau (sol, haut ou les deux), poids du tirage, sol percé (canal ou fosse).
+      3. Modifier l'intérieur avec les prefabs `Prop_*`, des blocs ou des escaliers. Règles :
+         - centre du module = centre de la salle, sol à y = 0, murs à ±côté/2 (faits par le générateur) ;
+         - ouvertures des couloirs au milieu de chaque mur ;
+         - **garder libre une croix de 11 m de large** entre les ouvertures, sous 10 m de haut ;
+         - étages pleins jusqu'au sol ; ponts dont le dessous est à 10 m ;
+         - groupes de décor séparés d'au moins 8 m ;
+         - rien qui ferme un angle.
+      4. Ajouter des objets vides avec `SpawnPoint` (goule ou volant), `ResidentSpot` (habitant) et `ChestSpot` (coffre
+         possible, derrière un obstacle).
+      5. Relancer *ItHunts > Générer le niveau 1* : le module est tiré comme les autres.
+      6. Vérifier la portée de la main du traqueur avec la mesure habituelle (aucun recoin hors de portée).
+15. **Passages en hauteur (D-056).** Il y en a 10, à côté de l'entrée d'un couloir dans une salle :
+    - une ouverture de 3 × 3 m à 4.5 m du sol, dans le mur de la salle, mène par un conduit de 8 m à une ouverture à la même
+      hauteur dans le mur du couloir ;
+    - on y monte en saut mural, et les murs autour sont non magnétiques ;
+    - c'est trop petit pour le traqueur, qui fait le tour, mais sa main l'atteint.
+
+    C'est une sortie de secours quand il bloque l'entrée.
+16. **Contourner le traqueur seulement dans les zones de parcours (D-057).**
+    - **Pentes :** elles prennent toute la largeur du couloir (plus de voie au sol avec du vide à côté).
+    - **Galeries de parcours :** il y en a 6, le long des couloirs plats de 55 m et plus, derrière le mur du couloir (20 m de
+      large). Portes de 3 m aux deux bouts, puis des paliers et des poutres à sa portée, et des plateformes qui tombent
+      0.6 s après qu'on s'y pose et reviennent 4 s plus tard. Les plateformes sont à 21 à 25 m de l'axe, hors de sa portée.
+      En dessous, un vide de 10 m : on revient au palier et on perd 20 PV. Tout est non magnétique.
+    - **Modules de parcours :** 3, avec une fosse centrale et les mêmes plateformes.
+    - **Mesures :**
+      - **dépasser hors parcours :** 0 sur 240 essais (8 pentes et 4 couloirs, 10 en course et 10 en bunny hop chacun, dash à
+        chaque prise annoncée) ; le joueur est tué par ses bras en passant à 5 m ;
+      - **traverser une galerie avec le traqueur devant :** 89 sur 120 ressortent derrière lui (de 12 à 20 sur 20 selon la
+        galerie ; déplacement imposé à 13.5 m/s, sans esquive : les échecs sont des prises sur les paliers et les poutres, ou
+        un traqueur qui suit en parallèle) ;
+      - **portée de la main (grille de 2 m, 48 323 points) :** 0 hors de portée hors des zones de parcours ; 83 hors de portée,
+        tous sur des plateformes qui tombent (on n'y reste pas plus de 0.6 s) ; 32 abrités de ses mains levées (la prise les
+        atteint).
 12. **Tronçons de couloir (D-047).** Ils font 40 m au plus. Aucun ennemi n'apparaît dans le tronçon d'un joueur ni dans les
     tronçons voisins.
 
@@ -117,6 +170,17 @@ Le traqueur est lâché à 3 min et la porte de sortie se déverrouille à 10 mi
 | Tronçon de couloir | 40 m au plus | `ArenaLayout_*` |
 
 ## À valider (choix pris seul)
+
+- **Après le playtest de l'étape 8 :**
+  - **Pièces fermées :** elles sont sur les couloirs (annexes) et non plus sur les murs des salles, que les étages des
+    modules bouchaient.
+  - **Lancement d'un module :** la salle de départ n'en a pas (marchand) ; voie centrale des couloirs à 8 m (réglable) pour
+    laisser passer le traqueur (7 m de large).
+  - **Passages en hauteur :** à 4.5 m (saut, double saut et saut mural) ; ils servent de sortie de secours d'une salle
+    vers son couloir.
+  - **Galeries :** les paliers et poutres sont à portée de sa main ; à cause d'eux, environ 1 traversée sur 4 échoue si le
+    joueur n'esquive pas.
+  - **Test_Arena :** garde sa voie au sol à côté des pentes (scène de test).
 
 - **Avant la sortie de la salle de départ, aucune vague ne tourne**, nulle part sur la carte, et pas seulement dans la salle.
 - **La porte de sortie se paie une fois pour tous**, au prix fixe de 200 âmes, sans hausse.

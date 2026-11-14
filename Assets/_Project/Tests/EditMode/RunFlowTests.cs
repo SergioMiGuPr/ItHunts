@@ -122,7 +122,7 @@ namespace ItHunts.Tests
             Assert.That(CountScript(basePath, rt + "Level/DeepWater.cs"), Is.GreaterThanOrEqualTo(5), "canaux d'égout (D-052)");
             Assert.That(CountScript(basePath, rt + "Orbs/NonMagneticSurface.cs"), Is.GreaterThanOrEqualTo(20), "zones de parcours (D-051)");
             Assert.That(CountScript(basePath, rt + "Economy/Chest.cs"), Is.GreaterThanOrEqualTo(12));
-            Assert.That(CountScript(basePath, rt + "Enemies/SpawnPoint.cs"), Is.GreaterThan(500));
+            Assert.That(CountScript(basePath, rt + "Enemies/SpawnPoint.cs"), Is.GreaterThan(250), "couloirs (ceux des modules sont dans leurs prefabs)");
             Assert.That(File.ReadAllText(basePath).Contains("kind: 2"), Is.True, "une salle de départ (RoomKind.Depart)");
             Assert.That(CountScript(basePath, rt + "Level/BossFight.cs"), Is.EqualTo(1), "arène du combat de boss (D-049)");
             Assert.That(CountScript(basePath, rt + "Level/BossTrap.cs"), Is.EqualTo(3), "herse, pont, lustre");

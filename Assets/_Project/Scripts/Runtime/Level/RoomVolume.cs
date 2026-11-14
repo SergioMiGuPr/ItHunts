@@ -13,6 +13,8 @@ namespace ItHunts.Level
         Depart,
         /// <summary>Arène du combat de boss.</summary>
         Arene,
+        /// <summary>Galerie de parcours (seul endroit hors de portée de sa main, sans sol où rester).</summary>
+        Parcours,
     }
 
     /// <summary>

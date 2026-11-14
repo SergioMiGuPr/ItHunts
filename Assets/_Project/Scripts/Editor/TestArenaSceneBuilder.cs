@@ -315,6 +315,8 @@ namespace ItHunts.EditorTools
             NodeOpenings.Clear();
             CorridorOpenings.Clear();
             Canals.Clear();
+            NodeModules.Clear();
+            Pits.Clear();
             float S = L.gridSpacing, U = L.upperLevel, X = L.crossingSize * 0.5f, CC = L.crossingCeiling, HC = L.hallCeiling;
             AddNode("SO (départ)", new Vector3(-S, 0f, -S), L.startHallSize * 0.5f, HC, true);           // 0
             AddNode("S (carrefour)", new Vector3(0f, 0f, -S), X, CC, false);                              // 1
@@ -535,6 +537,8 @@ namespace ItHunts.EditorTools
             Vector3 c = n.C;
             if (Canals.TryGetValue(i, out Vector2 cut))
                 CanalFloor(n, cut.x, cut.y);
+            else if (Pits.TryGetValue(i, out RoomModule pit))
+                PitFloor(n, pit);
             else if (y > 0.1f)
                 Piece($"{n.Name} : sol (bloc de {y:0} m)", new Vector3(c.x, y / 2f, c.z), new Vector3(2f * hx, y, 2f * hz), _floor);
             else
@@ -561,10 +565,11 @@ namespace ItHunts.EditorTools
                 return;
             }
 
-            for (int a = 0; a < 3; a++)
-            for (int b = 0; b < 3; b++)
+            int grid = NodeModules.ContainsKey(i) ? 2 : 3;                // salle à module : 4 grandes lampes, ses torches font le reste
+            for (int a = 0; a < grid; a++)
+            for (int b = 0; b < grid; b++)
             {
-                float fx = (a - 1) * 0.6f, fz = (b - 1) * 0.6f;
+                float fx = grid == 3 ? (a - 1) * 0.6f : (a - 0.5f) * 0.9f, fz = grid == 3 ? (b - 1) * 0.6f : (b - 0.5f) * 0.9f;
                 Lamp($"{n.Name} : lumière {a * 3 + b + 1}", c + new Vector3(fx * hx, n.Ceil * 0.75f, fz * hz),
                     (a + b) % 2 == 0 ? new Color(1f, 0.78f, 0.55f) : new Color(0.75f, 0.82f, 1f), L.lightIntensity, L.lightRange);
             }
@@ -636,8 +641,9 @@ namespace ItHunts.EditorTools
                 float lane = L.cliffLaneWidth, slopeW = w - lane;
                 Vector3 slopeOffset = lateral * (w / 2f - slopeW / 2f), laneOffset = -lateral * (w / 2f - lane / 2f);
                 Ramp($"{name} : pente ({len:0} m, {ang:0.0}°)", low + slopeOffset + Vector3.up * Mathf.Min(ya, yb), dy, len, slopeW, yaw, _ramp);
-                Piece($"{name} : voie au sol", mid + laneOffset + Vector3.down * 0.5f + Vector3.up * Mathf.Min(ya, yb),
-                    alongX ? new Vector3(len, 1f, lane) : new Vector3(lane, 1f, len), _floor);
+                if (lane > 0.1f)                                            // niveau 1 : 0, pente sur toute la largeur (pas de vide à côté)
+                    Piece($"{name} : voie au sol", mid + laneOffset + Vector3.down * 0.5f + Vector3.up * Mathf.Min(ya, yb),
+                        alongX ? new Vector3(len, 1f, lane) : new Vector3(lane, 1f, len), _floor);
                 // Mur au bout de la voie au sol (allège de la salle haute) : les goules le grimpent (liens automatiques, D-038).
                 float l = Mathf.Sqrt(len * len + dy * dy);
                 var ceil = Piece($"{name} : plafond", mid + Vector3.up * ((ya + yb) / 2f + h + 0.5f), new Vector3(w + 2f * T, 1f, l), _ceiling, walkable: false);

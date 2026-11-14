@@ -28,5 +28,5 @@ MonoBehaviour:
   canalWidth: 6
   canalDepth: 4
   waterDamage: 20
-  parkourHalls: 6
+  parkourHalls: 3
   corridorFeatureShare: 0.35

@@ -35,7 +35,7 @@ namespace ItHunts.EditorTools
         [Tooltip("Couloirs en pente entre les niveaux (D-037) : largeur totale (m) et largeur de la voie au sol (m) qui finit au " +
                  "pied d'un mur de la hauteur du niveau haut (les goules le grimpent) ; le reste est la pente (au moins 7 m pour lui).")]
         [Range(14f, 20f)] public float slopeCorridorWidth = 16f;
-        [Range(2f, 9f)] public float cliffLaneWidth = 8f;
+        [Range(0f, 9f)] public float cliffLaneWidth = 8f;
         [Tooltip("Longueur maximale d'un tronçon de couloir (m, D-047) : un volume par tronçon ; aucun ennemi n'apparaît dans le " +
                  "tronçon d'un joueur ni dans les tronçons voisins.")]
         [Range(15f, 100f)] public float corridorSegmentLength = 40f;

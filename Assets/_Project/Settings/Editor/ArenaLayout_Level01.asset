@@ -25,7 +25,7 @@ MonoBehaviour:
   corridorWidth: 14
   corridorHeight: 19
   slopeCorridorWidth: 16
-  cliffLaneWidth: 8
+  cliffLaneWidth: 0
   corridorSegmentLength: 40
   bridgeBottom: 10
   bridgeWidth: 6

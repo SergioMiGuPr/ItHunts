@@ -3,6 +3,7 @@ using System.IO;
 using ItHunts.Economy;
 using ItHunts.Enemies;
 using ItHunts.Level;
+using System.Linq;
 using ItHunts.Settings;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -70,11 +71,29 @@ namespace ItHunts.EditorTools
             for (int e = 0; e < Edges.Count; e++)
                 if (!IsLairEdge(e))
                     Corridor(e);
+            _decorCount = 0;
+            PropLibrary.Usage.Clear();
             foreach (RoomDef r in rooms)
+            {
                 BuildRoom(r);
+                FurnishAnnex(r, AnnexTypes.TryGetValue(r.Name, out string kind) ? kind : "réserve");
+            }
+
+            BuildPassages();
+            BuildGalleries(P.waterDamage);
+            for (int e = 0; e < Edges.Count; e++)
+                if (!IsLairEdge(e))
+                    CorridorDecor(e, P.minLane);
+            ModuleUsage.Clear();
             for (int i = 0; i < Nodes.Count; i++)
-                if (i != _lairNode && Nodes[i].Hall)
-                    HallInterior(i, chestHalls.Contains(i), parkourHalls.Contains(i));
+            {
+                if (i == _lairNode)
+                    continue;
+                if (NodeModules.ContainsKey(i))
+                    PlaceModule(i, chestHalls.Contains(i));
+                else if (Nodes[i].Hall)
+                    HallInterior(i, false, false);                         // salle de départ (marchand)
+            }
             Level01CorridorFeatures();
             Residents();
 
@@ -124,8 +143,8 @@ namespace ItHunts.EditorTools
 
             Vector2 size = new Vector2(max.x - min.x - 60f, max.z - min.z - 60f);
             Level01Summary = $"{halls} salles et {crossings} carrefours ({upper} en hauteur), {Edges.Count - 1} couloirs, {rooms.Count} pièces fermées, " +
-                             $"{_chestCount} coffres, {_canalCount} canaux, {_parkourCount} zones de parcours, {_spawnCount} points d'apparition, " +
-                             $"{_residentGhouls} goules et {_residentFlyers} volants habitants, " +
+                             $"{_chestCount} coffres, {_canalCount} canaux, {_parkourCount} zones de parcours ({Galleries.Count} galeries), {Passages.Count} passages en hauteur, {_spawnCount} points d'apparition, " +
+                             $"{_residentGhouls} goules et {_residentFlyers} volants habitants, {_decorCount} props de décor (salles en plus), " +
                              $"{Object.FindObjectsByType<RoomVolume>(FindObjectsSortMode.None).Length} volumes ; emprise {size.x:0} × {size.y:0} m";
             return $"OK : {Level01BasePath} ({Level01Summary}) ; " +
                    (copied ? $"{Level01Path} créée (copie à retravailler)." : $"{Level01Path} existe déjà : pas touchée.");
@@ -205,26 +224,42 @@ namespace ItHunts.EditorTools
             NodeOpenings.Clear();
             CorridorOpenings.Clear();
             Canals.Clear();
+            Pits.Clear();
             RoomHalls.Clear();
             ModuleSpots.Clear();
             int cols = P.columns, rws = P.rows;
             float sp = P.spacing, x0 = -(cols - 1) * sp * 0.5f, z0 = -(rws - 1) * sp * 0.5f;
             _startNode = 0;
             _exitNode = (rws - 1) * cols + (cols - 1);
+            int total = cols * rws;
+            var crossingOf = new bool[total];
+            var highOf = new bool[total];
+            for (int idx = 0; idx < total; idx++)
+            {
+                bool fixedHall = idx == _startNode || idx == _exitNode;
+                crossingOf[idx] = !fixedHall && R01() < P.crossingShare;
+                highOf[idx] = !fixedHall && R01() < P.upperShare;
+            }
+
+            AssignModules(total, crossingOf, highOf);
             for (int j = 0; j < rws; j++)
             for (int i = 0; i < cols; i++)
             {
                 int idx = j * cols + i;
                 bool start = idx == _startNode, exit = idx == _exitNode;
-                bool crossing = !start && !exit && R01() < P.crossingShare;
-                bool high = !start && !exit && R01() < P.upperShare;
-                float size = crossing ? L.crossingSize : Mathf.Round(Mathf.Lerp(P.hallMin, P.hallMax, R01()) / 2f) * 2f;
+                bool crossing = crossingOf[idx], high = highOf[idx];
+                RoomModule mod = NodeModules.TryGetValue(idx, out RoomModule mm) ? mm : null;
+                float size = mod != null ? mod.size : crossing ? L.crossingSize : 56f;
                 string name = $"{(char)('A' + i)}{j + 1}" + (start ? " (départ)" : exit ? " (sortie)" : crossing ? " (carrefour)" : "");
                 Nodes.Add(new Node
                 {
                     Name = name, C = new Vector3(x0 + i * sp, high ? L.upperLevel : 0f, z0 + j * sp), Half = size * 0.5f, HalfZ = size * 0.5f,
                     Ceil = crossing ? L.crossingCeiling : L.hallCeiling, Hall = !crossing,
                 });
+                if (mod != null && mod.hole == ModuleHole.Canal)
+                    Canals[idx] = new Vector2(mod.holeRect.center.y, mod.holeRect.height);
+                if (mod != null && mod.hole == ModuleHole.Vide)
+                    Pits[idx] = mod;
             }
 
             // Couloirs : toute la grille, puis on en retire en gardant 2 couloirs par salle et une carte d'un seul tenant.
@@ -282,62 +317,198 @@ namespace ItHunts.EditorTools
 
             AddExitOpening(_exitNode);
 
-            // Pièces fermées sur le pourtour (côté extérieur libre), dont les salles verrouillées.
-            var spots = new List<(int node, int side)>();
-            for (int j = 0; j < rws; j++)
-            for (int i = 0; i < cols; i++)
-            {
-                int idx = j * cols + i;
-                if (!Nodes[idx].Hall || idx == _startNode || idx == _exitNode)
-                    continue;
-                if (j == rws - 1) spots.Add((idx, SideN));
-                if (j == 0) spots.Add((idx, SideS));
-                if (i == 0) spots.Add((idx, SideW));
-                if (i == cols - 1 && idx != host) spots.Add((idx, SideE));
-            }
-
-            Shuffle(spots);
+            // Pièces annexes (2 bis) le long des couloirs plats : meublées, ouvertes par une porte de 3 m ; les premières sont les
+            // salles verrouillées. Une par côté de couloir au plus ; le côté pris est noté (galeries de parcours, passages).
             rooms = new List<RoomDef>();
-            var used = new HashSet<int>();
-            foreach ((int node, int side) in spots)
+            AnnexTypes.Clear();
+            CorridorSideUsed.Clear();
+            var flat = new List<int>();
+            for (int e = 0; e < Edges.Count; e++)
+                if (!IsLairEdge(e) && !IsSlope(e))
+                    flat.Add(e);
+            Shuffle(flat);
+            foreach (int e in flat)
             {
-                if (rooms.Count >= P.sideRooms || used.Contains(node))
+                CorridorEnds(e, out Vector3 cs, out Vector3 ce, out _, out _, out _, out bool ax);
+                float len = Vector3.Distance(cs, ce);
+                if (len < 40f || R01() > P.annexShare)
                     continue;
-                used.Add(node);
-                RoomHalls.Add(node);
-                Node n = Nodes[node];
-                bool ns = side == SideN || side == SideS;
-                float along = (ns ? n.C.x : n.C.z) - n.Half * 0.6f;      // loin de l'ouverture du couloir (au milieu du mur)
-                bool locked = rooms.Count < P.lockedRooms;
-                rooms.Add(new RoomDef
-                {
-                    Name = locked ? $"Salle verrouillée {n.Name}" : $"Pièce {n.Name}", Node = node, Edge = -1, Side = side, Along = along, Locked = locked,
-                });
+                int side = R01() < 0.5f ? 1 : -1;
+                float t = R01() < 0.5f ? 0.3f : 0.7f;
+                float along = ax ? Mathf.Lerp(cs.x, ce.x, t) : Mathf.Lerp(cs.z, ce.z, t);
+                bool locked = rooms.Count(r => r.Locked) < P.lockedRooms;
+                string type = locked ? "réserve" : AnnexKinds[_rng.Next(AnnexKinds.Length)];
+                string name = locked ? $"Salle verrouillée {CorridorName(e)}" : $"Pièce ({type}) {CorridorName(e)}";
+                rooms.Add(new RoomDef { Name = name, Node = -1, Edge = e, Side = side, Along = along, Locked = locked });
+                AnnexTypes[name] = type;
+                CorridorSideUsed[(e, side)] = true;
             }
 
+            PlanParkour(P.parkourCorridors, P.passages);                 // points 3 et 4 (après les annexes)
             AddRoomOpenings(rooms);
 
-            // Salles à canal, à coffre, à parcours (tirées parmi les grandes salles, ni départ ni sortie).
+            // Coffres : dans des salles à module (un de leurs emplacements de coffre), ni départ ni sortie.
             var halls = new List<int>();
             for (int i = 0; i < _lairNode; i++)
-                if (Nodes[i].Hall && i != _startNode && i != _exitNode)
+                if (Nodes[i].Hall && i != _startNode && i != _exitNode && NodeModules.ContainsKey(i))
                     halls.Add(i);
             Shuffle(halls);
-            int c = 0;
             parkourHalls = new HashSet<int>();
-            for (; c < halls.Count && Canals.Count < P.canalHalls; c++)
-            {
-                Node n = Nodes[halls[c]];
-                Canals[halls[c]] = new Vector2(n.HalfZ * 0.5f, P.canalWidth);
-            }
-
-            for (; c < halls.Count && parkourHalls.Count < P.parkourHalls; c++)
-                parkourHalls.Add(halls[c]);
-            Shuffle(halls);
             chestHalls = new HashSet<int>();
             foreach (int i in halls)
                 if (chestHalls.Count < P.chests)
                     chestHalls.Add(i);
+        }
+
+        /// <summary>Types d'annexes meublées (2 bis).</summary>
+        private static readonly string[] AnnexKinds = { "chambre", "cellule", "réserve", "cuisine", "armurerie", "chapelle", "crypte" };
+        private static readonly Dictionary<string, string> AnnexTypes = new Dictionary<string, string>();
+        /// <summary>Côtés de couloir déjà pris (annexe, galerie de parcours, passage).</summary>
+        private static readonly Dictionary<(int, int), bool> CorridorSideUsed = new Dictionary<(int, int), bool>();
+        /// <summary>Module de chaque salle (et carrefour) ; fosses de parcours.</summary>
+        private static readonly Dictionary<int, RoomModule> NodeModules = new Dictionary<int, RoomModule>();
+        private static readonly Dictionary<int, RoomModule> Pits = new Dictionary<int, RoomModule>();
+
+        /// <summary>
+        /// Tirage des modules : canaux (P.canalHalls) et fosses de parcours (P.parkourHalls, au sol) d'abord, puis les autres au
+        /// hasard selon leur poids et leur niveau (sol, haut) ; carrefours : modules de carrefour. La salle de départ n'en a pas.
+        /// </summary>
+        private static void AssignModules(int total, bool[] crossingOf, bool[] highOf)
+        {
+            NodeModules.Clear();
+            Pits.Clear();
+            List<RoomModule> mods = ModuleLibrary.Load();
+            bool Fits(RoomModule m, bool high) => m.level == ModuleLevel.Tous || (m.level == ModuleLevel.Haut) == high;
+            RoomModule Pick(IEnumerable<RoomModule> pool)
+            {
+                var list = pool.ToList();
+                float sum = list.Sum(m => m.weight);
+                if (list.Count == 0 || sum <= 0f)
+                    return null;
+                float r = R01() * sum;
+                foreach (RoomModule m in list)
+                {
+                    r -= m.weight;
+                    if (r <= 0f)
+                        return m;
+                }
+
+                return list[list.Count - 1];
+            }
+
+            var halls = new List<int>();
+            for (int i = 0; i < total; i++)
+                if (i != _startNode && !crossingOf[i])
+                    halls.Add(i);
+            Shuffle(halls);
+            int canals = 0, pits = 0;
+            foreach (int i in halls)
+            {
+                bool exit = i == _exitNode, high = highOf[i];
+                RoomModule m = null;
+                if (!exit && canals < P.canalHalls)
+                    m = Pick(mods.Where(x => x.kind == ModuleKind.Salle && x.hole == ModuleHole.Canal && Fits(x, high)));
+                if (m != null)
+                    canals++;
+                else if (!exit && pits < P.parkourHalls && !high)
+                {
+                    m = Pick(mods.Where(x => x.kind == ModuleKind.Salle && x.hole == ModuleHole.Vide && Fits(x, high)));
+                    if (m != null)
+                        pits++;
+                }
+
+                if (m == null)
+                    m = Pick(mods.Where(x => x.kind == ModuleKind.Salle && x.hole == ModuleHole.Aucun && Fits(x, high)));
+                if (m != null)
+                    NodeModules[i] = m;
+            }
+
+            for (int i = 0; i < total; i++)
+                if (crossingOf[i])
+                {
+                    RoomModule m = Pick(mods.Where(x => x.kind == ModuleKind.Carrefour));
+                    if (m != null)
+                        NodeModules[i] = m;
+                }
+        }
+
+        /// <summary>
+        /// Pose le module d'une salle (prefab lié : une retouche du module se répercute) : tourné d'un quart de tour au hasard
+        /// (sauf canal). Habitants à ses emplacements ; coffre à l'un de ses emplacements si la salle en a un.
+        /// </summary>
+        private static void PlaceModule(int i, bool chest)
+        {
+            if (!NodeModules.TryGetValue(i, out RoomModule mod))
+                return;
+            Node n = Nodes[i];
+            int k = mod.rotate ? _rng.Next(4) : 0;
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(mod.gameObject, _level);
+            go.name = $"Module {mod.displayName} : {n.Name}";
+            go.transform.SetPositionAndRotation(n.C, Quaternion.Euler(0f, k * 90f, 0f));
+            var spots = new List<Vector3>();
+            foreach (ResidentSpot r in go.GetComponentsInChildren<ResidentSpot>())
+                if (!r.flyer)
+                    spots.Add(r.transform.position);
+            ModuleSpots[i] = spots;
+            _spawnCount += go.GetComponentsInChildren<SpawnPoint>().Length;
+            ChestSpot[] chestSpots = go.GetComponentsInChildren<ChestSpot>();
+            if (chest && chestSpots.Length > 0)
+            {
+                ChestSpot c = chestSpots[_rng.Next(chestSpots.Length)];
+                BuildChest($"Coffre : {n.Name}", c.transform.position, c.transform.rotation, -1);
+                _chestCount++;
+            }
+
+            ModuleUsage[mod.displayName] = ModuleUsage.TryGetValue(mod.displayName, out int u) ? u + 1 : 1;
+        }
+
+        public static readonly Dictionary<string, int> ModuleUsage = new Dictionary<string, int>();
+
+        /// <summary>Sol percé d'une fosse vide (module de parcours) : tour du sol, fond, bords, vide (retour au bord, dégâts).</summary>
+        private static void PitFloor(Node n, RoomModule mod)
+        {
+            float hx = n.Half, hz = n.HalfZ, y = n.C.y, d = mod.holeDepth;
+            Vector3 c = n.C;
+            Rect r = mod.holeRect;
+            float x0 = r.xMin, x1 = r.xMax, za = r.yMin, zb = r.yMax;
+            void Slab(string nm, float xa, float xb, float zq, float zr)
+            {
+                if (xb - xa < 0.01f || zr - zq < 0.01f)
+                    return;
+                if (y > 0.1f)
+                    Piece($"{n.Name} : sol {nm} (bloc de {y:0} m)", new Vector3(c.x + (xa + xb) / 2f, y / 2f, c.z + (zq + zr) / 2f), new Vector3(xb - xa, y, zr - zq), _floor);
+                else
+                    Piece($"{n.Name} : sol {nm}", new Vector3(c.x + (xa + xb) / 2f, -0.5f, c.z + (zq + zr) / 2f), new Vector3(xb - xa, 1f, zr - zq), _floor);
+            }
+
+            Slab("ouest", -hx - T, x0, -hz - T, hz + T);
+            Slab("est", x1, hx + T, -hz - T, hz + T);
+            Slab("sud", x0, x1, -hz - T, za);
+            Slab("nord", x0, x1, zb, hz + T);
+            float bottom = y - d;
+            Piece($"{n.Name} : fond de la fosse", new Vector3(c.x + r.center.x, bottom - 0.5f, c.z + r.center.y), new Vector3(r.width, 1f, r.height), _ceiling, walkable: false);
+            Piece($"{n.Name} : bord ouest de la fosse", new Vector3(c.x + x0 - 0.5f, (bottom + y - 1f) / 2f, c.z + r.center.y), new Vector3(1f, d - 1f, r.height + 2f), _wall, walkable: false);
+            Piece($"{n.Name} : bord est de la fosse", new Vector3(c.x + x1 + 0.5f, (bottom + y - 1f) / 2f, c.z + r.center.y), new Vector3(1f, d - 1f, r.height + 2f), _wall, walkable: false);
+            Piece($"{n.Name} : bord sud de la fosse", new Vector3(c.x + r.center.x, (bottom + y - 1f) / 2f, c.z + za - 0.5f), new Vector3(r.width, d - 1f, 1f), _wall, walkable: false);
+            Piece($"{n.Name} : bord nord de la fosse", new Vector3(c.x + r.center.x, (bottom + y - 1f) / 2f, c.z + zb + 0.5f), new Vector3(r.width, d - 1f, 1f), _wall, walkable: false);
+            var trig = new GameObject($"{n.Name} : vide de la fosse");
+            trig.transform.SetParent(_level, false);
+            trig.transform.position = new Vector3(c.x + r.center.x, (bottom + y - 1.5f) / 2f, c.z + r.center.y);
+            var box = trig.AddComponent<BoxCollider>();
+            box.isTrigger = true;
+            box.size = new Vector3(r.width, y - 1.5f - bottom, r.height);
+            var respawns = new List<Transform>();
+            foreach (Vector3 p in new[] { new Vector3(x0 - 2.5f, 0f, r.center.y), new Vector3(x1 + 2.5f, 0f, r.center.y), new Vector3(r.center.x, 0f, za - 2.5f), new Vector3(r.center.x, 0f, zb + 2.5f) })
+            {
+                var t = new GameObject("Reprise").transform;
+                t.SetParent(trig.transform, false);
+                t.position = c + p + Vector3.up * 0.2f;
+                respawns.Add(t);
+            }
+
+            trig.AddComponent<FallVoid>().Configure(_waterDamage, respawns.ToArray());
+            trig.AddComponent<NotWalkable>();
+            _parkourCount++;
         }
 
         private static void Shuffle<T>(List<T> list)

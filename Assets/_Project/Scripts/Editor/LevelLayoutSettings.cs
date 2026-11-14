@@ -38,6 +38,19 @@ namespace ItHunts.EditorTools
         [Range(0, 5)] public int residentFlyersMin = 1;
         [Range(0, 5)] public int residentFlyersMax = 2;
 
+        [Header("Annexes (pièces meublées le long des couloirs)")]
+        [Tooltip("Probabilité qu'un couloir plat de 40 m ou plus ait une pièce annexe (chambre, cellule, réserve, cuisine, armurerie, " +
+                 "chapelle, crypte) ; les premières sont les salles verrouillées.")]
+        [Range(0f, 1f)] public float annexShare = 0.7f;
+        [Tooltip("Largeur minimale de la voie dégagée au milieu des couloirs (m) : le décor reste le long des murs.")]
+        [Range(4f, 12f)] public float minLane = 8f;
+
+        [Header("Parcours et passages (points 3 et 4)")]
+        [Tooltip("Galeries de parcours le long des couloirs plats de 55 m et plus (seul endroit où l'on dépasse le traqueur).")]
+        [Range(0, 20)] public int parkourCorridors = 6;
+        [Tooltip("Passages en hauteur (saut mural) entre une salle et un couloir.")]
+        [Range(0, 30)] public int passages = 10;
+
         [Header("Contenu")]
         [Tooltip("Coffres placés dans le décor, derrière des obstacles.")]
         [Range(0, 40)] public int chests = 14;
