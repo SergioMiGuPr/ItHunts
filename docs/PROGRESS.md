@@ -24,6 +24,46 @@ D-047) ajouté ensuite, commité et poussé sur `main` :
 - **Réseau (étape 11) :** collecte et gain des âmes, ouvertures de coffre et choix sur l'autorité ; les orbes de choix
   n'existent que chez leur joueur.
 
+**Étape 8 — corrections après le playtest (partie A), 2026-11-14, branche `etape-8`, sans push.** Le playtest a validé la
+salle verrouillée, les murs non magnétiques, l'écran de mort, la minimap, les menus et le marchand ; la porte de sortie et le
+combat de boss ne sont pas encore testés. Fait, un commit par point (`git log etape-8`) :
+- **Point 5, soin (`b58cced`) :** 4e offre fixe du marchand de départ, +40 PV pour 35 âmes.
+- **Point 1, population (D-054, `f662ae1`) :**
+  - 2 à 5 goules par grande salle, 1 à 2 volants dans les salles hautes ; rien ne bouge avant la première sortie ;
+  - vagues × surface / 36 300 m², borné 0.5 à 2.5 (niveau 1 : ×2.5) ;
+  - mesuré sur 15 min : 0 grande salle vide sur 40, 164 à 344 ennemis vivants.
+- **Points 2, 2 bis, 3, 4 (D-055 à D-057, `cd05cca`, puis correction `a3d3590`) :**
+  - 31 props greybox (`Prop_*`, catalogue dans ART-HANDOFF) ;
+  - 13 modules de salle et 2 de carrefour (prefabs, ajoutables sans code : voir la fiche run et niveaux) ;
+  - une vingtaine de pièces annexes meublées, décor des couloirs, environ 3 900 props ;
+  - 9 passages en hauteur (1 refermé, module devant) ; 6 galeries de parcours et 3 fosses ; pentes sur toute la largeur.
+  - Mesuré :
+    - 0 point hors de portée hors parcours (sur 48 323) ;
+    - 0 dépassement sur 240 essais hors parcours ;
+    - traversée de galerie réussie dans 89 cas sur 120, sans esquive.
+- **Points 6 et 7 (D-058, `1d401c4`) :**
+  - combat : 2 leviers par piège, pression × 0.7 par piège ;
+  - arène : sur plusieurs hauteurs, avec décor, poche de la herse à 22 m ;
+  - mesuré : 64.6 s à 7.5 m/s ; plus vite, la herse échoue en simulation (estimé 35 à 45 s) ;
+  - Level_01 recopiée depuis la base (dernière fois le 2026-11-14, pour la correction des plaques).
+- **Point 8, performance (`5ccbf2a`) :**
+  - build de développement au pic, 1920 × 1080 : 18.7 → **11.4 ms** en médiane, 95e centile 16.1 ms ;
+  - optimisé : minimap en texture, props fusionnés ;
+  - reste : FixedUpdate de 1 600 scripts (3.2 ms), culling (1.4 ms).
+
+À valider (choix pris seul, partie A) :
+- **Pièces fermées et modules :**
+  - les pièces fermées sont sur les couloirs (les étages des modules bouchaient les portes) ;
+  - la salle de départ n'a pas de module ;
+  - voie centrale des couloirs à 8 m (le traqueur fait 7 m).
+- **Galeries :** paliers et poutres à portée de sa main ; Test_Arena garde sa voie au sol à côté des pentes.
+- **Combat de boss :**
+  - probablement trop court pour un joueur rapide ;
+  - herse : il faut appâter le traqueur près de l'arche ;
+  - le soin compte comme un achat au marchand (+25 %).
+- **Affichage de debug (F3) :** allumé par défaut, il coûte 3 à 6 ms en IMGUI ; à éteindre par défaut dans les builds de
+  joueurs.
+
 **Étape 8 — blocs 1 à 6 codés le 2026-11-13, branche locale `etape-8` (un commit par bloc, pas de push), playtest en
 attente ; l'utilisateur fusionne après son playtest.** Fiche : `docs/design/features/run-et-niveaux/` (design, checklist).
 
