@@ -16,7 +16,7 @@ namespace ItHunts.Debugging
     /// </summary>
     public sealed class MovementDebugOverlay : MonoBehaviour
     {
-        [SerializeField] private bool visibleOnStart = true;
+        [SerializeField] private bool visibleOnStart = false;
 
         private const int HistoryTicks = 60;
 

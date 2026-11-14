@@ -48,6 +48,7 @@ namespace ItHunts.EditorTools
             D("Cage", "Cage", 2.2f, 3f, 2.2f),
             D("Lanterne", "Lanterne", 0.5f, 0.8f, 0.5f, noCollider: true, light: true),
             D("Torche", "Torche", 0.3f, 1f, 0.5f, noCollider: true, light: true),
+            D("TorcheEteinte", "Torche (flamme sans lumière)", 0.3f, 1f, 0.5f, noCollider: true),
             D("Gravats", "Tas de gravats", 3.2f, 1.2f, 3f),
             D("MurEffondre", "Mur effondré", 5f, 3f, 1.2f),
             D("Echafaudage", "Échafaudage", 4f, 6f, 2f),
@@ -114,8 +115,13 @@ namespace ItHunts.EditorTools
         }
 
         /// <summary>Pose un prop (prefab) : position des pieds, rotation autour de y. Compte l'usage.</summary>
+        private static int _torches;
+
         public static GameObject Place(string id, Transform parent, Vector3 feet, float yaw = 0f)
         {
+            // Performance (étape 9, écran partagé : 3 ms de lumières) : une torche sur deux éclaire, l'autre n'a que sa flamme.
+            if (id == "Torche" && (_torches++ & 1) == 1)
+                id = "TorcheEteinte";
             if (!Cache.TryGetValue(id, out GameObject prefab) || prefab == null)
             {
                 prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{Dir}/Prop_{id}.prefab");
@@ -253,6 +259,10 @@ namespace ItHunts.EditorTools
                     Part(t, PrimitiveType.Cube, new Vector3(0f, 0.4f, 0f), new Vector3(0.4f, 0.55f, 0.4f), _iron);
                     Part(t, PrimitiveType.Cube, new Vector3(0f, 0.4f, 0f), new Vector3(0.3f, 0.4f, 0.3f), _flame);
                     AddLight(t, new Vector3(0f, 0.4f, 0f), new Color(1f, 0.7f, 0.4f), 3f, 11f);
+                    break;
+                case "TorcheEteinte":
+                    Part(t, PrimitiveType.Cube, new Vector3(0f, 0.45f, 0.2f), new Vector3(0.08f, 0.7f, 0.08f), _darkWood, new Vector3(-25f, 0f, 0f));
+                    Part(t, PrimitiveType.Sphere, new Vector3(0f, 0.85f, 0.38f), Vector3.one * 0.22f, _flame);
                     break;
                 case "Torche":
                     Part(t, PrimitiveType.Cube, new Vector3(0f, 0.45f, 0.2f), new Vector3(0.08f, 0.7f, 0.08f), _darkWood, new Vector3(-25f, 0f, 0f));

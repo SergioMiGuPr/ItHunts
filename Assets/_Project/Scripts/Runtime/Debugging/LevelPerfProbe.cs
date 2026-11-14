@@ -75,6 +75,9 @@ namespace ItHunts.Debugging
             var mid = RoomVolume.All.Where(r => r.Kind == RoomKind.Salle && r.Size.x > 30f).OrderBy(r => new Vector2(r.transform.position.x, r.transform.position.z).sqrMagnitude).First();
             Vector3 at = new Vector3(mid.transform.position.x, mid.transform.position.y - mid.Size.y / 2f + 0.3f, mid.transform.position.z);
             motor.Teleport(at);
+            yield return null;
+            if (_split && SpawnSecondPlayer == null)
+                Write("ERREUR : pas d'écran partagé dans la scène");
             if (_split && SpawnSecondPlayer != null)
             {
                 GameObject p2 = SpawnSecondPlayer();

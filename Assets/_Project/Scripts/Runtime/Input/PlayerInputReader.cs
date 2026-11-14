@@ -54,6 +54,8 @@ namespace ItHunts.Input
         public int ThrowPressedTick { get; private set; } = MovementState.NeverTick;
         public int ReloadPressedTick { get; private set; } = MovementState.NeverTick;
         public bool ToggleDebugPressed { get; private set; }
+        /// <summary>E / Y maintenu (réanimation d'un allié, étape 9).</summary>
+        public bool InteractHeld => _interact != null && _interact.IsPressed();
         public bool PausePressed { get; private set; }
 
         public string ControlScheme => _playerInput != null ? _playerInput.currentControlScheme : null;

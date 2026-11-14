@@ -107,15 +107,19 @@ namespace ItHunts.Player
             _lastEye = MagnetismOrb.EyePosition(_state, settings);
         }
 
+        private PlayerHealth _health;
+
         private void FixedUpdate()
         {
+            if (_health == null)
+                _health = GetComponent<PlayerHealth>();
             ApplyCapsuleSettings();
             _previousPosition = _currentPosition;
 
             var input = MovementInput.Neutral;
             input.Yaw = _look != null ? _look.Yaw : transform.eulerAngles.y;
             input.Pitch = _look != null ? _look.Pitch : 0f;
-            if (_reader != null)
+            if (_reader != null && (_health == null || !_health.Dead))   // à terre ou mort : plus d'actions
             {
                 input.Move = _reader.Move;
                 input.JumpHeld = _reader.JumpHeld;

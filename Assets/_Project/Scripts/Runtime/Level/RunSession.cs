@@ -16,6 +16,8 @@ namespace ItHunts.Level
         public static int DifficultyIndex { get; private set; }
         public static int LevelIndex { get; private set; }
         public static int CharacterIndex { get; private set; }
+        /// <summary>Manette du 2e joueur, rejoint dans le menu (étape 9) ; l'écran partagé l'ajoute au chargement du niveau.</summary>
+        public static UnityEngine.InputSystem.InputDevice CoopDevice { get; set; }
         public static bool Active => Definition != null;
 
         public static RunDifficulty Difficulty =>
@@ -36,6 +38,7 @@ namespace ItHunts.Level
                 return null;
             if (definition.levels.Count == 0 || !definition.levels[0].Ready)
                 return null;
+            ItHunts.Player.PlayerHealth.ResetDebugFlags();
             Definition = definition;
             DifficultyIndex = difficulty;
             CharacterIndex = character;

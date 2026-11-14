@@ -39,6 +39,12 @@ namespace ItHunts.Player
         public float Pitch => _pitch;
         public float CurrentFov => _fov;
 
+        /// <summary>Rig de vue (détaché du joueur au démarrage) : caméra, caméra virtuelle, mains.</summary>
+        public Transform ViewRig => viewRig;
+
+        /// <summary>Facteur de FOV posé par l'écran partagé selon la découpe (1 en solo).</summary>
+        public float FovScale { get; set; } = 1f;
+
         private void Awake()
         {
             if (settings == null || viewRig == null)
@@ -114,7 +120,7 @@ namespace ItHunts.Player
             if (virtualCamera != null)
             {
                 LensSettings lens = virtualCamera.Lens;
-                lens.FieldOfView = _fov;
+                lens.FieldOfView = Mathf.Clamp(_fov * FovScale, 20f, 150f);
                 virtualCamera.Lens = lens;
             }
         }

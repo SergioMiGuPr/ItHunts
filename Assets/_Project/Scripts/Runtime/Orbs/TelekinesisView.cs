@@ -1,6 +1,7 @@
 using ItHunts.Player;
 using ItHunts.Settings;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace ItHunts.Orbs
 {
@@ -10,7 +11,8 @@ namespace ItHunts.Orbs
     ///   sélectionnés (visés, ou pris par l'aide à la visée),
     ///   rouge terne s'ils sont trop lourds, violette quand ils sont tenus, verte qui s'éteint après un lancer ;
     /// - trait violet de l'orbe à l'objet tenu (la couleur de l'orbe elle-même : MagnetismOrbView, règle OrbLook).
-    /// Sur la racine du joueur. En écran partagé, la lueur des objets suivra le joueur 1 (à revoir à l'étape 9).
+    /// Sur la racine du joueur. Écran partagé (étape 9) : la lueur des objets est recalculée juste avant le rendu de la caméra
+    /// de chaque joueur, chacun voit donc ce que lui vise, tient et peut attraper.
     /// </summary>
     public sealed class TelekinesisView : MonoBehaviour
     {
@@ -32,14 +34,26 @@ namespace ItHunts.Orbs
                 line.enabled = false;
         }
 
+        private void OnEnable() => RenderPipelineManager.beginCameraRendering += BeforeCamera;
+
+        private void OnDisable() => RenderPipelineManager.beginCameraRendering -= BeforeCamera;
+
+        private bool Ready => _motor != null && settings != null && _motor.TelekinesisSettings != null;
+
         private void LateUpdate()
         {
-            if (_motor == null || settings == null || _motor.TelekinesisSettings == null)
+            if (!Ready)
                 return;
-
-            TelekinesisState t = _motor.Telekinesis;
-            UpdateObjects(t);
+            if (_camera == null)
+                UpdateObjects(_motor.Telekinesis);                       // sans caméra (tests) : chaque image
             UpdateLine();
+        }
+
+        /// <summary>Avant la caméra de ce joueur : lueurs des objets vues par lui.</summary>
+        private void BeforeCamera(ScriptableRenderContext context, Camera cam)
+        {
+            if (cam != null && cam == _camera && Ready)
+                UpdateObjects(_motor.Telekinesis);
         }
 
         private void UpdateObjects(in TelekinesisState t)
