@@ -31,16 +31,12 @@ namespace ItHunts.Settings
         [Header("Poursuite (D-035) : elles savent toujours où sont les joueurs")]
         [Tooltip("Elles vont vers le joueur le plus proche par le chemin ; recalcul de ce choix (s).")]
         [Min(0.1f)] public float targetInterval = 1f;
-        [Tooltip("Goules en chasse au même moment, au plus (D-037) ; les autres attendent et prennent le relais quand une goule " +
-                 "meurt (la plus proche du joueur par le chemin).")]
-        [Min(0)] public int maxHunting = 25;
-        [Tooltip("Aggro (D-038) : une goule en attente qui voit un joueur à moins de cette distance (m, ligne de vue), ou qui est " +
-                 "à moins de aggroProximity (m) même sans le voir, se met en chasse en plus des maxHunting, jusqu'à maxHuntingTotal.")]
+        [Tooltip("Aggro (D-061) : une goule en attente qui voit un joueur debout à moins de cette distance (m, ligne de vue), ou " +
+                 "qui est à moins de aggroProximity (m) même sans le voir, se met en chasse ; sans limite de nombre. Les " +
+                 "chasseuses (pression continue) sont choisies par les vagues (WaveSettings, chasseurs).")]
         [Min(0f)] public float aggroSightRange = 20f;
         [Min(0f)] public float aggroProximity = 8f;
-        [Min(0)] public int maxHuntingTotal = 40;
-        [Tooltip("Une goule réveillée par l'aggro retourne en attente si le joueur est à plus de cette distance (m) pendant ce " +
-                 "temps (s), sauf si une place se libère parmi les maxHunting (elle la prend alors).")]
+        [Tooltip("Semée : plus aucun joueur à moins de cette distance (m) pendant ce temps (s) ; elle attend là où elle est.")]
         [Min(0f)] public float aggroLoseDistance = 50f;
         [Min(0f)] public float aggroLoseTime = 5f;
         [Tooltip("Encerclement : chacune vise un point décalé autour du joueur (rayon, m) tant qu'elle est loin.")]

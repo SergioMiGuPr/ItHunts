@@ -137,17 +137,31 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void PlafondsDeChasse_SuiventLaTendance()
+        public void Chasseurs_ParPaliers_1Puis2_4_6_8_Enrage10()
         {
-            Assert.That(WaveMath.HuntingScale(60f, _s.ghoulTrend, _s), Is.EqualTo(1f), "fin du timer : plafond réglé");
-            Assert.That(WaveMath.ScaledCap(25, WaveMath.HuntingScale(10f, _s.ghoulTrend, _s)), Is.EqualTo(4), "au début : 25 × 10/60");
-            Assert.That(WaveMath.ScaledCap(25, WaveMath.HuntingScale(80f, _s.ghoulTrend, _s)), Is.EqualTo(33), "Enragé : 25 × 80/60");
-            Assert.That(WaveMath.ScaledCap(8, WaveMath.HuntingScale(2f, _s.flyerTrend, _s)), Is.EqualTo(1), "au moins 1");
-            Assert.That(WaveMath.ScaledCap(0, 0.5f), Is.EqualTo(0));
-            _s.scaleHuntingCaps = false;
-            Assert.That(WaveMath.HuntingScale(10f, _s.ghoulTrend, _s), Is.EqualTo(1f), "réglage coupé");
+            var a = AssetDatabase.LoadAssetAtPath<WaveSettings>("Assets/_Project/Settings/Waves_Default.asset");
+            Assert.That(a.chaserTimes, Is.EqualTo(new[] { 0f, 0.15f, 0.35f, 0.55f, 0.75f }));
+            Assert.That(a.chaserCounts, Is.EqualTo(new[] { 1, 2, 4, 6, 8 }));
+            Assert.That(a.chaserEnraged, Is.EqualTo(10));
+            Assert.That(WaveMath.ChasersPerPlayer(0f, 900f, _s), Is.EqualTo(1), "début : 1 par joueur");
+            Assert.That(WaveMath.ChasersPerPlayer(134f, 900f, _s), Is.EqualTo(1), "juste avant 15 %");
+            Assert.That(WaveMath.ChasersPerPlayer(135f, 900f, _s), Is.EqualTo(2), "palier, sans interpolation");
+            Assert.That(WaveMath.ChasersPerPlayer(400f, 900f, _s), Is.EqualTo(4));
+            Assert.That(WaveMath.ChasersPerPlayer(500f, 900f, _s), Is.EqualTo(6));
+            Assert.That(WaveMath.ChasersPerPlayer(700f, 900f, _s), Is.EqualTo(8));
+            Assert.That(WaveMath.ChasersPerPlayer(900f, 900f, _s), Is.EqualTo(10), "Enragé");
+            Assert.That(WaveMath.ChasersPerPlayer(60f, 240f, _s), Is.EqualTo(WaveMath.ChasersPerPlayer(225f, 900f, _s)), "en part du timer");
         }
-    
+
+        [Test]
+        public void Habitants_1a3ParGrandeSalle_SelonLaTaille()
+        {
+            Assert.That(new[] { _s.residentGhoulsMin, _s.residentGhoulsMax, _s.residentFlyersMax }, Is.EqualTo(new[] { 1, 3, 1 }));
+            Assert.That(WaveMath.ResidentsToKeep(40f, _s), Is.EqualTo(1), "petite salle");
+            Assert.That(WaveMath.ResidentsToKeep(56f, _s), Is.EqualTo(2));
+            Assert.That(WaveMath.ResidentsToKeep(80f, _s), Is.EqualTo(3), "grande salle");
+        }
+
         [Test]
         public void DensiteParSurface_EchelleBornee()
         {

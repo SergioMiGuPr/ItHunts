@@ -95,17 +95,12 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Accalmie_PlafondDeChasse60PourCent_ReculDe10m()
+        public void Coop_PartParJoueur_Reglage()
         {
             var a = AssetDatabase.LoadAssetAtPath<WaveSettings>("Assets/_Project/Settings/Waves_Default.asset");
-            Assert.That(new[] { a.lullHuntingShare, a.extraPlayerShare }, Is.EqualTo(new[] { 0.6f, 0.5f }));
-            Assert.That(WaveMath.PackShare(true, _s), Is.EqualTo(1f));
-            Assert.That(WaveMath.PackShare(false, _s), Is.EqualTo(0.6f));
-            Assert.That(WaveMath.ScaledCap(25, 1f * WaveMath.PackShare(false, _s)), Is.EqualTo(15), "25 en chasse → 15 pendant l'accalmie");
-            Assert.That(WaveMath.ScaledCap(25, 1.5f * WaveMath.PackShare(false, _s)), Is.EqualTo(22), "à 2 joueurs : 25 × 1.5 × 0.6 = 22.5, arrondi à 22");
-            Assert.That(_g.lullRetreatDistance, Is.EqualTo(10f));
+            Assert.That(a.extraPlayerShare, Is.EqualTo(0.5f));
             Vector3 r = EnemyMath.RetreatPoint(new Vector3(5f, 0f, 0f), Vector3.zero, 10f);
-            Assert.That(r, Is.EqualTo(new Vector3(15f, 0f, 0f)), "il recule de 10 m, loin du joueur");
+            Assert.That(r, Is.EqualTo(new Vector3(15f, 0f, 0f)), "point de recul : loin du joueur");
         }
 
         [Test]

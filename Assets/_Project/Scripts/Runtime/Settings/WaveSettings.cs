@@ -29,9 +29,6 @@ namespace ItHunts.Settings
         [Min(1f)] public float peakDuration = 20f;
         [Tooltip("Durée d'une accalmie (s). La zone commence par une accalmie.")]
         [Min(0f)] public float lullDuration = 15f;
-        [Tooltip("Pendant une accalmie, le plafond de chasse (sans l'aggro) descend à cette part : les ennemis en trop (les plus " +
-                 "loin) repassent en attente et reculent ; au pic suivant, ils reprennent la chasse. Personne ne disparaît.")]
-        [Range(0f, 1f)] public float lullHuntingShare = 0.6f;
         [Tooltip("Durée de l'indication « vague » dans le HUD (s).")]
         [Min(0f)] public float peakAnnounceTime = 1.5f;
 
@@ -65,10 +62,24 @@ namespace ItHunts.Settings
                  "Chaque joueur a sa part ; les apparitions se font à tour de rôle autour de chacun.")]
         [Min(0f)] public float extraPlayerShare = 0.5f;
 
-        [Header("Plafonds de chasse")]
-        [Tooltip("Les plafonds de chasse des goules et des volants (et leur total avec l'aggro) suivent la tendance : réglage de " +
-                 "l'ennemi × tendance du moment / tendance à la fin du timer (Enragé : au-dessus).")]
-        public bool scaleHuntingCaps = true;
+        [Header("Chasseurs (D-061)")]
+        [Tooltip("Paliers des chasseurs, en part du timer : à partir de chacun de ces moments, chaque joueur debout a le nombre " +
+                 "de chasseurs correspondant (ennemis qui savent toujours où il est). Pas d'interpolation.")]
+        public float[] chaserTimes = { 0f, 0.15f, 0.35f, 0.55f, 0.75f };
+        [Tooltip("Chasseurs par joueur à chaque palier.")]
+        public int[] chaserCounts = { 1, 2, 4, 6, 8 };
+        [Tooltip("Chasseurs par joueur en Enragé.")]
+        [Min(0)] public int chaserEnraged = 10;
+
+        [Header("Habitants des salles (posés par le constructeur)")]
+        [Tooltip("Au début de la zone, chaque grande salle garde entre min et max goules habitantes selon sa taille (les autres " +
+                 "posées par le constructeur sont retirées), et au plus residentFlyersMax volants.")]
+        [Range(0, 10)] public int residentGhoulsMin = 1;
+        [Range(0, 10)] public int residentGhoulsMax = 3;
+        [Range(0, 5)] public int residentFlyersMax = 1;
+        [Tooltip("Côté de salle (m) qui donne le minimum, et celui qui donne le maximum (interpolé).")]
+        [Min(1f)] public float residentRoomSmall = 46f;
+        [Min(1f)] public float residentRoomLarge = 66f;
 
         [Header("Taille de la carte (étape 8, après playtest)")]
         [Tooltip("Le nombre voulu suit la surface de la carte (somme du sol des volumes de salle et de tronçon) : × surface / " +

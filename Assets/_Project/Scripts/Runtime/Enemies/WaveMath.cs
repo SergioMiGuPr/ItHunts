@@ -58,17 +58,25 @@ namespace ItHunts.Enemies
         public static bool RecentlyVisited(float lastVisit, float now, float seconds) =>
             !float.IsNegativeInfinity(lastVisit) && now - lastVisit < seconds;
 
-        /// <summary>Plafond de chasse suivant la tendance : niveau du moment / niveau à la fin du timer (1 sans réglage).</summary>
-        public static float HuntingScale(float level, int[] trend, WaveSettings s)
+        /// <summary>Paliers : la valeur du dernier moment atteint (pas d'interpolation).</summary>
+        public static int Steps(float fraction, float[] times, int[] counts)
         {
-            if (!s.scaleHuntingCaps || trend == null || trend.Length == 0)
-                return 1f;
-            float top = trend[trend.Length - 1];
-            return top > 0f ? level / top : 1f;
+            if (times == null || counts == null || counts.Length == 0)
+                return 0;
+            int v = counts[0];
+            for (int i = 1; i < Mathf.Min(times.Length, counts.Length); i++)
+                if (fraction >= times[i])
+                    v = counts[i];
+            return v;
         }
 
-        /// <summary>Plafond mis à l'échelle (au moins 1 si le réglage n'est pas 0).</summary>
-        public static int ScaledCap(int cap, float scale) => cap <= 0 ? 0 : Mathf.Max(1, Mathf.RoundToInt(cap * scale));
+        /// <summary>Chasseurs par joueur debout (D-061) : paliers en part du timer, chaserEnraged après le timer.</summary>
+        public static int ChasersPerPlayer(float elapsed, float timer, WaveSettings s) =>
+            elapsed >= timer ? s.chaserEnraged : Steps(timer > 0f ? elapsed / timer : 1f, s.chaserTimes, s.chaserCounts);
+
+        /// <summary>Habitants gardés dans une salle de ce côté (m) : de min (petite) à max (grande), arrondi.</summary>
+        public static int ResidentsToKeep(float side, WaveSettings s) =>
+            Mathf.RoundToInt(Mathf.Lerp(s.residentGhoulsMin, s.residentGhoulsMax, Mathf.InverseLerp(s.residentRoomSmall, s.residentRoomLarge, side)));
 
         /// <summary>Point à bonne distance : au moins min de tous les joueurs, au plus max du plus proche.</summary>
         public static bool DistanceOk(Vector3 point, IReadOnlyList<Vector3> players, float min, float max)
@@ -85,8 +93,6 @@ namespace ItHunts.Enemies
         /// <summary>Coop : multiplicateur du nombre voulu et des plafonds (1 + part × joueurs vivants en plus).</summary>
         public static float PlayerMultiplier(int alivePlayers, WaveSettings s) => 1f + s.extraPlayerShare * Mathf.Max(0, alivePlayers - 1);
 
-        /// <summary>Plafond de chasse sans l'aggro : × lullHuntingShare pendant une accalmie.</summary>
-        public static float PackShare(bool peak, WaveSettings s) => peak ? 1f : s.lullHuntingShare;
 
         /// <summary>Part de chaque joueur dans le nombre voulu (le reste aux premiers).</summary>
         public static int[] Shares(int wanted, int players)

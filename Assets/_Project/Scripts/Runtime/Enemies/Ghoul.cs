@@ -25,7 +25,7 @@ namespace ItHunts.Enemies
     /// Repoussée, étourdie, tenue ou lancée, son corps (EnemyBody) prend la main.
     /// </summary>
     [RequireComponent(typeof(EnemyBody))]
-    public sealed class Ghoul : MonoBehaviour
+    public sealed class Ghoul : MonoBehaviour, IHunter
     {
         [SerializeField] private GhoulSettings settings;
         [Tooltip("Partie visible qui s'accroupit pendant l'annonce du bond.")]
@@ -73,14 +73,9 @@ namespace ItHunts.Enemies
         /// <summary>Goules actives (debug, mesures).</summary>
         public static readonly System.Collections.Generic.List<Ghoul> All = new System.Collections.Generic.List<Ghoul>();
 
-        /// <summary>Vagues (D-041) : les plafonds de chasse (maxHunting, maxHuntingTotal) suivent la tendance (1 sans vagues).</summary>
-        public static float HuntingScale { get; set; } = 1f;
-        private int MaxHunting => WaveMath.ScaledCap(settings.maxHunting, HuntingScale * PackShare);
         private readonly TargetKeeper _keeper = new TargetKeeper();
-        private bool _retreating, _aggroArmed = true;
-        private Vector3 _retreatTo;
+        private readonly HuntState _hunt = new HuntState();
         private ItHunts.Orbs.Grabbable _grabbable;
-        private int MaxHuntingTotal => WaveMath.ScaledCap(settings.maxHuntingTotal, HuntingScale);
 
         private void OnEnable() => All.Add(this);
         private void OnDisable() => All.Remove(this);
@@ -139,11 +134,7 @@ namespace ItHunts.Enemies
             _move.Heading = _homeRotation * Vector3.forward;
             _target = null;
             _keeper.Clear();
-            _retreating = false;
-            _aggroArmed = true;
-            Hunting = false;
-            Aggroed = false;
-            _farSince = float.NegativeInfinity;
+            _hunt.Clear();
             _retargetAt = 0f;
             _nextLeap = 0f;
             _nextContact = 0f;
@@ -192,25 +183,13 @@ namespace ItHunts.Enemies
             }
 
             Vector3 pos = _rb.position;
-            Pack(now);
             Aggro(pos, now);
             if (!Hunting)
             {
-                // En attente : elle prendra le relais quand une goule en chasse mourra (D-037) ; accalmie : elle recule d'abord.
+                // En attente (D-061) : l'aggro la réveille, ou le directeur en fait une chasseuse.
                 if (Mode != GhoulMode.Poste)
                     SetMode(GhoulMode.Poste);
                 _move.Speed = 0f;
-                if (_retreating)
-                {
-                    _move.SetDestination(pos, _retreatTo, now, settings.repathInterval);
-                    MoveTo(_move.Step(pos, settings.runSpeed * 0.6f, settings.acceleration, settings.turnRate, dt));
-                    if (new Vector2(_retreatTo.x - pos.x, _retreatTo.z - pos.z).magnitude < 1f || now - _modeSince > 5f)
-                    {
-                        _retreating = false;
-                        _move.Clear();
-                        _move.Speed = 0f;
-                    }
-                }
                 ContactDamage(now);
                 UpdateVisual();
                 return;
@@ -249,32 +228,31 @@ namespace ItHunts.Enemies
             UpdateVisual();
         }
 
-        /// <summary>En chasse (une des maxHunting goules autorisées, ou réveillée par l'aggro), sinon en attente.</summary>
-        public bool Hunting { get; private set; }
-        /// <summary>Réveillée par l'aggro (D-038), en plus des maxHunting.</summary>
-        public bool Aggroed { get; private set; }
-        public int AggroWakes { get; private set; }
-        private float _farSince = float.NegativeInfinity;
+        // ---------- Chasse (D-061) : aggro par proximité, sans limite ; chasseuses du directeur ----------
+
+        /// <summary>En chasse : réveillée par l'aggro, ou chasseuse d'un joueur (HuntDirector) ; sinon en attente.</summary>
+        public bool Hunting => _hunt.Hunting;
+        /// <summary>Réveillée par l'aggro (pas chasseuse).</summary>
+        public bool Aggroed => _hunt.Aggroed;
+        /// <summary>Chasseuse : elle sait toujours où est son joueur.</summary>
+        public bool Chaser => _hunt.ChaserFor != null;
+        public int AggroWakes => _hunt.AggroWakes;
         private float _nextAggroCheck;
 
-        /// <summary>Goules en chasse grâce au plafond (sans l'aggro).</summary>
-        public static int PackCount
+        public HuntState Hunt => _hunt;
+        public bool CanHunt => isActiveAndEnabled && (_damageable == null || !_damageable.Dead) && !ZoneState.Asleep;
+        public Vector3 Position => _rb != null ? _rb.position : transform.position;
+
+        public float PathLength(PlayerHealth p)
         {
-            get
-            {
-                int n = 0;
-                foreach (Ghoul g in All)
-                    if (g != null && g.Hunting && !g.Aggroed && (g._damageable == null || !g._damageable.Dead))
-                        n++;
-                return n;
-            }
+            Vector3 pos = Position;
+            return _move.Probe(pos, p.transform.position, out float l, out _) ? l : Vector3.Distance(pos, p.transform.position) * 3f;
         }
 
         /// <summary>
-        /// Aggro (D-038) : en attente, elle se réveille si un joueur est visible à moins de aggroSightRange ou à moins de
-        /// aggroProximity (sans ligne de vue), tant que le total en chasse reste sous maxHuntingTotal. Réveillée, elle se rendort
-        /// si le joueur le plus proche reste à plus de aggroLoseDistance pendant aggroLoseTime, sauf si une place du plafond
-        /// est libre (elle la prend).
+        /// Aggro (D-061) : en attente, elle se réveille si un joueur debout est visible à moins de aggroSightRange ou à moins de
+        /// aggroProximity (sans ligne de vue), sans limite de nombre. Elle le poursuit jusqu'à être semée : plus aucun joueur à
+        /// moins de aggroLoseDistance pendant aggroLoseTime ; elle attend alors là où elle est.
         /// </summary>
         private void Aggro(Vector3 pos, float now)
         {
@@ -282,68 +260,29 @@ namespace ItHunts.Enemies
                 return;
             _nextAggroCheck = now + 0.2f;
             float nearest = float.PositiveInfinity;
-            PlayerHealth seen = null;
+            bool seen = false;
             foreach (PlayerHealth p in PlayerHealth.All)
             {
                 if (p == null || p.Dead)
                     continue;
                 float d = Vector3.Distance(pos, p.transform.position);
                 nearest = Mathf.Min(nearest, d);
-                if (seen == null && (d <= settings.aggroProximity
-                                     || (d <= settings.aggroSightRange && LineOfSight(pos + Vector3.up * Height * 0.8f, p))))
-                    seen = p;
+                if (!seen && (d <= settings.aggroProximity
+                              || (d <= settings.aggroSightRange && LineOfSight(pos + Vector3.up * Height * 0.8f, p))))
+                    seen = true;
             }
 
-            if (!Hunting)
+            bool was = Hunting;
+            _hunt.Step(seen, nearest, now, settings.aggroLoseDistance, settings.aggroLoseTime);
+            if (was && !Hunting)
             {
-                if (!_aggroArmed)
-                {
-                    if (seen == null)
-                        _aggroArmed = true;                              // le joueur est sorti de sa zone d'aggro
-                    return;
-                }
-
-                if (seen != null && HuntingCount < MaxHuntingTotal)
-                {
-                    _retreating = false;
-                    Hunting = true;
-                    Aggroed = true;
-                    AggroWakes++;
-                    _farSince = float.NegativeInfinity;
-                    _retargetAt = 0f;
-                }
-
-                return;
-            }
-
-            if (!Aggroed)
-                return;
-            if (nearest <= settings.aggroLoseDistance)
-            {
-                _farSince = float.NegativeInfinity;
-                return;
-            }
-
-            if (float.IsNegativeInfinity(_farSince))
-                _farSince = now;
-            if (now - _farSince < settings.aggroLoseTime)
-                return;
-            if (PackCount < MaxHunting)
-                Aggroed = false;                                    // une place du plafond est libre : elle la prend
-            else
-            {
-                Hunting = false;                                    // retour en attente, là où elle est
-                Aggroed = false;
-                _target = null;
+                _target = null;                                          // semée : elle attend là où elle est
                 _keeper.Clear();
                 _move.Clear();
             }
-
-            _farSince = float.NegativeInfinity;
+            else if (!was && Hunting)
+                _retargetAt = 0f;
         }
-
-        private static float _packNext;
-        private static readonly System.Collections.Generic.List<(Ghoul g, float d)> PackCandidates = new System.Collections.Generic.List<(Ghoul, float)>();
 
         /// <summary>Goules en chasse en ce moment (vivantes).</summary>
         public static int HuntingCount
@@ -359,142 +298,24 @@ namespace ItHunts.Enemies
         }
 
         /// <summary>
-        /// Plafond des goules en chasse (D-037), revu toutes les 0.5 s par une seule goule : s'il manque des chasseuses, les
-        /// goules en attente les plus proches d'un joueur par le chemin prennent le relais (chemin calculé pour chacune).
-        /// </summary>
-        private void Pack(float now)
-        {
-            if (_packNext - now > 1f)
-                _packNext = 0f;                                      // nouvelle partie (le temps est reparti de zéro)
-            if (now < _packNext)
-                return;
-            _packNext = now + 0.5f;
-            int excess = PackCount - MaxHunting;
-            if (excess > 0)
-            {
-                DemoteExcess(excess);                               // accalmie (D-041) : les plus loin repassent en attente
-                return;
-            }
-
-            int free = MaxHunting - PackCount;     // une goule réveillée par l'aggro peut prendre une place du plafond
-            if (free <= 0)
-                return;
-            PackCandidates.Clear();
-            foreach (Ghoul g in All)
-            {
-                if (g == null || (g.Hunting && !g.Aggroed) || !g.isActiveAndEnabled || (g._damageable != null && g._damageable.Dead))
-                    continue;
-                float d = float.PositiveInfinity;
-                foreach (PlayerHealth p in PlayerHealth.All)
-                    if (p != null && !p.Dead)
-                        d = Mathf.Min(d, Vector3.Distance(g._rb.position, p.transform.position));
-                if (!float.IsPositiveInfinity(d))
-                    PackCandidates.Add((g, d));
-            }
-
-            if (PackCandidates.Count == 0)
-                return;
-            // Par le chemin, pour toutes les goules en attente (rare : seulement quand une place se libère).
-            int keep = PackCandidates.Count;
-            for (int i = 0; i < keep; i++)
-            {
-                Ghoul g = PackCandidates[i].g;
-                float best = float.PositiveInfinity;
-                foreach (PlayerHealth p in PlayerHealth.All)
-                {
-                    if (p == null || p.Dead)
-                        continue;
-                    float len = g._move.Probe(g._rb.position, p.transform.position, out float l, out _) ? l : PackCandidates[i].d * 3f;
-                    best = Mathf.Min(best, len);
-                }
-
-                PackCandidates[i] = (g, best);
-            }
-
-            PackCandidates.RemoveRange(keep, PackCandidates.Count - keep);
-            PackCandidates.Sort((a, b) => a.d.CompareTo(b.d));
-            for (int i = 0; i < Mathf.Min(free, PackCandidates.Count); i++)
-            {
-                PackCandidates[i].g.Hunting = true;
-                PackCandidates[i].g.Aggroed = false;
-                PackCandidates[i].g._retreating = false;            // pic suivant : elle reprend la chasse
-            }
-        }
-
-        /// <summary>
-        /// Elle sait toujours où sont les joueurs (D-035) ; coop (D-041) : au départ le plus proche par le chemin, puis elle garde
-        /// sa cible (TargetKeeper : marge, abandon, délai ; immédiat si sa cible meurt ou si un autre joueur la blesse ou la lance).
+        /// Cible : une chasseuse vise son joueur. Sinon elle sait où sont les joueurs (D-035) ; coop (D-041) : au départ le plus
+        /// proche par le chemin, puis elle garde sa cible (TargetKeeper : marge, abandon, délai ; immédiat si sa cible tombe ou si
+        /// un autre joueur la blesse ou la lance).
         /// </summary>
         private void ChooseTarget(Vector3 pos, float now)
         {
-            _target = _keeper.Update(now, _damageable, settings, settings.targetInterval,
-                p => _move.Probe(pos, p.transform.position, out float l, out _) ? l : Vector3.Distance(pos, p.transform.position) * 3f);
+            PlayerHealth chased = _hunt.ChaserFor;
+            if (chased != null && !chased.Dead)
+                _target = chased;
+            else
+                _target = _keeper.Update(now, _damageable, settings, settings.targetInterval,
+                    p => _move.Probe(pos, p.transform.position, out float l, out _) ? l : Vector3.Distance(pos, p.transform.position) * 3f);
             if (_target == null && Mode == GhoulMode.Chasse)
                 SetMode(GhoulMode.Poste);
         }
 
         /// <summary>Changements de cible (mesures, debug).</summary>
         public int TargetSwitches => _keeper.Switches;
-
-        // ---------- Accalmie (D-041) ----------
-
-        /// <summary>Vagues : part du plafond de chasse (sans l'aggro) pendant une accalmie (1 pendant un pic).</summary>
-        public static float PackShare { get; set; } = 1f;
-        /// <summary>Goules renvoyées en attente par une accalmie (mesures).</summary>
-        public static int Demotions { get; private set; }
-        public bool Retreating => _retreating;
-
-        /// <summary>Elle repasse en attente et recule loin du joueur ; l'aggro ne la réveille qu'après que le joueur est sorti de sa zone.</summary>
-        private void Retreat()
-        {
-            Hunting = false;
-            Aggroed = false;
-            _target = null;
-            _keeper.Clear();
-            _aggroArmed = false;
-            _move.Clear();
-            Demotions++;
-            Vector3 pos = _rb.position;
-            PlayerHealth near = null;
-            float best = float.PositiveInfinity;
-            foreach (PlayerHealth p in PlayerHealth.All)
-                if (p != null && !p.Dead && Vector3.Distance(pos, p.transform.position) < best)
-                {
-                    best = Vector3.Distance(pos, p.transform.position);
-                    near = p;
-                }
-
-            _retreating = false;
-            if (near != null && settings.lullRetreatDistance > 0f
-                && _move.Snap(EnemyMath.RetreatPoint(pos, near.transform.position, settings.lullRetreatDistance), 3f, out Vector3 to))
-            {
-                _retreatTo = to;
-                _retreating = true;
-            }
-
-            if (Mode != GhoulMode.Poste)
-                SetMode(GhoulMode.Poste);
-        }
-
-        /// <summary>Accalmie : les chasseuses en trop (les plus loin d'un joueur) repassent en attente.</summary>
-        private static void DemoteExcess(int excess)
-        {
-            PackCandidates.Clear();
-            foreach (Ghoul g in All)
-            {
-                if (g == null || !g.Hunting || g.Aggroed || !g.isActiveAndEnabled || (g._damageable != null && g._damageable.Dead) || g._body.Busy)
-                    continue;
-                float d = float.PositiveInfinity;
-                foreach (PlayerHealth p in PlayerHealth.All)
-                    if (p != null && !p.Dead)
-                        d = Mathf.Min(d, Vector3.Distance(g._rb.position, p.transform.position));
-                PackCandidates.Add((g, d));
-            }
-
-            PackCandidates.Sort((a, b) => b.d.CompareTo(a.d));
-            for (int i = 0; i < Mathf.Min(excess, PackCandidates.Count); i++)
-                PackCandidates[i].g.Retreat();
-        }
 
         private void Chase(Vector3 pos, float now, float dt)
         {

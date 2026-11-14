@@ -136,8 +136,81 @@ namespace ItHunts.Enemies
 
         private void OnDisable()
         {
-            Ghoul.HuntingScale = Flyer.HuntingScale = 1f;
-            Ghoul.PackShare = Flyer.PackShare = 1f;
+            foreach (IHunter h in HuntDirector.Gather())
+                h.Hunt.Release();
+        }
+
+        // ---------- Habitants des salles (D-061) ----------
+
+        private readonly List<GameObject> _residents = new List<GameObject>();
+        private bool _residentsFound;
+
+        /// <summary>Habitants gardés et retirés au dernier début de zone (mesures).</summary>
+        public int ResidentsKept { get; private set; }
+        public int ResidentsRemoved { get; private set; }
+
+        /// <summary>
+        /// Habitants (goules et volants posés par le constructeur, hors réserve) : chaque grande salle en garde de
+        /// residentGhoulsMin à residentGhoulsMax selon sa taille, et au plus residentFlyersMax volants ; les autres sont retirés
+        /// pour la zone. Toujours les mêmes (ordre des noms) : la remise à zéro redonne la même population.
+        /// </summary>
+        private void ApplyResidents()
+        {
+            if (settings == null)
+                return;
+            if (!_residentsFound)
+            {
+                _residentsFound = true;
+                var pool = new HashSet<GameObject>(_ghouls.Members);
+                pool.UnionWith(_flyers.Members);
+                foreach (Ghoul g in FindObjectsByType<Ghoul>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    if (!pool.Contains(g.gameObject))
+                        _residents.Add(g.gameObject);
+                foreach (Flyer f in FindObjectsByType<Flyer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    if (!pool.Contains(f.gameObject))
+                        _residents.Add(f.gameObject);
+                _residents.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+            }
+
+            var ghoulsIn = new Dictionary<ItHunts.Level.RoomVolume, int>();
+            var flyersIn = new Dictionary<ItHunts.Level.RoomVolume, int>();
+            ResidentsKept = ResidentsRemoved = 0;
+            foreach (GameObject m in _residents)
+            {
+                if (m == null)
+                    continue;
+                bool flyer = m.GetComponent<Flyer>() != null;
+                Vector3 at = m.transform.position;
+                ItHunts.Level.RoomVolume room = null;
+                foreach (ItHunts.Level.RoomVolume r in ItHunts.Level.RoomVolume.All)
+                    if (r != null && r.Kind == ItHunts.Level.RoomKind.Salle && r.Contains(flyer ? new Vector3(at.x, r.transform.position.y, at.z) : at + Vector3.up * 0.5f))
+                    {
+                        room = r;
+                        break;
+                    }
+
+                bool keep = true;
+                if (room != null)
+                {
+                    Dictionary<ItHunts.Level.RoomVolume, int> count = flyer ? flyersIn : ghoulsIn;
+                    count.TryGetValue(room, out int n);
+                    int max = flyer ? settings.residentFlyersMax : WaveMath.ResidentsToKeep(Mathf.Max(room.Size.x, room.Size.z), settings);
+                    keep = n < max;
+                    count[room] = n + 1;
+                }
+
+                if (keep)
+                {
+                    ResidentsKept++;
+                    if (!m.activeSelf)
+                        m.SetActive(true);
+                }
+                else
+                {
+                    ResidentsRemoved++;
+                    m.SetActive(false);
+                }
+            }
         }
 
         /// <summary>Remise à zéro de la zone : toute la réserve rentre, la population de départ sera reposée.</summary>
@@ -161,6 +234,8 @@ namespace ItHunts.Enemies
 
             _peakIndex = 0;
             _visits.Clear();
+            ApplyResidents();
+            HuntDirector.ResetCounters();
             var run = FindFirstObjectByType<ItHunts.Artifacts.RunState>();
             _rng = new System.Random((run != null ? run.Seed : 1) * 7919 + (_zone != null ? _zone.Resets : 0));
         }
@@ -193,9 +268,19 @@ namespace ItHunts.Enemies
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
             if (_zone == null)
                 _zone = FindFirstObjectByType<ZoneState>();
-            if (_zone == null || _zone.Settings == null || _zone.Finished || !_zone.Started || _zone.BossFightActive)
+            if (_zone == null || _zone.Settings == null || _zone.Finished || !_zone.Started)
                 return;                                                  // salle de départ (D-048) : rien avant la première sortie
             float now = Time.time, elapsed = _zone.Elapsed, timer = _zone.Settings.timer;
+
+            // Chasseurs (D-061), revus toutes les 0.5 s ; aucun pendant le combat de boss.
+            if (now >= _nextHunt || _nextHunt - now > 1f)
+            {
+                _nextHunt = now + 0.5f;
+                HuntDirector.Tick(PlayerHealth.All, _zone.BossFightActive ? 0 : WaveMath.ChasersPerPlayer(elapsed, timer, settings) , HuntDirector.Gather());
+            }
+
+            if (_zone.BossFightActive)
+                return;
             InPeak = WaveMath.InPeak(elapsed, settings, out float left, out int index);
             PhaseLeft = left;
 
@@ -214,9 +299,6 @@ namespace ItHunts.Enemies
             float flyerBase = WaveMath.Level(elapsed, timer, settings.flyerTrend, settings.flyerEnraged, settings);
             _ghouls.Level = ghoulBase * PlayerMultiplier * AreaScale;            // densité par surface (étape 8)
             _flyers.Level = flyerBase * PlayerMultiplier * AreaScale;
-            Ghoul.HuntingScale = WaveMath.HuntingScale(ghoulBase, settings.ghoulTrend, settings) * PlayerMultiplier;
-            Flyer.HuntingScale = WaveMath.HuntingScale(flyerBase, settings.flyerTrend, settings) * PlayerMultiplier;
-            Ghoul.PackShare = Flyer.PackShare = WaveMath.PackShare(InPeak, settings);
 
             TrackVisits(now);
             UpdateKind(_ghouls, now);
@@ -278,6 +360,8 @@ namespace ItHunts.Enemies
                 k.Spawns++;
             }
         }
+
+        private float _nextHunt;
 
         /// <summary>Dernier passage d'un joueur dans chaque volume qui le contient (salle, tronçon).</summary>
         private void TrackVisits(float now)
