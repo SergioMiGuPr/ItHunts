@@ -1929,7 +1929,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4281e521021962c46895438ccb30dcbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Debugging.MovementDebugOverlay
-  visibleOnStart: 1
+  visibleOnStart: 0
 --- !u!114 &1973928570591129331
 MonoBehaviour:
   m_ObjectHideFlags: 0
