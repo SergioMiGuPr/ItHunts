@@ -151,6 +151,32 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void InvulnerabiliteDeDebug_RemiseAZero_SortieDuPlayModeEtLancementDeRun()
+        {
+            System.Type hook = null;
+            foreach (Assembly asm in System.AppDomain.CurrentDomain.GetAssemblies())
+                hook ??= asm.GetType("ItHunts.EditorTools.DebugFlagsReset");
+            Assert.That(hook, Is.Not.Null, "crochet de l'éditeur présent");
+            try
+            {
+                PlayerHealth.DebugInvulnerable = true;
+                hook.GetMethod("OnPlayModeChanged").Invoke(null, new object[] { PlayModeStateChange.ExitingPlayMode });
+                Assert.That(PlayerHealth.DebugInvulnerable, Is.False, "sortie du Play Mode");
+
+                PlayerHealth.DebugInvulnerable = true;
+                var run = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.RunDefinition>("Assets/_Project/Settings/Run_Default.asset");
+                Assert.That(run, Is.Not.Null);
+                ItHunts.Level.RunSession.Begin(run, 0);
+                Assert.That(PlayerHealth.DebugInvulnerable, Is.False, "lancement d'une run");
+            }
+            finally
+            {
+                PlayerHealth.ResetDebugFlags();
+                ItHunts.Level.RunSession.ResetForTests();
+            }
+        }
+
+        [Test]
         public void Fov_AdapteALaMoitieDEcran()
         {
             var c = AssetDatabase.LoadAssetAtPath<CoopSettings>("Assets/_Project/Settings/Coop_Default.asset");

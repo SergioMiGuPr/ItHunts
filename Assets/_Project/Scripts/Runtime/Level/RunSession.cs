@@ -38,6 +38,7 @@ namespace ItHunts.Level
                 return null;
             if (definition.levels.Count == 0 || !definition.levels[0].Ready)
                 return null;
+            ItHunts.Player.PlayerHealth.ResetDebugFlags();
             Definition = definition;
             DifficultyIndex = difficulty;
             CharacterIndex = character;

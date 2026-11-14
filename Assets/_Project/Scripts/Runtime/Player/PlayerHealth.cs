@@ -52,6 +52,18 @@ namespace ItHunts.Player
         public static int DebugBlockedKills { get; set; }
         public static int DebugBlockedHits { get; set; }
 
+        /// <summary>
+        /// Remet les drapeaux de mesure à zéro : au chargement du jeu, au lancement d'une run, et à la sortie du Play Mode
+        /// (DebugFlagsReset, éditeur). Les variables statiques survivent sinon à la sortie du Play Mode.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        public static void ResetDebugFlags()
+        {
+            DebugInvulnerable = false;
+            DebugBlockedKills = 0;
+            DebugBlockedHits = 0;
+        }
+
         public bool Dead => _health.Dead;
         public PlayerMotor Motor => _motor;
 
