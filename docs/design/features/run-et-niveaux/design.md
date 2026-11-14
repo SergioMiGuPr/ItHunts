@@ -154,6 +154,30 @@ Le traqueur est lâché à 3 min et la porte de sortie se déverrouille à 10 mi
       - **portée de la main (grille de 2 m, 48 323 points) :** 0 hors de portée hors des zones de parcours ; 83 hors de portée,
         tous sur des plateformes qui tombent (on n'y reste pas plus de 0.6 s) ; 32 abrités de ses mains levées (la prise les
         atteint).
+17. **Combat de boss, après le playtest (D-058).**
+    - **Leviers :** chaque piège s'arme d'abord. Il faut frapper ses **2 leviers lumineux** (orange, puis verts) avec un
+      objet lancé ou l'onde de répulsion. Les leviers sont placés à l'écart du piège et à des hauteurs différentes ; ceux d'un
+      piège armé restent allumés, et la cible n'apparaît qu'une fois le piège armé. Emplacements :
+      - herse : galeries nord et sud à 6 m ;
+      - pont : sol et galerie à 6 m de la poche est ;
+      - lustre : sommets des tours de 11 m.
+    - **Pression :** à chaque piège gagné, les recharges de ses attaques (prise, mains levées, pointe) × 0.7 (réglable,
+      `pressurePerTrap`).
+    - **Arène sur plusieurs hauteurs :**
+      - galeries pleines à 6 m le long des murs nord et sud (hors des entrées), avec escaliers ;
+      - deux tours de 11 m ;
+      - galerie à 6 m et escalier dans la poche est ;
+      - poche ouest de la herse à 22 m (sa main ne passait pas l'arche, mais elle touchait le fond de l'ancienne poche
+        de 15 m) ;
+      - décor le long des murs (torches, tonneaux, statues, échafaudages, sarcophages, grilles, tapisseries, chaînes).
+    - **Contournement :** seulement par une traversée de la fosse en plateformes qui tombent (zone de parcours).
+    - **Mesure** (joueur simulé : trajet imposé, sans esquive ni vrais sauts, invulnérable pour la mesure ; trajets vers les
+      leviers en ligne droite à la vitesse donnée) :
+      - **à 7.5 m/s :** gagné en 64.6 s. Lustre 21.8 s (armé en 17.3 s), herse 22.5 s (armée en 16.9 s), pont 11.8 s.
+      - **à 13.5 et 18 m/s :** lustre 9.7 et 7.2 s, pont 6.9 et 5.0 s ; **la herse échoue en simulation**. Le joueur simulé
+        file au fond de la poche, et le traqueur essaie ses prises depuis l'arche sans y entrer. Un vrai joueur doit
+        l'appâter près de l'arche.
+      - **Estimation** pour un joueur rapide : 35 à 45 s, sous la cible de 60 à 90 s (à valider).
 12. **Tronçons de couloir (D-047).** Ils font 40 m au plus. Aucun ennemi n'apparaît dans le tronçon d'un joueur ni dans les
     tronçons voisins.
 
@@ -181,6 +205,10 @@ Le traqueur est lâché à 3 min et la porte de sortie se déverrouille à 10 mi
   - **Galeries :** les paliers et poutres sont à portée de sa main ; à cause d'eux, environ 1 traversée sur 4 échoue si le
     joueur n'esquive pas.
   - **Test_Arena :** garde sa voie au sol à côté des pentes (scène de test).
+  - **Combat de boss :** probablement trop court pour un joueur rapide (35 à 45 s estimées). Pistes : 3 leviers par piège,
+    leviers plus loin, piège qui se réarme plus lentement, traqueur sonné moins longtemps.
+  - **Level_01 :** recopiée une dernière fois depuis la base le 2026-11-14 (sans retouche de l'utilisateur) ; plus jamais
+    ensuite.
 
 - **Avant la sortie de la salle de départ, aucune vague ne tourne**, nulle part sur la carte, et pas seulement dans la salle.
 - **La porte de sortie se paie une fois pour tous**, au prix fixe de 200 âmes, sans hausse.

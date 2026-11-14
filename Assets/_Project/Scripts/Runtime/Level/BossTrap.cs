@@ -28,6 +28,8 @@ namespace ItHunts.Level
         [SerializeField] private Transform moving;
         [SerializeField] private float dropHeight = 12f;
         [SerializeField] private float dropTime = 0.35f;
+        [Tooltip("Leviers à activer (objet lancé ou répulsion) pour armer le piège ; la cible n'apparaît qu'une fois armé.")]
+        [SerializeField] private BossLever[] levers;
         [Tooltip("Réarmement après un coup raté (s).")]
         [SerializeField] private float rearmDelay = 4f;
 
@@ -41,6 +43,22 @@ namespace ItHunts.Level
         public int Misses { get; private set; }
         public Damageable Trigger => trigger;
         public Bounds Zone => new Bounds(transform.position, zoneSize);
+        public BossLever[] Levers => levers;
+
+        /// <summary>Tous les leviers allumés (ou aucun levier).</summary>
+        public bool Armed
+        {
+            get
+            {
+                if (levers != null)
+                    foreach (BossLever l in levers)
+                        if (l != null && !l.Lit)
+                            return false;
+                return true;
+            }
+        }
+
+        private bool _shownArmed = true;
 
         private void Awake()
         {
@@ -81,6 +99,15 @@ namespace ItHunts.Level
 
         private void Update()
         {
+            bool armed = Armed;
+            if (armed != _shownArmed && trigger != null)
+            {
+                _shownArmed = armed;
+                trigger.gameObject.SetActive(armed);                     // la cible n'apparaît qu'une fois armé
+                if (armed && !Sprung)
+                    trigger.Revive();
+            }
+
             if (moving == null)
                 return;
             if (kind != TrapKind.Pont)
@@ -119,6 +146,11 @@ namespace ItHunts.Level
         /// <summary>Remise à zéro de la zone : armé, rien de tombé.</summary>
         public void ResetTrap()
         {
+            if (levers != null)
+                foreach (BossLever l in levers)
+                    if (l != null)
+                        l.ResetLever();
+            _shownArmed = !Armed;
             Sprung = false;
             Misses = 0;
             _firedAt = float.NegativeInfinity;

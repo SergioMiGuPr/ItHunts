@@ -18,6 +18,8 @@ namespace ItHunts.Level
         [SerializeField] private BossTrap[] traps;
         [Tooltip("Temps où le traqueur reste sonné après un piège gagné (s).")]
         [Min(0f)] [SerializeField] private float staggerSeconds = 4f;
+        [Tooltip("Pression : à chaque piège gagné, les recharges de ses attaques (prise, mains levées, pointe) × ce facteur.")]
+        [Range(0.3f, 1f)] [SerializeField] private float pressurePerTrap = 0.7f;
         [Tooltip("Délai entre le troisième piège et la fin du niveau (s).")]
         [Min(0f)] [SerializeField] private float finishDelay = 2f;
 
@@ -75,6 +77,8 @@ namespace ItHunts.Level
 
             if (_zone != null)
                 _zone.BossFightActive = true;
+            if (_stalker != null)
+                _stalker.CooldownScale = 1f;
             if (_stalker != null && stalkerEntry != null)
             {
                 _stalker.gameObject.SetActive(true);
@@ -90,7 +94,10 @@ namespace ItHunts.Level
         {
             Hits++;
             if (_stalker != null)
+            {
                 _stalker.Stagger(Hits >= TrapCount ? 999f : staggerSeconds);
+                _stalker.CooldownScale *= pressurePerTrap;                  // la pression monte à chaque piège
+            }
             if (Hits >= TrapCount)
             {
                 Won = true;
@@ -124,6 +131,8 @@ namespace ItHunts.Level
         /// <summary>Remise à zéro de la zone : combat pas commencé, pièges armés.</summary>
         public void ResetFight()
         {
+            if (_stalker != null)
+                _stalker.CooldownScale = 1f;
             Active = Won = false;
             Hits = 0;
             _returnAt = _finishAt = float.PositiveInfinity;

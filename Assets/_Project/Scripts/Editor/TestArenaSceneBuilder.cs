@@ -202,6 +202,7 @@ namespace ItHunts.EditorTools
             SetRef(runState, "pool", LoadOrCreate<ArtifactPool>(PoolPath));
             SetRef(runState, "upgrades", UpgradePoolAsset());
             new GameObject("Minimap (brouillard de guerre)").AddComponent<MapDiscovery>().gameObject.AddComponent<ItHunts.Hud.MinimapHud>();
+            new GameObject("Mesure de performance du niveau (build, -ithunts-perf-level)").AddComponent<ItHunts.Debugging.LevelPerfProbe>();
             var feedback = new GameObject("Retour des dégâts").AddComponent<DamageFeedback>();
             SetRef(feedback, "settings", LoadOrCreate<DamageFeedbackSettings>(DamageFeedbackPath));
             SetRef(feedback, "flashMaterial", UnlitMat("Damage_Flash", "Universal Render Pipeline/Unlit", Color.white));

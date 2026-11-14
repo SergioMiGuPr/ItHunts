@@ -101,6 +101,40 @@ namespace ItHunts.Tests
             }
         }
 
+        [Test]
+        public void Piege_ArmeSeulementQuandSesDeuxLeviersSontAllumes()
+        {
+            var go = new GameObject("Piège (test)");
+            try
+            {
+                var l1 = GameObject.CreatePrimitive(PrimitiveType.Cube).AddComponent<BossLever>();
+                var l2 = GameObject.CreatePrimitive(PrimitiveType.Cube).AddComponent<BossLever>();
+                l1.transform.SetParent(go.transform);
+                l2.transform.SetParent(go.transform);
+                var trap = go.AddComponent<BossTrap>();
+                var so = new UnityEditor.SerializedObject(trap);
+                SerializedProperty lp = so.FindProperty("levers");
+                lp.arraySize = 2;
+                lp.GetArrayElementAtIndex(0).objectReferenceValue = l1;
+                lp.GetArrayElementAtIndex(1).objectReferenceValue = l2;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(trap.Armed, Is.False, "aucun levier");
+                l1.Hit(1);
+                Assert.That(trap.Armed, Is.False, "un seul levier");
+                Assert.That(l1.Lit, Is.True);
+                l1.Hit(2);
+                Assert.That(l1.LitBy, Is.EqualTo(1), "reste allumé, une seule fois");
+                l2.OnWave(3);
+                Assert.That(trap.Armed, Is.True, "les deux (objet lancé ou répulsion)");
+                trap.ResetTrap();
+                Assert.That(trap.Armed || l1.Lit || l2.Lit, Is.False, "remise à zéro");
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
+
         private static int CountScript(string scenePath, string scriptPath)
         {
             string guid = AssetDatabase.AssetPathToGUID(scriptPath);
@@ -126,6 +160,7 @@ namespace ItHunts.Tests
             Assert.That(File.ReadAllText(basePath).Contains("kind: 2"), Is.True, "une salle de départ (RoomKind.Depart)");
             Assert.That(CountScript(basePath, rt + "Level/BossFight.cs"), Is.EqualTo(1), "arène du combat de boss (D-049)");
             Assert.That(CountScript(basePath, rt + "Level/BossTrap.cs"), Is.EqualTo(3), "herse, pont, lustre");
+            Assert.That(CountScript(basePath, rt + "Level/BossLever.cs"), Is.EqualTo(6), "deux leviers par piège");
             Assert.That(CountScript(basePath, rt + "Level/MapDiscovery.cs"), Is.EqualTo(1), "minimap (D-053)");
             Assert.That(System.Array.Exists(EditorBuildSettings.scenes, sc => sc.path == copy), Is.True, "Level_01 dans le build (la run la charge)");
             Assert.That(EditorBuildSettings.scenes[0].path, Is.EqualTo("Assets/Scenes/MainMenu.unity"), "le menu d'abord");

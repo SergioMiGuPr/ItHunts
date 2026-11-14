@@ -218,6 +218,9 @@ namespace ItHunts.Enemies
 
         private float _staggerUntil;
 
+        /// <summary>Pression du combat de boss : recharges de la prise, des mains levées et de la pointe × ce facteur (1 hors combat).</summary>
+        public float CooldownScale { get; set; } = 1f;
+
         /// <summary>Sonné par un piège du combat de boss (D-049) : il ne bouge ni n'attaque pendant ce temps.</summary>
         public bool Staggered => Time.time < _staggerUntil;
 
@@ -344,7 +347,7 @@ namespace ItHunts.Enemies
                 Decide(pos, feet, enraged, now);
             }
 
-            EnemyMath.UpdateBurst(ref _burst, SeesTarget && !Planted, now, settings.burstDuration, settings.burstCooldown);
+            EnemyMath.UpdateBurst(ref _burst, SeesTarget && !Planted, now, settings.burstDuration, settings.burstCooldown * CooldownScale);
             float playerSpeed = new Vector2(vel.x, vel.z).magnitude;
             // Enragé (D-038) : paliers de vitesse tant qu'il reste sur la même cible ; chaque palier s'annonce (grondement, HUD).
             float rampBase = -1f;
@@ -803,7 +806,7 @@ namespace ItHunts.Enemies
                     {
                         _grab = GrabPhase.Retour;
                         _grabStart = now;
-                        _grabReadyAt = now + settings.grabCooldown;
+                        _grabReadyAt = now + settings.grabCooldown * CooldownScale;
                         Planted = false;
                     }
 
@@ -1143,7 +1146,7 @@ namespace ItHunts.Enemies
                     {
                         _over = OverheadPhase.Retour;
                         _overStart = now;
-                        _overReadyAt = now + settings.overheadCooldown;
+                        _overReadyAt = now + settings.overheadCooldown * CooldownScale;
                     }
 
                     break;

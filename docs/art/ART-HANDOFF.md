@@ -394,3 +394,7 @@ Nombre utilisé : niveau 1 (modules, couloirs, annexes) après génération du 2
 - **Passages en hauteur :** ouverture de 3 × 3 m à 4.5 m du sol, conduit de 8 × 3.5 × 3 m ; murs autour non magnétiques (rayés).
 - **Galeries de parcours :** 20 m de large le long d'un couloir, vide de 10 m, paliers de 6 × 5 m, poutres de 0.6 m,
   plateformes de 2.4 × 2.4 m qui tombent ; tout est non magnétique (ne jamais faire briller ces surfaces).
+
+- **Arène du combat de boss (après le playtest de l'étape 8) :** galeries pleines à 6 m (5 m de profondeur) le long des murs nord et
+  sud, tours de 11 m (6 × 6 m), galerie de 6 m dans la poche est ; herse à x = −18 (poche de 22 m) ; 6 leviers (plaque de
+  1.2 × 0.8 × 1.2 m sur un socle de 1.2 m, orange puis vert) ; 5 plateformes de 2.4 m qui tombent au-dessus de la fosse.

@@ -47,6 +47,11 @@ namespace ItHunts.Player
         /// <summary>Quand vrai, la zone gère la mort (remise à zéro) : pas de réapparition seule.</summary>
         public static bool ZoneHandlesDeath { get; set; }
 
+        /// <summary>Mesures seulement (scripts de l'éditeur) : aucun dégât ; les coups qui auraient tué sont comptés.</summary>
+        public static bool DebugInvulnerable { get; set; }
+        public static int DebugBlockedKills { get; set; }
+        public static int DebugBlockedHits { get; set; }
+
         public bool Dead => _health.Dead;
         public PlayerMotor Motor => _motor;
 
@@ -105,7 +110,7 @@ namespace ItHunts.Player
         /// <summary>Blessure venue d'un joueur (balle, objet lancé ou repoussé) : vrai si des PV ont été retirés.</summary>
         public bool TryHurt(int attackerId, float damage, Vector3 point, float time)
         {
-            if (damage <= 0f || _health.Dead || !FriendlyFire.Allows(attackerId, PlayerId, coop))
+            if (damage <= 0f || _health.Dead || DebugInvulnerable || !FriendlyFire.Allows(attackerId, PlayerId, coop))
                 return false;
             float taken = HealthState.Apply(ref _health, FriendlyFire.Scale(damage, coop), time, out bool killed);
             if (taken <= 0f)
@@ -119,6 +124,11 @@ namespace ItHunts.Player
         {
             if (damage <= 0f || _health.Dead)
                 return false;
+            if (DebugInvulnerable)
+            {
+                DebugBlockedHits++;
+                return false;
+            }
             damage *= ItHunts.Level.RunSession.EnemyDamage;                 // difficulté (D-048)
             float taken = HealthState.Apply(ref _health, damage, time, out bool killed);
             if (taken <= 0f)
@@ -142,6 +152,12 @@ namespace ItHunts.Player
         /// <summary>Tué net, quels que soient ses PV (coup du traqueur). Vrai s'il était vivant.</summary>
         public bool Kill(Vector3 point, float time)
         {
+            if (DebugInvulnerable && !_health.Dead)
+            {
+                DebugBlockedKills++;                                    // mesures : le coup aurait tué
+                return false;
+            }
+
             if (_health.Dead)
                 return false;
             float taken = _health.Current;
