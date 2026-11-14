@@ -141,6 +141,31 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void AlliéQuiQuitte_LeJoueurATerreMeurt()
+        {
+            PlayerHealth a = Player(Vector3.zero), b = Player(new Vector3(5f, 0f, 0f));
+            int died = 0;
+            System.Action<PlayerHealth> onDied = p => { if (p == a) died++; };
+            PlayerHealth.Died += onDied;
+            try
+            {
+                a.TakeEnemyDamage(1000f, Vector3.zero, 1f);
+                Assert.That(a.Downed, Is.True);
+                died = 0;
+                a.NoAllyLeft();
+                Assert.That(died, Is.EqualTo(0), "l'allié est encore là : rien");
+                Invoke(b, "OnDisable");                                // l'allié quitte l'écran partagé
+                _players.Remove(b);
+                a.NoAllyLeft();
+                Assert.That(died, Is.EqualTo(1), "plus personne pour le relever : mort annoncée à la zone");
+            }
+            finally
+            {
+                PlayerHealth.Died -= onDied;
+            }
+        }
+
+        [Test]
         public void Ecran_GaucheDroite_OuHautBas()
         {
             Assert.That(SplitScreen.ViewRect(0, 1, false), Is.EqualTo(new Rect(0f, 0f, 1f, 1f)), "seul : tout l'écran");

@@ -42,6 +42,8 @@ namespace ItHunts.Player
         private void OnEnable()
         {
             Current = this;
+            if (GetComponent<ItHunts.Level.PauseMenu>() == null)
+                gameObject.AddComponent<ItHunts.Level.PauseMenu>();     // menu pause de chaque joueur (Échap / Start)
             ItHunts.Debugging.LevelPerfProbe.SpawnSecondPlayer = () => Join(null);
             RenderPipelineManager.beginCameraRendering += BeforeCamera;
         }
@@ -114,6 +116,30 @@ namespace ItHunts.Player
             Layout();
             Joins++;
             return p2.gameObject;
+        }
+
+        public int Leaves { get; private set; }
+
+        /// <summary>
+        /// Le 2e joueur quitte l'écran partagé (menu pause) : il disparaît, le 1er reprend tout l'écran. Si le 1er était à
+        /// terre, plus personne ne peut le relever : il meurt (fin de partie). Le 1er joueur ne peut pas quitter ainsi.
+        /// </summary>
+        public bool Leave(PlayerInput player)
+        {
+            if (player == null || PlayerInput.all.Count < 2 || PlayerInput.all[0] == player)
+                return false;
+            RunSession.CoopDevice = null;                                // le niveau suivant ne le rajoute pas
+            PlayerLook look = player.GetComponent<PlayerLook>();
+            if (look != null && look.ViewRig != null)
+                look.ViewRig.gameObject.SetActive(false);                // sa caméra s'arrête tout de suite
+            player.gameObject.SetActive(false);                          // sort de PlayerInput.all et PlayerHealth.All
+            Destroy(player.gameObject);
+            Layout();
+            foreach (PlayerHealth p in PlayerHealth.All.ToList())
+                if (p != null)
+                    p.NoAllyLeft();
+            Leaves++;
+            return true;
         }
 
         private static void LockFirstPlayer(PlayerInput p1, InputDevice joining)

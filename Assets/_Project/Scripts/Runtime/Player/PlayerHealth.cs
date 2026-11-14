@@ -239,6 +239,16 @@ namespace ItHunts.Player
             return n;
         }
 
+        /// <summary>
+        /// Plus aucun allié debout pour le relever (l'autre joueur a quitté l'écran partagé) : à terre devient mort, la zone
+        /// décide de la fin.
+        /// </summary>
+        public void NoAllyLeft()
+        {
+            if (Downed && OthersStanding() == 0)
+                Died?.Invoke(this);
+        }
+
         /// <summary>Relevé par un allié : revient avec hp PV (D-007, étape 9).</summary>
         public bool ReviveFromDown(float hp)
         {

@@ -24,6 +24,11 @@ namespace ItHunts.Hud
         /// <summary>Dernière manette qui a navigué dans un menu (celle du 1er joueur).</summary>
         public static Gamepad LastNavPad { get; private set; }
         public int Focus { get; private set; }
+        /// <summary>
+        /// Appareil qui pilote ce menu (écran partagé : le menu pause d'un joueur). Null : clavier et toute manette. Une
+        /// manette : elle seule. Un clavier : le clavier seul (et la souris).
+        /// </summary>
+        public InputDevice Owner;
         private float _repeatAt;
         private static GUIStyle _button, _title, _text;
 
@@ -41,7 +46,7 @@ namespace ItHunts.Hud
                 return;
             int dy = 0, dx = 0;
             bool submit = false;
-            Keyboard k = Keyboard.current;
+            Keyboard k = Owner == null || Owner is Keyboard ? Keyboard.current : null;
             if (k != null)
             {
                 if (k.upArrowKey.wasPressedThisFrame || k.wKey.wasPressedThisFrame || k.zKey.wasPressedThisFrame) dy = -1;
@@ -51,8 +56,8 @@ namespace ItHunts.Hud
                 submit |= k.enterKey.wasPressedThisFrame || k.spaceKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame;
             }
 
-            Gamepad g = Gamepad.current;
-            if (g != null && (g.leftStick.ReadValue().sqrMagnitude > 0.4f || g.dpad.ReadValue().sqrMagnitude > 0.4f || g.buttonSouth.wasPressedThisFrame))
+            Gamepad g = Owner == null ? Gamepad.current : Owner as Gamepad;
+            if (Owner == null && g != null && (g.leftStick.ReadValue().sqrMagnitude > 0.4f || g.dpad.ReadValue().sqrMagnitude > 0.4f || g.buttonSouth.wasPressedThisFrame))
                 LastNavPad = g;
             if (g != null)
             {
@@ -93,11 +98,16 @@ namespace ItHunts.Hud
         public void FocusFirst() => Focus = Items.Count > 0 && Items[0].Enabled ? 0 : Next(0, 1);
 
         /// <summary>Dessine le titre, un texte et les boutons au centre de l'écran (dans OnGUI).</summary>
-        public void Draw(string title, string text, float width = 520f)
+        public void Draw(string title, string text, float width = 520f) =>
+            Draw(title, text, width, new Rect(0f, 0f, Screen.width, Screen.height));
+
+        /// <summary>Dessine le menu au centre d'une zone de l'écran (coordonnées IMGUI : origine en haut à gauche).</summary>
+        public void Draw(string title, string text, float width, Rect region)
         {
             Styles();
+            width = Mathf.Min(width, region.width - 60f);
             float h = 64f + (string.IsNullOrEmpty(text) ? 0f : _text.CalcHeight(new GUIContent(text), width) + 16f) + Items.Count * 58f;
-            var area = new Rect((Screen.width - width) / 2f, Mathf.Max(20f, (Screen.height - h) / 2f), width, h);
+            var area = new Rect(region.x + (region.width - width) / 2f, region.y + Mathf.Max(20f, (region.height - h) / 2f), width, h);
             GUI.color = new Color(0f, 0f, 0f, 0.75f);
             GUI.DrawTexture(new Rect(area.x - 24f, area.y - 20f, area.width + 48f, area.height + 40f), Texture2D.whiteTexture);
             GUI.color = Color.white;

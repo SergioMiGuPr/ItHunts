@@ -1,0 +1,184 @@
+using System.Collections.Generic;
+using System.Linq;
+using ItHunts.Hud;
+using ItHunts.Input;
+using ItHunts.Player;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace ItHunts.Level
+{
+    /// <summary>
+    /// Menu pause greybox, un par joueur (Échap au clavier, Start à la manette). Il s'affiche dans la moitié d'écran du joueur et
+    /// se pilote avec son seul appareil. Le jeu ne s'arrête pas (coop, D-048). Le joueur qui l'a ouvert ne bouge plus, l'autre
+    /// continue. Entrées : Reprendre ; Quitter l'écran partagé (2e joueur seulement) ; Menu principal. Posé par SplitScreen.
+    /// Refait à l'étape 10.
+    /// </summary>
+    public sealed class PauseMenu : MonoBehaviour
+    {
+        private sealed class Open
+        {
+            public PlayerInput Player;
+            public GreyboxMenu Menu;
+            public int Frame;
+        }
+
+        private readonly List<Open> _open = new List<Open>();
+        private readonly Dictionary<PlayerInput, int> _closedAt = new Dictionary<PlayerInput, int>();
+
+        public static PauseMenu Current { get; private set; }
+
+        private void OnEnable() => Current = this;
+
+        private void OnDisable()
+        {
+            if (Current == this)
+                Current = null;
+        }
+
+        public bool IsOpenFor(PlayerInput player) => _open.Any(o => o.Player == player);
+
+        /// <summary>Entrées du menu de ce joueur (tests).</summary>
+        public IReadOnlyList<string> ItemsFor(PlayerInput player) =>
+            _open.FirstOrDefault(o => o.Player == player)?.Menu.Items.Select(i => i.Label).ToList() ?? new List<string>();
+
+        private void Update()
+        {
+            if (RunEndScreen.Current != null)
+            {
+                foreach (Open o in _open.ToList())
+                    Close(o, false);
+                return;
+            }
+
+            foreach (PlayerInput pi in PlayerInput.all.ToList())
+            {
+                if (IsOpenFor(pi))
+                    continue;
+                var reader = pi.GetComponent<PlayerInputReader>();
+                bool justClosed = _closedAt.TryGetValue(pi, out int f) && Time.frameCount <= f + 1;
+                if (reader != null && reader.PausePressed && !justClosed)
+                    OpenFor(pi);
+            }
+
+            foreach (Open o in _open.ToList())
+            {
+                if (o.Player == null)
+                {
+                    _open.Remove(o);
+                    continue;
+                }
+
+                if (Time.frameCount > o.Frame && BackPressed(o.Menu.Owner))
+                    Close(o, true);
+                else
+                    o.Menu.Update();
+            }
+
+            if (_open.Count == 0 && PlayerLook.MenuOpen && RunEndScreen.Current == null && _hadKeyboardMenu)
+            {
+                PlayerLook.MenuOpen = false;
+                _hadKeyboardMenu = false;
+            }
+        }
+
+        private bool _hadKeyboardMenu;
+
+        /// <summary>Ouvre le menu pause de ce joueur.</summary>
+        public void OpenFor(PlayerInput pi)
+        {
+            if (pi == null || IsOpenFor(pi))
+                return;
+            var o = new Open { Player = pi, Menu = new GreyboxMenu { Owner = OwnerOf(pi) }, Frame = Time.frameCount };
+            o.Menu.Add("Reprendre", () => Close(o, true));
+            int index = IndexOf(pi);
+            if (index > 0 && PlayerInput.all.Count > 1 && SplitScreen.Current != null)
+                o.Menu.Add("Quitter l'écran partagé", () => LeaveSplit(o));
+            o.Menu.Add("Menu principal", ToMenu);
+            o.Menu.FocusFirst();
+            _open.Add(o);
+            pi.DeactivateInput();                                       // il ne bouge plus ; l'autre joueur continue
+            if (o.Menu.Owner is Keyboard)
+            {
+                PlayerLook.MenuOpen = true;                             // la souris sert au menu
+                _hadKeyboardMenu = true;
+            }
+        }
+
+        private void Close(Open o, bool reactivate)
+        {
+            _open.Remove(o);
+            if (o.Player == null)
+                return;
+            _closedAt[o.Player] = Time.frameCount;
+            if (reactivate)
+                o.Player.ActivateInput();
+            if (o.Menu.Owner is Keyboard && !_open.Any(x => x.Menu.Owner is Keyboard) && RunEndScreen.Current == null)
+            {
+                PlayerLook.MenuOpen = false;
+                _hadKeyboardMenu = false;
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+        }
+
+        private void LeaveSplit(Open o)
+        {
+            PlayerInput pi = o.Player;
+            _open.Remove(o);
+            if (SplitScreen.Current != null)
+                SplitScreen.Current.Leave(pi);
+        }
+
+        private static void ToMenu()
+        {
+            string menu = RunSession.MenuScene;
+            RunSession.End();
+            if (!RunSession.Load(menu))
+                UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        }
+
+        private static int IndexOf(PlayerInput pi)
+        {
+            for (int i = 0; i < PlayerInput.all.Count; i++)
+                if (PlayerInput.all[i] == pi)
+                    return i;
+            return -1;
+        }
+
+        /// <summary>Appareil du joueur : sa manette s'il joue à la manette, sinon le clavier.</summary>
+        private static InputDevice OwnerOf(PlayerInput pi)
+        {
+            if (pi.currentControlScheme == "Gamepad")
+            {
+                Gamepad pad = pi.devices.OfType<Gamepad>().FirstOrDefault();
+                if (pad != null)
+                    return pad;
+            }
+
+            return Keyboard.current;
+        }
+
+        private static bool BackPressed(InputDevice owner)
+        {
+            if (owner is Gamepad g)
+                return g.startButton.wasPressedThisFrame || g.buttonEast.wasPressedThisFrame;
+            Keyboard k = Keyboard.current;
+            return k != null && k.escapeKey.wasPressedThisFrame;
+        }
+
+        private void OnGUI()
+        {
+            foreach (Open o in _open)
+            {
+                if (o.Player == null)
+                    continue;
+                Camera cam = o.Player.camera;
+                Rect r = cam != null ? cam.rect : new Rect(0f, 0f, 1f, 1f);
+                var region = new Rect(r.x * Screen.width, (1f - r.y - r.height) * Screen.height, r.width * Screen.width, r.height * Screen.height);
+                string who = PlayerInput.all.Count > 1 ? $"Joueur {IndexOf(o.Player) + 1}. " : "";
+                o.Menu.Draw("Pause", who + "Le jeu continue.", 460f, region);
+            }
+        }
+    }
+}
