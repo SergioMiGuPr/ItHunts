@@ -404,8 +404,8 @@ namespace ItHunts.Debugging
             var waves = FindFirstObjectByType<ItHunts.Enemies.WaveDirector>();
             if (waves != null)
                 _text.AppendLine($"Vagues : {(waves.InPeak ? $"PIC {waves.PeakIndex}" : "accalmie")} ({waves.PhaseLeft:0} s) ; goules {waves.PresentGhouls}/{waves.WantedGhouls} " +
-                                 $"(tendance {waves.GhoulLevel:0}, à reconstituer {waves.GhoulDebt}), volants {waves.PresentFlyers}/{waves.WantedFlyers} (à reconstituer {waves.FlyerDebt}) ; " +
-                                 $"en annonce {waves.PendingCount}, prochaine dans {waves.NextSpawnIn:0.0} s ; apparitions {waves.Spawns}, tués {waves.Kills}, échecs {waves.SpawnFailures}");
+                                 $"(dernière vague {waves.LastGhoulWave}, reste {waves.GhoulWaveLeft}), volants {waves.PresentFlyers}/{waves.WantedFlyers} (vague {waves.LastFlyerWave}) ; " +
+                                 $"en annonce {waves.PendingCount} ; apparitions {waves.Spawns}, tués {waves.Kills}, échecs {waves.SpawnFailures}, abandonnées {waves.Abandoned}");
 
             // Volants : résumé et le plus proche.
             int flyers = 0, diving = 0;

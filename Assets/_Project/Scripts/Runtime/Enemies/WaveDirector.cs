@@ -8,12 +8,13 @@ using UnityEngine;
 namespace ItHunts.Enemies
 {
     /// <summary>
-    /// Vagues d'une zone (bloc 7, D-041), objet de la scène (pas du joueur) : il fait apparaître les goules et les volants de la
-    /// réserve (inactifs, créés par le constructeur) pour suivre le nombre voulu (WaveMath : tendance selon le temps de la zone,
-    /// pics annoncés et accalmies, Enragé). Apparition : un point d'apparition (SpawnPoint) hors de la vue de tous les joueurs,
-    /// jamais dans la salle d'un joueur (RoomVolume, D-045), entre minDistance et maxDistance, annoncé par une lueur au sol, puis l'ennemi apparaît. Un ennemi tué retourne dans la
-    /// réserve ; il est remplacé lentement (refillInterval), en plus des apparitions normales. Les plafonds de chasse suivent la
-    /// tendance. Réseau (étape 11) : tout ceci tourne sur l'autorité.
+    /// Vagues d'une zone (D-041, revu par D-060), objet de la scène (pas du joueur) : au début de chaque pic de vague, il fait
+    /// apparaître une fournée de goules et de volants de la réserve (inactifs, créés par le constructeur) : waveSpawns du moment,
+    /// sous le plafond de population. Rien entre deux vagues : ni apparition continue, ni remplacement des tués. Apparition : un
+    /// point d'apparition (SpawnPoint) hors de la vue de tous les joueurs, à minDistance au moins de chacun, jamais dans la salle
+    /// ou le tronçon d'un joueur (RoomVolume, D-045), jamais dans une salle où un joueur est passé depuis recentVisitSeconds,
+    /// jamais dans la salle de départ ; annoncé par une lueur au sol, puis l'ennemi apparaît. Un ennemi tué retourne dans la
+    /// réserve. Réseau (étape 11) : tout ceci tourne sur l'autorité.
     /// </summary>
     public sealed class WaveDirector : MonoBehaviour
     {
@@ -38,8 +39,10 @@ namespace ItHunts.Enemies
             public readonly List<GameObject> Members = new List<GameObject>();
             public readonly HashSet<GameObject> CountedDead = new HashSet<GameObject>();
             public readonly Dictionary<GameObject, float> DeadSince = new Dictionary<GameObject, float>();
-            public int Wanted, Present, Pending, Debt, Spawns, Refills, Kills;
-            public float NextSpawn, NextRefill;
+            public int Wanted, Present, Pending, Spawns, Kills;
+            /// <summary>Vague en cours : apparitions qui restent à faire, avant WaveUntil.</summary>
+            public int WaveLeft, LastWave, Abandoned;
+            public float NextSpawn, WaveUntil;
             public float Level;
             public int RoundRobin;
             /// <summary>Coop : joueur autour de qui chaque ennemi est apparu (sa part).</summary>
@@ -63,13 +66,14 @@ namespace ItHunts.Enemies
         private readonly List<Vector3> _players = new List<Vector3>();
         private readonly List<int> _playerIds = new List<int>();
         private readonly List<SpawnPoint> _candidates = new List<SpawnPoint>();
+        /// <summary>Dernier passage d'un joueur dans chaque volume (salle ou tronçon).</summary>
+        private readonly Dictionary<ItHunts.Level.RoomVolume, float> _visits = new Dictionary<ItHunts.Level.RoomVolume, float>();
         private readonly RaycastHit[] _hits = new RaycastHit[16];
         private ZoneState _zone;
         private System.Random _rng = new System.Random(1);
         private AudioSource _audio;
         private AudioClip _horn;
         private int _peakIndex;
-        private bool _needFill = true;
 
         public WaveSettings Settings => settings;
         public bool InPeak { get; private set; }
@@ -80,17 +84,21 @@ namespace ItHunts.Enemies
         public int PresentGhouls => _ghouls.Present;
         public int PresentFlyers => _flyers.Present;
         public int PendingCount => _pending.Count;
-        public int GhoulDebt => _ghouls.Debt;
-        public int FlyerDebt => _flyers.Debt;
+        /// <summary>Vague en cours : goules et volants qui restent à faire apparaître.</summary>
+        public int GhoulWaveLeft => _ghouls.WaveLeft;
+        public int FlyerWaveLeft => _flyers.WaveLeft;
+        /// <summary>Taille de la dernière vague (goules, volants) : mesures.</summary>
+        public int LastGhoulWave => _ghouls.LastWave;
+        public int LastFlyerWave => _flyers.LastWave;
+        /// <summary>Apparitions abandonnées (pas de point permis avant la fin de la fenêtre de la vague).</summary>
+        public int Abandoned => _ghouls.Abandoned + _flyers.Abandoned;
         public float GhoulLevel => _ghouls.Level;
         public float FlyerLevel => _flyers.Level;
         public int Spawns => _ghouls.Spawns + _flyers.Spawns;
-        public int Refills => _ghouls.Refills + _flyers.Refills;
         public int Kills => _ghouls.Kills + _flyers.Kills;
         public int SpawnFailures { get; private set; }
         /// <summary>Apparitions annulées : un joueur est entré dans la salle du point pendant l'annonce (D-045).</summary>
         public int SpawnsCancelled { get; private set; }
-        public float NextSpawnIn => Mathf.Max(0f, Mathf.Min(_ghouls.NextSpawn, _flyers.NextSpawn) - Time.time);
         public int GhoulPoolSize => _ghouls.Members.Count;
         /// <summary>Coop : multiplicateur du moment (joueurs vivants).</summary>
         public float PlayerMultiplier { get; private set; } = 1f;
@@ -147,12 +155,12 @@ namespace ItHunts.Enemies
                 k.CountedDead.Clear();
                 k.DeadSince.Clear();
                 k.Owner.Clear();
-                k.Debt = k.Present = k.Pending = 0;
-                k.NextSpawn = k.NextRefill = 0f;
+                k.Present = k.Pending = k.WaveLeft = 0;
+                k.NextSpawn = k.WaveUntil = 0f;
             }
 
             _peakIndex = 0;
-            _needFill = true;
+            _visits.Clear();
             var run = FindFirstObjectByType<ItHunts.Artifacts.RunState>();
             _rng = new System.Random((run != null ? run.Seed : 1) * 7919 + (_zone != null ? _zone.Resets : 0));
         }
@@ -188,18 +196,8 @@ namespace ItHunts.Enemies
             if (_zone == null || _zone.Settings == null || _zone.Finished || !_zone.Started || _zone.BossFightActive)
                 return;                                                  // salle de départ (D-048) : rien avant la première sortie
             float now = Time.time, elapsed = _zone.Elapsed, timer = _zone.Settings.timer;
-
-            // Pics et accalmies.
             InPeak = WaveMath.InPeak(elapsed, settings, out float left, out int index);
             PhaseLeft = left;
-            if (InPeak && index != _peakIndex)
-            {
-                _peakIndex = index;
-                LastPeakTime = now;
-                if (_horn != null)
-                    _audio.PlayOneShot(_horn, 0.9f);
-                PeakStarted?.Invoke(index);
-            }
 
             _players.Clear();
             _playerIds.Clear();
@@ -220,26 +218,108 @@ namespace ItHunts.Enemies
             Flyer.HuntingScale = WaveMath.HuntingScale(flyerBase, settings.flyerTrend, settings) * PlayerMultiplier;
             Ghoul.PackShare = Flyer.PackShare = WaveMath.PackShare(InPeak, settings);
 
+            TrackVisits(now);
             UpdateKind(_ghouls, now);
             UpdateKind(_flyers, now);
+
+            // Début d'un pic : une fournée par type (D-060), sous le plafond de population.
+            if (InPeak && index != _peakIndex)
+            {
+                _peakIndex = index;
+                LastPeakTime = now;
+                if (_horn != null)
+                    _audio.PlayOneShot(_horn, 0.9f);
+                float scale = PlayerMultiplier * AreaScale;
+                StartWave(_ghouls, WaveMath.Level(elapsed, timer, settings.ghoulWaveSpawns, settings.ghoulWaveEnraged, settings) * scale, now);
+                StartWave(_flyers, WaveMath.Level(elapsed, timer, settings.flyerWaveSpawns, settings.flyerWaveEnraged, settings) * scale, now);
+                PeakStarted?.Invoke(index);
+            }
+
             UpdatePending(now);
             if (_players.Count == 0)
                 return;
-
-            if (_needFill && settings.fillAtStart)
-            {
-                _needFill = false;
-                FillNow(_ghouls);
-                FillNow(_flyers);
-            }
-
-            _needFill = false;
-            float interval = WaveMath.SpawnInterval(elapsed, timer, settings);
-            Spawning(_ghouls, now, interval);
-            Spawning(_flyers, now, interval);
+            WaveStep(_ghouls, now);
+            WaveStep(_flyers, now);
         }
 
-        /// <summary>Présents, morts (dette, retour dans la réserve après despawnDelay), nombre voulu.</summary>
+        private void StartWave(Kind k, float spawns, float now)
+        {
+            k.Abandoned += k.WaveLeft;                                   // reste de la vague précédente : abandonné
+            k.WaveLeft = k.LastWave = WaveMath.WaveBatch(spawns, k.Present, k.Pending, k.Wanted);
+            k.WaveUntil = now + settings.waveSpawnWindow;
+            k.NextSpawn = now;
+        }
+
+        /// <summary>Vague en cours : une apparition tous les waveSpawnStep, jusqu'à la fin de la fenêtre.</summary>
+        private void WaveStep(Kind k, float now)
+        {
+            if (k.WaveLeft <= 0)
+                return;
+            if (now >= k.WaveUntil)
+            {
+                k.Abandoned += k.WaveLeft;
+                k.WaveLeft = 0;
+                return;
+            }
+
+            if (now < k.NextSpawn)
+                return;
+            k.NextSpawn = now + settings.waveSpawnStep;
+            if (k.Present + k.Pending >= k.Wanted)
+            {
+                k.Abandoned += k.WaveLeft;                               // plafond atteint entre-temps
+                k.WaveLeft = 0;
+                return;
+            }
+
+            if (Begin(k, now, settings.telegraph))
+            {
+                k.WaveLeft--;
+                k.Spawns++;
+            }
+        }
+
+        /// <summary>Dernier passage d'un joueur dans chaque volume qui le contient (salle, tronçon).</summary>
+        private void TrackVisits(float now)
+        {
+            foreach (Vector3 p in _players)
+                foreach (ItHunts.Level.RoomVolume r in ItHunts.Level.RoomVolume.All)
+                    if (r != null && r.Contains(p + Vector3.up * 0.5f))
+                        _visits[r] = now;
+        }
+
+        /// <summary>Dernier passage d'un joueur dans ce volume (moins l'infini : jamais).</summary>
+        public float LastVisit(ItHunts.Level.RoomVolume r) =>
+            r != null && _visits.TryGetValue(r, out float t) ? t : float.NegativeInfinity;
+
+        /// <summary>Note un passage (tests, mesures).</summary>
+        public void NoteVisit(ItHunts.Level.RoomVolume r, float now)
+        {
+            if (r != null)
+                _visits[r] = now;
+        }
+
+        /// <summary>
+        /// Règles de lieu d'une apparition (D-060) : jamais dans la salle de départ, jamais dans un volume où un joueur est
+        /// passé depuis recentVisitSeconds.
+        /// </summary>
+        public bool PlaceAllowed(Vector3 point, float now)
+        {
+            Vector3 p = point + Vector3.up * 0.5f;
+            foreach (ItHunts.Level.RoomVolume r in ItHunts.Level.RoomVolume.All)
+            {
+                if (r == null || !r.Contains(p))
+                    continue;
+                if (r.Kind == ItHunts.Level.RoomKind.Depart)
+                    return false;
+                if (WaveMath.RecentlyVisited(LastVisit(r), now, settings != null ? settings.recentVisitSeconds : 60f))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>Présents, morts (retour dans la réserve après despawnDelay), plafond de population.</summary>
         private void UpdateKind(Kind k, float now)
         {
             k.Present = 0;
@@ -252,7 +332,6 @@ namespace ItHunts.Enemies
                 {
                     if (k.CountedDead.Add(m))
                     {
-                        k.Debt++;
                         k.Kills++;
                         k.DeadSince[m] = now;
                     }
@@ -275,34 +354,13 @@ namespace ItHunts.Enemies
             foreach (PendingSpawn p in _pending)
                 if (p.Kind == k)
                     k.Pending++;
-            k.Wanted = WaveMath.Wanted(k.Level, InPeak, settings);
-            k.Debt = WaveMath.ClampDebt(k.Debt, k.Present, k.Pending, k.Wanted);
+            k.Wanted = WaveMath.Cap(k.Level);
         }
 
-        private void Spawning(Kind k, float now, float interval)
-        {
-            if (now >= k.NextSpawn && WaveMath.NormalSpawnAllowed(k.Present, k.Pending, k.Wanted, k.Debt))
-            {
-                k.NextSpawn = now + interval;
-                if (Begin(k, now, settings.telegraph))
-                    k.Spawns++;
-            }
-
-            if (now >= k.NextRefill && WaveMath.RefillAllowed(k.Present, k.Pending, k.Wanted, k.Debt))
-            {
-                k.NextRefill = now + settings.refillInterval;
-                if (Begin(k, now, settings.telegraph))
-                {
-                    k.Debt--;
-                    k.Refills++;
-                }
-            }
-        }
-
-        /// <summary>Population de départ : posée d'un coup, sans annonce, hors de vue.</summary>
+        /// <summary>Debug et mesures : pose d'un coup, sans annonce, hors de vue, jusqu'au plafond.</summary>
         private void FillNow(Kind k)
         {
-            int want = WaveMath.Wanted(k.Level, InPeak, settings);
+            int want = k.Wanted;
             for (int i = k.Present; i < want; i++)
             {
                 if (!Begin(k, Time.time, 0f))
@@ -314,7 +372,7 @@ namespace ItHunts.Enemies
             UpdatePending(Time.time);
         }
 
-        /// <summary>Remplit tout de suite jusqu'au nombre voulu (mesures, debug).</summary>
+        /// <summary>Remplit tout de suite jusqu'au plafond de population (mesures, debug).</summary>
         public void FillToWanted()
         {
             UpdateKind(_ghouls, Time.time);
@@ -437,7 +495,8 @@ namespace ItHunts.Enemies
             foreach (SpawnPoint p in SpawnPoint.All)
                 if (p != null && p.Accepts(kind) && now - p.LastUsed > 2f
                     && WaveMath.DistanceOkFor(p.transform.position, _players, forPlayer, settings.minDistance, settings.maxDistance)
-                    && !ItHunts.Level.RoomVolume.SharesRoomWithAny(p.transform.position, _players))   // jamais dans la salle d'un joueur (D-045)
+                    && !ItHunts.Level.RoomVolume.SharesRoomWithAny(p.transform.position, _players)    // jamais dans la salle d'un joueur (D-045)
+                    && PlaceAllowed(p.transform.position, now))                                       // salle récente, salle de départ (D-060)
                     _candidates.Add(p);
             for (int i = _candidates.Count - 1; i > 0; i--)
             {

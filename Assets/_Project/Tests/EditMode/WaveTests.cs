@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace ItHunts.Tests
 {
-    /// <summary>Vagues (bloc 7, D-041) : tendance, pics et accalmies, rythme, distance, reconstitution, plafonds, asset.</summary>
+    /// <summary>Vagues (D-041, D-060) : tendance, pics et accalmies, fournée au début du pic, lieux interdits, distance, asset.</summary>
     public class WaveTests
     {
         private WaveSettings _s;
@@ -27,9 +27,12 @@ namespace ItHunts.Tests
             Assert.That(a.ghoulTrend, Is.EqualTo(new[] { 10, 20, 35, 50, 60 }));
             Assert.That(a.flyerTrend, Is.EqualTo(new[] { 2, 4, 8, 12, 16 }));
             Assert.That(new[] { a.ghoulEnraged, a.flyerEnraged }, Is.EqualTo(new[] { 80, 20 }));
-            Assert.That(new[] { a.peakDuration, a.lullDuration, a.lullShare }, Is.EqualTo(new[] { 20f, 15f, 0.6f }));
-            Assert.That(new[] { a.spawnIntervalStart, a.spawnIntervalEnd, a.spawnIntervalEnraged }, Is.EqualTo(new[] { 3f, 1f, 0.5f }));
-            Assert.That(new[] { a.minDistance, a.maxDistance, a.telegraph, a.refillInterval }, Is.EqualTo(new[] { 25f, 80f, 0.6f, 4f }));
+            Assert.That(new[] { a.peakDuration, a.lullDuration }, Is.EqualTo(new[] { 20f, 15f }));
+            Assert.That(new[] { a.minDistance, a.maxDistance, a.telegraph }, Is.EqualTo(new[] { 25f, 80f, 0.6f }));
+            Assert.That(a.ghoulWaveSpawns, Is.EqualTo(new[] { 3, 4, 6, 8, 10 }), "goules par vague (D-060)");
+            Assert.That(a.flyerWaveSpawns, Is.EqualTo(new[] { 1, 1, 2, 2, 3 }));
+            Assert.That(new[] { a.ghoulWaveEnraged, a.flyerWaveEnraged }, Is.EqualTo(new[] { 14, 4 }));
+            Assert.That(new[] { a.waveSpawnWindow, a.waveSpawnStep, a.recentVisitSeconds }, Is.EqualTo(new[] { 8f, 0.2f, 60f }));
             Assert.That(new[] { a.ghoulPool, a.flyerPool }, Is.EqualTo(new[] { 80, 20 }));
         }
 
@@ -60,17 +63,63 @@ namespace ItHunts.Tests
             Assert.That(WaveMath.InPeak(35f, _s, out _, out index), Is.False, "accalmie suivante");
             Assert.That(WaveMath.InPeak(50f, _s, out _, out index), Is.True);
             Assert.That(index, Is.EqualTo(2), "deuxième pic");
-            Assert.That(WaveMath.Wanted(60f, true, _s), Is.EqualTo(60), "pic : la tendance");
-            Assert.That(WaveMath.Wanted(60f, false, _s), Is.EqualTo(36), "accalmie : 60 %");
-            Assert.That(WaveMath.Wanted(10f, false, _s), Is.EqualTo(6));
         }
 
         [Test]
-        public void Rythme_3sA1s_PuisDemiSecondeEnEnrage()
+        public void Vague_FourneeAuDebutDuPic_SousLePlafond()
         {
-            Assert.That(WaveMath.SpawnInterval(0f, 240f, _s), Is.EqualTo(3f));
-            Assert.That(WaveMath.SpawnInterval(120f, 240f, _s), Is.EqualTo(2f).Within(1e-4f));
-            Assert.That(WaveMath.SpawnInterval(240f, 240f, _s), Is.EqualTo(0.5f));
+            // Fournée : waveSpawns du moment, bornée par le plafond de population (vivants et annoncés compris).
+            Assert.That(WaveMath.Level(0f, 900f, _s.ghoulWaveSpawns, _s.ghoulWaveEnraged, _s), Is.EqualTo(3f), "début : 3 goules");
+            Assert.That(WaveMath.Level(450f, 900f, _s.ghoulWaveSpawns, _s.ghoulWaveEnraged, _s), Is.EqualTo(6f), "milieu : 6");
+            Assert.That(WaveMath.Level(900f, 900f, _s.ghoulWaveSpawns, _s.ghoulWaveEnraged, _s), Is.EqualTo(14f), "Enragé : 14");
+            Assert.That(WaveMath.WaveBatch(6f, 10, 0, 35), Is.EqualTo(6), "place sous le plafond");
+            Assert.That(WaveMath.WaveBatch(6f, 32, 1, 35), Is.EqualTo(2), "plafond presque atteint");
+            Assert.That(WaveMath.WaveBatch(6f, 40, 0, 35), Is.EqualTo(0), "au-dessus du plafond : rien");
+            Assert.That(WaveMath.Cap(35.4f), Is.EqualTo(35));
+        }
+
+        [Test]
+        public void SalleRecente_60s_EtSalleDeDepart_JamaisDApparition()
+        {
+            Assert.That(WaveMath.RecentlyVisited(float.NegativeInfinity, 100f, 60f), Is.False, "jamais visitée");
+            Assert.That(WaveMath.RecentlyVisited(50f, 100f, 60f), Is.True, "passé il y a 50 s");
+            Assert.That(WaveMath.RecentlyVisited(30f, 100f, 60f), Is.False, "il y a 70 s : de nouveau permise");
+
+            var made = new List<GameObject>();
+            try
+            {
+                ItHunts.Level.RoomVolume Room(string n, Vector3 c, ItHunts.Level.RoomKind kind)
+                {
+                    var go = new GameObject(n);
+                    made.Add(go);
+                    go.transform.position = c;
+                    var r = go.AddComponent<ItHunts.Level.RoomVolume>();
+                    r.Configure(n, new Vector3(20f, 8f, 20f), kind);
+                    typeof(ItHunts.Level.RoomVolume).GetMethod("OnEnable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(r, null);
+                    return r;
+                }
+
+                ItHunts.Level.RoomVolume depart = Room("Départ", new Vector3(0f, 4f, 0f), ItHunts.Level.RoomKind.Depart);
+                ItHunts.Level.RoomVolume salle = Room("Salle", new Vector3(100f, 4f, 0f), ItHunts.Level.RoomKind.Salle);
+                var dgo = new GameObject("Vagues (test)");
+                made.Add(dgo);
+                var waves = dgo.AddComponent<WaveDirector>();
+                typeof(WaveDirector).GetField("settings", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(waves, _s);
+                Assert.That(waves.PlaceAllowed(new Vector3(2f, 0f, 2f), 1000f), Is.False, "salle de départ : jamais, toute la zone");
+                Assert.That(waves.PlaceAllowed(new Vector3(102f, 0f, 2f), 1000f), Is.True, "salle jamais visitée");
+                waves.NoteVisit(salle, 1000f);
+                Assert.That(waves.PlaceAllowed(new Vector3(102f, 0f, 2f), 1030f), Is.False, "un joueur y est passé il y a 30 s");
+                Assert.That(waves.PlaceAllowed(new Vector3(102f, 0f, 2f), 1061f), Is.True, "61 s après : permise");
+                Assert.That(waves.PlaceAllowed(new Vector3(200f, 0f, 0f), 1030f), Is.True, "hors de tout volume");
+                foreach (GameObject go in made)
+                    if (go.GetComponent<ItHunts.Level.RoomVolume>() != null)
+                        typeof(ItHunts.Level.RoomVolume).GetMethod("OnDisable", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(go.GetComponent<ItHunts.Level.RoomVolume>(), null);
+            }
+            finally
+            {
+                foreach (GameObject go in made)
+                    Object.DestroyImmediate(go);
+            }
         }
 
         [Test]
@@ -85,46 +134,6 @@ namespace ItHunts.Tests
             Assert.That(WaveMath.OutsideView(Vector3.zero, Vector3.forward, new Vector3(0f, 0f, 30f), 70f, 16f / 9f, 10f), Is.False);
             Assert.That(WaveMath.OutsideView(Vector3.zero, Vector3.forward, new Vector3(30f, 0f, 10f), 70f, 16f / 9f, 10f), Is.True, "à 72° sur le côté");
             Assert.That(WaveMath.OutsideView(Vector3.zero, Vector3.forward, new Vector3(0f, 0f, -30f), 70f, 16f / 9f, 10f), Is.True, "derrière");
-        }
-
-        [Test]
-        public void TuesReconstituesLentement_JamaisDUnCoup()
-        {
-            // 20 voulus, 20 présents ; 5 tués : dette 5, pas d'apparition normale pour eux.
-            int present = 15, pending = 0, wanted = 20, debt = 5;
-            Assert.That(WaveMath.NormalSpawnAllowed(present, pending, wanted, debt), Is.False, "les tués ne reviennent pas par les apparitions normales");
-            Assert.That(WaveMath.RefillAllowed(present, pending, wanted, debt), Is.True, "un par refillInterval");
-            // La tendance monte à 22 : 2 apparitions normales en plus de la reconstitution.
-            Assert.That(WaveMath.NormalSpawnAllowed(15, 0, 22, 5), Is.True);
-            Assert.That(WaveMath.NormalSpawnAllowed(17, 0, 22, 5), Is.False);
-            // Accalmie : le voulu descend à 12 ; la dette ne dépasse jamais ce qui manque.
-            Assert.That(WaveMath.ClampDebt(5, 15, 0, 12), Is.EqualTo(0));
-            Assert.That(WaveMath.ClampDebt(5, 10, 0, 12), Is.EqualTo(2));
-            Assert.That(WaveMath.RefillAllowed(12, 0, 12, 0), Is.False);
-
-            // Simulation : 5 tués d'un coup, pic stable : il faut 16 s pour revenir à 20 (un toutes les 4 s, le premier tout de suite).
-            float t = 0f, nextRefill = 0f;
-            int back = 0;
-            debt = 5;
-            present = 15;
-            float done = -1f;
-            while (t < 30f && done < 0f)
-            {
-                if (t >= nextRefill && WaveMath.RefillAllowed(present, 0, 20, debt))
-                {
-                    nextRefill = t + _s.refillInterval;
-                    debt--;
-                    present++;
-                    back++;
-                }
-
-                if (present == 20)
-                    done = t;
-                t += 0.02f;
-            }
-
-            Assert.That(back, Is.EqualTo(5));
-            Assert.That(done, Is.EqualTo(16f).Within(0.05f));
         }
 
         [Test]

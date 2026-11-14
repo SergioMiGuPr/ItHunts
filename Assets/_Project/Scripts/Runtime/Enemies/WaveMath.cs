@@ -44,14 +44,19 @@ namespace ItHunts.Enemies
             return peak;
         }
 
-        /// <summary>Nombre voulu : la tendance pendant un pic, lullShare de la tendance pendant une accalmie (arrondi).</summary>
-        public static int Wanted(float level, bool peak, WaveSettings s) =>
-            Mathf.RoundToInt(peak ? level : level * s.lullShare);
+        /// <summary>Plafond de population (arrondi) : la tendance du moment × joueurs × surface.</summary>
+        public static int Cap(float level) => Mathf.RoundToInt(level);
 
-        /// <summary>Intervalle entre deux apparitions : du début à la fin du timer, puis celui de l'Enragé.</summary>
-        public static float SpawnInterval(float elapsed, float timer, WaveSettings s) =>
-            elapsed >= timer ? s.spawnIntervalEnraged
-                : Mathf.Lerp(s.spawnIntervalStart, s.spawnIntervalEnd, timer > 0f ? Mathf.Clamp01(elapsed / timer) : 1f);
+        /// <summary>
+        /// Fournée d'une vague (D-060) : waveSpawns du moment, sans dépasser le plafond de population (vivants et annoncés
+        /// compris). Jamais négative.
+        /// </summary>
+        public static int WaveBatch(float waveSpawns, int present, int pending, int cap) =>
+            Mathf.Max(0, Mathf.Min(Mathf.RoundToInt(waveSpawns), cap - present - pending));
+
+        /// <summary>Salle visitée récemment : un joueur y est passé il y a moins de seconds (jamais visitée : non).</summary>
+        public static bool RecentlyVisited(float lastVisit, float now, float seconds) =>
+            !float.IsNegativeInfinity(lastVisit) && now - lastVisit < seconds;
 
         /// <summary>Plafond de chasse suivant la tendance : niveau du moment / niveau à la fin du timer (1 sans réglage).</summary>
         public static float HuntingScale(float level, int[] trend, WaveSettings s)
@@ -76,15 +81,6 @@ namespace ItHunts.Enemies
             return nearest >= min && nearest <= max;
         }
 
-        /// <summary>Apparition normale : seulement si les présents (et ceux qui arrivent) restent sous le voulu moins la dette.</summary>
-        public static bool NormalSpawnAllowed(int present, int pending, int wanted, int debt) => present + pending < wanted - debt;
-
-        /// <summary>Reconstitution (ennemis tués) : une à la fois, seulement si la dette est là et qu'on reste sous le voulu.</summary>
-        public static bool RefillAllowed(int present, int pending, int wanted, int debt) => debt > 0 && present + pending < wanted;
-
-        /// <summary>La dette (ennemis tués à reconstituer) ne dépasse jamais ce qu'il manque pour atteindre le voulu.</summary>
-        public static int ClampDebt(int debt, int present, int pending, int wanted) =>
-            Mathf.Clamp(debt, 0, Mathf.Max(0, wanted - present - pending));
 
         /// <summary>Coop : multiplicateur du nombre voulu et des plafonds (1 + part × joueurs vivants en plus).</summary>
         public static float PlayerMultiplier(int alivePlayers, WaveSettings s) => 1f + s.extraPlayerShare * Mathf.Max(0, alivePlayers - 1);
