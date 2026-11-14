@@ -203,6 +203,9 @@ namespace ItHunts.EditorTools
             SetRef(runState, "upgrades", UpgradePoolAsset());
             new GameObject("Minimap (brouillard de guerre)").AddComponent<MapDiscovery>().gameObject.AddComponent<ItHunts.Hud.MinimapHud>();
             new GameObject("Mesure de performance du niveau (build, -ithunts-perf-level)").AddComponent<ItHunts.Debugging.LevelPerfProbe>();
+            var split = new GameObject("Écran partagé (2e joueur : Start sur sa manette)").AddComponent<ItHunts.Player.SplitScreen>();
+            SetRef(split, "playerPrefab", playerPrefab);
+            SetRef(split, "settings", LoadOrCreate<CoopSettings>(SettingsDir + "/Coop_Default.asset"));
             var feedback = new GameObject("Retour des dégâts").AddComponent<DamageFeedback>();
             SetRef(feedback, "settings", LoadOrCreate<DamageFeedbackSettings>(DamageFeedbackPath));
             SetRef(feedback, "flashMaterial", UnlitMat("Damage_Flash", "Universal Render Pipeline/Unlit", Color.white));

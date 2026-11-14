@@ -21,6 +21,8 @@ namespace ItHunts.Hud
         }
 
         public readonly List<Item> Items = new List<Item>();
+        /// <summary>Dernière manette qui a navigué dans un menu (celle du 1er joueur).</summary>
+        public static Gamepad LastNavPad { get; private set; }
         public int Focus { get; private set; }
         private float _repeatAt;
         private static GUIStyle _button, _title, _text;
@@ -50,6 +52,8 @@ namespace ItHunts.Hud
             }
 
             Gamepad g = Gamepad.current;
+            if (g != null && (g.leftStick.ReadValue().sqrMagnitude > 0.4f || g.dpad.ReadValue().sqrMagnitude > 0.4f || g.buttonSouth.wasPressedThisFrame))
+                LastNavPad = g;
             if (g != null)
             {
                 Vector2 s = g.leftStick.ReadValue() + g.dpad.ReadValue();

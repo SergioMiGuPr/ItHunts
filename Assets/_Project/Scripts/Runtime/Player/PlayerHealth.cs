@@ -167,7 +167,14 @@ namespace ItHunts.Player
         }
 
         /// <summary>Tous les PV, vivant (remise à zéro de la zone).</summary>
-        public void Restore() => _health = HealthState.Create((settings != null ? settings.maxHealth : 100f) + MaxHealthBonus);
+        public void Restore()
+        {
+            if (Downed || Spectating)
+                CoopLife.RaiseChanged(PlayerId, Spectating ? LifeState.Spectateur : LifeState.ATerre, LifeState.Vivant);
+            Downed = Spectating = false;
+            DownedAt = float.NegativeInfinity;
+            _health = HealthState.Create((settings != null ? settings.maxHealth : 100f) + MaxHealthBonus);
+        }
 
         /// <summary>Amélioration « PV max » (D-043) : bonus de PV max, gagné aussi tout de suite.</summary>
         public float MaxHealthBonus { get; private set; }
@@ -192,8 +199,57 @@ namespace ItHunts.Player
         public float CurrentHealth => _health.Current;
         public float MaxHealth => _health.Max;
 
+        /// <summary>À terre (coop, D-007) : il compte comme mort (cibles, vagues, fin de partie) mais un allié peut le relever.</summary>
+        public bool Downed { get; private set; }
+        /// <summary>Non relevé à temps : il regarde un allié vivant et revient au début de la zone suivante.</summary>
+        public bool Spectating { get; private set; }
+        public float DownedAt { get; private set; } = float.NegativeInfinity;
+        public float DownedLeft => Downed && !Spectating ? Mathf.Max(0f, DownedSeconds - (Time.time - DownedAt)) : 0f;
+        private float DownedSeconds => coop != null ? coop.downedSeconds : 30f;
+
+        /// <summary>À terre depuis downedSeconds sans être relevé : spectateur (public pour les tests).</summary>
+        public void TickDowned(float now)
+        {
+            if (Downed && !Spectating && now - DownedAt >= DownedSeconds)
+            {
+                Spectating = true;
+                CoopLife.RaiseChanged(PlayerId, LifeState.ATerre, LifeState.Spectateur);
+            }
+        }
+
+        /// <summary>Autres joueurs debout (ni morts, ni à terre).</summary>
+        public int OthersStanding()
+        {
+            int n = 0;
+            foreach (PlayerHealth p in AllList)
+                if (p != null && p != this && !p.Dead)
+                    n++;
+            return n;
+        }
+
+        /// <summary>Relevé par un allié : revient avec hp PV (D-007, étape 9).</summary>
+        public bool ReviveFromDown(float hp)
+        {
+            if (!Downed || Spectating)
+                return false;
+            Downed = false;
+            DownedAt = float.NegativeInfinity;
+            _health = HealthState.Create((settings != null ? settings.maxHealth : 100f) + MaxHealthBonus);
+            _health.Current = Mathf.Clamp(hp, 1f, _health.Max);
+            CoopLife.RaiseChanged(PlayerId, LifeState.ATerre, LifeState.Vivant);
+            return true;
+        }
+
         private void Raise(int attacker, float taken, Vector3 point, bool killed, float time)
         {
+            if (killed && !Downed && OthersStanding() > 0)
+            {
+                // Coop : à terre au lieu de mort (un allié peut le relever) ; seul : mort.
+                Downed = true;
+                DownedAt = time;
+                CoopLife.RaiseChanged(PlayerId, LifeState.Vivant, LifeState.ATerre);
+            }
+
             Hurt?.Invoke(new PlayerHurtEvent
             {
                 Victim = this, AttackerId = attacker, Damage = taken, Point = point, Killed = killed, Time = time,
@@ -204,6 +260,8 @@ namespace ItHunts.Player
 
         private void Update()
         {
+            TickDowned(Time.time);
+
             if (!_health.Dead || ZoneHandlesDeath
                 || !HealthState.TryRespawn(ref _health, Time.time, settings != null ? settings.respawnDelay : 1f))
                 return;

@@ -27,6 +27,7 @@ namespace ItHunts.Level
             Cursor.visible = true;
             ItHunts.Player.PlayerLook.MenuOpen = false;
             RunSession.End();
+            RunSession.CoopDevice = null;
             Build();
         }
 
@@ -48,6 +49,8 @@ namespace ItHunts.Level
             _menu.Add("Lancer la run (niveau 1)", Launch);
             _menu.Add("Test_Movement (banc d'essai)", () => Direct(movementScene));
             _menu.Add("Test_Arena (labyrinthe)", () => Direct(arenaScene));
+            GreyboxMenu.Item coop = _menu.Add("Joueur 2 (écran partagé)", null);
+            coop.Value = () => RunSession.CoopDevice != null ? "prêt" : "Start sur sa manette";
             _menu.Add("Inviter un ami", null, false);
             _menu.Add("Multijoueur", null, false);
             _menu.Add("Paramètres", null, false);
@@ -85,7 +88,17 @@ namespace ItHunts.Level
                 _status = $"Scène « {scene} » absente du build.";
         }
 
-        private void Update() => _menu.Update();
+        private void Update()
+        {
+            _menu.Update();
+            // Écran partagé (étape 9) : le 2e joueur rejoint avec Start sur une autre manette que celle du 1er.
+            foreach (UnityEngine.InputSystem.Gamepad g in UnityEngine.InputSystem.Gamepad.all)
+                if (g.startButton.wasPressedThisFrame && g != GreyboxMenu.LastNavPad)
+                {
+                    RunSession.CoopDevice = RunSession.CoopDevice == g ? null : g;   // Start de nouveau : il se retire
+                    _status = RunSession.CoopDevice != null ? $"Joueur 2 prêt ({g.displayName}) : écran partagé au lancement." : "Joueur 2 retiré.";
+                }
+        }
 
         private void OnGUI()
         {
