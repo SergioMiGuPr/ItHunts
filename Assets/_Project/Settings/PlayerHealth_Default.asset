@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c21869bb00453c40bad5e511f7bd61b, type: 3}
   m_Name: PlayerHealth_Default
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.PlayerHealthSettings
-  maxHealth: 100
+  maxHealth: 150
   respawnDelay: 1

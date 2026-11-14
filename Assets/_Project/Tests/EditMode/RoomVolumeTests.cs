@@ -85,6 +85,26 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Minimap_DecouverteEnVisitant_PointsClesVisiblesUneFoisDecouverts()
+        {
+            RoomVolume a = Room("A", new Vector3(0f, 4f, 0f), new Vector3(20f, 8f, 20f));
+            RoomVolume t = Room("Tronçon", new Vector3(30f, 4f, 0f), new Vector3(40f, 8f, 14f), kind: RoomKind.Couloir);
+            var go = new GameObject("Carte");
+            _made.Add(go);
+            var map = go.AddComponent<MapDiscovery>();
+            Assert.That(map.IsKnown(a) || map.IsKnown(t), Is.False, "tout est dans le noir au début");
+            Assert.That(map.DiscoverAt(new Vector3(2f, 0.5f, 2f)), Is.EqualTo(1), "le joueur entre dans A");
+            Assert.That(map.IsKnown(a) && !map.IsKnown(t), Is.True);
+            Assert.That(map.IsKnownPoint(new Vector3(-8f, 1f, 8f)), Is.True, "coffre dans A : affiché");
+            Assert.That(map.IsKnownPoint(new Vector3(40f, 1f, 0f)), Is.False, "coffre dans le couloir pas encore visité : caché");
+            Assert.That(map.DiscoverAt(new Vector3(2f, 0.5f, 2f)), Is.EqualTo(0), "déjà découverte");
+            map.DiscoverAt(new Vector3(35f, 0.5f, 0f));
+            Assert.That(map.IsKnownPoint(new Vector3(40f, 1f, 0f)), Is.True, "découvertes communes : un autre joueur l'a visité");
+            map.Clear();
+            Assert.That(map.KnownCount, Is.EqualTo(0));
+        }
+
+        [Test]
         public void Reglages_Traction2Charges_Murs85PourcentEt18()
         {
             var m = AssetDatabase.LoadAssetAtPath<MagnetismOrbSettings>("Assets/_Project/Settings/Magnetism_Default.asset");

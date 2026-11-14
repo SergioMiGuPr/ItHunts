@@ -50,6 +50,7 @@ namespace ItHunts.Orbs
             bool hit = aim.Raycast(eye, aimDir, cfg.attractRange, out AimHit h);
             m.AimHit = hit;
             m.AimOnEnemy = hit && h.Enemy;
+            m.AimNonMagnetic = hit && h.NonMagnetic;
             m.AimDistance = hit ? h.Distance : 0f;
             m.AimPoint = hit ? h.Point : Vector3.zero;
             m.AimNormal = hit ? h.Normal : Vector3.up;
@@ -160,6 +161,11 @@ namespace ItHunts.Orbs
                 {
                     // Jamais de traction vers un ennemi (D-021).
                     Refuse(ref m, tick, MagnetMode.Attraction, MagnetRefusal.RienAPortee, ref m.LastConsumedAttractPressTick, input.AttractPressedTick);
+                }
+                else if (h.NonMagnetic)
+                {
+                    // Surface non magnétique (D-051) : refus en rouge, la charge reste.
+                    Refuse(ref m, tick, MagnetMode.Attraction, MagnetRefusal.NonMagnetique, ref m.LastConsumedAttractPressTick, input.AttractPressedTick);
                 }
                 else
                 {

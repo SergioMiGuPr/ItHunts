@@ -67,7 +67,9 @@ namespace ItHunts.Economy
             var holder = new GameObject("Étiquette").transform;
             holder.SetParent(go.transform, false);
             holder.localScale = Vector3.one / 0.55f;
-            WorldLabel.Create(holder, new Vector3(0f, 0.95f, 0f), title + priceText, Color.white);
+            WorldLabel label = WorldLabel.Create(holder, new Vector3(0f, 0.95f, 0f), title + priceText, Color.white);
+            if (price > 0)
+                label.TextFor = viewer => viewer != null ? $"{title}\n{orb.PriceFor(viewer)} âmes" : title + priceText;   // prix de ce joueur (hausse par achat)
             return orb;
         }
 

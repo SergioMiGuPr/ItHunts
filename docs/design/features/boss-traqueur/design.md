@@ -143,3 +143,5 @@ course 7.5 m/s, plafond des gains 20 m/s, bunny hop 18 à 26 m/s, traction 18 m/
 - 2026-11-12 : mains levées au-dessus de la tête, contact mortel du corps, des bras et des mains (D-037).
 - 2026-11-12 : Enragé qui accélère sur la même cible (D-038) ; mesure du passage à côté (D-037).
 - 2026-11-12 : main plantée après une prise ratée (D-039).
+
+- 2026-11-13 : combat de boss de fin de niveau à trois pièges (D-049) ; sonné (`Stagger`) et replacé (`WarpTo`) seulement par les pièges ([run et niveaux](../run-et-niveaux/design.md)).

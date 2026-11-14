@@ -216,9 +216,43 @@ namespace ItHunts.Enemies
                 _move.AgentType = _nav.StalkerAgent;
         }
 
+        private float _staggerUntil;
+
+        /// <summary>Pression du combat de boss : recharges de la prise, des mains levées et de la pointe × ce facteur (1 hors combat).</summary>
+        public float CooldownScale { get; set; } = 1f;
+
+        /// <summary>Sonné par un piège du combat de boss (D-049) : il ne bouge ni n'attaque pendant ce temps.</summary>
+        public bool Staggered => Time.time < _staggerUntil;
+
+        public void Stagger(float seconds) => _staggerUntil = Mathf.Max(_staggerUntil, Time.time + seconds);
+
+        /// <summary>Le pose ailleurs (entrée de l'arène du combat de boss) : sans prise ni attaque en cours, sans chemin.</summary>
+        public void WarpTo(Vector3 feet, Quaternion rotation)
+        {
+            transform.SetPositionAndRotation(feet, rotation);
+            _rb.position = feet;
+            _move.Clear();
+            _move.Heading = rotation * Vector3.forward;
+            _grab = GrabPhase.Aucune;
+            Planted = false;
+            _grabOpening = null;
+            _over = OverheadPhase.Aucune;
+            _back = BackhandPhase.Aucune;
+            _inNode = _lastNode = -1;
+            GoalNode = ArrivedFrom = -1;
+            _trackEdge = -1;
+            _hasDest = false;
+            _retargetAt = 0f;
+            _nextDecision = 0f;
+            if (grabMarker != null)
+                grabMarker.gameObject.SetActive(false);
+            PoseArm(RestHand(), 0f);
+        }
+
         /// <summary>Remise à zéro de la zone : au repaire, sans cible, pointe rechargée.</summary>
         public void ResetState()
         {
+            _staggerUntil = 0f;
             transform.SetPositionAndRotation(_home, _homeRotation);
             _rb.position = _home;
             _move.Clear();
@@ -268,6 +302,11 @@ namespace ItHunts.Enemies
             bool enraged = _zone != null && _zone.Enraged;
             Vector3 pos = _rb.position;
             UpdateCrouch(pos, dt);
+            if (Staggered)
+            {
+                WantedSpeed = 0f;
+                return;                                                  // sonné par un piège (D-049)
+            }
 
             if (grace)
             {
@@ -308,7 +347,7 @@ namespace ItHunts.Enemies
                 Decide(pos, feet, enraged, now);
             }
 
-            EnemyMath.UpdateBurst(ref _burst, SeesTarget && !Planted, now, settings.burstDuration, settings.burstCooldown);
+            EnemyMath.UpdateBurst(ref _burst, SeesTarget && !Planted, now, settings.burstDuration, settings.burstCooldown * CooldownScale);
             float playerSpeed = new Vector2(vel.x, vel.z).magnitude;
             // Enragé (D-038) : paliers de vitesse tant qu'il reste sur la même cible ; chaque palier s'annonce (grondement, HUD).
             float rampBase = -1f;
@@ -767,7 +806,7 @@ namespace ItHunts.Enemies
                     {
                         _grab = GrabPhase.Retour;
                         _grabStart = now;
-                        _grabReadyAt = now + settings.grabCooldown;
+                        _grabReadyAt = now + settings.grabCooldown * CooldownScale;
                         Planted = false;
                     }
 
@@ -1107,7 +1146,7 @@ namespace ItHunts.Enemies
                     {
                         _over = OverheadPhase.Retour;
                         _overStart = now;
-                        _overReadyAt = now + settings.overheadCooldown;
+                        _overReadyAt = now + settings.overheadCooldown * CooldownScale;
                     }
 
                     break;

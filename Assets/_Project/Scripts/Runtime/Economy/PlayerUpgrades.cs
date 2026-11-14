@@ -20,6 +20,10 @@ namespace ItHunts.Economy
         public float MaxHealthBonus { get; private set; }
         public int ExtraRounds { get; private set; }
         public float PullSpeedBonus { get; private set; }
+        public float BarrelDamageBonus { get; private set; }
+        public float FireIntervalCut { get; private set; }
+        public float ReloadCut { get; private set; }
+        public float RangeBonus { get; private set; }
 
         private MovementSettings _moveOrig, _moveCopy;
         private MagnetismOrbSettings _magOrig, _magCopy;
@@ -69,6 +73,10 @@ namespace ItHunts.Economy
                 case UpgradeKind.PvMax: MaxHealthBonus += d.amount; break;
                 case UpgradeKind.BallesBarillet: ExtraRounds += Mathf.RoundToInt(d.amount); break;
                 case UpgradeKind.AspirationAmes: PullSpeedBonus += d.amount; break;
+                case UpgradeKind.DegatsBarillet: BarrelDamageBonus += d.amount; break;
+                case UpgradeKind.CadenceBarillet: FireIntervalCut += d.amount; break;
+                case UpgradeKind.RechargementBarillet: ReloadCut += d.amount; break;
+                case UpgradeKind.PorteeBarillet: RangeBonus += d.amount; break;
             }
 
             Refresh(d.kind);
@@ -111,7 +119,8 @@ namespace ItHunts.Economy
                     hp.SetMaxHealthBonus(MaxHealthBonus);
             }
 
-            if (changed == UpgradeKind.BallesBarillet)
+            if (changed == UpgradeKind.BallesBarillet || changed == UpgradeKind.DegatsBarillet || changed == UpgradeKind.CadenceBarillet
+                || changed == UpgradeKind.RechargementBarillet || changed == UpgradeKind.PorteeBarillet)
             {
                 var holder = GetComponent<ArtifactHolder>();
                 if (holder != null && holder.Current != null)
@@ -125,6 +134,10 @@ namespace ItHunts.Economy
                         var copy = Instantiate(b);
                         copy.name = b.name + " (améliorations)";
                         copy.rounds = b.rounds + ExtraRounds;
+                        copy.damage = b.damage * (1f + BarrelDamageBonus);
+                        copy.fireInterval = Mathf.Max(0.05f, b.fireInterval * (1f - Mathf.Min(0.8f, FireIntervalCut)));
+                        copy.reloadTime = Mathf.Max(0.2f, b.reloadTime * (1f - Mathf.Min(0.8f, ReloadCut)));
+                        copy.range = b.range + RangeBonus;
                         _artCopy = copy;
                         holder.Equip(copy);
                     }

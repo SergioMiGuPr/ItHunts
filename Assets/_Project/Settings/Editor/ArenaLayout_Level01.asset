@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0805983250594914f98dc30fe5be597d, type: 3}
+  m_Name: ArenaLayout_Level01
+  m_EditorClassIdentifier: ItHunts.Editor::ItHunts.EditorTools.ArenaLayoutSettings
+  gridSpacing: 100
+  upperLevel: 16
+  startHallSize: 50
+  southEastHallSize: 60
+  centralHallSize: 64
+  northWestHallSize: 60
+  exitHallSize: 50
+  hallCeiling: 36
+  crossingSize: 20
+  crossingCeiling: 24
+  corridorWidth: 14
+  corridorHeight: 19
+  slopeCorridorWidth: 16
+  cliffLaneWidth: 0
+  corridorSegmentLength: 40
+  bridgeBottom: 10
+  bridgeWidth: 6
+  roomSize: 12
+  roomHeight: 6
+  roomDoorWidth: 3
+  roomDoorHeight: 3
+  lairWidth: 22
+  lairDepth: 26
+  lairHeight: 20
+  ghoulsPerHall: 8
+  ghoulsPerCorridor: 3
+  flyersPerHall: 4
+  flyersPerCorridor: 1
+  propsPerHall: 8
+  lightIntensity: 6
+  lightRange: 50
+  ambient: {r: 0.16, g: 0.16, b: 0.2, a: 1}

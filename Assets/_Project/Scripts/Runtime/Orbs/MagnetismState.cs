@@ -24,6 +24,8 @@ namespace ItHunts.Orbs
         PasDeCharge,
         Recharge,
         RienAPortee,
+        /// <summary>Surface non magnétique visée (D-051).</summary>
+        NonMagnetique,
     }
 
     /// <summary>
@@ -71,6 +73,8 @@ namespace ItHunts.Orbs
 
         /// <summary>Le point visé est sur un ennemi : pas de traction (la répulsion reste possible).</summary>
         public bool AimOnEnemy;
+        /// <summary>La surface visée est non magnétique (D-051) : pas de traction.</summary>
+        public bool AimNonMagnetic;
 
         /// <summary>La répulsion peut s'appliquer au point visé (surface à portée de la répulsion).</summary>
         public bool RepelInRange;

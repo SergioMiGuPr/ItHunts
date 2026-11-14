@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94c8bf6f47004594194d1460683f367f, type: 3}
+  m_Name: LevelLayout_Level01
+  m_EditorClassIdentifier: ItHunts.Editor::ItHunts.EditorTools.LevelLayoutSettings
+  seed: 1801
+  columns: 7
+  rows: 7
+  spacing: 120
+  hallMin: 46
+  hallMax: 66
+  crossingShare: 0.2
+  upperShare: 0.3
+  removedCorridorShare: 0.2
+  chests: 14
+  sideRooms: 6
+  lockedRooms: 2
+  canalHalls: 7
+  canalWidth: 6
+  canalDepth: 4
+  waterDamage: 20
+  parkourHalls: 3
+  corridorFeatureShare: 0.35

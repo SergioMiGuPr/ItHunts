@@ -24,8 +24,85 @@ D-047) ajouté ensuite, commité et poussé sur `main` :
 - **Réseau (étape 11) :** collecte et gain des âmes, ouvertures de coffre et choix sur l'autorité ; les orbes de choix
   n'existent que chez leur joueur.
 
-**Étape 8 — run complète (D-046)** : vision de l'utilisateur du 2026-11-13 ; **plan court envoyé, attendre sa réponse avant
-de coder**. On fait seulement le niveau 1, mais la structure doit être prête pour la suite.
+**Étape 8 — corrections après le playtest (partie A), 2026-11-14, branche `etape-8`, sans push.** Le playtest a validé la
+salle verrouillée, les murs non magnétiques, l'écran de mort, la minimap, les menus et le marchand ; la porte de sortie et le
+combat de boss ne sont pas encore testés. Fait, un commit par point (`git log etape-8`) :
+- **Point 5, soin (`b58cced`) :** 4e offre fixe du marchand de départ, +40 PV pour 35 âmes.
+- **Point 1, population (D-054, `f662ae1`) :**
+  - 2 à 5 goules par grande salle, 1 à 2 volants dans les salles hautes ; rien ne bouge avant la première sortie ;
+  - vagues × surface / 36 300 m², borné 0.5 à 2.5 (niveau 1 : ×2.5) ;
+  - mesuré sur 15 min : 0 grande salle vide sur 40, 164 à 344 ennemis vivants.
+- **Points 2, 2 bis, 3, 4 (D-055 à D-057, `cd05cca`, puis correction `a3d3590`) :**
+  - 31 props greybox (`Prop_*`, catalogue dans ART-HANDOFF) ;
+  - 13 modules de salle et 2 de carrefour (prefabs, ajoutables sans code : voir la fiche run et niveaux) ;
+  - une vingtaine de pièces annexes meublées, décor des couloirs, environ 3 900 props ;
+  - 9 passages en hauteur (1 refermé, module devant) ; 6 galeries de parcours et 3 fosses ; pentes sur toute la largeur.
+  - Mesuré :
+    - 0 point hors de portée hors parcours (sur 48 323) ;
+    - 0 dépassement sur 240 essais hors parcours ;
+    - traversée de galerie réussie dans 89 cas sur 120, sans esquive.
+- **Points 6 et 7 (D-058, `1d401c4`) :**
+  - combat : 2 leviers par piège, pression × 0.7 par piège ;
+  - arène : sur plusieurs hauteurs, avec décor, poche de la herse à 22 m ;
+  - mesuré : 64.6 s à 7.5 m/s ; plus vite, la herse échoue en simulation (estimé 35 à 45 s) ;
+  - Level_01 recopiée depuis la base (dernière fois le 2026-11-14, pour la correction des plaques).
+- **Point 8, performance (`5ccbf2a`) :**
+  - build de développement au pic, 1920 × 1080 : 18.7 → **11.4 ms** en médiane, 95e centile 16.1 ms ;
+  - optimisé : minimap en texture, props fusionnés ;
+  - reste : FixedUpdate de 1 600 scripts (3.2 ms), culling (1.4 ms).
+
+À valider (choix pris seul, partie A) :
+- **Pièces fermées et modules :**
+  - les pièces fermées sont sur les couloirs (les étages des modules bouchaient les portes) ;
+  - la salle de départ n'a pas de module ;
+  - voie centrale des couloirs à 8 m (le traqueur fait 7 m).
+- **Galeries :** paliers et poutres à portée de sa main ; Test_Arena garde sa voie au sol à côté des pentes.
+- **Combat de boss :**
+  - probablement trop court pour un joueur rapide ;
+  - herse : il faut appâter le traqueur près de l'arche ;
+  - le soin compte comme un achat au marchand (+25 %).
+- **Affichage de debug (F3) :** allumé par défaut, il coûte 3 à 6 ms en IMGUI ; à éteindre par défaut dans les builds de
+  joueurs.
+
+**Étape 8 — blocs 1 à 6 codés le 2026-11-13, branche locale `etape-8` (un commit par bloc, pas de push), playtest en
+attente ; l'utilisateur fusionne après son playtest.** Fiche : `docs/design/features/run-et-niveaux/` (design, checklist).
+
+Fait :
+- **Bloc 1 (D-048), `2891dcb` :**
+  - `Run_Default` : niveaux et difficultés, Facile seule jouable ; `RunSession` ; multiplicateurs des ennemis.
+  - Salle de départ et timer à la première sortie ; traqueur 180 s, porte 600 s puis 200 âmes, Enragé 900 s.
+  - Écran de fin ; PV 150 ; `CoopLife` (événements de l'étape 9) ; Page haut : +60 s au timer.
+  - Mesuré dans Test_Arena : rien dans la salle de départ en 45 s ; événements à 3, 10 et 15 min ; victoire et mort.
+- **Bloc 2 (D-050), `7d7ce81` :**
+  - Marchand de l'artefact par joueur : 3 offres, +25 % par achat ; 5 améliorations du barillet provisoires.
+  - Marchand placé au hasard retiré ; menu principal greybox (`MainMenu`, première scène du build).
+- **Bloc 3 (D-051), `fb63959` :** `NonMagneticSurface`, refus en rouge, matériau à rayures ; mur d'essai dans la salle de
+  départ de Test_Arena.
+- **Bloc 4 (D-052), `e678c43` :**
+  - Niveau 1 : `Level_01_Base` régénérée, `Level_01` jamais écrasée (recopiée une fois au bloc 6, sans retouche de
+    l'utilisateur).
+  - 800 × 785 m, 41 salles et 8 carrefours, 7 canaux, 14 coffres, 6 zones de parcours, 6 pièces, 204 volumes, 760 points
+    d'apparition.
+- **Bloc 5 (D-053), `ee1c5a3` :** minimap et brouillard de guerre (Tab : carte entière).
+- **Bloc 6 (D-049), `810a353` :**
+  - Arène de 80 × 80 m et trois pièges (herse, pont, lustre), dans Test_Arena et le niveau 1.
+  - Mesuré (joueur simulé) : gagné en 21.5 s à 13.5 m/s et 20.8 s à 18 m/s, tué à 7.5 m/s.
+- 324 tests EditMode (1 non concluant à dessein).
+
+À valider (choix pris seul) :
+- Aucune vague avant la sortie de la salle de départ ; porte payée une fois pour tous, sans hausse ; vagues arrêtées pendant
+  le combat de boss.
+- Marchand sans soin, nouveau tirage après chaque achat ; multiplicateurs de Moyenne et de Difficile.
+- **Arène :**
+  - poches de la herse et du pont : le traqueur atteint sinon le joueur par-dessus des murs de 10 m ;
+  - un piège réussi rouvre le passage après 4 s ;
+  - combat court (environ 21 s) ; sonné 4 s.
+- Niveau 1 encore très régulier (grille) ; zones de parcours approximatives ; la carte fait 800 m, donc 3 min de course
+  directe jusqu'à la sortie.
+
+À faire ensuite : playtest de l'étape 8, puis fusion ; réanimation et spectateur avec l'écran partagé (étape 9).
+
+**Vision de l'étape 8 (D-046)**, telle que donnée par l'utilisateur le 2026-11-13 :
 - **Run :** une seule run du début à la fin : niveau 1 (cave du château), niveau 2, niveau 3, combat final (D-008 : tué
   seulement par l'environnement). **Difficultés :** Facile = niveau 1 (fin après son combat de boss) ; Moyenne = niveaux 1 et 2
   (ennemis plus forts) ; Difficile = niveaux 1, 2, 3, fuite devant le boss, combat final (encore plus forts). Stats des ennemis
@@ -50,8 +127,8 @@ de coder**. On fait seulement le niveau 1, mais la structure doit être prête p
   Test_Movement et Test_Arena) ; inviter un ami, multijoueur, paramètres, touches : présents mais grisés.
 - **Mort et fin de partie :** écran de mort, réanimation par un allié (D-007 : non réanimé = retour à la zone suivante),
   spectateur d'un allié vivant, écran de fin si le dernier joueur vivant meurt ; en solo : mort = écran de fin, puis menu.
-- **Questions à trancher avec l'utilisateur :** forme du combat de boss, égouts et eau, taille de la carte, PV du joueur, prix
-  de la porte de sortie.
+- **Réponses de l'utilisateur (2026-11-13) :** combat (b) pièges ; égouts (a) canaux en décor, 20 PV ; carte 800 × 800 m
+  (environ 50 salles, réglable) ; PV 150 ; porte 200 âmes ; 4 à 6 améliorations du barillet provisoires.
 
 **Notes pour plus tard (ne pas coder) :**
 - **Équilibrage complet** quand le niveau 1 entier sera jouable avec la DA : nombre d'ennemis, revenus en âmes (environ 280 en
@@ -257,7 +334,7 @@ Ordre de CLAUDE.md, une étape validée en playtest avant la suivante :
 3. Magnétisme (fait) → 4. Télékinésie, une seule orbe, dégâts (fait) → 5. Vue FPS et HUD (fait) →
 **5 bis. Artefacts** (fait, D-032) → **6. Ennemis et vagues, avec le traqueur** (fait, D-033 à D-041) → **7. Âmes et
 économie** (fait, D-043) →
-**8. Run complète** (vision D-046, plan en attente de validation) → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
+**8. Run complète** (blocs 1 à 6 codés sur `etape-8`, playtest en attente) → 9. Écran partagé → 10. Direction artistique (dont les **vrais sons**, voir
 ci-dessous) → 11. Coop en ligne → 12. Build.
 
 **Piste parallèle : direction artistique (étape 10)**, menée par une deuxième personne depuis le 2026-11-12 :

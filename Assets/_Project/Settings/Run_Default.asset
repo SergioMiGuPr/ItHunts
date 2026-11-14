@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d87add9394d5f347a0aa070c17da335, type: 3}
+  m_Name: Run_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.RunDefinition
+  menuScene: MainMenu
+  levels:
+  - displayName: "Niveau 1 : la cave du ch\xE2teau"
+    sceneName: Level_01
+  - displayName: Niveau 2
+    sceneName: 
+  - displayName: Niveau 3
+    sceneName: 
+  - displayName: 'Zone finale : fuite et combat final'
+    sceneName: 
+  difficulties:
+  - displayName: Facile
+    description: Niveau 1, puis son combat de boss. Ennemis normaux.
+    playable: 1
+    levelCount: 1
+    enemyHealth: 1
+    enemyDamage: 1
+    enemySpeed: 1
+    enemyCount: 1
+  - displayName: Moyenne
+    description: Niveaux 1 et 2, ennemis plus forts.
+    playable: 0
+    levelCount: 2
+    enemyHealth: 1.4
+    enemyDamage: 1.25
+    enemySpeed: 1.1
+    enemyCount: 1.25
+  - displayName: Difficile
+    description: Niveaux 1, 2 et 3, fuite devant le boss, combat final. Ennemis encore
+      plus forts.
+    playable: 0
+    levelCount: 4
+    enemyHealth: 1.8
+    enemyDamage: 1.5
+    enemySpeed: 1.2
+    enemyCount: 1.5
+  characters:
+  - Le porteur d'orbe

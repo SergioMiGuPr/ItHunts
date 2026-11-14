@@ -14,6 +14,13 @@ namespace ItHunts.Combat
     /// ni un ennemi tenu, ni le traqueur (Damageable.ImmuneToOrbs). Appelée par PlayerMotor au tick de la répulsion.
     /// Réseau (étape 11) : à faire là où la physique fait autorité.
     /// </summary>
+    /// <summary>Cible de l'onde de répulsion qui n'est pas un ennemi (levier) : touchée si elle est dans le cône et visible.</summary>
+    public interface IWaveTarget
+    {
+        Collider WaveCollider { get; }
+        void OnWave(int playerId);
+    }
+
     public static class RepulsionWave
     {
         private static readonly RaycastHit[] Hits = new RaycastHit[16];
@@ -86,7 +93,24 @@ namespace ItHunts.Combat
                 pushed++;
             }
 
+            HitTargets(physics, eye, aimDir, cfg, owner);
             return pushed;
+        }
+
+        /// <summary>Cibles qui réagissent à l'onde sans être des ennemis (leviers du combat de boss).</summary>
+        public static readonly System.Collections.Generic.List<IWaveTarget> Targets = new System.Collections.Generic.List<IWaveTarget>();
+
+        private static void HitTargets(PhysicsScene physics, Vector3 eye, Vector3 aimDir, MagnetismOrbSettings cfg, Transform owner)
+        {
+            IWaveTarget[] targets = Targets.ToArray();
+            foreach (IWaveTarget t in targets)
+            {
+                Collider c = t?.WaveCollider;
+                if (c == null || !c.enabled)
+                    continue;
+                if (InCone(c, c.bounds.center, eye, aimDir, cfg, out Vector3 point, out _, out _) && Visible(physics, eye, point, null, owner))
+                    t.OnWave(ItHunts.Player.PlayerHealth.IdOf(owner));
+            }
         }
 
         /// <summary>Amélioration « dégâts de la répulsion » (D-043, D-008) : PV retirés par l'onde, par joueur (0 sans).</summary>
@@ -165,6 +189,7 @@ namespace ItHunts.Combat
                 pushed++;
             }
 
+            HitTargets(physics, eye, aimDir, cfg, owner);
             return pushed;
         }
 

@@ -131,6 +131,7 @@ namespace ItHunts.Enemies
         /// <summary>Remise à zéro de la zone : à sa place, en attente, entier.</summary>
         public void ResetState()
         {
+            _path.SpeedScale = ItHunts.Level.RunSession.EnemySpeed;   // difficulté (D-048)
             _burst = false;
             _wasHeld = false;
             Hunting = Aggroed = false;
@@ -157,8 +158,8 @@ namespace ItHunts.Enemies
 
         private void FixedUpdate()
         {
-            if (settings == null || Dead)
-                return;
+            if (settings == null || Dead || ZoneState.Asleep)
+                return;                                                    // salle de départ pas encore quittée (D-048)
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
             float now = Time.time, dt = Time.fixedDeltaTime;
             if (_nav == null)

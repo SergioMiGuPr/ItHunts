@@ -48,7 +48,8 @@ namespace ItHunts.Orbs
             RaycastHit h = _hits[best];
             // Un ennemi arrête le rayon et le signale : la traction ne s'y accroche jamais, la répulsion y part (onde).
             bool enemy = h.collider.GetComponentInParent<ItHunts.Combat.Damageable>() != null;
-            hit = new AimHit { Point = h.point, Normal = h.normal, Distance = h.distance, Enemy = enemy };
+            bool nonMagnetic = h.collider.GetComponentInParent<NonMagneticSurface>() != null;   // D-051
+            hit = new AimHit { Point = h.point, Normal = h.normal, Distance = h.distance, Enemy = enemy, NonMagnetic = nonMagnetic };
             return true;
         }
     }

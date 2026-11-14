@@ -138,5 +138,25 @@ namespace ItHunts.Tests
             _s.scaleHuntingCaps = false;
             Assert.That(WaveMath.HuntingScale(10f, _s.ghoulTrend, _s), Is.EqualTo(1f), "réglage coupé");
         }
+    
+        [Test]
+        public void DensiteParSurface_EchelleBornee()
+        {
+            var w = AssetDatabase.LoadAssetAtPath<WaveSettings>("Assets/_Project/Settings/Waves_Default.asset");
+            Assert.That(w.scaleWithMapArea, Is.True);
+            Assert.That(WaveDirector.AreaScaleFor(w.referenceArea, w), Is.EqualTo(1f).Within(1e-4f), "Test_Arena : courbe inchangée");
+            Assert.That(WaveDirector.AreaScaleFor(w.referenceArea * 2f, w), Is.EqualTo(2f).Within(1e-4f), "deux fois plus grand : deux fois plus");
+            Assert.That(WaveDirector.AreaScaleFor(w.referenceArea * 6f, w), Is.EqualTo(w.maxAreaScale), "borné (niveau 1 : ×2.5)");
+            Assert.That(WaveDirector.AreaScaleFor(100f, w), Is.EqualTo(w.minAreaScale));
+        }
+
+        [Test]
+        public void Niveau1_HabitantsDansLesSalles()
+        {
+            string scene = System.IO.File.ReadAllText("Assets/Scenes/Level_01_Base.unity");
+            Assert.That(scene.Contains("Habitants des salles"), Is.True);
+            int residents = System.Text.RegularExpressions.Regex.Matches(scene, "habitante, ").Count;
+            Assert.That(residents, Is.InRange(100, 220), "2 à 5 goules par grande salle (40 salles)");
+        }
     }
 }

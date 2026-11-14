@@ -15,6 +15,7 @@ namespace ItHunts.Tests
         public bool HasTarget;
         public Vector3 Target;
         public float BlockAt;
+        public bool NonMagnetic;
 
         public bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, out AimHit hit)
         {
@@ -30,7 +31,7 @@ namespace ItHunts.Tests
             Vector3 to = Target - origin;
             if (to.magnitude > maxDistance || Vector3.Angle(direction, to) > 2f)
                 return false;
-            hit = new AimHit { Point = Target, Normal = -to.normalized, Distance = to.magnitude };
+            hit = new AimHit { Point = Target, Normal = -to.normalized, Distance = to.magnitude, NonMagnetic = NonMagnetic };
             return true;
         }
     }
@@ -368,6 +369,20 @@ namespace ItHunts.Tests
             Step(PressAttract(new Vector3(0f, 0f, _cfg.attractRange + 5f)));
             Assert.That(_m.LastRefusal, Is.EqualTo(MagnetRefusal.RienAPortee));
             Assert.That(_s.Mode, Is.Not.EqualTo(MovementMode.Traction));
+        }
+
+        [Test]
+        public void Traction_SurfaceNonMagnetique_RefuseeEtChargeGardee()
+        {
+            _aim.NonMagnetic = true;
+            float before = _m.AttractCharges;
+            Step(PressAttract(new Vector3(0f, 25f, 25f)));
+            Assert.That(_m.LastRefusal, Is.EqualTo(MagnetRefusal.NonMagnetique), "D-051 : refus en rouge");
+            Assert.That(_s.Mode, Is.Not.EqualTo(MovementMode.Traction));
+            Assert.That(_m.AttractCharges, Is.EqualTo(before), "la charge reste");
+            Assert.That(_m.AimNonMagnetic, Is.True);
+            Assert.That(MagnetismFeedback.CanAttract(_m), Is.False, "le viseur ne propose pas la traction");
+            _aim.NonMagnetic = false;
         }
 
         [Test]

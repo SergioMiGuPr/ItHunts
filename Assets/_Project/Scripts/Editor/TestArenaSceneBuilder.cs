@@ -28,7 +28,7 @@ namespace ItHunts.EditorTools
     /// traqueur se baisse dessous), corniches à 11 m ; 6 pièces fermées (portes de 3 m, fenêtres) où il passe le bras.
     /// Règle du traqueur : tout point où l'on tient debout est à portée de sa main (mesuré en Play Mode).
     /// </summary>
-    public static class TestArenaSceneBuilder
+    public static partial class TestArenaSceneBuilder
     {
         private const string ScenePath = "Assets/Scenes/Test_Arena.unity";
         private const string LayoutPath = SettingsDir + "/Editor/ArenaLayout_Test.asset";
@@ -38,6 +38,7 @@ namespace ItHunts.EditorTools
         private const string EconomyPath = SettingsDir + "/Economy_Default.asset";
         private const string UpgradePoolPath = SettingsDir + "/UpgradePool_Default.asset";
         private const string UpgradesDir = SettingsDir + "/Upgrades";
+        private const string BarrelPoolPath = SettingsDir + "/UpgradePool_Barillet.asset";
         private static EconomySettings _economy;
         private static Material _offerOrb;
         private const string StalkerPath = SettingsDir + "/Stalker_Default.asset";
@@ -82,6 +83,8 @@ namespace ItHunts.EditorTools
         private static readonly List<Vector2Int> Edges = new List<Vector2Int>();
         private static readonly Dictionary<(int, int), List<Opening>> NodeOpenings = new Dictionary<(int, int), List<Opening>>();
         private static readonly Dictionary<(int, int), List<Opening>> CorridorOpenings = new Dictionary<(int, int), List<Opening>>();
+        /// <summary>Canaux d'égout (D-052) : salle → (milieu du canal en z relatif au centre, largeur).</summary>
+        private static readonly Dictionary<int, Vector2> Canals = new Dictionary<int, Vector2>();
 
         [MenuItem("ItHunts/Reconstruire la scène Test_Arena (labyrinthe)")]
         private static void BuildFromMenu() => Debug.Log(Build());
@@ -91,16 +94,48 @@ namespace ItHunts.EditorTools
             var playerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPrefabPath);
             if (playerPrefab == null)
                 return "Prefab joueur absent : lancer d'abord ItHunts > Reconstruire le prefab joueur et la scène Test_Movement.";
+            var scene = BeginScene(LayoutPath, out StalkerSettings stalkerSettings);
+            _startNode = 0;
+            _exitNode = 8;
+            _lairNode = 9;
+            DefineMaze();
+            DefineRooms(out List<RoomDef> rooms);
+            for (int i = 0; i < Nodes.Count; i++)
+                BuildNode(i);
+            for (int e = 0; e < Edges.Count; e++)
+                if (!IsLairEdge(e))
+                    Corridor(e);
+            foreach (RoomDef r in rooms)
+                BuildRoom(r);
+            Halls();
+            CorridorFeatures();
+            EconomyContent();
+
+            float S = L.gridSpacing;
+            Vector3 min = new Vector3(-S - 50f, -5f, -S - 50f), max = new Vector3(S + 50f, L.upperLevel + L.hallCeiling + 10f, S + 50f);
+            Node sw = Nodes[0];
+            FinishScene(stalkerSettings, LoadOrCreate<ZoneSettings>(ZonePath), min, max,
+                sw.C + new Vector3(-12f, 0f, -10f), Quaternion.Euler(0f, 45f, 0f), playerPrefab);
+            EditorSceneManager.SaveScene(scene, ScenePath);
+            AddSceneToBuild(ScenePath);
+            return $"OK : {ScenePath} (labyrinthe {Nodes.Count} intersections, {Edges.Count} couloirs, {_spawnCount} points d'apparition, " +
+                   $"réserve de {_ghoulCount} goules et {_flyerCount} volants, {_crateCount} objets ; murs grimpables trouvés au lancement)";
+        }
+
+        /// <summary>Indices des nœuds : salle de départ, salle de la sortie, repaire du traqueur (cul-de-sac).</summary>
+        private static int _startNode, _exitNode, _lairNode;
+
+        /// <summary>Nouvelle scène : réglages, matériaux, lumière d'ambiance, post-process, racines du niveau.</summary>
+        private static UnityEngine.SceneManagement.Scene BeginScene(string layoutPath, out StalkerSettings stalkerSettings)
+        {
             EnsureFolder(SettingsDir + "/Editor");
             InitDefaults();
-
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             // Rechargés après NewScene : la nouvelle scène décharge les assets chargés avant.
-            L = LoadOrCreate<ArenaLayoutSettings>(LayoutPath);
+            L = LoadOrCreate<ArenaLayoutSettings>(layoutPath);
             _ghoul = LoadOrCreate<GhoulSettings>(GhoulPath);
             _flyer = LoadOrCreate<FlyerSettings>(FlyerPath);
-            var stalkerSettings = LoadOrCreate<StalkerSettings>(StalkerPath);
-            var zoneSettings = LoadOrCreate<ZoneSettings>(ZonePath);
+            stalkerSettings = LoadOrCreate<StalkerSettings>(StalkerPath);
             Materials();
 
             RenderSettings.ambientMode = AmbientMode.Flat;
@@ -116,32 +151,23 @@ namespace ItHunts.EditorTools
             _level = new GameObject("Niveau").transform;
             _spawns = new GameObject("Points d'apparition (vagues)").transform;
             _crateCount = _ghoulCount = _flyerCount = _spawnCount = 0;
-
             _economy = LoadOrCreate<EconomySettings>(EconomyPath);
             _offerOrb = UnlitMat("Economy_Offer_Orb", "Universal Render Pipeline/Unlit", new Color(1f, 0.8f, 0.3f));
-            DefineMaze();
-            DefineRooms(out List<RoomDef> rooms);
-            for (int i = 0; i < Nodes.Count; i++)
-                BuildNode(i);
-            for (int e = 0; e < Edges.Count; e++)
-                if (!IsLairEdge(e))
-                    Corridor(e);
-            foreach (RoomDef r in rooms)
-                BuildRoom(r);
-            Halls();
-            CorridorFeatures();
+            return scene;
+        }
 
-            // Sortie verte au fond de la salle NE (la plus loin du départ).
-            Node ne = Nodes[8];
-            Vector3 exitAt = ne.C + new Vector3(12f, 0f, 8f);
-            Material exitMat = UnlitMat("Arena_Exit", "Universal Render Pipeline/Unlit", new Color(0.3f, 3f, 0.8f));
-            GameObject exit = Box("Sortie", _level, exitAt + Vector3.up * 0.05f, new Vector3(5f, 0.1f, 5f), exitMat, collider: false);
-            var trigger = exit.AddComponent<BoxCollider>();
-            trigger.isTrigger = true;
-            trigger.center = new Vector3(0f, 12f, 0f);
-            trigger.size = new Vector3(1f, 24f, 1f);
-            exit.AddComponent<ZoneExit>();
-            Lamp("Lumière de la sortie", exitAt + Vector3.up * 3f, new Color(0.3f, 1f, 0.5f), 4f, 15f);
+        /// <summary>
+        /// Fin commune : sortie et escaliers, graphe du labyrinthe, NavMesh, zone, run, retour des dégâts, traqueur dans son
+        /// repaire, réserve des vagues, joueur au départ.
+        /// </summary>
+        private static Vector3 FinishScene(StalkerSettings stalkerSettings, ZoneSettings zoneSettings, Vector3 navMin, Vector3 navMax,
+            Vector3 startAt, Quaternion startRotation, GameObject playerPrefab)
+        {
+            // Sortie (D-048) : grande porte dans le mur nord de la salle de sortie, escaliers, palier de sortie.
+            Vector3 exitAt = ExitStairs(Nodes[_exitNode]);
+            Bounds arena = BossArena(exitAt);                             // combat de boss (D-049), derrière le palier
+            navMin = Vector3.Min(navMin, arena.min);
+            navMax = Vector3.Max(navMax, arena.max);
 
             // Graphe du labyrinthe (règle de Pac-Man du traqueur).
             var graph = new GameObject("Graphe du labyrinthe").AddComponent<MazeGraph>();
@@ -158,45 +184,46 @@ namespace ItHunts.EditorTools
             graph.Configure(names, centers, halves, Edges.ToArray());
             EditorUtility.SetDirty(graph);
 
-            // NavMesh, zone, run, retour des dégâts.
-            float S = L.gridSpacing;
             var nav = new GameObject("NavMesh de la zone").AddComponent<ZoneNavMesh>();
-            Vector3 min = new Vector3(-S - 50f, -5f, -S - 50f), max = new Vector3(S + 50f, L.upperLevel + L.hallCeiling + 10f, S + 50f);
-            nav.transform.position = (min + max) * 0.5f;
+            nav.transform.position = (navMin + navMax) * 0.5f;
             var nso = new SerializedObject(nav);
-            nso.FindProperty("size").vector3Value = max - min;
+            nso.FindProperty("size").vector3Value = navMax - navMin;
             nso.FindProperty("stalkerRadius").floatValue = stalkerSettings.width * 0.5f;
             nso.FindProperty("stalkerHeight").floatValue = stalkerSettings.crouchMinHeight;   // il se baisse jusqu'à 9 m
             nso.FindProperty("smallVoxel").floatValue = 0.2f;                                  // portes de 3 m : 0.2 m suffit
             nso.FindProperty("stalkerVoxel").floatValue = 0.3f;                                // voies de 8 m des pentes : 1 m de NavMesh pour lui
             nso.ApplyModifiedPropertiesWithoutUndo();
-            Node sw = Nodes[0];
             var start = new GameObject("Départ des joueurs").transform;
-            start.SetPositionAndRotation(sw.C + new Vector3(-12f, 0f, -10f), Quaternion.Euler(0f, 45f, 0f));
+            start.SetPositionAndRotation(startAt, startRotation);
             var zone = new GameObject("État de la zone").AddComponent<ZoneState>();
             SetRef(zone, "settings", zoneSettings);
             SetRef(zone, "playerStart", start);
             var runState = new GameObject("État de la run").AddComponent<RunState>();
             SetRef(runState, "pool", LoadOrCreate<ArtifactPool>(PoolPath));
             SetRef(runState, "upgrades", UpgradePoolAsset());
-            EconomyContent();
+            new GameObject("Minimap (brouillard de guerre)").AddComponent<MapDiscovery>().gameObject.AddComponent<ItHunts.Hud.MinimapHud>();
+            new GameObject("Mesure de performance du niveau (build, -ithunts-perf-level)").AddComponent<ItHunts.Debugging.LevelPerfProbe>();
             var feedback = new GameObject("Retour des dégâts").AddComponent<DamageFeedback>();
             SetRef(feedback, "settings", LoadOrCreate<DamageFeedbackSettings>(DamageFeedbackPath));
             SetRef(feedback, "flashMaterial", UnlitMat("Damage_Flash", "Universal Render Pipeline/Unlit", Color.white));
             SetRef(feedback, "lineMaterial", UnlitMat("Orb_Line", "Universal Render Pipeline/Particles/Unlit", Color.white));
 
-            Node lair = Nodes[9];
+            Node lair = Nodes[_lairNode];
             BuildStalker(stalkerSettings, lair.C + new Vector3(lair.Half * 0.3f, 0f, 0f));
 
             // Vagues (D-041) : réserve de goules et de volants inactifs (sous le niveau), réutilisés par le directeur des vagues.
             var waves = LoadOrCreate<WaveSettings>(WavesPath);
+            // Réserve à la taille de la carte (densité par surface, étape 8) : × la même échelle que le nombre voulu.
+            float areaScale = WaveDirector.AreaScaleFor(WaveDirector.MeasureMapArea(), waves);
+            int ghoulReserve = Mathf.CeilToInt(waves.ghoulPool * Mathf.Max(1f, areaScale));
+            int flyerReserve = Mathf.CeilToInt(waves.flyerPool * Mathf.Max(1f, areaScale));
             var ghoulPool = new GameObject("Réserve des vagues : goules").transform;
             var flyerPool = new GameObject("Réserve des vagues : volants").transform;
             _ghouls = ghoulPool;
-            for (int i = 0; i < waves.ghoulPool; i++)
+            for (int i = 0; i < ghoulReserve; i++)
                 BuildGhoul(new Vector3(i * 2f, -60f, 0f), Quaternion.identity, $"(réserve) {i + 1}");
             _ghouls = flyerPool;
-            for (int i = 0; i < waves.flyerPool; i++)
+            for (int i = 0; i < flyerReserve; i++)
                 BuildFlyer(new Vector3(i * 2f, -60f, 10f), $"(réserve) {i + 1}");
             foreach (Transform t in ghoulPool)
                 t.gameObject.SetActive(false);
@@ -210,10 +237,7 @@ namespace ItHunts.EditorTools
 
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
             player.transform.SetPositionAndRotation(start.position, start.rotation);
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            AddSceneToBuild(ScenePath);
-            return $"OK : {ScenePath} (labyrinthe {Nodes.Count} intersections, {Edges.Count} couloirs, {_spawnCount} points d'apparition, " +
-                   $"réserve de {_ghoulCount} goules et {_flyerCount} volants, {_crateCount} objets ; murs grimpables trouvés au lancement)";
+            return exitAt;
         }
 
         /// <summary>Valeurs du traqueur géant (D-034, D-035) et de la goule sur les assets existants.</summary>
@@ -291,6 +315,9 @@ namespace ItHunts.EditorTools
             Edges.Clear();
             NodeOpenings.Clear();
             CorridorOpenings.Clear();
+            Canals.Clear();
+            NodeModules.Clear();
+            Pits.Clear();
             float S = L.gridSpacing, U = L.upperLevel, X = L.crossingSize * 0.5f, CC = L.crossingCeiling, HC = L.hallCeiling;
             AddNode("SO (départ)", new Vector3(-S, 0f, -S), L.startHallSize * 0.5f, HC, true);           // 0
             AddNode("S (carrefour)", new Vector3(0f, 0f, -S), X, CC, false);                              // 1
@@ -310,6 +337,9 @@ namespace ItHunts.EditorTools
             for (int i = 0; i < links.GetLength(0); i++)
                 Edges.Add(new Vector2Int(links[i, 0], links[i, 1]));
 
+            // Porte de sortie (D-048) : ouverture de 10 × 10 m au milieu du mur nord de la salle NE.
+            AddExitOpening(8);
+
             // Ouvertures des couloirs dans les murs des intersections.
             float h = L.corridorHeight;
             for (int e = 0; e < Edges.Count; e++)
@@ -324,6 +354,103 @@ namespace ItHunts.EditorTools
             }
         }
 
+        private const float ExitDoorWidth = 10f, ExitDoorHeight = 10f;
+
+        /// <summary>Porte de sortie (D-048) : ouverture de 10 × 10 m au milieu du mur nord de la salle (côté nord libre).</summary>
+        private static void AddExitOpening(int node)
+        {
+            Node n = Nodes[node];
+            AddOpening(node, SideN, new Opening(n.C.x - ExitDoorWidth / 2f, n.C.x + ExitDoorWidth / 2f, n.C.y, n.C.y + ExitDoorHeight));
+        }
+
+        /// <summary>
+        /// Matériau greybox des surfaces non magnétiques (D-051) : pierre gris pâle à rayures diagonales sombres, sans lueur (les
+        /// cibles de traction sont bleues et brillent ; celles-ci, jamais).
+        /// </summary>
+        public static Material NonMagneticMat()
+        {
+            const string texPath = MaterialDir + "/NonMagnetic_Stripes.png";
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texPath);
+            if (tex == null)
+            {
+                var t = new Texture2D(64, 64, TextureFormat.RGBA32, false);
+                for (int y = 0; y < 64; y++)
+                for (int x = 0; x < 64; x++)
+                    t.SetPixel(x, y, ((x + y) / 8) % 2 == 0 ? new Color(0.78f, 0.76f, 0.72f) : new Color(0.42f, 0.4f, 0.38f));
+                System.IO.File.WriteAllBytes(texPath, t.EncodeToPNG());
+                Object.DestroyImmediate(t);
+                AssetDatabase.ImportAsset(texPath);
+                tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texPath);
+            }
+
+            Material m = Mat("Greybox_NonMagnetic", Color.white);
+            m.SetTexture("_BaseMap", tex);
+            m.SetTextureScale("_BaseMap", new Vector2(4f, 4f));
+            m.DisableKeyword("_EMISSION");
+            m.SetColor("_EmissionColor", Color.black);
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
+        /// <summary>Pièce non magnétique (D-051) : la traction ne s'y accroche pas.</summary>
+        public static GameObject NonMagneticPiece(string name, Transform parent, Vector3 center, Vector3 size, bool walkable = true)
+        {
+            GameObject go = Box($"Non magnétique : {name}", parent, center, size, NonMagneticMat());
+            go.AddComponent<ItHunts.Orbs.NonMagneticSurface>();
+            if (!walkable)
+                go.AddComponent<NotWalkable>();
+            return go;
+        }
+
+        /// <summary>
+        /// Sortie du niveau (D-048) : grande porte (rouge verrouillée, orange payable) dans le mur nord de la salle, escaliers de
+        /// 20 marches (8 m de montée sur 32 m), palier avec le déclencheur de sortie. Le combat de boss (D-049) se branche derrière.
+        /// </summary>
+        private static Vector3 ExitStairs(Node n)
+        {
+            float x = n.C.x, z0 = n.C.z + n.HalfZ + T, y0 = n.C.y, w = ExitDoorWidth;
+            Material locked = GrabbableMat("Exit_Door_Locked", new Color(0.35f, 0.08f, 0.06f));
+            locked.SetColor("_EmissionColor", new Color(1.4f, 0.1f, 0.05f));
+            Material open = GrabbableMat("Exit_Door_Unlocked", new Color(0.45f, 0.25f, 0.08f));
+            open.SetColor("_EmissionColor", new Color(2.2f, 1.1f, 0.2f));
+            GameObject door = Box("Porte de sortie", _level, new Vector3(x, y0 + ExitDoorHeight / 2f, z0 - T / 2f), new Vector3(w + 0.4f, ExitDoorHeight, T + 0.6f), locked);
+            GameObjectUtility.SetStaticEditorFlags(door, 0);
+            var exitDoor = door.AddComponent<ItHunts.Level.ExitDoor>();
+            SetRef(exitDoor, "unlockedMaterial", open);
+            Lamp("Porte de sortie : lumière", new Vector3(x, y0 + ExitDoorHeight + 2f, z0 - 4f), new Color(1f, 0.4f, 0.2f), 4f, 20f);
+
+            const int steps = 20;
+            const float rise = 0.4f, depth = 1.6f, headroom = 14f;
+            float zTop = z0 + steps * depth, yTop = y0 + steps * rise, landing = 12f;
+            for (int i = 0; i < steps; i++)
+            {
+                float top = y0 + rise * (i + 1);
+                Piece($"Escaliers de sortie : marche {i + 1}", new Vector3(x, top / 2f, z0 + depth * (i + 0.5f)), new Vector3(w, top, depth), _bridge);
+            }
+
+            Piece("Escaliers de sortie : palier", new Vector3(x, yTop / 2f, zTop + landing / 2f), new Vector3(w, yTop, landing), _floor);
+            float zEnd = zTop + landing, len = zEnd - z0, yWall = yTop + headroom;
+            Piece("Escaliers de sortie : mur ouest", new Vector3(x - w / 2f - T / 2f, yWall / 2f, z0 + len / 2f), new Vector3(T, yWall, len), _wall, walkable: false);
+            Piece("Escaliers de sortie : mur est", new Vector3(x + w / 2f + T / 2f, yWall / 2f, z0 + len / 2f), new Vector3(T, yWall, len), _wall, walkable: false);
+            Piece("Escaliers de sortie : plafond", new Vector3(x, yWall + 0.5f, z0 + len / 2f), new Vector3(w + 2f * T, 1f, len), _ceiling, walkable: false);
+            // Pas de mur du fond : le palier s'ouvre sur l'arène du combat de boss (D-049).
+            for (int i = 0; i < 3; i++)
+                Lamp($"Escaliers de sortie : lumière {i + 1}", new Vector3(x, y0 + rise * steps * (i + 1) / 3f + 6f, z0 + len * (i + 0.5f) / 3f),
+                    new Color(1f, 0.75f, 0.45f), 4f, 22f);
+
+            // Palier : déclencheur de sortie (combat de boss ensuite, D-049).
+            Material exitMat = UnlitMat("Arena_Exit", "Universal Render Pipeline/Unlit", new Color(0.3f, 3f, 0.8f));
+            Vector3 exitAt = new Vector3(x, yTop, zTop + landing / 2f);
+            GameObject exit = Box("Sortie (haut des escaliers)", _level, exitAt + Vector3.up * 0.05f, new Vector3(6f, 0.1f, 6f), exitMat, collider: false);
+            var trigger = exit.AddComponent<BoxCollider>();
+            trigger.isTrigger = true;
+            trigger.center = new Vector3(0f, 12f, 0f);                 // boîte aplatie (0.1 m) : 6 × 2.4 × 6 m dans le monde
+            trigger.size = new Vector3(1f, 24f, 1f);
+            exit.AddComponent<ZoneExit>();
+            Lamp("Lumière de la sortie", exitAt + Vector3.up * 3f, new Color(0.3f, 1f, 0.5f), 4f, 15f);
+            return exitAt;
+        }
+
         /// <summary>Couloir en pente (deux niveaux) : plus large, une voie en pente et une voie au sol qui finit au pied d'un mur.</summary>
         private static bool IsSlope(int e) => !Mathf.Approximately(Nodes[Edges[e].x].C.y, Nodes[Edges[e].y].C.y);
 
@@ -332,7 +459,7 @@ namespace ItHunts.EditorTools
         private static void AddNode(string name, Vector3 c, float half, float ceil, bool hall) =>
             Nodes.Add(new Node { Name = name, C = c, Half = half, HalfZ = half, Ceil = ceil, Hall = hall });
 
-        private static bool IsLairEdge(int e) => Edges[e].y == 9;
+        private static bool IsLairEdge(int e) => Edges[e].y == _lairNode;
 
         private static int SideOf(Vector3 d) =>
             Mathf.Abs(d.x) > Mathf.Abs(d.z) ? (d.x > 0f ? SideE : SideW) : (d.z > 0f ? SideN : SideS);
@@ -409,18 +536,23 @@ namespace ItHunts.EditorTools
             Node n = Nodes[i];
             float hx = n.Half, hz = n.HalfZ, y = n.C.y, top = y + n.Ceil;
             Vector3 c = n.C;
-            if (y > 0.1f)
+            if (Canals.TryGetValue(i, out Vector2 cut))
+                CanalFloor(n, cut.x, cut.y);
+            else if (Pits.TryGetValue(i, out RoomModule pit))
+                PitFloor(n, pit);
+            else if (y > 0.1f)
                 Piece($"{n.Name} : sol (bloc de {y:0} m)", new Vector3(c.x, y / 2f, c.z), new Vector3(2f * hx, y, 2f * hz), _floor);
             else
                 Piece($"{n.Name} : sol", new Vector3(c.x, -0.5f, c.z), new Vector3(2f * hx + 2f * T, 1f, 2f * hz + 2f * T), _floor);
             Piece($"{n.Name} : plafond", new Vector3(c.x, top + 0.5f, c.z), new Vector3(2f * hx + 2f * T, 1f, 2f * hz + 2f * T), _ceiling, walkable: false);
-            bool lair = i == 9;
+            bool lair = i == _lairNode;
             WallLine($"{n.Name} : mur nord", true, c.z + hz + T / 2f, c.x - hx - T, c.x + hx + T, 0f, top, Openings(i, SideN));
             WallLine($"{n.Name} : mur sud", true, c.z - hz - T / 2f, c.x - hx - T, c.x + hx + T, 0f, top, Openings(i, SideS));
             WallLine($"{n.Name} : mur est", false, c.x + hx + T / 2f, c.z - hz, c.z + hz, 0f, top, Openings(i, SideE));
             if (!lair)                                                   // le repaire s'ouvre dans le mur est du carrefour E
                 WallLine($"{n.Name} : mur ouest", false, c.x - hx - T / 2f, c.z - hz, c.z + hz, 0f, top, Openings(i, SideW));
-            RoomVolumeAt(n.Name, new Vector3(c.x, y + n.Ceil / 2f, c.z), Quaternion.identity, new Vector3(2f * hx, n.Ceil, 2f * hz));
+            RoomVolumeAt(n.Name, new Vector3(c.x, y + n.Ceil / 2f, c.z), Quaternion.identity, new Vector3(2f * hx, n.Ceil, 2f * hz),
+                i == _startNode ? RoomKind.Depart : lair ? RoomKind.Salle : RoomKind.Salle);   // salle de départ (D-048)
 
             if (lair)
             {
@@ -434,10 +566,11 @@ namespace ItHunts.EditorTools
                 return;
             }
 
-            for (int a = 0; a < 3; a++)
-            for (int b = 0; b < 3; b++)
+            int grid = NodeModules.ContainsKey(i) ? 2 : 3;                // salle à module : 4 grandes lampes, ses torches font le reste
+            for (int a = 0; a < grid; a++)
+            for (int b = 0; b < grid; b++)
             {
-                float fx = (a - 1) * 0.6f, fz = (b - 1) * 0.6f;
+                float fx = grid == 3 ? (a - 1) * 0.6f : (a - 0.5f) * 0.9f, fz = grid == 3 ? (b - 1) * 0.6f : (b - 0.5f) * 0.9f;
                 Lamp($"{n.Name} : lumière {a * 3 + b + 1}", c + new Vector3(fx * hx, n.Ceil * 0.75f, fz * hz),
                     (a + b) % 2 == 0 ? new Color(1f, 0.78f, 0.55f) : new Color(0.75f, 0.82f, 1f), L.lightIntensity, L.lightRange);
             }
@@ -509,8 +642,9 @@ namespace ItHunts.EditorTools
                 float lane = L.cliffLaneWidth, slopeW = w - lane;
                 Vector3 slopeOffset = lateral * (w / 2f - slopeW / 2f), laneOffset = -lateral * (w / 2f - lane / 2f);
                 Ramp($"{name} : pente ({len:0} m, {ang:0.0}°)", low + slopeOffset + Vector3.up * Mathf.Min(ya, yb), dy, len, slopeW, yaw, _ramp);
-                Piece($"{name} : voie au sol", mid + laneOffset + Vector3.down * 0.5f + Vector3.up * Mathf.Min(ya, yb),
-                    alongX ? new Vector3(len, 1f, lane) : new Vector3(lane, 1f, len), _floor);
+                if (lane > 0.1f)                                            // niveau 1 : 0, pente sur toute la largeur (pas de vide à côté)
+                    Piece($"{name} : voie au sol", mid + laneOffset + Vector3.down * 0.5f + Vector3.up * Mathf.Min(ya, yb),
+                        alongX ? new Vector3(len, 1f, lane) : new Vector3(lane, 1f, len), _floor);
                 // Mur au bout de la voie au sol (allège de la salle haute) : les goules le grimpent (liens automatiques, D-038).
                 float l = Mathf.Sqrt(len * len + dy * dy);
                 var ceil = Piece($"{name} : plafond", mid + Vector3.up * ((ya + yb) / 2f + h + 0.5f), new Vector3(w + 2f * T, 1f, l), _ceiling, walkable: false);
@@ -584,6 +718,7 @@ namespace ItHunts.EditorTools
             public int Edge;        // … ou un couloir (côté +1 / −1)
             public int Side;
             public float Along;     // centre de la porte le long du mur
+            public bool Locked;     // salle verrouillée (D-043) : porte payante, coffre gratuit dedans
         }
 
         private static void DefineRooms(out List<RoomDef> rooms)
@@ -594,11 +729,17 @@ namespace ItHunts.EditorTools
                 new RoomDef { Name = "Pièce SO", Node = 0, Edge = -1, Side = SideW, Along = -S },
                 new RoomDef { Name = "Pièce SE", Node = 2, Edge = -1, Side = SideS, Along = S },
                 new RoomDef { Name = "Pièce NO", Node = 6, Edge = -1, Side = SideN, Along = -S },
-                new RoomDef { Name = "Pièce NE", Node = 8, Edge = -1, Side = SideE, Along = S },
+                new RoomDef { Name = "Pièce NE", Node = 8, Edge = -1, Side = SideE, Along = S, Locked = true },
                 new RoomDef { Name = "Pièce du couloir S – SE", Node = -1, Edge = 1, Side = -1, Along = S * 0.4f },
                 new RoomDef { Name = "Pièce du couloir O – C", Node = -1, Edge = 2, Side = +1, Along = -S * 0.61f },
             };
 
+            AddRoomOpenings(rooms);
+        }
+
+        /// <summary>Porte et fenêtre de chaque pièce dans le mur de son hôte (salle ou couloir).</summary>
+        private static void AddRoomOpenings(List<RoomDef> rooms)
+        {
             float dw = L.roomDoorWidth, dh = L.roomDoorHeight;
             foreach (RoomDef r in rooms)
             {
@@ -688,7 +829,7 @@ namespace ItHunts.EditorTools
             Crate(inner + Vector3.up * y + along * 3f, 15f, root.transform);
 
             // Salle verrouillée (D-043) : la pièce NE ; porte payante (E / Y), fenêtre à barreaux, coffre gratuit dedans.
-            if (r.Name == "Pièce NE")
+            if (r.Locked)
             {
                 Material doorMat = GrabbableMat("Economy_Locked_Door", new Color(0.35f, 0.22f, 0.12f));
                 GameObject block = Box($"{r.Name} : porte verrouillée", _level, wallPlane + Vector3.up * (y + L.roomDoorHeight / 2f),
@@ -721,10 +862,51 @@ namespace ItHunts.EditorTools
             pool.upgrades.Add(Upgrade("Upgrade_Projectiles", "Projectiles lourds", "Objets lancés ou repoussés : +25 % de dégâts.", "x1.25", new Color(2f, 0.6f, 3f), UpgradeKind.DegatsObjetsLances, 0.25f, 70));
             pool.upgrades.Add(Upgrade("Upgrade_Repulsion", "Onde blessante", "La répulsion blesse les ennemis touchés (10 PV).", "10", new Color(3.2f, 1.3f, 0.3f), UpgradeKind.DegatsRepulsion, 10f, 60));
             pool.upgrades.Add(Upgrade("Upgrade_PV", "Cœur solide", "+25 PV max (et 25 PV tout de suite).", "PV+", new Color(3.2f, 0.4f, 0.4f), UpgradeKind.PvMax, 25f, 50));
-            pool.upgrades.Add(Upgrade("Upgrade_Barillet", "Barillet garni", "+2 balles au barillet.", "+2", new Color(3f, 2.5f, 0.4f), UpgradeKind.BallesBarillet, 2f, 50));
             pool.upgrades.Add(Upgrade("Upgrade_Aspiration", "Aspiration", "Les âmes viennent à l'orbe 50 % plus vite.", ">>", new Color(1.2f, 2.6f, 3.2f), UpgradeKind.AspirationAmes, 0.5f, 40));
             EditorUtility.SetDirty(pool);
             return pool;
+        }
+
+        /// <summary>Améliorations du barillet (D-050, provisoires) : vendues par le marchand de la salle de départ.</summary>
+        public static UpgradePool BarrelPoolAsset()
+        {
+            if (!AssetDatabase.IsValidFolder(UpgradesDir))
+                AssetDatabase.CreateFolder(SettingsDir, "Upgrades");
+            var pool = LoadOrCreate<UpgradePool>(BarrelPoolPath);
+            pool.upgrades.Clear();
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet", "Barillet garni", "+2 balles au barillet.", "+2", new Color(3f, 2.5f, 0.4f), UpgradeKind.BallesBarillet, 2f, 50));
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Degats", "Balles lourdes", "Balles du barillet : +30 % de dégâts.", "x1.3", new Color(3.2f, 0.9f, 0.3f), UpgradeKind.DegatsBarillet, 0.3f, 60));
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Cadence", "Gâchette vive", "Tir du barillet 25 % plus rapide.", ">>>", new Color(3f, 1.8f, 0.3f), UpgradeKind.CadenceBarillet, 0.25f, 55));
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Rechargement", "Rechargement éclair", "Rechargement du barillet 35 % plus court.", "R", new Color(2.6f, 2.6f, 0.6f), UpgradeKind.RechargementBarillet, 0.35f, 45));
+            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Portee", "Long canon", "Portée du barillet +25 m.", "+25", new Color(2.2f, 2.8f, 0.8f), UpgradeKind.PorteeBarillet, 25f, 40));
+            EditorUtility.SetDirty(pool);
+            return pool;
+        }
+
+        /// <summary>Marchand de l'artefact dans la salle de départ (D-050) : silhouette violette, enseigne, offres par joueur.</summary>
+        public static void BuildArtifactMerchant(Transform parent, Vector3 at, Quaternion rotation, EconomySettings economy, Material orb)
+        {
+            var root = new GameObject("Marchand de l'artefact (salle de départ)");
+            root.transform.SetParent(parent, false);
+            root.transform.SetPositionAndRotation(at, rotation);
+            Material robe = GrabbableMat("Economy_Merchant", new Color(0.2f, 0.12f, 0.25f));
+            robe.SetColor("_EmissionColor", new Color(0.8f, 0.3f, 1.2f));
+            GameObject figure = Box("Marchand (silhouette)", root.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.9f, 2.2f, 0.9f), robe);
+            GameObjectUtility.SetStaticEditorFlags(figure, 0);
+            GameObject sign = Box("Enseigne", root.transform, new Vector3(0f, 2.9f, 0f), new Vector3(1.6f, 0.4f, 0.1f),
+                UnlitMat("Economy_Merchant_Sign", "Universal Render Pipeline/Unlit", new Color(2.5f, 1f, 3f)), collider: false);
+            GameObjectUtility.SetStaticEditorFlags(sign, 0);
+            var m = root.AddComponent<ArtifactMerchant>();
+            SetRef(m, "settings", economy);
+            SetRef(m, "pool", BarrelPoolAsset());
+            SetRef(m, "orbMaterial", orb);
+            var l = new GameObject("Lumière du marchand").AddComponent<Light>();
+            l.transform.SetParent(root.transform, false);
+            l.transform.localPosition = new Vector3(0f, 4f, 1.5f);
+            l.type = LightType.Point;
+            l.color = new Color(0.8f, 0.4f, 1f);
+            l.intensity = 3f;
+            l.range = 12f;
         }
 
         /// <summary>Asset d'amélioration : créé avec ces valeurs s'il n'existe pas (sinon gardé tel quel, réglages compris).</summary>
@@ -785,33 +967,11 @@ namespace ItHunts.EditorTools
             BuildChest("Coffre : salle C", Nodes[4].C + new Vector3(10f, 0f, -12f), Quaternion.Euler(0f, 180f, 0f), -1);
             BuildChest("Coffre : salle SE", Nodes[2].C + new Vector3(-12f, 0f, 10f), Quaternion.Euler(0f, 90f, 0f), -1);
 
-            var merchantRoot = new GameObject("Marchand");
-            merchantRoot.transform.SetParent(_level, false);
-            Material robe = GrabbableMat("Economy_Merchant", new Color(0.2f, 0.12f, 0.25f));
-            robe.SetColor("_EmissionColor", new Color(0.8f, 0.3f, 1.2f));
-            GameObject figure = Box("Marchand (silhouette)", merchantRoot.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.9f, 2.2f, 0.9f), robe);
-            GameObjectUtility.SetStaticEditorFlags(figure, 0);
-            GameObject sign = Box("Enseigne", merchantRoot.transform, new Vector3(0f, 2.9f, 0f), new Vector3(1.6f, 0.4f, 0.1f),
-                UnlitMat("Economy_Merchant_Sign", "Universal Render Pipeline/Unlit", new Color(2.5f, 1f, 3f)), collider: false);
-            GameObjectUtility.SetStaticEditorFlags(sign, 0);
-            var merchant = merchantRoot.AddComponent<Merchant>();
-            SetRef(merchant, "settings", _economy);
-            SetRef(merchant, "orbMaterial", _offerOrb);
-            int[] spotNodes = { 1, 3, 5, 7, 6 };
-            var mso = new SerializedObject(merchant);
-            SerializedProperty spots = mso.FindProperty("spots");
-            spots.arraySize = spotNodes.Length;
-            for (int i = 0; i < spotNodes.Length; i++)
-            {
-                Node n = Nodes[spotNodes[i]];
-                var spot = new GameObject($"Emplacement du marchand {i + 1} : {n.Name}").transform;
-                spot.SetParent(merchantRoot.transform.parent, false);
-                Vector3 at = n.C + new Vector3(n.Half * 0.5f, 0f, n.HalfZ * 0.5f);
-                spot.SetPositionAndRotation(at, Quaternion.LookRotation(new Vector3(n.C.x - at.x, 0f, n.C.z - at.z).normalized, Vector3.up));
-                spots.GetArrayElementAtIndex(i).objectReferenceValue = spot;
-            }
-
-            mso.ApplyModifiedPropertiesWithoutUndo();
+            // Marchand de l'artefact dans la salle de départ SO (D-050), face au départ des joueurs.
+            Node sw0 = Nodes[0];
+            Vector3 mAt = sw0.C + new Vector3(4f, 0f, 6f);
+            NonMagneticPiece("mur d'essai (salle de départ)", _level, sw0.C + new Vector3(-20f, 6f, 14f), new Vector3(1f, 12f, 14f), walkable: false);
+            BuildArtifactMerchant(_level, mAt, Quaternion.LookRotation(new Vector3(-12f, 0f, -10f) - new Vector3(4f, 0f, 6f), Vector3.up), _economy, _offerOrb);
         }
 
         private static Vector3 Abs(Vector3 v) => new Vector3(Mathf.Abs(v.x), Mathf.Abs(v.y), Mathf.Abs(v.z));

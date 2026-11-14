@@ -1,4 +1,5 @@
 using ItHunts.Combat;
+using ItHunts.Level;
 using ItHunts.Orbs;
 using ItHunts.Player;
 using ItHunts.Settings;
@@ -7,10 +8,11 @@ using UnityEngine;
 namespace ItHunts.Enemies
 {
     /// <summary>
-    /// État d'une zone (objet de la scène, pas du joueur ; D-033) : timer (à 0 le traqueur devient enragé), temps de grâce,
-    /// sortie, remise à zéro. Étape 6 : à la mort d'un joueur (en coop : quand tous sont morts), toute la zone est remise
-    /// à zéro (joueurs, ennemis, objets, timer, traqueur) ; sortie atteinte : message, puis la zone recommence. La vraie
-    /// mort (bilan, relance de la run) vient à l'étape 8.
+    /// État d'une zone, c'est-à-dire d'un niveau (objet de la scène, pas du joueur ; D-033, D-048). Le timer démarre quand le
+    /// premier joueur sort de la salle de départ (volume « Départ ») ; traqueur lâché à gracePeriod, porte de sortie
+    /// déverrouillée à exitUnlockAt, Enragé à timer. Mort du dernier joueur vivant : écran de fin (deathEndsRun), sinon remise à
+    /// zéro de la zone (ancien comportement de test). Niveau gagné (combat de boss, ou sortie s'il n'y a pas d'arène) : niveau
+    /// suivant ou écran de victoire. Réseau (étape 11) : démarrage, fin et changement de niveau décidés par l'hôte.
     /// </summary>
     [DefaultExecutionOrder(-150)]
     public sealed class ZoneState : MonoBehaviour
@@ -25,8 +27,25 @@ namespace ItHunts.Enemies
         public ZoneSettings Settings => settings;
         public float Elapsed { get; private set; }
         public float TimeLeft => settings != null ? Mathf.Max(0f, settings.timer - Elapsed) : 0f;
-        public bool Enraged => settings != null && Elapsed >= settings.timer;
-        public bool InGrace => settings != null && Elapsed < settings.gracePeriod;
+        public bool Enraged => settings != null && Started && Elapsed >= settings.timer;
+        public bool InGrace => settings != null && (!Started || Elapsed < settings.gracePeriod);
+        /// <summary>Le timer tourne : un joueur est sorti de la salle de départ (D-048).</summary>
+        public bool Started { get; private set; }
+        /// <summary>Avant la première sortie de la salle de départ, rien ne bouge sur la carte (habitants compris).</summary>
+        public static bool Asleep { get; private set; }
+
+        public bool ExitUnlocked => settings != null && Started && Elapsed >= settings.exitUnlockAt;
+        public float ExitUnlockLeft => settings != null ? Mathf.Max(0f, settings.exitUnlockAt - Elapsed) : 0f;
+        /// <summary>Niveau gagné (combat de boss ou sortie) ; écran de fin affiché ou niveau suivant en chargement.</summary>
+        public bool Won { get; private set; }
+        public bool RunOver { get; private set; }
+        /// <summary>Le timer vient de démarrer (premier joueur sorti de la salle de départ).</summary>
+        public static event System.Action<ZoneState> TimerStarted;
+        /// <summary>Combat de boss en cours (D-049) : les vagues s'arrêtent.</summary>
+        public bool BossFightActive { get; set; }
+
+        /// <summary>Remplacé par le combat de boss (D-049) : vrai s'il prend la main à la sortie.</summary>
+        public System.Func<PlayerHealth, bool> ExitHandler { get; set; }
         public float GraceLeft => settings != null ? Mathf.Max(0f, settings.gracePeriod - Elapsed) : 0f;
         public bool Finished { get; private set; }
         public float FinishTime { get; private set; }
@@ -36,7 +55,11 @@ namespace ItHunts.Enemies
 
         private void Awake() => PlayerHealth.ZoneHandlesDeath = true;
 
-        private void OnDestroy() => PlayerHealth.ZoneHandlesDeath = false;
+        private void OnDestroy()
+        {
+            PlayerHealth.ZoneHandlesDeath = false;
+            Asleep = false;
+        }
 
         private void OnEnable() => PlayerHealth.Died += OnDied;
         private void OnDisable() => PlayerHealth.Died -= OnDied;
@@ -45,10 +68,74 @@ namespace ItHunts.Enemies
 
         private void FixedUpdate()
         {
-            if (!Finished && float.IsPositiveInfinity(_resetAt))
+            if (!Started && !Finished)
+                TryStart();
+            Asleep = !Started && settings != null && settings.timerWaitsForStartRoom;
+            if (Started && !Finished && float.IsPositiveInfinity(_resetAt))
                 Elapsed += Time.fixedDeltaTime;
             if (Time.time >= _resetAt)
-                ResetZone();
+            {
+                _resetAt = float.PositiveInfinity;
+                if (_pending != null)
+                {
+                    System.Action a = _pending;
+                    _pending = null;
+                    a();
+                }
+                else
+                    ResetZone();
+            }
+        }
+
+        private System.Action _pending;
+
+        private void Update()
+        {
+            // Debug (éditeur et builds de dev) : Page haut avance le timer de 60 s (événements à 3, 10 et 15 min).
+            if ((Application.isEditor || Debug.isDebugBuild) && UnityEngine.InputSystem.Keyboard.current != null
+                && UnityEngine.InputSystem.Keyboard.current.pageUpKey.wasPressedThisFrame && !Finished)
+            {
+                DebugAdvance(60f);
+                Show($"Debug : timer +60 s ({Mathf.FloorToInt(Elapsed) / 60}:{Mathf.FloorToInt(Elapsed) % 60:00})", 1.5f);
+            }
+        }
+
+        /// <summary>Démarre le timer dès qu'un joueur vivant est hors de la salle de départ (ou tout de suite sans salle de départ).</summary>
+        private void TryStart()
+        {
+            bool hasStart = false;
+            foreach (RoomVolume r in RoomVolume.All)
+                if (r != null && r.Kind == RoomKind.Depart)
+                {
+                    hasStart = true;
+                    break;
+                }
+
+            bool go = settings == null || !settings.timerWaitsForStartRoom || !hasStart;
+            if (!go)
+                foreach (PlayerHealth p in PlayerHealth.All)
+                    if (p != null && !p.Dead && !RoomVolume.InKind(p.transform.position + Vector3.up * 0.5f, RoomKind.Depart))
+                    {
+                        go = true;
+                        break;
+                    }
+
+            if (!go)
+                return;
+            Started = true;
+            TimerStarted?.Invoke(this);
+        }
+
+        /// <summary>Avance le timer (debug F9, mesures) ; le démarre si besoin.</summary>
+        public void DebugAdvance(float seconds)
+        {
+            if (!Started)
+            {
+                Started = true;
+                TimerStarted?.Invoke(this);
+            }
+
+            Elapsed = Mathf.Max(0f, Elapsed + seconds);
         }
 
         private void Show(string message, float seconds)
@@ -62,22 +149,71 @@ namespace ItHunts.Enemies
             foreach (PlayerHealth other in PlayerHealth.All)
                 if (other != null && !other.Dead)
                     return;                                             // coop : un joueur reste debout
-            if (!float.IsPositiveInfinity(_resetAt))
+            if (!float.IsPositiveInfinity(_resetAt) || RunOver)
                 return;
+            if (settings == null || settings.deathEndsRun)
+            {
+                // Mort du dernier joueur vivant = fin de la run (D-048). Coop : réanimation et spectateur à l'étape 9 (CoopLife).
+                RunOver = true;
+                Finished = true;
+                FinishTime = Elapsed;
+                float d = settings != null ? settings.exitRestartDelay : 2f;
+                Show("Mort", d + 1f);
+                _pending = () => RunEndScreen.Show(false, Summary("Tu es mort."));
+                _resetAt = Time.time + d;
+                return;
+            }
+
             Show("Mort : la zone recommence", (settings != null ? settings.resetDelay : 1.5f) + 1f);
             _resetAt = Time.time + (settings != null ? settings.resetDelay : 1.5f);
         }
 
-        /// <summary>Un joueur atteint la sortie : zone terminée (solo ; en coop, la règle viendra avec l'étape 9).</summary>
+        private string Summary(string head)
+        {
+            int s = Mathf.FloorToInt(Elapsed);
+            string level = RunSession.Active
+                ? $"{RunSession.Definition.levels[RunSession.LevelIndex].displayName} ({RunSession.Difficulty.displayName})"
+                : gameObject.scene.name;
+            int souls = 0;
+            var run = ItHunts.Artifacts.RunState.Current;
+            foreach (PlayerHealth p in PlayerHealth.All)
+                if (p != null && run != null)
+                    souls = Mathf.Max(souls, run.Souls(p.PlayerId));
+            return $"{head}\n{level} : {s / 60}:{s % 60:00} de timer, {souls} âmes en poche.";
+        }
+
+        /// <summary>
+        /// Un joueur atteint la sortie (en haut des escaliers). Si le combat de boss (D-049) prend la main, il commence ; sinon le
+        /// niveau est gagné.
+        /// </summary>
         public void ExitReached(PlayerHealth p)
         {
             if (Finished || p == null || p.Dead)
                 return;
+            if (ExitHandler != null && ExitHandler(p))
+                return;
+            LevelWon();
+        }
+
+        /// <summary>Niveau gagné (D-048) : niveau suivant, ou écran de victoire si la run est finie (Facile : après le niveau 1).</summary>
+        public void LevelWon()
+        {
+            if (Won)
+                return;
+            Won = true;
             Finished = true;
             FinishTime = Elapsed;
-            int s = Mathf.FloorToInt(Elapsed);
-            float delay = settings != null ? settings.exitRestartDelay : 4f;
-            Show($"Sortie atteinte en {s / 60}:{s % 60:00}", delay + 0.5f);
+            string next = RunSession.NextLevelScene();
+            float delay = settings != null ? settings.exitRestartDelay : 2f;
+            Show("Niveau terminé", delay + 1f);
+            if (next != null)
+                _pending = () => RunSession.Load(next);
+            else
+            {
+                RunOver = true;
+                _pending = () => RunEndScreen.Show(true, Summary(RunSession.Active ? "La run est gagnée." : "Niveau gagné."));
+            }
+
             _resetAt = Time.time + delay;
         }
 
@@ -85,8 +221,13 @@ namespace ItHunts.Enemies
         public void ResetZone()
         {
             _resetAt = float.PositiveInfinity;
+            _pending = null;
             Elapsed = 0f;
             Finished = false;
+            Started = false;
+            BossFightActive = false;
+            Won = false;
+            RunOver = false;
             Resets++;
             int i = 0;
             foreach (PlayerHealth p in PlayerHealth.All)
@@ -129,6 +270,14 @@ namespace ItHunts.Enemies
                 d.SetOpen(false);
             foreach (ItHunts.Economy.Merchant m in FindObjectsByType<ItHunts.Economy.Merchant>(FindObjectsSortMode.None))
                 m.Place();
+            foreach (ItHunts.Economy.ArtifactMerchant m in FindObjectsByType<ItHunts.Economy.ArtifactMerchant>(FindObjectsSortMode.None))
+                m.ResetMerchant();
+            foreach (BossFight b in FindObjectsByType<BossFight>(FindObjectsSortMode.None))
+                b.ResetFight();
+            if (MapDiscovery.Current != null)
+                MapDiscovery.Current.Clear();                            // brouillard de guerre (D-053)
+            foreach (ExitDoor d in FindObjectsByType<ExitDoor>(FindObjectsSortMode.None))
+                d.ResetDoor();
             ImpactDamager.ResetCooldowns();
         }
     }

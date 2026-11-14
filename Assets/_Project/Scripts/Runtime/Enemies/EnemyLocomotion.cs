@@ -125,8 +125,12 @@ namespace ItHunts.Enemies
         /// Un pas : avance vers le coin suivant du chemin à la vitesse voulue ; renvoie la nouvelle position (pieds, sur le
         /// NavMesh). Arrivé (ou sans chemin) : il freine sur place.
         /// </summary>
+        /// <summary>Multiplicateur de vitesse (difficulté, D-048) : goules et volants ; 1 pour le traqueur (réglé avec la traction).</summary>
+        public float SpeedScale = 1f;
+
         public Vector3 Step(Vector3 position, float targetSpeed, float acceleration, float turnRate, float dt)
         {
+            targetSpeed *= SpeedScale;
             Vector3 desired = Vector3.zero;
             while (HasPath)
             {

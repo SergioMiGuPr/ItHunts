@@ -131,6 +131,7 @@ namespace ItHunts.Enemies
 
         public void ResetState()
         {
+            _move.SpeedScale = ItHunts.Level.RunSession.EnemySpeed;   // difficulté (D-048)
             transform.SetPositionAndRotation(_home, _homeRotation);
             if (_rb != null)
                 _rb.position = _home;
@@ -162,6 +163,11 @@ namespace ItHunts.Enemies
         {
             if (settings == null || (_damageable != null && _damageable.Dead))
                 return;
+            if (ZoneState.Asleep && !_body.Busy)
+            {
+                _move.Speed = 0f;                                          // salle de départ pas encore quittée (D-048)
+                return;
+            }
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
             float now = Time.time, dt = Time.fixedDeltaTime;
             if (_body.Busy)

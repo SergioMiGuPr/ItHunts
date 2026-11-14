@@ -316,3 +316,85 @@ leurs options sont à vérifier dans le connecteur au moment de s'en servir.
   `Assets/Art/Materials/`, `Assets/Art/Shaders/`, `Assets/Art/Scenes/`.
 - **Vérifier avant la PR :** échelle à côté du mannequin, pivot, orientation, triangles dans le budget, matériaux
   URP (pas de shader manquant, rose), ligne du manifeste remplie.
+
+## Étape 8 : niveau 1, arène, menus (D-048 à D-053)
+
+- **Niveau 1 (`Level_01`, copie retravaillée ; `Level_01_Base` régénérée par le constructeur) :**
+  - **Grille :** 7 × 7 salles à 120 m d'écart, soit 800 × 785 m. Salles de 46 à 66 m de côté, carrefours de 20 m ;
+    plafonds de 36 m (salles) et 24 m (carrefours) ; niveau haut à +16 m.
+  - **Couloirs :** 14 × 19 m (16 m en pente). Ponts et poutres : dessous à 10 m.
+  - **Corniches :** 11 m, pleines jusqu'au sol.
+  - **Canaux d'égout :** 6 m de large, 4 m de profondeur, eau à 1.2 m sous le sol. Grand pont de 14 m, petit pont de 4 m.
+  - **Muret des coffres :** 3 m de haut.
+  - **Plateformes non magnétiques :** 4 × 4 m, de 2.5 à 6.5 m, écarts de 3 m ; matériau à rayures sans lueur, à garder
+    lisible à la DA (ne jamais les faire briller comme les cibles de traction).
+- **Sortie :**
+  - **Grande porte :** 10 × 10 m, rouge verrouillée, orange payable.
+  - **Escaliers :** 20 marches de 0.4 × 1.6 m, 10 m de large.
+  - **Palier :** 12 m.
+- **Arène du combat de boss :**
+  - **Dimensions :** 80 × 80 m, 30 m de haut.
+  - **Herse :** piliers de 28 m, passage de 10 m, grille de 10 × 12 m ; poche ouest fermée jusqu'au plafond.
+  - **Fosse :** 18 m de large, 8 m de profondeur, sur toute la profondeur de l'arène ; tablier du pont de 12 m.
+  - **Lustre géant :** 12 × 12 m, à 24 m, avec un treuil sur le mur nord.
+  - **Lisibilité :** cibles de 1.4 m qui brillent (orange), zones de pièges en orange au sol.
+- **Salle de départ :** marchand de l'artefact (silhouette violette de 2.2 m, enseigne) ; 3 orbes d'offre par joueur.
+- **Menus et minimap :** greybox IMGUI (`MainMenu`, écran de fin, minimap en haut à gauche), à refaire à l'étape 10 ;
+  aucun menu ne met le jeu en pause.
+
+## Catalogue des props (après le playtest de l'étape 8) : modèles à produire
+
+Chaque objet de décor est un prefab greybox **`Assets/_Project/Prefabs/Props/Prop_<Nom>.prefab`**, fait de formes simples, avec
+une seule boîte de collision sur la racine (collisions simplifiées) et le batching statique pour le décor fixe. Pour le
+remplacer : ouvrir le prefab, remplacer les formes par le modèle (même pivot : **au sol, au centre**, +z vers l'avant), garder la
+boîte de collision (ajuster sa taille) et **ajouter l'étiquette (label) « DA »** au prefab, pour que le constructeur ne le
+recrée plus. Toutes les scènes suivent. Les props attrapables gardent leurs composants (Rigidbody, Grabbable) et leur lueur.
+Nombre utilisé : niveau 1 (modules, couloirs, annexes) après génération du 2026-11-14.
+
+| Prefab | Catégorie | Dimensions (m, l × h × p) | Nombre utilisé | Rôle |
+|---|---|---|---|---|
+| `Prop_Tonneau` | Tonneau | 0.9 × 1.1 × 0.9 | 212 | fixe |
+| `Prop_Tonneau_Attrapable` | Tonneau | 0.6 × 0.9 × 0.6 | 131 | attrapable (20 kg) |
+| `Prop_Caisse` | Caisse | 1.3 × 1.3 × 1.3 | 100 | fixe |
+| `Prop_Caisse_Attrapable` | Caisse | 0.8 × 0.8 × 0.8 | 279 | attrapable (15 kg) |
+| `Prop_PileDeCaisses` | Caisse | 2.6 × 2.6 × 2.6 | 78 | fixe |
+| `Prop_Etagere` | Étagère | 2.6 × 3.2 × 0.7 | 117 | fixe |
+| `Prop_Table` | Table | 2.6 × 0.95 × 1.2 | 82 | fixe |
+| `Prop_Chaise_Attrapable` | Chaise | 0.55 × 1 × 0.55 | 63 | attrapable (8 kg) |
+| `Prop_Banc` | Banc | 2.6 × 0.55 × 0.6 | 79 | fixe |
+| `Prop_Lit` | Lit | 1.3 × 0.7 × 2.3 | 23 | fixe |
+| `Prop_CoffreDeco` | Coffre décoratif | 1.2 × 0.8 × 0.8 | 85 | fixe |
+| `Prop_Armoire` | Armoire | 1.6 × 2.7 × 0.8 | 30 | fixe |
+| `Prop_Ratelier` | Râtelier d'armes | 2.6 × 2.1 × 0.5 | 40 | fixe |
+| `Prop_Statue` | Statue | 1.4 × 3.6 × 1.4 | 69 | fixe |
+| `Prop_Colonne` | Pilier / colonne | 1.4 × 8 × 1.4 | 358 | fixe |
+| `Prop_ColonneBrisee` | Colonne brisée | 1.4 × 2.6 × 1.4 | 47 | fixe |
+| `Prop_Chaine` | Chaîne | 0.2 × 4 × 0.2 | 247 | décor sans collision |
+| `Prop_Cage` | Cage | 2.2 × 3 × 2.2 | 50 | fixe |
+| `Prop_Lanterne` | Lanterne | 0.5 × 0.8 × 0.5 | 258 | lumière, sans collision |
+| `Prop_Torche` | Torche murale | 0.3 × 1 × 0.5 | 1231 | lumière, sans collision |
+| `Prop_Gravats` | Tas de gravats | 3.2 × 1.2 × 3 | 72 | fixe |
+| `Prop_MurEffondre` | Mur effondré | 5 × 3 × 1.2 | 11 | fixe |
+| `Prop_Echafaudage` | Échafaudage | 4 × 6 × 2 | 24 | fixe (on y monte) |
+| `Prop_Poutre` | Poutre | 6 × 0.5 × 0.5 | 0 | fixe |
+| `Prop_Grille` | Grille | 3 × 3 × 0.2 | 46 | fixe |
+| `Prop_Tapisserie` | Tapisserie | 2.6 × 4 × 0.08 | 29 | décor sans collision |
+| `Prop_Autel` | Autel | 2.6 × 1.2 × 1.3 | 4 | fixe |
+| `Prop_Sarcophage` | Sarcophage | 1.2 × 1 × 2.5 | 52 | fixe |
+| `Prop_Paille` | Paille (litière) | 2 × 0.3 × 2 | 77 | décor sans collision |
+| `Prop_Chaudron` | Chaudron | 1.3 × 1 × 1.3 | 14 | fixe |
+| `Prop_Tuyau` | Tuyau d'égout | 0.8 × 0.8 × 6 | 28 | fixe |
+
+- **Modules de salle** (`Assets/_Project/Prefabs/Modules/Module_*.prefab`) : 13 salles (48, 56, 64 m) et 2 carrefours (20 m),
+  assemblés par le générateur ; ils utilisent ces props. Mesures à respecter dans les salles : voies dégagées en croix de 11 m
+  entre les ouvertures (rien sous 10 m), étages pleins jusqu'au sol, ponts dont le dessous est à 10 m.
+- **Couloirs :** décor dans une bande de 3 m le long des murs, voie centrale de 8 m ; torches tous les 12 m à 4 m de haut ;
+  colonnes engagées tous les 18 m.
+- **Pièces annexes** (12 × 12 m, porte de 3 × 3 m) : chambre, cellule, réserve, cuisine, armurerie, chapelle, crypte.
+- **Passages en hauteur :** ouverture de 3 × 3 m à 4.5 m du sol, conduit de 8 × 3.5 × 3 m ; murs autour non magnétiques (rayés).
+- **Galeries de parcours :** 20 m de large le long d'un couloir, vide de 10 m, paliers de 6 × 5 m, poutres de 0.6 m,
+  plateformes de 2.4 × 2.4 m qui tombent ; tout est non magnétique (ne jamais faire briller ces surfaces).
+
+- **Arène du combat de boss (après le playtest de l'étape 8) :** galeries pleines à 6 m (5 m de profondeur) le long des murs nord et
+  sud, tours de 11 m (6 × 6 m), galerie de 6 m dans la poche est ; herse à x = −18 (poche de 22 m) ; 6 leviers (plaque de
+  1.2 × 0.8 × 1.2 m sur un socle de 1.2 m, orange puis vert) ; 5 plateformes de 2.4 m qui tombent au-dessus de la fosse.

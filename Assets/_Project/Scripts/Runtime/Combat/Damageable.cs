@@ -80,8 +80,11 @@ namespace ItHunts.Combat
             _block = new MaterialPropertyBlock();
             _body = GetComponent<EnemyBody>();
             _grabbable = GetComponent<ItHunts.Orbs.Grabbable>();
-            _health = HealthState.Create(settings != null ? settings.maxHealth : 100f);
+            _health = HealthState.Create(ScaledMaxHealth);
         }
+
+        /// <summary>PV max × multiplicateur de la difficulté (D-048) ; pas pour le traqueur (ImmuneToOrbs).</summary>
+        private float ScaledMaxHealth => (settings != null ? settings.maxHealth : 100f) * (ImmuneToOrbs ? 1f : ItHunts.Level.RunSession.EnemyHealth);
 
         private void OnEnable()
         {
@@ -139,7 +142,7 @@ namespace ItHunts.Combat
         {
             if (_renderers == null)
                 Init();
-            _health = HealthState.Create(settings != null ? settings.maxHealth : 100f);
+            _health = HealthState.Create(ScaledMaxHealth);
             if (_body != null)
                 _body.ResetToHome();
             SetAlive(true);

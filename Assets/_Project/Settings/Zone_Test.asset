@@ -12,7 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 094de60a60a0fa74aaed0f49d2de4ab4, type: 3}
   m_Name: Zone_Test
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.ZoneSettings
-  timer: 240
-  gracePeriod: 15
+  timer: 900
+  gracePeriod: 180
   resetDelay: 1.5
-  exitRestartDelay: 4
+  exitUnlockAt: 600
+  exitPrice: 200
+  timerWaitsForStartRoom: 1
+  deathEndsRun: 1
+  exitRestartDelay: 2

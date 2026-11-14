@@ -11,6 +11,9 @@ namespace ItHunts.Orbs
 
         /// <summary>La surface touchée est un ennemi : la répulsion y part (onde), jamais la traction.</summary>
         public bool Enemy;
+
+        /// <summary>Surface non magnétique (D-051) : la traction ne s'y accroche pas, la répulsion oui.</summary>
+        public bool NonMagnetic;
     }
 
     /// <summary>
