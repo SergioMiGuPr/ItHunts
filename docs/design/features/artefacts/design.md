@@ -1,20 +1,31 @@
 # Artefacts
 
-**Status:** implemented · **Updated:** 2026-11-12 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md)
+**Status:** implemented · **Updated:** 2026-11-15 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md)
 
 Un artefact est une arme ou un pouvoir de combat porté en **main gauche**, en plus de l'orbe (main droite). Il donne
-une façon de se battre quand l'arène ne fournit plus rien à lancer, et rend chaque run différente. Cohérent avec
-D-008 : de base, l'orbe ne fait pas de dégâts directs ; les artefacts et les améliorations en ajoutent (D-022).
-Décisions D-022 et D-032.
+une façon de se battre quand l'arène ne fournit plus rien à lancer. **Chaque personnage a son artefact** (D-064) : la
+variété d'une run à l'autre vient des améliorations et de la carte. Cohérent avec D-008 : de base, l'orbe ne fait pas de
+dégâts directs ; les artefacts et les améliorations en ajoutent (D-022). Décisions D-022, D-032, D-064 et D-065.
 
 ## Règles
 
-1. **Tirage :** au début de chaque run, chaque joueur reçoit **1 artefact tiré au hasard avec la seed de la run**
-   (même seed, même tirage : relance, partie en ligne). Le joueur *i* reçoit l'élément *i* d'une suite fixée par la
-   seed ; son artefact ne dépend pas du nombre de joueurs.
-2. **Coop :** **pas de doublon tant que le pool suffit**. Quand il y a plus de joueurs que d'artefacts, un nouveau
-   tour du pool commence : les doublons n'apparaissent qu'à ce moment, répartis au mieux (avec un pool d'un seul
-   artefact, tout le monde a le barillet) (validé, D-032).
+1. **Personnages (D-064, remplace le tirage de D-032) :** le joueur choisit son personnage dans le menu, avant la run ;
+   l'artefact vient avec lui.
+
+   | Personnage | Couleur | Artefact | Jouable |
+   |---|---|---|---|
+   | Renard | rouge | lanterne de feu (D-065) | oui |
+   | Caméléon | orange | barillet (D-032) | oui |
+   | Koala | vert | à concevoir | grisé (« bientôt ») |
+   | Hibou | bleu | à concevoir | grisé (« bientôt ») |
+
+   Un asset par personnage (`CharacterDefinition`, dans `Settings/Personnages/`), listés dans `Characters_Default`
+   (ordre du menu ; personnage par défaut : le caméléon). Un joueur qui n'a rien choisi (scène de test ouverte
+   directement) prend le caméléon ; le choix du menu vaut aussi pour les scènes de test lancées depuis le menu.
+2. **Coop : chaque joueur prend un personnage différent** (remplace « pas de doublon d'artefact »). Le menu fait
+   défiler les personnages libres (le joueur 2 apparaît quand il a rejoint avec Start) ; un joueur qui rejoint en jeu
+   prend le premier personnage jouable libre. Plus de joueurs que de personnages jouables : **pas d'artefact** pour les
+   derniers plutôt qu'un doublon (2 personnages jouables aujourd'hui, l'écran partagé est à 2).
 3. **Emplacement :** un seul artefact à la fois, en main gauche. Système générique : chaque artefact a son asset
    (`ArtifactDefinition`) avec son tir, ses munitions et son rechargement ; le pool est `ArtifactPool_Default`.
 4. **Touche (D-024) :** le **clic gauche / RT** est l'action principale : si l'orbe tient un objet, il le **lance** ;
@@ -33,18 +44,36 @@ Décisions D-022 et D-032.
      qui se rallument une à une pendant le rechargement) et sous le viseur (HUD discret) ; sons provisoires (tir,
      rechargement, fin de rechargement).
    - Le **traqueur ignore les balles** (elles l'atteignent sans le blesser).
-6. **Tir ami** (réglage coop `Coop_Default`, **désactivé par défaut**) : les balles, les objets lancés (zone
+6. **Lanterne de feu** (renard, D-065) : la main gauche tient une lanterne.
+   - **Clic gauche / RT sans objet tenu** : **jet de flammes** de **0.6 s** dans un **cône de 40°** (20° de chaque côté
+     du viseur), **portée 5 m** depuis les yeux ; **25 dégâts par ennemi**, **une fois par jet** (un ennemi qui entre dans
+     le cône pendant le jet est touché aussi) ; **recharge de 3 s** comptée depuis la fin du jet ; un clic un peu trop tôt
+     part dès que possible (0.12 s).
+   - **Le jet traverse les ennemis, les joueurs et les objets (Rigidbody), pas le décor** (collider solide sans
+     Rigidbody : même règle que les textes en monde).
+   - Comme toute attaque d'un joueur : **un volant meurt en un coup**, le **traqueur n'est pas touché**, le **tir ami** est
+     respecté (jamais soi-même), l'ennemi tué **donne ses âmes** et se retourne contre le joueur (D-041).
+   - **Objet tenu** : le clic est un lancer, la lanterne est inactive (atténuée, main abaissée) ; **prendre un objet arrête
+     le jet** (la recharge commence).
+   - **Retour (greybox) :** bouffées de flammes du jaune au rouge, qui s'arrêtent sur le décor ; la main pousse et tremble
+     pendant le jet ; **la lanterne s'éteint à la fin du jet et se rallume pendant la recharge** (petit son quand elle est
+     prête) ; HUD : un segment sous le viseur qui se vide pendant le jet et se remplit pendant la recharge ; sons provisoires
+     (souffle, rallumage). Le modèle de la DA arrivera par une PR (lanterne greybox de 6 × 9 × 6 cm en attendant).
+   - **Marchand de l'artefact** (D-050) : ses améliorations sont celles du barillet ; le renard ne voit que le soin tant que
+     la lanterne n'a pas les siennes.
+7. **Tir ami** (réglage coop `Coop_Default`, **désactivé par défaut**) : les balles, les objets lancés (zone
    comprise) et les objets repoussés d'un joueur blessent les autres joueurs s'il est activé ; **jamais le joueur
    lui-même**. Un objet est attribué au dernier joueur qui l'a attrapé, lancé ou repoussé. PV du joueur provisoires :
    100, réapparition au point de départ à 0 PV (validés pour les tests ; la vraie mort vient à l'étape 8).
-7. **Coop en ligne (étape 11) :** le contact entre un objet et un joueur est détecté par le jeu lui-même (Unity ne
+8. **Coop en ligne (étape 11) :** le contact entre un objet et un joueur est détecté par le jeu lui-même (Unity ne
    signale pas le choc d'un objet contre un `CharacterController`) ; en ligne, cette détection et les dégâts du tir
    ami devront être calculés **côté autorité réseau** (serveur ou hôte), comme les dégâts des objets.
 
 ## Valeurs
 
-Réglages dans `Barrel_Default` (artefact), `ArtifactPool_Default`, `Coop_Default`, `PlayerHealth_Default` ; modifiables
-en Play Mode.
+Réglages dans `Barrel_Default` et `FireLantern_Default` (artefacts), `Characters_Default` (personnages), `Coop_Default`,
+`PlayerHealth_Default` ; modifiables en Play Mode. `ArtifactPool_Default` ne sert plus qu'aux anciennes scènes sans liste
+de personnages.
 
 | Nom | Valeur | Unité | À observer en playtest |
 |---|---|---|---|
@@ -58,6 +87,12 @@ en Play Mode.
 | Traînée | 0.06 s, 2 → 5 cm | | lisible sans gêner |
 | Tir ami | désactivé, ×1 | | |
 | PV du joueur (provisoire) | 100, réapparition 1 s | PV | |
+| **Lanterne :** portée | 5 | m | |
+| Cône (ouverture totale) | 40 | ° | goules basses à moins de 2 m : viser un peu vers le bas |
+| Durée du jet | 0.6 | s | |
+| Dégâts par ennemi et par jet | 25 | PV | goule de 60 PV : 3 jets (7.2 s) ; barillet : 1 s |
+| Recharge (depuis la fin du jet) | 3 | s | rythme ressenti |
+| Bouffées de flammes | 30 par s, 0.35 s, 0.06 → 0.9 m | | lisible sans masquer la vue |
 
 ## Interactions
 
@@ -65,11 +100,19 @@ en Play Mode.
 |---|---|
 | [Orbes](../orbes/design.md) | même clic gauche / RT que le lancer ; barillet inactif quand l'orbe tient un objet |
 | [Vue FPS et HUD](../vue-fps/design.md) | barillet dans la main gauche, munitions sous les jauges de l'orbe, PV du joueur en bas à gauche |
-| [Boss traqueur](../boss-traqueur/design.md) | ignore les balles |
+| [Boss traqueur](../boss-traqueur/design.md) | ignore les balles ; pas touché par la lanterne |
+| Menu | choix du personnage de chaque joueur (D-064) |
+| [Âmes et économie](../ames/design.md) | marchand de l'artefact : améliorations du barillet seulement (le renard n'a que le soin) |
 | Améliorations | pourront modifier un artefact (dégâts, munitions…) |
 | Coop en ligne | tirage par la seed ; tir instantané à rejouer côté serveur avec compensation de latence ; contact objet-joueur (tir ami) calculé par l'autorité réseau |
 
 ## Questions ouvertes
+
+- **Équilibre de la lanterne** (mesuré, voir testing) : 7.2 s pour tuer une goule seule (barillet : 1 s), 7.2 s pour un
+  groupe de 3 (barillet : 5.4 s) ; elle brille contre les meutes (8 goules sur 8 en un jet, visée au centre du groupe)
+  mais ne finit pas seule une goule isolée. Pistes : 30 à 35 dégâts (2 jets), recharge plus courte, ou améliorations de la
+  lanterne au marchand.
+- **Artefacts du koala et du hibou** : à concevoir.
 
 - **Tir maintenu :** aujourd'hui un clic = un tir (un clic trop tôt est mémorisé 0.12 s) ; un tir automatique en
   maintenant le bouton reste possible.
@@ -80,3 +123,5 @@ en Play Mode.
 - 2026-11-12 : designed (D-022).
 - 2026-11-12 : système générique, barillet, tir ami (D-032).
 - 2026-11-12 : validé en playtest ; doublons au nouveau tour du pool validés.
+- 2026-11-15 : un artefact par personnage, choisi dans le menu, jamais deux fois le même en coop (D-064) ; lanterne de feu
+  du renard (D-065) ; orbe à la couleur du personnage avec l'orbe v2 (D-066).

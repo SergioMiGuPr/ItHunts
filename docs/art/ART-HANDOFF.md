@@ -19,6 +19,11 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 > - **`.meta` des assets art (nouvelle règle, commit `94cebbf`)** : les `.meta` de `Assets/Art/` sont générés et commités par la
 >   session principale (Unity), juste après la fusion d'une PR art. La branche `art` fait un **pull de `main` avant chaque
 >   nouveau lot** ; ne jamais générer de `.meta` sur `art` sans avoir tiré `main` (détail au § 1).
+> - **Personnages et orbe (D-064 à D-066, `carte-suite`)** : chaque personnage a son artefact et sa couleur — **renard rouge
+>   (lanterne de feu), caméléon orange (barillet), koala vert, hibou bleu** (artefacts à concevoir). Avec l'**orbe v2**, l'orbe
+>   gardera **la couleur du personnage en permanence** ; les actions se liront au **mouvement des anneaux et des runes** ; les
+>   **6 tablettes** servent de jauge (**2 traction, 1 répulsion, 3 mouvement**). Le code couleur par action (§ 0 quater) reste
+>   jusqu'à l'intégration de l'orbe v2. **Lanterne de feu** : mesures au § 5 bis (greybox en place, modèle attendu par PR).
 > - **Hauteurs abaissées (`carte-suite`, charte « caves à l'échelle humaine »)** : salles simples 18 m, à étages 22 m, d'égout 16 m,
 >   carrefours 16 m, couloirs 15 m (§ 0) ; les arcs de couloir portent la voûte (sommet au plafond, deux piédroits de 1 × 1.6 m).
 > - **Carte aléatoire (`carte-aleatoire`)** : nouvelle section « Kit de construction » : toute la structure en pièces `Kit_*` (4 m),
@@ -87,6 +92,10 @@ Le jeu décide du moment des coups ; l'animation doit montrer l'annonce **pendan
 | **Libération d'un ennemi tenu** | goule **3 s** (elle se débat les **0.5 s** d'avant : clignote et tremble) ; volant **2 s** | elle se débat |
 
 ## 0 quater. Couleurs : orbe par action (D-024) et codes du jeu
+
+> **À venir (D-066) :** avec l'orbe v2, l'orbe prend la **couleur du personnage** (rouge, orange, vert, bleu) en permanence et
+> les actions passent par les anneaux et les runes ; le tableau ci-dessous vaut jusque-là. Attention aux couleurs réservées
+> (rouge = annonce d'attaque et refus) : la teinte exacte des personnages est à choisir avec la DA.
 
 | Couleur | Sens |
 |---|---|
@@ -262,6 +271,24 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
   brillance), les runes gardent le matériau du FBX, les chambres une copie de `M_Barillet_Chambre` avec l'émission activée
   (une couleur par chambre via MaterialPropertyBlock). **Reste à livrer :** le canon (point d'attache `Barrel_Muzzle` au
   bout). Recul géré par le code (la main recule de 3.5 cm et se relève de 8° à chaque tir).
+- **Lanterne de feu (renard, D-065), greybox à remplacer :** tenue dans la paume gauche comme le barillet, centre à
+  **(0, 0.075, 0.05)** dans le repère de la main gauche (réglable dans `FpsView_Default` : `lanternInHand`, rotation,
+  échelle). Mesures (m) :
+
+  | Pièce | Taille | Position (repère de la lanterne) |
+  |---|---|---|
+  | Socle et chapeau | 0.07 × 0.012 × 0.07 | y = −0.045 et +0.045 |
+  | Toit | 0.04 × 0.012 × 0.04 | y = 0.056 |
+  | 4 montants | 0.007 × 0.08 × 0.007 | aux coins (±0.03, ±0.03) |
+  | Anse | cylindre Ø 0.006 × 0.044 | y = 0.068 |
+  | **Flamme** (émission réglée par le code) | 0.032 × 0.045 × 0.032 | centre (0, −0.005, 0) |
+  | Sortie du jet (point d'attache) | — | (0, 0.03, 0.05) |
+
+  **États à lire sur le modèle :** flamme **allumée** (prête, émission orangée HDR (4, 1.7, 0.4)), **vive** pendant le jet
+  (× 1.4), **éteinte** à la fin du jet puis **se rallume en 3 s** (taille et émission), **atténuée** (× 0.25) quand l'orbe tient
+  un objet. La cage doit laisser voir la flamme (côtés ouverts ou vitres claires). Le **jet** (5 m, cône de 40°, 0.6 s) est
+  fait de bouffées de flammes par le code (sphères additives, jaune → rouge) : un effet de particules dessiné à la main
+  pourra les remplacer. Recul géré par le code (main poussée de 3 cm, tremblement).
 - **Livraison des mains :** `SK_Mains` (bras et mains, squelette avec poignet et doigts), pivot au poignet de chaque
   main, mêmes axes ; budget 15 000 à 20 000 triangles, texture 2048. Les gestes sont faits par le code (positions et
   rotations du poignet, ouverture des doigts) : des animations faites à la main pourront venir plus tard.

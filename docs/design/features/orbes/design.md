@@ -1,6 +1,6 @@
 # Orbes
 
-**Status:** in progress · **Updated:** 2026-11-12 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md)
+**Status:** in progress · **Updated:** 2026-11-15 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md)
 
 **Une seule orbe** (D-024), qui réunit deux pouvoirs : le magnétisme déplace le joueur (et bouscule les
 ennemis) ; la télékinésie transforme l'arène en munitions. Les quatre actions sont disponibles **en même
@@ -122,6 +122,10 @@ l'arme », « le mouvement est la survie ».
    tenu > recharge > prête. Exemple : traction en tenant une caisse → orbe bleue (ce qui te déplace), la
    caisse et son trait restent violets ; lancer en arrivant → éclair vert, puis bleu ou neutre. Écarté :
    un mélange bleu-violet (illisible à pleine vitesse) ou une orbe coupée en deux couleurs.
+   **Provisoire (D-066) :** à l'intégration de l'orbe v2 (modélisée par la session art), l'orbe garde **en permanence la
+   couleur du personnage** (renard rouge, caméléon orange, koala vert, hibou bleu) ; les actions se lisent au **mouvement
+   des anneaux et des runes**, plus par la couleur. Les **6 tablettes** de l'orbe v2 servent de jauge : **2 charges de
+   traction, 1 répulsion, 3 charges de mouvement**. Jusque-là, le code couleur ci-dessus reste.
 8. **Âmes :** l'orbe aspire automatiquement les âmes dans un rayon autour d'elle.
 9. **Dégâts par amélioration :** une amélioration peut donner des dégâts directs à l'orbe
    (par exemple l'onde de répulsion) ou un bonus aux objets lancés. Ces dégâts s'ajoutent à
@@ -271,4 +275,6 @@ ScriptableObjects `MagnetismOrbSettings`, `TelekinesisOrbSettings`, `MagnetismFe
 - 2026-11-12 : recharge d'une charge d'attraction à 6 s (D-036).
 - 2026-11-13 : 2 charges d'attraction au lieu de 3, pour ne pas trop s'appuyer sur la traction (D-036 mise à jour).
 
+- 2026-11-15 : couleur du personnage en permanence et jauge des 6 tablettes avec l'orbe v2 (D-066) ; le code couleur par
+  action reste jusqu'à son intégration.
 - 2026-11-13 : surfaces non magnétiques (D-051) : la traction ne s'y accroche pas (refus en rouge, charge gardée), la répulsion oui ([run et niveaux](../run-et-niveaux/design.md)).
