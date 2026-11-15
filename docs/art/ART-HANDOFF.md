@@ -19,6 +19,7 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 > - **`.meta` des assets art (nouvelle règle, commit `94cebbf`)** : les `.meta` de `Assets/Art/` sont générés et commités par la
 >   session principale (Unity), juste après la fusion d'une PR art. La branche `art` fait un **pull de `main` avant chaque
 >   nouveau lot** ; ne jamais générer de `.meta` sur `art` sans avoir tiré `main` (détail au § 1).
+> - **Barillet (`barillet-modele`)** : `SM_Barillet` branché dans la vue FPS (§ 5 bis) ; le canon reste greybox, à modéliser.
 > - **Catalogue des props** : `Prop_TorcheEteinte` (flamme sans lumière, une torche sur deux dans les bases régénérées).
 > - Goules : elles grimpent aussi les flancs des plateformes et les murs proches d'un joueur hors d'atteinte, puis **bondissent
 >   depuis le mur** (même annonce de 0.3 s) : garder les murs et flancs de plateforme **pleins**, sans trou ni rebord qui coupe.
@@ -236,21 +237,27 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
 - **Orbe :** sphère de **Ø 0.08 m**, centre en (0, 0.06, 0.045) dans le repère de la main droite (au-dessus de la
   paume). Prévoir un point d'attache nommé `Orb_Socket` à cet endroit ; l'orbe reste un objet séparé (le jeu change sa
   couleur, HDR, bloom).
-- **Barillet (premier artefact, main gauche, D-032) :** tenu dans la paume gauche, pointé dans le sens des doigts
-  (+z de la main). Repère `Barillet (vue)` en (0, 0.055, 0.05) dans le repère de la main gauche. Mesures (m) :
+- **Barillet (premier artefact, main gauche, D-032) : modèle `SM_Barillet` branché (2026-11-15, branche `barillet-modele`).**
+  Tenu dans la paume gauche, axe de tir (+Z) dans le sens des doigts. Repère `Barillet (vue)` en **(0, 0.065, 0.05)** dans
+  le repère de la main gauche, rotation (0, 0, 0), échelle 1 (= 0.10 m de diamètre) : réglables dans `FpsView_Default`
+  (« Barillet »). Le modèle entier tourne de **−60° autour de son Z local à chaque tir** (sens horaire vu du joueur), en
+  0.08 s (courbe réglable, `Barrel_Default`), et finit toujours sur un multiple de 60°. Mesures (m) :
 
   | Pièce | Taille | Position (repère du barillet) |
   |---|---|---|
-  | Corps (tourne d'un cran de 60° à chaque tir, autour de z) | cylindre Ø 0.075 × 0.07 | centre (0, 0, 0) |
-  | 6 chambres (face arrière, vers la caméra) | Ø 0.016, au rayon 0.024 | z −0.037 ; chambre 1 en haut, puis tous les 60° |
-  | Canon | cylindre Ø 0.022 × 0.10 | centre (0, 0.022, 0.085) |
-  | Bouche du canon (départ de la traînée) | — | (0, 0.022, 0.136) |
+  | `SM_Barillet` (modèle livré, pivot au centre) | 0.100 × 0.100 × 0.111 | centre (0, 0, 0) |
+  | 6 chambres `SM_Barillet_Chambre_01` à `_06` | maillage propre à chacune | 01 en haut (0, 0.0307), puis tous les 60° |
+  | Canon (**greybox, à modéliser**) | cylindre Ø 0.022 × 0.10 | centre (0, 0.0307, 0.1055), dans l'axe de la chambre du haut |
+  | Bouche du canon (départ de la traînée) | — | (0, 0.0307, 0.1565) |
 
-  **Les munitions se lisent sur les chambres** : une chambre chargée s'allume (couleur HDR orangée, bloom), une vide
-  est noire, et elles sont grisées quand l'orbe tient un objet (barillet inactif). Prévoir dans le modèle : 6
-  chambres **séparées** (le jeu change leur couleur une à une), le corps qui tourne en pièce séparée, un point
-  d'attache `Barrel_Muzzle` au bout du canon, pivot du corps sur son axe. Budget proposé : 3 000 à 5 000 triangles,
-  texture 1024. Recul géré par le code (la main recule de 3.5 cm et se relève de 8° à chaque tir).
+  **Les munitions se lisent sur les chambres** : chargée = **émission** (blanc chaud provisoire (1, 0.86, 0.66) × 3,
+  au-delà du seuil de bloom, réglable dans `Barrel_Default`, pas le violet de la télékinésie) ; vide = **couleur de base
+  seule #1A120C** ; barillet inactif (objet tenu) : émission × 0.2. La chambre du haut est la prochaine à tirer ; au
+  rechargement, les chambres se rallument une à une. Matériaux (provisoires, la liste sera validée avec la DA) : le corps
+  utilise `Assets/_Project/Art/Barillet/M_Barillet_Laiton` (texture `T_Barillet_Laiton_BaseColor` seulement, ni métal ni
+  brillance), les runes gardent le matériau du FBX, les chambres une copie de `M_Barillet_Chambre` avec l'émission activée
+  (une couleur par chambre via MaterialPropertyBlock). **Reste à livrer :** le canon (point d'attache `Barrel_Muzzle` au
+  bout). Recul géré par le code (la main recule de 3.5 cm et se relève de 8° à chaque tir).
 - **Livraison des mains :** `SK_Mains` (bras et mains, squelette avec poignet et doigts), pivot au poignet de chaque
   main, mêmes axes ; budget 15 000 à 20 000 triangles, texture 2048. Les gestes sont faits par le code (positions et
   rotations du poignet, ouverture des doigts) : des animations faites à la main pourront venir plus tard.

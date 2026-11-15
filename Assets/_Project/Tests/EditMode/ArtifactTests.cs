@@ -483,5 +483,108 @@ namespace ItHunts.Tests
                 Assert.That(clear.HandsReceiveAmbientOcclusion, Is.False, path);
             }
         }
+
+        // ---------- Modèle SM_Barillet (étape 10) ----------
+
+        [TestCase(1)]
+        [TestCase(3)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(13)]
+        public void ModeleBarillet_NTirs_AngleFinalEtChambresAllumees(int n)
+        {
+            // N tirs réels (Barrel.Step), clic à chaque tick ; la vue (BarrelSpin) suit le compteur, même pendant l'animation
+            // (rotation allongée à 0.4 s, plus longue que la cadence de 0.25 s). Puis le modèle livré reçoit l'état.
+            _barrel.spinDuration = 0.4f;
+            var gun = new Gun(_barrel);
+            var spin = new BarrelSpin();
+            float t = 0f;
+            for (int i = 0; i < 4000 && gun.Shots < n; i++)
+            {
+                if (!gun.B.Reloading)
+                    gun.Click();
+                gun.Step(_barrel);
+                t += Dt;
+                spin.Follow(gun.B.ShotCount, t, _barrel.spinDuration, _barrel.spinCurve);
+            }
+
+            Assert.That(gun.Shots, Is.EqualTo(n));
+            t += _barrel.spinDuration;                                      // animation finie
+            float angle = spin.Angle(t, _barrel.spinDuration, _barrel.spinCurve);
+            Assert.That(angle, Is.EqualTo(-60f * (n % 6)), "−60° par tir, multiple exact de 60°, sans dérive");
+
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/Models/FPS/SM_Barillet.fbx");
+            Assert.That(asset, Is.Not.Null, "modèle livré par la DA");
+            var model = Object.Instantiate(asset);
+            Material mat = null;
+            try
+            {
+                var chambers = Enumerable.Range(1, 6).Select(i => model.transform.Find($"SM_Barillet_Chambre_{i:00}").GetComponent<Renderer>()).ToArray();
+                mat = BarrelView.ChamberMaterial(chambers);
+                Assert.That(mat.IsKeywordEnabled("_EMISSION"), Is.True);
+                int lit = BarrelModel.Lit(gun.B.Rounds, gun.B.Reloading, 0f);
+                int on = BarrelView.ApplyModel(model.transform, chambers, new MaterialPropertyBlock(), angle, gun.B.ShotCount, lit, false, _barrel);
+                int expected = gun.B.Reloading ? 0 : 6 - n % 6;
+                Assert.That(on, Is.EqualTo(expected), "chambres allumées = coups restants");
+                Assert.That(Mathf.DeltaAngle(model.transform.localEulerAngles.z, -60f * (n % 6)), Is.EqualTo(0f).Within(0.01f));
+                var block = new MaterialPropertyBlock();
+                int glowing = 0;
+                for (int i = 0; i < 6; i++)
+                {
+                    chambers[i].GetPropertyBlock(block);
+                    bool glow = block.GetColor(Shader.PropertyToID("_EmissionColor")).maxColorComponent > 1f;
+                    if (glow)
+                        glowing++;
+                    Assert.That(glow, Is.EqualTo(BarrelModel.Loaded(i, gun.B.ShotCount, lit)), $"chambre {i + 1}");
+                    Assert.That((Color32)block.GetColor(Shader.PropertyToID("_BaseColor")), Is.EqualTo(new Color32(0x1A, 0x12, 0x0C, 0xFF)), "#1A120C");
+                }
+
+                Assert.That(glowing, Is.EqualTo(expected), "émission au-delà du seuil de bloom (1) pour les seules chambres chargées");
+                if (!gun.B.Reloading && n % 6 != 0)
+                    Assert.That(BarrelModel.Loaded(BarrelModel.TopChamber(n), n, lit), Is.True, "la chambre du haut est la prochaine à tirer");
+            }
+            finally
+            {
+                Object.DestroyImmediate(model);
+                if (mat != null)
+                    Object.DestroyImmediate(mat);
+            }
+        }
+
+        [Test]
+        public void ModeleBarillet_Rechargement_SeRallumeUneAUne_SansEteindreLesChargees()
+        {
+            Assert.That(BarrelModel.Lit(2, true, 0f), Is.EqualTo(2), "les 2 coups restants restent allumés");
+            Assert.That(BarrelModel.Lit(2, true, 0.5f), Is.EqualTo(3));
+            Assert.That(BarrelModel.Lit(0, true, 0.99f), Is.EqualTo(5));
+            Assert.That(BarrelModel.Lit(6, false, 0f), Is.EqualTo(6));
+            Assert.That(BarrelModel.Lit(8, false, 0f), Is.EqualTo(6), "barillet garni (+2) : 6 chambres au plus");
+            // 2 tirs : chambres 01 et 02 vides, la 03 en haut.
+            Assert.That(BarrelModel.TopChamber(2), Is.EqualTo(2));
+            Assert.That(BarrelModel.Loaded(0, 2, 4), Is.False);
+            Assert.That(BarrelModel.Loaded(1, 2, 4), Is.False);
+            Assert.That(BarrelModel.Loaded(2, 2, 4), Is.True);
+            Assert.That(BarrelModel.Loaded(5, 2, 4), Is.True);
+            Assert.That(BarrelModel.Loaded(0, 2, 5), Is.True, "en rechargement, la chambre qui a tiré en premier se rallume la première");
+            Assert.That(BarrelModel.Loaded(1, 2, 5), Is.False);
+        }
+
+        [Test]
+        public void ModeleBarillet_PrefabPlayer_ModeleLivreBrancheSurLaVue()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");
+            var view = prefab.GetComponent<BarrelView>();
+            var so = new SerializedObject(view);
+            var spin = (Transform)so.FindProperty("cylinder").objectReferenceValue;
+            Assert.That(spin, Is.Not.Null);
+            Assert.That(PrefabUtility.GetCorrespondingObjectFromSource(spin.gameObject),
+                Is.EqualTo(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/Models/FPS/SM_Barillet.fbx")), "le modèle SM_Barillet tourne");
+            SerializedProperty list = so.FindProperty("chambers");
+            Assert.That(list.arraySize, Is.EqualTo(6));
+            for (int i = 0; i < 6; i++)
+                Assert.That(((Renderer)list.GetArrayElementAtIndex(i).objectReferenceValue).name, Is.EqualTo($"SM_Barillet_Chambre_{i + 1:00}"));
+            var body = spin.GetComponent<Renderer>();
+            Assert.That(body.sharedMaterials[0].GetTexture("_BaseMap").name, Is.EqualTo("T_Barillet_Laiton_BaseColor"), "laiton texturé");
+        }
     }
 }

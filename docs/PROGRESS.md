@@ -4,6 +4,24 @@
 
 ## Étape en cours
 
+**Modèle du barillet (demande de la session art) — 2026-11-15, branche `barillet-modele` (depuis `main` après la fusion des
+corrections 8-9), commitée, sans push ni fusion : l'utilisateur valide en Play Mode d'abord.**
+- `SM_Barillet` (PR #2) remplace le barillet greybox en main gauche (`BarrelModelInstaller`, menu *ItHunts > Barillet :
+  installer le modèle…* ; le prefab Player est modifié en place, le constructeur l'utilise aussi). Logique de tir inchangée.
+- Chambre chargée = émission (blanc chaud (1, 0.86, 0.66) × 3) ; vide = couleur de base #1A120C ; inactif (objet tenu) ×0.2 ;
+  un matériau partagé (copie de `M_Barillet_Chambre`, émission activée) et un MaterialPropertyBlock par chambre.
+- −60° autour du Z local par tir, 0.08 s, courbe réglable (`BarrelSpin`) ; rechargement : les chambres se rallument une à une.
+- État visuel dérivé du compteur de munitions et de tirs du joueur (`BarrelModel`), sans état à part (coop en ligne).
+- Laiton : `Assets/_Project/Art/Barillet/M_Barillet_Laiton.mat` (couleur de base seule) posé sur l'instance ; le FBX n'est pas
+  modifié. **Canon encore greybox** (aligné sur la chambre du haut).
+- Réglages : `Barrel_Default` (émission, intensité, part inactive, couleur de base, durée et courbe de rotation),
+  `FpsView_Default` (position (0, 0.065, 0.05), rotation, échelle 1 du barillet).
+- Mesuré en Play Mode (Test_Movement, tirs réels) : chambres conformes après 1, 3 et 6 tirs et après le rechargement ;
+  rechargement ······ → 1····· → … → 123456 ; 30 tirs rapides avec une rotation allongée à 0.4 s (29 tirs pendant
+  l'animation) : angle final 0°, écart 0° à un multiple de 60° ; à 20 m/s (FOV du monde 81.4°), mains dessinées à 60°,
+  barillet à 0.385 m devant la caméra au plus près (plan proche 0.01 m).
+- Tests : 7 nouveaux (`ModeleBarillet_*`), 363 au total, 362 passent, 1 non concluant à dessein.
+
 **Corrections après le playtest des étapes 8 et 9 — terminées le 2026-11-15, fusionnées dans `main`** (branche `correctifs-8-9`,
 supprimée après la fusion). Playtest du 2026-11-15 : vagues, ennemis endormis, chasseurs, pression au début de zone **bons** ;
 goules en hauteur **bonnes** (plus de goule coincée ni de téléportation visible) ; aide à la visée à la manette pas encore testée.
