@@ -52,7 +52,10 @@ namespace ItHunts.Level
             RenderSettings.fogEndDistance = ambiance.fogEnd;
             foreach (Light l in FindObjectsByType<Light>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (l.type == LightType.Directional)
+                {
                     l.intensity = ambiance.moonIntensity;
+                    AmbianceLight.LightViewmodel(l);                    // la lune éclaire aussi les mains (pas la lanterne)
+                }
             Cameras();
         }
 

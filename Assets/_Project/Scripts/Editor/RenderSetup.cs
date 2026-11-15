@@ -19,6 +19,15 @@ namespace ItHunts.EditorTools
     /// </summary>
     public static class RenderSetup
     {
+        /// <summary>Composant existant ou ajouté (pas de « ?? » : GetComponent renvoie un faux null dans l'éditeur).</summary>
+        private static T Comp<T>(Component c) where T : Component => Comp<T>(c.gameObject);
+
+        private static T Comp<T>(GameObject go) where T : Component
+        {
+            T t = go.GetComponent<T>();
+            return t != null ? t : go.AddComponent<T>();
+        }
+
         public const string RendererPath = "Assets/Settings/PC_Renderer.asset";
         public const string PipelinePath = "Assets/Settings/PC_RPAsset.asset";
         public const string ContoursMaterialPath = "Assets/Art/Materials/Rendu/M_Contours.mat";
@@ -124,7 +133,7 @@ namespace ItHunts.EditorTools
             try
             {
                 Transform view = root.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Mains (vue)");
-                var h = root.GetComponent<HandsOutline>() ?? root.AddComponent<HandsOutline>();
+                var h = Comp<HandsOutline>(root);
                 SetRef(h, "viewRoot", view);
                 SetRef(h, "outline", mat);
                 PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);

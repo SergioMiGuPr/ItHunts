@@ -19,10 +19,25 @@ namespace ItHunts.Level
 
         private void OnEnable() => Apply();
 
+        /// <summary>Calque de rendu de la vue FPS (mains, artefacts) : les torches, lampes et la lune l'éclairent, pas la lanterne.</summary>
+        public const int FpsRenderingLayer = 1;
+
+        /// <summary>Ajoute le calque de la vue FPS aux calques éclairés par cette lumière.</summary>
+        public static void LightViewmodel(Light l)
+        {
+            if (l == null)
+                return;
+            l.renderingLayerMask |= 1 << FpsRenderingLayer;
+            var data = l.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalLightData>();
+            if (data != null)
+                data.renderingLayers |= 1u << FpsRenderingLayer;
+        }
+
         public void Apply()
         {
             var a = SceneAmbiance.Active;
             var l = GetComponent<Light>();
+            LightViewmodel(l);
             if (a == null || l == null)
                 return;
             l.intensity = kind == Kind.Torche ? a.torchIntensity : a.lampIntensity;

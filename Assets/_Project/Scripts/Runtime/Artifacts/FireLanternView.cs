@@ -22,8 +22,12 @@ namespace ItHunts.Artifacts
         [SerializeField] private Transform lanternRoot;
         [Tooltip("Flamme dans la cage de la lanterne (émission réglée par le code).")]
         [SerializeField] private Renderer flame;
-        [Tooltip("Sortie du jet (haut de la lanterne).")]
+        [Tooltip("Sortie du jet (repère FX_Jet du modèle SM_LanterneFeu).")]
         [SerializeField] private Transform muzzle;
+        [Tooltip("Verre de la lanterne (SM_LanterneFeu_Verre) : allumé par _EmissionColor à la couleur du personnage, éteint pendant la recharge.")]
+        [SerializeField] private Renderer glass;
+        [Tooltip("Intensité de l'émission du verre allumé (× couleur du personnage).")]
+        [SerializeField] private float glassIntensity = 2.5f;
         [Tooltip("Maillage et matériau des bouffées de flammes (sphère, Particles/Unlit).")]
         [SerializeField] private Mesh puffMesh;
         [SerializeField] private Material puffMaterial;
@@ -51,7 +55,7 @@ namespace ItHunts.Artifacts
         private readonly Puff[] _puffs = new Puff[MaxPuffs];
         private int _next;
         private float _spawnDebt;
-        private MaterialPropertyBlock _block;
+        private MaterialPropertyBlock _block, _glassBlock;
         private AudioSource _audio;
         private AudioClip _jet, _relight;
         private float _jetClipFor = -1f;
@@ -71,6 +75,7 @@ namespace ItHunts.Artifacts
             var input = GetComponent<PlayerInput>();
             _camera = input != null ? input.camera : null;
             _block = new MaterialPropertyBlock();
+            _glassBlock = new MaterialPropertyBlock();
             _audio = gameObject.AddComponent<AudioSource>();
             _audio.playOnAwake = false;
             _audio.spatialBlend = 0f;
@@ -155,6 +160,15 @@ namespace ItHunts.Artifacts
             float glow = s.Jetting ? 1.4f : Mathf.SmoothStep(0f, 1f, FireLantern.CooldownProgress(s, tick, cfg, dt));
             float flicker = 0.9f + 0.1f * Mathf.PerlinNoise(Time.time * 9f, GetInstanceID() * 0.01f);
             ShownGlow = glow;
+            if (glass != null)
+            {
+                Color c = _holder.Character != null ? _holder.Character.color : new Color(0.9f, 0.22f, 0.16f);
+                float kg = glow * flicker * (s.Inactive ? cfg.inactiveFactor : 1f);
+                glass.GetPropertyBlock(_glassBlock);
+                _glassBlock.SetColor(EmissionColorId, c * (glassIntensity * kg));
+                glass.SetPropertyBlock(_glassBlock);
+            }
+
             if (flame != null)
             {
                 float k = glow * flicker * (s.Inactive ? cfg.inactiveFactor : 1f);

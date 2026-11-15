@@ -21,6 +21,9 @@ MonoBehaviour:
   barrelInHand: {x: 0, y: 0.065, z: 0.05}
   barrelInHandEuler: {x: 0, y: 0, z: 0}
   barrelScale: 1
+  lanternInHand: {x: 0, y: 0.075, z: 0.05}
+  lanternInHandEuler: {x: 0, y: 0, z: 0}
+  lanternScale: 0.6
   orbDiameter: 0.08
   orbInHand: {x: 0, y: 0.06, z: 0.045}
   swayPerDegree: 0.002
