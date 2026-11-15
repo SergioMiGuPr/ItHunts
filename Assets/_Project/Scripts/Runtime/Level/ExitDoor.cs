@@ -18,7 +18,7 @@ namespace ItHunts.Level
         [SerializeField] private float interactRange = 6f;
 
         private ZoneState _zone;
-        private WorldLabel _label;
+        private WorldLabel[] _labels;
         private Renderer[] _renderers;
         private Material[] _lockedMaterials;
         private bool _shownUnlocked;
@@ -38,8 +38,10 @@ namespace ItHunts.Level
             _lockedMaterials = new Material[_renderers.Length];
             for (int i = 0; i < _renderers.Length; i++)
                 _lockedMaterials[i] = _renderers[i].sharedMaterial;
-            _label = WorldLabel.Create(transform, new Vector3(0f, 0f, -0.2f), "Sortie", new Color(1f, 0.5f, 0.3f), 0.5f);
-            _label.TextFor = _ => LabelText();
+            // Un texte devant chaque face de la porte : la porte cache celui de l'autre face (règle des textes en monde).
+            _labels = WorldLabel.CreateOnFaces(transform, "Sortie", new Color(1f, 0.5f, 0.3f), 0.5f);
+            foreach (WorldLabel l in _labels)
+                l.TextFor = _ => LabelText();
         }
 
         private void OnEnable() => Interactables.All.Add(this);
@@ -90,8 +92,10 @@ namespace ItHunts.Level
             foreach (Renderer r in GetComponentsInChildren<Renderer>(true))
                 if (r.GetComponent<TextMesh>() == null)
                     r.enabled = !open;
-            if (_label != null)
-                _label.gameObject.SetActive(!open);
+            if (_labels != null)
+                foreach (WorldLabel l in _labels)
+                    if (l != null)
+                        l.gameObject.SetActive(!open);
         }
 
         /// <summary>Remise à zéro de la zone : refermée et verrouillée.</summary>

@@ -31,6 +31,34 @@ namespace ItHunts.Economy
         public IReadOnlyList<OfferOrb> OffersFor(int playerId) => _offers.TryGetValue(playerId, out List<OfferOrb> l) ? l : new List<OfferOrb>();
         public int Purchases { get; private set; }
 
+        /// <summary>Décalage d'une offre (repère du marchand, m) : rangée devant lui, une sur deux plus haute ; le soin au bout.</summary>
+        public static Vector3 OfferOffset(int i, int count) =>
+            new Vector3((i - (count - 1) * 0.5f) * 2.4f, 1.6f + (i % 2 == 1 ? 0.6f : 0f), 1.6f);
+
+        /// <summary>Décalage du soin (après les count offres, à la hauteur basse).</summary>
+        public static Vector3 HealOffset(int count) => new Vector3((count - (count - 1) * 0.5f) * 2.4f, 1.6f, 1.6f);
+
+        /// <summary>
+        /// Enseigne (enfant « Enseigne ») : au-dessus de toute la rangée d'offres, dans le même plan que leurs textes, avec 1.6 m de
+        /// marge sur le plus haut (orbe la plus haute + texte de 3 lignes + flottement) : elle ne cache aucune étiquette d'offre,
+        /// sous aucun angle de face (corrections des étapes 8 et 9 ; avant, elle était derrière les textes, à 2.9 m).
+        /// </summary>
+        public static Vector3 SignOffset(int count, bool heal, float signHeight)
+        {
+            float minX = OfferOffset(0, count).x, maxX = heal ? HealOffset(count).x : OfferOffset(count - 1, count).x, top = 0f;
+            for (int i = 0; i < count; i++)
+                top = Mathf.Max(top, OfferOffset(i, count).y);
+            top += 0.95f + 3f * 0.28f * 0.5f + 0.12f;                   // texte au-dessus de l'orbe (3 lignes de 0.28 m) + flottement
+            return new Vector3((minX + maxX) * 0.5f, top + 1.6f + signHeight * 0.5f, 1.6f);
+        }
+
+        private void Start()
+        {
+            Transform sign = transform.Find("Enseigne");
+            if (sign != null)
+                sign.position = transform.TransformPoint(SignOffset(offers, withHeal, sign.lossyScale.y));
+        }
+
         private void Update()
         {
             foreach (PlayerHealth p in PlayerHealth.All)
@@ -67,8 +95,7 @@ namespace ItHunts.Economy
             for (int i = 0; i < idx.Length; i++)
             {
                 UpgradeDefinition u = pool.upgrades[idx[i]];
-                float x = (i - (idx.Length - 1) * 0.5f) * 2.4f;
-                Vector3 at = transform.position + transform.forward * 1.6f + transform.right * x + Vector3.up * (1.6f + (i % 2 == 1 ? 0.6f : 0f));
+                Vector3 at = transform.TransformPoint(OfferOffset(i, idx.Length));
                 OfferOrb orb = OfferOrb.Create(transform, at, u, u.merchantPrice, 0f, playerId, range, orbMaterial);
                 orb.Pricing = settings;
                 orb.TakenBy += (o, p) =>
@@ -82,8 +109,7 @@ namespace ItHunts.Economy
             // 4e offre fixe : le soin (+40 PV pour 35 âmes, EconomySettings) ; seul moyen de se soigner pendant une zone.
             if (withHeal)
             {
-                float hx = (idx.Length - (idx.Length - 1) * 0.5f) * 2.4f;
-                Vector3 hat = transform.position + transform.forward * 1.6f + transform.right * hx + Vector3.up * 1.6f;
+                Vector3 hat = transform.TransformPoint(HealOffset(idx.Length));
                 OfferOrb heal = OfferOrb.Create(transform, hat, null, settings != null ? settings.healPrice : 35,
                     settings != null ? settings.healAmount : 40f, playerId, range, orbMaterial);
                 heal.Pricing = settings;

@@ -10,6 +10,17 @@ Le traqueur est lâché à 3 min et la porte de sortie se déverrouille à 10 mi
 15 min. En haut des escaliers de sortie, le combat de boss se gagne avec trois pièges. Le niveau 1 est généré en greybox
 (800 × 800 m environ, 49 salles), avec une minimap et un brouillard de guerre.
 
+## Après le playtest des étapes 8 et 9 (2026-11-15)
+
+- **Playtest du combat de boss :** entrée « Playtest : combat de boss » au menu principal (niveau 1 en Facile, directement dans
+  l'arène, traqueur, pièges et leviers) ; en jeu, **Page bas** (éditeur et builds de développement) y emmène directement (le timer
+  avance jusqu'à l'ouverture de la sortie, comme en vraie partie).
+- **Minimap :** la sortie est affichée **dès le début de la zone**, sans la découvrir.
+- **Textes en monde** (marchand, sortie, coffres, orbes de choix) : **cachés par le décor** (shader `ItHunts/WorldText` avec test de
+  profondeur), toujours lisibles à 10 m quand rien ne les cache.
+- **Menu pause** par joueur (Échap / Start), le jeu continue ; « Quitter l'écran partagé » pour le joueur 2.
+- **Affichage de debug (F3)** éteint au lancement.
+
 ## Règles
 
 1. **Run (D-048).** Un asset (`Run_Default`) liste les niveaux : le niveau 1 est rempli ; les niveaux 2 et 3 et la zone

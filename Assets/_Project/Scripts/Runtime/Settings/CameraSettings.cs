@@ -23,6 +23,19 @@ namespace ItHunts.Settings
         [Range(1f, 4f)] public float gamepadResponseExponent = 2f;
         public bool invertGamepadY;
 
+        [Header("Aide à la visée (après le playtest des étapes 8 et 9)")]
+        [Tooltip("Active à la manette (par défaut) ; à la souris (coupée par défaut).")]
+        public bool aimAssistGamepad = true;
+        public bool aimAssistMouse;
+        [Tooltip("Cône autour du viseur où une cible agit (demi-angle, °) et portée (m). Cibles : goules et volants ; main libre, " +
+                 "objets attrapables à portée de la télékinésie.")]
+        [Range(0f, 20f)] public float aimAssistAngle = 6f;
+        [Min(1f)] public float aimAssistRange = 45f;
+        [Tooltip("Vitesse de visée au centre d'une cible (× la vitesse normale), revenant à 1 au bord du cône.")]
+        [Range(0.1f, 1f)] public float aimAssistSlowdown = 0.5f;
+        [Tooltip("Légère attraction vers la cible (°/s), seulement quand le joueur bouge la vue ou se déplace ; 0 : aucune.")]
+        [Range(0f, 60f)] public float aimAssistPull = 8f;
+
         [Header("Vue")]
         [Tooltip("Inclinaison maximale vers le haut et vers le bas (°).")]
         [Range(10f, 89.9f)] public float pitchLimit = 89f;

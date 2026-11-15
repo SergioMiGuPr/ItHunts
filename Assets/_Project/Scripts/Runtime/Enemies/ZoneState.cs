@@ -98,6 +98,18 @@ namespace ItHunts.Enemies
                 DebugAdvance(60f);
                 Show($"Debug : timer +60 s ({Mathf.FloorToInt(Elapsed) / 60}:{Mathf.FloorToInt(Elapsed) % 60:00})", 1.5f);
             }
+
+            // Debug : Page bas emmène directement au combat de boss (playtest des étapes 8 et 9).
+            if ((Application.isEditor || Debug.isDebugBuild) && UnityEngine.InputSystem.Keyboard.current != null
+                && UnityEngine.InputSystem.Keyboard.current.pageDownKey.wasPressedThisFrame && !Finished)
+            {
+                BossFight fight = FindFirstObjectByType<BossFight>();
+                if (fight != null)
+                {
+                    fight.DebugBegin();
+                    Show("Debug : combat de boss", 1.5f);
+                }
+            }
         }
 
         /// <summary>Démarre le timer dès qu'un joueur vivant est hors de la salle de départ (ou tout de suite sans salle de départ).</summary>

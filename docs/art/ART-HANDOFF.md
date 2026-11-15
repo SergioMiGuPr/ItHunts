@@ -1,7 +1,100 @@
 # ItHunts : dossier de mesures et de livraison pour l'artiste
 
-**Mis à jour :** 2026-11-12 · Tiré des réglages réels du jeu (`Assets/_Project/Settings/*.asset`) et de la scène
-de test `Test_Movement`. Quand un réglage change, ce document est mis à jour par le côté code (branche `main`).
+**Mis à jour :** 2026-11-15 · Tiré des réglages réels du jeu (`Assets/_Project/Settings/*.asset`), des constructeurs de
+scène et des scènes `Test_Movement`, `Test_Arena` et `Level_01`. **C'est la référence unique des mesures pour la DA** : quand un
+réglage qui y figure change, ce document est mis à jour par le côté code (branche `main`).
+
+> **Ce qui a changé le 2026-11-15** (après le playtest des étapes 8 et 9) :
+> - **Nouveau § 0** : toutes les dimensions de ce qui a un modèle, dans un seul tableau (joueur, traqueur, goule, volant,
+>   caisses, lustres, coffres, marchands, portes, couloirs et salles).
+> - **Nouveaux § 0 bis, 0 ter et 0 quater** : masses des objets et des ennemis attrapables, timings que les animations doivent
+>   respecter, couleur de l'orbe par action (D-024) et codes couleur du jeu (rouge = annonce d'attaque et refus).
+> - **Volant : envergure 2.3 m** (et non ≈ 2.4 m).
+> - **Plus aucune porte « refuge »** (D-035) : aucune porte ni aucun abri où le traqueur ne peut pas passer la main.
+> - **Textes en monde** (marchand, sortie, coffres, orbes de choix, salle verrouillée, « à terre ») : **cachés par le décor**, avec
+>   une règle unique : un texte n'est affiché que si **aucun décor (collider solide sans Rigidbody) n'est entre la caméra et lui**,
+>   en plus du test de profondeur. Lignes de 0.28 m (sortie 0.5 m), toujours face à l'écran, **toujours à l'échelle du monde**
+>   (même posés sur une porte étirée). Sur une porte (sortie, salle verrouillée), **un texte devant chaque face**, à 0.12 m : un
+>   modèle de porte doit donc avoir une **collision pleine** (sinon le texte de l'autre face se voit à travers).
+> - **`.meta` des assets art (nouvelle règle, commit `94cebbf`)** : les `.meta` de `Assets/Art/` sont générés et commités par la
+>   session principale (Unity), juste après la fusion d'une PR art. La branche `art` fait un **pull de `main` avant chaque
+>   nouveau lot** ; ne jamais générer de `.meta` sur `art` sans avoir tiré `main` (détail au § 1).
+> - **Catalogue des props** : `Prop_TorcheEteinte` (flamme sans lumière, une torche sur deux dans les bases régénérées).
+> - Goules : elles grimpent aussi les flancs des plateformes et les murs proches d'un joueur hors d'atteinte, puis **bondissent
+>   depuis le mur** (même annonce de 0.3 s) : garder les murs et flancs de plateforme **pleins**, sans trou ni rebord qui coupe.
+
+## 0. Dimensions de référence (tout ce qui a un modèle)
+
+Un modèle doit tenir dans ces volumes (± 10 %), sauf mention contraire. Pivot et axes : § 9.
+
+| Objet | Dimensions | Où c'est réglé | Détails |
+|---|---|---|---|
+| **Joueur** | capsule **1.8 × 0.8 m** (rayon 0.4) ; yeux à 1.6 m ; accroupi 0.9 m, yeux à 0.75 m | `Movement_Default` | § 2 ; en écran partagé, l'autre joueur est vu comme une capsule (provisoire, à remplacer par un corps) |
+| **Traqueur** (boss) | capsule **7 × 14 m** (Ø 7, 14 de haut) ; **se baisse jusqu'à 9 m** ; épaule à 12 m ; **portée de main 15 m** depuis l'épaule (et 15 m dans une pièce depuis l'ouverture) | `Stalker_Default` | mains : boîtes de 4 × 2.2 × 4.5 m, bras de 1.5 m d'épaisseur (§ 5 ter) |
+| **Goule** | capsule **Ø 0.9 × 1.1 m** | `Ghoul_Default` | basse, rampe, grimpe aux murs (visuel basculé de 80°) |
+| **Volant** | corps 0.6 × 0.45 × 0.8 m (sphère de collision de 0.4 m de rayon) ; ailes de 0.9 × 0.5 m ; **envergure 2.3 m** | `Flyer_Default`, constructeur | zone de touche : corps + une boîte de 0.9 × 0.1 × 0.55 m par aile |
+| **Caisses attrapables** | cubes de **0.5 / 0.7 / 0.8 / 0.9 / 1.1 m** ; caisse trop lourde 1.3 m | scènes, props | § 5 et catalogue |
+| **Tonneau attrapable** | Ø 0.6 × 0.9 m | `Prop_Tonneau_Attrapable` | |
+| **Lustre** (salles) | 1.6 × 0.3 × 1.6 m, suspendu vers 7.6 m (au plus ≈ 15 m) | scènes | se décroche à l'onde (cône de 14 m) |
+| **Lustre géant** (arène du boss) | **12 × 1.5 × 12 m**, accroché à **24 m** | `BossArenaBuilder` | piège : tombe sur le traqueur |
+| **Coffre** | caisse **1.4 × 0.8 × 0.9 m** + couvercle **1.5 × 0.2 × 1 m** séparé | `Economy_Default`, scènes | orbes de choix de 0.55 m à 2.2 m au-dessus (§ 5 quater) |
+| **Marchand** (au hasard, retiré à l'étape 8) / **marchand de l'artefact** (salle de départ) | silhouette **0.9 × 2.2 m** + enseigne **1.6 × 0.4 m**, centrée à **5.5 m** de haut, 1.6 m devant lui (au-dessus de la rangée d'offres, dans leur plan) | scènes | 4 offres à 1.6 m de haut, 1.6 m devant lui ; l'enseigne ne doit cacher aucune étiquette d'offre |
+| **Grande porte de sortie** | **10 × 10 m** | `Level01Builder` | escalier de 20 marches de 0.4 × 1.6 m, 10 m de large, palier de 12 m |
+| **Portes des pièces** (annexes, salles verrouillées) | **3 × 3 m** dans un mur de 1 m ; fenêtre 3 × 1.5 m | constructeurs | sous la porte, le jeu ajoute un seuil pour les goules : ne pas y mettre de marche ni d'objet |
+| **Couloirs** | **14 m de large, 19 m de haut** (16 m de large en pente) ; tronçons de 40 m au plus | `LevelLayoutSettings` | voie centrale de 8 m, décor dans une bande de 3 m le long des murs |
+| **Salles** | **46 à 66 m** de côté (modules de 48, 56, 64 m), plafond **36 m** ; carrefours **20 m**, plafond 24 m ; niveau haut à **+16 m** | `LevelLayoutSettings` | voies dégagées en croix de 11 m entre les ouvertures |
+| **Pièces annexes** | **12 × 12 m, 6 m de haut** | constructeurs | profondeur ≤ 15 m depuis une ouverture |
+| **Passages en hauteur** | ouverture **3 × 3 m à 4.5 m** du sol, conduit 8 × 3.5 × 3 m | `LevelParkour` | murs autour non magnétiques |
+| **Arène du boss** | **80 × 80 m, 30 m** de haut ; fosse de 18 m de large, 8 m de profondeur | `BossArenaBuilder` | leviers : plaque 1.2 × 0.8 × 1.2 m sur un socle de 1.2 m |
+
+## 0 bis. Masses (objets et ennemis attrapables)
+
+La télékinésie attrape jusqu'à **40 kg** (au-delà : lueur rouge terne et refus). La masse doit **se lire à l'œil**.
+
+| Objet ou ennemi | Masse | Attrapable |
+|---|---|---|
+| Petite caisse (0.5 m) | 5 kg | oui |
+| Chaise attrapable | 8 kg | oui |
+| Caisse moyenne (0.7 m) / caisse attrapable (0.8 m) | 15 kg | oui |
+| Tonneau attrapable | 20 kg | oui |
+| Caisse (0.9 m) | 25 kg | oui |
+| Lustre (salles) | 25 kg | oui (il tombe) |
+| Grosse caisse (1.1 m) | 40 kg | oui (le maximum) |
+| Caisse trop lourde (1.3 m) | 60 kg | **non** (lueur rouge terne) |
+| **Volant** | **8 kg** | **oui, à tout moment** ; se libère en **2 s** |
+| **Goule** | **50 kg** | **seulement étourdie** (la masse de 40 kg ne s'applique pas aux ennemis étourdis) ; se libère en **3 s** |
+| Ennemi factice (greybox) | 80 kg | étourdi seulement |
+| Traqueur | — | **jamais** (intuable, insensible à l'orbe) |
+
+## 0 ter. Timings que les animations doivent respecter
+
+Le jeu décide du moment des coups ; l'animation doit montrer l'annonce **pendant** ce temps, pas avant ni après.
+
+| Action | Durée | Ce que l'animation montre |
+|---|---|---|
+| **Bond de la goule** (au sol, depuis une corniche **ou depuis un mur**) | annonce **0.3 s** puis bond | posture accroupie (le code écrase le visuel à 60 %), lueur rouge ; le bond s'esquive par un dash pendant le vol |
+| **Prise du traqueur** (main abattue) | annonce **0.5 s** ; la visée se recale **0.15 s avant** la descente | bras levé, ombre et lueur rouge au sol à la taille de la main |
+| **Mains levées au-dessus de la tête** (traqueur) | annonce **0.2 s**, puis 1 s | deux mains au-dessus de la tête |
+| **Revers** (traqueur, balayage de la main) | annonce **0.2 s**, balayage 0.25 s | |
+| **Main plantée** (traqueur, après une prise ratée) | **1.5 s** au sol | la main reste au sol, il tourne plus lentement |
+| **Piqué du volant** | annonce **0.4 s** | cri, lueur rouge, ailes repliées en piqué |
+| **Étourdissement** (goule, volant) | **1.5 s** | sonné ; attrapable pendant ce temps |
+| **Libération d'un ennemi tenu** | goule **3 s** (elle se débat les **0.5 s** d'avant : clignote et tremble) ; volant **2 s** | elle se débat |
+
+## 0 quater. Couleurs : orbe par action (D-024) et codes du jeu
+
+| Couleur | Sens |
+|---|---|
+| **Bleu** | traction (orbe, trait, ancre) ; c'est elle qui l'emporte sur l'objet tenu |
+| **Orange** | répulsion ; aussi les pièges, cibles et leviers du combat de boss |
+| **Violet** | objet visé ou tenu (télékinésie) ; marchands |
+| **Vert** | lancer (un éclat bref, qui l'emporte sur le reste) ; levier activé, sortie ouverte |
+| **Rouge** | **annonce d'attaque** (bond, prise, piqué, mains levées) **et refus** (trop lourd, surface non magnétique, porte verrouillée) |
+| **Cyan** | âmes |
+| **Doré / orangé** | coffres |
+
+Ces couleurs saturées sont **réservées au jeu** : à éviter en grandes surfaces dans le décor (§ 7).
+
 
 Ce dossier dit **à quelle taille** construire le monde et les objets, **dans quel style**, et **comment les
 livrer**. Les mesures viennent du contrôleur du joueur : un décor qui les ignore casse le mouvement, qui est le
@@ -177,7 +270,7 @@ volumes (± 10 %), pivot **aux pieds**, avant vers **+z**.
 | Goule | capsule Ø 0.9 × 1.1 m de haut, 50 kg | basse, rampe ; yeux lumineux ; posture accroupie avant le bond (le code écrase le visuel à 60 % en hauteur) ; **grimpe aux murs** : le code bascule le visuel de 80° (plaquée contre la paroi) |
 | **Traqueur (géant)** | capsule **Ø 7 × 14 m** ; **baissé : 9 m** | intuable ; yeux rouges vers 13 m ; **épaule à 12 m** ; il ne grimpe pas ; **se baisse** sous les ponts (le code écrase le corps jusqu'à 9 m : prévoir une pose accroupie) |
 | Mains du traqueur (deux) | **boîtes de 4 × 2.2 × 4.5 m** (largeur × épaisseur × longueur) ; bras de **1.5 m** d'épaisseur | elles tuent au contact, comme le corps et les bras (D-037) : garder ces volumes ; bras de l'épaule à la main (le code l'étire), **portée 15 m depuis l'épaule** ; pose **deux mains levées au-dessus de la tête** (geste contre ceux qui passent par-dessus) |
-| Volant (D-040) | sphère de **0.4 m** de rayon (corps 0.6 × 0.45 × 0.8 m, **ailes de 0.9 m** chacune, envergure ≈ 2.4 m), 8 kg ; **zone de touche** : sphère du corps + une boîte de 0.9 × 0.1 × 0.55 m par aile, qui suit le battement (garder les ailes à ces dimensions, ou prévenir) | vole en ronde **8 m au-dessus du joueur** (rayon 8 m) ; attrapable à tout moment comme une caisse ; ailes animées par le code (battement, repliées en piqué) ; yeux lumineux, **lueur rouge** à l'annonce du piqué ; éclate (zone de 3 m) quand il est lancé |
+| Volant (D-040) | sphère de **0.4 m** de rayon (corps 0.6 × 0.45 × 0.8 m, **ailes de 0.9 m** chacune, **envergure 2.3 m**), 8 kg ; **zone de touche** : sphère du corps + une boîte de 0.9 × 0.1 × 0.55 m par aile, qui suit le battement (garder les ailes à ces dimensions, ou prévenir) | vole en ronde **8 m au-dessus du joueur** (rayon 8 m) ; attrapable à tout moment comme une caisse ; ailes animées par le code (battement, repliées en piqué) ; yeux lumineux, **lueur rouge** à l'annonce du piqué ; éclate (zone de 3 m) quand il est lancé |
 
 **Prévoir dans le modèle du traqueur :** un bras droit articulé épaule → coude → poignet (le code pose la main : repos le
 long du corps, levée au-dessus de la tête pendant l'annonce, abattue sur la cible), une main en pièce séparée
@@ -201,7 +294,8 @@ long du corps, levée au-dessus de la tête pendant l'annonce, abattue sur la ci
 | Murs de course | au moins 10 m de long ; 9 à 12 m de haut | |
 
 - **Plus d'abris (D-035) :** tout point où l'on tient debout doit rester à portée de sa main (15 m depuis l'épaule, ou
-  15 m depuis l'ouverture d'une pièce). Pas de recoin sous un objet bas, pas de pièce plus profonde que 15 m.
+  15 m depuis l'ouverture d'une pièce). Pas de recoin sous un objet bas, pas de pièce plus profonde que 15 m. **Plus aucune
+  porte « refuge »** : aucune porte, trappe ou grille ne doit fermer un endroit où il ne passe pas la main.
 - **Volumes de salle (D-045, D-047) :** chaque salle de vos scènes de niveau reçoit un objet vide avec le composant
   `RoomVolume` (une boîte du sol au plafond, type Salle) ; chaque couloir, un volume de type Couloir par **tronçon de 40 m au
   plus**. Aucun ennemi n'apparaît dans la salle ou le tronçon d'un joueur (ni dans les tronçons voisins), et la minimap s'en
@@ -219,7 +313,7 @@ long du corps, levée au-dessus de la tête pendant l'annonce, abattue sur la ci
 | Éclat d'âme | sphère de **0.25 m**, flotte un peu au sol, file vers l'orbe (25 m/s) | **cyan très lumineux** (HDR ≈ 0.4 / 2.6 / 3.2, bloom) ; clignote ses 5 dernières secondes ; **commun** : visible par tous les joueurs |
 | Coffre | caisse de **1.4 × 0.8 × 0.9 m** (collision sur tout le volume) + couvercle **1.5 × 0.2 × 1 m** (caché, **pour chaque joueur**, quand il l'a ouvert : un modèle avec couvercle séparé) | liseré **orangé** (émission), couvercle **doré lumineux** (HDR ≈ 3 / 2 / 0.5) ; texte « Coffre / 30 âmes » à 1.7 m, « Coffre / ouvert » pour qui l'a ouvert |
 | Orbes de choix (coffre) | sphères de **0.55 m**, à **2.2 m** au-dessus du coffre (celle du milieu 0.6 m plus haut), espacées de **2.4 m** ; flottent (±0.12 m) et tournent | couleur de l'amélioration (HDR) ; **icône puis nom, deux lignes de 0.28 m**, toujours face à l'écran, **lisibles à 10 m** (vérifié par une capture) ; **visibles seulement par le joueur qui a ouvert le coffre** (deux joueurs : deux jeux d'orbes au même endroit) |
-| Marchand | silhouette de **0.9 × 2.2 m** + enseigne **1.6 × 0.4 m** à 2.9 m | robe **violette** (émission), enseigne violette lumineuse ; 4 orbes d'offre à 1.6 m de haut (une sur deux 0.6 m plus haut), **1.6 m devant lui**, espacées de 2.4 m, avec leur prix |
+| Marchand | silhouette de **0.9 × 2.2 m** + enseigne **1.6 × 0.4 m** centrée à **5.5 m**, 1.6 m devant lui, au-dessus du milieu de la rangée d'offres (1.6 m au-dessus du plus haut texte) | robe **violette** (émission), enseigne violette lumineuse ; 4 orbes d'offre à 1.6 m de haut (une sur deux 0.6 m plus haut), **1.6 m devant lui**, espacées de 2.4 m, avec leur prix |
 | Porte de la salle verrouillée | **3 × 3 m** (l'ouverture de la pièce), barreaux sur la fenêtre (3 × 1.5 m) | bois sombre à **lueur orangée** ; texte « Salle verrouillée / 50 âmes » |
 
 ## 6. Budgets proposés (à valider ensemble)
@@ -262,7 +356,7 @@ le guide de style, **décris les traits**, ne cite pas de jeu ou de série.
   | Orange | répulsion |
   | Violet | télékinésie : objet visé ou tenu |
   | Vert | objet lancé |
-  | Rouge | refus, objet trop lourd |
+  | Rouge | annonce d'attaque, refus, objet trop lourd |
 
   **Technique :** le code fixe la couleur d'émission (`_EmissionColor`) des objets attrapables. Leur matériau doit
   avoir l'**émission activée** et une **carte d'émission** (masque) qui dit *où* ils brillent (arêtes, runes,
@@ -377,6 +471,7 @@ Nombre utilisé : niveau 1 (modules, couloirs, annexes) après génération du 2
 | `Prop_Cage` | Cage | 2.2 × 3 × 2.2 | 50 | fixe |
 | `Prop_Lanterne` | Lanterne | 0.5 × 0.8 × 0.5 | 258 | lumière, sans collision |
 | `Prop_Torche` | Torche murale | 0.3 × 1 × 0.5 | 1231 | lumière, sans collision |
+| `Prop_TorcheEteinte` | Torche murale (flamme sans lumière) | 0.3 × 1 × 0.5 | une torche sur deux dans les bases régénérées (étape 9) | décor sans collision ; même modèle que la torche, sans lumière |
 | `Prop_Gravats` | Tas de gravats | 3.2 × 1.2 × 3 | 72 | fixe |
 | `Prop_MurEffondre` | Mur effondré | 5 × 3 × 1.2 | 11 | fixe |
 | `Prop_Echafaudage` | Échafaudage | 4 × 6 × 2 | 24 | fixe (on y monte) |

@@ -45,11 +45,6 @@ namespace ItHunts.Settings
         [Min(0f)] public float targetGiveUpDistance = 60f;
         [Min(0f)] public float targetSwitchCooldown = 3f;
 
-        [Header("Accalmie (D-041)")]
-        [Tooltip("Pendant une accalmie, un ennemi en trop repasse en attente et recule de cette distance (m) loin du joueur ; il ne " +
-                 "repart que si le joueur repasse dans sa zone d'aggro, ou au pic suivant.")]
-        [Min(0f)] public float lullRetreatDistance = 10f;
-
         /// <summary>
         /// Meurt au premier impact de projectile (balle, objet lancé ou repoussé, ennemi lancé, dégâts contre un mur), quels que
         /// soient les dégâts ; jamais par une zone ni par l'onde de répulsion seule. Faux par défaut ; le volant le règle (D-040).

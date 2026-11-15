@@ -19,6 +19,8 @@ namespace ItHunts.Level
         /// <summary>Manette du 2e joueur, rejoint dans le menu (étape 9) ; l'écran partagé l'ajoute au chargement du niveau.</summary>
         public static UnityEngine.InputSystem.InputDevice CoopDevice { get; set; }
         public static bool Active => Definition != null;
+        /// <summary>Playtest du combat de boss (menu) : le niveau chargé lance directement son combat (BossFight).</summary>
+        public static bool BossPlaytest { get; set; }
 
         public static RunDifficulty Difficulty =>
             Definition != null && DifficultyIndex >= 0 && DifficultyIndex < Definition.difficulties.Count ? Definition.difficulties[DifficultyIndex] : null;

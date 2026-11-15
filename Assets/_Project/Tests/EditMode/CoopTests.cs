@@ -165,6 +165,95 @@ namespace ItHunts.Tests
             }
         }
 
+        private sealed class FakeHunter : IHunter
+        {
+            public HuntState Hunt { get; } = new HuntState();
+            public bool CanHunt { get; set; } = true;
+            public Vector3 Position { get; set; }
+            /// <summary>Chemin plus long que la ligne droite (mur entre les deux) ; négatif : ligne droite.</summary>
+            public float Path = -1f;
+            public float PathLength(PlayerHealth p) => Path >= 0f ? Path : Vector3.Distance(Position, p.transform.position);
+        }
+
+        [Test]
+        public void Aggro_SansLimite_SemeA50mPendant5s_ChasseurJamaisSeme()
+        {
+            var h = new HuntState();
+            h.Step(false, 30f, 0f, 50f, 5f);
+            Assert.That(h.Hunting, Is.False, "en attente tant que personne ne passe près");
+            h.Step(true, 15f, 1f, 50f, 5f);
+            Assert.That(h.Aggroed, Is.True, "aggro");
+            h.Step(false, 49f, 2f, 50f, 5f);
+            h.Step(false, 60f, 3f, 50f, 5f);
+            h.Step(false, 60f, 7.9f, 50f, 5f);
+            Assert.That(h.Aggroed, Is.True, "4.9 s au-delà de 50 m : il poursuit encore");
+            h.Step(false, 60f, 8f, 50f, 5f);
+            Assert.That(h.Aggroed, Is.False, "semé après 5 s au-delà de 50 m");
+            Assert.That(h.Losses, Is.EqualTo(1));
+
+            // Sans limite de nombre : 300 ennemis qui voient le joueur sont tous en aggro.
+            int n = 0;
+            for (int i = 0; i < 300; i++)
+            {
+                var x = new HuntState();
+                x.Step(true, 10f, 0f, 50f, 5f);
+                if (x.Hunting)
+                    n++;
+            }
+
+            Assert.That(n, Is.EqualTo(300));
+
+            PlayerHealth a = Player(Vector3.zero);
+            h.MakeChaser(a);
+            h.Step(false, 500f, 10f, 50f, 5f);
+            h.Step(false, 500f, 30f, 50f, 5f);
+            Assert.That(h.ChaserFor, Is.EqualTo(a), "un chasseur n'est jamais semé");
+            a.TakeEnemyDamage(1000f, Vector3.zero, 31f);
+            h.Step(false, 500f, 32f, 50f, 5f);
+            Assert.That(h.ChaserFor, Is.Null, "son joueur est tombé : plus chasseur");
+            Assert.That(h.Aggroed, Is.True, "aggro ordinaire ensuite");
+        }
+
+        [Test]
+        public void Chasseurs_ParJoueur_RelaisAuPlusProcheParLeChemin()
+        {
+            PlayerHealth a = Player(Vector3.zero), b = Player(new Vector3(200f, 0f, 0f));
+            var hunters = new List<IHunter>();
+            var near = new FakeHunter { Position = new Vector3(10f, 0f, 0f), Path = 120f };   // derrière un mur
+            var mid = new FakeHunter { Position = new Vector3(30f, 0f, 0f) };
+            var far = new FakeHunter { Position = new Vector3(60f, 0f, 0f) };
+            var nearB = new FakeHunter { Position = new Vector3(190f, 0f, 0f) };
+            var nearB2 = new FakeHunter { Position = new Vector3(180f, 0f, 0f) };
+            hunters.AddRange(new IHunter[] { near, mid, far, nearB, nearB2 });
+            var players = new List<PlayerHealth> { a, b };
+
+            HuntDirector.Tick(players, 1, hunters);
+            Assert.That(mid.Hunt.ChaserFor, Is.EqualTo(a), "le plus proche par le chemin (pas à vol d'oiseau)");
+            Assert.That(near.Hunt.ChaserFor, Is.Null);
+            Assert.That(nearB.Hunt.ChaserFor, Is.EqualTo(b), "un par joueur");
+            Assert.That(HuntDirector.ChasersOf(a, hunters) + HuntDirector.ChasersOf(b, hunters), Is.EqualTo(2));
+
+            // Un chasseur meurt : le plus proche en attente prend le relais.
+            mid.CanHunt = false;
+            HuntDirector.Tick(players, 1, hunters);
+            Assert.That(far.Hunt.ChaserFor, Is.EqualTo(a), "relais : 60 m en ligne droite contre 120 m de chemin");
+
+            // Palier suivant : 2 par joueur.
+            HuntDirector.Tick(players, 2, hunters);
+            Assert.That(HuntDirector.ChasersOf(a, hunters), Is.EqualTo(2));
+            Assert.That(HuntDirector.ChasersOf(b, hunters), Is.EqualTo(2));
+
+            // Le joueur b tombe : ses chasseurs redeviennent des ennemis en aggro ordinaire.
+            b.TakeEnemyDamage(1000f, Vector3.zero, 5f);
+            HuntDirector.Tick(players, 2, hunters);
+            Assert.That(nearB.Hunt.ChaserFor, Is.Null);
+            Assert.That(nearB.Hunt.Aggroed, Is.True);
+
+            // Combat de boss : plus aucun chasseur.
+            HuntDirector.Tick(players, 0, hunters);
+            Assert.That(HuntDirector.ChasersOf(a, hunters), Is.EqualTo(0));
+        }
+
         [Test]
         public void Ecran_GaucheDroite_OuHautBas()
         {

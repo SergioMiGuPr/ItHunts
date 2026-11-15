@@ -102,6 +102,16 @@ namespace ItHunts.Tests
             Assert.That(map.IsKnownPoint(new Vector3(40f, 1f, 0f)), Is.True, "découvertes communes : un autre joueur l'a visité");
             map.Clear();
             Assert.That(map.KnownCount, Is.EqualTo(0));
+
+            // Sortie : affichée dès le début, sans la découvrir ; un coffre au même endroit reste caché.
+            var exitGo = new GameObject("Sortie");
+            _made.Add(exitGo);
+            var exit = exitGo.AddComponent<ItHunts.Level.ExitDoor>();
+            var chestGo = new GameObject("Coffre");
+            _made.Add(chestGo);
+            var chest = chestGo.AddComponent<ItHunts.Economy.Chest>();
+            Assert.That(ItHunts.Hud.MinimapHud.MarkVisible(exit, new Vector3(40f, 0f, 0f), map), Is.True, "sortie toujours affichée");
+            Assert.That(ItHunts.Hud.MinimapHud.MarkVisible(chest, new Vector3(40f, 0f, 0f), map), Is.False, "coffre non découvert : caché");
         }
 
         [Test]

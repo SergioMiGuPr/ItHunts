@@ -32,11 +32,11 @@ namespace ItHunts.EditorTools
         [Header("Habitants (étape 8, après playtest)")]
         [Tooltip("Goules posées dans chaque grande salle dès le départ (en attente, aggro habituelle), selon sa taille : le " +
                  "minimum pour la plus petite, le maximum pour la plus grande. Tuées, elles ne reviennent pas avant la remise à zéro.")]
-        [Range(0, 10)] public int residentGhoulsMin = 2;
-        [Range(0, 10)] public int residentGhoulsMax = 5;
+        [Range(0, 10)] public int residentGhoulsMin = 1;
+        [Range(0, 10)] public int residentGhoulsMax = 3;
         [Tooltip("Volants posés dans les salles du niveau haut.")]
         [Range(0, 5)] public int residentFlyersMin = 1;
-        [Range(0, 5)] public int residentFlyersMax = 2;
+        [Range(0, 5)] public int residentFlyersMax = 1;
 
         [Header("Annexes (pièces meublées le long des couloirs)")]
         [Tooltip("Probabilité qu'un couloir plat de 40 m ou plus ait une pièce annexe (chambre, cellule, réserve, cuisine, armurerie, " +

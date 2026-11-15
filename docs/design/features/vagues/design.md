@@ -1,6 +1,6 @@
 # Vagues
 
-**Status:** implemented · **Updated:** 2026-11-13 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md) · D-041
+**Status:** implemented · **Updated:** 2026-11-15 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md) · D-041, D-060, D-061
 
 ## Résumé
 
@@ -8,7 +8,32 @@ Le nombre d'ennemis présents dans une zone suit le temps passé dans la zone : 
 plus encore en Enragé. Par-dessus cette tendance, des **pics de vague** annoncés alternent avec des **accalmies**. Les
 ennemis apparaissent hors de la vue des joueurs, sur des points d'apparition posés partout dans la zone.
 
-## Règles
+## Revu après le playtest des étapes 8 et 9 (2026-11-15) : D-060 et D-061
+
+Ces règles **remplacent** les règles 2 (accalmie : plafond de chasse et recul), 3 (rythme), 5 (population de départ), 6
+(reconstitution) et 7 (plafonds de chasse) ci-dessous. Le reste (points d'apparition, distances, salle et tronçon du joueur, coop)
+ne change pas.
+
+1. **Apparitions seulement au début d'une vague (D-060).** Au début de chaque pic, une **fournée** apparaît : `ghoulWaveSpawns`
+   (3, 4, 6, 8, 10 aux moments de la tendance, 14 en Enragé) et `flyerWaveSpawns` (1, 1, 2, 2, 3 ; 4 en Enragé), × joueurs ×
+   surface de la carte, sans dépasser le **plafond de population** (l'ancienne tendance : 10 → 60 goules, × joueurs × surface).
+   Les apparitions s'étalent sur au plus **8 s** (une toutes les 0.2 s, chacune annoncée 0.6 s) ; ce qui n'a pas trouvé de point
+   est abandonné. **Plus aucune apparition entre deux vagues**, ni continue, ni pour remplacer les tués. Les accalmies ne règlent
+   plus que le rythme des fournées.
+2. **Lieux interdits en plus (D-060)** : jamais dans une **salle ou un tronçon où un joueur est passé depuis 60 s**
+   (`recentVisitSeconds`) ; jamais dans la **salle de départ**, pendant toute la zone (un ennemi qui poursuit peut y entrer).
+3. **Aggro par proximité, sans limite de nombre (D-061)** : un ennemi attend tant qu'aucun joueur debout ne passe dans sa zone
+   d'aggro (**20 m en vue, 8 m sans**) ; pris en aggro, il poursuit jusqu'à être **semé** : plus aucun joueur à moins de
+   **50 m pendant 5 s** (réglables, réglages de l'ennemi). Plus de plafond de chasse (25 goules, 8 volants).
+4. **Chasseurs (D-061)** : en plus, chaque joueur debout a un petit groupe d'ennemis qui **savent toujours où il est** et le
+   poursuivent. Nombre par joueur, par paliers en part du timer : **1** dès le début, **2** à 15 %, **4** à 35 %, **6** à 55 %,
+   **8** à 75 %, **10** en Enragé (`chaserTimes`, `chaserCounts`, `chaserEnraged`). Revu toutes les 0.5 s : quand un chasseur
+   meurt, **l'ennemi en attente le plus proche du joueur par le chemin** prend le relais (à défaut, un ennemi déjà en aggro). Un
+   chasseur dont le joueur tombe redevient un ennemi en aggro ordinaire. Aucun chasseur pendant le combat de boss.
+5. **Habitants des salles** : chaque grande salle garde **1 à 3 goules** selon sa taille (46 → 66 m) et au plus **1 volant**
+   (`residentGhoulsMin/Max`, `residentFlyersMax`) ; les autres posées par le constructeur sont retirées au début de la zone.
+
+## Règles (D-041)
 
 1. **Tendance :** nombre voulu de goules et de volants à des moments donnés **en part du timer** (marche avec 4 min en test
    et 20 min en vrai), interpolé entre ces moments ; en **Enragé** (après le timer), un niveau plus haut.
