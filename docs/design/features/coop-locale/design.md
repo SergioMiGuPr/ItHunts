@@ -72,6 +72,11 @@ zone suivante. La partie se termine quand tous les joueurs sont à terre ou mort
     Entrées : Reprendre ; **Quitter l'écran partagé** (joueur 2 seulement : le joueur 1 reprend tout l'écran ; s'il était
     à terre, il meurt, car plus personne ne peut le relever) ; Menu principal.
 
+11. **Aide à la visée à la manette** (après le playtest, D-063) : près d'une cible (goule, volant ; main libre, objet
+    attrapable à portée), la visée **ralentit** (×0.5 au centre, cône de 6°, 45 m) et **glisse légèrement** vers elle (8°/s,
+    seulement quand le joueur vise ou se déplace). Cible visible seulement. **Activée par défaut à la manette, coupée à la
+    souris** (`Camera_Default` : `aimAssistGamepad`, `aimAssistMouse`, angle, portée, ralentissement, attraction).
+
 ## Validé en playtest (2026-11-14)
 
 - FOV ×1.1 et ×0.75 ; Start pour rejoindre ; capsules pour les corps (en attendant le vrai modèle, étape 10) ; spectateur

@@ -4,6 +4,60 @@
 
 ## Étape en cours
 
+**Corrections après le playtest des étapes 8 et 9 — 2026-11-15, branche `correctifs-8-9` (créée depuis `main`), sans push,
+playtest en attente ; pas de fusion avant le playtest de l'utilisateur.** Un commit par point (`git log main..correctifs-8-9`) :
+- **Point 9 (`4b04c24`) :** sortie affichée sur la minimap dès le début de la zone.
+- **Point 8 (`cdbfbae`) :** « Playtest : combat de boss » au menu principal ; **Page bas** en jeu (éditeur et builds de dev). Mesuré :
+  combat lancé en 3 s, joueur à l'entrée, traqueur lâché, vagues arrêtées.
+- **Point 6 (`ecc186a`) :** textes en monde cachés par le décor (shader `ItHunts/WorldText`, `Resources/WorldText.mat`), lisibles à
+  10 m (captures `label_10m.png`, `label_mur.png`).
+- **Point 4 (`4bee9e8`, D-060) :**
+  - apparitions seulement au début d'une vague ;
+  - jamais dans une salle ou un tronçon visité depuis 60 s, ni dans la salle de départ ;
+  - mesuré sur 240 s : 60 apparitions, toutes dans les 7.1 s après le début du pic, 0 en lieu interdit.
+- **Point 5 (`9930373`, D-061) :**
+  - aggro sans limite, semé à 50 m pendant 5 s ;
+  - chasseurs par joueur 1, 2, 4, 6, 8, Enragé 10, relais en moins de 1 s ;
+  - habitants 1 à 3 par grande salle (89 gardés, 74 retirés, à l'exécution : Level_01 n'est pas recopiée) ;
+  - mesures solo et à 2 dans la fiche vagues.
+- **Point 7 (`859e6da`, D-062) :**
+  - goules qui grimpent vers un joueur hors d'atteinte et bondissent depuis le mur ;
+  - trajets longs par étapes ;
+  - seuils de porte des pièces ;
+  - déblocage automatique.
+  - Mesuré : 10 plateformes sur 10 atteintes (médiane 6.1 s en salle, 3.0 s en couloir) ; 0 goule immobile plus de 8 s sur une
+    zone complète.
+- **Point 10 (`f9d975a`, D-063) :** aide à la visée à la manette (×0.5, 8°/s, cône de 6°, 45 m), coupée à la souris.
+- **Point 11 (`c7c374e`) :** ART-HANDOFF, référence unique des mesures (dimensions, masses, timings, couleurs, plus de porte refuge).
+- **Tests :** 352 passent, 1 non concluant à dessein.
+- **Partie 3 :** plan de la carte aléatoire assemblée à partir de modules :
+  `docs/design/features/run-et-niveaux/plan-carte-aleatoire.md`. **Rien de codé, en attente de la réponse de l'utilisateur.**
+
+Causes trouvées (point 7) :
+- le calcul de chemin d'Unity n'aboutit pas sur environ 900 m dans le niveau 1 : chemin partiel au même point, goules immobiles ;
+- au seuil d'une salle, la goule pouvait viser l'entrée de la salle qu'elle quittait ;
+- il manquait du sol sous l'épaisseur du mur des portes : 21 pièces annexes inaccessibles ;
+- des goules sortaient du NavMesh au bord des fosses des modules « Parcours : fosse ».
+- **Piège de mesure à retenir :** téléporter le joueur puis contrôler les goules dans la même itération fait croire à des goules
+  « coincées à 450 m » (elles étaient au contact une image plus tôt).
+
+À valider (choix pris seul, partie 2) :
+- **Vagues :**
+  - fournées 3 → 10 goules et 1 → 3 volants (Enragé 14 / 4), × joueurs × surface ;
+  - plafond de population = l'ancienne tendance ;
+  - fenêtre de 8 s ; le reste d'une fournée sans point libre est abandonné.
+- **Chasseurs :**
+  - paliers à 0, 15, 35, 55, 75 % du timer ;
+  - goules et volants peuvent être chasseurs ;
+  - à défaut d'ennemi en attente, un ennemi déjà en aggro devient chasseur.
+- **Habitants :** au plus 1 volant par salle ; toujours les mêmes gardés (ordre des noms).
+- **Goules :**
+  - escalade jusqu'à 30 m du joueur, mur à 12 m de lui au plus, bond depuis le mur jusqu'à 12 m ;
+  - elles renoncent 10 s après 2 escalades ratées ;
+  - remplacement par téléportation quand elles sont coincées (invisible la plupart du temps, mais pas toujours).
+- **Aide à la visée :** valeurs de départ ; ralentissement aussi pour la prise ; aucune attraction sans mouvement du joueur.
+- **Textes :** l'enseigne du marchand peut cacher une partie d'une étiquette d'offre (le décor du marchand lui-même).
+
 **Étapes 8 et 9 terminées pour le niveau 1 : validées en playtest le 2026-11-14 et fusionnées dans `main`.** Le playtest a
 validé l'ensemble, et la coop en écran partagé marche bien. Les corrections demandées après ce playtest se font sur la branche
 `correctifs-8-9` (voir plus bas).

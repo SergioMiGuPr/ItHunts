@@ -4,6 +4,19 @@
 
 ## Acceptance criteria
 
+Après le playtest des étapes 8 et 9 (D-062) :
+
+- [x] Trajet long par étapes : entrée de la salle suivante, jamais de retour au seuil. *(`GhoulPathTests.cs` › LongTrajet_EntreeDeLaSalleSuivante_JamaisDeRetourAuSeuil)*
+- [x] Seuil de NavMesh sous les portes des pièces (pas sous les fenêtres). *(GhoulPathTests › SeuilDePorte_DalleAuSol_PasSousUneFenetre)*
+- [x] Réglages : escalade 30 / 12 / 12 m, accrochée 3 s, long trajet 100 m, déblocage 2 s, annonce du bond 0.3 s. *(GhoulPathTests › Reglages_Escalade_Deblocage_LongTrajet)*
+- [x] En Play Mode (Level_01_Base), **10 plateformes**, joueur dessus, une goule chasseuse à 16–19 m au sol :
+  - salles (galerie de module 6 m, cages 3 m, pile de caisses 2.6 m, échafaudage 6 m) : **5 / 5 atteintes**, médiane **6.1 s**, max **11.6 s** (escalades et bonds depuis le mur) ;
+  - couloirs (passages en hauteur à 4.5 m) : **5 / 5 atteintes**, médiane **3.0 s**, max **4.8 s**. *(Play Mode, 2026-11-15 ; captures `p7_plateforme_*.png`)*
+- [x] En Play Mode, **zone complète** (timer 0 → 930 s, temps ×4, joueur invulnérable qui change de salle toutes les 20 s) : **0 goule immobile plus de 8 s** en chasse ; 15 déblocages, 4 replacements après 6 s hors du NavMesh. Causes trouvées et corrigées : trajets de 900 m au-delà de ce que calcule Unity (chemin partiel au même point), goules sorties du NavMesh au bord des fosses, seuil sans sol sous les portes (21 pièces inaccessibles avant, 2 salles verrouillées après). *(Play Mode, 2026-11-15)*
+- [x] NavMesh des goules (niveau 1) : 270 étapes sur 271 reliées (la seule exception : derrière la porte de sortie fermée). *(Play Mode, 2026-11-15)*
+
+Avant :
+
 - [x] Valeurs de départ : 60 PV, 50 kg, 10 m/s, bond 14 m/s annoncé 0.3 s, recharge 2.5 s, contact 15 PV / 1 s, étourdie 1.5 s. *(`Assets/_Project/Tests/EditMode/EnemyTests.cs` › Reglages_ValeursDeDepart)*
 - [x] Bond : arc de 1 m, retombe 1 m après le joueur, au plus 14 m/s ; contact mesuré entre les capsules. *(EnemyTests › Bond_ArcEtVitesseMax_Contact)*
 - [x] La poussée ne ralentit jamais le joueur (500 cas, dont poussé de face). *(EnemyTests › Poussee_NeRalentitJamaisLeJoueur)*
