@@ -166,7 +166,10 @@ namespace ItHunts.Level
             Progress = 0f;
             if (_root != null)
             {
-                // Nouvelle carte dans la même scène (mesures) : libère aussi les maillages combinés du batching statique.
+                // Nouvelle carte dans la même scène (mesures) : libère aussi les maillages fusionnés.
+                foreach (MeshFilter mf in _root.GetComponentsInChildren<MeshFilter>(true))
+                    if (mf.sharedMesh != null && mf.sharedMesh.name.StartsWith("Décor fusionné"))
+                        Destroy(mf.sharedMesh);
                 DestroyImmediate(_root.gameObject);
                 Resources.UnloadUnusedAssets();
                 System.GC.Collect();
@@ -940,21 +943,65 @@ namespace ItHunts.Level
             }
         }
 
-        /// <summary>Regroupe les pièces du kit (visuel seulement) : batching statique à l'exécution.</summary>
+        /// <summary>Renderers après la fusion (mesures).</summary>
+        public int MergedRenderers { get; private set; }
+
+        /// <summary>
+        /// Fusion des pièces du kit (visuel seulement) : pour chaque salle, couloir ou ensemble de premier niveau, un maillage par
+        /// matériau, puis les pièces d'origine sont supprimées. Des dizaines de milliers d'objets deviennent quelques centaines :
+        /// moins de culling, de bornes à mettre à jour et de draw calls (point 5 de carte-suite). Les prefabs Kit_* restent la source :
+        /// remplacer un prefab par le vrai modèle change toujours toute la carte.
+        /// </summary>
         private void Batch()
         {
-            var list = new List<GameObject>();
-            foreach (MeshRenderer r in _root.GetComponentsInChildren<MeshRenderer>())
+            MergedRenderers = 0;
+            foreach (Transform group in _root.Cast<Transform>().ToList())
             {
-                Transform t = r.transform;
-                while (t != null && t != _root && !t.name.StartsWith("Kit_"))
-                    t = t.parent;
-                if (t != null && t != _root)
-                    list.Add(r.gameObject);
-            }
+                if (group.GetComponentInChildren<ExitArenaMarker>(true) != null)
+                    continue;                                                 // la grande porte disparaît à l'ouverture : pas fusionnée
+                var byMaterial = new Dictionary<Material, List<CombineInstance>>();
+                var pieces = new List<GameObject>();
+                foreach (Transform t in group.GetComponentsInChildren<Transform>(true))
+                {
+                    if (!t.name.StartsWith("Kit_") || (t.parent != null && t.parent.name.StartsWith("Kit_")))
+                        continue;
+                    pieces.Add(t.gameObject);
+                    foreach (MeshRenderer r in t.GetComponentsInChildren<MeshRenderer>(true))
+                    {
+                        var mf = r.GetComponent<MeshFilter>();
+                        if (mf == null || mf.sharedMesh == null || !r.enabled)
+                            continue;
+                        Matrix4x4 m = group.worldToLocalMatrix * r.transform.localToWorldMatrix;
+                        Material[] mats = r.sharedMaterials;
+                        for (int s = 0; s < mf.sharedMesh.subMeshCount && s < mats.Length; s++)
+                        {
+                            if (mats[s] == null)
+                                continue;
+                            if (!byMaterial.TryGetValue(mats[s], out List<CombineInstance> list))
+                                byMaterial[mats[s]] = list = new List<CombineInstance>();
+                            list.Add(new CombineInstance { mesh = mf.sharedMesh, subMeshIndex = s, transform = m });
+                        }
+                    }
+                }
 
-            if (list.Count > 0)
-                StaticBatchingUtility.Combine(list.ToArray(), _root.gameObject);
+                if (pieces.Count == 0)
+                    continue;
+                foreach (KeyValuePair<Material, List<CombineInstance>> kv in byMaterial)
+                {
+                    var go = new GameObject($"Décor fusionné ({kv.Key.name})");
+                    go.transform.SetParent(group, false);
+                    var mesh = new Mesh { name = go.name, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+                    mesh.CombineMeshes(kv.Value.ToArray(), true, true);
+                    go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                    var mr = go.AddComponent<MeshRenderer>();
+                    mr.sharedMaterial = kv.Key;
+                    mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    MergedRenderers++;
+                }
+
+                foreach (GameObject p in pieces)
+                    Destroy(p);
+            }
         }
 
         // ---------- Outils ----------

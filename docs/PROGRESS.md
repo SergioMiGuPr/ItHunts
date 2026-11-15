@@ -4,6 +4,22 @@
 
 ## Étape en cours
 
+**Suite de la carte (`carte-suite`) — 2026-11-15, en attente de playtest, pas poussée.**
+- **Point 1 (`26a7b85`) — arcs au sol :** l'arc du kit (11 m) était posé au niveau du sol dans des couloirs de 19 m (portique isolé),
+  et les arcs de porte entraient de 1,8 m dans les couloirs en pente. `KitBuild.Arch` : sommet sous le plafond, sur deux piédroits ;
+  arcs de porte dans l'épaisseur du mur. 5 seeds : 0 pièce mal posée.
+- **Point 2 (`a2ee72f`) — hauteurs :** plafond par type de module (`ModuleShape` : simple 18 m, étages 22 m, égout 16 m, réglable par
+  module avec `ceilingOverride`), croisements 16 m, couloirs 15 m (minimum 15). Avant : salles 36, croisements 24, couloirs 19.
+  18/18 modules validés ; traqueur accroupi 1,3 % du trajet avant et après (3,9 s sur ≈ 440 s).
+- **Point 3 (`400aea6`) — galeries et passages en hauteur :** `PlanBypass` (6 galeries, 10 passages, minimum 6 zones et une dans chaque
+  tiers départ → sortie) ; passage fermé s'il est bloqué par un module. 20/20 seeds conformes, 16 à 19 zones par carte.
+- **Point 4 (`0785cf2`) — écran de chargement :** `LoadingScreen` (titre, étape, barre) ; construction par tranches de 50 ms, systèmes
+  de jeu sous une racine inactive activée à la fin. 6,7 à 7,5 s dans l'éditeur, 5,1 s en build.
+- **Point 5 — performance :** fusion du décor par groupe (salle, couloir…) et par matériau au chargement (`RandomLevel.Batch`), à la
+  place du batching statique : ≈ 53 600 pièces → 529 renderers. Build de développement, seed 104729, 1920 × 1080, timer à 13:40 :
+  solo **19,2 → 8,0 ms** médiane (95 % 14,8 ; GPU 2,9 ; 2 555 draw calls au lieu de 4 940) ; écran partagé **13,4 ms** médiane
+  (95 % 16,1 ; GPU 4,1). Reste : `FinishFrameRendering` 4,1 ms (8,1 à deux), 1 718 lumières, ≈ 4 600 renderers hors kit.
+
 **Carte aléatoire — 2026-11-15, validée en playtest le 2026-11-15 et fusionnée dans `main`** (branche `carte-aleatoire` supprimée ;
 réserve : ça rame un peu, mesuré avec Blender et deux projets Unity ouverts — mesure de performance dans `carte-suite`). Fiche : `docs/design/features/run-et-niveaux/` (design « Carte aléatoire », testing « Carte aléatoire »).
 - **Bloc 1 (`ae95e8c`) :** format des modules (empreinte 1 × 1, 1 × 2, 2 × 2 ; entrées `ModuleDoor` ; contraintes ; résultat de
