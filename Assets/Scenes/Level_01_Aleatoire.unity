@@ -109670,6 +109670,7 @@ MonoBehaviour:
   lockedAnnex: {fileID: 3891145954122993680, guid: 94e0ccf98ea25cb438651118393c6046, type: 3}
   water: {fileID: 2100000, guid: dbfd9da3bafb14e43a6e093205406fa9, type: 2}
   nonMagnetic: {fileID: 2100000, guid: 84b6270bbb7a7594c8f5b2f3049397be, type: 2}
+  movement: {fileID: 11400000, guid: a6bd474d2627e5442afb24d7a86cb8d0, type: 2}
   zoneNav: {fileID: 998866357}
   graph: {fileID: 401580613}
   playerStart: {fileID: 1363708110}

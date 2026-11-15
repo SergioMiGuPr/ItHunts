@@ -37,6 +37,8 @@ namespace ItHunts.Level
         [SerializeField] private Material water;
         [Tooltip("Matériau des surfaces non magnétiques (galeries de parcours, passages en hauteur).")]
         [SerializeField] private Material nonMagnetic;
+        [Tooltip("Réglages de mouvement du joueur : les écarts des parcours sont calculés depuis ses capacités (sans traction).")]
+        [SerializeField] private ItHunts.Settings.MovementSettings movement;
 
         [Header("Scène")]
         [SerializeField] private ZoneNavMesh zoneNav;
@@ -193,6 +195,7 @@ namespace ItHunts.Level
             // Inactive pendant la construction : aucun composant des modules ne démarre sur une carte à moitié faite.
             _root.gameObject.SetActive(false);
             _moduleInstances.Clear();
+            Courses.Clear();
             _min = new Vector3(float.MaxValue, -10f, float.MaxValue);
             _max = new Vector3(float.MinValue, settings.upperLevel + settings.MaxCeiling + 10f, float.MinValue);
             PlanCuts();
@@ -230,6 +233,7 @@ namespace ItHunts.Level
             Physics.SyncTransforms();
             BuildPassages();
             BuildGalleries();
+            BuildParkourRooms();
             int lairNode = BuildLair();
             int arenaNode = BuildExit();
             BuildStart();
@@ -569,10 +573,13 @@ namespace ItHunts.Level
                     float sink = l.Slope ? 0.3f : 0f;
                     KitBuild.Arch(parent, kit, Point(d / len) - Vector3.up * sink, yaw, w, h);
                 }
+            bool Open(int side, float d) => Plan.Galleries.Any(g => g.Link == li && g.Side == side) && d > 2f && d < len - 2f;
             if (kit != null && kit.torche != null)
                 for (float d = 6f; d < len - 4f; d += 12f)
                     foreach (int s in new[] { 1, -1 })
                     {
+                        if (Open(s, d))
+                            continue;                                  // côté ouvert sur une galerie : pas de mur
                         Vector3 p = Point(d / len, s * (w * 0.5f - 0.3f)) + Vector3.up * 4f;
                         KitBuild.Piece(kit.torche, parent, p, Mathf.Atan2(-lateral.x * s, -lateral.z * s) * Mathf.Rad2Deg);
                     }
@@ -587,7 +594,7 @@ namespace ItHunts.Level
                 Spawn(parent, Point((i + 1f) / (settings.flyerSpawnsPerCorridor + 1f)) + Vector3.up * (h - 5f), SpawnKinds.Volant);
 
             // Poutre ou pont en hauteur (dessous à 10 m) dans une partie des couloirs plats.
-            if (!l.Slope && _rng.NextDouble() < settings.corridorFeatureShare)
+            if (!l.Slope && _rng.NextDouble() < settings.corridorFeatureShare && !Plan.Galleries.Any(g => g.Link == li))
             {
                 Vector3 p = Point(0.5f) + Vector3.up * (settings.bridgeBottom + 0.5f);
                 if (_rng.NextDouble() < 0.5)
@@ -652,14 +659,12 @@ namespace ItHunts.Level
                 AddCut(_corridorCuts, (p.Link, p.Side), new Cut(Mathf.Min(c0, c1), Mathf.Max(c0, c1), face.y + DuctY, face.y + DuctY + DuctH));
             }
 
+            // Galeries : le mur du couloir disparaît sur tout leur long (parcours parallèle à la voie du traqueur, à portée de sa main).
             foreach (PlanGallery g in Plan.Galleries)
             {
                 Frame(g.Link, true, out Vector3 face, out Vector3 axis, out _, out float len);
-                foreach (float d in new[] { 6f, len - 9f })
-                {
-                    float c0 = Along(face + axis * d, axis), c1 = Along(face + axis * (d + 3f), axis);
-                    AddCut(_corridorCuts, (g.Link, g.Side), new Cut(Mathf.Min(c0, c1), Mathf.Max(c0, c1), face.y, face.y + 3.5f));
-                }
+                float c0 = Along(face + axis * 3f, axis), c1 = Along(face + axis * (len - 3f), axis);
+                AddCut(_corridorCuts, (g.Link, g.Side), new Cut(Mathf.Min(c0, c1), Mathf.Max(c0, c1), face.y - 1f, face.y + settings.corridorHeight + 1f));
             }
         }
 
@@ -730,8 +735,15 @@ namespace ItHunts.Level
         /// portes de 3 m aux deux bouts, paliers et poutres à portée de sa main, plateformes qui s'effondrent et panneaux de course
         /// hors de sa portée ; tout est non magnétique. Le seul endroit où l'on dépasse le traqueur.
         /// </summary>
+        /// <summary>
+        /// Galeries de parcours (point 4 de carte-suite) : le long d'un couloir plat, ouvertes sur lui (parapet de 1 m que la main du
+        /// traqueur passe), au-dessus d'un vide de 10 m. Paliers d'entrée et de sortie au niveau du couloir, puis un parcours exigeant
+        /// (ParkourCourse) à 9 m du bord : poutre, marches qui tombent, deux murs (sauts muraux), vide à dash, poteaux, poutre. Tout est
+        /// non magnétique ; hors de portée du traqueur, on ne se pose que sur ce qui tombe. Une sur trois environ mène à un coffre.
+        /// </summary>
         private void BuildGalleries()
         {
+            ParkourCaps caps = ParkourCaps.From(movement);
             for (int k = 0; k < Plan.Galleries.Count; k++)
             {
                 PlanGallery g = Plan.Galleries[k];
@@ -743,56 +755,184 @@ namespace ItHunts.Level
                 root.SetParent(_root, false);
                 Vector3 Pt(float a, float lt, float up) => face + axis * a + latS * lt + Vector3.up * up;
                 Vector3 Size(float axLen, float latLen, float hgt) => Mathf.Abs(axis.x) > 0.5f ? new Vector3(axLen, hgt, latLen) : new Vector3(latLen, hgt, axLen);
-                float l0 = w * 0.5f + T, l1 = l0 + GalleryWidth, a0 = 3f, a1 = len - 3f;
+                float l0 = w * 0.5f, l1 = l0 + T + GalleryWidth, a0 = 3f, a1 = len - 3f, landing = 5f, line = l0 + 9f;
                 NM($"{nm} : mur extérieur", root, Pt((a0 + a1) * 0.5f, l1 + 0.5f, (H - depth) * 0.5f), Size(a1 - a0 + 2f, 1f, H + depth), false);
-                NM($"{nm} : bout 1", root, Pt(a0 - 0.5f, (l0 + l1) * 0.5f, (H - depth) * 0.5f), Size(1f, GalleryWidth, H + depth), false);
-                NM($"{nm} : bout 2", root, Pt(a1 + 0.5f, (l0 + l1) * 0.5f, (H - depth) * 0.5f), Size(1f, GalleryWidth, H + depth), false);
-                NM($"{nm} : plafond", root, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H + 0.5f), Size(a1 - a0 + 2f, GalleryWidth + 2f, 1f), false);
-                foreach ((float pa, float pb) in new[] { (a0, 6f), (9f, len - 9f), (len - 6f, a1) })
-                    NM($"{nm} : plaque du mur du couloir", root, Pt((pa + pb) * 0.5f, l0 + 0.06f, (H - depth) * 0.5f), Size(pb - pa, 0.12f, H + depth), false);
-                foreach (float da in new[] { 7.5f, len - 7.5f })
-                {
-                    NM($"{nm} : plaque au-dessus de la porte", root, Pt(da, l0 + 0.06f, (3.5f + H) * 0.5f), Size(3f, 0.12f, H - 3.5f), false);
-                    NM($"{nm} : plaque sous la porte", root, Pt(da, l0 + 0.06f, -depth * 0.5f - 0.5f), Size(3f, 0.12f, depth - 1f), false);
-                }
+                NM($"{nm} : bout 1", root, Pt(a0 - 0.5f, (l0 + l1) * 0.5f, (H - depth) * 0.5f), Size(1f, l1 - l0, H + depth), false);
+                NM($"{nm} : bout 2", root, Pt(a1 + 0.5f, (l0 + l1) * 0.5f, (H - depth) * 0.5f), Size(1f, l1 - l0, H + depth), false);
+                NM($"{nm} : plafond", root, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H + 0.5f), Size(a1 - a0 + 2f, l1 - l0 + 2f, 1f), false);
+                NM($"{nm} : parapet", root, Pt((a0 + a1) * 0.5f, l0 - 0.25f, 0.5f), Size(a1 - a0 - 2f * landing, 0.5f, 1f), false);
+                KitBuild.Box(root, $"{nm} : fond du vide", Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth - 0.5f), Size(a1 - a0, l1 - l0, 1f), KitBuild.Kind.Sol, kit, walkable: false);
 
-                KitBuild.Box(root, $"{nm} : fond du vide", Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth - 0.5f), Size(a1 - a0, GalleryWidth, 1f), KitBuild.Kind.Sol, kit, walkable: false);
+                // Paliers (au niveau du couloir, à portée) : de la porte du couloir jusqu'à la ligne du parcours.
                 var respawns = new List<Transform>();
-                foreach ((float a, string tag) in new[] { (7.5f, "entrée"), (len - 7.5f, "sortie") })
+                foreach ((float a, string tag) in new[] { (a0 + landing * 0.5f, "entrée"), (a1 - landing * 0.5f, "sortie") })
                 {
-                    NM($"{nm} : palier {tag}", root, Pt(a, l0 + 2.5f, -0.5f), Size(6f, 5f, 1f));
+                    NM($"{nm} : palier {tag}", root, Pt(a, (l0 + line + 1f) * 0.5f, -0.5f), Size(landing, line + 1f - l0, 1f));
                     var t = new GameObject($"Reprise {tag}").transform;
                     t.SetParent(root, false);
-                    t.position = Pt(a, l0 + 2.5f, 0.2f);
+                    t.position = Pt(a, l0 + 2f, 0.2f);
                     respawns.Add(t);
                 }
 
-                float beamL = l0 + 7f;
-                NM($"{nm} : poutre d'entrée", root, Pt(13f, beamL, -0.25f), Size(11f, 0.6f, 0.5f));
-                NM($"{nm} : poutre de sortie", root, Pt(len - 13f, beamL, -0.25f), Size(11f, 0.6f, 0.5f));
-                NM($"{nm} : passerelle d'entrée", root, Pt(10f, (l0 + 5f + beamL) * 0.5f, -0.25f), Size(0.6f, beamL - l0 - 5f + 0.6f, 0.5f));
-                NM($"{nm} : passerelle de sortie", root, Pt(len - 10f, (l0 + 5f + beamL) * 0.5f, -0.25f), Size(0.6f, beamL - l0 - 5f + 0.6f, 0.5f));
-                int n = 0;
-                for (float a = 21f; a <= len - 21f; a += 4.2f, n++)
+                // Parcours : de la fin du palier d'entrée au début du palier de sortie, à 9 m du bord du couloir.
+                float courseLen = a1 - a0 - 2f * landing;
+                var report = new CourseReport { Name = nm, Link = g.Link };
+                var rng = new System.Random(Plan.Seed * 977 + k);
+                List<ParkourPiece> pieces = null;
+                foreach (float height in new[] { 2f, 1f, 0f })
                 {
-                    float lt = l0 + (n % 2 == 0 ? 13f : 16.5f);
-                    NM($"{nm} : plateforme {n + 1}", root, Pt(a, lt, -0.25f), Size(2.4f, 2.4f, 0.5f)).AddComponent<CrumblePlatform>();
-                    if (n % 4 == 2)
-                        NM($"{nm} : panneau de course {n}", root, Pt(a, l1 - 0.4f, 3.5f), Size(8f, 0.6f, 7f), false);
+                    bool withChest = g.Chest && height >= 2f;
+                    pieces = ParkourCourse.Layout(courseLen, height, -depth, H, withChest ? "palier après les murs" : null, -1f,
+                        height + 2.4f, caps, rng, report.Jumps);
+                    if (pieces != null)
+                    {
+                        report.Height = height;
+                        report.Chest = withChest;
+                        break;
+                    }
                 }
+
+                report.Length = courseLen;
+                if (pieces != null)
+                    BuildCourse(root, nm, Pt(a0 + landing, line, 0f), axis, latS, pieces, report);
+                Courses.Add(report);
 
                 var trig = new GameObject($"{nm} : vide");
                 trig.transform.SetParent(root, false);
                 trig.transform.position = Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth * 0.5f - 0.75f);
                 var box = trig.AddComponent<BoxCollider>();
                 box.isTrigger = true;
-                box.size = Size(a1 - a0, GalleryWidth, depth - 1.5f);
+                box.size = Size(a1 - a0, l1 - l0, depth - 1.5f);
                 trig.AddComponent<FallVoid>().Configure(settings.waterDamage, respawns.ToArray());
                 trig.AddComponent<NotWalkable>();
-                Volume(root, nm, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H * 0.5f), Size(a1 - a0, GalleryWidth, H), RoomKind.Parcours);
+                Volume(root, nm, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H * 0.5f), Size(a1 - a0, l1 - l0, H), RoomKind.Parcours);
                 if (kit != null && kit.torche != null)
-                    for (float a = 20f; a < len - 15f; a += 18f)
+                    for (float a = 12f; a < len - 10f; a += 16f)
                         KitBuild.Piece(kit.torche, root, Pt(a, l1 - 0.35f, 5f), Mathf.Atan2(-latS.x, -latS.z) * Mathf.Rad2Deg);
+            }
+        }
+
+        /// <summary>
+        /// Salles de parcours (point 4) : toute la salle est non magnétique (sol, murs, plafond, objets fixes : la traction y est
+        /// refusée partout) et repeinte en gris non magnétique ; l'ancien tracé du module est remplacé par un parcours exigeant en
+        /// diagonale de la fosse (ParkourCourse), avec un coffre pour certaines.
+        /// </summary>
+        private void BuildParkourRooms()
+        {
+            ParkourCaps caps = ParkourCaps.From(movement);
+            for (int i = 0; i < Plan.Rooms.Count; i++)
+            {
+                PlanRoom r = Plan.Rooms[i];
+                if (!r.Parkour || !_moduleInstances.TryGetValue(i, out GameObject inst) || r.Module < 0)
+                    continue;
+                RoomModule mod = _modules[r.Module];
+                Transform room = inst.transform.parent;
+                if (room.GetComponent<Orbs.NonMagneticSurface>() == null)
+                    room.gameObject.AddComponent<Orbs.NonMagneticSurface>();
+                if (nonMagnetic != null)
+                    foreach (MeshRenderer mr in room.GetComponentsInChildren<MeshRenderer>(true))
+                    {
+                        Transform piece = mr.transform;
+                        while (piece != null && piece != room && !piece.name.StartsWith("Kit_"))
+                            piece = piece.parent;
+                        if (piece != null && piece != room && !piece.name.Contains("Torche"))
+                            mr.sharedMaterial = nonMagnetic;
+                    }
+
+                // Seuils des portes : le couloir commence dans l'épaisseur du mur de la salle ; ces 1.3 m restent non magnétiques.
+                foreach (PlanDoor d in r.Doors)
+                {
+                    if (d.Use != 1)
+                        continue;
+                    Vector3 o = MapPlanner.SideVector(d.Side);
+                    bool alongZ = Mathf.Abs(o.z) > 0.5f;
+                    float dw = Plan.Links[d.Link].Width, H = settings.corridorHeight;
+                    Vector3 SizeD(float outLen, float across, float hgt) => alongZ ? new Vector3(across, hgt, outLen) : new Vector3(outLen, hgt, across);
+                    Vector3 across = alongZ ? Vector3.right : Vector3.forward;
+                    // Couloir en pente : sol et plafond du seuil inclinés comme la rampe (montante ou descendante depuis la salle).
+                    PlanLink dl = Plan.Links[d.Link];
+                    float other = dl.A == i ? dl.To.y : dl.From.y, here = dl.A == i ? dl.From.y : dl.To.y;
+                    float tan = dl.Slope ? (other - here) / Mathf.Max(1f, dl.Length) : 0f;
+                    Quaternion tilt = Quaternion.FromToRotation(o, (o + Vector3.up * tan).normalized);
+                    Vector3 at = d.Position + o * 0.525f + Vector3.up * (tan * 0.525f);           // de 0.25 m dans la salle à 1.3 m dans le couloir
+                    NM($"seuil (sol) {d.Side}", room, at + Vector3.up * 0.03f, SizeD(1.55f, dw, 0.06f)).transform.rotation = tilt;
+                    NM($"seuil (plafond) {d.Side}", room, at + Vector3.up * (H - 0.03f), SizeD(1.55f, dw, 0.06f), false).transform.rotation = tilt;
+                    foreach (float sgn in new[] { -1f, 1f })
+                    {
+                        NM($"seuil (côté) {d.Side}", room, at + across * sgn * (dw * 0.5f - 0.03f) + Vector3.up * (H * 0.5f), SizeD(1.55f, 0.06f, H + 1f), false);
+                        // Bouts des murs du couloir, dans le plan du mur de la salle (et jusqu'à 0.1 m dedans) : cache côté salle.
+                        NM($"seuil (bout de mur) {d.Side}", room, d.Position - o * 0.2f + across * sgn * (dw * 0.5f + T * 0.5f) + Vector3.up * ((H + 5f) * 0.5f - 1f),
+                            SizeD(0.06f, T + 0.4f, H + 5f), false);
+                    }
+
+                    NM($"seuil (bout du plafond) {d.Side}", room, d.Position - o * 0.2f + Vector3.up * (H + 1.5f), SizeD(0.06f, dw + 2f * T + 0.4f, 3.2f), false);
+                }
+
+                // Passages en hauteur qui débouchent dans cette salle : leurs pièces aussi.
+                Transform passages = _root.Find("Passages en hauteur (saut mural)");
+                for (int k = 0; passages != null && k < Plan.Passages.Count; k++)
+                {
+                    PlanPassage pp = Plan.Passages[k];
+                    if ((pp.AtStart ? Plan.Links[pp.Link].A : Plan.Links[pp.Link].B) != i)
+                        continue;
+                    foreach (Transform t in passages)
+                        if (t.name.Contains($"Passage {k + 1} :") && t.GetComponent<Orbs.NonMagneticSurface>() == null)
+                            t.gameObject.AddComponent<Orbs.NonMagneticSurface>();
+                }
+
+                foreach (Transform t in inst.GetComponentsInChildren<Transform>(true).Where(t => t != null && t.name.StartsWith("Parcours :")).ToList())
+                    if (t != null)
+                        DestroyImmediate(t.gameObject);
+
+                Rect hole = mod.holeRect;
+                Vector3 c0 = inst.transform.TransformPoint(new Vector3(hole.xMin, 0f, hole.yMin));
+                Vector3 c1 = inst.transform.TransformPoint(new Vector3(hole.xMax, 0f, hole.yMax));
+                var rng = new System.Random(Plan.Seed * 613 + i);
+                if (rng.NextDouble() < 0.5)
+                    (c0, c1) = (inst.transform.TransformPoint(new Vector3(hole.xMax, 0f, hole.yMin)), inst.transform.TransformPoint(new Vector3(hole.xMin, 0f, hole.yMax)));
+                Vector3 ax = (c1 - c0).normalized, az = Vector3.Cross(ax, Vector3.up).normalized;
+                float length = Vector3.Distance(c0, c1);
+                string nm = $"Salle de parcours : {r.Name}";
+                var report = new CourseReport { Name = nm, Room = i, Length = length };
+                float side = rng.NextDouble() < 0.5 ? 1f : -1f;
+                List<ParkourPiece> pieces = null;
+                foreach (float height in new[] { 1f, 0f })
+                {
+                    bool withChest = r.ParkourChest && height >= 1f;
+                    pieces = ParkourCourse.Layout(length, height, -mod.holeDepth, r.Ceiling, withChest ? "marche 1" : null, side,
+                        height + 2.4f, caps, rng, report.Jumps);
+                    if (pieces != null)
+                    {
+                        report.Height = height;
+                        report.Chest = withChest;
+                        break;
+                    }
+                }
+
+                if (pieces != null)
+                    BuildCourse(room, nm, c0 + Vector3.up * 0f, ax, az, pieces, report);
+                Courses.Add(report);
+            }
+        }
+
+        /// <summary>Pose les pièces d'un parcours (repère : origine, axe du tracé, côté) ; le socle du coffre reçoit un coffre.</summary>
+        private void BuildCourse(Transform root, string nm, Vector3 origin, Vector3 ax, Vector3 az, List<ParkourPiece> pieces, CourseReport report)
+        {
+            Quaternion rot = Quaternion.LookRotation(ax, Vector3.up);
+            foreach (ParkourPiece q in pieces)
+            {
+                Vector3 at = origin + ax * q.Center.x + az * q.Center.z + Vector3.up * q.Center.y;
+                GameObject go = NM($"{nm} : {q.Name}", root, at, new Vector3(q.Size.z, q.Size.y, q.Size.x), !q.Wall);
+                go.transform.rotation = rot;
+                if (q.Crumble)
+                    go.AddComponent<CrumblePlatform>();
+                if (q.Chest && chest != null)
+                {
+                    Vector3 top = at + Vector3.up * (q.Size.y * 0.5f);
+                    GameObject c = Instantiate(chest, top, Quaternion.LookRotation(-az * Mathf.Sign(q.Center.z == 0f ? 1f : q.Center.z), Vector3.up), root);
+                    c.name = $"Coffre de parcours : {nm}";
+                    c.AddComponent<Orbs.NonMagneticSurface>();          // pas de traction vers lui : on n'y arrive que par le parcours
+                }
             }
         }
 
@@ -887,7 +1027,10 @@ namespace ItHunts.Level
                 if (spots.Length == 0)
                     continue;
                 ChestSpot s = spots[_rng.Next(spots.Length)];
-                Instantiate(chest, s.transform.position, s.transform.rotation, _root).name = $"Coffre : {Plan.Rooms[r].Name}";
+                GameObject c = Instantiate(chest, s.transform.position, s.transform.rotation, _root);
+                c.name = $"Coffre : {Plan.Rooms[r].Name}";
+                if (Plan.Rooms[r].Parkour)
+                    c.AddComponent<Orbs.NonMagneticSurface>();               // salle de parcours : rien n'y est magnétique
             }
         }
 
@@ -947,6 +1090,19 @@ namespace ItHunts.Level
                 zoneNav.Configure((min + max) * 0.5f, max - min);
             }
         }
+
+        /// <summary>Un parcours construit (mesures) : galerie ou salle de parcours, ses sauts vérifiés, son coffre.</summary>
+        public sealed class CourseReport
+        {
+            public string Name;
+            public int Link = -1, Room = -1;
+            public bool Chest;
+            public float Length, Height;
+            public readonly List<ParkourJump> Jumps = new List<ParkourJump>();
+        }
+
+        /// <summary>Parcours de la carte (galeries et salles de parcours).</summary>
+        public readonly List<CourseReport> Courses = new List<CourseReport>();
 
         /// <summary>Renderers après la fusion (mesures).</summary>
         public int MergedRenderers { get; private set; }

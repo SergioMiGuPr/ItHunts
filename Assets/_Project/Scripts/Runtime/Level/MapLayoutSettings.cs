@@ -38,10 +38,14 @@ namespace ItHunts.Level
         [Header("Contenu")]
         [Range(0, 40)] public int chests = 14;
         [Range(0, 20)] public int canalHalls = 7;
-        [Tooltip("Salles avec une zone de parcours (fosse, non magnétique).")]
-        [Range(0, 20)] public int parkourHalls = 3;
-        [Tooltip("Galeries de parcours le long des couloirs plats de 55 m et plus entre deux salles (seul endroit où l'on dépasse le traqueur).")]
-        [Range(0, 20)] public int galleries = 6;
+        [Tooltip("Salles de parcours (fosse traversée par un parcours exigeant ; toute la salle est non magnétique).")]
+        [Range(0, 20)] public int parkourHalls = 6;
+        [Tooltip("Galeries de parcours au plus, le long des couloirs plats de 55 m et plus (hors départ et sortie), ouvertes sur le couloir.")]
+        [Range(0, 40)] public int galleries = 30;
+        [Tooltip("Zones de parcours (salles de parcours + galeries) par salle de la carte : 0.5 = une zone pour deux salles. Les passages en hauteur s'ajoutent.")]
+        [Range(0f, 1f)] public float zonesPerRoom = 0.5f;
+        [Tooltip("Part des zones de parcours qui mènent à un coffre (au bout d'un saut, atteint seulement par le parcours).")]
+        [Range(0f, 1f)] public float parkourChestShare = 0.34f;
         [Tooltip("Passages en hauteur (saut mural, conduit de 8 m) entre une salle et un couloir.")]
         [Range(0, 30)] public int passages = 10;
         [Tooltip("Zones de contournement au moins par carte (galeries, passages ouverts, fosses de parcours), réparties sur les trois tiers du trajet départ – sortie (une au moins par tiers).")]

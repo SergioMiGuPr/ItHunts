@@ -37,11 +37,21 @@ reste une **carte fixe de référence** (menu : « Level_01 (carte fixe de réf�
 - **repaire** du traqueur en cul-de-sac sur le bord, le plus loin possible du départ ;
 - **niveau haut (+16 m)** seulement pour les modules qui le déclarent ; **pente de liaison plafonnée à 20°** (réglable) : en pratique
   13 à 14° sur toutes les cartes mesurées ;
-- **contournement du traqueur** (seuls endroits où l'on peut le dépasser) : **galeries de parcours** (6 par défaut, le long des couloirs
-  plats de 55 m et plus entre deux salles) et **passages en hauteur** en saut mural (10 par défaut, au bout d'un couloir, côté salle ;
-  refermés si un étage du module bouche l'ouverture), plus les fosses des modules de parcours ; au moins `minBypassZones` (6) par
-  carte, **une au moins dans chaque tiers du trajet départ – sortie** (sinon le tirage en ajoute dans le tiers manquant, ou refait un
-  essai) ;
+- **zones de parcours** (seuls endroits où l'on peut dépasser le traqueur ; point 4 de `carte-suite`) : environ **une pour deux
+  salles** (`zonesPerRoom` 0.5 : 24 par carte), **au moins une par tiers** du trajet départ – sortie :
+  - **salles de parcours** (6, `parkourHalls`) : fosse de 30 × 30 m traversée en diagonale ; **toute la salle est non magnétique**
+    (sol, murs, plafond, objets fixes, coffres, seuils des portes, conduits qui y débouchent : la traction y est refusée partout) ;
+  - **galeries** (le reste, au plus `galleries`) le long des couloirs plats de 55 m et plus (hors départ et sortie), **ouvertes sur
+    le couloir** (parapet de 1 m que la main du traqueur passe) au-dessus d'un vide de 10 m : le parcours est parallèle à sa voie ;
+  - **parcours exigeants, toujours faisables sans traction** (`ParkourCourse`, écarts calculés depuis les réglages de mouvement) :
+    poutre étroite (0.45 m), marches qui tombent, **passage entre deux murs plus long qu'un double saut** (sauts muraux en chaîne ou
+    course sur le mur), **vide qui demande un dash** (plus long qu'un double saut), poteaux étroits qui tombent, poutre d'arrivée ;
+  - **coffres de parcours** : environ une zone sur trois (`parkourChestShare` 0.34) ; socle plus haut que le tracé, hors d'atteinte
+    depuis le sol (et le parapet), non magnétique ;
+  - **pas de cachette** : hors de portée de la main du traqueur, on ne se pose que sur des plateformes qui tombent (0.6 s) ; les
+    murs de saut montent jusqu'au plafond (pas de dessus) ;
+  - **passages en hauteur** en saut mural (10 au plus, au bout d'un couloir, côté salle ; refermés si un étage du module bouche
+    l'ouverture) en plus ;
 - tout vient de `System.Random(seed)` dans un ordre fixe : chaque machine refait la même carte (jeu en ligne) ; 20 essais, puis une
   carte de secours.
 

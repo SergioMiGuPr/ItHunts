@@ -25,7 +25,12 @@ MonoBehaviour:
   maxAttempts: 20
   chests: 14
   canalHalls: 7
-  parkourHalls: 3
+  parkourHalls: 6
+  galleries: 30
+  zonesPerRoom: 0.5
+  parkourChestShare: 0.34
+  passages: 10
+  minBypassZones: 6
   annexShare: 0.35
   lockedRooms: 2
   residentGhoulsMin: 1

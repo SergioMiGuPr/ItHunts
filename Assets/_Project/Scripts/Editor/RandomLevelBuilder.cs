@@ -330,6 +330,7 @@ namespace ItHunts.EditorTools
             SetRef(gen, "lockedAnnex", locked);
             SetRef(gen, "water", water);
             SetRef(gen, "nonMagnetic", NonMagneticMat());
+            SetRef(gen, "movement", AssetDatabase.LoadAssetAtPath<ItHunts.Settings.MovementSettings>(SettingsDir + "/Movement_Default.asset"));   // écarts des parcours
             SetRef(gen, "zoneNav", nav);
             SetRef(gen, "graph", graph);
             SetRef(gen, "playerStart", start);
