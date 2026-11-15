@@ -26,6 +26,7 @@ namespace ItHunts.EditorTools
 
         private static Transform _m;
         private static float _h;
+        private static KitSet _kit;
         private static Material _stone, _floorStone, _wood, _beam, _platform;
 
         [MenuItem("ItHunts/Reconstruire les modules de salle (Assets/_Project/Prefabs/Modules)")]
@@ -48,6 +49,10 @@ namespace ItHunts.EditorTools
             ("Prison", Prison),
             ("Carrefour_Niches", CarrefourNiches),
             ("Carrefour_Encombre", CarrefourEncombre),
+            // Modèles vides à dupliquer (poids 0 : jamais tirés tels quels) : 1 × 1, 1 × 2, 2 × 2.
+            ("Modele", m => Modele(m, 1, 1)),
+            ("Modele_1x2", m => Modele(m, 1, 2)),
+            ("Modele_2x2", m => Modele(m, 2, 2)),
         };
 
         public static string BuildAll()
@@ -60,6 +65,9 @@ namespace ItHunts.EditorTools
             _wood = Mat("Prop_Bois", new Color(0.36f, 0.25f, 0.15f));
             _beam = Mat("Prop_BoisSombre", new Color(0.22f, 0.15f, 0.1f));
             _platform = Mat("Greybox_Platform", new Color(0.32f, 0.42f, 0.55f));
+            // Structure en pièces du kit (carte aléatoire) : liées à leur prefab, une retouche du kit se répercute dans les modules.
+            _kit = TestArenaSceneBuilder.BuildKit();
+            TestArenaSceneBuilder.UseEditorSpawner();
             var report = new List<string>();
             foreach ((string id, Action<RoomModule> build) in Builders)
             {
@@ -67,8 +75,9 @@ namespace ItHunts.EditorTools
                 _m = root.transform;
                 RoomModule mod = root.AddComponent<RoomModule>();
                 build(mod);
-                if (mod.kind == ModuleKind.Salle)
+                if (mod.kind == ModuleKind.Salle && !id.StartsWith("Modele"))
                     Dress(mod, id.GetHashCode());
+                Doors(mod);
                 string issues = Validate(mod);
                 if (issues.Length > 0)
                     report.Add($"{id} : {issues}");
@@ -76,8 +85,64 @@ namespace ItHunts.EditorTools
                 Object.DestroyImmediate(root);
             }
 
+            KitBuild.Spawner = (prefab, parent) => Object.Instantiate(prefab, parent, false);
             AssetDatabase.SaveAssets();
             return $"{Builders.Length} modules" + (report.Count > 0 ? " ; à vérifier : " + string.Join(" | ", report) : " ; voies dégagées partout");
+        }
+
+        /// <summary>Entrées aux ouvertures actuelles : le milieu de chaque côté de chaque case (ModuleDoor, aimantées).</summary>
+        private static void Doors(RoomModule mod)
+        {
+            foreach (DoorSide s in new[] { DoorSide.Nord, DoorSide.Est, DoorSide.Sud, DoorSide.Ouest })
+                for (int c = 0; c < mod.CellsAlong(s); c++)
+                {
+                    var go = new GameObject($"Entrée {s} {c + 1}");
+                    go.transform.SetParent(_m, false);
+                    go.transform.localPosition = mod.DoorLocal(s, c);
+                    go.transform.localRotation = Quaternion.Euler(0f, RoomModule.SideYaw(s), 0f);
+                    var d = go.AddComponent<ModuleDoor>();
+                    d.side = s;
+                    d.cell = c;
+                }
+        }
+
+        /// <summary>
+        /// Modèle de module vide (à dupliquer pour en créer un sans code) : sa taille et ses entrées, quelques piliers du kit hors
+        /// des voies, torches, points d'apparition, habitants et un coffre. Poids 0 : jamais tiré tel quel.
+        /// </summary>
+        private static void Modele(RoomModule m, int fx, int fz)
+        {
+            Setup(m, fx * fz == 1 ? "Modèle (1 case)" : $"Modèle ({fx} × {fz} cases)", 56f);
+            m.footprint = new Vector2Int(fx, fz);
+            m.weight = 0f;
+            Vector2 e = m.Extent * 0.5f;
+            for (int i = 0; i < fx; i++)
+            for (int j = 0; j < fz; j++)
+            {
+                float cx = (i - (fx - 1) * 0.5f) * RoomModule.GridSpacing, cz = (j - (fz - 1) * 0.5f) * RoomModule.GridSpacing;
+                Quad((sx, sz, q) =>
+                {
+                    Pilier(cx + sx * 14f, cz + sz * 14f);
+                    Spawn(cx + sx * 18f, cz + sz * 8f);
+                    Resident(cx + sx * 9f, cz + sz * 18f);
+                });
+                Spawn(cx, cz, true);
+                if (i == 0 && j == 0)
+                    ChestAt(cx + 20f, cz - 20f, 315f);
+            }
+
+            for (float a = -e.x + 6f; a <= e.x - 6f; a += 14f)
+            {
+                P("Torche", a, e.y - 0.6f, 180f, 4f);
+                P("Torche", a, -e.y + 0.6f, 0f, 4f);
+            }
+        }
+
+        /// <summary>Pilier du kit (Kit_Pilier, colonne de 1.4 × 8 m) : collision fusionnée et modèle.</summary>
+        private static void Pilier(float x, float z, float y = 0f)
+        {
+            GameObject col = KitBuild.Box(_m, "Pilier", new Vector3(x, y + 4f, z), new Vector3(1.4f, 8f, 1.4f), KitBuild.Kind.Sol, null);
+            KitBuild.Piece(_kit != null ? _kit.pilier : null, col.transform, new Vector3(0f, -4f, 0f), 0f);
         }
 
         /// <summary>Tous les modules du dossier (les miens et ceux de l'utilisateur).</summary>
@@ -147,7 +212,7 @@ namespace ItHunts.EditorTools
                     };
                     if (mod.hole != ModuleHole.Aucun && mod.holeRect.Contains(new Vector2(p.x, p.z)))
                         continue;
-                    if (Mathf.Abs(p.x) > _h - 9f && Mathf.Abs(p.z) > _h - 9f)
+                    if (Mathf.Abs(p.x) > _h - 12f && Mathf.Abs(p.z) > _h - 12f)
                         continue;                                          // pas dans les angles (le traqueur doit pouvoir y venir)
                     if (!Free(p + Vector3.up * 1.2f, new Vector3(2.4f, 1.1f, 2.4f)))
                         continue;
@@ -189,15 +254,24 @@ namespace ItHunts.EditorTools
             _h = size / 2f;
         }
 
-        private static GameObject P(string id, float x, float z, float yaw = 0f, float y = 0f) => PropLibrary.Place(id, _m, new Vector3(x, y, z), yaw);
+        private static GameObject P(string id, float x, float z, float yaw = 0f, float y = 0f)
+        {
+            if (id == "Colonne")
+            {
+                Pilier(x, z, y);                                           // les colonnes sont des piliers du kit
+                return null;
+            }
+
+            return PropLibrary.Place(id, _m, new Vector3(x, y, z), yaw);
+        }
 
         /// <summary>Bloc plein (étage rempli jusqu'au sol, ou obstacle) de y0 à y0 + sy.</summary>
         private static GameObject Block(string name, float x0, float x1, float z0, float z1, float sy, float y0 = 0f, Material mat = null, bool walkable = true)
         {
-            GameObject b = Box(name, _m, new Vector3((x0 + x1) / 2f, y0 + sy / 2f, (z0 + z1) / 2f), new Vector3(Mathf.Abs(x1 - x0), sy, Mathf.Abs(z1 - z0)), mat != null ? mat : _stone);
-            if (!walkable)
-                b.AddComponent<NotWalkable>();
-            return b;
+            // Pièces du kit : dalle (1 m au plus), mur (1.5 m d'épaisseur au plus), sinon bloc plein (côtés en murs, dessus en dalles).
+            var size = new Vector3(Mathf.Abs(x1 - x0), sy, Mathf.Abs(z1 - z0));
+            KitBuild.Kind kind = sy <= 1.01f ? KitBuild.Kind.Sol : Mathf.Min(size.x, size.z) <= 1.5f ? KitBuild.Kind.Mur : KitBuild.Kind.Bloc;
+            return KitBuild.Box(_m, name, new Vector3((x0 + x1) / 2f, y0 + sy / 2f, (z0 + z1) / 2f), size, kind, _kit, walkable);
         }
 
         /// <summary>Pont (tablier de 1 m, dessous à 10 m) de a à b (axe x ou z).</summary>
@@ -206,22 +280,18 @@ namespace ItHunts.EditorTools
             Vector3 d = b - a;
             bool alongX = Mathf.Abs(d.x) > Mathf.Abs(d.z);
             Vector3 c = (a + b) / 2f;
-            Box($"Pont : {name}", _m, new Vector3(c.x, 10.5f, c.z), alongX ? new Vector3(Mathf.Abs(d.x), 1f, width) : new Vector3(width, 1f, Mathf.Abs(d.z)), _beam);
+            KitBuild.Box(_m, $"Pont : {name}", new Vector3(c.x, 10.5f, c.z), alongX ? new Vector3(Mathf.Abs(d.x), 1f, width) : new Vector3(width, 1f, Mathf.Abs(d.z)), KitBuild.Kind.Pont, _kit);
             P("Lanterne", c.x, c.z, 0f, 9.2f);
         }
 
         /// <summary>Escalier de marches pleines (0.4 m de haut, 0.56 m de profondeur : on le monte en courant), du sol à top.</summary>
         private static void Stairs(string name, Vector3 start, Vector3 dir, float top, float width = 3f)
         {
+            // Même pente qu'avant (0.4 m pour 0.56 m), mais collision lisse (course, glissade et bunny hop comme sur une pente) et
+            // marches visuelles (Kit_Escalier), pleine jusqu'au sol.
             const float rise = 0.4f, run = 0.56f;
             int n = Mathf.CeilToInt(top / rise);
-            for (int i = 0; i < n; i++)
-            {
-                float h = Mathf.Min(top, (i + 1) * rise);
-                Vector3 c = start + dir * (run * (i + 0.5f));
-                Vector3 size = Mathf.Abs(dir.x) > 0.5f ? new Vector3(run, h, width) : new Vector3(width, h, run);
-                Box($"{name} : marche {i + 1}", _m, new Vector3(c.x, h / 2f, c.z), size, _platform);
-            }
+            KitBuild.Ramp(_m, name, start, dir, n * run * top / (n * rise), top, width, _kit, top + 1f);
         }
 
         private static void Spawn(float x, float z, bool flyer = false, float y = 0f)
@@ -441,7 +511,7 @@ namespace ItHunts.EditorTools
                 P("Tonneau", sx * (h - 2f), sz * 10f, 0f, 8f);
                 P("Caisse_Attrapable", sx * 10f, sz * 10f);
                 P("Caisse_Attrapable", sx * 11.2f, sz * 10f);
-                P("Statue", sx * (h - 3f), sz * (h - 3f), 45f, 12f);
+                P("Statue", sx * (h - 11f), sz * (h - 11f), 45f);         // au sol : sur la tour, elle cachait le joueur (Valider le module)
             });
             ChestAt(h - 2f, 12f, 270f, 8f);
             WallTorches(10f, 10f);
@@ -705,9 +775,9 @@ namespace ItHunts.EditorTools
                 P("Colonne", sx * 7.5f, sz * 7.5f);
                 P("Torche", sx * 9.4f, sz * 7.5f, sx > 0 ? -90f : 90f, 3.5f);
             });
-            Box("Poutre nord-sud", _m, new Vector3(0f, 10.5f, 0f), new Vector3(1f, 1f, 20f), _beam);
-            Box("Poutre est-ouest", _m, new Vector3(0f, 11.5f, 0f), new Vector3(20f, 1f, 1f), _beam);
-            P("Gravats", 7f, -6.5f);
+            KitBuild.Box(_m, "Poutre nord-sud", new Vector3(0f, 10.5f, 0f), new Vector3(1f, 1f, 20f), KitBuild.Kind.Poutre, _kit);
+            KitBuild.Box(_m, "Poutre est-ouest", new Vector3(0f, 11.5f, 0f), new Vector3(20f, 1f, 1f), KitBuild.Kind.Poutre, _kit);
+            P("Gravats", 6.8f, -8.4f);                                      // hors de la voie (Valider le module : il y était)
             Spawn(7f, 0f);
             Spawn(0f, 7f, true);
         }

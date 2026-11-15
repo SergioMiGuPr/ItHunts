@@ -39,7 +39,7 @@ namespace ItHunts.Tests
         {
             var mods = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/_Project/Prefabs/Modules" })
                 .Select(g => AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(g)))
-                .Where(g => g.GetComponent<RoomModule>() != null).ToList();
+                .Where(g => g.GetComponent<RoomModule>() != null && g.GetComponent<RoomModule>().weight > 0f).ToList();   // les modèles (poids 0) ne sont pas tirés
             var halls = mods.Where(m => m.GetComponent<RoomModule>().kind == ModuleKind.Salle).ToList();
             Assert.That(halls.Count, Is.GreaterThanOrEqualTo(12), "au moins 12 modules de salle");
             Assert.That(mods.Count(m => m.GetComponent<RoomModule>().kind == ModuleKind.Carrefour), Is.GreaterThanOrEqualTo(2));

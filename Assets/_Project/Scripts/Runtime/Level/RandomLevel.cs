@@ -48,6 +48,8 @@ namespace ItHunts.Level
 
         /// <summary>Seed imposée (mesures) : prioritaire si non nulle.</summary>
         public static int SeedOverride;
+        /// <summary>Poids imposé d'un module (mesures : faire tirer les modèles de grande salle) ; null : son poids.</summary>
+        public static System.Func<RoomModule, float> WeightOverride;
         public static RandomLevel Current { get; private set; }
 
         public MapPlan Plan { get; private set; }
@@ -98,10 +100,18 @@ namespace ItHunts.Level
         public void Generate(int seed)
         {
             if (_root != null)
+            {
+                // Nouvelle carte dans la même scène (mesures) : libère aussi les maillages combinés du batching statique.
                 DestroyImmediate(_root.gameObject);
+                Resources.UnloadUnusedAssets();
+                System.GC.Collect();
+            }
             LevelSeed = seed;
-            _modules = catalog != null ? catalog.Usable() : new List<RoomModule>();
+            float Weight(RoomModule m) => WeightOverride != null ? WeightOverride(m) : m.weight;
+            _modules = catalog != null ? catalog.modules.Where(m => m != null && m.validated && Weight(m) > 0f).ToList() : new List<RoomModule>();
             var infos = _modules.Select((m, i) => ModuleInfo.From(m, i)).ToList();
+            foreach (ModuleInfo info in infos)
+                info.Weight = Weight(_modules[info.Index]);
             var sw = Stopwatch.StartNew();
             Plan = MapPlanner.Plan(settings, infos, seed);
             PlanMs = (float)sw.Elapsed.TotalMilliseconds;
