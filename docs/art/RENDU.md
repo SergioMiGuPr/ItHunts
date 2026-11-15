@@ -250,6 +250,54 @@ post-process) sur la moitié droite.
 - Limites : mesure dans l'éditeur (bruit), pas dans un build ; le build demande ton accord (règle 1). À refaire dans
   le build de mesure de la session principale (`-ithunts-perf`) sur `Level_01`.
 
+### Grand nombre d'objets : SRP Batcher, instanciation, GPU Resident Drawer (2026-11-15)
+
+Le niveau compte ≈ 1 231 torches et la carte aléatoire ≈ 65 000 pièces de kit. Vérifications :
+
+- **`ItHunts/Toon` est compatible SRP Batcher** (code 0, même résultat que URP Lit, lu par la fonction de l'inspecteur
+  du shader) : un seul CBUFFER `UnityPerMaterial` (`ItHunts_ToonInput.hlsl`) partagé par les 4 passes (ForwardToon,
+  ShadowCaster, DepthOnly, DepthNormals). Les propriétés qui n'y sont pas sont des états de rendu ou des bascules de
+  mots-clés (`_Cull`, `_SrcBlend`, `_DstBlend`, `_ZWrite`, `_Emission`, `_Rim`, `_AlphaClip`), ce qui est permis.
+  **Aucune correction du shader n'était nécessaire.**
+- **Instanciation GPU possible** : `multi_compile_instancing`, inclusion `DOTS.hlsl` et identifiant d'instance dans
+  les 4 passes (le shader a sa variante d'instanciation et sa variante DOTS, pour le GPU Resident Drawer). Tous les
+  matériaux toon d'`Assets/Art/Materials` ont « Enable GPU Instancing » coché (6 matériaux de démonstration des
+  signaux ne l'avaient pas : corrigé).
+- **`ItHunts/Contours`** : compatible SRP Batcher ; pas d'instanciation, inutile : c'est une passe plein écran, un seul
+  appel de dessin par caméra, quel que soit le nombre d'objets.
+
+**Mesure** : `Test_Rendu`, Play Mode, vue du joueur dans l'axe du couloir, réglage intermédiaire, contours actifs ;
+500 `SM_Torche` sur les murs du couloir (4 matériaux chacune) et 2 000 `SM_Colonne` en grille de 40 × 50 (pas de
+3 m, beaucoup derrière les murs : il n'y a pas d'occlusion) : 4 500 renderers, 4.67 M triangles. Appels de dessin,
+batches et SetPass : statistiques de la vue Game ; GPU et CPU : `FrameTimingManager`, médianes sur 8 s (éditeur).
+
+| Configuration | Appels de dessin | Batches | SetPass | GPU médiane | CPU médiane |
+|---|---|---|---|---|---|
+| Couloir vide (référence) | 315 | 256 | 57 | 1.86 ms | 5.7 ms |
+| **Props, SRP Batcher (état actuel du projet)** | 13 455 | 13 405 | 88 | 5.67 ms | 16.9 ms |
+| Props, SRP Batcher coupé : instanciation GPU | 355 | 296 | 205 | 4.74 ms | 12.4 ms |
+| Props combinés en lot statique (`StaticBatchingUtility`), SRP Batcher | 5 706 | 1 122 | 87 | 5.36 ms | 14.3 ms |
+| **Props, SRP Batcher + GPU Resident Drawer (Instanced Drawing)** | **458** | **423** | **49** | **4.25 ms** | **9.4 ms** |
+
+Lecture :
+- le SRP Batcher fonctionne (88 SetPass pour 4 500 objets), mais il ne réduit pas le nombre d'appels de dessin : avec
+  des milliers de copies du même modèle, c'est le CPU qui souffre (16.9 ms) ;
+- le **GPU Resident Drawer** garde le SRP Batcher et instancie les copies : **13 455 → 458 appels de dessin,
+  CPU 16.9 → 9.4 ms, GPU 5.67 → 4.25 ms**. C'est la meilleure configuration mesurée, sans rien changer au shader ;
+- le lot statique aide moins (5 706 appels) et coûte de la mémoire (maillages combinés).
+- Mesures dans l'éditeur (bruit de ± 0.3 ms sur le GPU) ; à refaire dans un build sur la carte aléatoire.
+
+**À faire sur `main`** (réglages partagés, essayés ici en local puis remis comme avant) :
+1. `PC_RPAsset` : **GPU Resident Drawer = Instanced Drawing** (le chemin de rendu est déjà Forward+, requis).
+2. *Project Settings > Graphics* : **BatchRendererGroup Variants = Keep All** (sinon le GPU Resident Drawer est refusé
+   et les variantes DOTS sont retirées des builds).
+3. Pièces de kit et props : garder des `MeshRenderer` simples. Le GPU Resident Drawer ignore les renderers qui
+   reçoivent un `MaterialPropertyBlock` (lueurs des objets attrapables, chambres du barillet) : ils restent sur le
+   SRP Batcher, ce qui est correct pour quelques centaines d'objets. Le lot statique devient inutile pour le décor
+   instancié (Unity conseille de ne pas le combiner avec le GPU Resident Drawer) : à vérifier en build.
+4. Option : l'occlusion GPU du GPU Resident Drawer (*GPU Occlusion*) pour la carte aléatoire (beaucoup de murs) : à
+   mesurer à part.
+
 ### Compilation et tests
 
 - Shaders : 0 erreur, 0 avertissement (`ShaderUtil.GetShaderMessages`). Recompilation des scripts : 0 erreur,

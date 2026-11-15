@@ -79,6 +79,7 @@ matériaux, tous sur `ItHunts/Toon`, ni métal ni brillance :
 | `M_Corde` | ligatures (torche, échafaudage) | aucune | #7A6548 | — |
 | `M_Os` | `SM_Cage_Os` | aucune | #CFC3A6 | — |
 | `M_Fond_Noir` | fond de la bouche du tuyau (trous, fonds d'ombre) | aucune | #070606 | — |
+| `M_Levier_Lueur` | cristal et anneau de rune de `SM_Levier` (arène, groupe C) | aucune | #5A3420 (ambre sombre, éteint) | **mot-clé actif, couleur noire** : orange (prêt) puis vert (activé) en jeu ; traverse un peu le brouillard (0.6) |
 | `M_Tapisserie` | `SM_Tapisserie` | `texture_tapisserie_v02_alpha` (import : alpha transparent, bord en Clamp) | blanc | **découpe alpha** (seuil 0.5), **double face** (Cull Off), file AlphaTest |
 
 ### Lanterne de feu et orbe, vue FPS (`Assets/Art/Materials/FPS/`, lot de modélisation, groupe A)
