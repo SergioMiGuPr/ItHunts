@@ -178,7 +178,8 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
     color += emission * lerp(fogVisibility, 1.0h, _EmissionThroughFog);
 #endif
 
-    return half4(color, 1.0h);
+    // alpha : utilisé seulement si le matériau mélange (translucide) ; ignoré en opaque (One / Zero)
+    return half4(color, albedo.a);
 }
 
 #endif

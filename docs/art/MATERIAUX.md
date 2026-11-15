@@ -67,6 +67,90 @@ utilisent ces FBX prennent ces `.mat` sans autre réglage.
   versions toon « à travers le brouillard » des signaux du jeu, pour l'essai de lisibilité (`RENDU.md` § 3 ter). Ce
   sont des propositions de réglage : les matériaux du jeu (`Assets/_Project/Art/Greybox/`) n'ont pas été modifiés.
 
+### Lanterne de feu et orbe, vue FPS (`Assets/Art/Materials/FPS/`, lot de modélisation, groupe A)
+
+Tous sur `ItHunts/Toon`, ni métal ni brillance, tiling (1, 1) / offset (0, 0) : les UV des FBX sont en échelle monde
+(tuile de **0.05 m**), calées dans Blender.
+
+| Matériau | Utilisé par | Texture | Couleur de base | Émission |
+|---|---|---|---|---|
+| `M_LanterneFeu_Fer` | `SM_LanterneFeu` (base, montants, chapeau, fleuron, anneau, coupelle) | `T_LanterneFeu_Fer_BaseColor` | blanc | non |
+| `M_LanterneFeu_Cuivre` | `SM_LanterneFeu` (bandeaux, liserés, tête du fleuron) | `T_LanterneFeu_Cuivre_BaseColor` | blanc | non |
+| `M_LanterneFeu_Meche` | `SM_LanterneFeu_Meche` | aucune | #17110D | non |
+| `M_LanterneFeu_Verre` | `SM_LanterneFeu_Verre` | aucune | **#7A0A12, alpha 0.55** (couleur du renard) | **mot-clé actif, couleur noire** (le code l'allume) |
+| `M_Orbe_Pierre` | dalles des 3 anneaux, corps des 6 tablettes | `T_Orbe_Pierre_BaseColor` | blanc | non |
+| `M_Orbe_Fer` | gorges et rivets des anneaux | `T_Orbe_Fer_BaseColor` | blanc | non |
+| `M_Orbe_Energie` | `SM_Orbe_Energie` | aucune (UV sphériques réservées au shader de vortex) | #8E1B12 (rouge renard ; **couleur du personnage**, réglée par le code) | **mot-clé actif, couleur noire** |
+| `M_Orbe_Tablette_01` à `_06` | **le glyphe seulement** de chaque tablette (2e matériau du renderer, index 1) | aucune | #D9D3C7 (glyphe pâle) | **mot-clé actif, couleur noire** : une tablette s'allume quand sa charge est prête |
+
+**Textures peintes** (`Assets/Art/Textures/FPS/`) : `T_LanterneFeu_Fer`, `T_LanterneFeu_Cuivre`, `T_Orbe_Pierre`,
+`T_Orbe_Fer` (`_BaseColor`), **256 × 256 px pour 0.05 m, soit 5 120 px/m**, la densité de `T_Barillet_Laiton`
+(512 px pour Ø 0.1 m). Tuiles sans couture, peintes par script (`Assets/Art/Source~/FPS/scripts/fps_common.py`,
+`PAINT`) dans la palette relevée sur les fiches : aplats en paliers, traînées de pinceau, quelques taches de rouille
+(fer), fissures et éclats (pierre). Couleur de base seule, pas de normal map. Réglages d'import par défaut (sRGB,
+répétition, mipmaps), comme le barillet.
+
+**Verre translucide :** `ItHunts/Toon` a maintenant un mélange réglable par matériau (`_SrcBlend`, `_DstBlend`,
+`_ZWrite` ; par défaut opaque, rien ne change pour les autres matériaux). Le verre est en SrcAlpha / OneMinusSrcAlpha,
+ZWrite Off, file 3000, passes ShadowCaster, DepthOnly et DepthNormals coupées (il ne fait pas d'ombre et n'a pas de
+contour ; ses montants, si). **À faire sur `main` :** la passe « ItHunts Mains : mains » du renderer ne dessine que la
+file opaque (`RenderQueueType: 0`) : sur la couche des mains, le verre ne serait pas dessiné. Ajouter une passe
+transparente pour les couches 8 à 11 (même événement, après la passe opaque), ou passer le verre en opaque.
+
+Captures (`docs/art/rendus/FPS/`, `Test_Rendu`, réglage intermédiaire, contours clairs dans le noir) :
+`Unity_LanterneFeu_eteint.jpg` / `_allume.jpg` et `Unity_Orbe_eteint.jpg` / `_allume.jpg` dans l'îlot d'une bougie,
+`Unity_*_lune.jpg` hors des bougies (seules l'émission et les contours se lisent). « Allumé » est une démonstration
+faite comme le ferait le code (bloc de propriétés) : verre et énergie en rouge renard, tablettes 01, 02 et 04.
+Rendus de modélisation (Blender, lumière plate) : `SM_LanterneFeu_*.jpg`, `SM_Orbe_*.jpg`.
+
+## Orbe : couleur du personnage, animations par action, jauge des tablettes
+
+**Décision (Sergio, 2026-11-15) : l'orbe garde la couleur de son personnage en permanence** (rouge renard, orange
+caméléon, vert koala, bleu hibou) : énergie, glyphes allumés, et verre de la lanterne pour le renard. **Les actions
+ne se lisent plus à la couleur de l'orbe, mais au mouvement des anneaux et des tablettes.** Cela remplace la couleur
+par action de D-024 (`ART-HANDOFF.md` § 0 quater, à mettre à jour sur `main`). Les autres codes couleur du jeu
+(trait et ancre de traction, cibles, rouge d'annonce et de refus) ne sont pas concernés.
+
+Repères : les anneaux tournent autour de leur axe local (anneau 1 : X, 2 : Y, 3 : Z, repère Unity, pivot au centre),
+depuis leur pose de repos (0°, 60°, 120°, déjà dans la géométrie : rotation nulle au repos). L'orbe est petite à
+l'écran : il faut des mouvements **amples, rapides et francs** (grands angles, changements de vitesse nets), lisibles
+en vision périphérique à pleine vitesse, plutôt que des détails.
+
+### Animations proposées (rien n'est codé ; valeurs de départ, à mettre dans le ScriptableObject de l'orbe)
+
+| État | Anneaux | Tablettes et énergie | Lecture à pleine vitesse |
+|---|---|---|---|
+| **Repos** | rotation lente et désynchronisée : 20, 30 et 45°/s ; léger flottement (±2 mm, 0.5 Hz) | tablettes immobiles en couronne, allumées selon les charges ; énergie qui pulse doucement (±10 %, 0.5 Hz) | calme : tout bouge lentement, dans des sens différents |
+| **Traction** (maintenue) | les 3 anneaux se **calent dans le même plan** (0.1 s, perpendiculaire à la visée), puis **tournent vite dans le même sens** (720°/s) : un disque qui vrille | la couronne de tablettes tourne avec eux (90°/s) ; énergie plus vive (+50 %) | le seul état où tout tourne ensemble, vite, dans le même sens |
+| **Répulsion** (coup, ou onde maintenue 0.8 s) | les anneaux **s'écartent d'un coup** : échelle ×1.35 en 0.06 s, chacun basculé de 25° sur son axe, puis retour en 0.25 s (amorti) ; onde maintenue : ils restent écartés et vibrent (±3°, 20 Hz) | tablettes projetées vers l'extérieur (rayon 0.13 → 0.17 m) puis retour ; l'énergie flashe puis se contracte | une « explosion » de la silhouette, puis le retour |
+| **Objet tenu** (télékinésie) | anneaux **resserrés autour de l'énergie** (échelle ×0.8 en 0.15 s), alignés en gyroscope serré, rotation régulière (180°/s, sens alternés) | couronne resserrée (0.13 → 0.10 m), tablettes inclinées vers le centre ; énergie stable | une boule compacte et tenue : silhouette plus petite et plus dense |
+| **Lancer** (éclat bref, l'emporte sur le reste) | coup d'arrêt, puis les anneaux pivotent de 90° en 0.08 s dans le sens du lancer | **éclat bref des glyphes** (0.12 s, émission ×3), l'énergie flashe | un flash et un « coup de fouet » |
+| **Traction + objet tenu** | la traction l'emporte pour les anneaux (règle de D-024) ; la couronne reste resserrée | | |
+| **Recharge** (après un lancer) | ralentis (×0.5) | glyphes éteints jusqu'à la fin de la recharge, puis un tic d'allumage | |
+| **Refus** (plus de charge, surface non magnétique, trop lourd) | secousse sèche (±8°, 3 allers-retours en 0.15 s) | les tablettes de la charge manquante clignotent deux fois | se lit même sans regarder les tablettes |
+| **Charge rechargée** | | la tablette s'allume par un éclat (0.1 s, ×2), puis reste allumée | |
+
+Interpolations : courbes franches (sortie rapide) pour les déclenchements, amorties pour les retours. Vitesses et
+durées : des points de départ pour le playtest.
+
+### Jauge des tablettes : les 6 charges du jeu
+
+**6 tablettes = 6 charges : 2 de traction, 1 de répulsion, 3 de mouvement** (la traction est passée à 2 charges, ce
+n'est plus 3 + 3). **Une tablette s'allume quand sa charge est prête** (émission de son glyphe, couleur du
+personnage), et s'éteint quand la charge est utilisée.
+
+Répartition proposée (vue du joueur, l'orbe en bas à droite de l'écran) :
+
+| Tablettes | Position | Glyphes | Charge |
+|---|---|---|---|
+| `_02`, `_03` | en haut à droite, en haut à gauche (40°, 140°) | arête de poisson, peigne | **traction** (2) |
+| `_04` | à gauche (180°) | triangle sur tige | **répulsion** (1) |
+| `_01`, `_06`, `_05` | à droite, en bas à droite, en bas à gauche (0°, 320°, 220°) | losange, spirale carrée, chevrons | **mouvement** (3) |
+
+Les deux charges de traction sont ensemble en haut, la répulsion seule sur le côté, le mouvement en bas : chaque
+groupe se lit à sa position, pas à sa couleur. La numérotation est celle des objets du FBX (angles mesurés depuis +X,
+sens trigonométrique vu du joueur).
+
 ## FBX remappés (`.meta` modifiés, seule exception à la règle des `.meta`)
 
 Onglet *Materials* de l'import : chaque matériau intégré est remappé vers le `.mat` du même nom
@@ -181,3 +265,16 @@ matériaux définitifs, réglage intermédiaire, contours clairs dans le noir. P
 4. Les matériaux greybox du jeu (`Assets/_Project/Art/Greybox/`) peuvent passer sur `ItHunts/Toon` (mêmes noms de
    propriétés que URP Lit) pour que tout le décor ait le même rendu en attendant les vrais modèles.
 5. Lanterne : si le DA la confirme, l'ajouter au prefab joueur (`RENDU.md` § 5, point 6).
+6. **Orbe (`SM_Orbe`) dans FpsView :** la greybox est une sphère de Ø 0.08 m ; le modèle fait **0.18 m** (anneaux)
+   et **0.295 × 0.228 × 0.182 m** avec les tablettes (couronne à 0.13 m, décision de Sergio). Régler l'échelle à
+   l'écran dans FpsView (pivot au centre, sur `Orb_Socket`). Couleur : celle du personnage, en permanence ;
+   animations et jauge des tablettes : section « Orbe : couleur du personnage, animations par action, jauge des
+   tablettes » (rien n'est codé ici). À piloter par bloc de propriétés : `_EmissionColor` de `M_Orbe_Energie` et du
+   glyphe de chaque tablette (index de matériau 1 sur `SM_Orbe_Tablette_0X`). Repère `FX_Orbe` au centre.
+7. **Lanterne de feu (`SM_LanterneFeu`, artefact du renard) :** pivot au centre de l'anneau de portage (elle pend en
+   dessous). Repères à brancher : `FX_Flamme` (flamme de la mèche, lumière ponctuelle) et `FX_Jet` (départ du jet de
+   feu ; son +Z local est l'avant de la lanterne ; dégagé sur 6 m, aucun élément de la lanterne devant lui).
+   `_EmissionColor` de `M_LanterneFeu_Verre` à allumer en jeu ; passe transparente des mains à ajouter (voir le verre
+   translucide plus haut).
+8. **`ART-HANDOFF.md` § 0 quater et § 5 bis** : remplacer la couleur de l'orbe par action (D-024) par la couleur du
+   personnage, et la sphère de 0.08 m par les mesures de `SM_Orbe`.

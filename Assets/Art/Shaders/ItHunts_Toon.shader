@@ -42,6 +42,11 @@ Shader "ItHunts/Toon"
 
         [Header(Rendu)]
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Faces", Float) = 2
+        // Translucide (verre de la lanterne) : SrcAlpha / OneMinusSrcAlpha, ZWrite Off, file 3000, et passes
+        // ShadowCaster, DepthOnly et DepthNormals coupées sur le matériau. Par défaut : opaque (One / Zero, ZWrite On).
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Mélange : source", Float) = 1
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Mélange : destination", Float) = 0
+        [Enum(Off, 0, On, 1)] _ZWrite ("Écrit la profondeur", Float) = 1
     }
 
     SubShader
@@ -53,7 +58,8 @@ Shader "ItHunts/Toon"
             Name "ForwardToon"
             Tags { "LightMode" = "UniversalForward" }
             Cull [_Cull]
-            ZWrite On
+            Blend [_SrcBlend] [_DstBlend]
+            ZWrite [_ZWrite]
 
             HLSLPROGRAM
             #pragma target 3.5
