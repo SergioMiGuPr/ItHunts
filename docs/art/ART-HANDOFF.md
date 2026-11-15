@@ -19,6 +19,8 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 > - **`.meta` des assets art (nouvelle règle, commit `94cebbf`)** : les `.meta` de `Assets/Art/` sont générés et commités par la
 >   session principale (Unity), juste après la fusion d'une PR art. La branche `art` fait un **pull de `main` avant chaque
 >   nouveau lot** ; ne jamais générer de `.meta` sur `art` sans avoir tiré `main` (détail au § 1).
+> - **Hauteurs abaissées (`carte-suite`, charte « caves à l'échelle humaine »)** : salles simples 18 m, à étages 22 m, d'égout 16 m,
+>   carrefours 16 m, couloirs 15 m (§ 0) ; les arcs de couloir portent la voûte (sommet au plafond, deux piédroits de 1 × 1.6 m).
 > - **Carte aléatoire (`carte-aleatoire`)** : nouvelle section « Kit de construction » : toute la structure en pièces `Kit_*` (4 m),
 >   à remplacer par les vrais modèles ; liste des pièces par priorité.
 > - **Barillet (`barillet-modele`)** : `SM_Barillet` branché dans la vue FPS (§ 5 bis) ; le canon reste greybox, à modéliser.
@@ -44,8 +46,8 @@ Un modèle doit tenir dans ces volumes (± 10 %), sauf mention contraire. Pivot 
 | **Marchand** (au hasard, retiré à l'étape 8) / **marchand de l'artefact** (salle de départ) | silhouette **0.9 × 2.2 m** + enseigne **1.6 × 0.4 m**, centrée à **5.5 m** de haut, 1.6 m devant lui (au-dessus de la rangée d'offres, dans leur plan) | scènes | 4 offres à 1.6 m de haut, 1.6 m devant lui ; l'enseigne ne doit cacher aucune étiquette d'offre |
 | **Grande porte de sortie** | **10 × 10 m** | `Level01Builder` | escalier de 20 marches de 0.4 × 1.6 m, 10 m de large, palier de 12 m |
 | **Portes des pièces** (annexes, salles verrouillées) | **3 × 3 m** dans un mur de 1 m ; fenêtre 3 × 1.5 m | constructeurs | sous la porte, le jeu ajoute un seuil pour les goules : ne pas y mettre de marche ni d'objet |
-| **Couloirs** | **14 m de large, 19 m de haut** (16 m de large en pente) ; tronçons de 40 m au plus | `LevelLayoutSettings` | voie centrale de 8 m, décor dans une bande de 3 m le long des murs |
-| **Salles** | **46 à 66 m** de côté (modules de 48, 56, 64 m), plafond **36 m** ; carrefours **20 m**, plafond 24 m ; niveau haut à **+16 m** | `LevelLayoutSettings` | voies dégagées en croix de 11 m entre les ouvertures |
+| **Couloirs** | **14 m de large, 15 m de haut** (16 m de large en pente ; 15 m au moins : le traqueur fait 14 m) ; tronçons de 40 m au plus | `MapLayout_Niveau1` | voie centrale de 8 m, décor dans une bande de 3 m le long des murs |
+| **Salles** | **46 à 66 m** de côté (modules de 48, 56, 64 m) ; plafond par type : **salle simple 18 m, salle à étages 22 m, salle d'égout 16 m** ; carrefours **20 m**, plafond **16 m** ; niveau haut à **+16 m** | `MapLayout_Niveau1` | voies dégagées en croix de 11 m entre les ouvertures |
 | **Pièces annexes** | **12 × 12 m, 6 m de haut** | constructeurs | profondeur ≤ 15 m depuis une ouverture |
 | **Passages en hauteur** | ouverture **3 × 3 m à 4.5 m** du sol, conduit 8 × 3.5 × 3 m | `LevelParkour` | murs autour non magnétiques |
 | **Arène du boss** | **80 × 80 m, 30 m** de haut ; fosse de 18 m de large, 8 m de profondeur | `BossArenaBuilder` | leviers : plaque 1.2 × 0.8 × 1.2 m sur un socle de 1.2 m |

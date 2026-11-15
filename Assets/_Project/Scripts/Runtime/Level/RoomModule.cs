@@ -25,6 +25,17 @@ namespace ItHunts.Level
         Vide,
     }
 
+    /// <summary>Type de module, pour la hauteur du plafond (réglages de la carte).</summary>
+    public enum ModuleShape
+    {
+        /// <summary>Un seul niveau de jeu (ponts à 10 m au plus).</summary>
+        Simple,
+        /// <summary>Plusieurs étages (sols jusqu'à 12 m).</summary>
+        Etages,
+        /// <summary>Salle d'égout (canal).</summary>
+        Egout,
+    }
+
     /// <summary>
     /// Module de salle (étape 8, carte aléatoire) : l'intérieur d'une salle, fait à la main en prefab, que le générateur pose sur
     /// une ou plusieurs cases de la grille (120 m) et tourne d'un quart de tour au hasard (sauf canal). Le générateur fait la
@@ -52,6 +63,10 @@ namespace ItHunts.Level
         [Min(0f)] public float weight = 1f;
         [Tooltip("Le générateur peut le tourner d'un quart de tour (pas les modules à canal).")]
         public bool rotate = true;
+        [Tooltip("Type, pour la hauteur du plafond (réglée par type dans MapLayout) : salle simple, à étages, d'égout.")]
+        public ModuleShape shape = ModuleShape.Simple;
+        [Tooltip("Plafond imposé (m, 15 au moins) ; 0 : celui de son type.")]
+        [Min(0f)] public float ceilingOverride;
 
         [Header("Contraintes de tirage")]
         [Tooltip("Nombre minimal par carte (0 : aucun).")]

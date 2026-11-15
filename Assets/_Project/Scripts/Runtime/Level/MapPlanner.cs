@@ -20,6 +20,8 @@ namespace ItHunts.Level
         public ModuleHole Hole;
         public bool Parkour;
         public int ChestSpots;
+        public ModuleShape Shape;
+        public float CeilingOverride;
         public List<(DoorSide side, int cell, bool required)> Doors = new List<(DoorSide, int, bool)>();
 
         public bool Big => Footprint.x * Footprint.y > 1;
@@ -41,6 +43,8 @@ namespace ItHunts.Level
             Hole = m.hole,
             Parkour = m.parkour || m.hole == ModuleHole.Vide,
             ChestSpots = m.GetComponentsInChildren<ChestSpot>(true).Length,
+            Shape = m.shape,
+            CeilingOverride = m.ceilingOverride,
             Doors = m.Doors(),
         };
     }
@@ -453,7 +457,7 @@ namespace ItHunts.Level
             {
                 Name = CellName(origin) + (special == "départ" ? " (départ)" : m != null && m.Kind == ModuleKind.Carrefour ? " (carrefour)" : m != null && m.Big ? $" ({cells.x}×{cells.y})" : ""),
                 Module = m != null ? m.Index : -1, Cell = origin, Cells = cells, Rot = rot, Center = c, Extent = extent,
-                Ceiling = hall ? s.hallCeiling : s.crossingCeiling, Hall = hall, Hole = m != null ? m.Hole : ModuleHole.Aucun,
+                Ceiling = m != null ? s.Ceiling(m.Kind, m.Shape, m.CeilingOverride) : s.ceilingSimple, Hall = hall, Hole = m != null ? m.Hole : ModuleHole.Aucun,
                 Parkour = m != null && m.Parkour,
             };
             List<(DoorSide side, int cell, bool required)> doors = m != null ? m.Doors : AllDoors(fp);

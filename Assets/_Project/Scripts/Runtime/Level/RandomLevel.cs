@@ -124,7 +124,7 @@ namespace ItHunts.Level
             _root = new GameObject($"Niveau (carte aléatoire, seed {seed})").transform;
             _moduleInstances.Clear();
             _min = new Vector3(float.MaxValue, -10f, float.MaxValue);
-            _max = new Vector3(float.MinValue, settings.upperLevel + settings.hallCeiling + 10f, float.MinValue);
+            _max = new Vector3(float.MinValue, settings.upperLevel + settings.MaxCeiling + 10f, float.MinValue);
             for (int i = 0; i < Plan.Rooms.Count; i++)
                 BuildRoom(i);
             for (int l = 0; l < Plan.Links.Count; l++)

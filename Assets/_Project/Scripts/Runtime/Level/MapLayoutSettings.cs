@@ -55,12 +55,19 @@ namespace ItHunts.Level
 
         [Header("Coque (cotes d'ART-HANDOFF)")]
         public float startHallSize = 56f;
-        public float hallCeiling = 36f;
-        public float crossingCeiling = 24f;
+        [Tooltip("Plafond d'une salle simple (un seul niveau de jeu, ponts à 10 m) : cave à l'échelle humaine (était 36 m).")]
+        [Min(15f)] public float ceilingSimple = 18f;
+        [Tooltip("Plafond d'une salle sur plusieurs étages (sols jusqu'à 12 m) : place au-dessus du dernier étage.")]
+        [Min(15f)] public float ceilingFloors = 22f;
+        [Tooltip("Plafond d'une salle d'égout (canal).")]
+        [Min(15f)] public float ceilingSewer = 16f;
+        [Tooltip("Plafond d'un carrefour (était 24 m).")]
+        [Min(15f)] public float crossingCeiling = 16f;
         public float corridorWidth = 14f;
         [Tooltip("Largeur d'un couloir en pente (m).")]
         public float slopeCorridorWidth = 16f;
-        public float corridorHeight = 19f;
+        [Tooltip("Hauteur des couloirs (m) : 15 m au moins, le traqueur fait 14 m (sinon il se baisse partout ; était 19 m).")]
+        [Min(15f)] public float corridorHeight = 15f;
         [Tooltip("Longueur d'un tronçon de couloir (volume de salle, D-047).")]
         public float corridorSegmentLength = 40f;
         public float lairDepth = 26f;
@@ -73,5 +80,23 @@ namespace ItHunts.Level
         public float waterDamage = 20f;
         public float lightIntensity = 6f;
         public float lightRange = 50f;
+
+        /// <summary>Plafond le plus haut (bornes du NavMesh).</summary>
+        public float MaxCeiling => Mathf.Max(ceilingSimple, Mathf.Max(ceilingFloors, Mathf.Max(ceilingSewer, crossingCeiling)));
+
+        /// <summary>Plafond d'un module selon son type (ou sa valeur imposée) ; carrefour : crossingCeiling.</summary>
+        public float Ceiling(ModuleKind kind, ModuleShape shape, float overrideHeight)
+        {
+            if (overrideHeight > 0f)
+                return Mathf.Max(15f, overrideHeight);
+            if (kind == ModuleKind.Carrefour)
+                return crossingCeiling;
+            return shape switch
+            {
+                ModuleShape.Etages => ceilingFloors,
+                ModuleShape.Egout => ceilingSewer,
+                _ => ceilingSimple,
+            };
+        }
     }
 }

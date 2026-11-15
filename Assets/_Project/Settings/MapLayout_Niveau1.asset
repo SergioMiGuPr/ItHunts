@@ -36,11 +36,13 @@ MonoBehaviour:
   flyerSpawnsPerCorridor: 1
   corridorFeatureShare: 0.35
   startHallSize: 56
-  hallCeiling: 36
-  crossingCeiling: 24
+  ceilingSimple: 18
+  ceilingFloors: 22
+  ceilingSewer: 16
+  crossingCeiling: 16
   corridorWidth: 14
   slopeCorridorWidth: 16
-  corridorHeight: 19
+  corridorHeight: 15
   corridorSegmentLength: 40
   lairDepth: 26
   lairWidth: 20
