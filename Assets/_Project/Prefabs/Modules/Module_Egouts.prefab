@@ -913,7 +913,7 @@ Transform:
   - {fileID: 303119547657014348}
   - {fileID: 3041167193021239079}
   - {fileID: 7824475254569362807}
-  - {fileID: 864955851233169722}
+  - {fileID: 8321728238301166670}
   - {fileID: 3299361347687142707}
   - {fileID: 3480621609313934860}
   - {fileID: 2919154068305962184}
@@ -964,9 +964,14 @@ MonoBehaviour:
   displayName: "\xC9gouts"
   kind: 0
   size: 56
+  footprint: {x: 1, y: 1}
   level: 0
   weight: 1
   rotate: 0
+  minPerMap: 0
+  maxPerMap: 0
+  minStartDistance: 0
+  exitAllowed: 1
   hole: 1
   holeRect:
     serializedVersion: 2
@@ -976,6 +981,13 @@ MonoBehaviour:
     height: 6
   holeDepth: 4
   laneHalfWidth: 5
+  parkour: 0
+  validated: 1
+  validatedHash: 28deef06
+  validationReport: "VALID\xC9 (2026-11-15 16:25)\nAvertissement : 2 pi\xE8ce(s)
+    de structure hors kit (Passerelle sud 1, Passerelle sud -1)\nNavMesh : 6 paires
+    d'entr\xE9es reli\xE9es\ncachettes : 0 sur 770 points\n4 entr\xE9es, 8 apparitions,
+    5 habitants, 1 coffres, 12164 triangles"
 --- !u!1001 &52314916404630486
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3513,7 +3525,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 02e333798c771e8408bc98f23211ba8c, type: 3}
---- !u!4 &864955851233169722 stripped
+--- !u!4 &8321728238301166670 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2013616979705183899, guid: 02e333798c771e8408bc98f23211ba8c, type: 3}
   m_PrefabInstance: {fileID: 7533812199106708181}

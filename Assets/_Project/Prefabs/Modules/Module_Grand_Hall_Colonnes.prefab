@@ -896,9 +896,14 @@ MonoBehaviour:
   displayName: "Grand hall \xE0 colonnes"
   kind: 0
   size: 64
+  footprint: {x: 1, y: 1}
   level: 0
   weight: 1
   rotate: 1
+  minPerMap: 0
+  maxPerMap: 0
+  minStartDistance: 0
+  exitAllowed: 1
   hole: 0
   holeRect:
     serializedVersion: 2
@@ -908,6 +913,12 @@ MonoBehaviour:
     height: 6
   holeDepth: 6
   laneHalfWidth: 5
+  parkour: 0
+  validated: 1
+  validatedHash: 164ae8aa
+  validationReport: "VALID\xC9 (2026-11-15 16:25)\nNavMesh : 6 paires d'entr\xE9es
+    reli\xE9es\ncachettes : 0 sur 980 points\n4 entr\xE9es, 14 apparitions, 5 habitants,
+    1 coffres, 19632 triangles"
 --- !u!1 &8054975813133878785
 GameObject:
   m_ObjectHideFlags: 0

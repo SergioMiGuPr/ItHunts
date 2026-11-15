@@ -2837,9 +2837,14 @@ MonoBehaviour:
   displayName: Salle haute remplie
   kind: 0
   size: 48
+  footprint: {x: 1, y: 1}
   level: 2
   weight: 1
   rotate: 1
+  minPerMap: 0
+  maxPerMap: 0
+  minStartDistance: 0
+  exitAllowed: 1
   hole: 0
   holeRect:
     serializedVersion: 2
@@ -2849,6 +2854,17 @@ MonoBehaviour:
     height: 6
   holeDepth: 6
   laneHalfWidth: 5
+  parkour: 0
+  validated: 0
+  validatedHash: f1f618b1
+  validationReport: "REFUS\xC9 (2026-11-15 16:40)\nERREUR : 4 cachette(s) sur 558
+    points (hors de port\xE9e du traqueur), par exemple (-23, 12, -23), (-23, 12,
+    23), (23, 12, -23), (23, 12, 23) ; NavMesh du traqueur le plus proche : (-12.2,
+    0.1, -12.2) ; \xE9paule \u2192 joueur 11,5 m, obstacles : Prop_Statue, \nAvertissement
+    : 20 pi\xE8ce(s) de structure hors kit (Tour 0, Gradin bas le long de z 0, Gradin
+    haut le long de z 0, Gradin bas le long de x 0, Gradin haut le long de x 0)\nNavMesh
+    : 6 paires d'entr\xE9es reli\xE9es\n4 entr\xE9es, 9 apparitions, 4 habitants,
+    1 coffres, 20848 triangles"
 --- !u!1 &8776078860463431165
 GameObject:
   m_ObjectHideFlags: 0
