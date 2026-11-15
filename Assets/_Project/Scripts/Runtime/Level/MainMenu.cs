@@ -14,6 +14,8 @@ namespace ItHunts.Level
         [SerializeField] private RunDefinition run;
         [SerializeField] private string movementScene = "Test_Movement";
         [SerializeField] private string arenaScene = "Test_Arena";
+        [Tooltip("Carte fixe de référence du niveau 1 (comparer les réglages) ; les vraies parties sont tirées au hasard.")]
+        [SerializeField] private string fixedLevelScene = "Level_01";
 
         private readonly GreyboxMenu _menu = new GreyboxMenu();
         private int _character, _difficulty;
@@ -50,6 +52,7 @@ namespace ItHunts.Level
             _menu.Add("Playtest : combat de boss", LaunchBossFight);
             _menu.Add("Test_Movement (banc d'essai)", () => Direct(movementScene));
             _menu.Add("Test_Arena (labyrinthe)", () => Direct(arenaScene));
+            _menu.Add("Level_01 (carte fixe de référence)", () => Direct(fixedLevelScene));
             GreyboxMenu.Item coop = _menu.Add("Joueur 2 (écran partagé)", null);
             coop.Value = () => RunSession.CoopDevice != null ? "prêt" : "Start sur sa manette";
             _menu.Add("Inviter un ami", null, false);

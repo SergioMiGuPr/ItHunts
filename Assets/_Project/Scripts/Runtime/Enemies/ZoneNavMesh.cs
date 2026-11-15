@@ -58,11 +58,22 @@ namespace ItHunts.Enemies
 
         private void Awake() => Build();
 
+        /// <summary>
+        /// Bornes de la zone (carte aléatoire : posées par le générateur avant le Awake, la construction se fait ensuite sur la
+        /// carte générée).
+        /// </summary>
+        public void Configure(Vector3 center, Vector3 boundsSize)
+        {
+            transform.position = center;
+            size = boundsSize;
+        }
+
         private void OnDestroy() => Clear();
 
         public void Build()
         {
             Clear();
+            Physics.SyncTransforms();                                       // colliders posés dans la même image (carte générée)
             var bounds = new Bounds(transform.position, size);
             var all = new List<NavMeshBuildSource>();
             NavMeshBuilder.CollectSources(bounds, layers, NavMeshCollectGeometry.PhysicsColliders, 0, new List<NavMeshBuildMarkup>(), all);

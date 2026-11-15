@@ -61,9 +61,36 @@ namespace ItHunts.Level
             List<Vector3> points = StandPoints(physics, area, step);
             result.Points = points.Count;
             foreach (Vector3 p in points)
-                if (!Reachable(physics, p, stalker, reach))
+            {
+                // Arène du boss : ses poches sont voulues (on y attire le traqueur, D-049), hors contrôle.
+                if (RoomVolume.InKind(p, RoomKind.Arene))
+                {
+                    result.Points--;
+                    continue;
+                }
+
+                if (!Reachable(physics, p, stalker, reach) && !InReachRoom(p, reach))
                     result.Hidden.Add(p);
+            }
+
             return result;
+        }
+
+        /// <summary>
+        /// Pièce fermée (ReachRoom) : le traqueur y passe le bras par une ouverture (règle du jeu : 15 m au plus depuis
+        /// l'ouverture la plus proche).
+        /// </summary>
+        public static bool InReachRoom(Vector3 p, float reach = 15f)
+        {
+            foreach (ReachRoom r in ReachRoom.All)
+            {
+                if (r == null || !r.Contains(p + Vector3.up * 0.9f))
+                    continue;
+                Transform o = r.NearestOpening(p);
+                return o != null && Vector3.Distance(o.position, p + Vector3.up * 0.9f) <= reach;
+            }
+
+            return false;
         }
 
         /// <summary>Diagnostic d'un point : candidats du NavMesh du traqueur et premier obstacle vu de l'épaule.</summary>

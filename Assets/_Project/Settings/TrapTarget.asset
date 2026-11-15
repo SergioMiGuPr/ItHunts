@@ -28,6 +28,5 @@ MonoBehaviour:
   targetSwitchMargin: 15
   targetGiveUpDistance: 60
   targetSwitchCooldown: 3
-  lullRetreatDistance: 10
   moveSpeed: 6
   pauseAtEnds: 0.3

@@ -23,6 +23,9 @@ namespace ItHunts.Enemies
         public static readonly List<SpawnPoint> All = new List<SpawnPoint>();
 
         public SpawnKinds Kinds => kinds;
+
+        /// <summary>Type d'ennemi accepté (points posés à l'exécution par le générateur de carte).</summary>
+        public void Configure(SpawnKinds accepted) => kinds = accepted;
         /// <summary>Dernière apparition ici (évite deux ennemis au même point en même temps).</summary>
         public float LastUsed { get; set; } = float.NegativeInfinity;
 

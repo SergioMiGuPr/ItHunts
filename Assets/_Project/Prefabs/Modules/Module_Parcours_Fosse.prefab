@@ -997,11 +997,12 @@ MonoBehaviour:
   parkour: 0
   validated: 1
   validatedHash: 924b2644
-  validationReport: "VALID\xC9 (2026-11-15 16:25)\nAvertissement : 15 pi\xE8ce(s)
+  validationReport: "VALID\xC9 (2026-11-15 17:28)\nAvertissement : 15 pi\xE8ce(s)
     de structure hors kit (Parcours : poutre x 1, Parcours : poutre z 1, Parcours
     : poutre x -1, Parcours : poutre z -1, Parcours : plateforme x -7)\nNavMesh :
-    6 paires d'entr\xE9es reli\xE9es\ncachettes : 0 sur 1016 points\n4 entr\xE9es,
-    7 apparitions, 4 habitants, 1 coffres, 21172 triangles"
+    6 paires d'entr\xE9es reli\xE9es\nzone de parcours : 1 point(s) hors de port\xE9e
+    dans la fosse (permis)\ncachettes : 0 sur 800 points\n4 entr\xE9es, 7 apparitions,
+    4 habitants, 1 coffres, 21172 triangles"
 --- !u!1 &3585686620611448138
 GameObject:
   m_ObjectHideFlags: 0

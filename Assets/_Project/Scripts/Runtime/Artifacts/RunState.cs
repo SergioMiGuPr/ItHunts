@@ -103,7 +103,21 @@ namespace ItHunts.Artifacts
             l.Add(upgrade);
         }
 
-        private void Awake() => NewRun(randomSeed ? (int?)null : seed);
+        private bool _started;
+
+        private void Awake() => EnsureStarted();
+
+        /// <summary>
+        /// La run a sa seed (appelé aussi par le générateur de la carte aléatoire, qui s'exécute avant tout le monde : la carte et
+        /// la run partagent la même seed). Une seule fois.
+        /// </summary>
+        public void EnsureStarted()
+        {
+            if (_started)
+                return;
+            _started = true;
+            NewRun(randomSeed ? (int?)null : seed);
+        }
 
         /// <summary>Nouvelle run : seed donnée, ou tirée au hasard.</summary>
         public void NewRun(int? withSeed)

@@ -241,6 +241,14 @@ namespace ItHunts.EditorTools
                 var stalker = new NavMeshQueryFilter { agentTypeID = stalkerAgent, areaMask = NavMesh.AllAreas };
                 var area = new Bounds(offset + Vector3.up * (ceil * 0.5f), new Vector3(ext.x - 0.5f, ceil - 1f, ext.y - 0.5f));
                 ReachCheck.Result reach = ReachCheck.Run(Physics.defaultPhysicsScene, area, 2f, stalker);
+                // Zone de parcours (fosse) : le seul endroit où l'on échappe au traqueur (D-051) ; comptée à part.
+                int parkourPoints = 0;
+                if (module.hole == ModuleHole.Vide)
+                {
+                    Rect hr = module.holeRect;
+                    parkourPoints = reach.Hidden.RemoveAll(p => hr.Contains(new Vector2(p.x - offset.x, p.z - offset.z)));
+                    info.Add($"zone de parcours : {parkourPoints} point(s) hors de portée dans la fosse (permis)");
+                }
                 if (reach.Hidden.Count > 0)
                     errors.Add($"{reach.Hidden.Count} cachette(s) sur {reach.Points} points (hors de portée du traqueur), par exemple {string.Join(", ", reach.Hidden.Take(4).Select(p => (p - offset).ToString("F0")))} ; "
                                + ReachCheck.Explain(Physics.defaultPhysicsScene, reach.Hidden[0], stalker, offset));
@@ -314,7 +322,12 @@ namespace ItHunts.EditorTools
             var shell = new GameObject("Coque de test").transform;
             shell.SetParent(parent, false);
             float hx = ext.x * 0.5f, hz = ext.y * 0.5f;
-            KitBuild.Box(shell, "Sol", c + new Vector3(0f, -0.5f, 0f), new Vector3(ext.x + 2f, 1f, ext.y + 2f), KitBuild.Kind.Sol, null);
+            // Même sol que le générateur (canal, fosse) : pas de dalle pleine qui ferait passer le traqueur au-dessus d'une fosse.
+            var layout = AssetDatabase.LoadAssetAtPath<MapLayoutSettings>(TestArenaSceneBuilder.MapLayoutPath);
+            if (layout == null)
+                layout = ScriptableObject.CreateInstance<MapLayoutSettings>();
+            var room = new PlanRoom { Name = m.displayName, Center = c, Extent = ext, Hole = m.hole, Ceiling = ceil, Hall = m.kind == ModuleKind.Salle };
+            RandomLevel.BuildFloor(shell, room, m, layout, null, null);
             KitBuild.Box(shell, "Plafond", c + new Vector3(0f, ceil + 0.5f, 0f), new Vector3(ext.x + 2f, 1f, ext.y + 2f), KitBuild.Kind.Sol, null, walkable: false);
             foreach (DoorSide s in new[] { DoorSide.Nord, DoorSide.Est, DoorSide.Sud, DoorSide.Ouest })
             {
