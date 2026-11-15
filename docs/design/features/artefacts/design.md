@@ -50,9 +50,11 @@ dégâts directs ; les artefacts et les améliorations en ajoutent (D-022). Déc
    - Le **traqueur ignore les balles** (elles l'atteignent sans le blesser).
 6. **Lanterne de feu** (renard, D-065) : la main gauche tient une lanterne.
    - **Clic gauche / RT sans objet tenu** : **jet de flammes** de **0.6 s** dans un **cône de 40°** (20° de chaque côté
-     du viseur), **portée 5 m** depuis les yeux ; **25 dégâts par ennemi**, **une fois par jet** (un ennemi qui entre dans
-     le cône pendant le jet est touché aussi) ; **recharge de 3 s** comptée depuis la fin du jet ; un clic un peu trop tôt
-     part dès que possible (0.12 s).
+     du viseur), **portée 5 m** **depuis la lanterne** (main gauche : 0.22 m à gauche, 0.45 m sous les yeux, 0.35 m devant,
+     `originOffset`) pour toucher une goule qui rampe tout près ; **32 dégâts par ennemi** (une goule de 60 PV en 2 jets),
+     **une fois par jet** (un ennemi qui entre dans le cône pendant le jet est touché aussi) ; **recharge de 2.5 s** comptée
+     depuis la fin du jet ; un clic un peu trop tôt part dès que possible (0.12 s). *Équilibre revu après le playtest
+     (25 → 32 PV, 3 → 2.5 s, départ du cône à la lanterne).*
    - **Le jet traverse les ennemis, les joueurs et les objets (Rigidbody), pas le décor** (collider solide sans
      Rigidbody : même règle que les textes en monde).
    - Comme toute attaque d'un joueur : **un volant meurt en un coup**, le **traqueur n'est pas touché**, le **tir ami** est
@@ -94,8 +96,9 @@ de personnages.
 | **Lanterne :** portée | 5 | m | |
 | Cône (ouverture totale) | 40 | ° | goules basses à moins de 2 m : viser un peu vers le bas |
 | Durée du jet | 0.6 | s | |
-| Dégâts par ennemi et par jet | 25 | PV | goule de 60 PV : 3 jets (7.2 s) ; barillet : 1 s |
-| Recharge (depuis la fin du jet) | 3 | s | rythme ressenti |
+| Dégâts par ennemi et par jet | 32 | PV | goule de 60 PV : 2 jets (3.1 s) ; barillet : 1 s |
+| Recharge (depuis la fin du jet) | 2.5 | s | rythme ressenti |
+| Départ du cône (par rapport aux yeux) | (−0.22, −0.45, 0.35) | m | goule qui rampe à 1 m : touchée |
 | Bouffées de flammes | 30 par s, 0.35 s, 0.06 → 0.9 m | | lisible sans masquer la vue |
 
 ## Interactions
@@ -112,10 +115,8 @@ de personnages.
 
 ## Questions ouvertes
 
-- **Équilibre de la lanterne** (mesuré, voir testing) : 7.2 s pour tuer une goule seule (barillet : 1 s), 7.2 s pour un
-  groupe de 3 (barillet : 5.4 s) ; elle brille contre les meutes (8 goules sur 8 en un jet, visée au centre du groupe)
-  mais ne finit pas seule une goule isolée. Pistes : 30 à 35 dégâts (2 jets), recharge plus courte, ou améliorations de la
-  lanterne au marchand.
+- **Équilibre de la lanterne** (après réglage) : 3.1 s pour une goule seule (barillet : 1 s), 3.1 s pour un groupe de 3
+  (barillet : 5.4 s) ; à confirmer en playtest.
 - **Artefacts du koala et du hibou** : à concevoir.
 
 - **Tir maintenu :** aujourd'hui un clic = un tir (un clic trop tôt est mémorisé 0.12 s) ; un tir automatique en

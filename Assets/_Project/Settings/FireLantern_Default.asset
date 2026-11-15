@@ -15,10 +15,11 @@ MonoBehaviour:
   id: lanterne-de-feu
   displayName: Lanterne de feu
   range: 5
+  originOffset: {x: -0.22, y: -0.45, z: 0.35}
   coneAngle: 40
   jetDuration: 0.6
-  damage: 25
-  cooldown: 3
+  damage: 32
+  cooldown: 2.5
   pressBuffer: 0.12
   hitMask:
     serializedVersion: 2

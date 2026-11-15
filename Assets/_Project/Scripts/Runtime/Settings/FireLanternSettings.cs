@@ -12,16 +12,20 @@ namespace ItHunts.Settings
     public sealed class FireLanternSettings : ArtifactDefinition
     {
         [Header("Jet")]
-        [Tooltip("Portée du jet (m), mesurée depuis les yeux.")]
+        [Tooltip("Portée du jet (m), mesurée depuis la lanterne.")]
         [Min(0.5f)] public float range = 5f;
+        [Tooltip("Départ du cône : la lanterne dans la main gauche, par rapport aux yeux et dans le sens du regard (m : droite, haut, " +
+                 "avant). Plus bas que les yeux : le jet touche une goule qui rampe tout près sans viser vers le bas.")]
+        public Vector3 originOffset = new Vector3(-0.22f, -0.45f, 0.35f);
         [Tooltip("Ouverture totale du cône (°) : 40 = 20° de chaque côté du viseur.")]
         [Range(1f, 170f)] public float coneAngle = 40f;
         [Tooltip("Durée d'un jet (s) ; un ennemi qui entre dans le cône pendant le jet est touché aussi.")]
         [Min(0.02f)] public float jetDuration = 0.6f;
-        [Tooltip("Dégâts par ennemi touché, une seule fois par jet (un volant meurt en un coup, comme pour toute attaque).")]
-        [Min(0f)] public float damage = 25f;
+        [Tooltip("Dégâts par ennemi touché, une seule fois par jet (un volant meurt en un coup, comme pour toute attaque). 32 : une " +
+                 "goule de 60 PV en 2 jets.")]
+        [Min(0f)] public float damage = 32f;
         [Tooltip("Recharge entre deux jets (s), comptée depuis la fin du jet : la lanterne s'éteint puis se rallume.")]
-        [Min(0f)] public float cooldown = 3f;
+        [Min(0f)] public float cooldown = 2.5f;
         [Tooltip("Un clic arrivé un peu trop tôt (fin de recharge) part dès que possible pendant ce délai (s).")]
         [Min(0f)] public float pressBuffer = 0.12f;
         [Tooltip("Ce que le jet peut toucher ou ce qui l'arrête (décor solide sans Rigidbody). Le joueur qui tire est toujours ignoré.")]
@@ -48,5 +52,12 @@ namespace ItHunts.Settings
         [Range(0f, 1f)] public float relightVolume = 0.45f;
 
         public float HalfAngle => coneAngle * 0.5f;
+
+        /// <summary>Départ du cône (monde) : la lanterne, depuis les yeux et la direction du regard.</summary>
+        public Vector3 Origin(Vector3 eye, Vector3 aim)
+        {
+            Vector3 f = aim.sqrMagnitude > 1e-6f ? aim.normalized : Vector3.forward;
+            return eye + Quaternion.LookRotation(f, Vector3.up) * originOffset;
+        }
     }
 }

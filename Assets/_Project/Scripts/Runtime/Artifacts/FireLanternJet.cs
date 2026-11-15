@@ -19,7 +19,7 @@ namespace ItHunts.Artifacts
 
     /// <summary>
     /// Cibles d'un jet de la lanterne de feu (D-065), à chaque tick du jet : tout ennemi (ou joueur, avec le tir ami) dont un point
-    /// est à moins de range des yeux et à moins de coneAngle / 2 du viseur, sans décor entre les yeux et lui. Le jet traverse les
+    /// est à moins de range de la lanterne (FireLanternSettings.Origin, main gauche) et à moins de coneAngle / 2 du viseur, sans décor entre les yeux et lui. Le jet traverse les
     /// ennemis, les joueurs et les objets (Rigidbody) ; seul le décor solide (collider sans Rigidbody, pas un déclencheur)
     /// l'arrête, la même règle que pour les textes en monde. Chaque cible n'est touchée qu'une fois par jet (burned). Comme toute
     /// attaque d'un joueur : un volant meurt en un coup, le traqueur n'est pas touché, le tir ami est respecté, l'ennemi tué donne

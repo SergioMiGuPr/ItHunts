@@ -100,7 +100,7 @@ namespace ItHunts.Artifacts
 
                 if (step.Burning)
                 {
-                    int n = FireLanternJet.Sweep(eye, aim, lc, transform, _playerId, _burned, Time.time, tick);
+                    int n = FireLanternJet.Sweep(lc.Origin(eye, aim), aim, lc, transform, _playerId, _burned, Time.time, tick);   // depuis la lanterne
                     LastJetHits += n;
                     TotalJetHits += n;
                 }

@@ -71,6 +71,19 @@ clics ; le barillet vise parfaitement et instantanément) :
 Captures : `captures/lanterne_jet.png` (jet sur 4 goules), `captures/lanterne_eteinte.png` (0.5 s après le jet),
 `captures/menu_personnages.png` (joueur 1 caméléon, joueur 2 renard, koala et hibou grisés).
 
+**Après réglage (32 PV, recharge 2.5 s, cône depuis la lanterne), même banc :**
+
+| Cas | Lanterne | Barillet |
+|---|---|---|
+| 1 goule à 3 m | 2 jets, **3.1 s** (3.6 s mesurées, latence des clics simulés comprise) | **1.0 s** |
+| Groupe de 3 | 2 jets touchant les 3, **3.1 s** (3.7 s mesurées) | **5.4 s** |
+
+| Goule qui rampe (haut du corps à 1.1 m), visée droit devant | cône depuis les yeux (avant) | cône depuis la lanterne |
+|---|---|---|
+| à 1 m | manquée | **touchée** (32 PV) |
+| à 2 m | touchée | touchée |
+| à 3 m | touchée | touchée |
+
 ### Playtest — lanterne et personnages
 
 1. **Menu :** « Joueur 1 » ◀ ▶ passe du caméléon (barillet) au renard (lanterne de feu) ; le koala et le hibou se voient

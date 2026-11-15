@@ -288,6 +288,8 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
   | **Flamme** (émission réglée par le code) | 0.032 × 0.045 × 0.032 | centre (0, −0.005, 0) |
   | Sortie du jet (point d'attache) | — | (0, 0.03, 0.05) |
 
+  **Le jet part de la lanterne** (le cône du code part de 0.45 m sous les yeux, 0.22 m à gauche, 0.35 m devant) : le point
+  `FX_Jet` du modèle doit être à cet endroit, en haut de la lanterne. Recharge **2.5 s** (et non 3 s).
   **États à lire sur le modèle :** flamme **allumée** (prête, émission orangée HDR (4, 1.7, 0.4)), **vive** pendant le jet
   (× 1.4), **éteinte** à la fin du jet puis **se rallume en 3 s** (taille et émission), **atténuée** (× 0.25) quand l'orbe tient
   un objet. La cage doit laisser voir la flamme (côtés ouverts ou vitres claires). Le **jet** (5 m, cône de 40°, 0.6 s) est

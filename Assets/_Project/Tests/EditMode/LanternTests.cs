@@ -119,14 +119,15 @@ namespace ItHunts.Tests
         // ---------- Valeurs de départ ----------
 
         [Test]
-        public void ValeursDeDepart_5m_40deg_06s_25PV_3s()
+        public void ValeursDeDepart_5m_40deg_06s_32PV_25s()
         {
             Assert.That(_cfg.range, Is.EqualTo(5f));
             Assert.That(_cfg.coneAngle, Is.EqualTo(40f));
             Assert.That(_cfg.HalfAngle, Is.EqualTo(20f));
             Assert.That(_cfg.jetDuration, Is.EqualTo(0.6f));
-            Assert.That(_cfg.damage, Is.EqualTo(25f));
-            Assert.That(_cfg.cooldown, Is.EqualTo(3f));
+            Assert.That(_cfg.damage, Is.EqualTo(32f), "une goule de 60 PV en 2 jets");
+            Assert.That(_cfg.cooldown, Is.EqualTo(2.5f));
+            Assert.That(_cfg.Origin(Vector3.up * 1.6f, Vector3.forward).y, Is.EqualTo(1.15f).Within(1e-3f), "le cône part de la lanterne, sous les yeux");
         }
 
         // ---------- Cône ----------
@@ -148,23 +149,23 @@ namespace ItHunts.Tests
 
             int n = Sweep(eye, Vector3.forward, shooter.transform, shooter.PlayerId, burned);
             Assert.That(n, Is.EqualTo(2), "devant et à 15°");
-            Assert.That(front.Health.Current, Is.EqualTo(front.Health.Max - 25f).Within(1e-3f));
-            Assert.That(side.Health.Current, Is.EqualTo(side.Health.Max - 25f).Within(1e-3f));
+            Assert.That(front.Health.Current, Is.EqualTo(front.Health.Max - _cfg.damage).Within(1e-3f));
+            Assert.That(side.Health.Current, Is.EqualTo(side.Health.Max - _cfg.damage).Within(1e-3f));
             Assert.That(wide.Health.Current, Is.EqualTo(wide.Health.Max), "à 35° : hors du cône (20° de chaque côté)");
             Assert.That(far.Health.Current, Is.EqualTo(far.Health.Max), "à 7 m : hors de portée");
             Assert.That(behind.Health.Current, Is.EqualTo(behind.Health.Max));
 
             // Les ticks suivants du même jet ne retouchent pas les mêmes ennemis ; un nouveau jet (liste vidée) les retouche.
             Assert.That(Sweep(eye, Vector3.forward, shooter.transform, shooter.PlayerId, burned, 0.1f), Is.EqualTo(0));
-            Assert.That(front.Health.Current, Is.EqualTo(front.Health.Max - 25f).Within(1e-3f));
+            Assert.That(front.Health.Current, Is.EqualTo(front.Health.Max - _cfg.damage).Within(1e-3f));
             burned.Clear();
             Assert.That(Sweep(eye, Vector3.forward, shooter.transform, shooter.PlayerId, burned, 4f), Is.EqualTo(2));
-            Assert.That(front.Health.Current, Is.EqualTo(front.Health.Max - 50f).Within(1e-3f));
+            Assert.That(front.Health.Current, Is.EqualTo(front.Health.Max - 2f * _cfg.damage).Within(1e-3f));
 
             // Viser à 35° : l'ennemi « large » entre dans le cône.
             burned.Clear();
             Sweep(eye, Quaternion.Euler(0f, 35f, 0f) * Vector3.forward, shooter.transform, shooter.PlayerId, burned, 8f);
-            Assert.That(wide.Health.Current, Is.EqualTo(wide.Health.Max - 25f).Within(1e-3f));
+            Assert.That(wide.Health.Current, Is.EqualTo(wide.Health.Max - _cfg.damage).Within(1e-3f));
         }
 
         // ---------- Murs ----------
@@ -215,7 +216,7 @@ namespace ItHunts.Tests
             int n = Sweep(new Vector3(0f, 0.9f, 0f), Vector3.forward, shooter.transform, shooter.PlayerId, new HashSet<int>());
             Assert.That(n, Is.EqualTo(1), "seul le volant");
             Assert.That(stalker.Health.Current, Is.EqualTo(stalker.Health.Max), "le traqueur n'est pas touché");
-            Assert.That(flyer.Dead, Is.True, "un volant meurt en un coup (60 PV, jet de 25)");
+            Assert.That(flyer.Dead, Is.True, "un volant meurt en un coup (60 PV, jet de 32)");
             Assert.That(flyer.LastAttackerId, Is.EqualTo(shooter.PlayerId), "attribué au joueur (aggro, coop)");
         }
 
@@ -234,17 +235,17 @@ namespace ItHunts.Tests
 
             coop.friendlyFire = true;
             Sweep(eye, Vector3.forward, p1.transform, p1.PlayerId, new HashSet<int>(), 1f);
-            Assert.That(p2.Health.Current, Is.EqualTo(p2.Health.Max - 25f).Within(1e-3f), "tir ami activé : 25 PV");
+            Assert.That(p2.Health.Current, Is.EqualTo(p2.Health.Max - _cfg.damage).Within(1e-3f), "tir ami activé : 32 PV");
             Assert.That(p1.Health.Current, Is.EqualTo(p1.Health.Max), "jamais soi-même, même dans son propre cône");
         }
 
         // ---------- Durée du jet et recharge ----------
 
         [Test]
-        public void Jet_06s_PuisRecharge_3s_ClicTropTotMemoriseOuPerdu()
+        public void Jet_06s_PuisRecharge_25s_ClicTropTotMemoriseOuPerdu()
         {
             LanternState s = LanternState.Create();
-            int jetTicks = MovementSettings.SecondsToTicks(0.6f, Dt), cdTicks = MovementSettings.SecondsToTicks(3f, Dt);
+            int jetTicks = MovementSettings.SecondsToTicks(0.6f, Dt), cdTicks = MovementSettings.SecondsToTicks(_cfg.cooldown, Dt);
             Assert.That(FireLantern.Ready(s, 1, _cfg, Dt), Is.True);
 
             LanternStep st = FireLantern.Step(ref s, 10, 10, false, false, _cfg, Dt);
@@ -278,7 +279,7 @@ namespace ItHunts.Tests
             for (int k = early + 1; k <= end + cdTicks + 2 && started < 0; k++)
                 if (FireLantern.Step(ref s, k, early, false, false, _cfg, Dt).Started)
                     started = k;
-            Assert.That(started, Is.EqualTo(end + cdTicks), "part dès la fin de la recharge (3 s)");
+            Assert.That(started, Is.EqualTo(end + cdTicks), "part dès la fin de la recharge (2.5 s)");
             Assert.That(s.JetCount, Is.EqualTo(2));
         }
 
