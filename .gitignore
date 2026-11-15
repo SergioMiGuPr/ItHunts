@@ -77,3 +77,7 @@ Desktop.ini
 # .claude/ (skills, settings.json), docs/ et .mcp.json restent suivis.
 # Seuls les réglages personnels locaux sont ignorés.
 .claude/settings.local.json
+
+# Python (scripts Blender)
+__pycache__/
+*.pyc
