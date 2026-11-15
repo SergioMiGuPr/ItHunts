@@ -54,10 +54,30 @@ et compatible avec le raccourcissement des pièces du bord). La deuxième option
 | `Prop_Tapisserie` | `SM_Tapisserie` + enfant `SM_Tapisserie_Tringle` (pivot : centre de la tringle, en haut) | **(0, 4.0, 0)** : la greybox a son pivot au sol | aucune | — | — | `M_Tapisserie` (découpe alpha, double face), `M_Bois_Brut` | non |
 | `Prop_Chaine` | `SM_Chaine` (pivot : sommet de l'anneau) | **(0, 3.95, 0)** : la greybox a son pivot au sol | aucune | — | — | `M_FerRouille` | non |
 | `Prop_Tuyau` | `SM_Tuyau` | — | **(0, 0.457, 0.04) ; 0.91 × 0.91 × 6.08** (rebord et colliers compris) | — | — | `M_FerRouille`, `M_Egout`, `M_Fond_Noir` | non |
-| `Prop_Echafaudage` | `SM_Echafaudage` | — | (0, 3, 0) ; 4 × 6 × 2 aujourd'hui : **un bloc plein**. Pour qu'on y monte comme le modèle le montre : deux plateaux (0, 2.965, 0) et (0, 5.965, 0) ; 4 × 0.07 × 2 (dessus à 3 et 6 m), plus 6 poteaux de 0.15 × 6 × 0.15 | — | — | `M_Bois_Brut`, `M_Corde` | non |
+| `Prop_Echafaudage` | `SM_Echafaudage` | — | **variante retenue** : deux plateaux et six poteaux, intérieur libre (tableau ci-dessous) | — | — | `M_Bois_Brut`, `M_Corde` | non |
 | `Prop_ColonneBrisee` | `SM_ColonneBrisee` | — | (0, 1.3, 0) ; 1.4 × 2.6 × 1.4 (inchangée) | — | — | `M_Pierre` | non |
 | `Prop_Colonne` | `SM_Colonne` (+ anneau) | — | (0, 4, 0) ; 1.4 × 8 × 1.4 (inchangée) | — | — | `M_Pierre`, `M_FerRouille` | non |
 | `Prop_Poutre` | `SM_Poutre` (+ crochet) | — | (0, 0.25, 0) ; 6 × 0.5 × 0.5 (inchangée) | — | — | `M_Poutre_Bois`, `M_FerRouille` | non |
+
+**Échafaudage : variante retenue (décision du 2026-11-15).** On doit pouvoir y monter, **les goules aussi**. Remplacer la
+boîte pleine de `Prop_Echafaudage` par des collisions qui laissent l'intérieur libre (repère du prefab, modèle sans
+décalage ; le modèle est recentré de 2.7 cm en Z à cause de l'échelle, d'où les z ci-dessous) :
+
+| Pièce | Centre | Taille | Remarque |
+|---|---|---|---|
+| Plateau du bas | (0, 2.965, −0.027) | 4 × 0.07 × 2 | dessus à 3 m |
+| Plateau du haut | (0, 5.965, −0.027) | 4 × 0.07 × 2 | dessus à 6 m |
+| 6 poteaux | x = −1.925, 0, 1.925 ; z = −0.952 et 0.898 ; y = 3 | 0.15 × 6 × 0.15 | du sol à 6 m |
+| Échelle (option) | (−1.0, 3, 1.013) | 0.57 × 6 × 0.05 | sur l'avant (+Z), à droite vu de face (x Unity négatif) |
+
+- Accès : l'échelle est visuelle ; le joueur monte par le saut, le wall jump ou la traction, les goules en grimpant
+  (`ART-HANDOFF` : elles grimpent les flancs des plateformes). Pour que les goules grimpent, les flancs des plateaux
+  doivent être des surfaces que leur logique accepte (même couche que les plateformes) ; l'échelle peut servir de
+  « mur » grimpable si on lui donne une boîte.
+- NavMesh : les deux plateaux sont des surfaces à cuire (4 × 2 m chacun, au-dessus des poteaux) ; le dessous reste
+  traversable (2.9 m de passage libre sous le plateau du bas, 1.85 m entre les poteaux sur la longueur).
+- Les croisillons en X et les longerons restent sans collision (décor), pour ne pas bloquer le passage sous les
+  plateaux ni accrocher le contrôleur.
 
 Écarts connus : chaîne de 3.89 m (au lieu de 4 : étirer de 3 % en Y si besoin) ; tuyau de 0.91 m de haut (rebord) ;
 colonne brisée sans les débris au sol de la greybox (ses morceaux restent sur les gradins, dans l'emprise de 1.4 m) ;
@@ -79,6 +99,7 @@ cadenas de la cage et de la grille qui dépassent de 2 à 3 cm à l'avant.
 |---|---|---|---|---|
 | Orbe (main droite, sur `Orb_Socket`) | `SM_Orbe` (racine vide) | pivot au centre de l'orbe sur `Orb_Socket` ; **échelle à régler dans FpsView** : la greybox fait Ø 0.08 m, le modèle 0.18 m (anneaux) et 0.295 × 0.228 × 0.182 m avec les tablettes | `SM_Orbe_Anneau_1` (axe **X**), `_2` (**Y**), `_3` (**Z**), modélisés à leur pose de repos ; `SM_Orbe_Tablette_01` à `_06` (positions de la couronne) ; repère `FX_Orbe` au centre | `M_Orbe_Energie` (`_EmissionColor`, couleur du personnage) ; glyphe de chaque tablette : **index de matériau 1** de `SM_Orbe_Tablette_0X` (`M_Orbe_Tablette_0X`) ; jauge et animations : `MATERIAUX.md`, planche `Orbe_Poses_*.jpg` |
 | Lanterne de feu (artefact du renard, main gauche) | `SM_LanterneFeu` | pivot au centre de l'anneau de portage (la lanterne pend dessous) | — | `M_LanterneFeu_Verre` : translucide (file 3000) et `_EmissionColor` ; **passe transparente des mains à ajouter** (la passe « ItHunts Mains : mains » ne dessine que l'opaque) ; repères `FX_Flamme` (mèche) et `FX_Jet` (départ du jet, +Z = avant, dégagé sur 6 m) |
+| Bras des 4 personnages (remplacent les mains greybox) | `SK_BrasFPS_<Perso>_D` / `_G` (armature `BrasFPS`, 17 os, mêmes noms partout) | placer le FBX pour que **`Socket_Poignet` coïncide avec la main greybox** (position et rotation de repos de FpsView, § 5 bis d'ART-HANDOFF) : le pivot est au coude, `Socket_Poignet` est en (0, 0, 0.27) dans le FBX, axes de l'ancrage (+Z doigts, +Y dos de la main) ; aucun recalage d'axe | os des doigts : remplacent l'angle unique `rightFingers` / `leftFingers` (rotation X) par les clips `BrasFPS|Pose_*` (mêmes clips pour les 4 personnages ; un jeu de clips par côté, le gauche est le miroir) ; `Pose_Attraper` a 3 clés (repos, ouverte, refermée) ; les déplacements de la main entière restent dans FirstPersonView | `M_BrasFPS_<Perso>_*` (aplats) ; contour par coque inversée (RENDU.md § 5 bis) ; repères fixes enfants de `BrasFPS` : `Socket_Orbe` (0, 0.06, 0.045) depuis le poignet (droit), `Socket_Artefact` (0, 0.055, 0.05) et `Socket_Artefact_Anneau` (0, −0.05, 0.105) pour l'anneau de la lanterne dans `Pose_PriseAnneau` (gauche, à ajuster en jeu) ; planches `BrasFPS_*.jpg` |
 | Barillet (caméléon, main gauche) | `SM_Barillet` | intégré sur `main` (branche `barillet-modele`) | | |
 
 ## 5. Props encore à produire (catalogue d'`ART-HANDOFF`)
