@@ -3,7 +3,22 @@ guid: 8315f833c02a51d4ea2dc06793f01bdc
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Dalles
+    second: {fileID: 2100000, guid: a528616e55f376f47b25b79bbf354bb0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Egout
+    second: {fileID: 2100000, guid: 8e9eaf73e464ee14eb7b418688bfc869, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Pierre
+    second: {fileID: 2100000, guid: 2e02e0ceebc6adb47b51e0f35605ee6f, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,22 @@ guid: ef3679c730eaea34f83d0c0b02d6cb45
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Barillet_Chambre
+    second: {fileID: 2100000, guid: f98c98d6dd8beec459e6022ba3b0f91c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Barillet_Laiton
+    second: {fileID: 2100000, guid: f39df41dc10b30b41a0ad4b2fd7d04cc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Barillet_Rune
+    second: {fileID: 2100000, guid: 93334898c82068b46a0e16af2b9e50da, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,27 @@ guid: 6b375ce2dd5d1e84283194f2863c7011
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_FerRouille
+    second: {fileID: 2100000, guid: 3802ef6c252a9674bb78558a2900fcde, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GrandePorte_Bois
+    second: {fileID: 2100000, guid: 906f34049ab58bc408820a06944a0900, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_GrandePorte_Serrure
+    second: {fileID: 2100000, guid: 9c700af9e2af39743a9fc9cd961bfbd8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Pierre
+    second: {fileID: 2100000, guid: 2e02e0ceebc6adb47b51e0f35605ee6f, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -20,6 +20,8 @@ MODELS_DIR = os.path.join(ROOT, "Assets", "Art", "Models", "Niveau1")
 SOURCE_DIR = os.path.join(ROOT, "Assets", "Art", "Source~", "Niveau1")
 RENDER_DIR = os.path.join(ROOT, "docs", "art", "rendus", "Niveau1")
 FICHES_DIR = os.path.join(ROOT, "docs", "art", "fiches")
+RENDER_FMT = "PNG"          # les scripts du lot de props passent en "JPEG" (qualité 90)
+RENDER_DIST_ADD = 2.0       # marge fixe de la caméra (m) ; 0 pour les petits props
 
 # Textures tuilables : (fichier, largeur de tuile en m, hauteur de tuile en m)
 TILES = {
@@ -588,7 +590,9 @@ def render_views(scene, objects, basename, views=("face", "cote", "34"), res=102
     sc.render.resolution_x = res
     sc.render.resolution_y = res
     sc.render.film_transparent = False
-    sc.render.image_settings.file_format = "PNG"
+    sc.render.image_settings.file_format = RENDER_FMT
+    if RENDER_FMT == "JPEG":
+        sc.render.image_settings.quality = 90
     sc.display.render_aa = "8"
 
     mn = Vector((1e9, 1e9, 1e9)); mx = -mn
@@ -624,10 +628,10 @@ def render_views(scene, objects, basename, views=("face", "cote", "34"), res=102
         else:   # 3/4 avant droit, un peu en hauteur
             d = Vector((0.75, -1, 0.5)).normalized(); cam_data.type = "PERSP"
             cam_data.lens = 35
-        dist = size.length * (1.05 if v.startswith("34") else 2.0) + 2
+        dist = size.length * (1.05 if v.startswith("34") else 2.0) + RENDER_DIST_ADD
         cam.location = ctr + d * dist
         cam.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
-        path = os.path.join(RENDER_DIR, "%s_%s.png" % (basename, v))
+        path = os.path.join(RENDER_DIR, "%s_%s.%s" % (basename, v, "jpg" if RENDER_FMT == "JPEG" else "png"))
         sc.render.filepath = path
         bpy.ops.render.render(write_still=True, scene=sc.name)
         out.append(path)
