@@ -148,6 +148,10 @@ en vision périphérique à pleine vitesse, plutôt que des détails.
 Interpolations : courbes franches (sortie rapide) pour les déclenchements, amorties pour les retours. Vitesses et
 durées : des points de départ pour le playtest.
 
+**Planche des poses** (couleur du caméléon, vue de l'œil du joueur, mouvement en surimpression de 3 instants) :
+`docs/art/rendus/FPS/Orbe_Poses_Planche.jpg` et une image par état (`Orbe_Poses_01_Repos.jpg` à
+`Orbe_Poses_08_ChargeRechargee.jpg`) ; scripts `sm_orbe_poses.py` (Blender) puis `orbe_poses_legendes.py` (légendes).
+
 ### Jauge des tablettes : les 6 charges du jeu
 
 **6 tablettes = 6 charges : 2 de traction, 1 de répulsion, 3 de mouvement** (la traction est passée à 2 charges, ce
@@ -270,7 +274,7 @@ matériaux définitifs, réglage intermédiaire, contours clairs dans le noir. P
      la même couleur ;
    - ambiance (0.055, 0.058, 0.080) en mode Flat ; lune 0.25 ; torches et bougies vers 1.8 d'intensité, 9 à 13 m de
      portée (le toon dessine l'îlot sur la portée).
-2. **Après la fusion, les FBX remappés apportent leurs matériaux** : les prefabs de kit (`Assets/Prefabs/Kit/`) qui
+2. **Après la fusion, les FBX remappés apportent leurs matériaux** : les prefabs du kit (`Assets/_Project/Prefabs/Kit/Kit_*`, voir `docs/art/INTEGRATION-PROPS.md`) qui
    contiennent ces FBX passent au toon sans rien faire, **sauf** s'ils ont des remplacements de matériaux sur leurs
    renderers (à vérifier : un remplacement l'emporte sur le remappage).
 3. **Barillet : `BarrelView` doit écrire `_EmissionColor` au lieu de `_BaseColor`** pour les chambres. Aujourd'hui il

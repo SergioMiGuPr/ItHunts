@@ -1,0 +1,112 @@
+# Intégration des modèles dans les prefabs du jeu
+
+Fiche pour la session principale (`main`) : comment remplacer les greybox par les modèles livrés sur `art` (PR #3), sans
+rien mesurer. Toutes les coordonnées sont **dans le repère Unity** (+Y en haut, +Z vers l'avant du modèle), en mètres.
+Mesures relevées le 2026-11-15 sur les FBX réimportés (Blender et Unity) et sur les prefabs greybox de `origin/main`
+(`Assets/_Project/Prefabs/Props/`, `Kit/`, `BossArenaBuilder.cs`), en lecture seule.
+
+**Règles communes**
+- Chaque FBX arrive à rotation nulle, échelle 1, matériaux déjà remappés vers les `.mat` toon (`Assets/Art/Materials/`).
+- Placer le FBX **en enfant** de la racine du prefab, à la position indiquée dans « décalage » (colonne vide = 0) ; ne
+  jamais l'échelonner, sauf mention.
+- Garder la boîte de collision de la racine (la taille conseillée est donnée ; les collisions plus fines attendront que
+  le jeu dise où une boîte ne suffit pas).
+- Props : ajouter l'étiquette « DA » au prefab (le constructeur ne le recrée plus). Pièces du kit : pas de collider dans
+  le modèle (boîte fusionnée posée par le code).
+- Objets mobiles : chaque pièce mobile est un **enfant séparé du FBX**, avec son pivot sur son axe, rotation nulle au
+  repos. Repères `FX_*` : objets vides, leur +Z local donne la direction (avant du modèle).
+- Les matériaux à émission (« prête mais éteinte ») ont le mot-clé `_EMISSION` actif et une couleur noire : le code
+  écrit `_EmissionColor` (bloc de propriétés ou matériau), sans activer de mot-clé.
+
+## 1. Pièces du kit (carte aléatoire, `Assets/_Project/Prefabs/Kit/`)
+
+Ordre de priorité d'`ART-HANDOFF.md` (« Kit de construction de la carte aléatoire »).
+
+| Priorité | Prefab | Modèle | État | Pivot du modèle | Remarques |
+|---|---|---|---|---|---|
+| 1 | `Kit_Mur4x4` | — | **à produire** | (au pied, au milieu ; x −2..2, y 0..4, z −0.5..0.5) | ≈ 60 000 pièces sur une carte : modèle très léger (≤ 200 triangles), texture de pierre partagée |
+| 2 | `Kit_Sol4` | — | **à produire** | (milieu du dessus ; y −1..0) | dalles, même tuile que `M_Dalles` |
+| 3 | `Kit_Escalier` | — | **à produire** | (milieu du bas de la contremarche ; x −2..2, y 0..0.25, z 0..1) | étirée en hauteur et en profondeur par le code : marche simple, texture en échelle monde |
+| 4 | `Kit_Arc` | `SM_Arc_Couloir` | intégré sur `main` | au sol, au milieu entre les deux pieds | 14 × 11 × 1.6 m |
+| 5 | `Kit_Pilier` | `SM_Colonne` (+ `SM_Colonne_Anneau`) | intégré sur `main` | au sol, au centre | 1.4 × 8 × 1.4 m ; anneau à 3 m sur la face avant |
+| 6 | `Kit_Pont` | — | **à produire** | (milieu du dessus) | passerelle de 4 × 3 m, tablier de 1 m, étirée en largeur |
+| 7 | `Kit_Poutre` | `SM_Poutre` (+ `SM_Poutre_Crochet`) | intégré sur `main` | centre du dessous du bois | 6 × 0.5 × 0.5 m |
+| 8 | `Kit_PortePiece` | `SM_Porte_Piece` | intégré sur `main` | au sol, au centre de l'ouverture | 4.4 × 5 × 1 m, ouverture 3 × 3 m |
+| 9 | `Kit_GrandePorte` | `SM_GrandePorte` | intégré sur `main` | cadre au sol, au centre ; battants sur l'axe des gonds | cadre 13 × 14 × 2 m |
+| 10 | `Kit_PontEgout4` / `14` | `SM_Pont_Egout_4m` / `_14m` | intégré sur `main` | centre du tablier, à la cote 0 | |
+| 11 | `Kit_Mur2x4`, `Kit_Mur4x3` | — | **à produire** | comme `Kit_Mur4x4` | demi-pièces (2 × 4 et 4 × 3 m) |
+
+**Point d'attention pour les murs et les sols du kit :** la texture de pierre (`M_Pierre`) a une tuile de **4 × 3 m**.
+Sur un mur de 4 m de haut, les assises peintes ne se raccordent pas d'une pièce à l'autre en hauteur (4 n'est pas un
+multiple de 3). À trancher avant de modéliser `Kit_Mur4x4` : refaire la tuile de pierre en 4 × 4 m (ou 4 × 2 m), ou
+calculer les UV en coordonnées monde dans le shader pour ces pièces (triplanaire simple, sans couture entre pièces,
+et compatible avec le raccourcissement des pièces du bord). La deuxième option règle aussi les pièces étirées
+(`Kit_Escalier`, `Kit_Pont`, pièces raccourcies).
+
+## 2. Props du niveau (`Assets/_Project/Prefabs/Props/`)
+
+| Prefab | Modèle (FBX `Assets/Art/Models/Niveau1/`) | Décalage du modèle | Boîte de collision conseillée (centre ; taille) | Repères FX | Objets mobiles (axe) | Matériaux | Attrapable |
+|---|---|---|---|---|---|---|---|
+| `Prop_Torche` | `SM_Torche` (pivot : centre du dos de la plaque, sur le mur) | **(0, 0.545, 0)** : le haut de la tête à 0.96 m comme la greybox | aucune (décor sans collision) | `FX_Flamme` en (0, 0.443, 0.354) dans le FBX, soit **(0, 0.988, 0.354)** dans le prefab : y mettre la lumière (aujourd'hui en (0, 1.1, 0.5), 15 cm trop loin du mur) et la flamme | — | `M_FerRouille`, `M_Bois_Brut`, `M_Chiffon_Brule`, `M_Corde` | non |
+| `Prop_TorcheEteinte` | `SM_Torche` (même modèle) | (0, 0.545, 0) | aucune | `FX_Flamme` : flamme sans lumière | — | idem | non |
+| `Prop_Cage` | `SM_Cage` + enfant `SM_Cage_Os` | — | (0, 1.5, 0) ; 2.2 × 3 × 2.2 (inchangée) | — | — (porte fermée, modélisée avec la cage) | `M_FerRouille` ; os : `M_Os` | non |
+| `Prop_Grille` | `SM_Grille` | — | (0, 1.5, 0) ; 3 × 3 × 0.2 (inchangée) | — | — (porte fermée, modélisée avec la grille) | `M_FerRouille` | non |
+| `Prop_Tapisserie` | `SM_Tapisserie` + enfant `SM_Tapisserie_Tringle` (pivot : centre de la tringle, en haut) | **(0, 4.0, 0)** : la greybox a son pivot au sol | aucune | — | — | `M_Tapisserie` (découpe alpha, double face), `M_Bois_Brut` | non |
+| `Prop_Chaine` | `SM_Chaine` (pivot : sommet de l'anneau) | **(0, 3.95, 0)** : la greybox a son pivot au sol | aucune | — | — | `M_FerRouille` | non |
+| `Prop_Tuyau` | `SM_Tuyau` | — | **(0, 0.457, 0.04) ; 0.91 × 0.91 × 6.08** (rebord et colliers compris) | — | — | `M_FerRouille`, `M_Egout`, `M_Fond_Noir` | non |
+| `Prop_Echafaudage` | `SM_Echafaudage` | — | (0, 3, 0) ; 4 × 6 × 2 aujourd'hui : **un bloc plein**. Pour qu'on y monte comme le modèle le montre : deux plateaux (0, 2.965, 0) et (0, 5.965, 0) ; 4 × 0.07 × 2 (dessus à 3 et 6 m), plus 6 poteaux de 0.15 × 6 × 0.15 | — | — | `M_Bois_Brut`, `M_Corde` | non |
+| `Prop_ColonneBrisee` | `SM_ColonneBrisee` | — | (0, 1.3, 0) ; 1.4 × 2.6 × 1.4 (inchangée) | — | — | `M_Pierre` | non |
+| `Prop_Colonne` | `SM_Colonne` (+ anneau) | — | (0, 4, 0) ; 1.4 × 8 × 1.4 (inchangée) | — | — | `M_Pierre`, `M_FerRouille` | non |
+| `Prop_Poutre` | `SM_Poutre` (+ crochet) | — | (0, 0.25, 0) ; 6 × 0.5 × 0.5 (inchangée) | — | — | `M_Poutre_Bois`, `M_FerRouille` | non |
+
+Écarts connus : chaîne de 3.89 m (au lieu de 4 : étirer de 3 % en Y si besoin) ; tuyau de 0.91 m de haut (rebord) ;
+colonne brisée sans les débris au sol de la greybox (ses morceaux restent sur les gradins, dans l'emprise de 1.4 m) ;
+cadenas de la cage et de la grille qui dépassent de 2 à 3 cm à l'avant.
+
+## 3. Arène du boss (`BossArenaBuilder.cs` : boîtes posées par leur centre)
+
+| Élément | Modèle | Placement | Objets mobiles (axe) | Collision | Lueur / FX |
+|---|---|---|---|---|---|
+| Herse (à `hc` = centre + (−18, 0, 0)) | `SM_Herse` + enfant `SM_Herse_Grille` | **rotation (0, 90, 0)** : le passage du modèle est selon Z, celui de l'arène selon X ; pivot au sol, au centre du passage, en `hc`. Les piliers tombent à z = ±6.5 comme les boîtes actuelles (3 × 28 × 3) | `SM_Herse_Grille` : translation **Y** ; pivot en bas au centre (pointes au sol). Position haute : **y = 16** (la boîte actuelle est centrée à 22 pour 12 m de haut) ; elle descend de 16 m jusqu'à 0 | garder les boîtes des piliers (3 × 28 × 3) et de la grille (1.2 × 12 × 10, plus épaisse que le modèle de 0.25 m : voulu pour le jeu) | — |
+| Leviers (6, pied en `feet`) | `SM_Levier` + enfant `SM_Levier_Manche` | pivot au sol, en `feet` ; socle (1 × 1.2 × 1 m) et plaque (1.2 × 0.8 × 1.2, dessus à 2 m) aux mêmes hauteurs que les boîtes actuelles | `SM_Levier_Manche` : rotation **X** autour de son pivot (axe à 2.108 m) ; repos à **+35°** (vers l'avant, déjà dans le modèle) ; activé : **−70°** de plus, soit −35° | boîte de la plaque (1.2 × 0.8 × 1.2, centre à 1.6 m) | `M_Levier_Lueur` (cristal et anneau de rune) : `_EmissionColor` orange quand le levier est prêt, vert quand il est activé (remplace l'échange de matériau `Trap_Lever_Off` / `_On` de `BossLever`) ; la lumière à 2.8 m reste |
+| Traversée de la fosse (5 plateformes, `CrumblePlatform`) | `SM_PlateformeTombe` | pivot au centre du **dessous** de la dalle : dessus du modèle = dessus de la boîte actuelle → modèle à **(0, −0.4, 0)** sous le dessus, ou à (0, −0.15, 0) du centre de la boîte de 0.5 m | la dalle entière (le code la fait tomber) ; les 4 morceaux font partie du même maillage | boîte actuelle 2.4 × 0.5 × 2.4 (le modèle fait 0.4 m d'épaisseur : passer la boîte à 0.4, centre −0.2, ou accepter 10 cm sous le modèle) | — |
+| Treuil (point `winch` = centre + (0, 6, h − 1.2), galerie nord à 6 m) | `SM_Treuil` + enfant `SM_Treuil_Manivelle` | **rotation (0, 180, 0)** (le modèle regarde vers +Z, le mur nord est en +Z) ; pivot au sol de la galerie, contre le mur : (0, 6, h). Le haut du tambour (départ de la corde) est alors en **(0, 7.9, h − 0.82)** : y déplacer `winch` | `SM_Treuil_Manivelle` : rotation **X** sur l'axe du tambour (1.3 m au-dessus du pivot, 0.82 m du mur) ; le tambour fait partie de `SM_Treuil` (pour le faire tourner aussi, demander une pièce séparée) | une boîte de 2.5 × 2.5 × 1.5 m contre le mur suffit | la corde qui brille (`Lustre : corde`) part du haut du tambour ; le brin de chaîne du modèle (≈ 1 m) peut rester |
+| Lustre géant | — | **à produire** (12 × 1.5 × 12 m, accroché à 24 m) | | | |
+
+## 4. Vue FPS (`Assets/Art/Models/FPS/`)
+
+| Objet | Modèle | Placement | Objets mobiles | Matériaux pilotés par le code |
+|---|---|---|---|---|
+| Orbe (main droite, sur `Orb_Socket`) | `SM_Orbe` (racine vide) | pivot au centre de l'orbe sur `Orb_Socket` ; **échelle à régler dans FpsView** : la greybox fait Ø 0.08 m, le modèle 0.18 m (anneaux) et 0.295 × 0.228 × 0.182 m avec les tablettes | `SM_Orbe_Anneau_1` (axe **X**), `_2` (**Y**), `_3` (**Z**), modélisés à leur pose de repos ; `SM_Orbe_Tablette_01` à `_06` (positions de la couronne) ; repère `FX_Orbe` au centre | `M_Orbe_Energie` (`_EmissionColor`, couleur du personnage) ; glyphe de chaque tablette : **index de matériau 1** de `SM_Orbe_Tablette_0X` (`M_Orbe_Tablette_0X`) ; jauge et animations : `MATERIAUX.md`, planche `Orbe_Poses_*.jpg` |
+| Lanterne de feu (artefact du renard, main gauche) | `SM_LanterneFeu` | pivot au centre de l'anneau de portage (la lanterne pend dessous) | — | `M_LanterneFeu_Verre` : translucide (file 3000) et `_EmissionColor` ; **passe transparente des mains à ajouter** (la passe « ItHunts Mains : mains » ne dessine que l'opaque) ; repères `FX_Flamme` (mèche) et `FX_Jet` (départ du jet, +Z = avant, dégagé sur 6 m) |
+| Barillet (caméléon, main gauche) | `SM_Barillet` | intégré sur `main` (branche `barillet-modele`) | | |
+
+## 5. Props encore à produire (catalogue d'`ART-HANDOFF`)
+
+Greybox actuelles (bornes de leur maillage) : à garder comme cotes et pivots. **Attrapables** : gardent leur Rigidbody,
+leur `Grabbable` et leur lueur ; leur modèle doit rester dans la boîte (la collision est celle de la greybox).
+
+| Prefab | Dimensions (l × h × p) | Nombre | Rôle | Remarque |
+|---|---|---|---|---|
+| `Prop_Caisse_Attrapable` | 0.8 × 0.8 × 0.8 | 279 | **attrapable** (15 kg) | le plus nombreux des attrapables |
+| `Prop_Tonneau` / `_Attrapable` | 0.9 × 1.1 × 0.9 / 0.6 × 0.9 × 0.6 | 212 / 131 | fixe / **attrapable** (20 kg) | |
+| `Prop_Etagere` | 2.6 × 3.2 × 0.7 | 117 | fixe | |
+| `Prop_Caisse` | 1.3 × 1.3 × 1.3 | 100 | fixe | même modèle que l'attrapable, à l'échelle |
+| `Prop_CoffreDeco` | 1.2 × 0.8 × 0.8 | 85 | fixe | |
+| `Prop_Table` | 2.6 × 0.95 × 1.2 | 82 | fixe | |
+| `Prop_Banc` | 2.6 × 0.55 × 0.6 | 79 | fixe | |
+| `Prop_PileDeCaisses` | 2.6 × 2.6 × 2.6 | 78 | fixe | assemblage de `Prop_Caisse` |
+| `Prop_Paille` | 2 × 0.3 × 2 | 77 | décor sans collision | |
+| `Prop_Gravats` | 3.2 × 1.2 × 3 | 72 | fixe | |
+| `Prop_Statue` | 1.4 × 3.6 × 1.4 | 69 | fixe | |
+| `Prop_Chaise_Attrapable` | 0.55 × 1 × 0.55 | 63 | **attrapable** (8 kg) | |
+| `Prop_Sarcophage` | 1.2 × 1 × 2.5 | 52 | fixe | |
+| `Prop_Ratelier` | 2.6 × 2.1 × 0.5 | 40 | fixe | |
+| `Prop_Armoire` | 1.6 × 2.7 × 0.8 | 30 | fixe | |
+| `Prop_Lit` | 1.3 × 0.7 × 2.3 | 23 | fixe | |
+| `Prop_Lanterne` | 0.5 × 0.8 × 0.5 | 258 | lumière, sans collision | peut reprendre `SM_LanterneFeu` à l'échelle ≈ 2.7, verre et lueur neutres |
+| `Prop_Chaudron` | 1.3 × 1 × 1.3 | 14 | fixe | |
+| `Prop_MurEffondre` | 5 × 3 × 1.2 | 11 | fixe | |
+| `Prop_Autel` | 2.6 × 1.2 × 1.3 | 4 | fixe | |
+| Lustre (salles) | 1.6 × 0.3 × 1.6, suspendu | — | **attrapable** (25 kg, tombe) | pivot au point d'accroche |
+| Lustre géant (arène) | 12 × 1.5 × 12, à 24 m | 1 | piège | |
