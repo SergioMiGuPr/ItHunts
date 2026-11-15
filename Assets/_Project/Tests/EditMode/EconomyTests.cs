@@ -433,5 +433,21 @@ namespace ItHunts.Tests
             }
         }
 
+        [Test]
+        public void Marchand_EnseigneAuDessusDeToutesLesEtiquettes()
+        {
+            // L'enseigne cachait une étiquette d'offre : elle est maintenant dans le plan des textes, au-dessus du plus haut.
+            float signH = 0.4f;
+            Vector3 sign = ArtifactMerchant.SignOffset(3, true, signH);
+            for (int i = 0; i < 3; i++)
+            {
+                Vector3 o = ArtifactMerchant.OfferOffset(i, 3);
+                float labelTop = o.y + 0.12f + 0.95f + 3f * 0.28f * 0.5f;    // flottement + texte de 3 lignes au-dessus de l'orbe
+                Assert.That(sign.y - signH * 0.5f, Is.GreaterThanOrEqualTo(labelTop + 1.6f - 0.001f), "1.6 m au-dessus du texte le plus haut");
+                Assert.That(sign.z, Is.EqualTo(o.z).Within(0.001f), "même plan que les offres");
+            }
+
+            Assert.That(sign.x, Is.EqualTo((ArtifactMerchant.OfferOffset(0, 3).x + ArtifactMerchant.HealOffset(3).x) * 0.5f).Within(0.001f), "au milieu de la rangée");
+        }
     }
 }

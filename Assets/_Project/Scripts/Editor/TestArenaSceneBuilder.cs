@@ -896,7 +896,7 @@ namespace ItHunts.EditorTools
             robe.SetColor("_EmissionColor", new Color(0.8f, 0.3f, 1.2f));
             GameObject figure = Box("Marchand (silhouette)", root.transform, new Vector3(0f, 1.1f, 0f), new Vector3(0.9f, 2.2f, 0.9f), robe);
             GameObjectUtility.SetStaticEditorFlags(figure, 0);
-            GameObject sign = Box("Enseigne", root.transform, new Vector3(0f, 2.9f, 0f), new Vector3(1.6f, 0.4f, 0.1f),
+            GameObject sign = Box("Enseigne", root.transform, ArtifactMerchant.SignOffset(3, true, 0.4f), new Vector3(1.6f, 0.4f, 0.1f),        // au-dessus des offres (replacée au lancement)
                 UnlitMat("Economy_Merchant_Sign", "Universal Render Pipeline/Unlit", new Color(2.5f, 1f, 3f)), collider: false);
             GameObjectUtility.SetStaticEditorFlags(sign, 0);
             var m = root.AddComponent<ArtifactMerchant>();
