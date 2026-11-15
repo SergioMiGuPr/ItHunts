@@ -35,6 +35,8 @@ namespace ItHunts.Level
         [SerializeField] private GameObject annex;
         [SerializeField] private GameObject lockedAnnex;
         [SerializeField] private Material water;
+        [Tooltip("Matériau des surfaces non magnétiques (galeries de parcours, passages en hauteur).")]
+        [SerializeField] private Material nonMagnetic;
 
         [Header("Scène")]
         [SerializeField] private ZoneNavMesh zoneNav;
@@ -67,6 +69,12 @@ namespace ItHunts.Level
         private readonly Dictionary<int, GameObject> _moduleInstances = new Dictionary<int, GameObject>();
         private Vector3 _min, _max;
         private Vector3 _arenaCenter, _arenaHalf;
+        private readonly Dictionary<(int, DoorSide), List<Cut>> _roomCuts = new Dictionary<(int, DoorSide), List<Cut>>();
+        private readonly Dictionary<(int, int), List<Cut>> _corridorCuts = new Dictionary<(int, int), List<Cut>>();
+        private const float DuctY = 4.5f, DuctH = 3f, DuctW = 3.5f, DuctLen = 8f, GalleryWidth = 20f;
+
+        /// <summary>Passages refermés (un étage du module bouchait l'ouverture) : indices dans Plan.Passages (mesures).</summary>
+        public readonly HashSet<int> ClosedPassages = new HashSet<int>();
 
         private void Awake()
         {
@@ -125,10 +133,14 @@ namespace ItHunts.Level
             _moduleInstances.Clear();
             _min = new Vector3(float.MaxValue, -10f, float.MaxValue);
             _max = new Vector3(float.MinValue, settings.upperLevel + settings.MaxCeiling + 10f, float.MinValue);
+            PlanCuts();
             for (int i = 0; i < Plan.Rooms.Count; i++)
                 BuildRoom(i);
             for (int l = 0; l < Plan.Links.Count; l++)
                 BuildCorridor(l);
+            Physics.SyncTransforms();
+            BuildPassages();
+            BuildGalleries();
             int lairNode = BuildLair();
             int arenaNode = BuildExit();
             BuildStart();
@@ -194,6 +206,9 @@ namespace ItHunts.Level
                         Plan.Links[d.Link].Width, settings.corridorHeight);
             }
 
+            foreach (DoorSide s in new[] { DoorSide.Nord, DoorSide.Est, DoorSide.Sud, DoorSide.Ouest })
+                if (_roomCuts.TryGetValue((i, s), out List<Cut> extra))
+                    cuts[s].AddRange(extra);
             Wall(parent, "Mur nord", true, c.z + hz + T * 0.5f, c.x - hx - T, c.x + hx + T, 0f, top, cuts[DoorSide.Nord]);
             Wall(parent, "Mur sud", true, c.z - hz - T * 0.5f, c.x - hx - T, c.x + hx + T, 0f, top, cuts[DoorSide.Sud]);
             Wall(parent, "Mur est", false, c.x + hx + T * 0.5f, c.z - hz, c.z + hz, 0f, top, cuts[DoorSide.Est]);
@@ -422,6 +437,10 @@ namespace ItHunts.Level
                 BuildAnnex(parent, p, lateral * an.Side, w, an.Locked);
             }
 
+            if (_corridorCuts.TryGetValue((li, 1), out List<Cut> morePlus))
+                plus.AddRange(morePlus);
+            if (_corridorCuts.TryGetValue((li, -1), out List<Cut> moreMinus))
+                minus.AddRange(moreMinus);
             float yLow = Mathf.Min(ya, yb), yTop = Mathf.Max(ya, yb) + h;
             float from = alongX ? Mathf.Min(flatStart.x, flatEnd.x) : Mathf.Min(flatStart.z, flatEnd.z);
             float to = alongX ? Mathf.Max(flatStart.x, flatEnd.x) : Mathf.Max(flatStart.z, flatEnd.z);
@@ -487,6 +506,194 @@ namespace ItHunts.Level
             Vector3 at = floorPoint + outward * (corridorWidth * 0.5f + T);
             GameObject go = Instantiate(prefab, at, Quaternion.LookRotation(outward, Vector3.up), parent);
             go.name = locked ? "Salle verrouillée" : "Pièce annexe";
+        }
+
+        // ---------- Contournement : passages en hauteur et galeries de parcours ----------
+
+        /// <summary>Repère d'un bout de couloir : face intérieure du mur de la salle (sol compris), axe vers le couloir, latéral du couloir.</summary>
+        private void Frame(int li, bool atStart, out Vector3 face, out Vector3 axis, out Vector3 lateral, out float len)
+        {
+            PlanLink l = Plan.Links[li];
+            Vector3 dir = l.To - l.From;
+            dir.y = 0f;
+            len = dir.magnitude;
+            dir /= Mathf.Max(0.001f, len);
+            lateral = new Vector3(-dir.z, 0f, dir.x);
+            face = atStart ? l.From : l.To;
+            axis = atStart ? dir : -dir;
+        }
+
+        private static float Along(Vector3 p, Vector3 wallAxis) => Mathf.Abs(wallAxis.x) > 0.5f ? p.x : p.z;
+
+        private void AddCut<TK>(Dictionary<TK, List<Cut>> map, TK key, Cut cut)
+        {
+            if (!map.TryGetValue(key, out List<Cut> list))
+                map[key] = list = new List<Cut>();
+            list.Add(cut);
+        }
+
+        /// <summary>Ouvertures des passages (mur de la salle et mur du couloir) et des portes des galeries, avant de construire les murs.</summary>
+        private void PlanCuts()
+        {
+            _roomCuts.Clear();
+            _corridorCuts.Clear();
+            ClosedPassages.Clear();
+            foreach (PlanPassage p in Plan.Passages)
+            {
+                PlanLink l = Plan.Links[p.Link];
+                Frame(p.Link, p.AtStart, out Vector3 face, out Vector3 axis, out Vector3 lateral, out _);
+                Vector3 latS = lateral * p.Side;
+                int room = p.AtStart ? l.A : l.B;
+                DoorSide wall = Plan.Rooms[room].Doors[p.AtStart ? l.DoorA : l.DoorB].Side;
+                Vector3 wallAxis = wall == DoorSide.Nord || wall == DoorSide.Sud ? Vector3.right : Vector3.forward;
+                float a0 = Along(face + latS * (l.Width * 0.5f + T), wallAxis), a1 = Along(face + latS * (l.Width * 0.5f + T + DuctW), wallAxis);
+                AddCut(_roomCuts, (room, wall), new Cut(Mathf.Min(a0, a1) + 0.25f, Mathf.Max(a0, a1) - 0.25f, face.y + DuctY, face.y + DuctY + DuctH));
+                float c0 = Along(face + axis * (T + 4f), axis), c1 = Along(face + axis * (T + 7f), axis);
+                AddCut(_corridorCuts, (p.Link, p.Side), new Cut(Mathf.Min(c0, c1), Mathf.Max(c0, c1), face.y + DuctY, face.y + DuctY + DuctH));
+            }
+
+            foreach (PlanGallery g in Plan.Galleries)
+            {
+                Frame(g.Link, true, out Vector3 face, out Vector3 axis, out _, out float len);
+                foreach (float d in new[] { 6f, len - 9f })
+                {
+                    float c0 = Along(face + axis * d, axis), c1 = Along(face + axis * (d + 3f), axis);
+                    AddCut(_corridorCuts, (g.Link, g.Side), new Cut(Mathf.Min(c0, c1), Mathf.Max(c0, c1), face.y, face.y + 3.5f));
+                }
+            }
+        }
+
+        private GameObject NM(string name, Transform parent, Vector3 center, Vector3 size, bool walkable = true)
+        {
+            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = $"Non magnétique : {name}";
+            go.transform.SetParent(parent, false);
+            go.transform.position = center;
+            go.transform.localScale = size;
+            if (nonMagnetic != null)
+                go.GetComponent<MeshRenderer>().sharedMaterial = nonMagnetic;
+            go.AddComponent<Orbs.NonMagneticSurface>();
+            if (!walkable)
+                go.AddComponent<NotWalkable>();
+            return go;
+        }
+
+        /// <summary>
+        /// Passages en hauteur (D-056) : à côté de l'entrée d'un couloir, ouverture de 3 × 3 m à 4.5 m dans le mur de la salle, conduit
+        /// de 8 m vers le mur du couloir ; on y monte en saut mural (murs non magnétiques autour) ; trop petit pour le traqueur, à
+        /// portée de sa main. Refermé si un étage du module bouche l'ouverture.
+        /// </summary>
+        private void BuildPassages()
+        {
+            var root = new GameObject("Passages en hauteur (saut mural)").transform;
+            root.SetParent(_root, false);
+            for (int k = 0; k < Plan.Passages.Count; k++)
+            {
+                PlanPassage p = Plan.Passages[k];
+                PlanLink l = Plan.Links[p.Link];
+                Frame(p.Link, p.AtStart, out Vector3 face, out Vector3 axis, out Vector3 lateral, out _);
+                float w = l.Width;
+                Vector3 latS = lateral * p.Side;
+                Vector3 Pt(float ax, float lt, float up) => face + axis * ax + latS * lt + Vector3.up * up;
+                Vector3 Size(float axLen, float latLen, float hgt) => Mathf.Abs(axis.x) > 0.5f ? new Vector3(axLen, hgt, latLen) : new Vector3(latLen, hgt, axLen);
+                float l0 = w * 0.5f + T, l1 = l0 + DuctW, lc = (l0 + l1) * 0.5f;
+                string nm = $"Passage {k + 1}";
+                Vector3 front = Pt(-1.5f, lc, DuctY + DuctH * 0.5f);
+                if (Physics.CheckBox(front, Size(2.6f, DuctW - 0.6f, DuctH - 0.8f) * 0.5f, Quaternion.identity, ~0, QueryTriggerInteraction.Ignore))
+                {
+                    NM($"{nm} : refermé (module devant)", root, Pt(T * 0.5f, lc, DuctY + DuctH * 0.5f), Size(T + 0.2f, DuctW, DuctH + 0.2f), false);
+                    NM($"{nm} : refermé (côté couloir)", root, Pt(T + 5.5f, w * 0.5f + T * 0.5f, DuctY + DuctH * 0.5f), Size(3.2f, T + 0.2f, DuctH + 0.2f), false);
+                    ClosedPassages.Add(k);
+                    continue;
+                }
+
+                KitBuild.Box(root, $"{nm} : sol", Pt(T + DuctLen * 0.5f, lc, DuctY - 0.25f), Size(DuctLen, DuctW, 0.5f), KitBuild.Kind.Sol, kit);
+                KitBuild.Box(root, $"{nm} : plafond", Pt(T + DuctLen * 0.5f, lc, DuctY + DuctH + 0.25f), Size(DuctLen + 1f, DuctW + 1f, 0.5f), KitBuild.Kind.Sol, kit, walkable: false);
+                KitBuild.Box(root, $"{nm} : mur extérieur", Pt(T + (DuctLen + 1f) * 0.5f, l1 + 0.5f, DuctY + DuctH * 0.5f), Size(DuctLen + 1f, 1f, DuctH + 1f), KitBuild.Kind.Mur, kit, walkable: false);
+                KitBuild.Box(root, $"{nm} : mur du fond", Pt(T + DuctLen + 0.5f, lc, DuctY + DuctH * 0.5f), Size(1f, DuctW, DuctH + 1f), KitBuild.Kind.Mur, kit, walkable: false);
+                float top = DuctY + DuctH + 1.5f, side = 2.5f, open = DuctW - 0.5f, ac = T + 5.5f;
+                NM($"{nm} : plaque (salle)", root, Pt(-0.08f, lc, DuctY * 0.5f), Size(0.12f, open + 2f * side, DuctY), false);
+                NM($"{nm} : plaque (salle) haut", root, Pt(-0.08f, lc, (DuctY + DuctH + top) * 0.5f), Size(0.12f, open + 2f * side, top - DuctY - DuctH), false);
+                NM($"{nm} : plaque (salle) gauche", root, Pt(-0.08f, lc - (open + side) * 0.5f, DuctY + DuctH * 0.5f), Size(0.12f, side, DuctH), false);
+                NM($"{nm} : plaque (salle) droite", root, Pt(-0.08f, lc + (open + side) * 0.5f, DuctY + DuctH * 0.5f), Size(0.12f, side, DuctH), false);
+                NM($"{nm} : plaque (couloir)", root, Pt(ac, w * 0.5f - 0.08f, DuctY * 0.5f), Size(9f, 0.12f, DuctY), false);
+                NM($"{nm} : plaque (couloir) haut", root, Pt(ac, w * 0.5f - 0.08f, (DuctY + DuctH + top) * 0.5f), Size(9f, 0.12f, top - DuctY - DuctH), false);
+                NM($"{nm} : plaque (couloir) avant", root, Pt(T + 2.75f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2.5f, 0.12f, DuctH), false);
+                NM($"{nm} : plaque (couloir) arrière", root, Pt(T + 8.25f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2.5f, 0.12f, DuctH), false);
+                if (kit != null && kit.torche != null)
+                    KitBuild.Piece(kit.torche, root, Pt(T + 2f, w * 0.5f - 0.35f, DuctY - 1f), Mathf.Atan2(-latS.x, -latS.z) * Mathf.Rad2Deg);
+            }
+        }
+
+        /// <summary>
+        /// Galeries de parcours : parallèles à un couloir plat, derrière son mur (20 m), sans sol (vide : retour au palier, dégâts) ;
+        /// portes de 3 m aux deux bouts, paliers et poutres à portée de sa main, plateformes qui s'effondrent et panneaux de course
+        /// hors de sa portée ; tout est non magnétique. Le seul endroit où l'on dépasse le traqueur.
+        /// </summary>
+        private void BuildGalleries()
+        {
+            for (int k = 0; k < Plan.Galleries.Count; k++)
+            {
+                PlanGallery g = Plan.Galleries[k];
+                Frame(g.Link, true, out Vector3 face, out Vector3 axis, out Vector3 lateral, out float len);
+                float w = Plan.Links[g.Link].Width, H = settings.corridorHeight, depth = 10f;
+                Vector3 latS = lateral * g.Side;
+                string nm = $"Galerie de parcours {k + 1}";
+                var root = new GameObject(nm).transform;
+                root.SetParent(_root, false);
+                Vector3 Pt(float a, float lt, float up) => face + axis * a + latS * lt + Vector3.up * up;
+                Vector3 Size(float axLen, float latLen, float hgt) => Mathf.Abs(axis.x) > 0.5f ? new Vector3(axLen, hgt, latLen) : new Vector3(latLen, hgt, axLen);
+                float l0 = w * 0.5f + T, l1 = l0 + GalleryWidth, a0 = 3f, a1 = len - 3f;
+                NM($"{nm} : mur extérieur", root, Pt((a0 + a1) * 0.5f, l1 + 0.5f, (H - depth) * 0.5f), Size(a1 - a0 + 2f, 1f, H + depth), false);
+                NM($"{nm} : bout 1", root, Pt(a0 - 0.5f, (l0 + l1) * 0.5f, (H - depth) * 0.5f), Size(1f, GalleryWidth, H + depth), false);
+                NM($"{nm} : bout 2", root, Pt(a1 + 0.5f, (l0 + l1) * 0.5f, (H - depth) * 0.5f), Size(1f, GalleryWidth, H + depth), false);
+                NM($"{nm} : plafond", root, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H + 0.5f), Size(a1 - a0 + 2f, GalleryWidth + 2f, 1f), false);
+                foreach ((float pa, float pb) in new[] { (a0, 6f), (9f, len - 9f), (len - 6f, a1) })
+                    NM($"{nm} : plaque du mur du couloir", root, Pt((pa + pb) * 0.5f, l0 + 0.06f, (H - depth) * 0.5f), Size(pb - pa, 0.12f, H + depth), false);
+                foreach (float da in new[] { 7.5f, len - 7.5f })
+                {
+                    NM($"{nm} : plaque au-dessus de la porte", root, Pt(da, l0 + 0.06f, (3.5f + H) * 0.5f), Size(3f, 0.12f, H - 3.5f), false);
+                    NM($"{nm} : plaque sous la porte", root, Pt(da, l0 + 0.06f, -depth * 0.5f - 0.5f), Size(3f, 0.12f, depth - 1f), false);
+                }
+
+                KitBuild.Box(root, $"{nm} : fond du vide", Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth - 0.5f), Size(a1 - a0, GalleryWidth, 1f), KitBuild.Kind.Sol, kit, walkable: false);
+                var respawns = new List<Transform>();
+                foreach ((float a, string tag) in new[] { (7.5f, "entrée"), (len - 7.5f, "sortie") })
+                {
+                    NM($"{nm} : palier {tag}", root, Pt(a, l0 + 2.5f, -0.5f), Size(6f, 5f, 1f));
+                    var t = new GameObject($"Reprise {tag}").transform;
+                    t.SetParent(root, false);
+                    t.position = Pt(a, l0 + 2.5f, 0.2f);
+                    respawns.Add(t);
+                }
+
+                float beamL = l0 + 7f;
+                NM($"{nm} : poutre d'entrée", root, Pt(13f, beamL, -0.25f), Size(11f, 0.6f, 0.5f));
+                NM($"{nm} : poutre de sortie", root, Pt(len - 13f, beamL, -0.25f), Size(11f, 0.6f, 0.5f));
+                NM($"{nm} : passerelle d'entrée", root, Pt(10f, (l0 + 5f + beamL) * 0.5f, -0.25f), Size(0.6f, beamL - l0 - 5f + 0.6f, 0.5f));
+                NM($"{nm} : passerelle de sortie", root, Pt(len - 10f, (l0 + 5f + beamL) * 0.5f, -0.25f), Size(0.6f, beamL - l0 - 5f + 0.6f, 0.5f));
+                int n = 0;
+                for (float a = 21f; a <= len - 21f; a += 4.2f, n++)
+                {
+                    float lt = l0 + (n % 2 == 0 ? 13f : 16.5f);
+                    NM($"{nm} : plateforme {n + 1}", root, Pt(a, lt, -0.25f), Size(2.4f, 2.4f, 0.5f)).AddComponent<CrumblePlatform>();
+                    if (n % 4 == 2)
+                        NM($"{nm} : panneau de course {n}", root, Pt(a, l1 - 0.4f, 3.5f), Size(8f, 0.6f, 7f), false);
+                }
+
+                var trig = new GameObject($"{nm} : vide");
+                trig.transform.SetParent(root, false);
+                trig.transform.position = Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth * 0.5f - 0.75f);
+                var box = trig.AddComponent<BoxCollider>();
+                box.isTrigger = true;
+                box.size = Size(a1 - a0, GalleryWidth, depth - 1.5f);
+                trig.AddComponent<FallVoid>().Configure(settings.waterDamage, respawns.ToArray());
+                trig.AddComponent<NotWalkable>();
+                Volume(root, nm, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H * 0.5f), Size(a1 - a0, GalleryWidth, H), RoomKind.Parcours);
+                if (kit != null && kit.torche != null)
+                    for (float a = 20f; a < len - 15f; a += 18f)
+                        KitBuild.Piece(kit.torche, root, Pt(a, l1 - 0.35f, 5f), Mathf.Atan2(-latS.x, -latS.z) * Mathf.Rad2Deg);
+            }
         }
 
         // ---------- Repaire, sortie, départ ----------

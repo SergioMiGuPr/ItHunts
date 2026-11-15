@@ -100,6 +100,21 @@ namespace ItHunts.Level
         public bool Locked;
     }
 
+    /// <summary>Galerie de parcours le long d'un couloir plat (côté +1 / −1 du latéral du couloir, comme les annexes).</summary>
+    public struct PlanGallery
+    {
+        public int Link;
+        public int Side;
+    }
+
+    /// <summary>Passage en hauteur à un bout de couloir (côté +1 / −1 du latéral du couloir), dans le mur de la salle de ce bout.</summary>
+    public struct PlanPassage
+    {
+        public int Link;
+        public int Side;
+        public bool AtStart;
+    }
+
     /// <summary>Résultat du tirage : de quoi construire la carte, et de quoi la vérifier.</summary>
     public sealed class MapPlan
     {
@@ -113,6 +128,8 @@ namespace ItHunts.Level
         public int Start = -1, Exit = -1, ExitDoor = -1, LairHost = -1, LairDoor = -1;
         public readonly List<int> ChestRooms = new List<int>();
         public readonly List<PlanAnnex> Annexes = new List<PlanAnnex>();
+        public readonly List<PlanGallery> Galleries = new List<PlanGallery>();
+        public readonly List<PlanPassage> Passages = new List<PlanPassage>();
         public int StartExitRooms;
         public readonly List<string> Failures = new List<string>();
 
@@ -416,21 +433,126 @@ namespace ItHunts.Level
             Shuffle(rng, chestRooms);
             plan.ChestRooms.AddRange(chestRooms.Take(s.chests));
 
-            // 9. Pièces annexes le long des couloirs plats de 40 m et plus (les premières : salles verrouillées).
+            // 9. Contournement du traqueur : galeries de parcours et passages en hauteur, répartis entre le départ et la sortie.
+            var sidesUsed = new HashSet<(int, int)>();
+            if (plan.Exit >= 0)
+                PlanBypass(plan, s, rng, dist0, sidesUsed);
+
+            // 10. Pièces annexes le long des couloirs plats de 40 m et plus (les premières : salles verrouillées), côtés libres.
             var flat = Enumerable.Range(0, plan.Links.Count).Where(i => !plan.Links[i].Slope && plan.Links[i].Length >= 40f).ToList();
             Shuffle(rng, flat);
             foreach (int i in flat)
             {
                 if (rng.NextDouble() > s.annexShare)
                     continue;
+                int side = rng.NextDouble() < 0.5 ? 1 : -1;
+                if (sidesUsed.Contains((i, side)))
+                    side = -side;
+                if (sidesUsed.Contains((i, side)))
+                    continue;
+                sidesUsed.Add((i, side));
                 plan.Annexes.Add(new PlanAnnex
                 {
-                    Link = i, Side = rng.NextDouble() < 0.5 ? 1 : -1, T = rng.NextDouble() < 0.5 ? 0.3f : 0.7f,
+                    Link = i, Side = side, T = rng.NextDouble() < 0.5 ? 0.3f : 0.7f,
                     Locked = plan.Annexes.Count(a => a.Locked) < s.lockedRooms,
                 });
             }
 
             return plan;
+        }
+
+        /// <summary>Tiers du trajet départ – sortie (0, 1, 2) d'une distance en salles depuis le départ.</summary>
+        public static int Band(int distance, int startExit) =>
+            startExit <= 0 ? 0 : Mathf.Clamp(Mathf.FloorToInt(3f * Mathf.Min(distance, startExit) / (startExit + 1f)), 0, 2);
+
+        /// <summary>
+        /// Galeries (couloirs plats de 55 m et plus entre deux salles) puis passages (bout de couloir côté salle, couloir plat entre
+        /// deux salles), au hasard ; puis, s'il manque des zones de contournement (galeries, passages, fosses) dans un tiers du
+        /// trajet départ – sortie, d'autres dans ce tiers. Échec de l'essai s'il en manque encore.
+        /// </summary>
+        private static void PlanBypass(MapPlan plan, MapLayoutSettings s, System.Random rng, int[] dist0, HashSet<(int, int)> used)
+        {
+            bool Halls(PlanLink l) => !l.Slope && plan.Rooms[l.A].Hall && plan.Rooms[l.B].Hall && l.A != plan.Exit && l.B != plan.Exit;
+            int D = plan.StartExitRooms;
+            int LinkBand(int i) => Band(Mathf.Min(dist0[plan.Links[i].A], dist0[plan.Links[i].B]), D);
+            var galleryLinks = Enumerable.Range(0, plan.Links.Count).Where(i => Halls(plan.Links[i]) && plan.Links[i].Length >= 55f).ToList();
+            var passageLinks = Enumerable.Range(0, plan.Links.Count).Where(i => Halls(plan.Links[i])).ToList();
+            Shuffle(rng, galleryLinks);
+            Shuffle(rng, passageLinks);
+            bool AddGallery(int i)
+            {
+                int side = rng.NextDouble() < 0.5 ? 1 : -1;
+                if (used.Contains((i, side)))
+                    side = -side;
+                if (used.Contains((i, side)) || plan.Galleries.Any(g => g.Link == i))
+                    return false;
+                used.Add((i, side));
+                plan.Galleries.Add(new PlanGallery { Link = i, Side = side });
+                return true;
+            }
+
+            bool AddPassage(int i)
+            {
+                int side = rng.NextDouble() < 0.5 ? 1 : -1;
+                if (used.Contains((i, side)))
+                    side = -side;
+                if (used.Contains((i, side)))
+                    return false;
+                used.Add((i, side));
+                plan.Passages.Add(new PlanPassage { Link = i, Side = side, AtStart = rng.NextDouble() < 0.5 });
+                return true;
+            }
+
+            foreach (int i in galleryLinks)
+                if (plan.Galleries.Count < s.galleries)
+                    AddGallery(i);
+            foreach (int i in passageLinks)
+                if (plan.Passages.Count < s.passages)
+                    AddPassage(i);
+
+            // Une zone au moins par tiers du trajet, et minBypassZones en tout.
+            int[] count = BypassBands(plan, dist0);
+            for (int band = 0; band < 3; band++)
+            {
+                if (count[band] > 0)
+                    continue;
+                foreach (int i in galleryLinks.Concat(passageLinks).Where(i => LinkBand(i) == band))
+                    if ((galleryLinks.Contains(i) && AddGallery(i)) || AddPassage(i))
+                        break;
+            }
+
+            foreach (int i in passageLinks)
+            {
+                if (BypassBands(plan, dist0).Sum() >= s.minBypassZones)
+                    break;
+                AddPassage(i);
+            }
+
+            count = BypassBands(plan, dist0);
+            if (count.Sum() < s.minBypassZones || count.Any(c => c == 0))
+                plan.Failures.Add($"contournement : {count.Sum()} zones (au moins {s.minBypassZones}), par tiers {count[0]} / {count[1]} / {count[2]}");
+        }
+
+        /// <summary>Zones de contournement par tiers du trajet départ – sortie : galeries, passages (hors refermés), salles de parcours.</summary>
+        public static int[] BypassBands(MapPlan plan, int[] dist0, ICollection<int> closedPassages = null)
+        {
+            var c = new int[3];
+            int D = plan.StartExitRooms;
+            foreach (PlanGallery g in plan.Galleries)
+                c[Band(Mathf.Min(dist0[plan.Links[g.Link].A], dist0[plan.Links[g.Link].B]), D)]++;
+            for (int k = 0; k < plan.Passages.Count; k++)
+            {
+                if (closedPassages != null && closedPassages.Contains(k))
+                    continue;
+                PlanPassage p = plan.Passages[k];
+                int room = p.AtStart ? plan.Links[p.Link].A : plan.Links[p.Link].B;
+                c[Band(dist0[room], D)]++;
+            }
+
+            for (int r = 0; r < plan.Rooms.Count; r++)
+                if (plan.Rooms[r].Parkour && dist0[r] != int.MaxValue)
+                    c[Band(dist0[r], D)]++;
+            return c;
         }
 
         // ---------- Pièces du tirage ----------

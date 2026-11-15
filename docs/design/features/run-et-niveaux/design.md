@@ -37,6 +37,11 @@ reste une **carte fixe de référence** (menu : « Level_01 (carte fixe de réf�
 - **repaire** du traqueur en cul-de-sac sur le bord, le plus loin possible du départ ;
 - **niveau haut (+16 m)** seulement pour les modules qui le déclarent ; **pente de liaison plafonnée à 20°** (réglable) : en pratique
   13 à 14° sur toutes les cartes mesurées ;
+- **contournement du traqueur** (seuls endroits où l'on peut le dépasser) : **galeries de parcours** (6 par défaut, le long des couloirs
+  plats de 55 m et plus entre deux salles) et **passages en hauteur** en saut mural (10 par défaut, au bout d'un couloir, côté salle ;
+  refermés si un étage du module bouche l'ouverture), plus les fosses des modules de parcours ; au moins `minBypassZones` (6) par
+  carte, **une au moins dans chaque tiers du trajet départ – sortie** (sinon le tirage en ajoute dans le tiers manquant, ou refait un
+  essai) ;
 - tout vient de `System.Random(seed)` dans un ordre fixe : chaque machine refait la même carte (jeu en ligne) ; 20 essais, puis une
   carte de secours.
 

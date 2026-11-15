@@ -40,6 +40,12 @@ namespace ItHunts.Level
         [Range(0, 20)] public int canalHalls = 7;
         [Tooltip("Salles avec une zone de parcours (fosse, non magnétique).")]
         [Range(0, 20)] public int parkourHalls = 3;
+        [Tooltip("Galeries de parcours le long des couloirs plats de 55 m et plus entre deux salles (seul endroit où l'on dépasse le traqueur).")]
+        [Range(0, 20)] public int galleries = 6;
+        [Tooltip("Passages en hauteur (saut mural, conduit de 8 m) entre une salle et un couloir.")]
+        [Range(0, 30)] public int passages = 10;
+        [Tooltip("Zones de contournement au moins par carte (galeries, passages ouverts, fosses de parcours), réparties sur les trois tiers du trajet départ – sortie (une au moins par tiers).")]
+        [Range(0, 30)] public int minBypassZones = 6;
         [Tooltip("Probabilité qu'un couloir plat de 40 m ou plus ait une pièce annexe (les premières sont les salles verrouillées).")]
         [Range(0f, 1f)] public float annexShare = 0.35f;
         [Range(0, 4)] public int lockedRooms = 2;

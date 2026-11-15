@@ -328,6 +328,7 @@ namespace ItHunts.EditorTools
             SetRef(gen, "annex", annex);
             SetRef(gen, "lockedAnnex", locked);
             SetRef(gen, "water", water);
+            SetRef(gen, "nonMagnetic", NonMagneticMat());
             SetRef(gen, "zoneNav", nav);
             SetRef(gen, "graph", graph);
             SetRef(gen, "playerStart", start);
