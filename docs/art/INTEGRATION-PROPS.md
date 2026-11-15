@@ -26,7 +26,7 @@ Ordre de priorité d'`ART-HANDOFF.md` (« Kit de construction de la carte aléat
 |---|---|---|---|---|---|
 | 1 | `Kit_Mur4x4` | `SM_Kit_Mur4x4` | **livré (art)** | (au pied, au milieu ; x −2..2, y 0..4, z −0.5..0.5) | ≈ 60 000 pièces sur une carte : modèle très léger (≤ 200 triangles), texture de pierre partagée |
 | 2 | `Kit_Sol4` | `SM_Kit_Sol4` | **livré (art)** | (milieu du dessus ; y −1..0) | dalles, même tuile que `M_Dalles` |
-| 3 | `Kit_Escalier` | `SM_Kit_Escalier` | **livré (art)** | (milieu du bas de la contremarche ; x −2..2, y 0..0.25, z 0..1) | étirée en hauteur et en profondeur par le code : marche simple, texture en échelle monde |
+| 3 | `Kit_Escalier` | `SM_Kit_Escalier` | **livré (art)** | (milieu du bas de la contremarche ; x −2..2, y 0..0.25, z 0..1) | **répétée le long de la pente** (une marche par 0.25 m de hauteur, chaque marche allongée vers le bas jusqu'au sol), pas étirée en profondeur ; collision : la pente lisse du code |
 | 4 | `Kit_Arc` | `SM_Arc_Couloir` | intégré sur `main` | au sol, au milieu entre les deux pieds | 14 × 11 × 1.6 m |
 | 5 | `Kit_Pilier` | `SM_Colonne` (+ `SM_Colonne_Anneau`) | intégré sur `main` | au sol, au centre | 1.4 × 8 × 1.4 m ; anneau à 3 m sur la face avant |
 | 6 | `Kit_Pont` | `SM_Kit_Pont` | **livré (art)** | (milieu du dessus) | passerelle de 4 × 3 m, tablier de 1 m, étirée en largeur |
@@ -43,10 +43,11 @@ l'extérieur, arêtes vives : prêts pour les UV en coordonnées monde (RENDU.md
 monde, mêmes tuiles). Matériaux : murs `M_Pierre` ; sol, giron de l'escalier et dessus du pont `M_Dalles`, le reste
 `M_Pierre`. Aucun relief qui doive se raccorder d'une pièce à l'autre (chanfreins, socles, joints modelés : une
 couture tous les 4 m sur 60 000 pièces, et faux dès que le code étire ou coupe une pièce) : le dessin des pierres
-vient de la texture projetée en monde. **Escalier** : une marche pleine, étirée par le code en hauteur et en
-profondeur ; la collision reste la pente lisse du code. **Pont** : dessous plat (la hauteur libre de 10 m sous les
-ponts est gardée). Le caractère gothique vient des pièces déjà livrées (arcs, colonnes, portes, poutres) ; si le jeu
-en demande plus, des variantes ponctuelles à mélanger aux murs pleins : `Kit_Mur4x4_Contrefort` (contrefort à
+vient de la texture projetée en monde. **Escalier (décision du 2026-11-15)** : construire l'escalier en **répétant `SM_Kit_Escalier` le
+long de la pente, une marche par hauteur de marche (0.25 m)**, et non en étirant une seule marche ; chaque marche peut
+être allongée vers le bas jusqu'au sol (marche pleine) ; la collision reste la pente lisse du code. **Pont** : dessous plat (la hauteur libre de 10 m sous les
+ponts est gardée). Le caractère gothique vient des pièces déjà livrées (arcs, colonnes, portes, poutres) ; variantes
+ponctuelles **gardées pour plus tard** (décision du 2026-11-15), à mélanger aux murs pleins : `Kit_Mur4x4_Contrefort` (contrefort à
 glacis), `Kit_Mur4x4_Niche` (niche en arc brisé), `Kit_Mur4x4_Meurtriere`.
 
 **Point d'attention pour les murs et les sols du kit :** la texture de pierre (`M_Pierre`) a une tuile de **4 × 3 m**.
