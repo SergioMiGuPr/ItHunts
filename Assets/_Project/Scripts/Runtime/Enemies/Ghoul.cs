@@ -73,6 +73,8 @@ namespace ItHunts.Enemies
         /// <summary>Escalades vers un joueur hors d'atteinte, et bonds depuis un mur : mesures.</summary>
         public static int WallAssaults { get; private set; }
         public int Unstuck { get; private set; }
+        /// <summary>Déblocages remis à plus tard parce qu'un joueur voyait la goule ou son point d'arrivée, toutes goules : mesures.</summary>
+        public static int UnstickWaits { get; private set; }
         /// <summary>Identifiant d'agent NavMesh remis à jour (NavMesh reconstruit après son Start), toutes goules : mesures.</summary>
         public static int AgentResyncs { get; private set; }
         private Vector3 _encircle;
@@ -898,11 +900,13 @@ namespace ItHunts.Enemies
                 _lastOnMeshAt = now;
             else if (pitTooLong || now - _lastOnMeshAt > settings.unstuckTime + 4f)
             {
-                _lastOnMeshAt = now;
-                _inPitSince = float.NegativeInfinity;
                 Vector3 rescue = pos;
                 bool ok = (pitNode >= 0 && RoomExit(pitNode, out rescue))
                           || _move.Snap(pos, 8f, out rescue) || _move.Snap(pos, 25f, out rescue);
+                if (ok && Seen(pos, rescue))
+                    return false;                                         // un joueur la voit : elle attend (nouvel essai au pas suivant)
+                _lastOnMeshAt = now;
+                _inPitSince = float.NegativeInfinity;
                 if (ok)
                 {
                     MoveTo(rescue);
@@ -923,6 +927,12 @@ namespace ItHunts.Enemies
                 _nextIslandCheck = now + 2f + (GetInstanceID() & 7) * 0.05f;
                 if (onMesh0 && OnIsland(pos, out Vector3 exit))
                 {
+                    if (Seen(pos, exit))
+                    {
+                        _nextIslandCheck = now + 0.25f;                   // un joueur la voit : elle attend
+                        return false;
+                    }
+
                     MoveTo(exit);
                     _move.Clear();
                     _assault = false;
@@ -953,6 +963,7 @@ namespace ItHunts.Enemies
 
             if (!offTooLong && now - _stillSince < settings.unstuckTime)
                 return false;
+            float stillSince0 = _stillSince, offMeshSince0 = _offMeshSince;
             _stillSince = now;
             _offMeshSince = float.NegativeInfinity;
             // Sous un joueur hors d'atteinte, sans mur à grimper : elle attend, ce n'est pas un blocage.
@@ -977,6 +988,13 @@ namespace ItHunts.Enemies
                 }
             }
 
+            if (Seen(pos, onMesh))
+            {
+                _stillSince = stillSince0;                                // un joueur la voit : elle attend (nouvel essai au pas suivant)
+                _offMeshSince = offMeshSince0;
+                return false;
+            }
+
             MoveTo(onMesh);
             _move.Clear();
             _assault = false;
@@ -984,6 +1002,21 @@ namespace ItHunts.Enemies
             Unsticks++;
             Unstuck++;
             return true;
+        }
+
+        /// <summary>
+        /// Téléportation de déblocage permise ? Seulement hors de la vue de tous les joueurs (corrections des étapes 8 et 9) :
+        /// ni la goule (pieds et tête) ni son point d'arrivée ne sont vus (PlayerSight : champ de la caméra + 10°, sans décor
+        /// entre). Vrai si un joueur voit l'un des deux : elle attend.
+        /// </summary>
+        private bool Seen(Vector3 from, Vector3 to)
+        {
+            Vector3 low = Vector3.up * 0.3f, high = Vector3.up * Mathf.Max(0.5f, Height);
+            bool seen = PlayerSight.SeenByAnyPlayer(from + low, from + high, 10f, transform)
+                        || PlayerSight.SeenByAnyPlayer(to + low, to + high, 10f, transform);
+            if (seen)
+                UnstickWaits++;
+            return seen;
         }
 
         private void ContactDamage(float now)
