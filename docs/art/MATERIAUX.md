@@ -234,14 +234,26 @@ mêmes endroits que dans Blender.
 |---|---|---|
 | `T_GrandePorte_Bois_BaseColor` | **≈ 50 à 80 px/m** pour des battants de 10 × 12.7 m, loin des 256–512 px/m visés : flou de près (la porte de sortie se voit de près) | 2048 × 2048, ou une tuile de planches répétée + ferrures en trim |
 | `T_Poutre_Bois_BaseColor` | ≈ 170 px/m sur la longueur (6 m sur 1024 px) | 2048 × 512, ou tuile de bois répétable |
-| `texture_fer_rouille_v01_tuile` | **1024 px/m**, 4 fois plus dense que la pierre (256 px/m) : la rouille paraît plus fine que tout le reste | tuile de 2 × 2 m (changer `TILES` dans `it_common.py` puis réexporter), ou texture refaite à plus gros grain |
+| `texture_fer_rouille_v01_tuile` | ~~1024 px/m, 4 fois plus dense que la pierre~~ | **Fait (2026-11-15)** : image ramenée à 256 × 256 px pour la tuile de 1 m, soit **256 px/m**, la densité de la pierre ; UV des modèles inchangées. Avant / après : `rendus/Textures/Retouche_Fer.jpg` |
 | `texture_mur_egout_v01_tuile` | 512 px/m, deux fois plus dense que la pierre : écart visible là où égout et pierre se touchent (culées du pont) | tuile de 4 × 4 m, ou garder (contraste voulu entre égout et pierre ?) |
-| `texture_mur_pierre_v01_tuile` | répétition visible sur les longs murs : la grande tache blanche revient tous les 4 m (couloir de 160 m dans `Test_Rendu`) | 1 ou 2 variantes de tuile, ou taches en décalques |
+| `texture_mur_pierre_v01_tuile` | ~~la grande coulure blanche revient tous les 4 m~~ | **Fait (2026-11-15)** : coulure effacée (≈ 11 800 px, assise du bas, à cheval sur les bords), par diffusion périodique et grain d'une pierre propre ; joints et contours gardés. Avant / après : `rendus/Textures/Retouche_Pierre.jpg` |
 | `texture_sol_dalles_v01_tuile` | raccord de bord légèrement visible (changement de ton entre dalles au raccord) | retouche du bord |
-| `texture_voute_briques_v01_tuile`, `texture_eau_egout_v01_tuile` | taille de tuile non définie | la fixer dans `TILES` (2 × 2 m proposé) |
-| `texture_eau_egout_v01_tuile` | motif très contrasté : sous une bougie, la répétition tous les 2 m fait un damier | tuile plus grande et moins contrastée, ou eau en shader |
+| `texture_voute_briques_v01_tuile`, `texture_eau_egout_v01_tuile` | ~~taille de tuile non définie~~ | **Fixé (2026-11-15) dans `TILES`** : voûte **3 × 3 m** (16 assises : briques de 0.44 × 0.19 m, 341 px/m, lisibles à pleine vitesse) ; eau **4 × 4 m** (256 px/m) |
+| `texture_eau_egout_v01_tuile` | ~~damier~~ : la tuile se répétait elle-même tous les 512 px en hauteur | **Fait (2026-11-15)** : moitié basse = moitié haute décalée de 352 px, raccords recousus par une coupe d'erreur minimale (traits nets) ; plus de répétition interne (écart 51 au lieu de 4.8), écume en quinconce irrégulier ; avec la tuile de 4 m, une tache d'écume tous les 2 à 4 m en diagonale. Avant / après : `rendus/Textures/Retouche_Eau.jpg` |
 
 Coutures : pas de couture visible sur les tuiles de pierre, d'égout, de fer et de voûte (mosaïques 2 × 2 contrôlées).
+
+Les retouches sont faites par `Assets/Art/Source~/Niveau1/scripts/textures_retouches.py` (Pillow et numpy), sur les
+fichiers en place (mêmes noms, mêmes GUID : les matériaux suivent sans réglage). Les originaux sont dans l'historique
+git (`git show <commit>:<fichier> | git lfs smudge`).
+
+**UV des modèles (défaut corrigé le 2026-11-15).** `it_common.Builder.finish` choisissait la projection monde d'après
+la normale de chaque face **avant** de l'avoir calculée : toutes les faces sans UV explicites recevaient la projection
+du dessus, et les faces verticales des boîtes, prismes, tubes et révolutions avaient des UV dégénérées (texture étirée
+en traînées). Corrigé et réexporté : kit, échafaudage, groupes A à C (props, arène, lanterne, orbe, bras). **Restent à
+réexporter**, déjà sur `main` (contenu des FBX seulement, `.meta` inchangés) : `SM_GrandePorte` (1 076 faces : ferrures,
+serrure, flancs du bois, un peu de pierre), `SM_Poutre` (288, ferrures), `SM_Porte_Piece` (48, pierre),
+`SM_Colonne` (6, anneau). Le barillet (72 faces de son atlas calé à la main) n'est pas concerné.
 
 ## Captures du réglage retenu
 

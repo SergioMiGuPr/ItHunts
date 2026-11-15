@@ -24,17 +24,30 @@ Ordre de priorité d'`ART-HANDOFF.md` (« Kit de construction de la carte aléat
 
 | Priorité | Prefab | Modèle | État | Pivot du modèle | Remarques |
 |---|---|---|---|---|---|
-| 1 | `Kit_Mur4x4` | — | **à produire** | (au pied, au milieu ; x −2..2, y 0..4, z −0.5..0.5) | ≈ 60 000 pièces sur une carte : modèle très léger (≤ 200 triangles), texture de pierre partagée |
-| 2 | `Kit_Sol4` | — | **à produire** | (milieu du dessus ; y −1..0) | dalles, même tuile que `M_Dalles` |
-| 3 | `Kit_Escalier` | — | **à produire** | (milieu du bas de la contremarche ; x −2..2, y 0..0.25, z 0..1) | étirée en hauteur et en profondeur par le code : marche simple, texture en échelle monde |
+| 1 | `Kit_Mur4x4` | `SM_Kit_Mur4x4` | **livré (art)** | (au pied, au milieu ; x −2..2, y 0..4, z −0.5..0.5) | ≈ 60 000 pièces sur une carte : modèle très léger (≤ 200 triangles), texture de pierre partagée |
+| 2 | `Kit_Sol4` | `SM_Kit_Sol4` | **livré (art)** | (milieu du dessus ; y −1..0) | dalles, même tuile que `M_Dalles` |
+| 3 | `Kit_Escalier` | `SM_Kit_Escalier` | **livré (art)** | (milieu du bas de la contremarche ; x −2..2, y 0..0.25, z 0..1) | étirée en hauteur et en profondeur par le code : marche simple, texture en échelle monde |
 | 4 | `Kit_Arc` | `SM_Arc_Couloir` | intégré sur `main` | au sol, au milieu entre les deux pieds | 14 × 11 × 1.6 m |
 | 5 | `Kit_Pilier` | `SM_Colonne` (+ `SM_Colonne_Anneau`) | intégré sur `main` | au sol, au centre | 1.4 × 8 × 1.4 m ; anneau à 3 m sur la face avant |
-| 6 | `Kit_Pont` | — | **à produire** | (milieu du dessus) | passerelle de 4 × 3 m, tablier de 1 m, étirée en largeur |
+| 6 | `Kit_Pont` | `SM_Kit_Pont` | **livré (art)** | (milieu du dessus) | passerelle de 4 × 3 m, tablier de 1 m, étirée en largeur |
 | 7 | `Kit_Poutre` | `SM_Poutre` (+ `SM_Poutre_Crochet`) | intégré sur `main` | centre du dessous du bois | 6 × 0.5 × 0.5 m |
 | 8 | `Kit_PortePiece` | `SM_Porte_Piece` | intégré sur `main` | au sol, au centre de l'ouverture | 4.4 × 5 × 1 m, ouverture 3 × 3 m |
 | 9 | `Kit_GrandePorte` | `SM_GrandePorte` | intégré sur `main` | cadre au sol, au centre ; battants sur l'axe des gonds | cadre 13 × 14 × 2 m |
 | 10 | `Kit_PontEgout4` / `14` | `SM_Pont_Egout_4m` / `_14m` | intégré sur `main` | centre du tablier, à la cote 0 | |
-| 11 | `Kit_Mur2x4`, `Kit_Mur4x3` | — | **à produire** | comme `Kit_Mur4x4` | demi-pièces (2 × 4 et 4 × 3 m) |
+| 11 | `Kit_Mur2x4`, `Kit_Mur4x3` | `SM_Kit_Mur2x4`, `SM_Kit_Mur4x3` | **livré (art)** ; prefabs `Kit_*` à créer sur `main` | comme `Kit_Mur4x4` | demi-pièces (2 × 4 et 4 × 3 m) |
+
+**Pièces livrées le 2026-11-15** (`Assets/Art/Models/Niveau1/SM_Kit_*.fbx`, script `sm_kit.py`) : cotes et pivots
+exacts des greybox (vérifiés au réimport), 12 triangles chacune, à remplacer **sans décalage** dans les prefabs `Kit_*`
+(même pivot que la racine du prefab ; supprimer l'enfant « (greybox) »). Volumes nets à faces planes, normales vers
+l'extérieur, arêtes vives : prêts pour les UV en coordonnées monde (RENDU.md § 5 ter) ; UV de repli fournies (projection
+monde, mêmes tuiles). Matériaux : murs `M_Pierre` ; sol, giron de l'escalier et dessus du pont `M_Dalles`, le reste
+`M_Pierre`. Aucun relief qui doive se raccorder d'une pièce à l'autre (chanfreins, socles, joints modelés : une
+couture tous les 4 m sur 60 000 pièces, et faux dès que le code étire ou coupe une pièce) : le dessin des pierres
+vient de la texture projetée en monde. **Escalier** : une marche pleine, étirée par le code en hauteur et en
+profondeur ; la collision reste la pente lisse du code. **Pont** : dessous plat (la hauteur libre de 10 m sous les
+ponts est gardée). Le caractère gothique vient des pièces déjà livrées (arcs, colonnes, portes, poutres) ; si le jeu
+en demande plus, des variantes ponctuelles à mélanger aux murs pleins : `Kit_Mur4x4_Contrefort` (contrefort à
+glacis), `Kit_Mur4x4_Niche` (niche en arc brisé), `Kit_Mur4x4_Meurtriere`.
 
 **Point d'attention pour les murs et les sols du kit :** la texture de pierre (`M_Pierre`) a une tuile de **4 × 3 m**.
 Sur un mur de 4 m de haut, les assises peintes ne se raccordent pas d'une pièce à l'autre en hauteur (4 n'est pas un
@@ -59,7 +72,7 @@ et compatible avec le raccourcissement des pièces du bord). La deuxième option
 | `Prop_Colonne` | `SM_Colonne` (+ anneau) | — | (0, 4, 0) ; 1.4 × 8 × 1.4 (inchangée) | — | — | `M_Pierre`, `M_FerRouille` | non |
 | `Prop_Poutre` | `SM_Poutre` (+ crochet) | — | (0, 0.25, 0) ; 6 × 0.5 × 0.5 (inchangée) | — | — | `M_Poutre_Bois`, `M_FerRouille` | non |
 
-**Échafaudage : variante retenue (décision du 2026-11-15).** On doit pouvoir y monter, **les goules aussi**. Remplacer la
+**Échafaudage : variante retenue (décision du 2026-11-15) ; modèle conforme livré le même jour** (croisillons seulement à l'étage, jambes de force courtes sous le plateau du bas : le rez-de-chaussée est libre, 1 032 triangles). On doit pouvoir y monter, **les goules aussi**. Remplacer la
 boîte pleine de `Prop_Echafaudage` par des collisions qui laissent l'intérieur libre (repère du prefab, modèle sans
 décalage ; le modèle est recentré de 2.7 cm en Z à cause de l'échelle, d'où les z ci-dessous) :
 
