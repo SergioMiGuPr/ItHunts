@@ -65,8 +65,8 @@ namespace ItHunts.Hud
             _mapTex.SetPixels32(px);
             _mapTex.Apply(false);
             _markKnown.Clear();
-            foreach ((Vector3 at, Color _, string _, Object _) in _marks)
-                _markKnown.Add(fog == null || fog.IsKnownPoint(at + Vector3.up));
+            foreach ((Vector3 at, Color _, string _, Object owner) in _marks)
+                _markKnown.Add(MarkVisible(owner, at, fog));
             _paintedKnown = fog != null ? fog.KnownCount : 0;
         }
 
@@ -96,6 +96,13 @@ namespace ItHunts.Hud
                     _marks.Add((r.transform.position, new Color(1f, 1f, 0.3f), "D", r));
             _refreshAt = Time.time + 5f;
         }
+
+        /// <summary>
+        /// Une marque est-elle affichée ? La sortie l'est dès le début de la zone (playtest des étapes 8 et 9) ; les autres
+        /// points clés une fois leur salle découverte.
+        /// </summary>
+        public static bool MarkVisible(Object owner, Vector3 at, MapDiscovery fog) =>
+            owner is ExitDoor || fog == null || fog.IsKnownPoint(at + Vector3.up);
 
         private void OnDestroy()
         {

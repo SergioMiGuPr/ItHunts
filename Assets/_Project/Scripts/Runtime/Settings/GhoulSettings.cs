@@ -31,16 +31,12 @@ namespace ItHunts.Settings
         [Header("Poursuite (D-035) : elles savent toujours où sont les joueurs")]
         [Tooltip("Elles vont vers le joueur le plus proche par le chemin ; recalcul de ce choix (s).")]
         [Min(0.1f)] public float targetInterval = 1f;
-        [Tooltip("Goules en chasse au même moment, au plus (D-037) ; les autres attendent et prennent le relais quand une goule " +
-                 "meurt (la plus proche du joueur par le chemin).")]
-        [Min(0)] public int maxHunting = 25;
-        [Tooltip("Aggro (D-038) : une goule en attente qui voit un joueur à moins de cette distance (m, ligne de vue), ou qui est " +
-                 "à moins de aggroProximity (m) même sans le voir, se met en chasse en plus des maxHunting, jusqu'à maxHuntingTotal.")]
+        [Tooltip("Aggro (D-061) : une goule en attente qui voit un joueur debout à moins de cette distance (m, ligne de vue), ou " +
+                 "qui est à moins de aggroProximity (m) même sans le voir, se met en chasse ; sans limite de nombre. Les " +
+                 "chasseuses (pression continue) sont choisies par les vagues (WaveSettings, chasseurs).")]
         [Min(0f)] public float aggroSightRange = 20f;
         [Min(0f)] public float aggroProximity = 8f;
-        [Min(0)] public int maxHuntingTotal = 40;
-        [Tooltip("Une goule réveillée par l'aggro retourne en attente si le joueur est à plus de cette distance (m) pendant ce " +
-                 "temps (s), sauf si une place se libère parmi les maxHunting (elle la prend alors).")]
+        [Tooltip("Semée : plus aucun joueur à moins de cette distance (m) pendant ce temps (s) ; elle attend là où elle est.")]
         [Min(0f)] public float aggroLoseDistance = 50f;
         [Min(0f)] public float aggroLoseTime = 5f;
         [Tooltip("Encerclement : chacune vise un point décalé autour du joueur (rayon, m) tant qu'elle est loin.")]
@@ -53,6 +49,21 @@ namespace ItHunts.Settings
         [Min(0.1f)] public float climbSpeed = 7f;
         [Tooltip("Vitesse quand elle saute d'une hauteur pour redescendre (m/s).")]
         [Min(0.1f)] public float dropSpeed = 12f;
+        [Tooltip("Joueur hors d'atteinte par le sol (plateforme, poutre) à moins de cette distance (m) : elle grimpe le mur le " +
+                 "plus proche de lui (jusqu'à wallSearchRange de lui) et bondit depuis le mur.")]
+        [Min(0f)] public float wallAssaultRange = 30f;
+        [Min(1f)] public float wallSearchRange = 12f;
+        [Tooltip("Depuis un mur, elle bondit sur le joueur à moins de cette distance (m) à l'horizontale (annonce leapTelegraph).")]
+        [Min(0f)] public float wallLeapRange = 12f;
+        [Tooltip("Accrochée en haut du mur sans pouvoir bondir (pas de ligne de vue) : elle redescend au bout de ce temps (s).")]
+        [Min(0.5f)] public float wallHoldTime = 3f;
+
+        [Header("Long trajet et déblocage (après le playtest des étapes 8 et 9)")]
+        [Tooltip("Au-delà de cette distance (m) au joueur, elle avance par étapes (salle voisine suivante, MazeGraph) : le calcul " +
+                 "de chemin d'Unity n'aboutit pas sur de très longues distances.")]
+        [Min(20f)] public float longPathDistance = 100f;
+        [Tooltip("En chasse, immobile plus de ce temps (s) alors que le joueur est loin : elle se replace sur le NavMesh le plus proche.")]
+        [Min(0.5f)] public float unstuckTime = 2f;
 
         [Header("Contact")]
         [Tooltip("Dégâts au contact (PV), au plus une fois par intervalle (s).")]

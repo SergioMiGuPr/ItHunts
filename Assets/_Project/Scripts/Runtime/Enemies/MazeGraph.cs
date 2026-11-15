@@ -196,6 +196,70 @@ namespace ItHunts.Enemies
             return best;
         }
 
+        /// <summary>
+        /// Étape d'un long trajet (goules, playtest des étapes 8 et 9) : l'entrée de l'intersection suivante vers la cible, par
+        /// les couloirs, depuis la dernière intersection traversée (<paramref name="lastNode"/>, mise à jour ici) : jamais de
+        /// retour en arrière au seuil d'une salle. Faux si la cible est dans cette intersection (aller droit dessus).
+        /// </summary>
+        public bool Waypoint(Vector3 from, Vector3 target, ref int lastNode, out Vector3 point)
+        {
+            Prepare();
+            point = target;
+            if (centers == null || centers.Length == 0)
+                return false;
+            int at = NodeAt(from);
+            if (at >= 0)
+                lastNode = at;
+            int a = lastNode;
+            if (a < 0 || a >= centers.Length)
+            {
+                // Inconnue (apparue dans un couloir) : le bout de son couloir qui rapproche le plus.
+                int e0 = NearestEdge(from, out _);
+                if (e0 < 0)
+                    return false;
+                int x = edges[e0].x, y = edges[e0].y;
+                a = Flat(centers[x] - from) + CostFrom(x, target) <= Flat(centers[y] - from) + CostFrom(y, target) ? x : y;
+                point = Entry(a, e0);
+                return true;
+            }
+
+            if (NodeAt(target) == a)
+                return false;
+            int n = ChooseNext(a, -1, target, true);
+            if (n < 0)
+                return false;
+            int e = EdgeBetween(a, n);
+            point = e >= 0 ? Entry(n, e) : centers[n];
+            return true;
+        }
+
+        /// <summary>Couloir entre deux intersections (−1 : aucun).</summary>
+        public int EdgeBetween(int a, int b)
+        {
+            for (int i = 0; i < edges.Length; i++)
+                if (IsEdge(i, a, b))
+                    return i;
+            return -1;
+        }
+
+        /// <summary>
+        /// Entrée de l'intersection <paramref name="node"/> côté couloir <paramref name="edge"/> : son sol près du bord, pas son
+        /// centre (une fosse ou une plateforme de module peut l'occuper).
+        /// </summary>
+        public Vector3 Entry(int node, int edge)
+        {
+            Prepare();
+            Vector3 mid = (centers[edges[edge].x] + centers[edges[edge].y]) * 0.5f;
+            Vector3 dir = mid - centers[node];
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 1e-4f)
+                return centers[node];
+            dir.Normalize();
+            Vector3 h = halfExtents[node];
+            float reach = Mathf.Abs(dir.x) > Mathf.Abs(dir.z) ? h.x : h.z;
+            return centers[node] + dir * (reach * 0.75f);
+        }
+
         private bool IsEdge(int e, int a, int b) =>
             (edges[e].x == a && edges[e].y == b) || (edges[e].x == b && edges[e].y == a);
 

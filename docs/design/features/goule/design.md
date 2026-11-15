@@ -1,10 +1,27 @@
 # Goule
 
-**Status:** implemented · **Updated:** 2026-11-12 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md)
+**Status:** implemented · **Updated:** 2026-11-15 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md) · D-061, D-062
 
 Ennemi de base de la zone 1 (BRIEF, D-033) : une créature basse qui rampe très vite, bondit sur le joueur, grimpe aux
 murs et bondit depuis le mur. Elle oblige à bouger et se tue surtout avec l'environnement : objets lancés, mur après
 une répulsion, prise quand elle est étourdie, lustre. Elle sait toujours où sont les joueurs et grimpe aux murs (D-035).
+
+## Revu après le playtest des étapes 8 et 9 (2026-11-15) : D-061, D-062
+
+1. **Chasse :** aggro par proximité sans limite, chasseuses par joueur (voir la fiche [vagues](../vagues/design.md), D-061).
+2. **Joueur hors d'atteinte par le sol** (plateforme, poutre, caisse empilée, échafaudage), à moins de **30 m** : elle court au
+   pied du **mur le plus proche de lui** (à 12 m au plus de lui) ou du **flanc de sa plateforme**, le grimpe jusqu'à sa hauteur et
+   **bondit depuis le mur** sur lui, jusqu'à **12 m** (même annonce de **0.3 s**, s'esquive par un dash pendant le vol).
+   Accrochée sans pouvoir bondir (pas de ligne de vue), elle redescend au bout de **3 s**. Après **2 escalades ratées en 20 s**,
+   elle renonce **10 s** et attend au bord (fosses de parcours). Posée sur une plateforme sans NavMesh, elle marche droit vers lui
+   sans dépasser le bord.
+3. **Longs trajets :** au-delà de **100 m** du joueur, elle avance par étapes, de salle en salle (`MazeGraph`, entrée de la salle
+   suivante) : le calcul de chemin d'Unity n'aboutit pas sur 900 m dans le niveau 1 et laissait des goules immobiles.
+4. **Portes des pièces :** un seuil ajouté au NavMesh sous chaque porte (il manquait du sol sous l'épaisseur du mur : les goules
+   n'entraient pas dans les pièces annexes).
+5. **Déblocage :** elle ne quitte plus le NavMesh en marchant (bord de fosse) ; en chasse, immobile plus de **2 s**, hors du
+   NavMesh plus de 2 s (5 s en bond), dans une fosse plus de 1.5 s ou sur un îlot sans sortie : elle est replacée sur le NavMesh
+   (à défaut, à une entrée de sa salle). Plus de 6 s sans toucher le NavMesh : replacée quel que soit son mode.
 
 ## Règles
 

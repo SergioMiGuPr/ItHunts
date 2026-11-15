@@ -30,6 +30,9 @@ namespace ItHunts.Enemies
         [SerializeField, Min(0.05f)] private float smallVoxel = 0.1f;
         [SerializeField, Min(0.05f)] private float stalkerVoxel = 0.6f;
         [SerializeField, Range(0f, 60f)] private float maxSlope = 45f;
+        [Tooltip("Taille des tuiles (voxels). Plus grandes : moins de polygones, donc des chemins longs qui aboutissent (le calcul " +
+                 "de chemin a un nombre de nœuds limité).")]
+        [SerializeField, Range(32, 1024)] private int tileSize = 128;
         [Header("Murs que les goules grimpent (D-038), créés automatiquement")]
         [Tooltip("Liens d'escalade sur tous les murs verticaux qui mènent à un sol praticable (corniche, pont, niveau haut), " +
                  "sans placement à la main.")]
@@ -95,6 +98,17 @@ namespace ItHunts.Enemies
                 });
             }
 
+            // Seuils des portes des pièces (D-035) : sous l'épaisseur du mur, entre le sol de la pièce et celui du couloir, il n'y
+            // a pas de sol ; le joueur l'enjambe, le NavMesh des goules y était coupé (playtest des étapes 8 et 9).
+            ThresholdCount = 0;
+            foreach (ReachRoom room in FindObjectsByType<ReachRoom>(FindObjectsSortMode.None))
+                foreach (Transform o in room.Openings)
+                    if (o != null && Threshold(room, o, out NavMeshBuildSource sill))
+                    {
+                        common.Add(sill);
+                        ThresholdCount++;
+                    }
+
             var watch = System.Diagnostics.Stopwatch.StartNew();
             SmallAgent = Bake(common, bounds, smallRadius, smallHeight, smallVoxel);
             StalkerAgent = Bake(stalker, bounds, stalkerRadius, stalkerHeight, stalkerVoxel);
@@ -112,6 +126,30 @@ namespace ItHunts.Enemies
 
             BuildMilliseconds = watch.ElapsedMilliseconds;
             Built = true;
+        }
+
+        /// <summary>Seuils de porte ajoutés au NavMesh des goules (dernière construction).</summary>
+        public int ThresholdCount { get; private set; }
+
+        /// <summary>
+        /// Seuil d'une ouverture de pièce au ras du sol (une porte, pas une fenêtre) : une dalle de 2.4 × 3.2 m sous l'ouverture,
+        /// au niveau du sol de la pièce, pour le NavMesh des goules seulement.
+        /// </summary>
+        public static bool Threshold(ReachRoom room, Transform opening, out NavMeshBuildSource sill)
+        {
+            sill = default;
+            float floorY = room.transform.position.y - room.Size.y * 0.5f;
+            if (opening.position.y - floorY > 2.5f)
+                return false;                                           // fenêtre
+            Quaternion flat = Quaternion.LookRotation(Vector3.ProjectOnPlane(opening.forward, Vector3.up).normalized, Vector3.up);
+            sill = new NavMeshBuildSource
+            {
+                shape = NavMeshBuildSourceShape.Box,
+                size = new Vector3(2.4f, 0.1f, 3.2f),
+                transform = Matrix4x4.TRS(new Vector3(opening.position.x, floorY - 0.05f, opening.position.z), flat, Vector3.one),
+                area = 0,
+            };
+            return true;
         }
 
         /// <summary>Durée de la dernière construction (ms), dont la cuisson des NavMesh et la recherche des murs grimpables.</summary>
@@ -255,7 +293,7 @@ namespace ItHunts.Enemies
             s.overrideVoxelSize = true;
             s.voxelSize = voxel;
             s.overrideTileSize = true;
-            s.tileSize = 128;
+            s.tileSize = tileSize;
             s.agentRadius = radius;
             s.agentHeight = height;
             s.agentClimb = stepHeight;

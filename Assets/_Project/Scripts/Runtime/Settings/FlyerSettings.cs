@@ -58,13 +58,10 @@ namespace ItHunts.Settings
         [Min(0f)] public float burstMinSpeed = 4f;
 
         [Header("Poursuite (D-040)")]
-        [Tooltip("Volants en chasse au même moment ; les autres attendent et prennent le relais (le plus proche).")]
-        [Min(0)] public int maxHunting = 8;
-        [Tooltip("Aggro des volants en attente : vue (m, ligne de vue), proximité (m) ; total en chasse au plus.")]
+        [Tooltip("Aggro des volants en attente (D-061) : vue (m, ligne de vue), proximité (m) ; sans limite de nombre.")]
         [Min(0f)] public float aggroSightRange = 20f;
         [Min(0f)] public float aggroProximity = 8f;
-        [Min(0)] public int maxHuntingTotal = 12;
-        [Tooltip("Réveillé par l'aggro : se rendort si le joueur reste au-delà de cette distance (m) pendant ce temps (s).")]
+        [Tooltip("Semé : plus aucun joueur à moins de cette distance (m) pendant ce temps (s).")]
         [Min(0f)] public float aggroLoseDistance = 50f;
         [Min(0f)] public float aggroLoseTime = 5f;
 

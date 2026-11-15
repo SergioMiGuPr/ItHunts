@@ -165,5 +165,31 @@ namespace ItHunts.Tests
             Assert.That(System.Array.Exists(EditorBuildSettings.scenes, sc => sc.path == copy), Is.True, "Level_01 dans le build (la run la charge)");
             Assert.That(EditorBuildSettings.scenes[0].path, Is.EqualTo("Assets/Scenes/MainMenu.unity"), "le menu d'abord");
         }
+
+        [Test]
+        public void PlaytestCombatDeBoss_EntreeDuMenu_EtCombatLanceAuChargement()
+        {
+            var go = new GameObject("Menu (test)");
+            try
+            {
+                var menu = go.AddComponent<MainMenu>();
+                typeof(MainMenu).GetField("run", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(menu, _def);
+                typeof(MainMenu).GetMethod("Build", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(menu, null);
+                var items = (ItHunts.Hud.GreyboxMenu)typeof(MainMenu).GetField("_menu", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(menu);
+                ItHunts.Hud.GreyboxMenu.Item boss = items.Items.Find(it => it.Label == "Playtest : combat de boss");
+                Assert.That(boss, Is.Not.Null, "entrée du menu principal");
+                Assert.That(boss.Enabled && boss.Submit != null, Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                RunSession.BossPlaytest = false;
+            }
+
+            // Le niveau 1 a un combat de boss qui lit le drapeau au chargement ; la touche Page bas y mène en jeu.
+            string fight = File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/BossFight.cs");
+            Assert.That(fight.Contains("RunSession.BossPlaytest"), Is.True);
+            Assert.That(File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/ZoneState.cs").Contains("pageDownKey"), Is.True);
+        }
     }
 }

@@ -343,13 +343,11 @@ namespace ItHunts.Tests
             // Mains au-dessus de la tête (D-037).
             Assert.That(new[] { s.overheadRadius, s.overheadAboveHead, s.overheadTelegraph, s.overheadDuration, s.overheadCooldown },
                 Is.EqualTo(new[] { 10f, 12f, 0.2f, 1f, 1.5f }));
-            Assert.That(g.maxHunting, Is.EqualTo(25), "goules en chasse au même moment (D-037)");
             // D-038 : accélération de l'Enragé, aggro des goules.
             Assert.That(s.enragedRampTimes, Is.EqualTo(new[] { 0f, 10f, 20f, 25f, 30f }));
             Assert.That(s.enragedRampSpeeds, Is.EqualTo(new[] { 11f, 13f, 15f, 16.5f, 18f }));
             Assert.That(new[] { s.enragedRampBlend, s.maxSpeed }, Is.EqualTo(new[] { 1f, 18f }));
             Assert.That(new[] { g.aggroSightRange, g.aggroProximity, g.aggroLoseDistance, g.aggroLoseTime }, Is.EqualTo(new[] { 20f, 8f, 50f, 5f }));
-            Assert.That(g.maxHuntingTotal, Is.EqualTo(40));
             var m = AssetDatabase.LoadAssetAtPath<MagnetismOrbSettings>("Assets/_Project/Settings/Magnetism_Default.asset");
             Assert.That(m.tractionSpeed, Is.EqualTo(18f), "traction plafonnée à 18 m/s (D-036)");
             var z = AssetDatabase.LoadAssetAtPath<ZoneSettings>("Assets/_Project/Settings/Zone_Test.asset");
@@ -509,7 +507,6 @@ namespace ItHunts.Tests
             Assert.That(new[] { f.maxHealth, f.mass, f.flySpeed, f.diveSpeed, f.diveDamage, f.diveTelegraph, f.diveCooldown, f.stunDuration },
                 Is.EqualTo(new[] { 25f, 8f, 6f, 14f, 8f, 0.4f, 3f, 1.5f }));
             Assert.That(new[] { f.orbitHeight, f.orbitRadius, f.burstRadius, f.burstDamage, f.burstEdgeShare }, Is.EqualTo(new[] { 8f, 8f, 3f, 30f, 0.25f }));
-            Assert.That(new[] { f.maxHunting, f.maxHuntingTotal }, Is.EqualTo(new[] { 8, 12 }));
             Assert.That(f.dieOnProjectileHit, Is.True, "meurt au premier impact de projectile (activé par défaut)");
             Assert.That(f.diveTurnRate, Is.EqualTo(80f), "piqué : virage limité à 80°/s (90 touchait 38 % des joueurs qui courent, objectif 25 à 35 %)");
             Assert.That(f.diveLead, Is.EqualTo(0f), "piqué : il vise où est le joueur (mesuré : 0.3 touchait 68 % des joueurs qui courent)");

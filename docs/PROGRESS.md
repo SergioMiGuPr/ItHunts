@@ -4,6 +4,48 @@
 
 ## Étape en cours
 
+**Corrections après le playtest des étapes 8 et 9 — terminées le 2026-11-15, fusionnées dans `main`** (branche `correctifs-8-9`,
+supprimée après la fusion). Playtest du 2026-11-15 : vagues, ennemis endormis, chasseurs, pression au début de zone **bons** ;
+goules en hauteur **bonnes** (plus de goule coincée ni de téléportation visible) ; aide à la visée à la manette pas encore testée.
+Commits (un par point) :
+- **Point 9 (`4b04c24`) :** sortie affichée sur la minimap dès le début de la zone (OK pour les tests, voir les notes plus bas).
+- **Point 8 (`cdbfbae`) :** « Playtest : combat de boss » au menu principal ; **Page bas** en jeu (éditeur et builds de dev).
+- **Point 6 (`ecc186a`), puis point 1 du 2026-11-15 (`fb667eb`) : textes en monde.**
+  - Cause des textes encore vus à travers les murs : les textes de la sortie et de la salle verrouillée étaient enfants de la
+    porte, une boîte étirée (10 × 10 m pour la sortie) ; ils en héritaient l'échelle, devenaient géants et déformés et dépassaient
+    des murs en se tournant vers la caméra.
+  - **Règle unique** (`WorldLabel`, `PlayerSight`) : un texte n'est affiché que si aucun décor (collider solide sans Rigidbody,
+    ni joueur ni ennemi) n'est entre la caméra et lui, en plus du test de profondeur ; toujours à l'échelle du monde ; sur une
+    porte, un texte devant chaque face.
+  - Mesuré dans Level_01, rendu réel en 1080p (moitié de largeur en écran partagé), texte allumé / éteint : coffre, offre du
+    marchand, orbe de choix, salle verrouillée, sortie et « à terre » : **5/5 caché** derrière un mur ou une porte (0 pixel) et
+    **5/5 lisible à 10 m** (lignes de 19 à 37 px), en solo et pour chaque joueur en écran partagé ; textes réservés à l'autre
+    joueur : jamais dessinés (10/10 et 10/10).
+- **Point 2 du 2026-11-15 (`cdd478b`) :** téléportation de déblocage d'une goule seulement hors de la vue de tous les joueurs
+  (elle et son point d'arrivée) ; sinon elle attend. Mesuré sur une zone complète (×4) : 17 téléportations, **0 vue**, 480 essais
+  remis à plus tard.
+- **Point 3 du 2026-11-15 (`6992282`) :** enseigne du marchand au-dessus de la rangée d'offres (centre à 5.5 m, dans leur plan).
+  Mesuré au pixel sur 50 points de vue : texte touché par l'enseigne dans 27 vues avant, 3 après (à 2–3 m et 60°, au milieu des
+  orbes).
+- **Point 4 du 2026-11-15 (`58ffcf1`) :** règle des `.meta` des assets art dans l'encadré d'ART-HANDOFF.
+- **Points 4, 5, 7, 10 et 11 du 2026-11-14** (`4bee9e8` D-060, `9930373` D-061, `859e6da` D-062, `f9d975a` D-063, `c7c374e`) :
+  apparitions au début des vagues, aggro et chasseurs, goules qui grimpent, aide à la visée, ART-HANDOFF.
+- **Tests :** 356 EditMode, 355 passent, 1 non concluant à dessein ; aucun test PlayMode.
+- **Unity, à retenir :** après une compilation lancée par la CLI, l'éditeur au second plan ne recharge pas toujours le code :
+  `EditorUtility.RequestScriptReload()`. Avec l'éditeur art ouvert (`ItHunts-art`, port 7801), **toujours passer
+  `--project-path`** : sans lui, la CLI peut viser l'éditeur art. En Play Mode piloté, activer `set_run_in_background`.
+
+Validé en playtest le 2026-11-15 (choix pris seul) : taille des vagues (3 à 10 goules, 1 à 3 volants, plus en Enragé, en 8 s au
+plus) ; paliers des chasseurs (0, 15, 35, 55, 75 % du timer, volants inclus) ; escalade (30 m, mur à 12 m au plus, bond jusqu'à
+12 m, abandon 10 s après 2 échecs en 20 s) ; aide à la visée (×0.5, 8°/s, cône de 6°, 45 m ; ressenti à tester plus tard).
+
+**Notes pour plus tard (ne pas coder maintenant) :**
+- **Combat de boss : à repenser.** Le traqueur s'y comporte comme dans tout le niveau, ce qui ne convient pas à une seule salle :
+  beaucoup trop dur et pas spécialement fun. L'utilisateur réfléchit à ses **attaques propres à l'arène** et aux **moyens de le
+  battre**. Le combat actuel (pièges, leviers) reste la base provisoire.
+- **Minimap :** la sortie est visible dès le départ (bon pour les tests). Quand le niveau sera jouable, elle devra être
+  **découverte comme les coffres**, et sa position sera **tirée au hasard** avec la carte aléatoire.
+
 **Étapes 8 et 9 terminées pour le niveau 1 : validées en playtest le 2026-11-14 et fusionnées dans `main`.** Le playtest a
 validé l'ensemble, et la coop en écran partagé marche bien. Les corrections demandées après ce playtest se font sur la branche
 `correctifs-8-9` (voir plus bas).

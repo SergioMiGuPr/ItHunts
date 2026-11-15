@@ -30,7 +30,7 @@ namespace ItHunts.Enemies
     /// mur s'il en percute un en tombant). Le traqueur l'ignore.
     /// </summary>
     [RequireComponent(typeof(EnemyBody))]
-    public sealed class Flyer : MonoBehaviour
+    public sealed class Flyer : MonoBehaviour, IHunter
     {
         [SerializeField] private FlyerSettings settings;
         [SerializeField] private Transform visual;
@@ -41,16 +41,9 @@ namespace ItHunts.Enemies
         private static readonly Unity.Profiling.ProfilerMarker Marker = new Unity.Profiling.ProfilerMarker("ItHunts.Flyer");
         public static readonly List<Flyer> All = new List<Flyer>();
 
-        /// <summary>Vagues (D-041) : les plafonds de chasse suivent la tendance (1 sans vagues).</summary>
-        public static float HuntingScale { get; set; } = 1f;
-        private int MaxHunting => WaveMath.ScaledCap(settings.maxHunting, HuntingScale * PackShare);
         private readonly TargetKeeper _keeper = new TargetKeeper();
-        private bool _retreating, _aggroArmed = true;
-        private Vector3 _retreatTo;
-        private int MaxHuntingTotal => WaveMath.ScaledCap(settings.maxHuntingTotal, HuntingScale);
+        private readonly HuntState _hunt = new HuntState();
         private static int _count;
-        private static float _packNext;
-        private static readonly List<(Flyer f, float d)> Candidates = new List<(Flyer, float)>();
 
         private Rigidbody _rb;
         private EnemyBody _body;
@@ -66,7 +59,6 @@ namespace ItHunts.Enemies
         private float _nextDive;
         private float _retargetAt;
         private float _nextAggroCheck;
-        private float _farSince = float.NegativeInfinity;
         private bool _wasHeld;
         private bool _burst;
         private PlayerHealth _target;
@@ -76,8 +68,19 @@ namespace ItHunts.Enemies
         public FlyerMode Mode { get; private set; }
         public FlyerSettings Settings => settings;
         public PlayerHealth Target => _target;
-        public bool Hunting { get; private set; }
-        public bool Aggroed { get; private set; }
+        /// <summary>En chasse : aggro, ou chasseur d'un joueur (D-061).</summary>
+        public bool Hunting => _hunt.Hunting;
+        public bool Aggroed => _hunt.Aggroed;
+        public bool Chaser => _hunt.ChaserFor != null;
+        public HuntState Hunt => _hunt;
+        public bool CanHunt => isActiveAndEnabled && !Dead && !ZoneState.Asleep;
+        public Vector3 Position => _rb != null ? _rb.position : transform.position;
+
+        public float PathLength(PlayerHealth p)
+        {
+            Vector3 pos = Position;
+            return _path.Probe(Ground(pos), p.transform.position, out float l, out _) ? l : Vector3.Distance(pos, p.transform.position);
+        }
         public int Dives { get; private set; }
         public int DiveHits { get; private set; }
         public bool Burst => _burst;
@@ -134,11 +137,9 @@ namespace ItHunts.Enemies
             _path.SpeedScale = ItHunts.Level.RunSession.EnemySpeed;   // difficulté (D-048)
             _burst = false;
             _wasHeld = false;
-            Hunting = Aggroed = false;
+            _hunt.Clear();
             _target = null;
             _keeper.Clear();
-            _retreating = false;
-            _aggroArmed = true;
             _velocity = Vector3.zero;
             _nextDive = 0f;
             _path.Clear();
@@ -225,21 +226,11 @@ namespace ItHunts.Enemies
             }
 
             Vector3 pos = _rb.position;
-            Pack(now);
             Aggro(pos, now);
             if (!Hunting)
             {
                 if (Mode != FlyerMode.Attente)
                     SetMode(FlyerMode.Attente);
-                if (_retreating)
-                {
-                    Steer(pos, _retreatTo, settings.travelSpeed, now, dt);   // accalmie (D-041) : il recule, puis plane
-                    if (Vector3.Distance(pos, _retreatTo) < 1.5f || now - _modeSince > 5f)
-                        _retreating = false;
-                    UpdateVisual(now);
-                    return;
-                }
-
                 _velocity = Vector3.MoveTowards(_velocity, Vector3.zero, settings.acceleration * dt);
                 Move(pos, dt);
                 UpdateVisual(now);
@@ -497,60 +488,19 @@ namespace ItHunts.Enemies
         /// <summary>Coop (D-041) : comme les goules (TargetKeeper) ; longueur par le chemin au sol, à défaut à vol d'oiseau.</summary>
         private void ChooseTarget(Vector3 pos, float now)
         {
+            PlayerHealth chased = _hunt.ChaserFor;
+            if (chased != null && !chased.Dead)
+            {
+                _target = chased;                                        // chasseur (D-061) : son joueur
+                return;
+            }
+
             Vector3 ground = Ground(pos);
             _target = _keeper.Update(now, _damageable, settings, 1f,
                 p => _path.Probe(ground, p.transform.position, out float l, out _) ? l : Vector3.Distance(pos, p.transform.position));
         }
 
         public int TargetSwitches => _keeper.Switches;
-
-        // ---------- Accalmie (D-041) ----------
-
-        /// <summary>Vagues : part du plafond de chasse (sans l'aggro) pendant une accalmie.</summary>
-        public static float PackShare { get; set; } = 1f;
-        public static int Demotions { get; private set; }
-        public bool Retreating => _retreating;
-
-        private void Retreat()
-        {
-            Hunting = false;
-            Aggroed = false;
-            _target = null;
-            _keeper.Clear();
-            _aggroArmed = false;
-            Demotions++;
-            Vector3 pos = _rb.position;
-            float best = float.PositiveInfinity;
-            Vector3 near = pos;
-            foreach (PlayerHealth p in PlayerHealth.All)
-                if (p != null && !p.Dead && Vector3.Distance(pos, p.transform.position) < best)
-                {
-                    best = Vector3.Distance(pos, p.transform.position);
-                    near = p.transform.position;
-                }
-
-            _retreatTo = EnemyMath.RetreatPoint(pos, near, settings.lullRetreatDistance);
-            _retreating = settings.lullRetreatDistance > 0f && !float.IsPositiveInfinity(best);
-            if (Mode != FlyerMode.Attente)
-                SetMode(FlyerMode.Attente);
-        }
-
-        private static void DemoteExcess(int excess)
-        {
-            Candidates.Clear();
-            foreach (Flyer f in All)
-                if (f != null && f.isActiveAndEnabled && !f.Dead && f.Hunting && !f.Aggroed
-                    && (f.Mode == FlyerMode.Ronde || f.Mode == FlyerMode.Remontee))
-                {
-                    float d = NearestPlayer(f._rb.position);
-                    if (!float.IsPositiveInfinity(d))
-                        Candidates.Add((f, d));
-                }
-
-            Candidates.Sort((a, b) => b.d.CompareTo(a.d));
-            for (int i = 0; i < Mathf.Min(excess, Candidates.Count); i++)
-                Candidates[i].f.Retreat();
-        }
 
         public static int HuntingCount
         {
@@ -564,63 +514,7 @@ namespace ItHunts.Enemies
             }
         }
 
-        public static int PackCount
-        {
-            get
-            {
-                int n = 0;
-                foreach (Flyer f in All)
-                    if (f != null && f.Hunting && !f.Aggroed && !f.Dead)
-                        n++;
-                return n;
-            }
-        }
-
-        private static float NearestPlayer(Vector3 p)
-        {
-            float d = float.PositiveInfinity;
-            foreach (PlayerHealth pl in PlayerHealth.All)
-                if (pl != null && !pl.Dead)
-                    d = Mathf.Min(d, Vector3.Distance(p, pl.transform.position));
-            return d;
-        }
-
-        /// <summary>Plafond des volants en chasse, revu toutes les 0.5 s : les plus proches d'un joueur en attente prennent le relais.</summary>
-        private void Pack(float now)
-        {
-            if (_packNext - now > 1f)
-                _packNext = 0f;
-            if (now < _packNext)
-                return;
-            _packNext = now + 0.5f;
-            int excess = PackCount - MaxHunting;
-            if (excess > 0)
-            {
-                DemoteExcess(excess);                               // accalmie (D-041) : les plus loin repassent en attente
-                return;
-            }
-
-            int free = MaxHunting - PackCount;
-            if (free <= 0)
-                return;
-            Candidates.Clear();
-            foreach (Flyer f in All)
-                if (f != null && f.isActiveAndEnabled && !f.Dead && (!f.Hunting || f.Aggroed))
-                {
-                    float d = NearestPlayer(f._rb.position);
-                    if (!float.IsPositiveInfinity(d))
-                        Candidates.Add((f, d));
-                }
-
-            Candidates.Sort((a, b) => a.d.CompareTo(b.d));
-            for (int i = 0; i < Mathf.Min(free, Candidates.Count); i++)
-            {
-                Candidates[i].f.Hunting = true;
-                Candidates[i].f.Aggroed = false;
-                Candidates[i].f._retreating = false;
-            }
-        }
-
+        /// <summary>Aggro (D-061) : comme les goules, sans limite de nombre ; semé au-delà de aggroLoseDistance pendant aggroLoseTime.</summary>
         private void Aggro(Vector3 pos, float now)
         {
             if (now < _nextAggroCheck)
@@ -638,49 +532,13 @@ namespace ItHunts.Enemies
                     seen = true;
             }
 
-            if (!Hunting)
+            bool was = Hunting;
+            _hunt.Step(seen, nearest, now, settings.aggroLoseDistance, settings.aggroLoseTime);
+            if (was && !Hunting)
             {
-                if (!_aggroArmed)
-                {
-                    if (!seen)
-                        _aggroArmed = true;                              // le joueur est sorti de sa zone d'aggro
-                    return;
-                }
-
-                if (seen && HuntingCount < MaxHuntingTotal)
-                {
-                    _retreating = false;
-                    Hunting = true;
-                    Aggroed = true;
-                    _farSince = float.NegativeInfinity;
-                }
-
-                return;
-            }
-
-            if (!Aggroed)
-                return;
-            if (nearest <= settings.aggroLoseDistance)
-            {
-                _farSince = float.NegativeInfinity;
-                return;
-            }
-
-            if (float.IsNegativeInfinity(_farSince))
-                _farSince = now;
-            if (now - _farSince < settings.aggroLoseTime)
-                return;
-            if (PackCount < MaxHunting)
-                Aggroed = false;
-            else
-            {
-                Hunting = false;
-                Aggroed = false;
                 _target = null;
                 _keeper.Clear();
             }
-
-            _farSince = float.NegativeInfinity;
         }
 
         // ---------- Lancé : il éclate (D-040) ----------

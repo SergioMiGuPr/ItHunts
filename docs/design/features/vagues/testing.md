@@ -1,8 +1,22 @@
 # Vagues : testing
 
-**Updated:** 2026-11-13 · [Design](design.md) · [Implementation](implementation.md)
+**Updated:** 2026-11-15 · [Design](design.md) · [Implementation](implementation.md)
 
 ## Acceptance criteria
+
+Après le playtest des étapes 8 et 9 (D-060, D-061) :
+
+- [x] Valeurs : fournées 3 → 10 goules (14 en Enragé), 1 → 3 volants (4), fenêtre 8 s, pas de 0.2 s, salles récentes 60 s. *(`WaveTests.cs` › Asset_ValeursValidees)*
+- [x] Fournée au début du pic, bornée par le plafond de population. *(WaveTests › Vague_FourneeAuDebutDuPic_SousLePlafond)*
+- [x] Jamais dans une salle visitée depuis 60 s ni dans la salle de départ. *(WaveTests › SalleRecente_60s_EtSalleDeDepart_JamaisDApparition)*
+- [x] Chasseurs par paliers 1, 2, 4, 6, 8, Enragé 10. *(WaveTests › Chasseurs_ParPaliers_1Puis2_4_6_8_Enrage10)*
+- [x] Habitants 1 à 3 par grande salle. *(WaveTests › Habitants_1a3ParGrandeSalle_SelonLaTaille)*
+- [x] Aggro sans limite, semé à 50 m pendant 5 s, chasseur jamais semé, relâché quand son joueur tombe. *(`CoopTests.cs` › Aggro_SansLimite_SemeA50mPendant5s_ChasseurJamaisSeme)*
+- [x] Un chasseur par joueur, le plus proche par le chemin, relais quand il meurt, aucun pendant le combat de boss. *(CoopTests › Chasseurs_ParJoueur_RelaisAuPlusProcheParLeChemin)*
+- [x] En Play Mode (Level_01_Base, temps ×3, joueur qui change de salle toutes les 8 s, 240 s de zone) : **60 apparitions, toutes dans les 7.1 s après le début du pic** ; 0 hors de la fenêtre, 0 dans une salle visitée depuis moins de 60 s, 0 dans la salle de départ. *(Play Mode, 2026-11-15)*
+- [x] En Play Mode, chasseurs au fil de la zone (timer sauté à 50, 170, 350, 540, 720, 940 s) : solo **1, 2, 4, 6, 8, 10** ; à 2 joueurs **1/1, 2/2, 4/4, 6/6, 8/8, 10/10** ; en aggro : 0 à 8 selon le moment. Relais : 4 chasseurs tués, 4 nouveaux en moins de 1 s, au contact du joueur 15 s plus tard. Habitants : 89 gardés, 74 retirés. *(Play Mode, 2026-11-15)*
+
+Avant (D-041, en partie remplacé) :
 
 - [x] Valeurs validées dans `Waves_Default` (tendance en part du timer, Enragé 80 / 20, pic 20 s, accalmie 15 s à 60 %, 3 → 1 s, 0.5 s en Enragé, 25 à 80 m, annonce 0.6 s, reconstitution 4 s, réserve 80 / 20). *(`Assets/_Project/Tests/EditMode/WaveTests.cs` › Asset_ValeursValidees)*
 - [x] Tendance interpolée, identique avec un timer de 4 ou 20 min ; Enragé au-dessus. *(WaveTests › Tendance_InterpoleeEnPartDuTimer_EnrageAuDessus)*
