@@ -170,5 +170,16 @@ namespace ItHunts.Settings
         [Range(0f, 1f)] public float shakeStrength = 0.6f;
         [Tooltip("Pas par seconde à la vitesse de chasse.")]
         [Min(0.1f)] public float stepsPerSecondAtChase = 1.6f;
+
+        [Header("Signal : colonne de lumière de la zone de prise (bloc 4)")]
+        [Tooltip("Colonne rouge faible au-dessus du disque de la zone de prise pendant l'annonce : lisible à 50 m (un disque au sol vu de loin devient une ligne).")]
+        public bool grabColumn = true;
+        [Min(0.5f)] public float grabColumnHeight = 12f;
+        [Tooltip("Diamètre de la colonne (m) : celui du disque de la zone de prise.")]
+        [Min(0.2f)] public float grabColumnDiameter = 4f;
+        [Min(0f)] public float grabColumnIntensity = 1f;
+        [ColorUsage(false, true)] public Color grabColumnColor = new Color(1.6f, 0.08f, 0.04f);
+        [Tooltip("Matériau additif qui traverse le brouillard (ItHunts/SignalAdditif).")]
+        public Material grabColumnMaterial;
     }
 }

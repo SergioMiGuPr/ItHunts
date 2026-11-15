@@ -92,5 +92,11 @@ namespace ItHunts.Settings
         [Header("Retour visuel")]
         [ColorUsage(false, true)] public Color telegraphColor = new Color(3f, 0.4f, 0.2f);
         [ColorUsage(false, true)] public Color eyeColor = new Color(2.5f, 1.4f, 0.3f);
+
+        [Header("Signal : lueur pendant l'annonce du bond (bloc 4)")]
+        [Tooltip("Yeux et gueule pendant l'annonce du bond (HDR, au-delà du seuil du bloom).")]
+        [ColorUsage(false, true)] public Color leapGlowColor = new Color(4f, 0.25f, 0.12f);
+        [Tooltip("Teinte rouge du corps pendant l'annonce (0 : aucune, 1 : rouge plein).")]
+        [Range(0f, 1f)] public float leapBodyTint = 0.55f;
     }
 }

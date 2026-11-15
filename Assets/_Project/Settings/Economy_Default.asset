@@ -22,6 +22,9 @@ MonoBehaviour:
   scatterSpeed: 4
   soulSize: 0.25
   soulColor: {r: 0.4, g: 2.6, b: 3.2, a: 1}
+  soulHaloSize: 1.4
+  soulHaloIntensity: 0.35
+  soulHaloMaterial: {fileID: 2100000, guid: 9610f7adab3940845b06f1f533f72eb2, type: 2}
   chestPrice: 30
   lockedDoorPrice: 50
   healPrice: 35

@@ -1,3 +1,4 @@
+using System.Linq;
 using ItHunts.Combat;
 using ItHunts.Player;
 using ItHunts.Settings;
@@ -1060,9 +1061,74 @@ namespace ItHunts.Enemies
             }
         }
 
+        private Renderer[] _glowParts, _bodyParts;
+        private Color[] _bodyColors;
+        private MaterialPropertyBlock _glowBlock;
+        private bool _glowShown, _glowApplied;
+
+        /// <summary>
+        /// Lueur de l'annonce du bond (bloc 4) : yeux et gueule en rouge HDR, corps teinté de rouge ; lisible à 30 m et plus, sur la
+        /// goule et pas seulement au sol. La gueule (greybox) est ajoutée sous la tête, sombre au repos.
+        /// </summary>
+        private void LeapGlow(bool on)
+        {
+            if (_glowParts == null)
+            {
+                var eyes = GetComponentsInChildren<Renderer>(true).Where(r => r.name.StartsWith("Oeil")).ToList();
+                if (eyes.Count >= 2 && eyes[0].transform.parent != null)
+                {
+                    GameObject mouth = Instantiate(eyes[0].gameObject, eyes[0].transform.parent);
+                    mouth.name = "Gueule";
+                    Vector3 a = eyes[0].transform.localPosition, b = eyes[1].transform.localPosition;
+                    Vector3 sc = eyes[0].transform.localScale;
+                    mouth.transform.localPosition = (a + b) * 0.5f + Vector3.down * Mathf.Abs(a.x - b.x) * 0.9f;
+                    mouth.transform.localScale = new Vector3(sc.x * 1.8f, sc.y * 0.6f, sc.z);
+                    eyes.Add(mouth.GetComponent<Renderer>());
+                }
+
+                _glowParts = eyes.ToArray();
+                _bodyParts = GetComponentsInChildren<Renderer>(true).Where(r => r.name == "Corps" || r.name == "Tête").ToArray();
+                _bodyColors = _bodyParts.Select(r => r.sharedMaterial != null && r.sharedMaterial.HasProperty("_BaseColor") ? r.sharedMaterial.GetColor("_BaseColor") : Color.gray).ToArray();
+                _glowBlock = new MaterialPropertyBlock();
+            }
+
+            if (_damageable != null)
+                _damageable.ExtraGlow = on ? settings.leapGlowColor * (0.6f * settings.leapBodyTint) : Color.black;   // le corps luit
+            if (_glowApplied && on == _glowShown)
+                return;
+            _glowApplied = true;
+            _glowShown = on;
+            foreach (Renderer r in _glowParts)
+            {
+                if (r == null)
+                    continue;
+                r.GetPropertyBlock(_glowBlock);
+                if (on)
+                    _glowBlock.SetColor("_BaseColor", settings.leapGlowColor);
+                else if (r.name == "Gueule")
+                    _glowBlock.SetColor("_BaseColor", new Color(0.06f, 0.02f, 0.02f));
+                else
+                    _glowBlock.Clear();
+                r.SetPropertyBlock(_glowBlock);
+            }
+
+            for (int i = 0; i < _bodyParts.Length; i++)
+            {
+                if (_bodyParts[i] == null)
+                    continue;
+                _bodyParts[i].GetPropertyBlock(_glowBlock);
+                if (on)
+                    _glowBlock.SetColor("_BaseColor", Color.Lerp(_bodyColors[i], new Color(0.9f, 0.05f, 0.03f), settings.leapBodyTint));
+                else
+                    _glowBlock.Clear();
+                _bodyParts[i].SetPropertyBlock(_glowBlock);
+            }
+        }
+
         private void UpdateVisual()
         {
             bool announcing = Mode == GhoulMode.Annonce;
+            LeapGlow(announcing && (_damageable == null || !_damageable.Dead));
             if (telegraph != null)
                 telegraph.enabled = announcing && (_damageable == null || !_damageable.Dead);
             if (visual != null)

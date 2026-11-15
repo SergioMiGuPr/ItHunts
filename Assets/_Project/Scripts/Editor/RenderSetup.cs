@@ -147,6 +147,56 @@ namespace ItHunts.EditorTools
             return "contour des mains (M_ContourMains, 1.5 px) sur le prefab joueur";
         }
 
+        /// <summary>
+        /// Signaux de survie (bloc 4) : matériaux additifs qui traversent le brouillard (colonne de la zone de prise, halo des âmes),
+        /// branchés dans les réglages ; lueur « à portée » des objets attrapables 0.35 → 1.0 (RENDU.md § 3 ter).
+        /// </summary>
+        public static string Signals()
+        {
+            EnsureFolder("Assets/_Project/Art/Rendu");
+            Material Signal(string name, Color c)
+            {
+                string path = $"Assets/_Project/Art/Rendu/{name}.mat";
+                var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (m == null)
+                {
+                    m = new Material(Shader.Find("ItHunts/SignalAdditif")) { name = name };
+                    AssetDatabase.CreateAsset(m, path);
+                }
+
+                m.SetColor("_BaseColor", c);
+                m.enableInstancing = true;
+                EditorUtility.SetDirty(m);
+                return m;
+            }
+
+            Material column = Signal("M_Signal_Colonne", new Color(1.6f, 0.08f, 0.04f));
+            Material halo = Signal("M_Signal_Halo", new Color(0.14f, 0.9f, 1.1f));
+            var stalker = AssetDatabase.LoadAssetAtPath<StalkerSettings>(SettingsDir + "/Stalker_Default.asset");
+            stalker.grabColumnMaterial = column;
+            EditorUtility.SetDirty(stalker);
+            var eco = AssetDatabase.LoadAssetAtPath<EconomySettings>(SettingsDir + "/Economy_Default.asset");
+            eco.soulHaloMaterial = halo;
+            EditorUtility.SetDirty(eco);
+            // Corps de la goule : émission active (noire au repos) pour sa lueur pendant l'annonce du bond.
+            var ghoulMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Greybox/Greybox_Ghoul.mat");
+            if (ghoulMat != null && !ghoulMat.IsKeywordEnabled("_EMISSION"))
+            {
+                ghoulMat.EnableKeyword("_EMISSION");
+                ghoulMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+                if (ghoulMat.GetColor("_EmissionColor").maxColorComponent <= 0f)
+                    ghoulMat.SetColor("_EmissionColor", Color.black);
+                EditorUtility.SetDirty(ghoulMat);
+            }
+
+            var tk = AssetDatabase.LoadAssetAtPath<TelekinesisFeedbackSettings>(SettingsDir + "/TelekinesisFeedback_Default.asset");
+            float before = tk.glowInRange;
+            tk.glowInRange = 1f;
+            EditorUtility.SetDirty(tk);
+            AssetDatabase.SaveAssets();
+            return $"signaux : colonne (M_Signal_Colonne), halo des âmes (M_Signal_Halo), lueur à portée {before} → {tk.glowInRange}";
+        }
+
         public static AmbianceSettings Intermediate()
         {
             var a = AssetDatabase.LoadAssetAtPath<AmbianceSettings>(IntermediatePath);
