@@ -50,6 +50,20 @@ namespace ItHunts.Settings
         [Min(0f)] public float recoilPitch = 8f;
         [Min(0.02f)] public float recoilDuration = 0.12f;
 
+        [Header("Modèle SM_Barillet (vue FPS)")]
+        [Tooltip("Couleur d'émission d'une chambre chargée (blanc chaud provisoire, pas le violet de la télékinésie) ; multipliée par l'intensité.")]
+        public Color chamberEmission = new Color(1f, 0.86f, 0.66f);
+        [Tooltip("Intensité de l'émission d'une chambre chargée : au-delà du seuil de bloom (1) pour qu'elle brille.")]
+        [Min(0f)] public float chamberEmissionIntensity = 3f;
+        [Tooltip("Part de l'émission gardée quand le barillet est inactif (l'orbe tient un objet).")]
+        [Range(0f, 1f)] public float chamberInactiveFactor = 0.2f;
+        [Tooltip("Couleur de base des chambres (chargées ou vides) : presque noir, #1A120C.")]
+        public Color chamberBaseColor = new Color32(0x1A, 0x12, 0x0C, 0xFF);
+        [Tooltip("Durée de la rotation d'un cran (−60°) à chaque tir (s).")]
+        [Min(0f)] public float spinDuration = 0.08f;
+        [Tooltip("Courbe de la rotation (0 → 1 sur la durée).")]
+        public AnimationCurve spinCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
         [Header("Sons (provisoires)")]
         [Range(0f, 1f)] public float shotVolume = 0.7f;
         [Range(0f, 1f)] public float reloadVolume = 0.5f;

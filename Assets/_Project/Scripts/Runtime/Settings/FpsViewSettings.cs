@@ -22,6 +22,14 @@ namespace ItHunts.Settings
         public Vector3 leftHandRest = new Vector3(-0.23f, -0.25f, 0.45f);
         public Vector3 leftHandRestEuler = new Vector3(-10f, 12f, 0f);
 
+        [Header("Barillet (main gauche, modèle SM_Barillet)")]
+        [Tooltip("Centre du barillet dans le repère de la main gauche (m) ; son axe de tir (+Z) suit les doigts.")]
+        public Vector3 barrelInHand = new Vector3(0f, 0.065f, 0.05f);
+        [Tooltip("Rotation du barillet dans la main gauche (degrés).")]
+        public Vector3 barrelInHandEuler = Vector3.zero;
+        [Tooltip("Échelle du barillet (1 = taille modélisée, 0.10 m de diamètre).")]
+        [Min(0.1f)] public float barrelScale = 1f;
+
         [Header("Orbe (dans la paume droite)")]
         [Tooltip("Diamètre de l'orbe (m).")]
         [Min(0.01f)] public float orbDiameter = 0.08f;

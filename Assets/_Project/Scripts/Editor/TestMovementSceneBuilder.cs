@@ -491,34 +491,17 @@ namespace ItHunts.EditorTools
         }
 
         /// <summary>
-        /// Barillet greybox (D-032) tenu dans la paume gauche, pointé dans le sens des doigts (+z de la main) : corps de
+        /// Barillet (D-032) tenu dans la paume gauche, pointé dans le sens des doigts (+z de la main) : corps de
         /// 7.5 cm de diamètre et 7 cm de long qui tourne, 6 chambres de 1.6 cm sur la face arrière (vers la caméra : les
         /// munitions se lisent dessus), canon de 2.2 cm × 10 cm. Mesures dans docs/art/ART-HANDOFF.md.
         /// </summary>
         private static BarrelParts BuildBarrel(Transform leftHand)
         {
-            Material metal = Mat("Greybox_Barrel", new Color(0.18f, 0.17f, 0.2f));
-            Material chamberMat = UnlitMat("Barrel_Chamber", "Universal Render Pipeline/Unlit", Color.white);
+            // Modèle SM_Barillet de la DA (étape 10) : BarrelModelInstaller (position, rotation et échelle : FpsView_Default).
             var root = new GameObject("Barillet (vue)").transform;
             root.SetParent(leftHand, false);
-            root.localPosition = new Vector3(0f, 0.055f, 0.05f);
-            var cylinder = new GameObject("Barillet (tourne)").transform;
-            cylinder.SetParent(root, false);
-            Part(PrimitiveType.Cylinder, "Corps", cylinder, Vector3.zero, new Vector3(0.075f, 0.035f, 0.075f), new Vector3(90f, 0f, 0f), metal);
-            var chambers = new Renderer[6];
-            for (int i = 0; i < chambers.Length; i++)
-            {
-                float a = i * Mathf.PI * 2f / chambers.Length;              // chambre 0 en haut, puis dans le sens horaire vu de derrière
-                var p = new Vector3(Mathf.Sin(a) * 0.024f, Mathf.Cos(a) * 0.024f, -0.037f);
-                Part(PrimitiveType.Cylinder, $"Chambre {i + 1}", cylinder, p, new Vector3(0.016f, 0.003f, 0.016f), new Vector3(90f, 0f, 0f), chamberMat);
-                chambers[i] = cylinder.Find($"Chambre {i + 1}").GetComponent<Renderer>();
-            }
-
-            Part(PrimitiveType.Cylinder, "Canon", root, new Vector3(0f, 0.022f, 0.085f), new Vector3(0.022f, 0.05f, 0.022f), new Vector3(90f, 0f, 0f), metal);
-            var muzzle = new GameObject("Bouche du canon").transform;
-            muzzle.SetParent(root, false);
-            muzzle.localPosition = new Vector3(0f, 0.022f, 0.136f);
-            return new BarrelParts { Root = root, Cylinder = cylinder, Muzzle = muzzle, Chambers = chambers };
+            BarrelModelInstaller.Parts parts = BarrelModelInstaller.Build(root);
+            return new BarrelParts { Root = root, Cylinder = parts.Spin, Muzzle = parts.Muzzle, Chambers = parts.Chambers };
         }
 
         /// <summary>Disque plat sans collision (cylindre écrasé), masqué au départ.</summary>
