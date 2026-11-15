@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4732820708977527551}
   - component: {fileID: 4617645454967108263}
+  - component: {fileID: 2969650869529955131}
   m_Layer: 0
   m_Name: "Lumi\xE8re"
   m_TagString: Untagged
@@ -97,6 +98,19 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &2969650869529955131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 704298262579895109}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ddf74c80ceba6443bf646dcfed34c34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.AmbianceLight
+  kind: 0
 --- !u!1 &8079578767649395306
 GameObject:
   m_ObjectHideFlags: 0

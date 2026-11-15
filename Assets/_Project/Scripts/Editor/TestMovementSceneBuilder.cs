@@ -182,13 +182,15 @@ namespace ItHunts.EditorTools
                 string clearName = FeaturePrefix + " : profondeur effacée";
                 string handsName = FeaturePrefix + " : mains";
                 string hudName = FeaturePrefix + " : HUD";
+                string glassName = FeaturePrefix + " : transparents";
                 var clear = Reuse<FirstPersonDepthClearFeature>(data, clearName);
                 var hands = Reuse<RenderObjects>(data, handsName);
+                var glass = Reuse<RenderObjects>(data, glassName);
                 var hud = Reuse<RenderObjects>(data, hudName);
                 for (int i = data.rendererFeatures.Count - 1; i >= 0; i--)
                 {
                     ScriptableRendererFeature f = data.rendererFeatures[i];
-                    if (f != null && f.name.StartsWith(FeaturePrefix) && f != clear && f != hands && f != hud)
+                    if (f != null && f.name.StartsWith(FeaturePrefix) && f != clear && f != hands && f != glass && f != hud)
                     {
                         data.rendererFeatures.RemoveAt(i);
                         AssetDatabase.RemoveObjectFromAsset(f);
@@ -206,12 +208,27 @@ namespace ItHunts.EditorTools
                 hands.settings.cameraSettings.restoreCamera = true;
                 hands.settings.cameraSettings.cameraFieldOfView = fps.viewmodelFov;
                 hands.settings.cameraSettings.offset = Vector4.zero;
+                // Contour des mains et des artefacts (coque inversée, D-067) : la passe des mains dessine aussi « ItHuntsOutline ».
+                hands.settings.filterSettings.PassNames = new[] { "UniversalForward", "UniversalForwardOnly", "SRPDefaultUnlit", "ItHuntsOutline" };
+                // Transparents des mains (verre de la lanterne, MATERIAUX.md) : même caméra que les mains, sans écrire la profondeur.
+                glass.settings.Event = RenderPassEvent.AfterRenderingTransparents;
+                glass.settings.filterSettings.RenderQueueType = RenderQueueType.Transparent;
+                glass.settings.filterSettings.LayerMask = mask;
+                glass.settings.filterSettings.PassNames = new[] { "UniversalForward", "UniversalForwardOnly" };
+                glass.settings.overrideDepthState = true;
+                glass.settings.depthCompareFunction = UnityEngine.Rendering.CompareFunction.LessEqual;
+                glass.settings.enableWrite = false;
+                glass.settings.cameraSettings.overrideCamera = true;
+                glass.settings.cameraSettings.restoreCamera = true;
+                glass.settings.cameraSettings.cameraFieldOfView = fps.viewmodelFov;
+                glass.settings.cameraSettings.offset = Vector4.zero;
                 hud.settings.Event = RenderPassEvent.AfterRenderingTransparents;
                 hud.settings.filterSettings.RenderQueueType = RenderQueueType.Transparent;
                 hud.settings.filterSettings.LayerMask = mask;
+                hud.settings.filterSettings.PassNames = new[] { "SRPDefaultUnlit" };   // interface seulement (pas le verre)
 
-                // Ordre : profondeur effacée, mains, HUD, à la fin de la liste.
-                foreach (ScriptableRendererFeature f in new ScriptableRendererFeature[] { clear, hands, hud })
+                // Ordre : profondeur effacée, mains, transparents des mains, HUD, à la fin de la liste.
+                foreach (ScriptableRendererFeature f in new ScriptableRendererFeature[] { clear, hands, glass, hud })
                 {
                     data.rendererFeatures.Remove(f);
                     data.rendererFeatures.Add(f);
@@ -642,6 +659,7 @@ namespace ItHunts.EditorTools
             var run = new GameObject("État de la run").AddComponent<RunState>();
             SetRef(run, "pool", pool);
             SetRef(run, "characters", CharacterSetup.Roster());          // personnages (D-064)
+            RenderSetup.AddTo(null);                                     // ambiance de rendu intermédiaire (D-067)
 
             // Joueur.
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
