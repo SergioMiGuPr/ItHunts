@@ -561,9 +561,14 @@ namespace ItHunts.Level
             for (int i = 0; i < lamps; i++)
                 Lamp(parent, Point((i + 0.5f) / lamps) + Vector3.up * (h - 2f), i % 2 == 0 ? new Color(1f, 0.75f, 0.5f) : new Color(0.8f, 0.85f, 1f), 5f, 40f);
             float yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
-            if (kit != null && !l.Slope)
+            // Arcs tous les 20 m. En pente (20° au plus), plafond parallèle à la rampe : l'arc (1.6 m d'épaisseur) descend de 0.3 m
+            // pour que ses deux bords restent sous le plafond, et ses piédroits s'enfoncent d'autant côté haut (posés côté bas).
+            if (kit != null)
                 for (float d = 20f; d < len - 10f; d += 20f)
-                    KitBuild.Arch(parent, kit, Point(d / len), yaw, w, h);
+                {
+                    float sink = l.Slope ? 0.3f : 0f;
+                    KitBuild.Arch(parent, kit, Point(d / len) - Vector3.up * sink, yaw, w, h);
+                }
             if (kit != null && kit.torche != null)
                 for (float d = 6f; d < len - 4f; d += 12f)
                     foreach (int s in new[] { 1, -1 })
@@ -945,6 +950,8 @@ namespace ItHunts.Level
 
         /// <summary>Renderers après la fusion (mesures).</summary>
         public int MergedRenderers { get; private set; }
+        /// <summary>Pièces gardées hors de la fusion (maillage non lisible).</summary>
+        public int KeptPieces { get; private set; }
 
         /// <summary>
         /// Fusion des pièces du kit (visuel seulement) : pour chaque salle, couloir ou ensemble de premier niveau, un maillage par
@@ -955,6 +962,7 @@ namespace ItHunts.Level
         private void Batch()
         {
             MergedRenderers = 0;
+            KeptPieces = 0;
             foreach (Transform group in _root.Cast<Transform>().ToList())
             {
                 if (group.GetComponentInChildren<ExitArenaMarker>(true) != null)
@@ -965,6 +973,17 @@ namespace ItHunts.Level
                 {
                     if (!t.name.StartsWith("Kit_") || (t.parent != null && t.parent.name.StartsWith("Kit_")))
                         continue;
+                    // Maillage non lisible (modèle importé sans Read/Write) : Unity ne peut pas le combiner ; la pièce reste telle
+                    // quelle au lieu de disparaître (cause des arcs invisibles, voir LevelModelImport).
+                    bool readable = true;
+                    foreach (MeshFilter f in t.GetComponentsInChildren<MeshFilter>(true))
+                        readable &= f.sharedMesh == null || f.sharedMesh.isReadable;
+                    if (!readable)
+                    {
+                        KeptPieces++;
+                        continue;
+                    }
+
                     pieces.Add(t.gameObject);
                     foreach (MeshRenderer r in t.GetComponentsInChildren<MeshRenderer>(true))
                     {

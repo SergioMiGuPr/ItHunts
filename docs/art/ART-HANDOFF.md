@@ -19,6 +19,10 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 > - **`.meta` des assets art (nouvelle règle, commit `94cebbf`)** : les `.meta` de `Assets/Art/` sont générés et commités par la
 >   session principale (Unity), juste après la fusion d'une PR art. La branche `art` fait un **pull de `main` avant chaque
 >   nouveau lot** ; ne jamais générer de `.meta` sur `art` sans avoir tiré `main` (détail au § 1).
+> - **Demande à la DA : « Read/Write » activé à l'import des modèles du décor** (`Assets/Art/Models/Niveau1/*.fbx`, case *Read/Write*
+>   de l'onglet Model). La carte aléatoire fusionne les pièces du kit par salle et par matériau (performance) ; Unity ne peut pas
+>   fusionner un maillage non lisible : ces pièces restent aujourd'hui des objets séparés (≈ 500 par carte : arcs, colonnes, portes,
+>   poutres, ponts). C'est un réglage de vos `.meta`, donc à faire sur `art`.
 > - **Personnages et orbe (D-064 à D-066, `carte-suite`)** : chaque personnage a son artefact et sa couleur — **renard rouge
 >   (lanterne de feu), caméléon orange (barillet), koala vert, hibou bleu** (artefacts à concevoir). Avec l'**orbe v2**, l'orbe
 >   gardera **la couleur du personnage en permanence** ; les actions se liront au **mouvement des anneaux et des runes** ; les
