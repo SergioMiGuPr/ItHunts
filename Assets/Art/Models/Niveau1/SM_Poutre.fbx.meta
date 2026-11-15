@@ -3,7 +3,17 @@ guid: 3b223d8ddc696344faaaad1f09afc895
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_FerRouille
+    second: {fileID: 2100000, guid: 3802ef6c252a9674bb78558a2900fcde, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Poutre_Bois
+    second: {fileID: 2100000, guid: 654051896c5aeb544b139472e8f50c1c, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

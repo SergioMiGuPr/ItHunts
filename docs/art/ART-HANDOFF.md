@@ -27,10 +27,13 @@ cœur du jeu.
   passent par **Git LFS** (déjà configuré dans `.gitattributes`). Le quota LFS gratuit de GitHub est petit (de
   l'ordre de 1 Go de stockage) : pas de fichiers de travail inutiles dans le dépôt.
 - Ne renomme ni ne déplace un fichier sans son `.meta` (Unity y garde l'identifiant de l'asset).
-- **`.meta` des assets art (règle du 2026-11-15) :** les `.meta` des assets de `Assets/Art/` sont générés et commités par
-  la session principale (Unity), juste après la fusion d'une PR art. La branche `art` fait un pull de `main` avant chaque
-  nouveau lot. Ne jamais générer de `.meta` sur `art` sans avoir tiré `main`. (Les `.meta` des PR #1 et #2 sont sur `main`
-  depuis le commit `255d6ff`.)
+- **`.meta` des assets art (règle mise à jour le 2026-11-15) :** la branche `art` travaille maintenant **dans Unity**
+  (worktree `ItHunts-art`). Elle génère elle-même les `.meta` de ses **nouveaux** assets de `Assets/Art/` (shaders,
+  matériaux, scènes…) et les commite dans sa PR avec les fichiers. Les captures de `docs/art/` n'ont pas de `.meta`.
+  Pour les assets **déjà sur `main`**, la branche `art` ne génère rien : elle fait un pull de `main` avant chaque lot.
+  Seule exception : un réglage d'import voulu (par exemple le remappage des matériaux d'un FBX), listé exactement
+  dans la PR. **La session principale n'ajoute des `.meta` que pour des assets art jamais ouverts dans Unity.** (Les
+  `.meta` des PR #1 et #2 sont sur `main` depuis le commit `255d6ff`.)
 
 ## 2. Le joueur
 
