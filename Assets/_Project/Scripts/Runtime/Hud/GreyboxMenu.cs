@@ -18,6 +18,8 @@ namespace ItHunts.Hud
             public System.Func<string> Value;
             public System.Action<int> Change;
             public System.Action Submit;
+            /// <summary>Texte ajouté quand l'élément est grisé (« (bientôt) » par défaut ; « (pris) » pour un personnage).</summary>
+            public string DisabledNote = "(bientôt)";
         }
 
         public readonly List<Item> Items = new List<Item>();
@@ -29,6 +31,8 @@ namespace ItHunts.Hud
         /// manette : elle seule. Un clavier : le clavier seul (et la souris).
         /// </summary>
         public InputDevice Owner;
+        /// <summary>Manette qui ne pilote jamais ce menu (Owner null) : celle du 2e joueur, qui a son propre choix.</summary>
+        public InputDevice Exclude;
         private float _repeatAt;
         private static GUIStyle _button, _title, _text;
 
@@ -57,6 +61,8 @@ namespace ItHunts.Hud
             }
 
             Gamepad g = Owner == null ? Gamepad.current : Owner as Gamepad;
+            if (Owner == null && g != null && g == Exclude)
+                g = null;
             if (Owner == null && g != null && (g.leftStick.ReadValue().sqrMagnitude > 0.4f || g.dpad.ReadValue().sqrMagnitude > 0.4f || g.buttonSouth.wasPressedThisFrame))
                 LastNavPad = g;
             if (g != null)
@@ -95,6 +101,13 @@ namespace ItHunts.Hud
             return from;
         }
 
+        /// <summary>Met le focus sur cet élément s'il est choisissable.</summary>
+        public void SetFocus(int index)
+        {
+            if (index >= 0 && index < Items.Count && Items[index].Enabled)
+                Focus = index;
+        }
+
         public void FocusFirst() => Focus = Items.Count > 0 && Items[0].Enabled ? 0 : Next(0, 1);
 
         /// <summary>Dessine le titre, un texte et les boutons au centre de l'écran (dans OnGUI).</summary>
@@ -124,7 +137,7 @@ namespace ItHunts.Hud
                 Item it = Items[i];
                 string label = it.Value != null ? $"{it.Label} :   ◀  {it.Value()}  ▶" : it.Label;
                 if (!it.Enabled)
-                    label += "   (bientôt)";
+                    label += "   " + it.DisabledNote;
                 GUI.enabled = it.Enabled;
                 GUI.color = i == Focus && it.Enabled ? new Color(1f, 0.85f, 0.4f) : Color.white;
                 Rect r = GUILayoutUtility.GetRect(new GUIContent(label), _button, GUILayout.Height(42f));

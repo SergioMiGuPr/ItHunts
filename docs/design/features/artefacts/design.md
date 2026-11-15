@@ -22,9 +22,13 @@ dégâts directs ; les artefacts et les améliorations en ajoutent (D-022). Déc
    Un asset par personnage (`CharacterDefinition`, dans `Settings/Personnages/`), listés dans `Characters_Default`
    (ordre du menu ; personnage par défaut : le caméléon). Un joueur qui n'a rien choisi (scène de test ouverte
    directement) prend le caméléon ; le choix du menu vaut aussi pour les scènes de test lancées depuis le menu.
-2. **Coop : chaque joueur prend un personnage différent** (remplace « pas de doublon d'artefact »). Le menu fait
-   défiler les personnages libres (le joueur 2 apparaît quand il a rejoint avec Start) ; un joueur qui rejoint en jeu
-   prend le premier personnage jouable libre. Plus de joueurs que de personnages jouables : **pas d'artefact** pour les
+2. **Coop : chaque joueur prend un personnage différent** (remplace « pas de doublon d'artefact »). **Au menu**, le
+   joueur 2 rejoint avec Start puis choisit **avec sa propre manette** (◀ ▶, A pour valider, B pour changer) ; sa
+   manette ne pilote pas le menu du joueur 1 ; le personnage de l'autre est sauté ; **la partie ne se lance que quand il a
+   validé**. **En jeu**, un joueur qui rejoint avec Start choisit dans un menu de sa moitié d'écran, piloté par sa
+   manette (personnages pris : « pris », grisés) ; il ne bouge pas pendant le choix ; B garde le personnage proposé (le
+   premier libre). Si le joueur 1 joue au clavier, l'appui sur Start d'une nouvelle manette ne la lui attribue plus (le
+   changement automatique de l'Input System la lui prenait : le joueur 2 ne pouvait pas rejoindre). Plus de joueurs que de personnages jouables : **pas d'artefact** pour les
    derniers plutôt qu'un doublon (2 personnages jouables aujourd'hui, l'écran partagé est à 2).
 3. **Emplacement :** un seul artefact à la fois, en main gauche. Système générique : chaque artefact a son asset
    (`ArtifactDefinition`) avec son tir, ses munitions et son rechargement ; le pool est `ArtifactPool_Default`.

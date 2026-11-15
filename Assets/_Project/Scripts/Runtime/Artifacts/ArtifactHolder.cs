@@ -54,6 +54,15 @@ namespace ItHunts.Artifacts
             Equip(a != null ? a : fallback);
         }
 
+        /// <summary>Change de personnage (choix en jeu d'un joueur qui rejoint) : son artefact remplace le précédent.</summary>
+        public void EquipCharacter(CharacterDefinition character)
+        {
+            if (character == null)
+                return;
+            Character = character;
+            Equip(character.artifact != null ? character.artifact : fallback);
+        }
+
         /// <summary>Équipe un artefact (début de run, tests, debug).</summary>
         public void Equip(ArtifactDefinition artifact)
         {

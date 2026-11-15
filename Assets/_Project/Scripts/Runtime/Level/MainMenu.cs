@@ -55,13 +55,10 @@ namespace ItHunts.Level
             _menu.Add("Test_Movement (banc d'essai)", () => Direct(movementScene));
             _menu.Add("Test_Arena (labyrinthe)", () => Direct(arenaScene));
             _menu.Add("Level_01 (carte fixe de référence)", () => Direct(fixedLevelScene));
-            GreyboxMenu.Item coop = _menu.Add("Joueur 2 (écran partagé)", null);
-            coop.Value = () => RunSession.CoopDevice != null ? CharacterLabel(1) : "Start sur sa manette";
-            coop.Change = d =>
-            {
-                if (RunSession.CoopDevice != null)
-                    Cycle(1, d);
-            };
+            GreyboxMenu.Item coop = _menu.Add("Joueur 2", null);
+            // Le 2e joueur choisit avec sa propre manette (◀ ▶, A pour valider, B pour changer), pas avec le menu du 1er.
+            coop.Value = () => RunSession.CoopDevice == null ? "Start sur sa manette"
+                : CharacterLabel(1) + (_p2Ready ? "  ✓" : "  · A pour valider");
             _menu.Add("Inviter un ami", null, false);
             _menu.Add("Multijoueur", null, false);
             _menu.Add("Paramètres", null, false);
@@ -70,8 +67,19 @@ namespace ItHunts.Level
             _menu.FocusFirst();
         }
 
+        /// <summary>Chaque joueur a choisi : le 2e joueur (s'il a rejoint) a validé son personnage avec A.</summary>
+        private bool EveryoneChose()
+        {
+            if (RunSession.CoopDevice == null || _p2Ready)
+                return true;
+            _status = "Joueur 2 : choisis ton personnage avec ta manette (◀ ▶), puis valide avec A.";
+            return false;
+        }
+
         private void Launch()
         {
+            if (!EveryoneChose())
+                return;
             if (run == null || run.difficulties.Count == 0)
             {
                 _status = "Pas de définition de run.";
@@ -96,6 +104,8 @@ namespace ItHunts.Level
         /// <summary>Playtest : le niveau 1 en Facile, directement dans l'arène du combat de boss (traqueur, pièges, leviers).</summary>
         private void LaunchBossFight()
         {
+            if (!EveryoneChose())
+                return;
             int easy = run != null ? run.difficulties.FindIndex(d => d.playable) : -1;
             Fix();
             string scene = easy >= 0 ? RunSession.Begin(run, easy) : null;
@@ -116,23 +126,64 @@ namespace ItHunts.Level
 
         private void Direct(string scene)
         {
+            if (!EveryoneChose())
+                return;
             Fix();
             RunSession.End();
             if (!RunSession.Load(scene))
                 _status = $"Scène « {scene} » absente du build.";
         }
 
+        private bool _p2Ready;
+        private float _p2RepeatAt;
+
+        /// <summary>Le 2e joueur a validé son personnage (tests, mesures).</summary>
+        public bool SecondPlayerReady => _p2Ready;
+
         private void Update()
         {
+            _menu.Exclude = RunSession.CoopDevice;                       // sa manette ne pilote pas le menu du 1er joueur
             _menu.Update();
+            UpdateSecondPlayer();
             // Écran partagé (étape 9) : le 2e joueur rejoint avec Start sur une autre manette que celle du 1er.
             foreach (UnityEngine.InputSystem.Gamepad g in UnityEngine.InputSystem.Gamepad.all)
                 if (g.startButton.wasPressedThisFrame && g != GreyboxMenu.LastNavPad)
                 {
                     RunSession.CoopDevice = RunSession.CoopDevice == g ? null : g;   // Start de nouveau : il se retire
+                    _p2Ready = false;
                     Fix();                                                        // il prend le premier personnage libre
-                    _status = RunSession.CoopDevice != null ? $"Joueur 2 prêt ({g.displayName}) : écran partagé au lancement." : "Joueur 2 retiré.";
+                    _status = RunSession.CoopDevice != null
+                        ? $"Joueur 2 a rejoint ({g.displayName}) : choisis ton personnage avec ta manette (◀ ▶), puis A."
+                        : "Joueur 2 retiré.";
                 }
+        }
+
+        /// <summary>Choix du 2e joueur avec sa manette : ◀ ▶ change (personnages libres seulement), A valide, B revient au choix.</summary>
+        private void UpdateSecondPlayer()
+        {
+            if (!(RunSession.CoopDevice is UnityEngine.InputSystem.Gamepad pad))
+                return;
+            if (_p2Ready)
+            {
+                if (pad.buttonEast.wasPressedThisFrame)
+                    _p2Ready = false;
+                return;
+            }
+
+            float x = pad.leftStick.ReadValue().x + pad.dpad.ReadValue().x;
+            if (Mathf.Abs(x) > 0.6f && Time.unscaledTime >= _p2RepeatAt)
+            {
+                Cycle(1, x > 0f ? 1 : -1);
+                _p2RepeatAt = Time.unscaledTime + 0.25f;
+            }
+            else if (Mathf.Abs(x) < 0.2f)
+                _p2RepeatAt = 0f;
+            if (pad.buttonSouth.wasPressedThisFrame)
+            {
+                Fix();
+                _p2Ready = true;
+                _status = $"Joueur 2 : {CharacterLabel(1)}, validé.";
+            }
         }
 
         // ---------- Personnages (D-064) ----------
@@ -210,7 +261,7 @@ namespace ItHunts.Level
                 _cardTitle.normal.textColor = on ? Color.white : new Color(0.5f, 0.5f, 0.5f);
                 _cardText.normal.textColor = on ? new Color(0.85f, 0.85f, 0.85f) : new Color(0.45f, 0.45f, 0.45f);
                 float x = card.x + cardH + 4f, w = card.width - cardH - 12f;
-                string tags = (p1 ? "   [J1]" : "") + (p2 ? "   [J2]" : "");
+                string tags = (p1 ? "   [J1]" : "") + (p2 ? (_p2Ready ? "   [J2 ✓]" : "   [J2]") : "");
                 GUI.Label(new Rect(x, card.y + 10f, w, 30f), c.displayName + tags, _cardTitle);
                 GUI.Label(new Rect(x, card.y + 42f, w, cardH - 46f), on ? c.ArtifactName : $"{c.ArtifactName} · bientôt", _cardText);
             }

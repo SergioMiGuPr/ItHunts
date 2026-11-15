@@ -84,6 +84,17 @@ namespace ItHunts.Level
 
         private bool _hadKeyboardMenu;
 
+        /// <summary>
+        /// Referme le menu de ce joueur s'il vient de s'ouvrir (cette image ou la précédente) : le Start d'une manette qui rejoint a pu
+        /// être lu comme une pause par le 1er joueur avant que SplitScreen ne lui rende ses appareils.
+        /// </summary>
+        public void CancelJustOpened(PlayerInput player)
+        {
+            Open o = _open.FirstOrDefault(x => x.Player == player && Time.frameCount <= x.Frame + 1);
+            if (o != null)
+                Close(o, true);
+        }
+
         /// <summary>Ouvre le menu pause de ce joueur.</summary>
         public void OpenFor(PlayerInput pi)
         {
