@@ -76,21 +76,26 @@ namespace ItHunts.EditorTools
             return $"contours (passe plein écran, M_Contours) ; pré-passe {(fixPrepass ? $"= couches opaques ({opaque})" : "= tout (ancienne)")}";
         }
 
-        /// <summary>GPU Resident Drawer (Instanced Drawing) et variantes BatchRendererGroup gardées (RENDU.md § 4).</summary>
-        public static string Performance()
+        /// <summary>
+        /// GPU Resident Drawer et variantes BatchRendererGroup (RENDU.md § 4). Mesuré dans un build sur la carte aléatoire, pic de vague
+        /// actif : activé, 1 007 draw calls mais 37 ms par image en solo (69.9 à deux) ; coupé, 4 712 draw calls et 9.0 ms (15.7) :
+        /// le coût CPU de ses milliers de renderers créés à l'exécution l'emporte. Coupé par défaut (gpuResidentDrawer = false) ;
+        /// les variantes sont gardées (Keep All) pour pouvoir le réessayer sans rebuild des shaders.
+        /// </summary>
+        public static string Performance(bool gpuResidentDrawer = false)
         {
             var rp = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelinePath);
             if (rp == null)
                 return "ERREUR : PC_RPAsset introuvable";
             var rps = new SerializedObject(rp);
-            rps.FindProperty("m_GPUResidentDrawerMode").intValue = 1;          // Instanced Drawing
+            rps.FindProperty("m_GPUResidentDrawerMode").intValue = gpuResidentDrawer ? 1 : 0;   // 1 : Instanced Drawing
             rps.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(rp);
             var gs = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset")[0]);
             gs.FindProperty("m_BrgStripping").intValue = 2;                  // Keep All
             gs.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssets();
-            return "GPU Resident Drawer : Instanced Drawing ; BatchRendererGroup Variants : Keep All";
+            return $"GPU Resident Drawer : {(gpuResidentDrawer ? "Instanced Drawing" : "coupé (mesuré plus lent)")} ; BatchRendererGroup Variants : Keep All";
         }
 
         /// <summary>Passes des mains (transparents, étiquette du contour) : voir EnsureFirstPersonRendering.</summary>

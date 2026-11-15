@@ -235,7 +235,7 @@ namespace ItHunts.Tests
             Assert.That(so.FindProperty("m_PrepassLayerMask.m_Bits").longValue, Is.EqualTo(so.FindProperty("m_OpaqueLayerMask.m_Bits").longValue),
                 "pré-passe sans les couches des mains (contours fantômes, SSAO)");
             var rp = new SerializedObject(AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>("Assets/Settings/PC_RPAsset.asset"));
-            Assert.That(rp.FindProperty("m_GPUResidentDrawerMode").intValue, Is.EqualTo(1), "GPU Resident Drawer : Instanced Drawing");
+            Assert.That(rp.FindProperty("m_GPUResidentDrawerMode").intValue, Is.EqualTo(0), "GPU Resident Drawer coupé : mesuré 37 ms contre 9 ms sur la carte aléatoire");
             var gs = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset")[0]);
             Assert.That(gs.FindProperty("m_BrgStripping").intValue, Is.EqualTo(2), "BatchRendererGroup Variants : Keep All");
             var mid = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Intermediaire.asset");
