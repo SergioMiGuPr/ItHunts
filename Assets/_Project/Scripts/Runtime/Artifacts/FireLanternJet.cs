@@ -67,6 +67,8 @@ namespace ItHunts.Artifacts
                     float taken = enemy.ApplyDamage(enemy.ProjectileDamage(cfg.damage), time, out bool killed);   // volant : un coup
                     hit.Damage = taken;
                     hit.Killed = killed;
+                    if (!killed && cfg.burnDps > 0f)
+                        Burning.Apply(enemy, cfg.burnDps, cfg.burnDuration, shooterId);   // amélioration « Braises »
                     if (taken > 0f)
                         DamageEvents.Raise(new DamageEvent
                         {

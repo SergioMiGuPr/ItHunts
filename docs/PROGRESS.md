@@ -4,7 +4,23 @@
 
 ## Étape en cours
 
-**Suite de la carte (`carte-suite`) — 2026-11-15, en attente de playtest, pas poussée.**
+**Suite de la carte (`carte-suite`) — 2026-11-15, playtestée** (hauteurs, chargement, fluidité, menu validés ; arcs disparus, coop
+bloquée, zones de parcours trop rares → corrigés ci-dessous), **fusionnée dans `main`**.
+- **Après le playtest (2026-11-15) :**
+  - **Arcs** : la fusion du décor ne peut pas combiner un maillage importé sans *Read/Write* (modèles de la DA) ; ces pièces
+    (≈ 500 par carte : arcs, colonnes, portes, poutres, ponts) restent séparées au lieu de disparaître ; arcs aussi dans les couloirs
+    en pente. 5 seeds : 1 465 arcs visibles, sur deux piédroits, sommet à 0.3 m au plus du plafond. Demande à la DA (ART-HANDOFF) :
+    *Read/Write* sur `Assets/Art/Models/Niveau1` pour qu'ils soient fusionnés aussi.
+  - **Coop** : au menu, le joueur 2 choisit avec sa manette (◀ ▶, A valide, B change) et la partie ne part qu'après sa
+    validation ; en jeu, menu de choix dans sa moitié d'écran (`CharacterSelectMenu`, personnages pris grisés). Cause du blocage :
+    le Start d'une nouvelle manette faisait basculer le joueur 1 (clavier) sur elle (changement automatique de l'Input System).
+  - **Zones de parcours** : 24 par carte (6 salles de parcours entièrement non magnétiques, 18 galeries ouvertes sur le couloir),
+    au moins 2 par tiers, 8 coffres de parcours ; parcours exigeants (`ParkourCourse` : poutre étroite, marches qui tombent, deux
+    murs plus longs qu'un double saut, vide à dash) vérifiés sans traction. 20/20 seeds : 3 045 sauts faisables, 0 surface
+    magnétique sur 45 695 rayons dans les salles de parcours, 0 cachette.
+  - **Lanterne** : 32 PV, recharge 2.5 s, cône depuis la lanterne : goule 3.1 s (barillet 1 s), groupe de 3 3.1 s (5.4 s),
+    goule qui rampe à 1 m touchée. **Améliorations** au marchand (portée, cône, recharge, brûlure) ; le marchand vend celles de
+    l'artefact du joueur. 385 tests EditMode (384 + 1 non concluant voulu).
 - **Point 1 (`26a7b85`) — arcs au sol :** l'arc du kit (11 m) était posé au niveau du sol dans des couloirs de 19 m (portique isolé),
   et les arcs de porte entraient de 1,8 m dans les couloirs en pente. `KitBuild.Arch` : sommet sous le plafond, sur deux piédroits ;
   arcs de porte dans l'épaisseur du mur. 5 seeds : 0 pièce mal posée.

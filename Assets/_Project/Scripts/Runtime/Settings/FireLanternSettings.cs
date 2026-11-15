@@ -26,6 +26,9 @@ namespace ItHunts.Settings
         [Min(0f)] public float damage = 32f;
         [Tooltip("Recharge entre deux jets (s), comptée depuis la fin du jet : la lanterne s'éteint puis se rallume.")]
         [Min(0f)] public float cooldown = 2.5f;
+        [Tooltip("Brûlure laissée sur chaque ennemi touché (PV/s ; 0 : aucune, l'amélioration « Braises » en ajoute) et sa durée (s).")]
+        [Min(0f)] public float burnDps;
+        [Min(0.1f)] public float burnDuration = 3f;
         [Tooltip("Un clic arrivé un peu trop tôt (fin de recharge) part dès que possible pendant ce délai (s).")]
         [Min(0f)] public float pressBuffer = 0.12f;
         [Tooltip("Ce que le jet peut toucher ou ce qui l'arrête (décor solide sans Rigidbody). Le joueur qui tire est toujours ignoré.")]

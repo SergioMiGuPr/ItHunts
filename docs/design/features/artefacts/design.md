@@ -65,8 +65,11 @@ dégâts directs ; les artefacts et les améliorations en ajoutent (D-022). Déc
      pendant le jet ; **la lanterne s'éteint à la fin du jet et se rallume pendant la recharge** (petit son quand elle est
      prête) ; HUD : un segment sous le viseur qui se vide pendant le jet et se remplit pendant la recharge ; sons provisoires
      (souffle, rallumage). Le modèle de la DA arrivera par une PR (lanterne greybox de 6 × 9 × 6 cm en attendant).
-   - **Marchand de l'artefact** (D-050) : ses améliorations sont celles du barillet ; le renard ne voit que le soin tant que
-     la lanterne n'a pas les siennes.
+   - **Marchand de l'artefact** (D-050) : il propose **les améliorations de l'artefact du joueur qui achète** (une liste par
+     artefact, `ArtifactDefinition.upgrades`). Lanterne, 4 provisoires (`UpgradePool_Lanterne`) : **Long souffle** (portée
+     +1.5 m, 45 âmes), **Flamme large** (cône +15°, 50), **Mèche vive** (recharge −0.5 s, 55), **Braises** (les ennemis touchés
+     brûlent 5 PV/s pendant 3 s, 60 ; pas le traqueur ; chiffres toutes les 0.5 s). Elles se cumulent sur une copie des
+     réglages du joueur.
 7. **Tir ami** (réglage coop `Coop_Default`, **désactivé par défaut**) : les balles, les objets lancés (zone
    comprise) et les objets repoussés d'un joueur blessent les autres joueurs s'il est activé ; **jamais le joueur
    lui-même**. Un objet est attribué au dernier joueur qui l'a attrapé, lancé ou repoussé. PV du joueur provisoires :

@@ -38,9 +38,62 @@ namespace ItHunts.EditorTools
 
             AssetDatabase.SaveAssets();
             string list = $"Personnages : {roster.Count} ({string.Join(", ", roster.characters.Select(c => c.displayName + (c.Selectable ? "" : " (grisé)")))})";
+            string pools = UpgradePools();
             string prefab = InstallLantern();
             string scenes = WireScenes();                                // ouvre les scènes : les assets chargés avant sont déchargés
-            return $"{list} ; {prefab} ; scènes : {scenes}";
+            return $"{list} ; {pools} ; {prefab} ; scènes : {scenes}";
+        }
+
+        public const string LanternPoolPath = SettingsDir + "/UpgradePool_Lanterne.asset";
+
+        /// <summary>
+        /// Améliorations vendues par le marchand de l'artefact, une liste par artefact (point 6) : celles du barillet (D-050) et 4
+        /// provisoires pour la lanterne de feu. Les assets déjà présents gardent leurs réglages.
+        /// </summary>
+        public static string UpgradePools()
+        {
+            UpgradePool barrelPool = TestArenaSceneBuilder.BarrelPoolAsset();
+            var barrel = AssetDatabase.LoadAssetAtPath<BarrelSettings>(BarrelPath);
+            if (barrel != null && barrel.upgrades != barrelPool)
+            {
+                barrel.upgrades = barrelPool;
+                EditorUtility.SetDirty(barrel);
+            }
+
+            var pool = LoadOrCreate<UpgradePool>(LanternPoolPath);
+            pool.upgrades.Clear();
+            pool.upgrades.Add(Upgrade("Upgrade_Lanterne_Portee", "Long souffle", "Jet de la lanterne : +1,5 m de portée.", "+1,5", new Color(3.2f, 1.2f, 0.3f), UpgradeKind.PorteeLanterne, 1.5f, 45));
+            pool.upgrades.Add(Upgrade("Upgrade_Lanterne_Cone", "Flamme large", "Cône du jet : +15°.", "<>", new Color(3.4f, 1.6f, 0.4f), UpgradeKind.ConeLanterne, 15f, 50));
+            pool.upgrades.Add(Upgrade("Upgrade_Lanterne_Recharge", "Mèche vive", "Recharge de la lanterne : -0,5 s.", "-0,5", new Color(3f, 2f, 0.5f), UpgradeKind.RechargeLanterne, 0.5f, 55));
+            pool.upgrades.Add(Upgrade("Upgrade_Lanterne_Brulure", "Braises", "Les ennemis touchés brûlent : 5 PV/s pendant 3 s.", "~", new Color(3.6f, 0.7f, 0.2f), UpgradeKind.BrulureLanterne, 5f, 60));
+            EditorUtility.SetDirty(pool);
+            FireLanternSettings lantern = Lantern();
+            if (lantern.upgrades != pool)
+            {
+                lantern.upgrades = pool;
+                EditorUtility.SetDirty(lantern);
+            }
+
+            AssetDatabase.SaveAssets();
+            return $"améliorations : barillet {barrelPool.upgrades.Count}, lanterne {pool.upgrades.Count}";
+        }
+
+        private static UpgradeDefinition Upgrade(string file, string name, string description, string icon, Color color, UpgradeKind kind, float amount, int price)
+        {
+            string path = $"{SettingsDir}/Upgrades/{file}.asset";
+            var u = AssetDatabase.LoadAssetAtPath<UpgradeDefinition>(path);
+            if (u != null)
+                return u;
+            u = ScriptableObject.CreateInstance<UpgradeDefinition>();
+            u.displayName = name;
+            u.description = description;
+            u.iconSymbol = icon;
+            u.color = color;
+            u.kind = kind;
+            u.amount = amount;
+            u.merchantPrice = price;
+            AssetDatabase.CreateAsset(u, path);
+            return u;
         }
 
         /// <summary>La lanterne de feu (créée avec les valeurs de départ si elle n'existe pas).</summary>

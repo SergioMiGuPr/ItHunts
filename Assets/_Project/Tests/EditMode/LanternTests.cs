@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ItHunts.Artifacts;
 using ItHunts.Combat;
@@ -363,6 +364,70 @@ namespace ItHunts.Tests
             r.characters.Add(C("Hibou", null, false));
             r.defaultIndex = 1;
             return r;
+        }
+
+        // ---------- Améliorations de la lanterne (point 6) ----------
+
+        [Test]
+        public void Ameliorations_PorteeConeRechargeBrulure_SurLaCopieDuJoueur()
+        {
+            var go = new GameObject("Joueur (améliorations)");
+            SceneManager.MoveGameObjectToScene(go, _scene);
+            go.AddComponent<PlayerHealth>().Configure(Asset<PlayerHealthSettings>(), Asset<CoopSettings>());
+            var holder = go.AddComponent<ArtifactHolder>();
+            holder.Equip(_cfg);
+            var up = go.AddComponent<ItHunts.Economy.PlayerUpgrades>();
+            UpgradeDefinition U(UpgradeKind k, float amount)
+            {
+                UpgradeDefinition d = Asset<UpgradeDefinition>();
+                d.kind = k;
+                d.amount = amount;
+                return d;
+            }
+
+            up.Apply(U(UpgradeKind.PorteeLanterne, 1.5f));
+            up.Apply(U(UpgradeKind.ConeLanterne, 15f));
+            up.Apply(U(UpgradeKind.RechargeLanterne, 0.5f));
+            up.Apply(U(UpgradeKind.BrulureLanterne, 5f));
+            FireLanternSettings c = holder.LanternSettings;
+            Assert.That(c, Is.Not.SameAs(_cfg), "copie pour ce joueur seul");
+            Assert.That(c.range, Is.EqualTo(6.5f).Within(1e-4f));
+            Assert.That(c.coneAngle, Is.EqualTo(55f).Within(1e-4f));
+            Assert.That(c.cooldown, Is.EqualTo(2f).Within(1e-4f));
+            Assert.That(c.burnDps, Is.EqualTo(5f).Within(1e-4f));
+            Assert.That(_cfg.range, Is.EqualTo(5f), "l'asset partagé ne change pas");
+            Object.DestroyImmediate(c);
+        }
+
+        [Test]
+        public void Brulure_5PVParSeconde_3s_TraqueurJamais()
+        {
+            Damageable d = Dummy(new Vector3(0f, 0f, 3f), Asset<TrainingDummySettings>());
+            Burning b = Burning.Apply(d, 5f, 3f, 7);
+            Assert.That(b, Is.Not.Null);
+            float t = Time.time, total = 0f;
+            for (int i = 0; i < 200; i++)
+                total += b.Tick(0.02f, t + i * 0.02f);
+            Assert.That(total, Is.EqualTo(15f).Within(0.2f), "5 PV/s pendant 3 s");
+            Assert.That(d.LastAttackerId, Is.EqualTo(7), "attribuée au joueur (âmes, aggro)");
+            Damageable stalker = Dummy(new Vector3(2f, 0f, 3f), Asset<TrainingDummySettings>(), stalker: true);
+            Assert.That(Burning.Apply(stalker, 5f, 3f, 7), Is.Null, "le traqueur ne brûle pas");
+        }
+
+        [Test]
+        public void Marchand_AmeliorationsDeLArtefactDuJoueur()
+        {
+            UpgradePool barrelPool = Asset<UpgradePool>(), lanternPool = Asset<UpgradePool>();
+            var barrel = Asset<BarrelSettings>();
+            barrel.upgrades = barrelPool;
+            _cfg.upgrades = lanternPool;
+            Assert.That(ItHunts.Economy.ArtifactMerchant.PoolFor(barrel, barrelPool), Is.SameAs(barrelPool));
+            Assert.That(ItHunts.Economy.ArtifactMerchant.PoolFor(_cfg, barrelPool), Is.SameAs(lanternPool), "le renard voit celles de la lanterne");
+            _cfg.upgrades = null;
+            Assert.That(ItHunts.Economy.ArtifactMerchant.PoolFor(_cfg, barrelPool), Is.Null, "artefact sans liste : le soin seulement");
+            var project = AssetDatabase.LoadAssetAtPath<FireLanternSettings>("Assets/_Project/Settings/FireLantern_Default.asset");
+            Assert.That(project.upgrades, Is.Not.Null);
+            Assert.That(project.upgrades.upgrades.Select(u => u.kind), Is.EquivalentTo(new[] { UpgradeKind.PorteeLanterne, UpgradeKind.ConeLanterne, UpgradeKind.RechargeLanterne, UpgradeKind.BrulureLanterne }));
         }
 
         // ---------- Assets du projet ----------
