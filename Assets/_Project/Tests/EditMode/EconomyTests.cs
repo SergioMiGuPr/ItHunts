@@ -374,5 +374,64 @@ namespace ItHunts.Tests
                 Object.DestroyImmediate(parent);
             }
         }
+
+        [Test]
+        public void TexteEnMonde_SurUnePorteEtiree_ResteALEchelleEtUnTexteParFace()
+        {
+            // Cause des textes vus à travers les murs : posé sur une porte (cube étiré à 10 × 10 × 1.2 m), le texte héritait de
+            // son échelle (lettres de 5 m, étirées, qui dépassaient des murs en se tournant vers la caméra).
+            var level = new GameObject("Niveau (test)");
+            var door = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            try
+            {
+                door.transform.SetParent(level.transform, false);
+                door.transform.localScale = new Vector3(10f, 10f, 1.2f);
+                WorldLabel[] labels = WorldLabel.CreateOnFaces(door.transform, "Sortie", Color.white, 0.5f);
+                Assert.That(labels.Length, Is.EqualTo(2));
+                foreach (WorldLabel l in labels)
+                {
+                    Assert.That(l.transform.lossyScale.x, Is.EqualTo(1f).Within(0.001f), "à l'échelle du monde");
+                    Assert.That(l.transform.lossyScale.y, Is.EqualTo(1f).Within(0.001f));
+                    Assert.That(Mathf.Abs(l.transform.position.z), Is.EqualTo(0.6f + 0.12f).Within(0.001f), "devant la face, à 0.12 m");
+                    Assert.That(l.IgnoreRoot, Is.Null, "la porte cache le texte de l'autre face");
+                }
+
+                Assert.That(labels[0].transform.position.z * labels[1].transform.position.z, Is.LessThan(0f), "une face chacun");
+            }
+            finally
+            {
+                Object.DestroyImmediate(level);
+            }
+        }
+
+        [Test]
+        public void LigneDeVue_DecorEntre_CacheMaisPasLesObjetsPhysiquesNiLePorteur()
+        {
+            var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var crate = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            try
+            {
+                wall.transform.position = new Vector3(0f, 0f, 5f);
+                wall.transform.localScale = new Vector3(4f, 4f, 0.5f);
+                Physics.SyncTransforms();
+                Assert.That(PlayerSight.DecorBetween(Vector3.zero, new Vector3(0f, 0f, 10f)), Is.True, "mur entre la caméra et le texte : caché");
+                Assert.That(PlayerSight.DecorBetween(Vector3.zero, new Vector3(0f, 0f, 4f)), Is.False, "texte devant le mur : visible");
+                Assert.That(PlayerSight.DecorBetween(Vector3.zero, new Vector3(0f, 0f, 10f), wall.transform), Is.False, "le porteur du texte ne le cache pas");
+
+                wall.transform.position = new Vector3(0f, 100f, 0f);
+                crate.transform.position = new Vector3(0f, 0f, 5f);
+                crate.AddComponent<Rigidbody>().isKinematic = true;
+                Physics.SyncTransforms();
+                Assert.That(PlayerSight.DecorBetween(Vector3.zero, new Vector3(0f, 0f, 10f)), Is.False, "une caisse (objet physique) ne cache rien");
+                Assert.That(PlayerSight.OutsideView(Vector3.zero, Vector3.forward, new Vector3(0f, 0f, -5f), 70f, 16f / 9f, 10f), Is.True, "derrière : hors du champ");
+                Assert.That(PlayerSight.OutsideView(Vector3.zero, Vector3.forward, new Vector3(1f, 0f, 5f), 70f, 16f / 9f, 10f), Is.False);
+            }
+            finally
+            {
+                Object.DestroyImmediate(wall);
+                Object.DestroyImmediate(crate);
+            }
+        }
+
     }
 }

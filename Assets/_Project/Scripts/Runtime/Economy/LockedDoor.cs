@@ -15,7 +15,7 @@ namespace ItHunts.Economy
         [Tooltip("Autres pièces bloquées avec la porte (barreaux de la fenêtre).")]
         [SerializeField] private GameObject[] alsoBlocking;
 
-        private WorldLabel _label;
+        private WorldLabel[] _labels;
 
         public bool Open { get; private set; }
         public int Price => settings != null ? settings.lockedDoorPrice : 50;
@@ -24,7 +24,8 @@ namespace ItHunts.Economy
         public float Range => settings != null ? settings.interactRange : 4f;
         public bool AcceptsGrab => false;
 
-        private void Awake() => _label = WorldLabel.Create(transform, new Vector3(0f, 0f, 0f), $"Salle verrouillée\n{Price} âmes", new Color(1f, 0.7f, 0.3f));
+        // Un texte devant chaque face de la porte : la porte cache celui de l'autre face (règle des textes en monde).
+        private void Awake() => _labels = WorldLabel.CreateOnFaces(transform, $"Salle verrouillée\n{Price} âmes", new Color(1f, 0.7f, 0.3f));
 
         private void OnEnable() => Interactables.All.Add(this);
         private void OnDisable() => Interactables.All.Remove(this);
@@ -48,8 +49,10 @@ namespace ItHunts.Economy
             foreach (Renderer r in GetComponentsInChildren<Renderer>(true))
                 if (r.GetComponent<TextMesh>() == null)
                     r.enabled = !open;
-            if (_label != null)
-                _label.gameObject.SetActive(!open);
+            if (_labels != null)
+                foreach (WorldLabel l in _labels)
+                    if (l != null)
+                        l.gameObject.SetActive(!open);
             if (alsoBlocking != null)
                 foreach (GameObject g in alsoBlocking)
                     if (g != null)

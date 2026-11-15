@@ -68,7 +68,6 @@ namespace ItHunts.Enemies
         private readonly List<SpawnPoint> _candidates = new List<SpawnPoint>();
         /// <summary>Dernier passage d'un joueur dans chaque volume (salle ou tronçon).</summary>
         private readonly Dictionary<ItHunts.Level.RoomVolume, float> _visits = new Dictionary<ItHunts.Level.RoomVolume, float>();
-        private readonly RaycastHit[] _hits = new RaycastHit[16];
         private ZoneState _zone;
         private System.Random _rng = new System.Random(1);
         private AudioSource _audio;
@@ -694,27 +693,8 @@ namespace ItHunts.Enemies
             return true;
         }
 
-        /// <summary>Le joueur voit-il ce point (dans son champ de vision et sans décor entre ses yeux et le point) ?</summary>
-        public bool VisibleTo(PlayerHealth p, Vector3 point)
-        {
-            Vector3 eye = p.transform.position + Vector3.up * 1.6f;
-            var look = p.GetComponent<PlayerLook>();
-            Vector3 forward = look != null ? Quaternion.Euler(look.Pitch, look.Yaw, 0f) * Vector3.forward : p.transform.forward;
-            float fov = look != null ? look.CurrentFov : 70f;
-            if (WaveMath.OutsideView(eye, forward, point, fov, 16f / 9f, 10f))
-                return false;
-            Vector3 d = point - eye;
-            float len = d.magnitude;
-            int n = Physics.RaycastNonAlloc(eye, d / Mathf.Max(0.001f, len), _hits, len, ~0, QueryTriggerInteraction.Ignore);
-            for (int i = 0; i < n; i++)
-            {
-                Collider c = _hits[i].collider;
-                if (c.attachedRigidbody == null && c.GetComponentInParent<PlayerHealth>() == null && c.GetComponentInParent<Damageable>() == null)
-                    return false;                                        // caché par le décor
-            }
-
-            return true;
-        }
+        /// <summary>Le joueur voit-il ce point (dans son champ de vision et sans décor entre ses yeux et le point) ? Règle commune : PlayerSight.</summary>
+        public bool VisibleTo(PlayerHealth p, Vector3 point) => PlayerSight.VisibleTo(p, point, 10f);
 
         private GameObject ShowMarker(SpawnPoint point)
         {

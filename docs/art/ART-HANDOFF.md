@@ -11,8 +11,11 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 >   respecter, couleur de l'orbe par action (D-024) et codes couleur du jeu (rouge = annonce d'attaque et refus).
 > - **Volant : envergure 2.3 m** (et non ≈ 2.4 m).
 > - **Plus aucune porte « refuge »** (D-035) : aucune porte ni aucun abri où le traqueur ne peut pas passer la main.
-> - **Textes en monde** (marchand, sortie, coffres, orbes de choix) : maintenant **cachés par le décor** (test de profondeur), lignes
->   de 0.28 m, toujours face à l'écran ; ne pas compter sur eux à travers un mur.
+> - **Textes en monde** (marchand, sortie, coffres, orbes de choix, salle verrouillée, « à terre ») : **cachés par le décor**, avec
+>   une règle unique : un texte n'est affiché que si **aucun décor (collider solide sans Rigidbody) n'est entre la caméra et lui**,
+>   en plus du test de profondeur. Lignes de 0.28 m (sortie 0.5 m), toujours face à l'écran, **toujours à l'échelle du monde**
+>   (même posés sur une porte étirée). Sur une porte (sortie, salle verrouillée), **un texte devant chaque face**, à 0.12 m : un
+>   modèle de porte doit donc avoir une **collision pleine** (sinon le texte de l'autre face se voit à travers).
 > - **Catalogue des props** : `Prop_TorcheEteinte` (flamme sans lumière, une torche sur deux dans les bases régénérées).
 > - Goules : elles grimpent aussi les flancs des plateformes et les murs proches d'un joueur hors d'atteinte, puis **bondissent
 >   depuis le mur** (même annonce de 0.3 s) : garder les murs et flancs de plateforme **pleins**, sans trou ni rebord qui coupe.
