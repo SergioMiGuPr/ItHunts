@@ -16,7 +16,15 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 >   en plus du test de profondeur. Lignes de 0.28 m (sortie 0.5 m), toujours face à l'écran, **toujours à l'échelle du monde**
 >   (même posés sur une porte étirée). Sur une porte (sortie, salle verrouillée), **un texte devant chaque face**, à 0.12 m : un
 >   modèle de porte doit donc avoir une **collision pleine** (sinon le texte de l'autre face se voit à travers).
-> - **`.meta` des assets art (nouvelle règle, commit `94cebbf`)** : les `.meta` de `Assets/Art/` sont générés et commités par la
+> - **Intégration du rendu et du lot de modélisation (PR #3, branche `rendu-integration`, 2026-11-16)** : contours plein écran et
+>   pré-passe sans les mains (`PC_Renderer`), ambiance intermédiaire dans toutes les scènes, lanterne du joueur, `SM_LanterneFeu` en main
+>   (`FX_Flamme`, `FX_Jet`, verre allumé par `_EmissionColor`), props et arène remplacés par les modèles (liste dans `PROGRESS.md`).
+>   **Demandes à la DA :** (1) `IsMatchingLightLayer` dans `ItHunts_ToonForwardPass` (sinon la lanterne du joueur éclaire encore les
+>   artefacts en toon) ; (2) *Read/Write* sur `Assets/Art/Models/Niveau1` (fusion du décor) ; (3) **`INTEGRATION-PROPS.md` absent de la
+>   PR #3** : pivots, boîtes de collision et repères repris du manifeste ; torche à +0.545 m (consigne), l'alignement sur la greybox
+>   donnait +0.330 m ; (4) normales lissées dans les FBX de vue FPS pour la coque du contour (arêtes vives du barillet).
+> - **`.meta` des assets art (règle du § 1, mise à jour)** : la session art génère et commite les `.meta` de ses nouveaux assets ; la
+>   session principale seulement pour des assets jamais ouverts dans Unity. Ancienne règle : les `.meta` de `Assets/Art/` sont générés et commités par la
 >   session principale (Unity), juste après la fusion d'une PR art. La branche `art` fait un **pull de `main` avant chaque
 >   nouveau lot** ; ne jamais générer de `.meta` sur `art` sans avoir tiré `main` (détail au § 1).
 > - **Demande à la DA : « Read/Write » activé à l'import des modèles du décor** (`Assets/Art/Models/Niveau1/*.fbx`, case *Read/Write*
