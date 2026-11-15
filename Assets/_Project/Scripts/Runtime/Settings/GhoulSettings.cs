@@ -49,6 +49,21 @@ namespace ItHunts.Settings
         [Min(0.1f)] public float climbSpeed = 7f;
         [Tooltip("Vitesse quand elle saute d'une hauteur pour redescendre (m/s).")]
         [Min(0.1f)] public float dropSpeed = 12f;
+        [Tooltip("Joueur hors d'atteinte par le sol (plateforme, poutre) à moins de cette distance (m) : elle grimpe le mur le " +
+                 "plus proche de lui (jusqu'à wallSearchRange de lui) et bondit depuis le mur.")]
+        [Min(0f)] public float wallAssaultRange = 30f;
+        [Min(1f)] public float wallSearchRange = 12f;
+        [Tooltip("Depuis un mur, elle bondit sur le joueur à moins de cette distance (m) à l'horizontale (annonce leapTelegraph).")]
+        [Min(0f)] public float wallLeapRange = 12f;
+        [Tooltip("Accrochée en haut du mur sans pouvoir bondir (pas de ligne de vue) : elle redescend au bout de ce temps (s).")]
+        [Min(0.5f)] public float wallHoldTime = 3f;
+
+        [Header("Long trajet et déblocage (après le playtest des étapes 8 et 9)")]
+        [Tooltip("Au-delà de cette distance (m) au joueur, elle avance par étapes (salle voisine suivante, MazeGraph) : le calcul " +
+                 "de chemin d'Unity n'aboutit pas sur de très longues distances.")]
+        [Min(20f)] public float longPathDistance = 100f;
+        [Tooltip("En chasse, immobile plus de ce temps (s) alors que le joueur est loin : elle se replace sur le NavMesh le plus proche.")]
+        [Min(0.5f)] public float unstuckTime = 2f;
 
         [Header("Contact")]
         [Tooltip("Dégâts au contact (PV), au plus une fois par intervalle (s).")]

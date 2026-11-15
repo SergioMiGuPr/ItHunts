@@ -22,6 +22,10 @@ namespace ItHunts.Enemies
         public Vector3 Heading = Vector3.forward;
         public float Speed;
         public Vector3 Destination { get; private set; }
+        /// <summary>Dernier chemin partiel : le but n'est pas atteignable (ou trop loin pour le calcul de chemin).</summary>
+        public bool Partial { get; private set; }
+        /// <summary>Dernier coin du chemin calculé.</summary>
+        public Vector3 PathEnd => _count > 0 ? _corners[_count - 1] : Destination;
         public bool HasPath => _count > 0 && _index < _count;
         public Vector3 Velocity => Heading * Speed;
         /// <summary>Coin du chemin vers lequel il va (valable si HasPath).</summary>
@@ -44,16 +48,24 @@ namespace ItHunts.Enemies
         }
 
         /// <summary>Nouveau chemin vers <paramref name="to"/> si l'intervalle est passé (ou forcé). Faux si aucun chemin.</summary>
+        /// <summary>Debug : prochain recalcul permis, et résultat du dernier appel.</summary>
+        public float NextRepath => _nextRepath;
+        public string LastSet { get; private set; } = "";
+
         public bool SetDestination(Vector3 from, Vector3 to, float now, float interval, bool force = false)
         {
             if (!force && now < _nextRepath)
+            {
+                LastSet = "attente";
                 return HasPath;
+            }
             _nextRepath = now + interval;
             if (AgentType == NoAgent)
                 return false;
             if (!NavMesh.SamplePosition(from, out NavMeshHit a, 3f, Filter) || !NavMesh.SamplePosition(to, out NavMeshHit b, 6f, Filter))
             {
                 _count = 0;
+                LastSet = "hors NavMesh";
                 return false;
             }
 
@@ -62,9 +74,12 @@ namespace ItHunts.Enemies
             if (!NavMesh.CalculatePath(a.position, b.position, Filter, _path) || _path.status == NavMeshPathStatus.PathInvalid)
             {
                 _count = 0;
+                Partial = true;
                 return false;
             }
 
+            Partial = _path.status == NavMeshPathStatus.PathPartial;
+            LastSet = _path.status.ToString();
             _count = _path.GetCornersNonAlloc(_corners);
             _index = _count > 1 ? 1 : 0;
             return HasPath;
@@ -127,6 +142,11 @@ namespace ItHunts.Enemies
         /// </summary>
         /// <summary>Multiplicateur de vitesse (difficulté, D-048) : goules et volants ; 1 pour le traqueur (réglé avec la traction).</summary>
         public float SpeedScale = 1f;
+        /// <summary>
+        /// Vrai (goules) : un pas qui sortirait du NavMesh (bord d'une fosse, d'un étage) est refusé ; elle reste où elle est.
+        /// Faux (traqueur) : le pas est gardé tel quel.
+        /// </summary>
+        public bool StayOnMesh;
 
         public Vector3 Step(Vector3 position, float targetSpeed, float acceleration, float turnRate, float dt)
         {
@@ -163,6 +183,12 @@ namespace ItHunts.Enemies
                 if (Speed > 0.01f && moved.magnitude < Speed * dt * 0.5f)
                     Speed = moved.magnitude / dt;
                 return onMesh;
+            }
+
+            if (StayOnMesh)
+            {
+                Speed = 0f;
+                return position;
             }
 
             return next;

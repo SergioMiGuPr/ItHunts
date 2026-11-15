@@ -145,6 +145,81 @@ namespace ItHunts.Enemies
         private readonly List<GameObject> _residents = new List<GameObject>();
         private bool _residentsFound;
 
+        /// <summary>Habitantes déplacées au début de la zone : posées sur un îlot (étage de module sans accès) ou sur la même place.</summary>
+        public int ResidentsMoved { get; private set; }
+
+        private UnityEngine.AI.NavMeshPath _residentPath;
+        private readonly List<Ghoul> _toPlace = new List<Ghoul>();
+
+        /// <summary>Habitantes gardées à vérifier, une fois le NavMesh construit (il l'est parfois après le début de la zone).</summary>
+        private void PlaceResidentsWhenReady()
+        {
+            if (_toPlace.Count == 0)
+                return;
+            var nav = FindFirstObjectByType<ZoneNavMesh>();
+            if (nav == null || !nav.Built)
+                return;
+            var placed = new List<Vector3>();
+            foreach (Ghoul g in _toPlace)
+                PlaceResident(g, placed);
+            _toPlace.Clear();
+        }
+
+        /// <summary>
+        /// Une habitante doit pouvoir sortir de sa salle : posée sur un îlot du NavMesh (étage de module sans accès), elle va à
+        /// l'entrée de sa salle (MazeGraph) ; deux habitantes au même endroit sont écartées de 1.6 m.
+        /// </summary>
+        private void PlaceResident(Ghoul g, List<Vector3> placed)
+        {
+            var nav = FindFirstObjectByType<ZoneNavMesh>();
+            var maze = FindFirstObjectByType<MazeGraph>();
+            if (g == null || nav == null || !nav.Built)
+                return;
+            var filter = new UnityEngine.AI.NavMeshQueryFilter { agentTypeID = nav.SmallAgent, areaMask = UnityEngine.AI.NavMesh.AllAreas };
+            Vector3 at = g.transform.position;
+            Vector3 to = at;
+            int node = maze != null ? maze.NodeAt(at) : -1;
+            if (node >= 0 && UnityEngine.AI.NavMesh.SamplePosition(at, out UnityEngine.AI.NavMeshHit here, 2f, filter))
+            {
+                _residentPath ??= new UnityEngine.AI.NavMeshPath();
+                bool outOk = false;
+                Vector3 firstEntry = at;
+                bool hasEntry = false;
+                for (int e = 0; e < maze.EdgeCount && !outOk; e++)
+                {
+                    if (maze.Edge(e).x != node && maze.Edge(e).y != node)
+                        continue;
+                    if (!UnityEngine.AI.NavMesh.SamplePosition(maze.Entry(node, e), out UnityEngine.AI.NavMeshHit entry, 10f, filter))
+                        continue;
+                    if (!hasEntry)
+                    {
+                        hasEntry = true;
+                        firstEntry = entry.position;
+                    }
+
+                    outOk = UnityEngine.AI.NavMesh.CalculatePath(here.position, entry.position, filter, _residentPath)
+                            && _residentPath.status == UnityEngine.AI.NavMeshPathStatus.PathComplete;
+                }
+
+                if (!outOk && hasEntry)
+                    to = firstEntry;                                     // îlot : à l'entrée de sa salle
+            }
+
+            for (int k = 0; k < 8 && placed.Exists(p => (p - to).sqrMagnitude < 0.8f); k++)
+            {
+                Vector3 off = to + Quaternion.Euler(0f, k * 45f, 0f) * Vector3.forward * 1.6f;
+                if (UnityEngine.AI.NavMesh.SamplePosition(off, out UnityEngine.AI.NavMeshHit o, 1f, filter))
+                    to = o.position;
+            }
+
+            placed.Add(to);
+            if ((to - at).sqrMagnitude > 0.01f)
+            {
+                g.Spawn(to, g.transform.rotation);
+                ResidentsMoved++;
+            }
+        }
+
         /// <summary>Habitants gardés et retirés au dernier début de zone (mesures).</summary>
         public int ResidentsKept { get; private set; }
         public int ResidentsRemoved { get; private set; }
@@ -172,6 +247,8 @@ namespace ItHunts.Enemies
                 _residents.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
             }
 
+            _toPlace.Clear();
+            ResidentsMoved = 0;
             var ghoulsIn = new Dictionary<ItHunts.Level.RoomVolume, int>();
             var flyersIn = new Dictionary<ItHunts.Level.RoomVolume, int>();
             ResidentsKept = ResidentsRemoved = 0;
@@ -204,6 +281,8 @@ namespace ItHunts.Enemies
                     ResidentsKept++;
                     if (!m.activeSelf)
                         m.SetActive(true);
+                    if (!flyer)
+                        _toPlace.Add(m.GetComponent<Ghoul>());
                 }
                 else
                 {
@@ -260,6 +339,7 @@ namespace ItHunts.Enemies
         {
             if (settings == null)
                 return;
+            PlaceResidentsWhenReady();
             if (MapArea <= 0f)
             {
                 MapArea = MeasureMapArea();
