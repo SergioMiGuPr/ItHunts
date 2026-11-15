@@ -65,7 +65,7 @@ namespace ItHunts.Level
         {
             if (RunSession.Active)
             {
-                string first = RunSession.Begin(RunSession.Definition, RunSession.DifficultyIndex, RunSession.CharacterIndex);
+                string first = RunSession.Begin(RunSession.Definition, RunSession.DifficultyIndex);
                 if (RunSession.Load(first))
                     return;
             }

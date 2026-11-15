@@ -276,6 +276,7 @@ namespace ItHunts.EditorTools
             SetRef(zone, "playerStart", start);
             var runState = new GameObject("État de la run").AddComponent<ItHunts.Artifacts.RunState>();
             SetRef(runState, "pool", LoadOrCreate<ArtifactPool>(PoolPath));
+            SetRef(runState, "characters", CharacterSetup.Roster());    // personnages (D-064)
             SetRef(runState, "upgrades", UpgradePoolAsset());
             new GameObject("Minimap (brouillard de guerre)").AddComponent<MapDiscovery>().gameObject.AddComponent<ItHunts.Hud.MinimapHud>();
             new GameObject("Mesure de performance du niveau (build, -ithunts-perf-level)").AddComponent<ItHunts.Debugging.LevelPerfProbe>();
@@ -328,6 +329,8 @@ namespace ItHunts.EditorTools
             SetRef(gen, "annex", annex);
             SetRef(gen, "lockedAnnex", locked);
             SetRef(gen, "water", water);
+            SetRef(gen, "nonMagnetic", NonMagneticMat());
+            SetRef(gen, "movement", AssetDatabase.LoadAssetAtPath<ItHunts.Settings.MovementSettings>(SettingsDir + "/Movement_Default.asset"));   // écarts des parcours
             SetRef(gen, "zoneNav", nav);
             SetRef(gen, "graph", graph);
             SetRef(gen, "playerStart", start);
@@ -335,6 +338,22 @@ namespace ItHunts.EditorTools
 
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
             player.transform.position = Vector3.up * 2f;
+
+            // Systèmes de jeu sous une racine inactive : le générateur l'active quand la carte est finie (écran de chargement).
+            var game = new GameObject("Jeu (activé quand la carte est prête)");
+            foreach (Transform t in new[] { graph.transform, nav.transform, start, zone.transform, souls.transform, feedback.transform,
+                         split.transform, _level, _spawns, ghoulPool, flyerPool, director.transform, player.transform })
+                if (t != null)
+                    t.SetParent(game.transform, true);
+            foreach (string n in new[] { "Minimap (brouillard de guerre)", "Mesure de performance du niveau (build, -ithunts-perf-level)" })
+            {
+                GameObject go = GameObject.Find(n);
+                if (go != null)
+                    go.transform.SetParent(game.transform, true);
+            }
+
+            game.SetActive(false);
+            SetRef(gen, "gameplayRoot", game);
             EditorSceneManager.SaveScene(scene, RandomScenePath);
             var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (!scenes.Exists(s => s.path == RandomScenePath))

@@ -122,6 +122,52 @@ namespace ItHunts.Level
             return go;
         }
 
+        /// <summary>Hauteur de l'arc du kit (m), lue sur son modèle ; 11 m (SM_Arc_Couloir) par défaut.</summary>
+        public static float ArchHeight(KitSet kit)
+        {
+            if (kit == null || kit.arc == null)
+                return 11f;
+            Renderer[] rs = kit.arc.GetComponentsInChildren<Renderer>();
+            if (rs.Length == 0)
+                return 11f;
+            float lo = float.MaxValue, hi = float.MinValue;
+            foreach (Renderer r in rs)
+            {
+                var mf = r.GetComponent<MeshFilter>();
+                if (mf == null || mf.sharedMesh == null)
+                    continue;
+                Bounds b = mf.sharedMesh.bounds;
+                Matrix4x4 m = kit.arc.transform.worldToLocalMatrix * r.transform.localToWorldMatrix;
+                for (int i = 0; i < 8; i++)
+                {
+                    Vector3 c = m.MultiplyPoint3x4(b.center + Vector3.Scale(b.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1)));
+                    lo = Mathf.Min(lo, c.y);
+                    hi = Mathf.Max(hi, c.y);
+                }
+            }
+
+            return hi > lo ? hi - lo : 11f;
+        }
+
+        /// <summary>
+        /// Arc d'un couloir (ou d'une entrée) : son sommet touche le plafond (height au-dessus de floor), porté par deux piédroits
+        /// du kit contre les murs, du sol à la naissance de l'arc ; élargi à la largeur du couloir (modèle de 14 m). Visuel seulement.
+        /// </summary>
+        public static void Arch(Transform parent, KitSet kit, Vector3 floor, float yaw, float width, float height)
+        {
+            if (kit == null || kit.arc == null)
+                return;
+            float ah = ArchHeight(kit), rise = Mathf.Max(0f, height - ah);
+            var root = new GameObject("Arc (porte la voûte)").transform;
+            root.SetParent(parent, false);
+            root.localPosition = floor;
+            root.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            Piece(kit.arc, root, new Vector3(0f, rise, 0f), 0f, new Vector3(width / 14f, 1f, 1f));
+            if (rise > 0.05f)
+                foreach (float s in new[] { -1f, 1f })
+                    Box(root, "Piédroit", new Vector3(s * (width * 0.5f - 0.5f), rise * 0.5f, 0f), new Vector3(1f, rise, 1.6f), Kind.Mur, kit, collider: false);
+        }
+
         /// <summary>Une pièce du kit à une position et une orientation locales.</summary>
         public static GameObject Piece(GameObject prefab, Transform parent, Vector3 localPosition, float yaw, Vector3? scale = null)
         {

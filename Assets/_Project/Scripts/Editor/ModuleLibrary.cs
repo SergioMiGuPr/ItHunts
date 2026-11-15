@@ -22,7 +22,8 @@ namespace ItHunts.EditorTools
     public static class ModuleLibrary
     {
         public const string Dir = "Assets/_Project/Prefabs/Modules";
-        private const float Ceil = 36f;
+        /// <summary>Plafond du module en cours (hauteur de son type dans MapLayout_Niveau1) : suspensions sous le plafond.</summary>
+        private static float Ceil = 18f;
 
         private static Transform _m;
         private static float _h;
@@ -245,13 +246,17 @@ namespace ItHunts.EditorTools
 
         // ---------- Outils ----------
 
-        private static void Setup(RoomModule m, string name, float size, ModuleKind kind = ModuleKind.Salle, ModuleLevel level = ModuleLevel.Tous)
+        private static void Setup(RoomModule m, string name, float size, ModuleKind kind = ModuleKind.Salle, ModuleLevel level = ModuleLevel.Tous,
+            ModuleShape shape = ModuleShape.Simple)
         {
             m.displayName = name;
             m.size = size;
             m.kind = kind;
             m.level = level;
+            m.shape = shape;
             _h = size / 2f;
+            var layout = AssetDatabase.LoadAssetAtPath<MapLayoutSettings>(TestArenaSceneBuilder.MapLayoutPath);
+            Ceil = layout != null ? layout.Ceiling(kind, shape, 0f) : kind == ModuleKind.Salle ? 18f : 16f;
         }
 
         private static GameObject P(string id, float x, float z, float yaw = 0f, float y = 0f)
@@ -375,7 +380,7 @@ namespace ItHunts.EditorTools
         /// <summary>Anneau d'étages : tours d'angle de 11 m, mezzanines de 5.5 m entre elles, escaliers, ponts à 10 m au-dessus des voies.</summary>
         private static void EtagesAnneau(RoomModule m)
         {
-            Setup(m, "Étages en anneau", 56f);
+            Setup(m, "Étages en anneau", 56f, shape: ModuleShape.Etages);
             float h = _h, lane = 5.5f;
             Quad((sx, sz, q) =>
             {
@@ -407,7 +412,7 @@ namespace ItHunts.EditorTools
         /// <summary>Galeries hautes (11 m) à l'est et à l'ouest, reliées par deux ponts ; échafaudages pour monter.</summary>
         private static void EtagesGaleries(RoomModule m)
         {
-            Setup(m, "Galeries hautes", 64f);
+            Setup(m, "Galeries hautes", 64f, shape: ModuleShape.Etages);
             float h = _h, lane = 5.5f;
             foreach (float sx in new[] { 1f, -1f })
             {
@@ -438,7 +443,7 @@ namespace ItHunts.EditorTools
         /// <summary>Égouts : canal au nord (le générateur le creuse), passerelles, tuyaux, grilles, tonneaux.</summary>
         private static void Egouts(RoomModule m)
         {
-            Setup(m, "Égouts", 56f);
+            Setup(m, "Égouts", 56f, shape: ModuleShape.Egout);
             m.rotate = false;
             m.hole = ModuleHole.Canal;
             float h = _h;
@@ -498,7 +503,7 @@ namespace ItHunts.EditorTools
         /// <summary>Salle haute remplie : gradins pleins le long des murs (4 m, 8 m), tours d'angle de 12 m ; aucun vide.</summary>
         private static void HauteRemplie(RoomModule m)
         {
-            Setup(m, "Salle haute remplie", 48f, level: ModuleLevel.Haut);
+            Setup(m, "Salle haute remplie", 48f, level: ModuleLevel.Haut, shape: ModuleShape.Etages);
             float h = _h, lane = 5.5f;
             Quad((sx, sz, q) =>
             {
@@ -716,7 +721,7 @@ namespace ItHunts.EditorTools
         /// <summary>Salle de garde : deux tours de 6 m avec escaliers, pont à 10 m entre elles, lits, râteliers.</summary>
         private static void SalleDeGarde(RoomModule m)
         {
-            Setup(m, "Salle de garde", 56f);
+            Setup(m, "Salle de garde", 56f, shape: ModuleShape.Etages);
             float h = _h;
             foreach (float s in new[] { 1f, -1f })
             {

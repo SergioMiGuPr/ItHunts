@@ -206,6 +206,45 @@ namespace ItHunts.Audio
             return Normalize(s, 0.9f);
         }
 
+        /// <summary>Jet de la lanterne de feu (D-065) : souffle (bruit filtré qui gronde) de la durée du jet, attaque nette, fin douce.</summary>
+        public static float[] LanternJet(float duration)
+        {
+            duration = Mathf.Max(0.1f, duration);
+            float[] s = new float[Samples(duration + 0.15f)];
+            var rng = new System.Random(71);
+            float low = 0f, mid = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float noise = (float)(rng.NextDouble() * 2.0 - 1.0);
+                low += (noise - low) * 0.05f;
+                mid += (noise - mid) * 0.35f;
+                float env = Mathf.Min(1f, t / 0.03f) * (t < duration ? 1f : Mathf.Exp(-(t - duration) * 30f));
+                float flutter = 0.75f + 0.25f * Mathf.Sin(2f * Mathf.PI * 13f * t);
+                s[i] = env * flutter * (2.2f * low + 0.6f * mid);
+            }
+
+            return Normalize(s, 0.85f);
+        }
+
+        /// <summary>Lanterne rallumée (fin de recharge) : petit « fouf » grave.</summary>
+        public static float[] LanternRelight()
+        {
+            float duration = 0.3f;
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(73);
+            float low = 0f;
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float noise = (float)(rng.NextDouble() * 2.0 - 1.0);
+                low += (noise - low) * 0.08f;
+                s[i] = low * Mathf.Min(1f, t / 0.02f) * Mathf.Exp(-t * 12f);
+            }
+
+            return Normalize(s, 0.6f);
+        }
+
         /// <summary>Début du rechargement : deux cliquetis métalliques.</summary>
         public static float[] BarrelReloadStart() => Clicks(new[] { 0f, 0.09f }, 2600f, 0.2f);
 

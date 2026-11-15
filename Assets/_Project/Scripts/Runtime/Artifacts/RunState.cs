@@ -6,12 +6,16 @@ using UnityEngine;
 namespace ItHunts.Artifacts
 {
     /// <summary>
-    /// État de la run (objet de la scène, pas du joueur) : seed et tirage des artefacts (D-032). Le reste de la run (âmes,
-    /// améliorations, salle en cours) viendra aux étapes 7 et 8. Chaque joueur demande son artefact par son index
-    /// (PlayerInput.playerIndex) ; le tirage ne dépend que de la seed (voir ArtifactDraw).
+    /// État de la run (objet de la scène, pas du joueur) : seed, personnages et artefacts, âmes et améliorations. Chaque joueur
+    /// demande son personnage et son artefact par son index (PlayerInput.playerIndex) : le personnage choisi dans le menu
+    /// (RunSession.Characters), jamais deux fois le même (D-064). Sans liste de personnages (anciennes scènes), tirage par la
+    /// seed dans le pool (D-032, ArtifactDraw).
     /// </summary>
     public sealed class RunState : MonoBehaviour
     {
+        [Tooltip("Personnages (D-064) : chaque joueur reçoit l'artefact de son personnage.")]
+        [SerializeField] private CharacterRoster characters;
+        [Tooltip("Ancien tirage (D-032), seulement sans liste de personnages.")]
         [SerializeField] private ArtifactPool pool;
         [Tooltip("Améliorations que les coffres et le marchand proposent (étape 7, D-043).")]
         [SerializeField] private UpgradePool upgrades;
@@ -130,9 +134,30 @@ namespace ItHunts.Artifacts
             Debug.Log($"Run : seed {Seed}");
         }
 
-        /// <summary>Artefact du joueur d'index donné (null si le pool est vide).</summary>
+        public CharacterRoster Characters => characters;
+
+        /// <summary>Indices des personnages des joueurs 0 à count − 1 (choix du menu, sans doublon ; −1 : aucun libre).</summary>
+        public int[] CharacterIndices(int count)
+        {
+            if (characters == null || characters.Count == 0)
+                return new int[count];
+            return CharacterPick.Assign(characters.Selectable(), ItHunts.Level.RunSession.Characters, count, characters.defaultIndex);
+        }
+
+        /// <summary>Personnage du joueur d'index donné (null sans liste ou si aucun n'est libre).</summary>
+        public CharacterDefinition CharacterFor(int playerIndex)
+        {
+            if (characters == null || characters.Count == 0 || playerIndex < 0)
+                return null;
+            int[] all = CharacterIndices(playerIndex + 1);
+            return characters[all[playerIndex]];
+        }
+
+        /// <summary>Artefact du joueur d'index donné : celui de son personnage ; sans liste, tirage dans le pool (null si vide).</summary>
         public ArtifactDefinition ArtifactFor(int playerIndex)
         {
+            if (characters != null && characters.Count > 0)
+                return CharacterFor(playerIndex)?.artifact;
             if (pool == null || pool.artifacts.Count == 0)
                 return null;
             int i = ArtifactDraw.ForPlayer(Seed, pool.artifacts.Count, playerIndex);
@@ -140,9 +165,10 @@ namespace ItHunts.Artifacts
         }
 
         /// <summary>Réglages (tests).</summary>
-        public void Configure(ArtifactPool artifacts, int runSeed, UpgradePool upgradePool = null)
+        public void Configure(ArtifactPool artifacts, int runSeed, UpgradePool upgradePool = null, CharacterRoster roster = null)
         {
             pool = artifacts;
+            characters = roster;
             Seed = runSeed;
             if (upgradePool != null)
                 upgrades = upgradePool;

@@ -531,7 +531,8 @@ namespace ItHunts.Hud
         private void UpdateAmmo(int tick, float now, float dt, float fixedDt)
         {
             ItHunts.Settings.BarrelSettings cfg = _artifact != null ? _artifact.BarrelSettings : null;
-            int rounds = cfg != null ? cfg.rounds : 0;
+            ItHunts.Settings.FireLanternSettings lantern = _artifact != null ? _artifact.LanternSettings : null;
+            int rounds = cfg != null ? cfg.rounds : lantern != null ? 1 : 0;   // lanterne (D-065) : un seul segment, sa recharge
             if (rounds != _ammoBuiltFor)
             {
                 _ammoBuiltFor = rounds;
@@ -556,6 +557,19 @@ namespace ItHunts.Hud
                         _ammoSegments.Add((back, fill));
                     }
                 }
+            }
+
+            if (_ammoGroup != null && lantern != null)
+            {
+                ItHunts.Artifacts.LanternState ls = _artifact.Lantern;
+                float charge = ls.Jetting ? 1f - ItHunts.Artifacts.FireLantern.JetProgress(ls, tick, lantern, fixedDt)
+                    : ItHunts.Artifacts.FireLantern.CooldownProgress(ls, tick, lantern, fixedDt);
+                bool busy = charge < 1f;
+                _ammoGroup.alpha = _ammoFade.Update(busy ? 0f : 1f, 1, busy, now, dt, settings.idleAlpha, settings.idleDelay,
+                    settings.fadeSpeed, settings.returnBlinkDuration);
+                FillSegments(_ammoSegments, charge, ls.Inactive ? settings.ammoInactiveColor : settings.ammoColor, settings.emptyColor,
+                    _ammoFade.Blinking(now));
+                return;
             }
 
             if (_ammoGroup == null || cfg == null)

@@ -44,6 +44,8 @@ namespace ItHunts.Player
             Current = this;
             if (GetComponent<ItHunts.Level.PauseMenu>() == null)
                 gameObject.AddComponent<ItHunts.Level.PauseMenu>();     // menu pause de chaque joueur (Échap / Start)
+            if (GetComponent<ItHunts.Level.CharacterSelectMenu>() == null)
+                gameObject.AddComponent<ItHunts.Level.CharacterSelectMenu>();   // choix du personnage d'un joueur qui rejoint (D-064)
             ItHunts.Debugging.LevelPerfProbe.SpawnSecondPlayer = () => Join(null);
             RenderPipelineManager.beginCameraRendering += BeforeCamera;
         }
@@ -72,13 +74,46 @@ namespace ItHunts.Player
                         al.enabled = i == 0;                             // un seul auditeur : le 1er joueur
             int max = settings != null ? settings.maxLocalPlayers : 2;
             if (PlayerInput.all.Count >= max)
+            {
+                RememberFirstPlayer();
                 return;
+            }
+
+            // Le 1er joueur (au clavier) bascule tout seul sur une nouvelle manette dès qu'elle est utilisée (changement automatique
+            // de l'Input System) : si cela arrive sur l'appui de Start, c'est un 2e joueur qui rejoint. Le 1er reprend ses appareils.
+            PlayerInput first = PlayerInput.all.Count == 1 ? PlayerInput.all[0] : null;
+            if (first != null && _p1Devices != null)
+                foreach (Gamepad g in Gamepad.all)
+                    if (g.startButton.wasPressedThisFrame && first.devices.Contains(g) && !_p1Devices.Contains(g))
+                    {
+                        if (_p1Scheme == "Gamepad" && _p1Devices.OfType<Gamepad>().Any())
+                            first.SwitchCurrentControlScheme("Gamepad", _p1Devices.OfType<Gamepad>().First());
+                        else if (Keyboard.current != null && Mouse.current != null)
+                            first.SwitchCurrentControlScheme("KeyboardMouse", Keyboard.current, Mouse.current);
+                        ItHunts.Level.PauseMenu.Current?.CancelJustOpened(first);   // ce Start n'était pas une pause du 1er
+                        break;
+                    }
+
+            RememberFirstPlayer();
             foreach (Gamepad g in Gamepad.all)
                 if (g.startButton.wasPressedThisFrame && !Paired(g))
                 {
-                    Join(g);
+                    // Rejoint en cours de partie : il choisit son personnage dans sa moitié d'écran (au menu, c'est déjà fait).
+                    GameObject joined = Join(g);
+                    if (joined != null && ItHunts.Level.CharacterSelectMenu.Current != null)
+                        ItHunts.Level.CharacterSelectMenu.Current.OpenFor(joined.GetComponent<PlayerInput>());
                     break;
                 }
+        }
+
+        private InputDevice[] _p1Devices;
+        private string _p1Scheme;
+
+        private void RememberFirstPlayer()
+        {
+            PlayerInput p1 = PlayerInput.all.Count > 0 ? PlayerInput.all[0] : null;
+            _p1Devices = p1 != null ? p1.devices.ToArray() : null;
+            _p1Scheme = p1 != null ? p1.currentControlScheme : null;
         }
 
         private static bool Paired(InputDevice d)

@@ -77,6 +77,28 @@ namespace ItHunts.Economy
             _draws = 0;
         }
 
+        /// <summary>Liste vendue pour cet artefact : la sienne ; sans artefact, celle du marchand (barillet) ; une copie améliorée
+        /// garde la liste de l'original.</summary>
+        public static UpgradePool PoolFor(ArtifactDefinition artifact, UpgradePool fallback)
+        {
+            if (artifact == null)
+                return fallback;
+            return artifact.upgrades != null ? artifact.upgrades : artifact is BarrelSettings ? fallback : null;
+        }
+
+        private static ArtifactDefinition ArtifactOf(int playerId)
+        {
+            foreach (PlayerHealth p in PlayerHealth.All)
+                if (p != null && p.PlayerId == playerId)
+                {
+                    var holder = p.GetComponent<ArtifactHolder>();
+                    holder?.EnsureReady();
+                    return holder != null ? holder.Current : null;
+                }
+
+            return null;
+        }
+
         /// <summary>Tire les offres d'un joueur (orbes vues par lui seul).</summary>
         public void Stock(int playerId)
         {
@@ -90,11 +112,14 @@ namespace ItHunts.Economy
                 return;
             RunState run = RunState.Current;
             int seed = (run != null ? run.Seed : 1) * 31 + playerId;
-            int[] idx = SoulMath.Draw(seed, _draws++, pool.upgrades.Count, Mathf.Min(offers, pool.upgrades.Count));
+            // Améliorations de l'artefact du joueur qui achète (barillet, lanterne de feu…) ; sans liste : le soin seulement.
+            UpgradePool own = PoolFor(ArtifactOf(playerId), pool);
+            int n = own != null ? own.upgrades.Count : 0;
+            int[] idx = n > 0 ? SoulMath.Draw(seed, _draws++, n, Mathf.Min(offers, n)) : new int[0];
             float range = settings != null ? settings.orbInteractRange : 8f;
             for (int i = 0; i < idx.Length; i++)
             {
-                UpgradeDefinition u = pool.upgrades[idx[i]];
+                UpgradeDefinition u = own.upgrades[idx[i]];
                 Vector3 at = transform.TransformPoint(OfferOffset(i, idx.Length));
                 OfferOrb orb = OfferOrb.Create(transform, at, u, u.merchantPrice, 0f, playerId, range, orbMaterial);
                 orb.Pricing = settings;

@@ -80,7 +80,7 @@ namespace ItHunts.EditorTools
             var sb = new StringBuilder();
             RoomModule m = root.GetComponent<RoomModule>();
             if (m != null)
-                sb.Append($"{m.kind}|{m.size}|{m.footprint}|{m.level}|{m.hole}|{m.holeRect}|{m.holeDepth}|{m.laneHalfWidth}|{m.parkour};");
+                sb.Append($"{m.kind}|{m.size}|{m.footprint}|{m.level}|{m.hole}|{m.holeRect}|{m.holeDepth}|{m.laneHalfWidth}|{m.parkour}|{m.shape}|{m.ceilingOverride};");
             foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
             {
                 if (t == root.transform)
@@ -155,7 +155,8 @@ namespace ItHunts.EditorTools
                 var root = (GameObject)PrefabUtility.InstantiatePrefab(prefab, container);
                 root.transform.position = offset;
                 Vector2 ext = module.Extent;
-                float ceil = module.kind == ModuleKind.Salle ? 36f : 24f;
+                var layoutAsset = AssetDatabase.LoadAssetAtPath<MapLayoutSettings>(TestArenaSceneBuilder.MapLayoutPath);
+                float ceil = layoutAsset != null ? layoutAsset.Ceiling(module.kind, module.shape, module.ceilingOverride) : (module.kind == ModuleKind.Salle ? 18f : 16f);
                 TestShell(container, offset, ext, ceil, module, doors);
                 Physics.SyncTransforms();
 

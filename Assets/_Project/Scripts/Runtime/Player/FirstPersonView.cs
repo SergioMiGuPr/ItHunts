@@ -67,7 +67,7 @@ namespace ItHunts.Player
         private ItHunts.Artifacts.ArtifactHolder _artifact;
         private int _seenShotTick = MovementState.NeverTick;
         private float _recoilStart = float.NegativeInfinity;
-        private float _inactive;
+        private float _inactive, _jetPush;
 
         public FpsViewSettings Settings => settings;
         public Camera OverlayCamera => overlayCamera;
@@ -343,6 +343,21 @@ namespace ItHunts.Player
                 }
 
                 _inactive = Mathf.Lerp(_inactive, b.Inactive ? 1f : 0f, kp);
+                leftOffset += new Vector3(-0.01f, -0.04f, -0.02f) * _inactive;
+                leftEuler += new Vector3(15f, 0f, 0f) * _inactive;
+            }
+
+            // Lanterne de feu (D-065) : main tendue et qui tremble pendant le jet, abaissée si l'orbe tient un objet.
+            ItHunts.Settings.FireLanternSettings lantern = _artifact != null ? _artifact.LanternSettings : null;
+            if (lantern != null)
+            {
+                leftCurl = 70f;
+                ItHunts.Artifacts.LanternState ls = _artifact.Lantern;
+                _jetPush = Mathf.Lerp(_jetPush, ls.Jetting ? 1f : 0f, 1f - Mathf.Exp(-20f * Time.deltaTime));
+                float shake = Mathf.Sin(Time.time * 60f) * 0.004f * _jetPush;
+                leftOffset += new Vector3(shake, 0.01f * _jetPush, lantern.jetPush * _jetPush);
+                leftEuler += new Vector3(-6f * _jetPush, 0f, 0f);
+                _inactive = Mathf.Lerp(_inactive, ls.Inactive ? 1f : 0f, kp);
                 leftOffset += new Vector3(-0.01f, -0.04f, -0.02f) * _inactive;
                 leftEuler += new Vector3(15f, 0f, 0f) * _inactive;
             }

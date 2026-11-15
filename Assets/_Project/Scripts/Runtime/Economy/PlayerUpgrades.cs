@@ -24,6 +24,10 @@ namespace ItHunts.Economy
         public float FireIntervalCut { get; private set; }
         public float ReloadCut { get; private set; }
         public float RangeBonus { get; private set; }
+        public float LanternRangeBonus { get; private set; }
+        public float LanternConeBonus { get; private set; }
+        public float LanternCooldownCut { get; private set; }
+        public float LanternBurnDps { get; private set; }
 
         private MovementSettings _moveOrig, _moveCopy;
         private MagnetismOrbSettings _magOrig, _magCopy;
@@ -77,6 +81,10 @@ namespace ItHunts.Economy
                 case UpgradeKind.CadenceBarillet: FireIntervalCut += d.amount; break;
                 case UpgradeKind.RechargementBarillet: ReloadCut += d.amount; break;
                 case UpgradeKind.PorteeBarillet: RangeBonus += d.amount; break;
+                case UpgradeKind.PorteeLanterne: LanternRangeBonus += d.amount; break;
+                case UpgradeKind.ConeLanterne: LanternConeBonus += d.amount; break;
+                case UpgradeKind.RechargeLanterne: LanternCooldownCut += d.amount; break;
+                case UpgradeKind.BrulureLanterne: LanternBurnDps += d.amount; break;
             }
 
             Refresh(d.kind);
@@ -119,6 +127,10 @@ namespace ItHunts.Economy
                     hp.SetMaxHealthBonus(MaxHealthBonus);
             }
 
+            if (changed == UpgradeKind.PorteeLanterne || changed == UpgradeKind.ConeLanterne || changed == UpgradeKind.RechargeLanterne
+                || changed == UpgradeKind.BrulureLanterne)
+                RefreshLantern();
+
             if (changed == UpgradeKind.BallesBarillet || changed == UpgradeKind.DegatsBarillet || changed == UpgradeKind.CadenceBarillet
                 || changed == UpgradeKind.RechargementBarillet || changed == UpgradeKind.PorteeBarillet)
             {
@@ -129,8 +141,7 @@ namespace ItHunts.Economy
                         _artOrig = holder.Current;
                     if (_artOrig is BarrelSettings b)
                     {
-                        if (_artCopy != null)
-                            Destroy(_artCopy);
+                        Discard(_artCopy);
                         var copy = Instantiate(b);
                         copy.name = b.name + " (améliorations)";
                         copy.rounds = b.rounds + ExtraRounds;
@@ -143,6 +154,38 @@ namespace ItHunts.Economy
                     }
                 }
             }
+        }
+
+        /// <summary>Lanterne de feu : copie de ses réglages pour ce joueur, avec ses améliorations (portée, cône, recharge, brûlure).</summary>
+        private void RefreshLantern()
+        {
+            var holder = GetComponent<ArtifactHolder>();
+            if (holder == null)
+                return;
+            holder.EnsureReady();
+            if (_artOrig == null)
+                _artOrig = holder.Current;
+            if (!(_artOrig is FireLanternSettings f))
+                return;
+            Discard(_artCopy);
+            var copy = Instantiate(f);
+            copy.name = f.name + " (améliorations)";
+            copy.range = f.range + LanternRangeBonus;
+            copy.coneAngle = Mathf.Min(170f, f.coneAngle + LanternConeBonus);
+            copy.cooldown = Mathf.Max(0.3f, f.cooldown - LanternCooldownCut);
+            copy.burnDps = f.burnDps + LanternBurnDps;
+            _artCopy = copy;
+            holder.Equip(copy);
+        }
+
+        private static void Discard(Object o)
+        {
+            if (o == null)
+                return;
+            if (Application.isPlaying)
+                Destroy(o);
+            else
+                DestroyImmediate(o);
         }
 
         private void OnDestroy()

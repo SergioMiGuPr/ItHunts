@@ -48,5 +48,4 @@ MonoBehaviour:
     enemyDamage: 1.5
     enemySpeed: 1.2
     enemyCount: 1.5
-  characters:
-  - Le porteur d'orbe
+  characters: {fileID: 11400000, guid: 6d2a5f019e0ca2e47b68a7a5c1317c71, type: 2}

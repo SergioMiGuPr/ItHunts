@@ -4,6 +4,50 @@
 
 ## Étape en cours
 
+**Suite de la carte (`carte-suite`) — 2026-11-15, playtestée** (hauteurs, chargement, fluidité, menu validés ; arcs disparus, coop
+bloquée, zones de parcours trop rares → corrigés ci-dessous), **fusionnée dans `main`**.
+- **Après le playtest (2026-11-15) :**
+  - **Arcs** : la fusion du décor ne peut pas combiner un maillage importé sans *Read/Write* (modèles de la DA) ; ces pièces
+    (≈ 500 par carte : arcs, colonnes, portes, poutres, ponts) restent séparées au lieu de disparaître ; arcs aussi dans les couloirs
+    en pente. 5 seeds : 1 465 arcs visibles, sur deux piédroits, sommet à 0.3 m au plus du plafond. Demande à la DA (ART-HANDOFF) :
+    *Read/Write* sur `Assets/Art/Models/Niveau1` pour qu'ils soient fusionnés aussi.
+  - **Coop** : au menu, le joueur 2 choisit avec sa manette (◀ ▶, A valide, B change) et la partie ne part qu'après sa
+    validation ; en jeu, menu de choix dans sa moitié d'écran (`CharacterSelectMenu`, personnages pris grisés). Cause du blocage :
+    le Start d'une nouvelle manette faisait basculer le joueur 1 (clavier) sur elle (changement automatique de l'Input System).
+  - **Zones de parcours** : 24 par carte (6 salles de parcours entièrement non magnétiques, 18 galeries ouvertes sur le couloir),
+    au moins 2 par tiers, 8 coffres de parcours ; parcours exigeants (`ParkourCourse` : poutre étroite, marches qui tombent, deux
+    murs plus longs qu'un double saut, vide à dash) vérifiés sans traction. 20/20 seeds : 3 045 sauts faisables, 0 surface
+    magnétique sur 45 695 rayons dans les salles de parcours, 0 cachette.
+  - **Lanterne** : 32 PV, recharge 2.5 s, cône depuis la lanterne : goule 3.1 s (barillet 1 s), groupe de 3 3.1 s (5.4 s),
+    goule qui rampe à 1 m touchée. **Améliorations** au marchand (portée, cône, recharge, brûlure) ; le marchand vend celles de
+    l'artefact du joueur. 385 tests EditMode (384 + 1 non concluant voulu).
+- **Point 1 (`26a7b85`) — arcs au sol :** l'arc du kit (11 m) était posé au niveau du sol dans des couloirs de 19 m (portique isolé),
+  et les arcs de porte entraient de 1,8 m dans les couloirs en pente. `KitBuild.Arch` : sommet sous le plafond, sur deux piédroits ;
+  arcs de porte dans l'épaisseur du mur. 5 seeds : 0 pièce mal posée.
+- **Point 2 (`a2ee72f`) — hauteurs :** plafond par type de module (`ModuleShape` : simple 18 m, étages 22 m, égout 16 m, réglable par
+  module avec `ceilingOverride`), croisements 16 m, couloirs 15 m (minimum 15). Avant : salles 36, croisements 24, couloirs 19.
+  18/18 modules validés ; traqueur accroupi 1,3 % du trajet avant et après (3,9 s sur ≈ 440 s).
+- **Point 3 (`400aea6`) — galeries et passages en hauteur :** `PlanBypass` (6 galeries, 10 passages, minimum 6 zones et une dans chaque
+  tiers départ → sortie) ; passage fermé s'il est bloqué par un module. 20/20 seeds conformes, 16 à 19 zones par carte.
+- **Point 4 (`0785cf2`) — écran de chargement :** `LoadingScreen` (titre, étape, barre) ; construction par tranches de 50 ms, systèmes
+  de jeu sous une racine inactive activée à la fin. 6,7 à 7,5 s dans l'éditeur, 5,1 s en build.
+- **Point 5 — performance :** fusion du décor par groupe (salle, couloir…) et par matériau au chargement (`RandomLevel.Batch`), à la
+  place du batching statique : ≈ 53 600 pièces → 529 renderers. Build de développement, seed 104729, 1920 × 1080, timer à 13:40 :
+  solo **19,2 → 8,0 ms** médiane (95 % 14,8 ; GPU 2,9 ; 2 555 draw calls au lieu de 4 940) ; écran partagé **13,4 ms** médiane
+  (95 % 16,1 ; GPU 4,1). Reste : `FinishFrameRendering` 4,1 ms (8,1 à deux), 1 718 lumières, ≈ 4 600 renderers hors kit.
+- **Décisions D-064 à D-066 :** un artefact par personnage, choisi avant la run, jamais deux fois le même en coop (renard rouge :
+  lanterne de feu ; caméléon orange : barillet ; koala vert et hibou bleu : à concevoir) ; variété par les améliorations et la
+  carte ; orbe à la couleur du personnage avec l'orbe v2 (anneaux et runes pour les actions, 6 tablettes : 2 traction,
+  1 répulsion, 3 mouvement), code couleur actuel gardé d'ici là. GDD, fiches artefacts et orbes, ART-HANDOFF.
+- **Lanterne de feu et choix du personnage :** menu (joueur 1 et joueur 2, cartes des 4 personnages, koala et hibou grisés) ;
+  `CharacterDefinition` / `CharacterRoster` / `CharacterPick` ; `RunSession.Characters` ; lanterne (`FireLantern`,
+  `FireLanternJet`, `FireLanternView`, `FireLantern_Default` : 5 m, 40°, 0.6 s, 25 PV, 3 s) en greybox dans la main gauche ;
+  HUD, debug ; marchand : soin seulement pour le renard. Outil *ItHunts > Personnages : …* (assets, prefab, scènes).
+  **Mesuré :** goule seule 7.2 s (3 jets) contre 1.0 s au barillet ; groupe de 3 : 7.2 s contre 5.4 s ; un jet dans un couloir :
+  8/8 d'une meute (visée au groupe), 4/5 d'une file, 2/6 d'un groupe étalé sur 14 m. 377 tests EditMode (376 + 1 non concluant
+  voulu). **À trancher en playtest :** équilibre de la lanterne contre une goule seule ; teintes des personnages face aux
+  couleurs réservées (rouge = annonce d'attaque).
+
 **Carte aléatoire — 2026-11-15, validée en playtest le 2026-11-15 et fusionnée dans `main`** (branche `carte-aleatoire` supprimée ;
 réserve : ça rame un peu, mesuré avec Blender et deux projets Unity ouverts — mesure de performance dans `carte-suite`). Fiche : `docs/design/features/run-et-niveaux/` (design « Carte aléatoire », testing « Carte aléatoire »).
 - **Bloc 1 (`ae95e8c`) :** format des modules (empreinte 1 × 1, 1 × 2, 2 × 2 ; entrées `ModuleDoor` ; contraintes ; résultat de

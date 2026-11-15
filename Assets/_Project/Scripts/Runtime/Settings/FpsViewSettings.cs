@@ -30,6 +30,14 @@ namespace ItHunts.Settings
         [Tooltip("Échelle du barillet (1 = taille modélisée, 0.10 m de diamètre).")]
         [Min(0.1f)] public float barrelScale = 1f;
 
+        [Header("Lanterne de feu (main gauche, greybox)")]
+        [Tooltip("Centre de la lanterne dans le repère de la main gauche (m), posée dans la paume comme le barillet ; le jet sort du haut.")]
+        public Vector3 lanternInHand = new Vector3(0f, 0.075f, 0.05f);
+        [Tooltip("Rotation de la lanterne dans la main gauche (degrés).")]
+        public Vector3 lanternInHandEuler = Vector3.zero;
+        [Tooltip("Échelle de la lanterne (1 = greybox de 0.11 m de haut).")]
+        [Min(0.1f)] public float lanternScale = 1f;
+
         [Header("Orbe (dans la paume droite)")]
         [Tooltip("Diamètre de l'orbe (m).")]
         [Min(0.01f)] public float orbDiameter = 0.08f;

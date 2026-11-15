@@ -25,7 +25,12 @@ MonoBehaviour:
   maxAttempts: 20
   chests: 14
   canalHalls: 7
-  parkourHalls: 3
+  parkourHalls: 6
+  galleries: 30
+  zonesPerRoom: 0.5
+  parkourChestShare: 0.34
+  passages: 10
+  minBypassZones: 6
   annexShare: 0.35
   lockedRooms: 2
   residentGhoulsMin: 1
@@ -36,11 +41,13 @@ MonoBehaviour:
   flyerSpawnsPerCorridor: 1
   corridorFeatureShare: 0.35
   startHallSize: 56
-  hallCeiling: 36
-  crossingCeiling: 24
+  ceilingSimple: 18
+  ceilingFloors: 22
+  ceilingSewer: 16
+  crossingCeiling: 16
   corridorWidth: 14
   slopeCorridorWidth: 16
-  corridorHeight: 19
+  corridorHeight: 15
   corridorSegmentLength: 40
   lairDepth: 26
   lairWidth: 20

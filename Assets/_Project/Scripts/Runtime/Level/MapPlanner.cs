@@ -20,6 +20,8 @@ namespace ItHunts.Level
         public ModuleHole Hole;
         public bool Parkour;
         public int ChestSpots;
+        public ModuleShape Shape;
+        public float CeilingOverride;
         public List<(DoorSide side, int cell, bool required)> Doors = new List<(DoorSide, int, bool)>();
 
         public bool Big => Footprint.x * Footprint.y > 1;
@@ -41,6 +43,8 @@ namespace ItHunts.Level
             Hole = m.hole,
             Parkour = m.parkour || m.hole == ModuleHole.Vide,
             ChestSpots = m.GetComponentsInChildren<ChestSpot>(true).Length,
+            Shape = m.shape,
+            CeilingOverride = m.ceilingOverride,
             Doors = m.Doors(),
         };
     }
@@ -61,6 +65,8 @@ namespace ItHunts.Level
         public bool Hall;
         public ModuleHole Hole;
         public bool Parkour;
+        /// <summary>Salle de parcours dont le parcours mène à un coffre.</summary>
+        public bool ParkourChest;
         public List<PlanDoor> Doors = new List<PlanDoor>();
     }
 
@@ -96,6 +102,23 @@ namespace ItHunts.Level
         public bool Locked;
     }
 
+    /// <summary>Galerie de parcours le long d'un couloir plat (côté +1 / −1 du latéral du couloir, comme les annexes).</summary>
+    public struct PlanGallery
+    {
+        public int Link;
+        public int Side;
+        /// <summary>Le parcours mène à un coffre.</summary>
+        public bool Chest;
+    }
+
+    /// <summary>Passage en hauteur à un bout de couloir (côté +1 / −1 du latéral du couloir), dans le mur de la salle de ce bout.</summary>
+    public struct PlanPassage
+    {
+        public int Link;
+        public int Side;
+        public bool AtStart;
+    }
+
     /// <summary>Résultat du tirage : de quoi construire la carte, et de quoi la vérifier.</summary>
     public sealed class MapPlan
     {
@@ -109,6 +132,8 @@ namespace ItHunts.Level
         public int Start = -1, Exit = -1, ExitDoor = -1, LairHost = -1, LairDoor = -1;
         public readonly List<int> ChestRooms = new List<int>();
         public readonly List<PlanAnnex> Annexes = new List<PlanAnnex>();
+        public readonly List<PlanGallery> Galleries = new List<PlanGallery>();
+        public readonly List<PlanPassage> Passages = new List<PlanPassage>();
         public int StartExitRooms;
         public readonly List<string> Failures = new List<string>();
 
@@ -412,21 +437,213 @@ namespace ItHunts.Level
             Shuffle(rng, chestRooms);
             plan.ChestRooms.AddRange(chestRooms.Take(s.chests));
 
-            // 9. Pièces annexes le long des couloirs plats de 40 m et plus (les premières : salles verrouillées).
+            // 9. Contournement du traqueur : galeries de parcours et passages en hauteur, répartis entre le départ et la sortie.
+            var sidesUsed = new HashSet<(int, int)>();
+            if (plan.Exit >= 0)
+                PlanBypass(plan, s, rng, dist0, sidesUsed);
+
+            // 10. Pièces annexes le long des couloirs plats de 40 m et plus (les premières : salles verrouillées), côtés libres.
             var flat = Enumerable.Range(0, plan.Links.Count).Where(i => !plan.Links[i].Slope && plan.Links[i].Length >= 40f).ToList();
             Shuffle(rng, flat);
             foreach (int i in flat)
             {
                 if (rng.NextDouble() > s.annexShare)
                     continue;
+                int side = rng.NextDouble() < 0.5 ? 1 : -1;
+                if (sidesUsed.Contains((i, side)))
+                    side = -side;
+                if (sidesUsed.Contains((i, side)))
+                    continue;
+                float at = rng.NextDouble() < 0.5 ? 0.3f : 0.7f;
+                PlanLink al = plan.Links[i];
+                Rect annex = LinkRect(al, al.Width * 0.5f, al.Width * 0.5f + 16f, side, al.Length * at - 8f, al.Length * at + 8f);
+                if (plan.Galleries.Any(g => GalleryRect(plan.Links[g.Link], g.Side).Overlaps(annex)))
+                    continue;
+                sidesUsed.Add((i, side));
                 plan.Annexes.Add(new PlanAnnex
                 {
-                    Link = i, Side = rng.NextDouble() < 0.5 ? 1 : -1, T = rng.NextDouble() < 0.5 ? 0.3f : 0.7f,
+                    Link = i, Side = side, T = at,
                     Locked = plan.Annexes.Count(a => a.Locked) < s.lockedRooms,
                 });
             }
 
             return plan;
+        }
+
+        /// <summary>Tiers du trajet départ – sortie (0, 1, 2) d'une distance en salles depuis le départ.</summary>
+        public static int Band(int distance, int startExit) =>
+            startExit <= 0 ? 0 : Mathf.Clamp(Mathf.FloorToInt(3f * Mathf.Min(distance, startExit) / (startExit + 1f)), 0, 2);
+
+        /// <summary>
+        /// Galeries (couloirs plats de 55 m et plus entre deux salles) puis passages (bout de couloir côté salle, couloir plat entre
+        /// deux salles), au hasard ; puis, s'il manque des zones de contournement (galeries, passages, fosses) dans un tiers du
+        /// trajet départ – sortie, d'autres dans ce tiers. Échec de l'essai s'il en manque encore.
+        /// </summary>
+        private static void PlanBypass(MapPlan plan, MapLayoutSettings s, System.Random rng, int[] dist0, HashSet<(int, int)> used)
+        {
+            int D = plan.StartExitRooms;
+            int LinkBand(int i) => Band(Mathf.Min(dist0[plan.Links[i].A], dist0[plan.Links[i].B]), D);
+            bool Ends(PlanLink l) => l.A == plan.Exit || l.B == plan.Exit || l.A == plan.Start || l.B == plan.Start;
+            var galleryLinks = Enumerable.Range(0, plan.Links.Count)
+                .Where(i => !plan.Links[i].Slope && !Ends(plan.Links[i]) && plan.Links[i].Length >= GalleryMinLength).ToList();
+            var passageLinks = Enumerable.Range(0, plan.Links.Count)
+                .Where(i => { PlanLink l = plan.Links[i]; return !l.Slope && plan.Rooms[l.A].Hall && plan.Rooms[l.B].Hall && l.A != plan.Exit && l.B != plan.Exit; }).ToList();
+            Shuffle(rng, galleryLinks);
+            Shuffle(rng, passageLinks);
+
+            // Emprises au sol (XZ) déjà prises : salles, couloirs ; puis chaque galerie ajoutée.
+            var taken = new List<Rect>();
+            foreach (PlanRoom r in plan.Rooms)
+                taken.Add(new Rect(r.Center.x - r.Extent.x * 0.5f - 2f, r.Center.z - r.Extent.y * 0.5f - 2f, r.Extent.x + 4f, r.Extent.y + 4f));
+            var linkRects = plan.Links.Select(l => LinkRect(l, 0f, l.Width * 0.5f + 2f)).ToList();
+            bool AddGallery(int i)
+            {
+                if (plan.Galleries.Any(g => g.Link == i))
+                    return false;
+                int first = rng.NextDouble() < 0.5 ? 1 : -1;
+                foreach (int side in new[] { first, -first })
+                {
+                    if (used.Contains((i, side)))
+                        continue;
+                    Rect gr = GalleryRect(plan.Links[i], side);
+                    bool clash = taken.Any(t => t.Overlaps(gr));
+                    for (int k = 0; k < linkRects.Count && !clash; k++)
+                        clash = k != i && linkRects[k].Overlaps(gr);
+                    if (clash)
+                        continue;
+                    used.Add((i, side));
+                    taken.Add(gr);
+                    plan.Galleries.Add(new PlanGallery { Link = i, Side = side });
+                    return true;
+                }
+
+                return false;
+            }
+
+            bool AddPassage(int i)
+            {
+                int side = rng.NextDouble() < 0.5 ? 1 : -1;
+                if (used.Contains((i, side)))
+                    side = -side;
+                if (used.Contains((i, side)))
+                    return false;
+                PlanLink l = plan.Links[i];
+                bool atStart = rng.NextDouble() < 0.5;
+                if (plan.Galleries.Any(g => GalleryRect(plan.Links[g.Link], g.Side).Overlaps(DuctRect(l, side, atStart))))
+                    return false;
+                used.Add((i, side));
+                plan.Passages.Add(new PlanPassage { Link = i, Side = side, AtStart = atStart });
+                return true;
+            }
+
+            // Zones de parcours : une pour 1 / zonesPerRoom salles (salles de parcours + galeries), au moins une par tiers.
+            int pits = plan.Rooms.Count(r => r.Parkour);
+            int target = Mathf.Min(s.galleries + pits, Mathf.RoundToInt(plan.Rooms.Count * s.zonesPerRoom));
+            for (int band = 0; band < 3; band++)
+                if (ParkourBands(plan, dist0)[band] == 0)
+                    foreach (int i in galleryLinks.Where(i => LinkBand(i) == band))
+                        if (AddGallery(i))
+                            break;
+            foreach (int i in galleryLinks)
+            {
+                if (plan.Galleries.Count + pits >= target || plan.Galleries.Count >= s.galleries)
+                    break;
+                AddGallery(i);
+            }
+
+            foreach (int i in passageLinks)
+                if (plan.Passages.Count < s.passages)
+                    AddPassage(i);
+
+            // Coffres de parcours : une part des zones (galeries assez longues pour monter jusqu'au socle, salles de parcours).
+            var zones = new List<int>();                               // ≥ 0 : galerie ; < 0 : salle −(r + 1)
+            for (int g = 0; g < plan.Galleries.Count; g++)
+                if (plan.Links[plan.Galleries[g].Link].Length >= GalleryChestLength)
+                    zones.Add(g);
+            for (int r = 0; r < plan.Rooms.Count; r++)
+                if (plan.Rooms[r].Parkour)
+                    zones.Add(-(r + 1));
+            Shuffle(rng, zones);
+            int chests = Mathf.RoundToInt((plan.Galleries.Count + pits) * s.parkourChestShare);
+            foreach (int z in zones.Take(chests))
+            {
+                if (z >= 0)
+                {
+                    PlanGallery g = plan.Galleries[z];
+                    g.Chest = true;
+                    plan.Galleries[z] = g;
+                }
+                else
+                    plan.Rooms[-z - 1].ParkourChest = true;
+            }
+
+            int[] count = ParkourBands(plan, dist0);
+            if (count.Sum() < s.minBypassZones || count.Any(c => c == 0))
+                plan.Failures.Add($"parcours : {count.Sum()} zones (au moins {s.minBypassZones}), par tiers {count[0]} / {count[1]} / {count[2]}");
+        }
+
+        /// <summary>Longueur de couloir minimale pour une galerie, et pour une galerie qui mène à un coffre (marches jusqu'au socle).</summary>
+        public const float GalleryMinLength = 55f, GalleryChestLength = 62f;
+        /// <summary>Largeur d'une galerie (vide et parcours) à côté du couloir, mur compris.</summary>
+        public const float GalleryOuter = 22f;
+
+        /// <summary>Emprise d'un couloir (XZ) : de part et d'autre de son axe, de lat0 à lat1 (lat0 = 0 : tout le couloir).</summary>
+        public static Rect LinkRect(PlanLink l, float lat0, float lat1, int side = 0, float along0 = 0f, float along1 = -1f)
+        {
+            Vector3 a = new Vector3(l.From.x, 0f, l.From.z), b = new Vector3(l.To.x, 0f, l.To.z);
+            Vector3 dir = (b - a).normalized, lat = new Vector3(-dir.z, 0f, dir.x);
+            float len = Vector3.Distance(a, b);
+            if (along1 < 0f)
+                along1 = len;
+            var pts = new List<Vector3>();
+            foreach (float t in new[] { along0, along1 })
+                foreach (float q in side == 0 ? new[] { -lat1, lat1 } : new[] { side * lat0, side * lat1 })
+                    pts.Add(a + dir * t + lat * q);
+            float x0 = pts.Min(v => v.x), x1 = pts.Max(v => v.x), z0 = pts.Min(v => v.z), z1 = pts.Max(v => v.z);
+            return new Rect(x0, z0, x1 - x0, z1 - z0);
+        }
+
+        /// <summary>Emprise d'une galerie : le long du couloir (3 m de chaque bout en moins), à côté de lui sur GalleryOuter mètres.</summary>
+        public static Rect GalleryRect(PlanLink l, int side) =>
+            LinkRect(l, l.Width * 0.5f + 0.5f, l.Width * 0.5f + GalleryOuter, side, 2f, l.Length - 2f);
+
+        /// <summary>Emprise du conduit d'un passage en hauteur (8 m depuis la salle, 3.5 m de large à côté du couloir).</summary>
+        public static Rect DuctRect(PlanLink l, int side, bool atStart) =>
+            LinkRect(l, l.Width * 0.5f, l.Width * 0.5f + 5f, side, atStart ? 0f : l.Length - 10f, atStart ? 10f : l.Length);
+
+        /// <summary>Zones de parcours par tiers du trajet départ – sortie : galeries et salles de parcours (les passages s'y ajoutent ailleurs).</summary>
+        public static int[] ParkourBands(MapPlan plan, int[] dist0)
+        {
+            var c = new int[3];
+            int D = plan.StartExitRooms;
+            foreach (PlanGallery g in plan.Galleries)
+                c[Band(Mathf.Min(dist0[plan.Links[g.Link].A], dist0[plan.Links[g.Link].B]), D)]++;
+            for (int r = 0; r < plan.Rooms.Count; r++)
+                if (plan.Rooms[r].Parkour && dist0[r] != int.MaxValue)
+                    c[Band(dist0[r], D)]++;
+            return c;
+        }
+
+        /// <summary>Zones de contournement par tiers du trajet départ – sortie : galeries, passages (hors refermés), salles de parcours.</summary>
+        public static int[] BypassBands(MapPlan plan, int[] dist0, ICollection<int> closedPassages = null)
+        {
+            var c = new int[3];
+            int D = plan.StartExitRooms;
+            foreach (PlanGallery g in plan.Galleries)
+                c[Band(Mathf.Min(dist0[plan.Links[g.Link].A], dist0[plan.Links[g.Link].B]), D)]++;
+            for (int k = 0; k < plan.Passages.Count; k++)
+            {
+                if (closedPassages != null && closedPassages.Contains(k))
+                    continue;
+                PlanPassage p = plan.Passages[k];
+                int room = p.AtStart ? plan.Links[p.Link].A : plan.Links[p.Link].B;
+                c[Band(dist0[room], D)]++;
+            }
+
+            for (int r = 0; r < plan.Rooms.Count; r++)
+                if (plan.Rooms[r].Parkour && dist0[r] != int.MaxValue)
+                    c[Band(dist0[r], D)]++;
+            return c;
         }
 
         // ---------- Pièces du tirage ----------
@@ -453,7 +670,7 @@ namespace ItHunts.Level
             {
                 Name = CellName(origin) + (special == "départ" ? " (départ)" : m != null && m.Kind == ModuleKind.Carrefour ? " (carrefour)" : m != null && m.Big ? $" ({cells.x}×{cells.y})" : ""),
                 Module = m != null ? m.Index : -1, Cell = origin, Cells = cells, Rot = rot, Center = c, Extent = extent,
-                Ceiling = hall ? s.hallCeiling : s.crossingCeiling, Hall = hall, Hole = m != null ? m.Hole : ModuleHole.Aucun,
+                Ceiling = m != null ? s.Ceiling(m.Kind, m.Shape, m.CeilingOverride) : s.ceilingSimple, Hall = hall, Hole = m != null ? m.Hole : ModuleHole.Aucun,
                 Parkour = m != null && m.Parkour,
             };
             List<(DoorSide side, int cell, bool required)> doors = m != null ? m.Doors : AllDoors(fp);
