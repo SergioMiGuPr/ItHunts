@@ -28,6 +28,9 @@ namespace ItHunts.Level
         [SerializeField] private Transform moving;
         [SerializeField] private float dropHeight = 12f;
         [SerializeField] private float dropTime = 0.35f;
+        [Tooltip("Pièce qui tourne pendant la chute (manivelle du treuil, SM_Treuil_Manivelle), autour de son axe X local.")]
+        [SerializeField] private Transform spinner;
+        [SerializeField] private float spinSpeed = 900f;
         [Tooltip("Leviers à activer (objet lancé ou répulsion) pour armer le piège ; la cible n'apparaît qu'une fois armé.")]
         [SerializeField] private BossLever[] levers;
         [Tooltip("Réarmement après un coup raté (s).")]
@@ -114,6 +117,8 @@ namespace ItHunts.Level
             {
                 float t = Down ? Mathf.Clamp01((Time.time - _firedAt) / Mathf.Max(0.01f, dropTime)) : 0f;
                 moving.position = _home + Vector3.down * (dropHeight * t * t);
+                if (spinner != null && Down && t < 1f)
+                    spinner.Rotate(spinSpeed * Time.deltaTime, 0f, 0f, Space.Self);   // la manivelle se dévide pendant la chute
             }
 
             if (Down && Time.time >= _rearmAt)
