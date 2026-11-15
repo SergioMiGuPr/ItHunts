@@ -52,7 +52,12 @@ PARAMS = dict(
     encoche=dict(r=0.008, profondeur=0.014, segs=12),
     cannelure=dict(r=0.0065, enfoncement=0.004, longueur=0.045, segs=12),
     rune=dict(longueur=0.052, largeur=0.024, trait=0.0028, profondeur=0.001, z=-0.011, subdiv=2),
-    couleur_rune=(0.86, 0.70, 0.34), couleur_chambre=(0.78, 0.58, 0.20),
+    couleur_rune=(0.86, 0.70, 0.34),
+    # chambre vide = couleur de base seule (presque noir, chaud : un trou sombre sur le laiton) ;
+    # chambre chargée = la même couleur + émission de M_Barillet_Chambre, réglée en jeu
+    couleur_chambre_hex="#1A120C",
+    # rendu de démonstration seulement (pas dans le FBX) : chambres chargées en violet
+    rendu_charge=dict(chambres=(1, 3, 5), hex="#B45CFF"),
     # fiche (pixels de l'image d'origine 2752 x 1536)
     fiche="fiche3d_barillet_v01.png",
     face_centre=(533, 0), face_rayon=374,      # centre y mesuré au lancement
@@ -67,6 +72,15 @@ PARAMS = dict(
 REG_FACE = (0.0, 0.5, 0.5, 1.0)
 REG_FLANC = (0.5, 0.5, 1.0, 1.0)
 REG_CANN = (0.0, 0.0, 1.0, 0.5)
+
+
+def srgb(hexa):
+    """'#RRGGBB' (sRGB) -> couleur linéaire, comme l'attend l'entrée Base Color."""
+    out = []
+    for i in (1, 3, 5):
+        c = int(hexa[i:i + 2], 16) / 255
+        out.append(c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4)
+    return tuple(out)
 
 
 def U(x, y, z):
@@ -408,7 +422,7 @@ def build(P):
     bpy.context.scene.collection.objects.link(body)
 
     # objets de chambre : insert au fond de la chambre + pastille sur la face arrière, un seul objet
-    mch = color_material("M_Barillet_Chambre", P["couleur_chambre"])
+    mch = color_material("M_Barillet_Chambre", srgb(P["couleur_chambre_hex"]))
     inserts = []
     I = P["insert"]
     n = I["segs"]
@@ -464,7 +478,7 @@ def build(P):
 
 
 # --------------------------------------------------------------------------- rendus
-def render(sc, objs, basename, views, res=1024):
+def render(sc, objs, basename, views, res=1024, suffix=""):
     os.makedirs(RENDER_DIR, exist_ok=True)
     old = C.RENDER_DIR
     C.RENDER_DIR = RENDER_DIR
@@ -502,13 +516,38 @@ def render(sc, objs, basename, views, res=1024):
         cam.location = d * dist
         up = "Y"
         cam.rotation_euler = (-d).to_track_quat("-Z", up).to_euler()
-        path = os.path.join(RENDER_DIR, "%s_%s.png" % (basename, v))
+        path = os.path.join(RENDER_DIR, "%s_%s%s.png" % (basename, v, suffix))
         sc.render.filepath = path
         bpy.ops.render.render(write_still=True, scene=sc.name)
         out.append(path)
     bpy.data.objects.remove(cam); bpy.data.cameras.remove(cam_data)
     C.RENDER_DIR = old
     return out
+
+
+def render_charge(sc, objs, P):
+    """Vue depuis l'œil avec quelques chambres « chargées » (émission violette), pour montrer le
+    contraste plein / vide. Matériau temporaire, appliqué après l'export et la sauvegarde."""
+    q = P["rendu_charge"]
+    col = srgb(q["hex"])
+    mat = bpy.data.materials.new("_Rendu_Chambre_Chargee")
+    mat.use_nodes = True
+    bsdf = next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    bsdf.inputs["Base Color"].default_value = (*col, 1.0)
+    if "Emission Color" in bsdf.inputs:
+        bsdf.inputs["Emission Color"].default_value = (*col, 1.0)
+        bsdf.inputs["Emission Strength"].default_value = 3.0
+    mat.diffuse_color = (*col, 1.0)
+    charged = [o for o in objs if o.name in ["SM_Barillet_Chambre_%02d" % k for k in q["chambres"]]]
+    old = [o.data.materials[0] for o in charged]
+    for o in charged:
+        o.data.materials[0] = mat
+    try:
+        return render(sc, objs, "SM_Barillet", ("oeil",), suffix="_charge")
+    finally:
+        for o, m in zip(charged, old):
+            o.data.materials[0] = m
+        bpy.data.materials.remove(mat)
 
 
 def run():
@@ -522,6 +561,7 @@ def run():
     bpy.context.window.scene = sc
     renders = render(sc, objs, "SM_Barillet", ("face", "cote", "dessus", "dos", "34", "34dos", "oeil"))
     print(C.report(res))
+    renders += render_charge(sc, objs, PARAMS)
     print("Rendus :", [os.path.basename(p) for p in renders])
     return res
 
