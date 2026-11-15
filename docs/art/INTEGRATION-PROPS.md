@@ -116,6 +116,16 @@ cadenas de la cage et de la grille qui dépassent de 2 à 3 cm à l'avant.
 | Bras des 4 personnages (remplacent les mains greybox) | `SK_BrasFPS_<Perso>_D` / `_G` (armature `BrasFPS`, 17 os, mêmes noms partout) | placer le FBX pour que **`Socket_Poignet` coïncide avec la main greybox** (position et rotation de repos de FpsView, § 5 bis d'ART-HANDOFF) : le pivot est au coude, `Socket_Poignet` est en (0, 0, 0.27) dans le FBX, axes de l'ancrage (+Z doigts, +Y dos de la main) ; aucun recalage d'axe | os des doigts : remplacent l'angle unique `rightFingers` / `leftFingers` (rotation X) par les clips `BrasFPS|Pose_*` (mêmes clips pour les 4 personnages ; un jeu de clips par côté, le gauche est le miroir) ; `Pose_Attraper` a 3 clés (repos, ouverte, refermée) ; les déplacements de la main entière restent dans FirstPersonView | `M_BrasFPS_<Perso>_*` (aplats) ; contour par coque inversée (RENDU.md § 5 bis) ; repères fixes enfants de `BrasFPS` : `Socket_Orbe` (0, 0.06, 0.045) depuis le poignet (droit), `Socket_Artefact` (0, 0.055, 0.05) et `Socket_Artefact_Anneau` (0, −0.05, 0.105) pour l'anneau de la lanterne dans `Pose_PriseAnneau` (gauche, à ajuster en jeu) ; planches `BrasFPS_*.jpg` |
 | Barillet (caméléon, main gauche) | `SM_Barillet` | intégré sur `main` (branche `barillet-modele`) | | |
 
+## 4 bis. Caisse attrapable : `SM_Caisse` (modèle généré par IA avec Tripo, nettoyé le 2026-11-15)
+
+| Prefab | Modèle | Décalage du modèle | Boîte de collision | Matériau | Attrapable |
+|---|---|---|---|---|---|
+| `Prop_Caisse_Attrapable` (cube unité à l'échelle 0.8 : **pivot au centre du cube**) | `SM_Caisse` (cube exact de 0.8 m, **pivot au sol, au centre**, +Z vers l'avant = face à la rune) | **(0, −0.4, 0)** dans un prefab dont la racine n'est pas mise à l'échelle ; si la racine garde son échelle 0.8, mettre le modèle à l'échelle 1.25 et à (0, −0.5, 0) | celle de la greybox : 0.8 m (centre (0, 0, 0)) | `M_Caisse` (à créer à la prochaine ouverture d'Unity, voir `MATERIAUX.md`) | **oui** (Rigidbody, `Grabbable`, 15 kg, lueur pilotée par le jeu via le masque de la rune) |
+
+- **Autres caisses du jeu** (cubes de 0.5, 0.7, 0.9, 1.1 m posés par le code selon la masse : 5, 15, 25, 40 kg) : le même
+  modèle mis à l'échelle convient (× 0.625, 0.875, 1.125, 1.375), puisque toutes sont des cubes.
+- 1 499 triangles, une texture de couleur de 512 px et un masque d'émission de 512 px.
+
 ## 5. Props encore à produire (catalogue d'`ART-HANDOFF`)
 
 Greybox actuelles (bornes de leur maillage) : à garder comme cotes et pivots. **Attrapables** : gardent leur Rigidbody,
@@ -123,7 +133,7 @@ leur `Grabbable` et leur lueur ; leur modèle doit rester dans la boîte (la col
 
 | Prefab | Dimensions (l × h × p) | Nombre | Rôle | Remarque |
 |---|---|---|---|---|
-| `Prop_Caisse_Attrapable` | 0.8 × 0.8 × 0.8 | 279 | **attrapable** (15 kg) | le plus nombreux des attrapables |
+| `Prop_Caisse_Attrapable` | 0.8 × 0.8 × 0.8 | 279 | **attrapable** (15 kg) | **modèle livré : `SM_Caisse`** (voir ci-dessous) |
 | `Prop_Tonneau` / `_Attrapable` | 0.9 × 1.1 × 0.9 / 0.6 × 0.9 × 0.6 | 212 / 131 | fixe / **attrapable** (20 kg) | |
 | `Prop_Etagere` | 2.6 × 3.2 × 0.7 | 117 | fixe | |
 | `Prop_Caisse` | 1.3 × 1.3 × 1.3 | 100 | fixe | même modèle que l'attrapable, à l'échelle |

@@ -82,6 +82,15 @@ matériaux, tous sur `ItHunts/Toon`, ni métal ni brillance :
 | `M_Levier_Lueur` | cristal et anneau de rune de `SM_Levier` (arène, groupe C) | aucune | #5A3420 (ambre sombre, éteint) | **mot-clé actif, couleur noire** : orange (prêt) puis vert (activé) en jeu ; traverse un peu le brouillard (0.6) |
 | `M_Tapisserie` | `SM_Tapisserie` | `texture_tapisserie_v02_alpha` (import : alpha transparent, bord en Clamp) | blanc | **découpe alpha** (seuil 0.5), **double face** (Cull Off), file AlphaTest |
 
+### Caisse attrapable (`SM_Caisse`, modèle Tripo nettoyé ; `.mat` à créer à la prochaine ouverture d'Unity)
+
+| Matériau | Utilisé par | Texture | Émission |
+|---|---|---|---|
+| `M_Caisse` | `SM_Caisse` | `T_Caisse_BaseColor` (512 px, tiling (1, 1)) : bois, fer, corde ; **rune gravée, neutre (sans violet)** | **mot-clé actif, couleur noire** ; `_EmissionMap` = `T_Caisse_Emission` (512 px, blanc = cœur de la rune) : le jeu écrit `_EmissionColor` (lueur des objets attrapables), seule la rune s'allume |
+
+Le violet de la rune peinte par Tripo (et ses reflets mauves) a été ramené au brun du bois dans la couleur : le violet
+est réservé à la télékinésie et la lueur passe par l'émission (`sm_caisse.py`, fonction `textures`).
+
 ### Lanterne de feu et orbe, vue FPS (`Assets/Art/Materials/FPS/`, lot de modélisation, groupe A)
 
 Tous sur `ItHunts/Toon`, ni métal ni brillance, tiling (1, 1) / offset (0, 0) : les UV des FBX sont en échelle monde
