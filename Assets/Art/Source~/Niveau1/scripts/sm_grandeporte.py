@@ -42,7 +42,10 @@ PARAMS = dict(
     pentures_z=(2.51, 6.56, 9.08),   # mesurées sur la fiche
     penture=dict(d0=0.15, d1=3.55, d2=3.8, d3=4.25, h=0.5, h_croix=1.0, ep=0.05),
     traverse=dict(h=0.6, ep=0.12),
-    charniere=dict(l=2.4, h=0.35, ep=0.05, noeud_r=0.11, noeud_h=0.6),
+    # noeud_retrait : le noeud est reculé de l'arête des gonds vers l'intérieur du battant ; ouvert à 90°,
+    # un point à la distance d de l'arête se retrouve à y = 1 + d : il faut d > noeud_r pour ne pas
+    # entrer dans le piédroit
+    charniere=dict(l=2.4, h=0.35, ep=0.05, noeud_r=0.11, noeud_h=0.6, noeud_retrait=0.14, depart=0.02),
     rivet=(0.08, 0.05, 0.04),
     serrure=dict(z=4.65, ep=0.06, bossage=0.04),
     anneau=dict(x=2.36, z=5.34, r=0.45, fil=0.06, rosace=0.2),
@@ -283,14 +286,15 @@ def build(P):
             y2 = yd + Tt["ep"]
             xa, xb_ = sorted((side * s, side * (s - Cc["l"])))
             tip = side * (s - Cc["l"] - 0.3)
-            poly = [(side * s, zp - Cc["h"] / 2), (side * (s - Cc["l"]), zp - Cc["h"] / 2), (tip, zp),
-                    (side * (s - Cc["l"]), zp + Cc["h"] / 2), (side * s, zp + Cc["h"] / 2)]
+            x0c = side * (s - Cc["depart"])
+            poly = [(x0c, zp - Cc["h"] / 2), (side * (s - Cc["l"]), zp - Cc["h"] / 2), (tip, zp),
+                    (side * (s - Cc["l"]), zp + Cc["h"] / 2), (x0c, zp + Cc["h"] / 2)]
             Bb.prism_y(poly, y2, y2 + Cc["ep"], "fer", skip_front=True)
             for k in range(3):
                 rivet(Bb, side * (s - 0.5 - 0.7 * k), zp, y2 + Cc["ep"], 1, P["rivet"])
-            # noeud de gond (cylindre vertical sur l'arête extérieure, côté dos)
+            # noeud de gond (cylindre vertical près de l'arête extérieure, côté dos)
             r = Cc["noeud_r"]
-            hexa = [(side * s + r * math.cos(math.pi / 3 * k), yd + 0.06 + r * math.sin(math.pi / 3 * k)) for k in range(6)]
+            hexa = [(side * (s - Cc["noeud_retrait"]) + r * math.cos(math.pi / 3 * k), yd + 0.06 + r * math.sin(math.pi / 3 * k)) for k in range(6)]
             Bb.prism_z(hexa, zp - Cc["noeud_h"] / 2, zp + Cc["noeud_h"] / 2, "fer", skip_bottom=False)
         pivot = (side * s, yf, 0.0)
         ob = Bb.finish(nom, {"bois": mats["bois"], "fer": mats["fer"]}, origin=pivot)
@@ -367,6 +371,39 @@ def rivet(B, x, z, y0, side, dims):
         B.face([(ax, y0, az), (bx, y0, bz), (cx_, y1, cz), (dx, y1, dz)], "fer", n)
 
 
+def verifier_ouverture(angles=(0, 90)):
+    """Contrôle d'interpénétration avec le cadre, porte fermée puis ouverte (vers l'arrière, +Y) :
+    compte les sommets des battants (et de leurs enfants) à l'intérieur des piédroits et de l'arc.
+    Fait aussi un rendu de dos porte ouverte (SM_GrandePorte_ouverte_dos.png)."""
+    import bpy
+    from mathutils.bvhtree import BVHTree
+    sc = bpy.context.window.scene
+    cadre = sc.objects["SM_GrandePorte_Cadre"]
+    dg = bpy.context.evaluated_depsgraph_get()
+    tree = BVHTree.FromObject(cadre, dg)
+    G, D = sc.objects["SM_GrandePorte_BattantG"], sc.objects["SM_GrandePorte_BattantD"]
+    for ang in angles:
+        G.rotation_euler.z, D.rotation_euler.z = math.radians(ang), math.radians(-ang)
+        bpy.context.view_layer.update()
+        dg = bpy.context.evaluated_depsgraph_get()
+        inside = 0
+        for bat in (G, D):
+            for ob in [bat] + list(bat.children):
+                mw = ob.matrix_world
+                for v in ob.data.vertices:
+                    p = mw @ v.co
+                    loc, nrm, idx, dist = tree.find_nearest(p)
+                    # sommet dans la pierre : du côté intérieur de la face la plus proche, à plus de 1 mm
+                    if loc is not None and (p - loc).dot(nrm) < -0.001:
+                        inside += 1
+        print("battants à %d° : %d sommet(s) dans le cadre" % (ang, inside))
+        if ang:
+            objs = [o for o in sc.objects if o.type == "MESH"]
+            C.render_views(sc, objs, "SM_GrandePorte_ouverte", ("dos", "34dos"))
+    G.rotation_euler.z = D.rotation_euler.z = 0.0
+    bpy.context.view_layer.update()
+
+
 def bpy_update():
     import bpy
     bpy.context.view_layer.update()
@@ -374,5 +411,6 @@ def bpy_update():
 
 if __name__ == "__main__":
     C.run_piece("SM_GrandePorte", build, PARAMS, "SM_GrandePorte", views=("face", "cote", "34", "dos"))
+    verifier_ouverture()
     C.render_detail(["SM_GrandePorte_Serrure_G", "SM_GrandePorte_Serrure_D", "SM_GrandePorte_Anneau_G",
                      "SM_GrandePorte_Anneau_D"], "SM_GrandePorte_Ferrures")

@@ -618,10 +618,13 @@ def render_views(scene, objects, basename, views=("face", "cote", "34"), res=102
         elif v == "dos":
             d = Vector((0, 1, 0)); cam_data.type = "ORTHO"
             cam_data.ortho_scale = max(size.x, size.z) * 1.15
+        elif v == "34dos":   # 3/4 arrière gauche, un peu en hauteur
+            d = Vector((-0.75, 1, 0.5)).normalized(); cam_data.type = "PERSP"
+            cam_data.lens = 35
         else:   # 3/4 avant droit, un peu en hauteur
             d = Vector((0.75, -1, 0.5)).normalized(); cam_data.type = "PERSP"
             cam_data.lens = 35
-        dist = size.length * (1.05 if v == "34" else 2.0) + 2
+        dist = size.length * (1.05 if v.startswith("34") else 2.0) + 2
         cam.location = ctr + d * dist
         cam.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
         path = os.path.join(RENDER_DIR, "%s_%s.png" % (basename, v))
