@@ -336,6 +336,22 @@ namespace ItHunts.EditorTools
 
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
             player.transform.position = Vector3.up * 2f;
+
+            // Systèmes de jeu sous une racine inactive : le générateur l'active quand la carte est finie (écran de chargement).
+            var game = new GameObject("Jeu (activé quand la carte est prête)");
+            foreach (Transform t in new[] { graph.transform, nav.transform, start, zone.transform, souls.transform, feedback.transform,
+                         split.transform, _level, _spawns, ghoulPool, flyerPool, director.transform, player.transform })
+                if (t != null)
+                    t.SetParent(game.transform, true);
+            foreach (string n in new[] { "Minimap (brouillard de guerre)", "Mesure de performance du niveau (build, -ithunts-perf-level)" })
+            {
+                GameObject go = GameObject.Find(n);
+                if (go != null)
+                    go.transform.SetParent(game.transform, true);
+            }
+
+            game.SetActive(false);
+            SetRef(gen, "gameplayRoot", game);
             EditorSceneManager.SaveScene(scene, RandomScenePath);
             var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (!scenes.Exists(s => s.path == RandomScenePath))

@@ -69,6 +69,7 @@ namespace ItHunts.Level
         private readonly Dictionary<int, GameObject> _moduleInstances = new Dictionary<int, GameObject>();
         private Vector3 _min, _max;
         private Vector3 _arenaCenter, _arenaHalf;
+        private Transform _residents;
         private readonly Dictionary<(int, DoorSide), List<Cut>> _roomCuts = new Dictionary<(int, DoorSide), List<Cut>>();
         private readonly Dictionary<(int, int), List<Cut>> _corridorCuts = new Dictionary<(int, int), List<Cut>>();
         private const float DuctY = 4.5f, DuctH = 3f, DuctW = 3.5f, DuctLen = 8f, GalleryWidth = 20f;
@@ -76,10 +77,55 @@ namespace ItHunts.Level
         /// <summary>Passages refermés (un étage du module bouchait l'ouverture) : indices dans Plan.Passages (mesures).</summary>
         public readonly HashSet<int> ClosedPassages = new HashSet<int>();
 
+        [Header("Chargement")]
+        [Tooltip("Racine des systèmes de jeu (zone, vagues, traqueur, joueur, NavMesh…), inactive dans la scène : activée quand la " +
+                 "carte est finie. Vide : la carte est construite d'un coup dans Awake (image figée).")]
+        [SerializeField] private GameObject gameplayRoot;
+        [Tooltip("Temps de construction par image de l'écran de chargement (ms) : plus, chargement plus court mais barre moins fluide.")]
+        [Min(5f)] [SerializeField] private float frameBudgetMs = 50f;
+
+        /// <summary>Avancement du chargement (0..1) et étape en cours (écran de chargement).</summary>
+        public float Progress { get; private set; }
+        public string Stage { get; private set; } = "";
+        public bool Loading { get; private set; }
+        /// <summary>Durée totale du chargement (de l'Awake au jeu actif, NavMesh compris), en secondes réelles.</summary>
+        public float LoadSeconds { get; private set; }
+
         private void Awake()
         {
             Current = this;
-            Generate(ChooseSeed());
+            if (gameplayRoot != null && Application.isPlaying && !gameplayRoot.activeSelf)
+                StartCoroutine(LoadRoutine(ChooseSeed()));
+            else
+                Generate(ChooseSeed());
+        }
+
+        /// <summary>
+        /// Chargement avec écran : la carte est construite sur plusieurs images (texte et barre de progression), puis le NavMesh
+        /// (ZoneNavMesh, à l'activation) et les systèmes de jeu démarrent sur la carte finie.
+        /// </summary>
+        private System.Collections.IEnumerator LoadRoutine(int seed)
+        {
+            float t0 = Time.realtimeSinceStartup;
+            Loading = true;
+            var screen = new GameObject("Écran de chargement").AddComponent<LoadingScreen>();
+            screen.Level = this;
+            yield return null;
+            System.Collections.IEnumerator build = Build(seed, true);
+            while (build.MoveNext())
+                yield return null;
+            Stage = "Préparation des ennemis (NavMesh)";
+            Progress = 0.92f;
+            yield return null;
+            yield return null;
+            gameplayRoot.SetActive(true);                                     // ZoneNavMesh se construit ici, puis tous les systèmes
+            if (_residents != null)
+                _residents.gameObject.SetActive(true);                        // après le graphe et le NavMesh
+            Progress = 1f;
+            Loading = false;
+            LoadSeconds = Time.realtimeSinceStartup - t0;
+            Debug.Log($"Chargement de la carte : {LoadSeconds:0.0} s (construction {BuildMs / 1000f:0.0} s)");
+            Destroy(screen.gameObject);
         }
 
         /// <summary>Seed de la carte : imposée, fixée, en ligne de commande, sinon seed de la run mêlée au numéro du niveau.</summary>
@@ -107,6 +153,17 @@ namespace ItHunts.Level
         /// <summary>Tire et construit la carte (remplace la précédente).</summary>
         public void Generate(int seed)
         {
+            System.Collections.IEnumerator build = Build(seed, false);
+            while (build.MoveNext())
+            {
+            }
+        }
+
+        /// <summary>Construction par étapes (async : une pause entre les étapes, pour l'écran de chargement).</summary>
+        private System.Collections.IEnumerator Build(int seed, bool async)
+        {
+            Stage = "Tirage de la carte";
+            Progress = 0f;
             if (_root != null)
             {
                 // Nouvelle carte dans la même scène (mesures) : libère aussi les maillages combinés du batching statique.
@@ -130,14 +187,43 @@ namespace ItHunts.Level
             KitBuild.PieceCount = 0;
             _rng = new System.Random(unchecked(seed ^ 0x5bd1e995));
             _root = new GameObject($"Niveau (carte aléatoire, seed {seed})").transform;
+            // Inactive pendant la construction : aucun composant des modules ne démarre sur une carte à moitié faite.
+            _root.gameObject.SetActive(false);
             _moduleInstances.Clear();
             _min = new Vector3(float.MaxValue, -10f, float.MaxValue);
             _max = new Vector3(float.MinValue, settings.upperLevel + settings.MaxCeiling + 10f, float.MinValue);
             PlanCuts();
-            for (int i = 0; i < Plan.Rooms.Count; i++)
+            int rooms = Plan.Rooms.Count, links = Plan.Links.Count;
+            var slice = Stopwatch.StartNew();
+            for (int i = 0; i < rooms; i++)
+            {
                 BuildRoom(i);
-            for (int l = 0; l < Plan.Links.Count; l++)
+                if (async && slice.Elapsed.TotalMilliseconds > frameBudgetMs)
+                {
+                    Stage = $"Salles {i + 1} / {rooms}";
+                    Progress = 0.05f + 0.45f * (i + 1) / rooms;
+                    yield return null;
+                    slice.Restart();
+                }
+            }
+
+            for (int l = 0; l < links; l++)
+            {
                 BuildCorridor(l);
+                if (async && slice.Elapsed.TotalMilliseconds > frameBudgetMs)
+                {
+                    Stage = $"Couloirs {l + 1} / {links}";
+                    Progress = 0.5f + 0.3f * (l + 1) / links;
+                    yield return null;
+                    slice.Restart();
+                }
+            }
+
+            Stage = "Passages, galeries, sortie et repaire";
+            Progress = 0.82f;
+            if (async)
+                yield return null;
+            _root.gameObject.SetActive(true);
             Physics.SyncTransforms();
             BuildPassages();
             BuildGalleries();
@@ -148,8 +234,14 @@ namespace ItHunts.Level
             Residents();
             ConfigureScene(lairNode, arenaNode);
             KitPieces = KitBuild.PieceCount;
+            Stage = "Regroupement du décor";
+            Progress = 0.88f;
+            if (async)
+                yield return null;
             Batch();
             Physics.SyncTransforms();
+            if (!async && _residents != null)
+                _residents.gameObject.SetActive(true);
             BuildMs = (float)sw.Elapsed.TotalMilliseconds;
             Debug.Log($"Carte aléatoire : seed {seed}, essai {Plan.Attempt}{(Plan.Fallback ? " (secours)" : "")}, {Plan.Rooms.Count} salles, " +
                       $"{Plan.Links.Count} couloirs, départ – sortie {Plan.StartExitRooms} salles ; tirage {PlanMs:0.0} ms, construction {BuildMs:0} ms, {KitPieces} pièces du kit");
@@ -795,6 +887,8 @@ namespace ItHunts.Level
         {
             var parent = new GameObject("Habitants des salles").transform;
             parent.SetParent(_root, false);
+            parent.gameObject.SetActive(false);                               // activés avec les systèmes de jeu
+            _residents = parent;
             for (int i = 0; i < Plan.Rooms.Count; i++)
             {
                 PlanRoom r = Plan.Rooms[i];
