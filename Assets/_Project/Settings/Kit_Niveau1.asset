@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42d990d07179f6d4ea9c6c8ddb1a53a2, type: 3}
+  m_Name: Kit_Niveau1
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.KitSet
+  mur4x4: {fileID: 5808336772722709763, guid: 18436342f44f1d04594faedbba29b2fb, type: 3}
+  sol4: {fileID: 6089793299465151086, guid: 6c73ce081b398704c8d2c9d05d5acc25, type: 3}
+  escalier: {fileID: 5615024629987204923, guid: 11b72f6159cacad459a951c504586995, type: 3}
+  pont: {fileID: 5085891167771914037, guid: 0b9237f1616e1184caf453a2ef470832, type: 3}
+  pilier: {fileID: 4475723971491241377, guid: f2b62509611c09f4586b8787da9012d0, type: 3}
+  arc: {fileID: 4937513962721464137, guid: 7bf06432328b00141a424ffaa4f49712, type: 3}
+  portePiece: {fileID: 3248121845602292874, guid: 686a2cf769e618447835021de12a0a22, type: 3}
+  grandePorte: {fileID: 4722080424172868238, guid: 05346b2b310f5a44ea81d7417289f2fa, type: 3}
+  poutre: {fileID: 300915052556697382, guid: db3a9670c230ee64cab21bcf7c59003e, type: 3}
+  pontEgout4: {fileID: 6583957339011043023, guid: 718362cbf901f4541a12e0d3044c3d8f, type: 3}
+  pontEgout14: {fileID: 2994761807298617888, guid: 16d1eafab6c3fbc458c2012b7e3fc28f, type: 3}
+  torche: {fileID: 8079578767649395306, guid: 02e333798c771e8408bc98f23211ba8c, type: 3}

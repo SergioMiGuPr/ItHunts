@@ -4,8 +4,29 @@
 
 ## Étape en cours
 
-**Modèle du barillet (demande de la session art) — 2026-11-15, branche `barillet-modele` (depuis `main` après la fusion des
-corrections 8-9), commitée, sans push ni fusion : l'utilisateur valide en Play Mode d'abord.**
+**Carte aléatoire — 2026-11-15, validée en playtest le 2026-11-15 et fusionnée dans `main`** (branche `carte-aleatoire` supprimée ;
+réserve : ça rame un peu, mesuré avec Blender et deux projets Unity ouverts — mesure de performance dans `carte-suite`). Fiche : `docs/design/features/run-et-niveaux/` (design « Carte aléatoire », testing « Carte aléatoire »).
+- **Bloc 1 (`ae95e8c`) :** format des modules (empreinte 1 × 1, 1 × 2, 2 × 2 ; entrées `ModuleDoor` ; contraintes ; résultat de
+  validation), kit (`KitSet`, `KitBuild`), catalogue `ModuleCatalog_Niveau1`, outil *ItHunts > Modules : valider…* (format, voies du
+  traqueur, cachettes `ReachCheck`, NavMesh entre les entrées, pièces hors kit, contenu).
+- **Bloc 2 (`d4732dc`) :** `MapPlanner` (déterministe, seed de la run × numéro du niveau ; boucles sans pont ; sortie à 6 salles au
+  moins tirée au hasard ; repaire au bord ; pentes ≤ 20° ; niveau haut seulement pour les modules qui le déclarent) ; `RandomLevel`
+  (construction avant tous les systèmes) ; scène `Level_01_Aleatoire` (niveau 1 de la run) ; `Level_01` = carte fixe de référence
+  (menu) ; prefabs du kit avec les modèles livrés (colonne, arc, porte de pièce, grande porte, poutre, ponts d'égout).
+- **Bloc 3 :** les 15 modules en pièces du kit (structure), entrées aux ouvertures actuelles, escaliers des modules en collision lisse
+  avec marches visuelles, 3 modèles vides à dupliquer (1 × 1, 1 × 2, 2 × 2, poids 0) ; 18/18 validés (corrigés : gravats dans une voie,
+  statues sur les tours, poche d'angle de l'habillage) ; ART-HANDOFF : section « Kit de construction » (pièces par priorité, pas de 4 m).
+- **Mesuré :** 20/20 cartes conformes (et 5/5 avec grandes salles), 0 couloir hors boucle, départ–sortie 6 à 10 salles, pente max
+  14°, 0 cachette sur 244 357 points (hors zone de sortie et fosses de parcours) ; tirage 2 à 6 ms, construction 3.4 s (5 s au plus),
+  NavMesh 1.7 s (2.8 s au plus) dans l'éditeur ; escaliers : même vitesse qu'une pente nue (avant : bloqué au pied en montée).
+- **Limites connues :** pas d'écran de chargement (≈ 5 s figé) ; galeries de parcours le long des couloirs et passages en hauteur
+  (Level_01) pas encore dans la carte aléatoire ; aucun vrai module de grande salle (seulement les modèles) ; ≈ 65 000 pièces du kit
+  par carte (à réduire avec les demi-pièces ou des pièces plus grandes) ; `Level_01` reprend les modules convertis (prefabs liés).
+- **Unity, à retenir :** régénérer une carte plusieurs fois dans la même session sans libérer les maillages combinés a fait planter
+  l'éditeur (corrigé : `Resources.UnloadUnusedAssets` à chaque régénération).
+
+**Modèle du barillet (demande de la session art) — 2026-11-15, validé en playtest (barillet, chambres, rotation, rechargement,
+lisibilité) et fusionné dans `main`** (branche `barillet-modele` supprimée).
 - `SM_Barillet` (PR #2) remplace le barillet greybox en main gauche (`BarrelModelInstaller`, menu *ItHunts > Barillet :
   installer le modèle…* ; le prefab Player est modifié en place, le constructeur l'utilise aussi). Logique de tir inchangée.
 - Chambre chargée = émission (blanc chaud (1, 0.86, 0.66) × 3) ; vide = couleur de base #1A120C ; inactif (objet tenu) ×0.2 ;

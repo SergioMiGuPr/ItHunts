@@ -15,7 +15,7 @@ MonoBehaviour:
   menuScene: MainMenu
   levels:
   - displayName: "Niveau 1 : la cave du ch\xE2teau"
-    sceneName: Level_01
+    sceneName: Level_01_Aleatoire
   - displayName: Niveau 2
     sceneName: 
   - displayName: Niveau 3

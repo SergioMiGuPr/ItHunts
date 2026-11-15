@@ -19,6 +19,8 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 > - **`.meta` des assets art (nouvelle règle, commit `94cebbf`)** : les `.meta` de `Assets/Art/` sont générés et commités par la
 >   session principale (Unity), juste après la fusion d'une PR art. La branche `art` fait un **pull de `main` avant chaque
 >   nouveau lot** ; ne jamais générer de `.meta` sur `art` sans avoir tiré `main` (détail au § 1).
+> - **Carte aléatoire (`carte-aleatoire`)** : nouvelle section « Kit de construction » : toute la structure en pièces `Kit_*` (4 m),
+>   à remplacer par les vrais modèles ; liste des pièces par priorité.
 > - **Barillet (`barillet-modele`)** : `SM_Barillet` branché dans la vue FPS (§ 5 bis) ; le canon reste greybox, à modéliser.
 > - **Catalogue des props** : `Prop_TorcheEteinte` (flamme sans lumière, une torche sur deux dans les bases régénérées).
 > - Goules : elles grimpent aussi les flancs des plateformes et les murs proches d'un joueur hors d'atteinte, puis **bondissent
@@ -446,6 +448,42 @@ leurs options sont à vérifier dans le connecteur au moment de s'en servir.
 - **Salle de départ :** marchand de l'artefact (silhouette violette de 2.2 m, enseigne) ; 3 orbes d'offre par joueur.
 - **Menus et minimap :** greybox IMGUI (`MainMenu`, écran de fin, minimap en haut à gauche), à refaire à l'étape 10 ;
   aucun menu ne met le jeu en pause.
+
+## Kit de construction de la carte aléatoire (2026-11-15, branche `carte-aleatoire`)
+
+La carte du niveau est maintenant **tirée au hasard** à chaque partie à partir de **modules** (salles, carrefours) et de couloirs,
+sur une **grille de 120 m**. Toute la structure (murs, sols, plafonds, piliers, arcs, portes, ponts, poutres, escaliers) est faite
+d'**instances des prefabs du kit** (`Assets/_Project/Prefabs/Kit/Kit_*.prefab`, liste dans `Settings/Kit_Niveau1.asset`) :
+**remplacer le contenu d'un prefab `Kit_*` par le vrai modèle met à jour toutes les salles, tous les couloirs et tous les modules
+d'un coup.** Les pièces du kit sont **visuelles** : la collision est une boîte fusionnée posée par le code (ne pas mettre de
+collider dans le modèle). Le batching statique est fait au chargement.
+
+**Compatibilité avec un pas de 4 m :** 120 m = 30 pièces de 4 m ; salles de 48, 56 et 64 m, carrefours de 20 m, plafonds de 36 et
+24 m, couloirs en pente de 16 m, pièces annexes de 12 m : **multiples de 4**. Ne le sont pas : couloirs plats de **14 m** de large
+(3.5 pièces), **19 m** de haut (4.75), pièces annexes de **6 m** de haut (1.5), repaire de **26 m** de profondeur (6.5), et la
+longueur d'un couloir entre un carrefour (20 m) et une salle (82 m, 102 m…). Le code pave avec des pièces entières et **comble le
+reste par une seule pièce raccourcie au bord** (pièce mise à l'échelle) : prévoir des modèles qui supportent un raccourcissement,
+ou livrer les demi-pièces de la liste ci-dessous.
+
+**Pièces dont les modules et la carte ont besoin, par ordre de priorité** (nombre posé sur une carte de 49 cases : environ 60 000
+pièces au total) :
+
+| Priorité | Prefab | Cotes et pivot | Usage | État |
+|---|---|---|---|---|
+| 1 | `Kit_Mur4x4` | **4 × 4 m, 1 m d'épaisseur** ; pivot au pied, au milieu (x −2..2, y 0..4, z −0.5..0.5) | murs des salles, des couloirs, du repaire, des annexes ; côtés des étages pleins | greybox |
+| 2 | `Kit_Sol4` | **4 × 4 m, 1 m d'épaisseur** ; pivot au milieu du dessus (y −1..0) | sols, plafonds, paliers, dessus des étages pleins | greybox |
+| 3 | `Kit_Escalier` | marche de **4 m de large, 0.25 m de haut, 1 m de profondeur** ; pivot au milieu du bas de la contremarche (x −2..2, y 0..0.25, z 0..1) ; **étirée** en hauteur (marche pleine jusqu'au sol) et en profondeur selon la pente | toutes les pentes de liaison et les escaliers des modules : la collision est une pente lisse, les marches sont visuelles et restent sous la pente (les pieds ne s'y enfoncent pas) | greybox |
+| 4 | `Kit_Arc` | `SM_Arc_Couloir` (14 × 11 × 1.6 m) | entrée de chaque couloir et tous les 20 m dans les couloirs plats | **livré** |
+| 5 | `Kit_Pilier` | `SM_Colonne` (1.4 × 8 × 1.4 m) | colonnes des modules | **livré** |
+| 6 | `Kit_Pont` | passerelle de **4 m de long, 3 m de large, tablier de 1 m** ; pivot au milieu du dessus ; étirée en largeur | ponts des modules et des couloirs (dessous à 10 m) | greybox |
+| 7 | `Kit_Poutre` | `SM_Poutre` (6 × 0.5 × 0.5 m) | poutres des couloirs et des carrefours | **livré** |
+| 8 | `Kit_PortePiece` | `SM_Porte_Piece` (4.4 × 5 × 1 m, ouverture 3 × 3 m) | porte des pièces annexes et des salles verrouillées | **livré** |
+| 9 | `Kit_GrandePorte` | `SM_GrandePorte` (cadre 13 × 14 × 2 m) | sortie du niveau | **livré** |
+| 10 | `Kit_PontEgout4` / `Kit_PontEgout14` | `SM_Pont_Egout_4m` / `_14m` | ponts des salles à canal | **livré** |
+| 11 (à faire) | `Kit_Mur2x4`, `Kit_Mur4x3` | 2 × 4 m et 4 × 3 m, 1 m d'épaisseur | demi-pièces des couloirs de 14 m × 19 m, des annexes de 6 m, des longueurs non multiples de 4 | à créer |
+
+Les pièces de **parcours** (poutres et plateformes non magnétiques, plateformes qui s'effondrent) restent hors du kit : ce sont des
+objets de jeu (matériau rayé, D-051).
 
 ## Catalogue des props (après le playtest de l'étape 8) : modèles à produire
 
