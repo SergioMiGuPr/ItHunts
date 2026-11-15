@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ItHunts.Input;
 using ItHunts.Settings;
 using Unity.Cinemachine;
@@ -79,18 +80,28 @@ namespace ItHunts.Player
             {
                 if (Cursor.lockState == CursorLockMode.Locked)
                 {
-                    Vector2 mouse = _reader.LookMouseDelta * settings.mouseSensitivity;
+                    Vector2 mouse = _reader.LookMouseDelta * settings.mouseSensitivity * AssistSlowdown(false, peek: true);
                     _yaw += mouse.x;
                     _pitch += settings.invertMouseY ? mouse.y : -mouse.y;
                 }
 
                 Vector2 stick = _reader.LookStick;
                 float magnitude = stick.magnitude;
+                float slow = AssistSlowdown(_reader.UsingGamepad);
                 if (magnitude > 1e-4f)
                 {
                     stick = stick / magnitude * Mathf.Pow(magnitude, settings.gamepadResponseExponent);
-                    _yaw += stick.x * settings.gamepadYawSpeed * dt;
-                    _pitch += (settings.invertGamepadY ? stick.y : -stick.y) * settings.gamepadPitchSpeed * dt;
+                    _yaw += stick.x * settings.gamepadYawSpeed * slow * dt;
+                    _pitch += (settings.invertGamepadY ? stick.y : -stick.y) * settings.gamepadPitchSpeed * slow * dt;
+                }
+
+                // Légère attraction vers la cible, quand le joueur vise ou se déplace.
+                if (_assistActive && settings.aimAssistPull > 0f && (magnitude > 0.1f || _reader.Move.sqrMagnitude > 0.01f
+                                                                     || (!_reader.UsingGamepad && _reader.LookMouseDelta.sqrMagnitude > 0.01f)))
+                {
+                    Vector2 pull = AimAssist.Pull(_yaw, _pitch, viewRig.position, _assistTarget, settings.aimAssistPull, dt);
+                    _yaw += pull.x;
+                    _pitch += pull.y;
                 }
             }
 
@@ -106,6 +117,46 @@ namespace ItHunts.Player
             viewRig.SetPositionAndRotation(feet + Vector3.up * _eyeHeight, Quaternion.Euler(_pitch, _yaw, 0f));
 
             UpdateFov(dt);
+        }
+
+        private bool _assistActive;
+        private Vector3 _assistTarget;
+        private int _assistFrame = -1;
+        private float _assistSlow = 1f;
+
+        /// <summary>Aide à la visée active ce pas-ci (debug, tests).</summary>
+        public bool AimAssistActive => _assistActive;
+
+        /// <summary>
+        /// Facteur de vitesse de visée (aide à la visée) : cible la plus proche du viseur dans le cône, visible ; calculé une fois
+        /// par image. peek : seulement lire le facteur pour la souris (actif seulement si le réglage souris l'est).
+        /// </summary>
+        private float AssistSlowdown(bool gamepad, bool peek = false)
+        {
+            if (_assistFrame != Time.frameCount)
+            {
+                _assistFrame = Time.frameCount;
+                _assistActive = false;
+                _assistSlow = 1f;
+                bool on = AimAssist.Enabled(settings, _reader != null && _reader.UsingGamepad);
+                if (on && viewRig != null)
+                {
+                    Vector3 eye = viewRig.position;
+                    Vector3 fwd = Quaternion.Euler(_pitch, _yaw, 0f) * Vector3.forward;
+                    bool freeHand = _motor == null || _motor.Holder == null || _motor.Holder.Held == null;
+                    IReadOnlyList<Vector3> pts = AimAssist.Targets(eye, freeHand, _motor != null ? _motor.TelekinesisSettings : null, settings.aimAssistRange);
+                    if (AimAssist.BestVisible(eye, fwd, pts, settings.aimAssistAngle, settings.aimAssistRange, out Vector3 best, out float angle))
+                    {
+                        _assistActive = true;
+                        _assistTarget = best;
+                        _assistSlow = AimAssist.Slowdown(angle, settings.aimAssistAngle, settings.aimAssistSlowdown);
+                    }
+                }
+            }
+
+            if (peek && (_reader == null || _reader.UsingGamepad))
+                return 1f;
+            return _assistSlow;
         }
 
         private void UpdateFov(float dt)
