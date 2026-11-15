@@ -33,6 +33,25 @@ rayon sera rejoué par le serveur avec compensation de latence ; la seed suffit 
 maison du contact objet-joueur (`ImpactDamager.FixedUpdate`) et les blessures du tir ami devront tourner **côté
 autorité réseau** (là où la physique des objets fait autorité), jamais chez chaque client.
 
+## Personnages et lanterne de feu (D-064, D-065)
+
+- `CharacterDefinition` (un asset par personnage : nom, couleur, artefact, jouable) et `CharacterRoster`
+  (`Settings/Personnages/Characters_Default`, ordre du menu, personnage par défaut). Référencé par `Run_Default` (menu) et par
+  l'état de la run (`RunState.characters`) de chaque scène.
+- `CharacterPick` (logique pure) : choix gardés valides, jamais deux fois le même personnage, défilement du menu.
+  `RunSession.Characters` garde le choix de chaque joueur d'une scène à l'autre ; `RunState.CharacterFor` /
+  `ArtifactFor(playerIndex)` en déduisent le personnage et l'artefact ; sans liste de personnages, l'ancien tirage (D-032).
+- `FireLanternSettings` (`FireLantern_Default`) ; `FireLantern` (état `LanternState` et tick, logique pure : jet, recharge,
+  clic mémorisé, objet tenu) ; `FireLanternJet.Sweep` (cibles du cône à chaque tick du jet, ligne de vue contre le décor
+  seulement, une touche par cible et par jet) ; `ArtifactHolder` fait tourner l'artefact du personnage.
+- `FireLanternView` (lanterne en main, flamme, bouffées, sons) ; `FirstPersonView` (main gauche) ; `PlayerHud` (un segment) ;
+  debug (F12 : état de la lanterne, cibles du dernier jet, personnage) ; `ArtifactMerchant` (améliorations du barillet
+  seulement pour le barillet).
+- Éditeur : *ItHunts > Personnages : créer les assets, poser la lanterne, brancher les scènes* (`CharacterSetup`), aussi appelé
+  par les constructeurs du prefab Player et des scènes.
+- Réseau (étape 11) : l'état de la lanterne est une structure copiable, le cône est à rejouer par l'autorité (comme le tir
+  instantané du barillet).
+
 ## Files
 
 | File | Role |

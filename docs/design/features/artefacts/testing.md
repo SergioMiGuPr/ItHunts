@@ -44,7 +44,52 @@ l'est). F3 trois fois : page 3, ligne « Artefact » (coups, rechargement, inact
 12. **Seed :** chaque lancement affiche « Run : seed … » dans la console ; dans « État de la run », décocher
     `Random Seed` pour rejouer la même.
 
+## Lanterne de feu et personnages (D-064, D-065) — 2026-11-15
+
+**Tests EditMode** (`LanternTests`, 10) : valeurs de départ ; cône (portée 5 m, 20° de chaque côté, une touche par ennemi et
+par jet, nouveau jet = nouvelle touche) ; murs (trois goules en file toutes touchées, une caisse ne protège pas, un mur
+oui) ; traqueur pas touché, volant tué en un coup, attaque attribuée au joueur ; tir ami (désactivé : rien ; activé : 25 PV ;
+jamais soi-même) ; jet de 0.6 s puis recharge de 3 s (clic trop tôt perdu, clic à 0.1 s de la fin mémorisé) ; objet tenu
+(clic = lancer, prise = fin du jet) ; personnages (jamais deux fois le même, grisés exclus, défilement du menu) ; état de la
+run (artefact du personnage, 2 joueurs différents, pas de 3e) ; assets du projet et prefab.
+
+**Mesures en Play Mode** (`Level_01_Aleatoire`, vraies goules de 60 PV figées dans un couloir plat de 14 m de large, vrais
+clics ; le barillet vise parfaitement et instantanément) :
+
+| Cas | Lanterne | Barillet |
+|---|---|---|
+| 1 goule à 3 m | 3 jets, **7.2 s** (7.8 s mesurées avec la latence des clics simulés) | 5 balles, **1.0 s** |
+| Groupe de 3 (2.5 à 3.2 m, ±0.9 m) | 3 jets touchant les 3, **7.2 s** (7.8 s mesurées) | 15 balles, **5.4 s** |
+
+| Couloir : cibles touchées par **un** jet | visée droit devant | visée au centre du groupe |
+|---|---|---|
+| File de 5 dans l'axe (1.5 à 5.5 m) | 4 / 5 (celle à 5.5 m est hors de portée) | 4 / 5 |
+| Groupe de 6 sur toute la largeur (±6.2 m) | 2 / 6 (les 4 des bords à plus de 50° du viseur) | 2 / 6 |
+| Meute de 8 qui charge (1.5 à 5 m, ±1.5 m) | 7 / 8 (une à 5.1 m) | **8 / 8** |
+
+À retenir : une goule rampe, elle est basse ; à moins de 2 m, viser droit devant peut la laisser sous le cône (20°).
+Captures : `captures/lanterne_jet.png` (jet sur 4 goules), `captures/lanterne_eteinte.png` (0.5 s après le jet),
+`captures/menu_personnages.png` (joueur 1 caméléon, joueur 2 renard, koala et hibou grisés).
+
+### Playtest — lanterne et personnages
+
+1. **Menu :** « Joueur 1 » ◀ ▶ passe du caméléon (barillet) au renard (lanterne de feu) ; le koala et le hibou se voient
+   grisés (« bientôt ») et ne se choisissent pas.
+2. **Écran partagé :** le 2e joueur rejoint avec Start ; sa ligne affiche l'autre personnage ; ◀ ▶ ne permet jamais de
+   prendre celui du 1er joueur. En jeu, chacun a son artefact (barillet d'un côté, lanterne de l'autre).
+3. Lancer **Test_Movement** depuis le menu avec le renard : la lanterne est en main gauche, la flamme brille.
+4. **Clic gauche / RT** : jet de 0.6 s, bouffées de flammes devant ; la flamme de la lanterne s'éteint puis se rallume en 3 s
+   (petit son quand elle est prête) ; le segment sous le viseur suit.
+5. Contre une meute de goules dans un couloir : combien en prend un jet ? Est-ce lisible (chiffres de 25) ?
+6. Une goule derrière un pilier ou une porte n'est pas touchée ; derrière une caisse ou une autre goule, si.
+7. Volant : tué d'un jet. Traqueur : rien.
+8. Tir ami activé (`Coop_Default`) : le jet blesse l'autre joueur (25), jamais soi-même.
+9. Tenir une caisse (F) : la lanterne s'atténue, le clic lance la caisse sans jet ; attraper pendant un jet le coupe.
+10. **Ressenti :** 25 dégâts et 3 s de recharge, est-ce trop faible contre une goule seule (7 s) ? (voir questions ouvertes)
+11. Marchand de la salle de départ avec le renard : seul le soin est proposé.
+
 ## History
 
 - 2026-11-12 : designed (D-022).
 - 2026-11-12 : système générique, barillet, tir ami ; mesures en Play Mode (D-032).
+- 2026-11-15 : lanterne de feu et personnages : 10 tests EditMode, mesures en Play Mode (D-064, D-065).

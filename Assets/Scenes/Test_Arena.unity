@@ -11803,6 +11803,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c374b56fe9b8a1489b95b9fbe9d579e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Artifacts.RunState
+  characters: {fileID: 11400000, guid: 6d2a5f019e0ca2e47b68a7a5c1317c71, type: 2}
   pool: {fileID: 11400000, guid: 2fee0a83251912048aacce9c2a571f95, type: 2}
   upgrades: {fileID: 11400000, guid: 3b4226d748f2ec64a9e2ed472e75197a, type: 2}
   randomSeed: 1
@@ -154213,6 +154214,7 @@ MonoBehaviour:
   smallVoxel: 0.2
   stalkerVoxel: 0.3
   maxSlope: 45
+  tileSize: 128
   autoClimbLinks: 1
   climbMaxHeight: 20
   climbMinHeight: 2

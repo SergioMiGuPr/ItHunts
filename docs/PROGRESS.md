@@ -19,6 +19,18 @@
   place du batching statique : ≈ 53 600 pièces → 529 renderers. Build de développement, seed 104729, 1920 × 1080, timer à 13:40 :
   solo **19,2 → 8,0 ms** médiane (95 % 14,8 ; GPU 2,9 ; 2 555 draw calls au lieu de 4 940) ; écran partagé **13,4 ms** médiane
   (95 % 16,1 ; GPU 4,1). Reste : `FinishFrameRendering` 4,1 ms (8,1 à deux), 1 718 lumières, ≈ 4 600 renderers hors kit.
+- **Décisions D-064 à D-066 :** un artefact par personnage, choisi avant la run, jamais deux fois le même en coop (renard rouge :
+  lanterne de feu ; caméléon orange : barillet ; koala vert et hibou bleu : à concevoir) ; variété par les améliorations et la
+  carte ; orbe à la couleur du personnage avec l'orbe v2 (anneaux et runes pour les actions, 6 tablettes : 2 traction,
+  1 répulsion, 3 mouvement), code couleur actuel gardé d'ici là. GDD, fiches artefacts et orbes, ART-HANDOFF.
+- **Lanterne de feu et choix du personnage :** menu (joueur 1 et joueur 2, cartes des 4 personnages, koala et hibou grisés) ;
+  `CharacterDefinition` / `CharacterRoster` / `CharacterPick` ; `RunSession.Characters` ; lanterne (`FireLantern`,
+  `FireLanternJet`, `FireLanternView`, `FireLantern_Default` : 5 m, 40°, 0.6 s, 25 PV, 3 s) en greybox dans la main gauche ;
+  HUD, debug ; marchand : soin seulement pour le renard. Outil *ItHunts > Personnages : …* (assets, prefab, scènes).
+  **Mesuré :** goule seule 7.2 s (3 jets) contre 1.0 s au barillet ; groupe de 3 : 7.2 s contre 5.4 s ; un jet dans un couloir :
+  8/8 d'une meute (visée au groupe), 4/5 d'une file, 2/6 d'un groupe étalé sur 14 m. 377 tests EditMode (376 + 1 non concluant
+  voulu). **À trancher en playtest :** équilibre de la lanterne contre une goule seule ; teintes des personnages face aux
+  couleurs réservées (rouge = annonce d'attaque).
 
 **Carte aléatoire — 2026-11-15, validée en playtest le 2026-11-15 et fusionnée dans `main`** (branche `carte-aleatoire` supprimée ;
 réserve : ça rame un peu, mesuré avec Blender et deux projets Unity ouverts — mesure de performance dans `carte-suite`). Fiche : `docs/design/features/run-et-niveaux/` (design « Carte aléatoire », testing « Carte aléatoire »).

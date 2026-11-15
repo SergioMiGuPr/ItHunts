@@ -437,6 +437,7 @@ namespace ItHunts.EditorTools
                 impactRenderer.receiveShadows = false;
                 impactRenderer.enabled = false;
                 SetRef(barrelView, "impact", impactRenderer);
+                CharacterSetup.BuildLantern(leftHand, root);                // lanterne de feu (D-065), cachée sans elle
                 var shake = root.AddComponent<CameraShake>();
                 SetRef(shake, "virtualCamera", vcam);
                 var health = root.AddComponent<PlayerHealth>();
@@ -640,6 +641,7 @@ namespace ItHunts.EditorTools
 
             var run = new GameObject("État de la run").AddComponent<RunState>();
             SetRef(run, "pool", pool);
+            SetRef(run, "characters", CharacterSetup.Roster());          // personnages (D-064)
 
             // Joueur.
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);

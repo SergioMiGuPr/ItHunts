@@ -276,6 +276,7 @@ namespace ItHunts.EditorTools
             SetRef(zone, "playerStart", start);
             var runState = new GameObject("État de la run").AddComponent<ItHunts.Artifacts.RunState>();
             SetRef(runState, "pool", LoadOrCreate<ArtifactPool>(PoolPath));
+            SetRef(runState, "characters", CharacterSetup.Roster());    // personnages (D-064)
             SetRef(runState, "upgrades", UpgradePoolAsset());
             new GameObject("Minimap (brouillard de guerre)").AddComponent<MapDiscovery>().gameObject.AddComponent<ItHunts.Hud.MinimapHud>();
             new GameObject("Mesure de performance du niveau (build, -ithunts-perf-level)").AddComponent<ItHunts.Debugging.LevelPerfProbe>();

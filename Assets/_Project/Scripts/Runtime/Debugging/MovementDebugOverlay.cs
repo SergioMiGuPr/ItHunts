@@ -349,6 +349,16 @@ namespace ItHunts.Debugging
                                  (bc == null ? "" : $", {br.Rounds}/{bc.rounds} coups" +
                                                     (br.Reloading ? $", RECHARGE {Barrel(br, bc, s.Tick, dt) * 100f:0} %" : "") +
                                                     (br.Inactive ? ", inactif (objet tenu)" : "") + $", tirs {br.ShotCount}"));
+                ItHunts.Settings.FireLanternSettings lc = art.LanternSettings;
+                if (lc != null)
+                {
+                    ItHunts.Artifacts.LanternState ls = art.Lantern;
+                    float cd = ItHunts.Artifacts.FireLantern.CooldownProgress(ls, s.Tick, lc, dt);
+                    _text.AppendLine($"Lanterne : {(ls.Jetting ? "JET" : cd >= 1f ? "prête" : $"recharge {cd * 100f:0} %")}" +
+                                     $"{(ls.Inactive ? ", inactive (objet tenu)" : "")}, jets {ls.JetCount}, cibles du dernier jet " +
+                                     $"{art.LastJetHits}, total {art.TotalJetHits}{(art.Character != null ? $" ; personnage {art.Character.displayName}" : "")}");
+                }
+
                 if (bc != null && br.ShotCount > 0)
                     _text.AppendLine($"Dernier tir : {shot.Kind}, {shot.Distance:0.0} m, {shot.Damage:0} dégâts" +
                                      $"{(shot.Collider != null ? $" ({shot.Collider.name})" : "")}");

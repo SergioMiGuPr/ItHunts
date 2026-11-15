@@ -77,6 +77,19 @@ namespace ItHunts.Economy
             _draws = 0;
         }
 
+        private static bool HasBarrel(int playerId)
+        {
+            foreach (PlayerHealth p in PlayerHealth.All)
+                if (p != null && p.PlayerId == playerId)
+                {
+                    var holder = p.GetComponent<ItHunts.Artifacts.ArtifactHolder>();
+                    holder?.EnsureReady();
+                    return holder == null || holder.Current == null || holder.Current is ItHunts.Settings.BarrelSettings;
+                }
+
+            return true;
+        }
+
         /// <summary>Tire les offres d'un joueur (orbes vues par lui seul).</summary>
         public void Stock(int playerId)
         {
@@ -90,7 +103,11 @@ namespace ItHunts.Economy
                 return;
             RunState run = RunState.Current;
             int seed = (run != null ? run.Seed : 1) * 31 + playerId;
-            int[] idx = SoulMath.Draw(seed, _draws++, pool.upgrades.Count, Mathf.Min(offers, pool.upgrades.Count));
+            // Améliorations du barillet seulement pour un joueur qui a le barillet ; la lanterne de feu (D-065) n'en a pas encore :
+            // il ne voit que le soin.
+            int[] idx = HasBarrel(playerId)
+                ? SoulMath.Draw(seed, _draws++, pool.upgrades.Count, Mathf.Min(offers, pool.upgrades.Count))
+                : new int[0];
             float range = settings != null ? settings.orbInteractRange : 8f;
             for (int i = 0; i < idx.Length; i++)
             {

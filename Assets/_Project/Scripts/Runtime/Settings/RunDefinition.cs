@@ -44,7 +44,7 @@ namespace ItHunts.Settings
         public string menuScene = "MainMenu";
         public List<RunLevel> levels = new List<RunLevel>();
         public List<RunDifficulty> difficulties = new List<RunDifficulty>();
-        [Tooltip("Personnages jouables (un seul pour l'instant).")]
-        public List<string> characters = new List<string> { "Le porteur d'orbe" };
+        [Tooltip("Personnages du menu (D-064) : chacun apporte son artefact ; les non jouables sont affichés grisés.")]
+        public CharacterRoster characters;
     }
 }

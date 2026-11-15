@@ -1,0 +1,238 @@
+using ItHunts.Audio;
+using ItHunts.Movement;
+using ItHunts.Player;
+using ItHunts.Settings;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace ItHunts.Artifacts
+{
+    /// <summary>
+    /// Retour visuel et sonore de la lanterne de feu (D-065), sur le prefab du joueur. Lit l'état simulé (ArtifactHolder) à chaque
+    /// image, n'écrit rien dans la simulation.
+    /// - Lanterne greybox en main gauche (le modèle de la DA arrivera par une PR) ; sa flamme brille quand elle est prête,
+    ///   s'éteint à la fin du jet et se rallume peu à peu pendant la recharge (petit son quand elle est de nouveau prête).
+    /// - Jet : bouffées de flammes (sphères sans collision, couleur HDR qui passe du jaune au rouge) lancées depuis la lanterne
+    ///   dans le cône du viseur ; elles s'arrêtent sur le décor. Visibles par tous les joueurs (objets du monde).
+    /// Cachée si l'artefact du joueur n'est pas la lanterne.
+    /// </summary>
+    [DefaultExecutionOrder(150)]
+    public sealed class FireLanternView : MonoBehaviour
+    {
+        [SerializeField] private Transform lanternRoot;
+        [Tooltip("Flamme dans la cage de la lanterne (émission réglée par le code).")]
+        [SerializeField] private Renderer flame;
+        [Tooltip("Sortie du jet (haut de la lanterne).")]
+        [SerializeField] private Transform muzzle;
+        [Tooltip("Maillage et matériau des bouffées de flammes (sphère, Particles/Unlit).")]
+        [SerializeField] private Mesh puffMesh;
+        [SerializeField] private Material puffMaterial;
+
+        private const int MaxPuffs = 64;
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
+
+        private struct Puff
+        {
+            public float Born;
+            public Vector3 From;
+            public Vector3 Dir;
+            public float Reach;
+            public float Size;
+        }
+
+        private ArtifactHolder _holder;
+        private PlayerMotor _motor;
+        private FirstPersonView _view;
+        private Camera _camera;
+        private Transform _puffRoot;
+        private readonly Transform[] _puffT = new Transform[MaxPuffs];
+        private readonly MeshRenderer[] _puffR = new MeshRenderer[MaxPuffs];
+        private readonly Puff[] _puffs = new Puff[MaxPuffs];
+        private int _next;
+        private float _spawnDebt;
+        private MaterialPropertyBlock _block;
+        private AudioSource _audio;
+        private AudioClip _jet, _relight;
+        private float _jetClipFor = -1f;
+        private int _seenJet;
+        private bool _wasReady = true;
+        private System.Random _rng;
+
+        /// <summary>Mesures : lueur affichée de la lanterne (0 éteinte, 1 prête) et bouffées visibles.</summary>
+        public float ShownGlow { get; private set; }
+        public int ShownPuffs { get; private set; }
+
+        private void Awake()
+        {
+            _holder = GetComponent<ArtifactHolder>();
+            _motor = GetComponent<PlayerMotor>();
+            _view = GetComponent<FirstPersonView>();
+            var input = GetComponent<PlayerInput>();
+            _camera = input != null ? input.camera : null;
+            _block = new MaterialPropertyBlock();
+            _audio = gameObject.AddComponent<AudioSource>();
+            _audio.playOnAwake = false;
+            _audio.spatialBlend = 0f;
+            _relight = ProceduralSfx.ToClip("Lanterne rallumée", ProceduralSfx.LanternRelight());
+            _rng = new System.Random(GetInstanceID());
+            _flameScale = flame != null ? flame.transform.localScale : Vector3.one;
+        }
+
+        private Vector3 _flameScale;
+
+        private void OnDestroy()
+        {
+            if (_puffRoot != null)
+                Destroy(_puffRoot.gameObject);
+        }
+
+        private void EnsurePuffs()
+        {
+            if (_puffRoot != null || puffMesh == null || puffMaterial == null)
+                return;
+            _puffRoot = new GameObject($"Flammes de la lanterne ({name})").transform;
+            for (int i = 0; i < MaxPuffs; i++)
+            {
+                var go = new GameObject("Bouffée");
+                go.transform.SetParent(_puffRoot, false);
+                go.AddComponent<MeshFilter>().sharedMesh = puffMesh;
+                var r = go.AddComponent<MeshRenderer>();
+                r.sharedMaterial = puffMaterial;
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                r.receiveShadows = false;
+                r.enabled = false;
+                _puffT[i] = go.transform;
+                _puffR[i] = r;
+                _puffs[i].Born = float.NegativeInfinity;
+            }
+        }
+
+        private void LateUpdate()
+        {
+            FireLanternSettings cfg = _holder != null ? _holder.LanternSettings : null;
+            if (lanternRoot != null && lanternRoot.gameObject.activeSelf != (cfg != null))
+                lanternRoot.gameObject.SetActive(cfg != null);
+            if (cfg == null)
+            {
+                HidePuffs();
+                return;
+            }
+
+            EnsurePuffs();
+            FpsViewSettings fps = _view != null ? _view.Settings : null;
+            if (lanternRoot != null && fps != null)                         // réglable en Play Mode
+            {
+                lanternRoot.localPosition = fps.lanternInHand;
+                lanternRoot.localRotation = Quaternion.Euler(fps.lanternInHandEuler);
+                lanternRoot.localScale = Vector3.one * fps.lanternScale;
+            }
+
+            LanternState s = _holder.Lantern;
+            int tick = _motor != null ? _motor.State.Tick : 0;
+            float dt = Time.fixedDeltaTime;
+            bool ready = FireLantern.Ready(s, tick, cfg, dt);
+
+            // Nouveau jet : son à la durée du jet.
+            if (s.JetCount != _seenJet)
+            {
+                _seenJet = s.JetCount;
+                if (!Mathf.Approximately(_jetClipFor, cfg.jetDuration))
+                {
+                    _jetClipFor = cfg.jetDuration;
+                    _jet = ProceduralSfx.ToClip("Jet de la lanterne", ProceduralSfx.LanternJet(cfg.jetDuration));
+                }
+
+                if (s.Jetting)
+                    _audio.PlayOneShot(_jet, cfg.jetVolume);
+            }
+
+            if (ready && !_wasReady && s.JetCount > 0)
+                _audio.PlayOneShot(_relight, cfg.relightVolume);
+            _wasReady = ready;
+
+            // Flamme de la lanterne : vive pendant le jet, éteinte à sa fin, puis se rallume avec la recharge (scintille un peu).
+            float glow = s.Jetting ? 1.4f : Mathf.SmoothStep(0f, 1f, FireLantern.CooldownProgress(s, tick, cfg, dt));
+            float flicker = 0.9f + 0.1f * Mathf.PerlinNoise(Time.time * 9f, GetInstanceID() * 0.01f);
+            ShownGlow = glow;
+            if (flame != null)
+            {
+                float k = glow * flicker * (s.Inactive ? cfg.inactiveFactor : 1f);
+                flame.transform.localScale = _flameScale * Mathf.Lerp(0.25f, 1f, Mathf.Clamp01(glow));
+                flame.GetPropertyBlock(_block);
+                _block.SetColor(BaseColorId, cfg.lanternGlow * k);
+                _block.SetColor(EmissionColorId, cfg.lanternGlow * k);
+                flame.SetPropertyBlock(_block);
+            }
+
+            // Bouffées : lancées pendant le jet depuis la lanterne, dans le cône du viseur.
+            if (s.Jetting && _puffRoot != null)
+            {
+                _spawnDebt += cfg.puffsPerSecond * Time.deltaTime;
+                Vector3 from = muzzle != null && _view != null ? _view.ViewToWorld(muzzle.position) : transform.position + Vector3.up * 1.5f;
+                Transform cam = _camera != null ? _camera.transform : transform;
+                while (_spawnDebt >= 1f)
+                {
+                    _spawnDebt -= 1f;
+                    Spawn(from, cam, cfg);
+                }
+            }
+            else
+                _spawnDebt = 0f;
+
+            UpdatePuffs(cfg);
+        }
+
+        private void Spawn(Vector3 from, Transform cam, FireLanternSettings cfg)
+        {
+            // Direction au hasard dans le cône (plus dense au centre), portée raccourcie par le décor.
+            float a = (float)_rng.NextDouble() * Mathf.PI * 2f;
+            float r = Mathf.Sqrt((float)_rng.NextDouble()) * Mathf.Tan(cfg.HalfAngle * Mathf.Deg2Rad) * 0.85f;
+            Vector3 dir = (cam.forward + cam.right * (Mathf.Cos(a) * r) + cam.up * (Mathf.Sin(a) * r)).normalized;
+            float reach = cfg.range;
+            if (Physics.Raycast(from, dir, out RaycastHit hit, cfg.range, cfg.hitMask, QueryTriggerInteraction.Ignore)
+                && hit.collider.attachedRigidbody == null && !hit.transform.IsChildOf(transform)
+                && hit.collider.GetComponentInParent<ItHunts.Combat.Damageable>() == null)
+                reach = Mathf.Max(0.2f, hit.distance - 0.2f);
+            _puffs[_next] = new Puff
+            {
+                Born = Time.time, From = from + dir * 0.25f, Dir = dir, Reach = Mathf.Max(0.1f, reach - 0.25f),
+                Size = 0.8f + 0.4f * (float)_rng.NextDouble(),
+            };
+            _next = (_next + 1) % MaxPuffs;
+        }
+
+        private void UpdatePuffs(FireLanternSettings cfg)
+        {
+            int shown = 0;
+            for (int i = 0; i < MaxPuffs; i++)
+            {
+                if (_puffR[i] == null)
+                    continue;
+                float u = (Time.time - _puffs[i].Born) / cfg.puffLifetime;
+                bool on = u >= 0f && u < 1f;
+                _puffR[i].enabled = on;
+                if (!on)
+                    continue;
+                shown++;
+                float travel = 1f - (1f - u) * (1f - u);                 // part vite, ralentit
+                _puffT[i].position = _puffs[i].From + _puffs[i].Dir * (_puffs[i].Reach * travel) + Vector3.up * (0.4f * u * u);
+                _puffT[i].localScale = Vector3.one * (Mathf.Lerp(cfg.puffStartSize, cfg.puffEndSize, travel) * _puffs[i].Size);
+                // Additif : fondu d'apparition (pas d'éclat plein écran près de la caméra) et de disparition.
+                Color c = Color.Lerp(cfg.flameStartColor, cfg.flameEndColor, u) * (Mathf.SmoothStep(0f, 1f, u / 0.2f) * (1f - u * u));
+                _block.Clear();
+                _block.SetColor(BaseColorId, c);
+                _puffR[i].SetPropertyBlock(_block);
+            }
+
+            ShownPuffs = shown;
+        }
+
+        private void HidePuffs()
+        {
+            for (int i = 0; i < MaxPuffs; i++)
+                if (_puffR[i] != null)
+                    _puffR[i].enabled = false;
+        }
+    }
+}
