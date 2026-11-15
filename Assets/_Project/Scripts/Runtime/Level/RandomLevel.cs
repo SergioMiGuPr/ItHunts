@@ -190,7 +190,8 @@ namespace ItHunts.Level
                 float h = d.Use == 2 ? ExitDoorHeight : settings.corridorHeight;
                 cuts[d.Side].Add(new Cut(along - w * 0.5f, along + w * 0.5f, y, y + h));
                 if (d.Use == 1 && kit != null)
-                    KitBuild.Piece(kit.arc, parent, d.Position + MapPlanner.SideVector(d.Side) * (T + 0.8f), RoomModule.SideYaw(d.Side));
+                    KitBuild.Arch(parent, kit, d.Position + MapPlanner.SideVector(d.Side) * (T * 0.5f), RoomModule.SideYaw(d.Side),   // dans l'épaisseur du mur, sous le linteau
+                        Plan.Links[d.Link].Width, settings.corridorHeight);
             }
 
             Wall(parent, "Mur nord", true, c.z + hz + T * 0.5f, c.x - hx - T, c.x + hx + T, 0f, top, cuts[DoorSide.Nord]);
@@ -448,7 +449,7 @@ namespace ItHunts.Level
             float yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
             if (kit != null && !l.Slope)
                 for (float d = 20f; d < len - 10f; d += 20f)
-                    KitBuild.Piece(kit.arc, parent, Point(d / len), yaw);
+                    KitBuild.Arch(parent, kit, Point(d / len), yaw, w, h);
             if (kit != null && kit.torche != null)
                 for (float d = 6f; d < len - 4f; d += 12f)
                     foreach (int s in new[] { 1, -1 })
