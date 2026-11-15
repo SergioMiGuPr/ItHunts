@@ -67,6 +67,20 @@ utilisent ces FBX prennent ces `.mat` sans autre réglage.
   versions toon « à travers le brouillard » des signaux du jeu, pour l'essai de lisibilité (`RENDU.md` § 3 ter). Ce
   sont des propositions de réglage : les matériaux du jeu (`Assets/_Project/Art/Greybox/`) n'ont pas été modifiés.
 
+### Props du niveau 1 (`Assets/Art/Materials/Niveau1/`, lot de modélisation, groupe B)
+
+Les props réutilisent `M_FerRouille`, `M_Pierre` et `M_Egout` (UV en échelle monde, mêmes tuiles). Nouveaux
+matériaux, tous sur `ItHunts/Toon`, ni métal ni brillance :
+
+| Matériau | Utilisé par | Texture | Couleur de base | Particularité |
+|---|---|---|---|---|
+| `M_Bois_Brut` | manche de la torche, tringle de la tapisserie, échafaudage | `T_Bois_Brut_BaseColor` (tuile peinte de 1 m, 256 px/m, fil vertical) | blanc | — |
+| `M_Chiffon_Brule` | tête de la torche | `T_Chiffon_Brule_BaseColor` (tuile peinte de 1 m) | blanc | — |
+| `M_Corde` | ligatures (torche, échafaudage) | aucune | #7A6548 | — |
+| `M_Os` | `SM_Cage_Os` | aucune | #CFC3A6 | — |
+| `M_Fond_Noir` | fond de la bouche du tuyau (trous, fonds d'ombre) | aucune | #070606 | — |
+| `M_Tapisserie` | `SM_Tapisserie` | `texture_tapisserie_v02_alpha` (import : alpha transparent, bord en Clamp) | blanc | **découpe alpha** (seuil 0.5), **double face** (Cull Off), file AlphaTest |
+
 ### Lanterne de feu et orbe, vue FPS (`Assets/Art/Materials/FPS/`, lot de modélisation, groupe A)
 
 Tous sur `ItHunts/Toon`, ni métal ni brillance, tiling (1, 1) / offset (0, 0) : les UV des FBX sont en échelle monde

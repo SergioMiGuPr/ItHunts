@@ -52,7 +52,11 @@ def flat_material(name, hexa, alpha=1.0):
 
 def empty(name, loc, parent, size=0.01, sc=None):
     """Repère vide (flèches) ; sans rotation : dans Unity, son +Z est l'avant de l'objet."""
+    other = bpy.data.objects.get(name)
+    if other is not None:                    # même nom dans une autre scène de la session : on le libère,
+        other.name = name + "_autre"         # sinon Blender suffixe (.001) et le FBX porte le mauvais nom
     ob = bpy.data.objects.new(name, None)
+    ob.name = name
     ob.empty_display_type = "ARROWS"
     ob.empty_display_size = size
     (sc or bpy.context.scene).collection.objects.link(ob)
@@ -207,7 +211,7 @@ def _noise(n, sx, sy, rng):
     return (out - out.mean()) / (out.std() + 1e-8)
 
 
-def painted_tile(name, spec, n=256):
+def painted_tile(name, spec, n=256, out_dir=None):
     """Tuile peinte « à la main » : grandes taches, aplats en paliers (rendu peint), traînées de pinceau
     dans une direction, taches de rouille ou fissures. Valeurs sRGB."""
     rng = np.random.default_rng(spec["seed"])
@@ -238,8 +242,9 @@ def painted_tile(name, spec, n=256):
         col = col + (chips > 2.3)[..., None] * 0.06               # quelques éclats clairs
     px = np.ones((n, n, 4), dtype=np.float32)
     px[..., :3] = np.clip(col, 0, 1)
-    os.makedirs(TEX_DIR, exist_ok=True)
-    path = os.path.join(TEX_DIR, name + ".png")
+    out_dir = out_dir or TEX_DIR
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, name + ".png")
     C.save_pixels(px, path)
     return path
 
