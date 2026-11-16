@@ -349,7 +349,43 @@ Sans autre solution, les mains seraient le seul objet sans contour.
 changer, à part la liste des passes des mains. L'artiste fournit des normales lissées dans les FBX de vue FPS. On
 passera à B seulement si le DA veut les traits intérieurs des doigts.
 
-## 5 ter. Prochaine tâche du shader : UV en coordonnées monde pour l'architecture (décidé le 2026-11-15, pas codé)
+## 5 ter. UV en coordonnées monde pour l'architecture (décidé le 2026-11-15, **codé le 2026-11-16**)
+
+**Fait (2026-11-16).** `ItHunts/Toon` a un mot-clé local `_WORLD_UV` (case « UV en coordonnées monde » du matériau),
+compilé seulement dans la passe ForwardToon (les passes d'ombre et de profondeur n'en ont pas besoin : aucune
+architecture n'utilise la découpe alpha). Réglages du matériau, dans le CBUFFER (SRP Batcher et GPU Resident Drawer
+gardés) :
+
+| Réglage | Rôle | Valeurs des matériaux livrés |
+|---|---|---|
+| `_TileSize` (x, y) | taille de la tuile en mètres : x = largeur, y = hauteur sur les murs, profondeur sur les sols | `M_Pierre_Monde` (4, 3), `M_Dalles_Monde` (4, 4), `M_Voute_Briques_Monde` (3, 3), `M_Egout_Monde` (2, 2) |
+| `_TileOffset` (x, y, z) | décalage de la grille en mètres (caler une assise ou un joint) | (0, 0, 0) : la première assise part de la cote 0, les joints des dalles tombent sur la grille de 4 m |
+| `_TopRotation` | quart de tour des dalles du dessus et du dessous (0, 90, 180, 270°) | 0 |
+| `_TopRandomRotation` | quart de tour tiré au hasard pour chaque tuile du dessus et du dessous (autour du centre de la tuile : les joints restent sur la grille) | 0 (à essayer sur les grandes salles) |
+
+- Projection « dure » selon la normale monde : ±X → (z, y), ±Z → (x, y), dessus et dessous → (x, z) ; le signe de la
+  normale retourne u (pas de lecture en miroir) ; sur les murs, v suit toujours la verticale monde. Une seule lecture
+  de texture (`SAMPLE_TEXTURE2D_GRAD`, avec les dérivées de la projection continue : pas de liseré de mip au
+  changement de face). Les UV du modèle et le tiling du matériau sont ignorés ; le masque d'émission suit les mêmes UV.
+- Les 4 matériaux `*_Monde` sont des **variantes** : `M_Pierre`, `M_Dalles`, `M_Voute_Briques` et `M_Egout` restent
+  en UV de modèle, car les props calés dans Blender (arc, colonnes, portes, ponts d'égout, levier, herse…) les
+  partagent. Les pièces du kit (`SM_Kit_*`) sont branchées sur les variantes.
+- Contrôle : `rendus/Lot/UVMonde_{coin,sol}_{avant_UV_modele,apres_UV_monde}.jpg` (cubes jointifs de 4 m, un mur de
+  2 m, un mur de 3 m, un mur étiré à 6 m de haut, des pièces empilées) : avec les UV du modèle, chaque pièce recommence
+  sa tuile et le mur étiré l'étire ; en UV monde, les assises et les dalles raccordent sans couture d'une pièce à
+  l'autre, aux angles comme au-dessus des pièces empilées.
+
+**Calques de lumière (Rendering Layers), corrigés le même jour.** Le shader ignorait les calques : toute lumière
+éclairait tout. Il suit maintenant le mot-clé `_LIGHT_LAYERS` d'URP (lumière principale, lumières directionnelles
+additionnelles et lumières ponctuelles) : une lumière n'éclaire un objet que si l'un de ses calques est dans le masque
+de la lumière (*Rendering Layers* de la lumière et du renderer). L'option est déjà active dans les assets URP
+(`m_SupportsLightLayers: 1`). Contrôle : `rendus/Lot/CalquesLumiere_{avant,apres}.jpg` (barillet et lanterne de feu
+sur le calque 1, lanterne du joueur limitée au calque 0 : ils ne prennent plus sa lumière rouge). **Pour la session
+main :** nommer le calque 1 « FPS » (réglages globaux d'URP), mettre les mains, l'orbe et l'artefact en main sur ce
+calque seul, et limiter la lanterne du joueur au calque 0 (`Light.renderingLayerMask` et
+`UniversalAdditionalLightData.renderingLayers`).
+
+### Ce qui avait été décidé (référence)
 
 **Pourquoi.** Les modules de la carte aléatoire s'assemblent librement, et le code étire ou raccourcit certaines
 pièces (`Kit_Escalier`, `Kit_Pont`, pièce coupée au bord d'un mur). Avec des UV de modèle, les assises de pierre ne se
