@@ -28,6 +28,7 @@ Ordre de priorité d'`ART-HANDOFF.md` (« Kit de construction de la carte aléat
 | 2 | `Kit_Sol4` | `SM_Kit_Sol4` | **livré (art)** | (milieu du dessus ; y −1..0) | dalles, même tuile que `M_Dalles` |
 | 3 | `Kit_Escalier` | `SM_Kit_Escalier` | **livré (art)** | (milieu du bas de la contremarche ; x −2..2, y 0..0.25, z 0..1) | **répétée le long de la pente** (une marche par 0.25 m de hauteur, chaque marche allongée vers le bas jusqu'au sol), pas étirée en profondeur ; collision : la pente lisse du code |
 | 4 | `Kit_Arc` | `SM_Arc_Couloir` | intégré sur `main` | au sol, au milieu entre les deux pieds | 14 × 11 × 1.6 m |
+| 4 bis | `Kit_Arc` (variante) | **`SM_Arc_Couloir_Ecoincons`** | **livré (art)** | même pivot que `SM_Arc_Couloir` (au sol, au milieu entre les deux pieds) | 14 × 11 × 1.6 m ; **même anneau**, écoinçons pleins jusqu'au cadre de 14 × 11 m (plaques de 1.2 m d'épaisseur, en retrait de 0.1 m sur la face de l'anneau) : remplace les blocs de pierre provisoires entre l'arc et la voûte ; même collision d'anneau (`ArchMidline`) plus, si besoin, une boîte par écoinçon ; s'élargit comme l'arc (`width / 14`) ; Read/Write ; `M_Pierre` ; 2 588 triangles ; `rendus/Lot2/Arc_Couloir_Ecoincons.jpg` |
 | 5 | `Kit_Pilier` | `SM_Colonne` (+ `SM_Colonne_Anneau`) | intégré sur `main` | au sol, au centre | 1.4 × 8 × 1.4 m ; anneau à 3 m sur la face avant |
 | 6 | `Kit_Pont` | `SM_Kit_Pont` | **livré (art)** | (milieu du dessus) | passerelle de 4 × 3 m, tablier de 1 m, étirée en largeur |
 | 7 | `Kit_Poutre` | `SM_Poutre` (+ `SM_Poutre_Crochet`) | intégré sur `main` | centre du dessous du bois | 6 × 0.5 × 0.5 m |
@@ -120,7 +121,7 @@ cadenas de la cage et de la grille qui dépassent de 2 à 3 cm à l'avant.
 |---|---|---|---|---|
 | Orbe (main droite, sur `Orb_Socket`) | `SM_Orbe` (racine vide) | pivot au centre de l'orbe sur `Orb_Socket` ; **échelle à régler dans FpsView** : la greybox fait Ø 0.08 m, le modèle 0.18 m (anneaux) et 0.295 × 0.228 × 0.182 m avec les tablettes | `SM_Orbe_Anneau_1` (axe **X**), `_2` (**Y**), `_3` (**Z**), modélisés à leur pose de repos ; `SM_Orbe_Tablette_01` à `_06` (positions de la couronne) ; repère `FX_Orbe` au centre | `M_Orbe_Energie` (`_EmissionColor`, couleur du personnage) ; glyphe de chaque tablette : **index de matériau 1** de `SM_Orbe_Tablette_0X` (`M_Orbe_Tablette_0X`) ; jauge et animations : `MATERIAUX.md`, planche `Orbe_Poses_*.jpg` |
 | Lanterne de feu (artefact du renard, main gauche) | `SM_LanterneFeu` | pivot au centre de l'anneau de portage (la lanterne pend dessous) | — | `M_LanterneFeu_Verre` : translucide (file 3000) et `_EmissionColor` ; **`M_LanterneFeu_Flamme`** (enfant `SM_LanterneFeu_Flamme`, flamme en goutte au-dessus de la mèche, depuis le 2026-11-16) : `_EmissionColor` = couleur du personnage (par défaut, orange du renard) ; **passe transparente des mains à ajouter** (la passe « ItHunts Mains : mains » ne dessine que l'opaque) ; repères `FX_Flamme` (mèche) et `FX_Jet` (départ du jet, +Z = avant, dégagé sur 6 m) |
-| Bras des 4 personnages (remplacent les mains greybox) | `SK_BrasFPS_<Perso>_D` / `_G` (armature `BrasFPS`, 17 os, mêmes noms partout) | placer le FBX pour que **`Socket_Poignet` coïncide avec la main greybox** (position et rotation de repos de FpsView, § 5 bis d'ART-HANDOFF) : le pivot est au coude, `Socket_Poignet` est en (0, 0, 0.27) dans le FBX, axes de l'ancrage (+Z doigts, +Y dos de la main) ; aucun recalage d'axe | os des doigts : remplacent l'angle unique `rightFingers` / `leftFingers` (rotation X) par les clips `BrasFPS|Pose_*` (mêmes clips pour les 4 personnages ; un jeu de clips par côté, le gauche est le miroir) ; `Pose_Attraper` a 3 clés (repos, ouverte, refermée), les 9 poses fixes 2 clés identiques (images 1 et 2) pour que chaque clip garde ses 180 courbes à l'import ; les déplacements de la main entière restent dans FirstPersonView | `M_BrasFPS_<Perso>_*` (aplats) ; contour par coque inversée (RENDU.md § 5 bis) ; repères fixes enfants de `BrasFPS` : `Socket_Orbe` (0, 0.06, 0.045) depuis le poignet (droit), `Socket_Artefact` (0, 0.055, 0.05) et `Socket_Artefact_Anneau` (0, −0.05, 0.105) pour l'anneau de la lanterne dans `Pose_PriseAnneau` (gauche, à ajuster en jeu) ; planches `BrasFPS_*.jpg` |
+| Bras des 4 personnages (remplacent les mains greybox) | `SK_BrasFPS_<Perso>_D` / `_G` (armature `BrasFPS`, 17 os, mêmes noms partout) | placer le FBX pour que **`Socket_Poignet` coïncide avec la main greybox** (position et rotation de repos de FpsView, § 5 bis d'ART-HANDOFF) : le pivot est au coude, `Socket_Poignet` est en (0, 0, 0.27) dans le FBX, axes de l'ancrage (+Z doigts, +Y dos de la main) ; aucun recalage d'axe | os des doigts : remplacent l'angle unique `rightFingers` / `leftFingers` (rotation X) par les clips `BrasFPS|Pose_*` (mêmes clips pour les 4 personnages ; un jeu de clips par côté, le gauche est le miroir) ; `Pose_Attraper` a 3 clés (repos, ouverte, refermée), les 9 poses fixes 2 clés identiques (images 1 et 2) pour que chaque clip garde ses 180 courbes à l'import ; 4 boucles de flottement et nouvelle convention des poses au § 4 quater ; les déplacements de la main entière restent dans FirstPersonView | `M_BrasFPS_<Perso>_*` (aplats) ; contour par coque inversée (RENDU.md § 5 bis) ; repères fixes enfants de `BrasFPS` : `Socket_Orbe` (0, 0.06, 0.045) depuis le poignet (droit), `Socket_Artefact` (0, 0.055, 0.05) et `Socket_Artefact_Anneau` (0, −0.05, 0.105) pour l'anneau de la lanterne dans `Pose_PriseAnneau` (gauche, à ajuster en jeu) ; planches `BrasFPS_*.jpg` |
 | Barillet (caméléon, main gauche) | `SM_Barillet` | intégré sur `main` (branche `barillet-modele`) | | |
 
 ## 4 bis. Caisse attrapable : `SM_Caisse` (modèle généré par IA avec Tripo, nettoyé le 2026-11-15)
@@ -164,6 +165,110 @@ Points à régler sur `main` (code) : l'épaule du code est à `width` × 0.4 = 
 du modèle à **1.8 m** et **11.1 m** (prévoir un réglage d'épaule séparé de `width`, ou accepter 1 m d'écart caché
 par l'épaisseur du bras) ; `eyeHeight` 12.5 m (yeux du modèle à 12.9 m : cohérent). Captures de l'assemblage dans la
 pose du code (main droite levée, main gauche au repos) : `rendus/Lot/Traqueur_pieces_{face,34}.jpg`.
+
+## 4 quater. Animations (lot du 2026-11-16 : retours de playtest)
+
+Noms identiques dans tous les FBX d'un même objet (clips Unity « `<Armature>|<Nom>` »). Boucles réglées à l'import
+(*Loop Time*), première et dernière images identiques.
+
+### Bras FPS (`SK_BrasFPS_<Perso>_D` / `_G`, armature `BrasFPS`, 17 os)
+
+**Convention des poses de flottement** (rien n'est tenu, l'orbe et l'artefact flottent au-dessus de la paume) : dans
+`Pose_Repos`, `Pose_OrbePaume`, `Pose_Pistolet`, `Pose_PriseAnneau` et leurs boucles, l'avant-bras est tourné de 180° :
+**la paume regarde +Y du repère de la main** (`Socket_Poignet`), là où FpsView pose déjà l'orbe (`orbInHand` (0, 0.06,
+0.045)), le barillet (`barrelInHand`) et la lanterne (`lanternInHand`). `Socket_Artefact_Anneau` est passé en (0, 0.075,
+0.05) depuis le poignet (anneau de la lanterne au-dessus de la paume). **Depuis le 2026-11-16, les poses d'action
+suivent la même convention** (`Pose_Traction`, `Pose_Repulsion`, `Pose_Attraper` — sa première clé est `Pose_Repos` —,
+`Pose_TenirObjet`, `Pose_Lancer` : paume vers +Y, forme de la main gardée) : plus de demi-tour de l'avant-bras d'une pose
+à l'autre (planche `rendus/Lot2/BrasFPS_Poses_action_avant_apres.jpg`). Seule `Pose_Poing` garde l'ancienne convention.
+
+**Placement conseillé** (mains levées devant la caméra, paumes l'une vers l'autre et un peu vers le haut, une bonne partie
+de l'avant-bras visible ; vérifié à `viewmodelFov` 60, planches `rendus/Lot2/BrasFPS_*.jpg`), dans `FpsView_Default` :
+
+| Réglage | Main droite | Main gauche |
+|---|---|---|
+| `…HandRest` (position du poignet, repère caméra) | (0.12, −0.115, 0.40) | (−0.12, −0.115, 0.40) |
+| `…HandRestEuler` | (−24, −8, 54.4) | (−24, 8, −54.4) |
+
+(paume à 50° de la verticale vers l'intérieur, doigts levés de 24° et tournés de 8° vers le centre.)
+
+| Clip | Durée | Boucle | Contenu |
+|---|---|---|---|
+| `Pose_Repos` | 2 images (0.04 s) | non | flottement, doigts recourbés sans toucher (orbe à droite, artefact à gauche) |
+| `Pose_OrbePaume` | 2 images | non | main plus ouverte, doigts écartés (orbe au-dessus de la paume) |
+| `Pose_Pistolet` | 2 images | non | index et majeur tendus, annulaire et auriculaire à demi repliés (barillet flottant) |
+| `Pose_PriseAnneau` | 2 images | non | doigts en crochet au-dessus de l'anneau flottant (lanterne) |
+| `Boucle_Repos`, `Boucle_OrbePaume`, `Boucle_Pistolet`, `Boucle_PriseAnneau` | **3.5 s** | **oui** | la pose du même nom + respiration (bascule de 1.4° de l'avant-bras au coude, soit ≈ 7 mm à la main, et torsion de 0.8°) + doigts qui ondulent (±5°, deux fois par boucle, décalés d'un doigt à l'autre) ; à jouer en état de repos à la place de la pose fixe |
+| `Pose_Attraper` | 0.29 s (3 clés) | non | inchangé |
+| autres `Pose_*` | 2 images | non | inchangées |
+
+Événements : aucun (les déplacements de la main entière restent dans FirstPersonView).
+
+### Goule (`SK_Goule`, armature `Goule`, 26 os)
+
+**Modèle à utiliser :** `SK_Goule` (gréé) à la place de `SM_Goule` (statique, gardé pour les aperçus), en (0, 0, 0) sous
+« Corps (visuel) », rotation nulle (avant +Z). Le FBX contient l'armature `Goule` et `SM_Goule_LOD0` (22 000 triangles),
+`_LOD1` (11 000), `_LOD2` (5 000) en `SkinnedMeshRenderer` (mêmes 26 os), avec un `LODGroup` à la racine. Import réglé :
+*Generic*, *Bake Axis Conversion*, boucles. Ajouter un `Animator` (contrôleur côté `main`) ; pas de déplacement de la racine
+(le code déplace la goule), sauf `Goule_Mort` qui couche le corps sur le flanc.
+
+**Échelle de 1.8 m** (le jeu agrandit la goule de 1.1 à ≈ 1.8 m, × 1.64) : vérifiée (planches ci-dessous, à 1.8 m) ; la
+texture de 2048 px reste nette de près (`Goule_texture_gros_plans.jpg`) ; proportions inchangées (allongée, bras jusqu'au sol).
+**Seuils de LOD conseillés à 1.8 m** (hauteur d'écran, champ de vision de 70°) : **LOD1 sous 0.25 (≈ 5 m), LOD2 sous 0.10
+(≈ 13 m), disparition sous 0.012 (≈ 105 m)** ; le `LODGroup` mesure l'objet mis à l'échelle, ces seuils s'entendent donc
+avec l'échelle du jeu (ils remplacent ceux conseillés à 1.1 m au § 4 ter).
+
+**Squelette :** `Racine` (au sol) → `Bassin` → `Dos_1` → `Dos_2` → `Poitrine` → `Cou` → `Tete` → `Machoire` ;
+`Epaule.L/R` → `Bras` → `AvantBras` → `Main` → `Doigts` ; `Bassin` → `Cuisse.L/R` → `Jambe` → `Pied` → `Orteils`
+(`.L` = gauche du personnage). Métarig Rigify (types des chaînes posés) : dans le `.blend`, *Rigify > Generate* donne un
+rig de contrôle pour retoucher les animations à la main ; les os exportés restent ceux de ce squelette.
+
+| Clip (`Goule|…`) | Durée | Boucle | Contenu | À caler sur le jeu |
+|---|---|---|---|---|
+| `Goule_Repos` | 2.0 s | oui | respiration, tête qui oscille, mâchoire et doigts qui bougent | — |
+| `Goule_Course` | 0.6 s | oui | galop sur 4 pattes (avant et arrière en opposition, dos qui ondule) | vitesse de lecture ∝ vitesse de course (0.6 s à la vitesse de chasse) |
+| `Goule_Annonce` | **0.3 s** | non | s'accroupit, gueule qui s'ouvre (dernière image tenue) | annonce du bond (0.3 s), en même temps que la lueur des yeux |
+| `Goule_Bond` | 0.4 s | non | détente : bras tendus en avant, jambes en arrière (dernière image tenue en vol) | départ du bond ; garder la dernière image jusqu'à l'atterrissage |
+| `Goule_Reception` | 0.33 s | non | choc à 0.12 s (accroupie), retour au repos | atterrissage |
+| `Goule_Escalade` | 0.8 s | oui | reptation en diagonale, dos qui ondule (le code bascule le visuel de 80° sur le mur) | sur un mur |
+| `Goule_Coup` | 0.47 s | non | armé du bras droit (0 → 0.15 s), frappe (**impact à 0.24 s**), retour | dégâts au contact à 0.24 s |
+| `Goule_Etourdie` | 1.2 s | oui | tête qui roule, corps qui tangue, mâchoire pendante | étourdissement |
+| `Goule_Mort` | 1.0 s | non | jambes qui cèdent (0.3 s), chute sur le flanc (dernière image tenue) | mort, avant la disparition |
+
+Planches : `docs/art/rendus/Lot2/Goule_<Animation>.jpg` (5 images réparties sur chaque clip, à 1.8 m).
+
+### Traqueur (`SK_Traqueur`, armature `Traqueur`, 32 os)
+
+**Modèle à utiliser :** `SK_Traqueur` remplace `SM_Traqueur_Corps` et les pièces `SM_Traqueur_Bras`, `_Main_D`, `_Main_G`
+(gardées pour l'aperçu, plus à jour). En (0, 0, 0) sous « Corps (se baisse) », rotation nulle (avant +Z). Deux
+`SkinnedMeshRenderer` : `SK_Traqueur` (24 804 triangles ; `M_Traqueur` sur le corps, `M_Traqueur_Mains` sur les bras et
+les mains) et `SK_Traqueur_Cheveux` (7 mèches, 1 344 triangles, `M_Traqueur_Cheveux`). Import réglé : *Generic*,
+*Bake Axis Conversion*, boucles.
+
+**Géant voûté** (pose de repos = pose voûtée) : ≈ 20 m debout ; épaule **11.7 m**, yeux **12.3 m**, sommet du crâne
+**13.9 m** (tient dans 14 m), genou 3.8 m, bout des doigts 4.0 m (au genou). Avec des yeux à 13 m, le crâne dépasserait
+14 m (2 m de crâne au-dessus des yeux) : j'ai gardé 14 m comme limite. Mains : 4.4 m du poignet au bout des doigts.
+Écart avec le code : l'épaule de `Stalker.cs` est à 12 m de haut et `width` × 0.4 = 2.8 m du centre ; celle du modèle
+est à 11.7 m et **2.6 m** du centre, **4 m devant le pivot** (dos voûté).
+
+**Os que le code oriente** (après l'`Animator`, dans `LateUpdate`) : `Epaule.R/L` (clavicule), `Bras.R/L` (épaule),
+`AvantBras.R/L` (coude), `Main.R/L` (poignet) ; la main droite est celle de la prise. Doigts : `Doigts_1`, `Doigts_2`,
+`Pouce_1`, `Pouce_2` (les quatre doigts groupés). `Machoire` (déboîtée au repos : ouverte et décalée).
+
+| Clip (`Traqueur|…`) | Durée | Boucle | Contenu | À caler sur le jeu |
+|---|---|---|---|---|
+| `Traqueur_Repos` | 3.0 s | oui | respiration, tête et bras qui oscillent | — |
+| `Traqueur_Marche` | 2.0 s | oui | marche voûtée lourde (sans déplacement de la racine) | vitesse de lecture ∝ vitesse de poursuite |
+| `Traqueur_Prise` | **0.5 s** | non | bras droit tendu vers l'avant (0 → 0.32 s), **griffes qui se referment de 0.32 à 0.5 s** | annonce de la prise (0.5 s) ; le code oriente ensuite `Bras.R` → `Main.R` vers la cible |
+| `Traqueur_MainsLevees` | **0.2 s** | non | deux mains au-dessus de la tête (dernière image tenue) | mains levées (0.2 s) |
+| `Traqueur_MainPlantee` | 2.0 s | non | main droite frappée au sol (**impact à 0.2 s**), **plantée de 0.2 à 1.7 s (1.5 s)**, relevée de 1.7 à 2.0 s | main plantée (1.5 s) |
+| `Traqueur_Revers` | **0.2 s** | non | revers du bras gauche, de travers à l'extérieur | revers (0.2 s) |
+| `Traqueur_PassageBas` | 2.4 s | oui | marche accroupie, sommet ≈ **8.6 m** (passages de 9 m) | passage baissé |
+| `Traqueur_Machoire` | 2.4 s | oui | **mâchoire seule** (balancement de côté, ouverture) | sur un calque additionnel avec un masque limité à `Machoire` |
+
+Lueurs : pupilles par `_EmissionColor` de `M_Traqueur` (rouge par défaut) ; griffes par `_EmissionColor` de
+`M_Traqueur_Mains` (repos (0.35, 0.32, 0.25), prise (3.5, 0.49, 0.21)). Planches : `rendus/Lot2/Traqueur_<Animation>.jpg`,
+`Traqueur_texture_gros_plans.jpg`.
 
 ## 5. Props encore à produire (catalogue d'`ART-HANDOFF`)
 

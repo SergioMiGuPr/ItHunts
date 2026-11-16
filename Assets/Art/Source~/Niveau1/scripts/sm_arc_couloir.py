@@ -32,7 +32,8 @@ PARAMS = dict(
 )
 
 
-def build(P):
+def build(P, extra=None, name="SM_Arc_Couloir"):
+    """extra(B, geo) : ajouts avant la finition (variante à écoinçons) ; geo : cotes de l'arc."""
     mats = {"pierre": C.tile_material("pierre")}
     B = C.Builder()
     B.set_uv_params("pierre", *C.TILES["pierre"][1:])
@@ -154,7 +155,9 @@ def build(P):
     for sx in (1, -1):
         B.box((sx * xc - sw / 2, -sd / 2, 0), (sx * xc + sw / 2, sd / 2, sh), "pierre", skip=("-z",), bevel=0.03)
 
-    ob = B.finish("SM_Arc_Couloir", mats)
+    if extra:
+        extra(B, dict(s_e=s_e, z0=z0, a=a, Re=Re, Ri=Ri, cx=cx, theta_k=theta_k, P1=P1, P2=P2, H=H, depth=depth))
+    ob = B.finish(name, mats)
     print("arc : a=%.3f Re=%.3f Ri=%.3f extrados sommet z=%.3f intrados sommet z=%.3f theta_k=%.1f°" % (
         a, Re, Ri, z0 + math.sqrt(Re * Re - a * a), z_ia, math.degrees(theta_k)))
     return [ob]
