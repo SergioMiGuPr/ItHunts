@@ -34,6 +34,21 @@ namespace ItHunts.Settings
         [Min(0f)] public float contourFadeStart = 40f;
         [Min(0.1f)] public float contourFadeEnd = 100f;
 
+        [Header("Textes en monde (sortie, salles, coffres, marchand)")]
+        [Tooltip("Entièrement lisibles jusqu'à cette distance (m), puis fondu.")]
+        [Min(0f)] public float labelFullDistance = 20f;
+        [Tooltip("Invisibles au-delà (m). Jamais au-delà de labelFogShare × la fin du brouillard (pas à travers le brouillard).")]
+        [Min(0.1f)] public float labelHiddenDistance = 35f;
+        [Range(0.2f, 1f)] public float labelFogShare = 0.8f;
+
+        /// <summary>Opacité d'un texte en monde à la distance d (m) : 1 jusqu'à full, 0 à hidden (et avant la fin du brouillard).</summary>
+        public static float LabelAlpha(float d, float full, float hidden, float fogEnd, float fogShare)
+        {
+            float gone = Mathf.Min(hidden, fogEnd * fogShare);
+            float start = Mathf.Min(full, gone - 0.5f);
+            return 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(start, gone, d));
+        }
+
         [Header("Phase enragée")]
         [Tooltip("Ambiance prise au passage en Enragé (fin du timer de la zone) ; aucune : l'ambiance ne change pas.")]
         public AmbianceSettings enraged;
@@ -55,6 +70,9 @@ namespace ItHunts.Settings
             into.lampRange = Mathf.Lerp(a.lampRange, b.lampRange, t);
             into.contourFadeStart = Mathf.Lerp(a.contourFadeStart, b.contourFadeStart, t);
             into.contourFadeEnd = Mathf.Lerp(a.contourFadeEnd, b.contourFadeEnd, t);
+            into.labelFullDistance = Mathf.Lerp(a.labelFullDistance, b.labelFullDistance, t);
+            into.labelHiddenDistance = Mathf.Lerp(a.labelHiddenDistance, b.labelHiddenDistance, t);
+            into.labelFogShare = Mathf.Lerp(a.labelFogShare, b.labelFogShare, t);
         }
     }
 }

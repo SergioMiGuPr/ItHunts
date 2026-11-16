@@ -286,6 +286,24 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void TextesEnMonde_LisiblesA20m_InvisiblesA35m_JamaisATraversLeBrouillard()
+        {
+            float A(float d, float fogEnd) => ItHunts.Settings.AmbianceSettings.LabelAlpha(d, 20f, 35f, fogEnd, 0.8f);
+            Assert.That(A(5f, 85f), Is.EqualTo(1f));
+            Assert.That(A(20f, 85f), Is.EqualTo(1f).Within(1e-4f));
+            Assert.That(A(27.5f, 85f), Is.InRange(0.3f, 0.7f));
+            Assert.That(A(35f, 85f), Is.EqualTo(0f).Within(1e-4f));
+            Assert.That(A(60f, 85f), Is.EqualTo(0f));
+            Assert.That(A(25f, 30f), Is.EqualTo(0f).Within(1e-4f), "brouillard court : effacé avant sa fin (0.8 × 30 m)");
+            var ghoul = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");
+            var flyer = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FlyerSettings>("Assets/_Project/Settings/Flyer_Default.asset");
+            Assert.That(ghoul.eyeColor.maxColorComponent, Is.LessThan(1f), "yeux sous le seuil du bloom hors annonce");
+            Assert.That(flyer.eyeColor.maxColorComponent, Is.LessThan(1f));
+            Assert.That(ghoul.leapGlowColor.maxColorComponent, Is.GreaterThan(1f), "annonce : au-delà du seuil du bloom");
+            Assert.That(flyer.diveGlowColor.maxColorComponent, Is.GreaterThan(1f));
+        }
+
+        [Test]
         public void Reglages_ParDefaut()
         {
             var fps = AssetDatabase.LoadAssetAtPath<FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");

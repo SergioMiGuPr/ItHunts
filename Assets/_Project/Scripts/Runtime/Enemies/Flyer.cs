@@ -95,6 +95,8 @@ namespace ItHunts.Enemies
             All.Remove(this);
             if (telegraph != null)
                 telegraph.enabled = false;                                 // recyclé par la réserve
+            if (_eyesLit)
+                EyeGlow(false);
         }
 
         private void Awake()
@@ -166,6 +168,8 @@ namespace ItHunts.Enemies
         {
             if (Dead && telegraph != null && telegraph.enabled)
                 telegraph.enabled = false;                                 // mort pendant l'annonce : plus de signal (correctifs-rendu point 4)
+            if (Dead && _eyesLit)
+                EyeGlow(false);
             if (settings == null || Dead || ZoneState.Asleep)
                 return;                                                    // salle de départ pas encore quittée (D-048)
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
@@ -612,10 +616,41 @@ namespace ItHunts.Enemies
 
         // ---------- Visuel ----------
 
+        private Renderer[] _eyes;
+        private MaterialPropertyBlock _eyeBlock;
+        private bool _eyesLit;
+
+        /// <summary>Yeux rouges pendant l'annonce du piqué seulement (correctifs-rendu point 5) ; sombres au repos.</summary>
+        private void EyeGlow(bool on)
+        {
+            if (_eyes == null)
+            {
+                _eyes = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Where(GetComponentsInChildren<Renderer>(true), r => r.name.StartsWith("Oeil")));
+                _eyeBlock = new MaterialPropertyBlock();
+                _eyesLit = !on;
+            }
+
+            if (on == _eyesLit)
+                return;
+            _eyesLit = on;
+            foreach (Renderer r in _eyes)
+            {
+                if (r == null)
+                    continue;
+                r.GetPropertyBlock(_eyeBlock);
+                if (on && settings != null)
+                    _eyeBlock.SetColor("_BaseColor", settings.diveGlowColor);
+                else
+                    _eyeBlock.Clear();
+                r.SetPropertyBlock(_eyeBlock);
+            }
+        }
+
         private void UpdateVisual(float now)
         {
             if (telegraph != null)
                 telegraph.enabled = Mode == FlyerMode.Annonce && !Dead;
+            EyeGlow(Mode == FlyerMode.Annonce && !Dead);
             float flap = Mode == FlyerMode.AuSol ? 0f : Mode == FlyerMode.Tenu ? 18f : Mode == FlyerMode.Pique ? 4f : 10f;
             float angle = Mathf.Sin(now * flap * Mathf.PI * 2f) * (Mode == FlyerMode.Pique ? 8f : 35f);
             if (wingLeft != null)
