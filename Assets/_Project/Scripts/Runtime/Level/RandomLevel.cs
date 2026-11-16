@@ -589,7 +589,7 @@ namespace ItHunts.Level
                     if (nearAnnex)
                         continue;
                     float sink = l.Slope ? 0.3f : 0f;
-                    KitBuild.Arch(parent, kit, Point(d / len) - Vector3.up * sink, yaw, w, h);
+                    KitBuild.Arch(parent, kit, Point(d / len) - Vector3.up * sink, yaw, w, h, l.Slope);
                 }
             bool Open(int side, float d) => Plan.Galleries.Any(g => g.Link == li && g.Side == side) && d > 2f && d < len - 2f;
             if (kit != null && kit.torche != null)

@@ -50,7 +50,8 @@ namespace ItHunts.EditorTools
             kit.escalier = ModelPiece("Kit_Escalier", "SM_Kit_Escalier") ?? CubePiece("Kit_Escalier", new Vector3(0f, 0.125f, 0.5f), new Vector3(4f, 0.25f, 1f), step);
             kit.pont = ModelPiece("Kit_Pont", "SM_Kit_Pont") ?? CubePiece("Kit_Pont", new Vector3(0f, -0.5f, 0f), new Vector3(3f, 1f, 4f), wood);
             kit.pilier = ModelPiece("Kit_Pilier", "SM_Colonne");
-            kit.arc = ModelPiece("Kit_Arc", "SM_Arc_Couloir");
+            // Arc à écoinçons pleins de la DA (PR #6, même pivot, 14 × 11 × 1.6 m), sinon l'anneau seul.
+            kit.arc = ModelPiece("Kit_Arc", "SM_Arc_Couloir_Ecoincons") ?? ModelPiece("Kit_Arc", "SM_Arc_Couloir");
             kit.portePiece = ModelPiece("Kit_PortePiece", "SM_Porte_Piece");
             kit.grandePorte = ModelPiece("Kit_GrandePorte", "SM_GrandePorte");
             kit.poutre = ModelPiece("Kit_Poutre", "SM_Poutre");

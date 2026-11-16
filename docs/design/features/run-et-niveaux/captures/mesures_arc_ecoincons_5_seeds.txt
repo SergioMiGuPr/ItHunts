@@ -1,0 +1,7 @@
+seed 104729 : 307 arcs, 36587 rayons dans les écoinçons, 0 sans arc (vide)
+seed 209458 : 291 arcs, 35181 rayons dans les écoinçons, 0 sans arc (vide)
+seed 314187 : 273 arcs, 32443 rayons dans les écoinçons, 0 sans arc (vide)
+seed 418916 : 287 arcs, 33742 rayons dans les écoinçons, 0 sans arc (vide)
+seed 523645 : 302 arcs, 35357 rayons dans les écoinçons, 0 sans arc (vide)
+TOTAL : 1460 arcs, 0 trous sur 173310 rayons (15 arcs sous un pont, non mesurés)
+#fin

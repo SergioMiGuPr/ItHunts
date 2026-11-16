@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ItHunts.Enemies;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -153,7 +154,7 @@ namespace ItHunts.Level
         /// Arc d'un couloir (ou d'une entrée) : son sommet touche le plafond (height au-dessus de floor), porté par deux piédroits
         /// du kit contre les murs, du sol à la naissance de l'arc ; élargi à la largeur du couloir (modèle de 14 m). Visuel seulement.
         /// </summary>
-        public static void Arch(Transform parent, KitSet kit, Vector3 floor, float yaw, float width, float height)
+        public static void Arch(Transform parent, KitSet kit, Vector3 floor, float yaw, float width, float height, bool slope = false)
         {
             if (kit == null || kit.arc == null)
                 return;
@@ -164,7 +165,9 @@ namespace ItHunts.Level
             root.localRotation = Quaternion.Euler(0f, yaw, 0f);
             Piece(kit.arc, root, new Vector3(0f, rise, 0f), 0f, new Vector3(sx, 1f, 1f));
             ArchCollision(root, sx, rise);
-            Spandrels(root, kit, width, height, sx, rise);
+            // Arc à écoinçons de la DA : plus de pierre ajoutée, sauf en pente (plafond incliné au-dessus de son dessus plat : la pierre,
+            // cachée derrière ses faces, comble la bande sous le plafond).
+            Spandrels(root, kit, width, height, sx, rise, !ArchHasSpandrels(kit) || slope);
             if (rise > 0.05f)
                 foreach (float s in new[] { -1f, 1f })
                     Pier(root, kit, s, width, rise);
@@ -239,7 +242,11 @@ namespace ItHunts.Level
         /// plafond : l'arc épouse le plafond sur toute sa largeur. Fusionné avec le décor (Kit_) ; collision à part (boîtes),
         /// traversée par le traqueur comme l'anneau. À remplacer par un arc à écoinçons pleins de la DA (ART-HANDOFF).
         /// </summary>
-        public static Transform Spandrels(Transform root, KitSet kit, float width, float height, float sx, float rise)
+        /// <summary>L'arc du kit est la variante à écoinçons pleins de la DA (SM_Arc_Couloir_Ecoincons) : plus de pierre ajoutée par le jeu.</summary>
+        public static bool ArchHasSpandrels(KitSet kit) =>
+            kit != null && kit.arc != null && kit.arc.GetComponentsInChildren<MeshFilter>(true).Any(m => m.sharedMesh != null && m.sharedMesh.name.Contains("Ecoincons"));
+
+        public static Transform Spandrels(Transform root, KitSet kit, float width, float height, float sx, float rise, bool visual = true)
         {
             List<Vector2> left = SpandrelOutline(width, sx, rise, height);
             if (left.Count < 2)
@@ -255,7 +262,7 @@ namespace ItHunts.Level
             var key = (Mathf.RoundToInt(width * 100f), Mathf.RoundToInt(height * 100f), Mathf.RoundToInt(rise * 100f));
             if (!SpandrelMeshes.TryGetValue(key, out Mesh mesh) || mesh == null)
                 SpandrelMeshes[key] = mesh = SpandrelMesh(left, top);
-            if (mat != null)
+            if (mat != null && visual)
             {
                 var vis = new GameObject("Kit_Ecoincons");
                 vis.transform.SetParent(root, false);
