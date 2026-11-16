@@ -25,6 +25,7 @@ namespace ItHunts.Combat
 
         private static readonly List<Damageable> AllList = new List<Damageable>();
         private static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
+        private static readonly int EmissionMapId = Shader.PropertyToID("_EmissionMap");
 
         private HealthState _health;
         private Renderer[] _renderers;
@@ -171,6 +172,7 @@ namespace ItHunts.Combat
                 return;
             if (_grabbable != null && _grabbable.Held)
                 return;                                                  // tenu : sa lueur vient de la télékinésie
+            bool whole = Time.time < _flashUntil || Stunned;
             Color glow = Time.time < _flashUntil ? _flashColor
                 : Stunned ? stunColor * (stunGlowIntensity * (0.6f + 0.4f * Mathf.Sin(Time.time * 18f)))
                 : ExtraGlow;
@@ -179,6 +181,15 @@ namespace ItHunts.Combat
                 {
                     r.GetPropertyBlock(_block);                           // garde les autres propriétés (lueur du bond, D-bloc 4)
                     _block.SetColor(EmissionId, glow);
+                    // Modèles à masque d'émission (goule de la DA) : le coup reçu et l'étourdissement allument tout le corps, la
+                    // lueur d'un état (ExtraGlow : yeux et gueule pendant l'annonce) seulement le masque.
+                    Material m = r.sharedMaterial;
+                    if (m != null && m.HasProperty(EmissionMapId))
+                    {
+                        Texture own = m.GetTexture(EmissionMapId);
+                        _block.SetTexture(EmissionMapId, whole || own == null ? Texture2D.whiteTexture : own);
+                    }
+
                     r.SetPropertyBlock(_block);
                 }
         }

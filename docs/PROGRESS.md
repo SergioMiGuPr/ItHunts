@@ -4,6 +4,41 @@
 
 ## Étape en cours
 
+**Intégration du lot art de la PR #4 (`integration-lot` = `correctifs-rendu` + `main` après fusion de la PR #4) — 2026-11-16,
+non poussée, à tester en playtest.** PR #4 vérifiée (périmètre `Assets/Art/`, `docs/art/`, manifeste ; 111 assets avec `.meta` ;
+import sans erreur ; 386 tests), fusionnée dans `main` (commit de fusion, branche `art` gardée) et poussée. Un commit par bloc.
+- **1. Kit (`23528f6`) :** `SM_Kit_Mur4x4`, `Mur2x4`, `Mur4x3`, `Sol4`, `Escalier`, `Pont` (M_Pierre_Monde, M_Dalles_Monde) ;
+  escalier en marches répétées (0.25 m, pleines jusqu'au sol), collision = pente lisse ; 18 modules revalidés ; 5 seeds :
+  0 pièce hors fusion, faces confondues ≈ 1.5 m² par carte, raccords sans couture (captures `kit_*`).
+- **2. Props (`fe075d9`) :** décalages de la fiche (torche +0.545 m, lumière sur `FX_Flamme`), `M_Torche`, `SM_Caisse` (prefab et
+  207 caisses des scènes, lueur par le masque de la rune), échafaudage praticable (20/20 plateaux sur le NavMesh des goules, surface
+  minimale du NavMesh 1 m²) ; props de la DA étiquetés « DA ».
+- **3. Goule (`231bd23`) :** `SM_Goule` (prefab, constructeur, 978 goules des scènes) ; annonce : yeux et gueule par le masque ;
+  sur un mur, bornes à 0.39 m du mur.
+- **4. Traqueur (`835d27c`) :** pièces de la DA ; épaule `shoulderSide` 1.8 m, `shoulderHeight` 11.1 m ; main 4.9 × 1.5 × 4.5 m ;
+  pupilles par le masque. Esquive : 10/10 prises sans réaction, 0/20 en courant de côté après 0.15 s (comme avant). Couverture :
+  salle haute remplie corrigée (tours d'angle jusqu'au plafond) ; **4 cachettes sur 20 cartes** (coins des tours de 11 m des
+  étages en anneau, galeries hautes) : à trancher (voir points ouverts).
+- **5. Vue FPS (`af633d3`) :** bras du renard et du caméléon (`FpsArms`, poses cuites `FpsArmPoses`) ; seuls les clips
+  `Pose_Attraper` ont des courbes : repli sur la fermeture des doigts des mains greybox ; flamme de la lanterne à la couleur
+  du personnage, éteinte pendant la recharge ; calque « FPS » ; couverture 6.5 % (renard), 8.1 % (caméléon).
+- **6. Performance (`02df035`) :** solo 11.2 → 9.9 ms médiane (5 % les plus lents 15.0 → 12.8), écran partagé 18.8 → 16.8 ms
+  (23.7 → 21.7) avec une torche sur deux (`torchShare` 0.5) et le plafond des pas physiques (0.05 s) ; GPU Resident Drawer sans gain
+  (754 draw calls, fil principal identique), laissé coupé. Objectifs non atteints : fil principal (rendu URP 5.4 ms, FixedUpdate
+  2.6 ms). Unity du projet art ouvert pendant la mesure.
+- **Texturé :** murs, sols, escaliers, ponts, arcs, colonnes, portes, poutres et ponts d'égout du kit ; torches, cage, grille,
+  tapisserie, chaîne, tuyau, échafaudage, colonnes ; caisses attrapables ; arène du boss (herse, leviers, treuil, plateformes) ;
+  goule ; traqueur ; bras FPS (renard, caméléon) ; lanterne de feu, barillet.
+- **Encore greybox :** props Armoire, Autel, Banc, Caisse (fixe), Chaise attrapable, Chaudron, CoffreDeco, Etagere, Gravats,
+  Lanterne, Lit, MurEffondre, Paille, PileDeCaisses, Poutre (prop), Ratelier, Sarcophage, Statue, Table, Tonneau (+ attrapable) ;
+  coffres, marchands, lustres ; volant ; orbe (v2 à intégrer) ; bras du koala et du hibou (personnages pas encore jouables) ;
+  pièces non magnétiques du parcours ; murs de l'arène du boss.
+- **Points ouverts :** écarts transmis à la DA (ART-HANDOFF) : clips des bras vides, rune de la caisse sur une seule face, droits
+  « à confirmer », mains du traqueur peu lisibles en « sombre », LOD de la goule ; **cachettes du traqueur** (options : reach 15 m
+  depuis 2.5 m du centre, tours et galeries d'angle jusqu'au plafond, ou portée 15.5 m) ; performance (fil principal).
+- **Piège noté :** changer de branche avec une scène ouverte bloque l'éditeur (boîte « scène modifiée ») : ouvrir une scène vide
+  avant.
+
 **Correctifs du rendu (`correctifs-rendu`, depuis `main` après la fusion de `rendu-integration`) — 2026-11-16, non poussée, à
 tester par l'utilisateur dans `integration-lot`.** Un commit par point.
 - **Phase enragée (`a2a3175`) :** ambiance « horreur » en fondu de 2 s au passage en Enragé (`AmbianceSettings.enraged`,

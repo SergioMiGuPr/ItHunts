@@ -13,7 +13,7 @@ namespace ItHunts.EditorTools
     /// le visuel greybox des props et des pièces de l'arène du boss. Les colliders du jeu sont gardés (réglés pour le gameplay) ;
     /// les FBX et leurs matériaux toon ne sont pas modifiés. Pièces mobiles : grille de la herse (tombe avec le piège), manche des
     /// leviers (±35°, lueur), manivelle du treuil (tourne pendant la chute du lustre), plateformes qui tombent. L'échafaudage garde
-    /// sa boîte pleine (variante praticable à venir). Idempotent : un modèle déjà posé est remplacé.
+    /// deux plateaux et six poteaux (variante praticable, fiche § 2). Idempotent : un modèle déjà posé est remplacé.
     /// </summary>
     public static class DecorModelInstaller
     {
@@ -70,43 +70,40 @@ namespace ItHunts.EditorTools
             return "props : " + string.Join(", ", report);
         }
 
+        /// <summary>
+        /// Décalage du modèle dans le prefab, selon docs/art/INTEGRATION-PROPS.md § 2 (fait foi, lot du 2026-11-16) : 0 sauf la torche
+        /// (pivot au dos de la plaque, tête à 0.96 m comme la greybox), la tapisserie et la chaîne (pivot en haut).
+        /// </summary>
+        public static Vector3 SheetOffset(string prop) => prop switch
+        {
+            "Torche" or "TorcheEteinte" => new Vector3(0f, TorchLift, 0f),
+            "Tapisserie" => new Vector3(0f, 4f, 0f),
+            "Chaine" => new Vector3(0f, 3.95f, 0f),
+            _ => Vector3.zero,
+        };
+
         private static string InstallProp(GameObject root, GameObject model, string prop)
         {
             foreach (Transform old in root.transform.Cast<Transform>().Where(t => t.name.StartsWith(ModelTag)).ToList())
                 Object.DestroyImmediate(old.gameObject);
-            // Emprise de la greybox (maillage de la racine, gardé dans le prefab tant qu'il n'a pas été retiré).
-            var mf = root.GetComponent<MeshFilter>();
-            Bounds grey = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds : new Bounds(Vector3.up * 0.5f, Vector3.one);
             var inst = (GameObject)PrefabUtility.InstantiatePrefab(model, root.transform);
             inst.name = ModelTag + model.name;
-            Bounds mb = LocalBounds(inst.transform, root.transform);
-            // Axes inversés (modèle long en z, greybox long en x) : quart de tour.
-            bool swap = Mathf.Abs(grey.size.x - mb.size.z) + Mathf.Abs(grey.size.z - mb.size.x) + 0.05f < Mathf.Abs(grey.size.x - mb.size.x) + Mathf.Abs(grey.size.z - mb.size.z);
-            if (swap)
-            {
-                inst.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
-                mb = LocalBounds(inst.transform, root.transform);
-            }
-
-            Vector3 offset = new Vector3(grey.center.x - mb.center.x, grey.min.y - mb.min.y, grey.center.z - mb.center.z);
-            string note = "";
-            if (prop.StartsWith("Torche"))
-            {
-                float auto = offset.y;
-                offset = new Vector3(grey.center.x - mb.center.x, TorchLift, grey.min.z - mb.min.z);   // dos de la plaque contre le mur
-                note = $" (+{TorchLift} m demandé, {auto:0.000} m calculé)";
-            }
-
-            inst.transform.localPosition += offset;
-            // Le greybox disparaît (le collider de la racine reste).
+            inst.transform.localPosition = SheetOffset(prop);                 // rotation nulle, échelle 1 (fiche, règles communes)
+            inst.transform.localRotation = Quaternion.identity;
+            inst.transform.localScale = Vector3.one;
             if (root.GetComponent<MeshRenderer>() != null)
                 Object.DestroyImmediate(root.GetComponent<MeshRenderer>());
+            var mf = root.GetComponent<MeshFilter>();
             if (mf != null)
                 Object.DestroyImmediate(mf);
-            // Torches : flamme (sans lumière pour la torche éteinte) et lumière sur FX_Flamme.
+
+            // Torches : flamme sur FX_Flamme ; la lumière exactement sur FX_Flamme (fiche : (0, 0.988, 0.354) dans le prefab).
             Transform fx = inst.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "FX_Flamme");
+            string note = "";
             if (fx != null)
             {
+                foreach (Transform f in fx.Cast<Transform>().Where(t => t.name == "Flamme").ToList())
+                    Object.DestroyImmediate(f.gameObject);
                 GameObject flame = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 flame.name = "Flamme";
                 Object.DestroyImmediate(flame.GetComponent<Collider>());
@@ -117,11 +114,297 @@ namespace ItHunts.EditorTools
                 r.sharedMaterial = UnlitMat("Torch_Flame", "Universal Render Pipeline/Unlit", new Color(2.4f, 1.1f, 0.3f));
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 foreach (Light l in root.GetComponentsInChildren<Light>(true))
-                    l.transform.position = fx.position + Vector3.up * 0.15f;
+                    l.transform.position = fx.position;
+                note = $" ; FX_Flamme en {root.transform.InverseTransformPoint(fx.position).ToString("F3")}";
             }
 
+            // Collisions de la fiche.
+            if (prop == "Tuyau")
+                SetRootBox(root, new Vector3(0f, 0.457f, 0.04f), new Vector3(0.91f, 0.91f, 6.08f));
+            if (prop == "Echafaudage")
+                ScaffoldColliders(root);
+
             Bounds after = LocalBounds(inst.transform, root.transform);
-            return $"{prop} ({model.name}{(swap ? ", ¼ de tour" : "")}{note} ; greybox {grey.size.x:0.##}×{grey.size.y:0.##}×{grey.size.z:0.##}, modèle {after.size.x:0.##}×{after.size.y:0.##}×{after.size.z:0.##})";
+            return $"{prop} ({model.name}, décalage {inst.transform.localPosition.ToString("F3")}{note} ; modèle {after.size.x:0.##}×{after.size.y:0.##}×{after.size.z:0.##})";
+        }
+
+        private static void SetRootBox(GameObject root, Vector3 center, Vector3 size)
+        {
+            var box = root.GetComponent<BoxCollider>();
+            if (box == null)
+                box = root.AddComponent<BoxCollider>();
+            Vector3 s = root.transform.localScale;
+            box.center = new Vector3(center.x / s.x, center.y / s.y, center.z / s.z);
+            box.size = new Vector3(size.x / s.x, size.y / s.y, size.z / s.z);
+        }
+
+        /// <summary>
+        /// Échafaudage praticable (fiche § 2, variante retenue) : deux plateaux (dessus à 3 et 6 m) et six poteaux, intérieur libre ;
+        /// plus de boîte pleine. Les plateaux sont des sols du NavMesh (les goules y grimpent par les flancs, comme les plateformes).
+        /// </summary>
+        public static void ScaffoldColliders(GameObject root)
+        {
+            foreach (Collider c in root.GetComponents<Collider>())
+                Object.DestroyImmediate(c);
+            foreach (Transform old in root.transform.Cast<Transform>().Where(t => t.name.StartsWith("Collision : ")).ToList())
+                Object.DestroyImmediate(old.gameObject);
+            void Box(string name, Vector3 center, Vector3 size, bool walkable)
+            {
+                var go = new GameObject("Collision : " + name);
+                go.transform.SetParent(root.transform, false);
+                go.transform.localPosition = center;
+                go.AddComponent<BoxCollider>().size = size;
+                if (!walkable)
+                    go.AddComponent<ItHunts.Enemies.NotWalkable>();
+            }
+
+            // Plateaux : dessus à 3 et 6 m (fiche) ; 0.3 m d'épaisseur vers le bas au lieu de 0.07 (plus fin que les voxels du NavMesh :
+            // selon sa hauteur, le plateau manquait à la cuisson). 2.7 m libres dessous.
+            Box("plateau du bas", new Vector3(0f, 2.85f, -0.027f), new Vector3(4f, 0.3f, 2f), true);
+            Box("plateau du haut", new Vector3(0f, 5.85f, -0.027f), new Vector3(4f, 0.3f, 2f), true);
+            int n = 0;
+            foreach (float x in new[] { -1.925f, 0f, 1.925f })
+            foreach (float z in new[] { -0.952f, 0.898f })
+                Box($"poteau {++n}", new Vector3(x, 3f, z), new Vector3(0.15f, 6f, 0.15f), false);
+            Box("échelle", new Vector3(-1f, 3f, 1.013f), new Vector3(0.57f, 6f, 0.05f), false);
+        }
+
+        // ---------- Goule : SM_Goule (lot du 2026-11-16) ----------
+
+        public const string GhoulPrefab = "Assets/_Project/Prefabs/Niveau/Goule.prefab";
+        public const string GhoulModel = "Assets/Art/Models/Ennemis/SM_Goule.fbx";
+
+        /// <summary>
+        /// Goule (fiche § 4 ter) : SM_Goule en (0, 0, 0) sous « Corps (visuel) », rotation nulle ; la capsule, la tête et les yeux
+        /// greybox sont retirés. Le code garde l'écrasement de l'annonce et la bascule de 80° sur les murs (sur « Corps (visuel) ») ;
+        /// l'annonce du bond allume les yeux et la gueule par le masque d'émission de M_Goule.
+        /// </summary>
+        public static string InstallGhoul(GameObject root)
+        {
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(GhoulModel);
+            Transform visual = root.transform.Find("Corps (visuel)");
+            if (model == null || visual == null)
+                return "goule : modèle ou « Corps (visuel) » absent";
+            foreach (Transform c in visual.Cast<Transform>().ToList())
+                Object.DestroyImmediate(c.gameObject);
+            var inst = (GameObject)PrefabUtility.InstantiatePrefab(model, visual);
+            inst.transform.localPosition = Vector3.zero;
+            inst.transform.localRotation = Quaternion.identity;
+            inst.transform.localScale = Vector3.one;
+            foreach (Collider c in inst.GetComponentsInChildren<Collider>(true))
+                Object.DestroyImmediate(c);
+            foreach (Renderer r in inst.GetComponentsInChildren<Renderer>(true))
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            Bounds b = LocalBounds(inst.transform, root.transform);
+            return $"goule : SM_Goule {b.size.x:0.00} × {b.size.y:0.00} × {b.size.z:0.00} m, pied à {b.min.y:0.00} m";
+        }
+
+        [MenuItem("ItHunts/Décor : goule de la DA (SM_Goule)")]
+        public static void GhoulMenu() => Debug.Log(InstallGhoulPrefab());
+
+        public static string InstallGhoulPrefab()
+        {
+            GameObject root = PrefabUtility.LoadPrefabContents(GhoulPrefab);
+            try
+            {
+                string r = InstallGhoul(root);
+                PrefabUtility.SaveAsPrefabAsset(root, GhoulPrefab);
+                return r;
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        /// <summary>Le prefab de la goule et toutes les goules des scènes de jeu (réserves comprises : des copies, pas des instances).</summary>
+        public static string InstallGhoulsEverywhere()
+        {
+            string r = InstallGhoulPrefab();
+            string current = EditorSceneManager.GetActiveScene().path;
+            int n = 0;
+            foreach (string path in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+            {
+                var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                int here = 0;
+                foreach (ItHunts.Enemies.Ghoul g in Object.FindObjectsByType<ItHunts.Enemies.Ghoul>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                {
+                    if (PrefabUtility.IsPartOfPrefabInstance(g.gameObject))
+                        continue;
+                    InstallGhoul(g.gameObject);
+                    here++;
+                }
+
+                if (here > 0)
+                    EditorSceneManager.SaveScene(scene);
+                n += here;
+            }
+
+            if (!string.IsNullOrEmpty(current))
+                EditorSceneManager.OpenScene(current, OpenSceneMode.Single);
+            return r + $" ; {n} goules dans les scènes";
+        }
+
+        // ---------- Traqueur : pièces de la DA (lot du 2026-11-16) ----------
+
+        private const string StalkerModels = "Assets/Art/Models/Ennemis/";
+
+        private static Mesh MeshOf(string model)
+        {
+            var go = AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + model + ".fbx");
+            var mf = go != null ? go.GetComponentInChildren<MeshFilter>() : null;
+            return mf != null ? mf.sharedMesh : null;
+        }
+
+        /// <summary>
+        /// Traqueur (fiche § 4 ter, version recommandée) : SM_Traqueur_Corps (sans les bras) sous « Corps (se baisse) » à la place des
+        /// greybox ; maillages des bras (boîte unité, SM_Traqueur_Bras) et des mains (SM_Traqueur_Main_D / _G, boîtes unité) sur les
+        /// objets que le code pose (PoseLimb, handSize) ; matériau M_Traqueur (pupilles rouges par son masque d'émission).
+        /// </summary>
+        public static string InstallStalker(GameObject root)
+        {
+            var corps = AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + "SM_Traqueur_Corps.fbx");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Ennemis/M_Traqueur.mat");
+            Transform body = root.transform.Find("Corps (se baisse)");
+            if (corps == null || body == null || mat == null)
+                return "traqueur : modèle, matériau ou « Corps (se baisse) » absent";
+            foreach (Transform c in body.Cast<Transform>().ToList())
+                Object.DestroyImmediate(c.gameObject);
+            var inst = (GameObject)PrefabUtility.InstantiatePrefab(corps, body);
+            inst.transform.localPosition = Vector3.zero;
+            inst.transform.localRotation = Quaternion.identity;
+            inst.transform.localScale = Vector3.one;
+            foreach (Collider c in inst.GetComponentsInChildren<Collider>(true))
+                Object.DestroyImmediate(c);
+            int n = 0;
+            foreach ((string part, string model) in new[] { ("Bras qui attrape", "SM_Traqueur_Bras"), ("Bras gauche", "SM_Traqueur_Bras"),
+                         ("Main (zone de prise)", "SM_Traqueur_Main_D"), ("Main gauche", "SM_Traqueur_Main_G") })
+            {
+                Transform t = root.transform.Find(part);
+                Mesh m = MeshOf(model);
+                if (t == null || m == null)
+                    continue;
+                t.GetComponent<MeshFilter>().sharedMesh = m;
+                t.GetComponent<MeshRenderer>().sharedMaterial = mat;
+                n++;
+            }
+
+            Bounds b = LocalBounds(inst.transform, root.transform);
+            return $"traqueur : SM_Traqueur_Corps {b.size.x:0.0} × {b.size.y:0.0} × {b.size.z:0.0} m, {n} bras et mains";
+        }
+
+        /// <summary>Tous les traqueurs des scènes de jeu.</summary>
+        public static string InstallStalkersEverywhere()
+        {
+            string current = EditorSceneManager.GetActiveScene().path;
+            var lines = new List<string>();
+            foreach (string path in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+            {
+                var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                int here = 0;
+                foreach (ItHunts.Enemies.Stalker st in Object.FindObjectsByType<ItHunts.Enemies.Stalker>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                {
+                    lines.Add(System.IO.Path.GetFileNameWithoutExtension(path) + " : " + InstallStalker(st.gameObject));
+                    here++;
+                }
+
+                if (here > 0)
+                    EditorSceneManager.SaveScene(scene);
+            }
+
+            if (!string.IsNullOrEmpty(current))
+                EditorSceneManager.OpenScene(current, OpenSceneMode.Single);
+            return string.Join(" | ", lines);
+        }
+
+        // ---------- Caisses attrapables : SM_Caisse ----------
+
+        public const string CrateModelPath = Models + "SM_Caisse.fbx";
+        public const string CrateTag = "Modèle (DA) : SM_Caisse";
+        /// <summary>Lueur des caisses sur tout le modèle (repli) au lieu de la rune seule (masque de la DA, face avant). Faux : la rune.</summary>
+        public const bool CrateGlowWholeModel = false;
+
+        /// <summary>
+        /// Caisse attrapable (fiche § 4 bis) : le cube greybox (racine mise à l'échelle, pivot au centre) prend le modèle SM_Caisse
+        /// (cube de 0.8 m, pivot au sol), à la taille du cube ; le collider et le Rigidbody restent. La lueur passe par le masque de la
+        /// rune (Grabbable.SetGlow écrit _EmissionColor sur tous ses rendus).
+        /// </summary>
+        public static bool ApplyCrateModel(GameObject crate)
+        {
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(CrateModelPath);
+            var mf = crate.GetComponent<MeshFilter>();
+            if (model == null || (mf != null && mf.sharedMesh != null && mf.sharedMesh.name != "Cube"))
+                return false;
+            foreach (Transform old in crate.transform.Cast<Transform>().Where(t => t.name.StartsWith(CrateTag)).ToList())
+                Object.DestroyImmediate(old.gameObject);
+            var inst = (GameObject)PrefabUtility.InstantiatePrefab(model, crate.transform);
+            inst.name = CrateTag;
+            inst.transform.localPosition = new Vector3(0f, -0.5f, 0f);   // pied du cube unité
+            inst.transform.localRotation = Quaternion.identity;
+            inst.transform.localScale = Vector3.one / 0.8f;               // 0.8 m → 1, puis l'échelle du cube
+            foreach (Collider c in inst.GetComponentsInChildren<Collider>(true))
+                Object.DestroyImmediate(c);
+            if (crate.GetComponent<MeshRenderer>() != null)
+                Object.DestroyImmediate(crate.GetComponent<MeshRenderer>());
+            if (mf != null)
+                Object.DestroyImmediate(mf);
+            // Lueur par le masque de la rune (CrateGlowWholeModel faux) ; le repli sur tout le modèle reste réglable par caisse.
+            var g = crate.GetComponent<ItHunts.Orbs.Grabbable>();
+            if (g != null)
+            {
+                var so = new SerializedObject(g);
+                so.FindProperty("glowWholeModel").boolValue = CrateGlowWholeModel;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            return true;
+        }
+
+        /// <summary>Le prefab de la caisse attrapable et toutes les caisses attrapables (cubes) des scènes de jeu.</summary>
+        [MenuItem("ItHunts/Décor : caisses attrapables en SM_Caisse (prefab et scènes)")]
+        public static void CratesMenu() => Debug.Log(InstallCrates());
+
+        public static string InstallCrates()
+        {
+            int n = 0;
+            const string prefab = PropsDir + "Prop_Caisse_Attrapable.prefab";
+            GameObject root = PrefabUtility.LoadPrefabContents(prefab);
+            try
+            {
+                if (ApplyCrateModel(root))
+                    n++;
+                PrefabUtility.SaveAsPrefabAsset(root, prefab);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+
+            string current = EditorSceneManager.GetActiveScene().path;
+            int inScenes = 0;
+            var names = new List<string>();
+            foreach (string path in new[] { "Assets/Scenes/Test_Movement.unity", "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity" })
+            {
+                var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                int here = 0;
+                foreach (ItHunts.Orbs.Grabbable g in Object.FindObjectsByType<ItHunts.Orbs.Grabbable>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                {
+                    if (g.IsEnemy || PrefabUtility.IsPartOfPrefabInstance(g.gameObject)
+                        || new SerializedObject(g).FindProperty("startsAnchored").boolValue)
+                        continue;                                        // ennemis, instances du prefab (faites par le prefab), lustres
+                    names.Add(g.name);
+                    if (ApplyCrateModel(g.gameObject))
+                        here++;
+                }
+
+                if (here > 0)
+                    EditorSceneManager.SaveScene(scene);
+                inScenes += here;
+            }
+
+            if (!string.IsNullOrEmpty(current))
+                EditorSceneManager.OpenScene(current, OpenSceneMode.Single);
+            return $"caisses : prefab {n}, scènes {inScenes} ({string.Join(", ", names.Select(x => System.Text.RegularExpressions.Regex.Replace(x, @"[\d.,]+", "#")).Distinct())})";
         }
 
         private static Bounds LocalBounds(Transform t, Transform space)

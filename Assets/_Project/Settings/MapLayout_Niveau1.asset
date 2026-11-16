@@ -28,6 +28,7 @@ MonoBehaviour:
   parkourHalls: 6
   galleries: 30
   galleryWaterDepth: 16
+  torchShare: 0.5
   zonesPerRoom: 0.5
   parkourChestShare: 0.34
   passages: 10

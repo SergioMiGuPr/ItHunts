@@ -11,7 +11,8 @@ namespace ItHunts.Level
     /// <summary>
     /// Menu pause greybox, un par joueur (Échap au clavier, Start à la manette). Il s'affiche dans la moitié d'écran du joueur et
     /// se pilote avec son seul appareil. Le jeu ne s'arrête pas (coop, D-048). Le joueur qui l'a ouvert ne bouge plus, l'autre
-    /// continue. Entrées : Reprendre ; Quitter l'écran partagé (2e joueur seulement) ; Menu principal. Posé par SplitScreen.
+    /// continue. Entrées : Reprendre ; Quitter l'écran partagé (2e joueur seulement) ; Retour au menu principal. Posé par
+    /// SplitScreen, sinon au chargement de toute scène de jeu (Ensure).
     /// Refait à l'étape 10.
     /// </summary>
     public sealed class PauseMenu : MonoBehaviour
@@ -29,6 +30,32 @@ namespace ItHunts.Level
         public static PauseMenu Current { get; private set; }
 
         private void OnEnable() => Current = this;
+
+        /// <summary>
+        /// Menu pause dans toutes les scènes de jeu, y compris celles sans écran partagé (Test_Movement…) : posé au chargement de
+        /// chaque scène s'il n'y en a pas déjà un (SplitScreen pose le sien). Pas dans la scène du menu principal.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void Install()
+        {
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+            Ensure();
+        }
+
+        private static void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode) => Ensure();
+
+        /// <summary>Pose un menu pause s'il manque (hors menu principal) ; renvoie celui de la scène.</summary>
+        public static PauseMenu Ensure()
+        {
+            PauseMenu existing = FindAnyObjectByType<PauseMenu>();
+            if (existing != null)
+                return existing;
+            string active = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (active == RunSession.MenuScene || FindAnyObjectByType<MainMenu>() != null)
+                return null;
+            return new GameObject("Menu pause").AddComponent<PauseMenu>();
+        }
 
         private void OnDisable()
         {
@@ -105,7 +132,7 @@ namespace ItHunts.Level
             int index = IndexOf(pi);
             if (index > 0 && PlayerInput.all.Count > 1 && SplitScreen.Current != null)
                 o.Menu.Add("Quitter l'écran partagé", () => LeaveSplit(o));
-            o.Menu.Add("Menu principal", ToMenu);
+            o.Menu.Add("Retour au menu principal", ToMenu);
             o.Menu.FocusFirst();
             _open.Add(o);
             pi.DeactivateInput();                                       // il ne bouge plus ; l'autre joueur continue

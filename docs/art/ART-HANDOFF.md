@@ -16,6 +16,19 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 >   en plus du test de profondeur. Lignes de 0.28 m (sortie 0.5 m), toujours face à l'écran, **toujours à l'échelle du monde**
 >   (même posés sur une porte étirée). Sur une porte (sortie, salle verrouillée), **un texte devant chaque face**, à 0.12 m : un
 >   modèle de porte doit donc avoir une **collision pleine** (sinon le texte de l'autre face se voit à travers).
+> - **Intégration du lot de la PR #4 (branche `integration-lot`, 2026-11-16)** : kit `SM_Kit_*` (UV monde) dans toute la carte, props
+>   calés sur `INTEGRATION-PROPS.md` (torche +0.545 m, lumière sur `FX_Flamme`), `SM_Caisse` sur toutes les caisses attrapables,
+>   échafaudage praticable (plateaux dessus à 3 et 6 m, épaissis de 0.07 à 0.3 m vers le bas pour le NavMesh), goule `SM_Goule`,
+>   traqueur en pièces (**épaule du code : 1.8 m du centre, 11.1 m de haut ; main = zone qui tue 4.9 × 1.5 × 4.5 m**), bras FPS
+>   du renard et du caméléon, flamme de la lanterne à la couleur du personnage, calque de rendu 1 nommé « FPS ».
+>   **Écarts à corriger côté DA :** (1) **bras FPS : les clips `Pose_*` sont vides à l'import, sauf `Pose_Attraper`** (une seule
+>   image par action : l'exporteur FBX ne la garde pas) : mettre au moins deux clés par pose ; en attendant, le jeu ferme les
+>   doigts lui-même ; (2) **caisse : la rune (masque d'émission) n'est que sur la face avant** : invisible des autres côtés, le
+>   signal « caisse à portée » se lit moins bien qu'avec la greybox (tout le cube) ; rune sur chaque face, ou dire si la face
+>   avant suffit ; (3) **droits commerciaux « à confirmer »** pour la goule, le traqueur, la caisse, le kit et les textures
+>   retouchées (forfaits Tripo, Higgsfield) : à régler avant toute publication ; (4) mains et bras du traqueur peu lisibles dans
+>   l'ambiance « sombre » (aucune émission) : un liseré ou une lueur de bord ? (5) `SM_Goule` à 22 000 triangles, jusqu'à 80
+>   goules en jeu : un niveau de détail réduit aiderait la performance.
 > - **Intégration du rendu et du lot de modélisation (PR #3, branche `rendu-integration`, 2026-11-16)** : contours plein écran et
 >   pré-passe sans les mains (`PC_Renderer`), ambiance intermédiaire dans toutes les scènes, lanterne du joueur, `SM_LanterneFeu` en main
 >   (`FX_Flamme`, `FX_Jet`, verre allumé par `_EmissionColor`), props et arène remplacés par les modèles (liste dans `PROGRESS.md`).

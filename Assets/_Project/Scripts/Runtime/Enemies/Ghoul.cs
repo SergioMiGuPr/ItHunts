@@ -1080,8 +1080,28 @@ namespace ItHunts.Enemies
         /// Lueur de l'annonce du bond (bloc 4) : yeux et gueule en rouge HDR, corps teinté de rouge ; lisible à 30 m et plus, sur la
         /// goule et pas seulement au sol. La gueule (greybox) est ajoutée sous la tête, sombre au repos.
         /// </summary>
+        private Renderer _model;
+        private bool _modelChecked;
+
         private void LeapGlow(bool on)
         {
+            // Modèle de la DA (SM_Goule, lot du 2026-11-16) : yeux et lueur entre les dents par le masque d'émission de M_Goule,
+            // sans teinter le corps (le masque suffit) ; la lueur passe par Damageable.ExtraGlow (émission de tous ses rendus).
+            if (!_modelChecked)
+            {
+                _modelChecked = true;
+                _model = GetComponentsInChildren<Renderer>(true).FirstOrDefault(r => r.name.StartsWith("SM_Goule"));
+            }
+
+            if (_model != null)
+            {
+                _glowShown = on;
+                _glowApplied = true;
+                if (_damageable != null && settings != null)
+                    _damageable.ExtraGlow = on ? settings.leapGlowColor : Color.black;
+                return;
+            }
+
             if (_glowParts == null)
             {
                 var eyes = GetComponentsInChildren<Renderer>(true).Where(r => r.name.StartsWith("Oeil")).ToList();

@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Kit_Niveau1
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.KitSet
   mur4x4: {fileID: 5808336772722709763, guid: 18436342f44f1d04594faedbba29b2fb, type: 3}
+  mur2x4: {fileID: 8850642605310498442, guid: 03cd1b4d118e10745b3000393f43808a, type: 3}
+  mur4x3: {fileID: 8692645740841154562, guid: ecd39c245b0cefd41a6f00301a3744d0, type: 3}
   sol4: {fileID: 6089793299465151086, guid: 6c73ce081b398704c8d2c9d05d5acc25, type: 3}
   escalier: {fileID: 5615024629987204923, guid: 11b72f6159cacad459a951c504586995, type: 3}
   pont: {fileID: 5085891167771914037, guid: 0b9237f1616e1184caf453a2ef470832, type: 3}

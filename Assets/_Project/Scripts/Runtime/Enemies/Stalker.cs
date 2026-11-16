@@ -190,11 +190,11 @@ namespace ItHunts.Enemies
             Vector3 flat = target - feet;
             flat.y = 0f;
             Vector3 dir = flat.sqrMagnitude > 0.01f ? flat.normalized : transform.forward;
-            return feet + Vector3.up * ShoulderHeight + dir * (settings.width * 0.4f);
+            return feet + Vector3.up * ShoulderHeight + dir * (settings.shoulderSide);
         }
 
         /// <summary>Épaule du bras qui attrape (droite).</summary>
-        public Vector3 Shoulder => _rb.position + Vector3.up * ShoulderHeight + transform.right * (settings.width * 0.4f);
+        public Vector3 Shoulder => _rb.position + Vector3.up * ShoulderHeight + transform.right * (settings.shoulderSide);
 
         private void Awake()
         {
@@ -209,6 +209,18 @@ namespace ItHunts.Enemies
 
         private void Start()
         {
+            // Pupilles rouges du modèle de la DA : Damageable écrit l'émission de tous ses rendus à chaque image (noir par défaut).
+            var dmg = GetComponent<ItHunts.Combat.Damageable>();
+            if (dmg != null && settings != null)
+                dmg.ExtraGlow = settings.pupilGlow;
+            // Mains de la DA (boîtes unité) : la taille réglée est celle de la main visible, qui est aussi la zone qui tue.
+            if (settings != null)
+            {
+                if (hand != null)
+                    hand.localScale = settings.handSize;
+                if (leftHand != null)
+                    leftHand.localScale = settings.handSize;
+            }
             _nav = FindFirstObjectByType<ZoneNavMesh>();
             _zone = FindFirstObjectByType<ZoneState>();
             _graph = FindFirstObjectByType<MazeGraph>();
@@ -701,7 +713,7 @@ namespace ItHunts.Enemies
                 float flat = Flat(s - feet);
                 if (flat >= bestD)
                     continue;
-                Vector3 shoulder = s + Vector3.up * settings.shoulderHeight + FlatDir(feet - s) * (settings.width * 0.4f);
+                Vector3 shoulder = s + Vector3.up * settings.shoulderHeight + FlatDir(feet - s) * (settings.shoulderSide);
                 float reach = settings.handReach + (flat > Radius + 1f ? settings.edgeLean : 0f);
                 if ((chest - shoulder).magnitude > reach)
                     continue;
@@ -1002,7 +1014,7 @@ namespace ItHunts.Enemies
         // ---------- Mains au-dessus de la tête (D-037) ----------
 
         private bool OverheadUsesRight => _over != OverheadPhase.Aucune && _grab == GrabPhase.Aucune;
-        private Vector3 LeftShoulder => _rb.position + Vector3.up * ShoulderHeight - transform.right * (settings.width * 0.4f);
+        private Vector3 LeftShoulder => _rb.position + Vector3.up * ShoulderHeight - transform.right * (settings.shoulderSide);
         private Vector3 LeftRestHand() => LeftShoulder + Vector3.down * (ShoulderHeight * 0.45f) + transform.forward * 1.5f;
         private float HeadTop => _rb.position.y + Height;
 

@@ -1,3 +1,4 @@
+using System.Linq;
 using ItHunts.Audio;
 using ItHunts.Movement;
 using ItHunts.Player;
@@ -81,10 +82,30 @@ namespace ItHunts.Artifacts
             _audio.spatialBlend = 0f;
             _relight = ProceduralSfx.ToClip("Lanterne rallumée", ProceduralSfx.LanternRelight());
             _rng = new System.Random(GetInstanceID());
+            // Flamme de la DA (SM_LanterneFeu_Flamme, M_LanterneFeu_Flamme) à la place de la sphère greybox, si elle est là.
+            if (lanternRoot != null)
+            {
+                Renderer da = lanternRoot.GetComponentsInChildren<Renderer>(true).FirstOrDefault(r => r.name == "SM_LanterneFeu_Flamme");
+                if (da != null)
+                {
+                    if (flame != null && flame != da)
+                        flame.enabled = false;
+                    flame = da;
+                    _daFlame = true;
+                }
+            }
+
             _flameScale = flame != null ? flame.transform.localScale : Vector3.one;
         }
 
         private Vector3 _flameScale;
+        private bool _daFlame;
+
+        [Tooltip("Flamme de la DA : intensité de l'émission (× couleur du personnage) quand elle brûle.")]
+        [SerializeField] private float flameIntensity = 4f;
+
+        /// <summary>Émission de la flamme au centre (mesures, tests).</summary>
+        public Color ShownFlame { get; private set; }
 
         private void OnDestroy()
         {
@@ -169,7 +190,18 @@ namespace ItHunts.Artifacts
                 glass.SetPropertyBlock(_glassBlock);
             }
 
-            if (flame != null)
+            if (flame != null && _daFlame)
+            {
+                // Flamme de la DA : couleur du personnage ; éteinte pendant la recharge, rallumée quand la lanterne est prête.
+                Color pc = _holder.Character != null ? _holder.Character.color : new Color(0.9f, 0.22f, 0.16f);
+                float k = (s.Jetting ? 1.4f : ready ? 1f : 0f) * flicker * (s.Inactive ? cfg.inactiveFactor : 1f);
+                flame.enabled = k > 0.001f;
+                ShownFlame = pc * (flameIntensity * k);
+                flame.GetPropertyBlock(_block);
+                _block.SetColor(EmissionColorId, ShownFlame);
+                flame.SetPropertyBlock(_block);
+            }
+            else if (flame != null)
             {
                 float k = glow * flicker * (s.Inactive ? cfg.inactiveFactor : 1f);
                 flame.transform.localScale = _flameScale * Mathf.Lerp(0.25f, 1f, Mathf.Clamp01(glow));

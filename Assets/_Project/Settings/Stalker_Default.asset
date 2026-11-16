@@ -74,7 +74,9 @@ MonoBehaviour:
   searchDuration: 10
   searchRadius: 8
   loseSightTime: 1.5
-  shoulderHeight: 12
+  shoulderHeight: 11.1
+  shoulderSide: 1.8
+  pupilGlow: {r: 4, g: 0.25, b: 0.15, a: 1}
   handReach: 15
   grabTelegraph: 0.5
   grabSlam: 0.12
@@ -90,7 +92,7 @@ MonoBehaviour:
   backhandTelegraph: 0.2
   backhandSweep: 0.25
   grabMoveFactor: 0.3
-  handSize: {x: 4, y: 2.2, z: 4.5}
+  handSize: {x: 4.9, y: 1.5, z: 4.5}
   overheadRadius: 10
   overheadMinHeight: 7
   overheadAboveHead: 12

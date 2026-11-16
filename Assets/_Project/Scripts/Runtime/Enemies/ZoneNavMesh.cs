@@ -28,6 +28,8 @@ namespace ItHunts.Enemies
         [SerializeField, Min(0f)] private float stepHeight = 0.45f;
         [Tooltip("Taille des voxels (m) : plus petits, plus précis mais plus longs à construire (grandes arènes).")]
         [SerializeField, Min(0.05f)] private float smallVoxel = 0.1f;
+        [Tooltip("Surface minimale d'une région du NavMesh des goules (m²) : 1 garde les plateaux d'échafaudage.")]
+        [SerializeField, Min(0f)] private float smallMinRegionArea = 1f;
         [SerializeField, Min(0.05f)] private float stalkerVoxel = 0.6f;
         [SerializeField, Range(0f, 60f)] private float maxSlope = 45f;
         [Tooltip("Taille des tuiles (voxels). Plus grandes : moins de polygones, donc des chemins longs qui aboutissent (le calcul " +
@@ -309,6 +311,10 @@ namespace ItHunts.Enemies
             s.agentHeight = height;
             s.agentClimb = stepHeight;
             s.agentSlope = maxSlope;
+            // Petites surfaces gardées pour les goules : un plateau d'échafaudage (4 × 2 m, poteaux aux bords) ne garde que ≈ 2.4 m²
+            // une fois rogné du rayon ; au seuil par défaut (2 m²), il manquait sur 85 % des échafaudages (lot art, bloc 2).
+            if (radius < 1f)
+                s.minRegionArea = smallMinRegionArea;
             NavMeshData data = NavMeshBuilder.BuildNavMeshData(s, sources, bounds, Vector3.zero, Quaternion.identity);
             if (data == null)
             {

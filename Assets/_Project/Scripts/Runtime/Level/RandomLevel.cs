@@ -247,6 +247,7 @@ namespace ItHunts.Level
             Progress = 0.88f;
             if (async)
                 yield return null;
+            ThinTorches();
             Batch();
             Physics.SyncTransforms();
             if (!async && _residents != null)
@@ -1138,6 +1139,33 @@ namespace ItHunts.Level
         /// moins de culling, de bornes à mettre à jour et de draw calls (point 5 de carte-suite). Les prefabs Kit_* restent la source :
         /// remplacer un prefab par le vrai modèle change toujours toute la carte.
         /// </summary>
+        /// <summary>Torches retirées (performance, MapLayoutSettings.torchShare) : une sur deux par défaut, dans l'ordre de construction.</summary>
+        public int RemovedTorches { get; private set; }
+
+        private void ThinTorches()
+        {
+            RemovedTorches = 0;
+            if (settings == null || settings.torchShare >= 0.999f)
+                return;
+            var torches = new List<Transform>();
+            foreach (Transform t in _root.GetComponentsInChildren<Transform>(true))
+                if (t.name.StartsWith("Prop_Torche"))
+                    torches.Add(t);
+            float keep = 0f;
+            foreach (Transform t in torches)
+            {
+                keep += settings.torchShare;
+                if (keep >= 1f)
+                {
+                    keep -= 1f;
+                    continue;
+                }
+
+                t.gameObject.SetActive(false);
+                RemovedTorches++;
+            }
+        }
+
         private void Batch()
         {
             MergedRenderers = 0;

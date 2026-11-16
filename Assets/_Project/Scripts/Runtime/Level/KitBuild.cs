@@ -273,7 +273,22 @@ namespace ItHunts.Level
             {
                 float a = u - len * 0.5f, y = v - size.y * 0.5f - 2f * sv;
                 Vector3 p = alongX ? new Vector3(c.x + a, c.y + y, c.z) : new Vector3(c.x, c.y + y, c.z + a);
-                Piece(kit.mur4x4, t, p, alongX ? 0f : 90f, new Vector3(su, sv, th));
+                // Demi-pièces de la DA pour les bouts de 2 × 4 m et de 4 × 3 m ; sinon la pièce de 4 × 4 m mise à l'échelle (UV monde :
+                // la texture ne s'étire pas).
+                GameObject prefab = kit.mur4x4;
+                Vector3 scale = new Vector3(su, sv, th);
+                if (kit.mur2x4 != null && Mathf.Abs(su - 0.5f) < 1e-3f && Mathf.Abs(sv - 1f) < 1e-3f)
+                {
+                    prefab = kit.mur2x4;
+                    scale = new Vector3(1f, 1f, th);
+                }
+                else if (kit.mur4x3 != null && Mathf.Abs(su - 1f) < 1e-3f && Mathf.Abs(sv - 0.75f) < 1e-3f)
+                {
+                    prefab = kit.mur4x3;
+                    scale = new Vector3(1f, 1f, th);
+                }
+
+                Piece(prefab, t, p, alongX ? 0f : 90f, scale);
             }
         }
 

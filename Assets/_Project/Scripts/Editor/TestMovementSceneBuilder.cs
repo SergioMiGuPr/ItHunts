@@ -1030,6 +1030,8 @@ namespace ItHunts.EditorTools
             go.transform.localScale = size;
             go.GetComponent<MeshRenderer>().sharedMaterial = mat;
             MakeGrabbable(go, mass, anchored);
+            if (!anchored)
+                DecorModelInstaller.ApplyCrateModel(go);                 // caisse de la DA (SM_Caisse)
             return go;
         }
 
