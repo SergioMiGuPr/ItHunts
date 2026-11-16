@@ -7,43 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_BrasFPS_Hibou_Boucle
-    second: {fileID: 2100000, guid: 068db93b1810e234f8ec66095b8232f8, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_BrasFPS_Hibou_Cuir
-    second: {fileID: 2100000, guid: 78b7ebc35acce1041b4dd1d3365a1f0e, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_BrasFPS_Hibou_Duvet
-    second: {fileID: 2100000, guid: 5edec9bc9e4827c4ca5aadf781f3c458, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_BrasFPS_Hibou_Griffe
-    second: {fileID: 2100000, guid: 595a864250f4c0b4f8de1682261345aa, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_BrasFPS_Hibou_Peau
-    second: {fileID: 2100000, guid: 0d59a72c3e8deba49a91aec2fc54e962, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_BrasFPS_Hibou_Plume1
-    second: {fileID: 2100000, guid: f9756615591dad54d837ec442a65744b, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_BrasFPS_Hibou_Plume2
-    second: {fileID: 2100000, guid: f33f04e40d3f1aa4b85098f131113358, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_BrasFPS_Hibou_Sangle
-    second: {fileID: 2100000, guid: abff0ee147531fc4f9fdf7699e536085, type: 2}
+      name: M_BrasFPS_Hibou
+    second: {fileID: 2100000, guid: 3c27da76f8e63f7459d96d99774a60a6, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
