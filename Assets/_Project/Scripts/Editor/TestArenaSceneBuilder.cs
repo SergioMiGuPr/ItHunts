@@ -1167,6 +1167,7 @@ namespace ItHunts.EditorTools
             go.transform.localScale = Vector3.one * size;
             go.GetComponent<MeshRenderer>().sharedMaterial = mass >= 40f ? _heavy : _crate;
             MakeGrabbable(go, mass, false);
+            DecorModelInstaller.ApplyCrateModel(go);                     // caisse de la DA (SM_Caisse)
         }
 
         private static void Lustre(string name, Vector3 at, float ceiling, Transform parent)
