@@ -9,6 +9,8 @@
   T_Goule_Emission (masque : deux yeux ronds à pupille claire, lueur entre les dents) ; le jeu pilote _EmissionColor
   (signal avant le bond).
 - Entrave de la cheville gardée (charte).
+- LOD (jusqu'à 80 goules en jeu) : SM_Goule_LOD0 (22 000 triangles), _LOD1 (≈ 11 000) et _LOD2 (≈ 5 000), décimés à
+  partir du LOD0 (mêmes UV : même matériau, même masque d'émission), enfants du même FBX : Unity crée le LODGroup.
 
 Lancer dans Blender (avec l'interface) :
     p = r"<dépôt>/Assets/Art/Source~/Ennemis/scripts/sm_goule.py"
@@ -26,6 +28,7 @@ import numpy as np
 PARAMS = dict(
     glb="tripo_goule_v01",
     hauteur=1.1, triangles=22000, texture=2048,
+    lod=(11000, 5000),
     peau_mauve=True,
     # zones dans les coordonnées brutes du GLB (avant vers +X, hauteur ≈ 0.98)
     tete=dict(x_min=0.12, z_min=0.27),
@@ -86,12 +89,23 @@ def build(P):
     E.smooth_shading(ob, 60)
     mat = C.make_material("M_Goule", p_base)
     ob.data.materials.clear(); ob.data.materials.append(mat)
-    ob.name = ob.data.name = "SM_Goule"
+    ob.name = ob.data.name = "SM_Goule_LOD0"
+    lods = [ob]
+    for i, target in enumerate(P["lod"], 1):
+        o = ob.copy(); o.data = ob.data.copy()
+        o.name = o.data.name = "SM_Goule_LOD%d" % i
+        for col in ob.users_collection:
+            col.objects.link(o)
+        a, b = E.weld_decimate(o, target, symmetry="Y")
+        E.smooth_shading(o, 60)
+        print("LOD%d : %d -> %d triangles" % (i, a, b))
+        o.hide_render = True                                      # rendus Blender : LOD0 seul (exportés quand même)
+        lods.append(o)
     print("goule : %d -> %d triangles ; échelle × %.4f ; taille (x, y, z) = (%.3f, %.3f, %.3f) m ; peau recolorée %.1f %%"
           % (t0, t1, k, size[0], size[1], size[2], 100 * part))
     for kk, v in info.items():
         print("  %s : %s" % (kk, v))
-    return [ob]
+    return lods
 
 
 if __name__ == "__main__":

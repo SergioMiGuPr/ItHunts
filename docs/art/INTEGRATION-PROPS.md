@@ -140,10 +140,16 @@ sol au centre, 1 unité = 1 m. Captures : `rendus/Lot/Goule_*.jpg`, `rendus/Lot/
 
 **Goule (`SM_Goule`, statique, sans squelette).** 22 000 triangles, 0.67 × 1.1 × 0.70 m (capsule de jeu Ø 0.9 ×
 1.1 m), quadrupède, entrave gardée, peau gris-mauve.
+**LOD (jusqu'à 80 goules) :** le FBX contient `SM_Goule_LOD0` (22 000), `SM_Goule_LOD1` (11 000) et `SM_Goule_LOD2` (5 000),
+mêmes UV, même `M_Goule` et même masque d'émission ; **Unity crée le `LODGroup` à la racine de `SM_Goule`** (seuils par défaut
+0.25 / 0.125 / 0.01). Seuils conseillés dans le prefab (hauteur d'écran, champ de vision de 60°) : **LOD1 sous 0.20 (≈ 5 m),
+LOD2 sous 0.08 (≈ 12 m), disparition sous 0.01** (≈ 95 m, bien au-delà du brouillard). Le signal du bond doit écrire
+`_EmissionColor` sur les **trois** renderers (bloc de propriétés sur chacun, ou sur le matériau partagé).
+Planche : `docs/art/rendus/Lot/Goule_LOD_eteint_et_lueur.jpg`.
 
 | Prefab (construit par `TestArenaSceneBuilder`) | Modèle | Placement | Matériau piloté par le code |
 |---|---|---|---|
-| goule : enfant « Corps (visuel) » (capsule greybox en (0, 0.55, 0)) | `SM_Goule` | en (0, 0, 0) sous « Corps (visuel) », rotation nulle ; retirer la capsule | `M_Goule` : `_EmissionColor` (noir au repos) allume les **deux yeux** (disque, pupille plus claire) et la **lueur entre les dents** : c'est le signal rouge avant le bond (0.3 s) ; l'écrasement à 60 % et la bascule de 80° sur les murs s'appliquent au visuel comme aujourd'hui |
+| goule : enfant « Corps (visuel) » (capsule greybox en (0, 0.55, 0)) | `SM_Goule` (le modèle entier, avec son `LODGroup`) | en (0, 0, 0) sous « Corps (visuel) », rotation nulle ; retirer la capsule | `M_Goule` : `_EmissionColor` (noir au repos) allume les **deux yeux** (disque, pupille plus claire) et la **lueur entre les dents** : c'est le signal rouge avant le bond (0.3 s) ; l'écrasement à 60 % et la bascule de 80° sur les murs s'appliquent au visuel comme aujourd'hui |
 
 **Traqueur, version statique provisoire (en attendant le squelette).** Deux façons de l'intégrer :
 
