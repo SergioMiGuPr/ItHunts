@@ -42,10 +42,13 @@ namespace ItHunts.EditorTools
             Material wood = Mat("Prop_BoisSombre", new Color(0.22f, 0.15f, 0.1f));
             Material step = Mat("Kit_Marche", new Color(0.3f, 0.28f, 0.3f));
             var kit = LoadOrCreate<KitSet>(KitPath);
-            kit.mur4x4 = CubePiece("Kit_Mur4x4", new Vector3(0f, 2f, 0f), new Vector3(4f, 4f, 1f), stone);
-            kit.sol4 = CubePiece("Kit_Sol4", new Vector3(0f, -0.5f, 0f), new Vector3(4f, 1f, 4f), slab);
-            kit.escalier = CubePiece("Kit_Escalier", new Vector3(0f, 0.125f, 0.5f), new Vector3(4f, 0.25f, 1f), step);
-            kit.pont = CubePiece("Kit_Pont", new Vector3(0f, -0.5f, 0f), new Vector3(3f, 1f, 4f), wood);
+            // Pièces de la DA (lot du 2026-11-16, UV en coordonnées monde, mêmes cotes et pivots que les greybox) ; greybox sinon.
+            kit.mur4x4 = ModelPiece("Kit_Mur4x4", "SM_Kit_Mur4x4") ?? CubePiece("Kit_Mur4x4", new Vector3(0f, 2f, 0f), new Vector3(4f, 4f, 1f), stone);
+            kit.mur2x4 = ModelPiece("Kit_Mur2x4", "SM_Kit_Mur2x4");
+            kit.mur4x3 = ModelPiece("Kit_Mur4x3", "SM_Kit_Mur4x3");
+            kit.sol4 = ModelPiece("Kit_Sol4", "SM_Kit_Sol4") ?? CubePiece("Kit_Sol4", new Vector3(0f, -0.5f, 0f), new Vector3(4f, 1f, 4f), slab);
+            kit.escalier = ModelPiece("Kit_Escalier", "SM_Kit_Escalier") ?? CubePiece("Kit_Escalier", new Vector3(0f, 0.125f, 0.5f), new Vector3(4f, 0.25f, 1f), step);
+            kit.pont = ModelPiece("Kit_Pont", "SM_Kit_Pont") ?? CubePiece("Kit_Pont", new Vector3(0f, -0.5f, 0f), new Vector3(3f, 1f, 4f), wood);
             kit.pilier = ModelPiece("Kit_Pilier", "SM_Colonne");
             kit.arc = ModelPiece("Kit_Arc", "SM_Arc_Couloir");
             kit.portePiece = ModelPiece("Kit_PortePiece", "SM_Porte_Piece");
@@ -189,12 +192,14 @@ namespace ItHunts.EditorTools
             const float R = 12f, H = 6f, D = 3f;
             var root = new GameObject(locked ? "Salle_Verrouillee" : "Piece_Annexe");
             Transform t = root.transform;
-            KitBuild.Box(t, "Sol", new Vector3(0f, -0.5f, (R - T) * 0.5f), new Vector3(R + 2f * T, 1f, R + T + T), KitBuild.Kind.Sol, kit);
-            KitBuild.Box(t, "Toit", new Vector3(0f, H + 0.5f, R * 0.5f), new Vector3(R + 2f * T, 1f, R + 2f * T), KitBuild.Kind.Sol, kit, walkable: false);
+            KitBuild.Box(t, "Sol", new Vector3(0f, -0.5f, R * 0.5f), new Vector3(R + 2f * T, 1f, R + 2f * T), KitBuild.Kind.Sol, kit);   // de la face extérieure du mur du couloir (−T) au fond : pas sous le sol du couloir
+            // Toit : son bout côté couloir 2 cm dans le mur du couloir (affleurant, il scintille avec lui).
+            KitBuild.Box(t, "Toit", new Vector3(0f, H + 0.5f, R * 0.5f + 0.01f), new Vector3(R + 2f * T, 1f, R + 2f * T - 0.02f), KitBuild.Kind.Sol, kit, walkable: false);
             KitBuild.Box(t, "Mur du fond", new Vector3(0f, H * 0.5f, R + T * 0.5f), new Vector3(R + 2f * T, H, T), KitBuild.Kind.Mur, kit, walkable: false);
             KitBuild.Box(t, "Mur 1", new Vector3(R * 0.5f + T * 0.5f, H * 0.5f, R * 0.5f), new Vector3(T, H, R), KitBuild.Kind.Mur, kit, walkable: false);
             KitBuild.Box(t, "Mur 2", new Vector3(-R * 0.5f - T * 0.5f, H * 0.5f, R * 0.5f), new Vector3(T, H, R), KitBuild.Kind.Mur, kit, walkable: false);
-            KitBuild.Piece(kit.portePiece, t, new Vector3(0f, 0f, -T * 0.5f), 180f);
+            // Cadre de 1 m dans un mur de 1 m : 2 cm de plus de chaque côté, sinon ses faces scintillent avec celles du mur.
+            KitBuild.Piece(kit.portePiece, t, new Vector3(0f, 0f, -T * 0.5f), 180f, new Vector3(1f, 1f, 1.04f));
             var lamp = new GameObject("Lumière").AddComponent<Light>();
             lamp.transform.SetParent(t, false);
             lamp.transform.localPosition = new Vector3(0f, H - 1f, R * 0.5f);
@@ -277,7 +282,7 @@ namespace ItHunts.EditorTools
             var runState = new GameObject("État de la run").AddComponent<ItHunts.Artifacts.RunState>();
             SetRef(runState, "pool", LoadOrCreate<ArtifactPool>(PoolPath));
             SetRef(runState, "characters", CharacterSetup.Roster());    // personnages (D-064)
-            RenderSetup.AddTo(null);                                     // ambiance de rendu intermédiaire (D-067)
+            RenderSetup.AddTo(null);                                     // ambiance de rendu par défaut : sombre (D-067, correctifs-rendu)
             SetRef(runState, "upgrades", UpgradePoolAsset());
             new GameObject("Minimap (brouillard de guerre)").AddComponent<MapDiscovery>().gameObject.AddComponent<ItHunts.Hud.MinimapHud>();
             new GameObject("Mesure de performance du niveau (build, -ithunts-perf-level)").AddComponent<ItHunts.Debugging.LevelPerfProbe>();

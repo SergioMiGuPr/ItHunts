@@ -23,3 +23,5 @@ MonoBehaviour:
   lampRange: 13
   contourFadeStart: 40
   contourFadeEnd: 100
+  enraged: {fileID: 11400000, guid: 4c6285ce5cc774d4e9a7245cf108d409, type: 2}
+  enragedTransition: 2

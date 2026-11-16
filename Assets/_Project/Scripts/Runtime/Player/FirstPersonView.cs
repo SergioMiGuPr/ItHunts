@@ -74,6 +74,11 @@ namespace ItHunts.Player
         public Transform Orb => orb;
         public int Layer => _layer;
         public HandGesture Gesture { get; private set; }
+        /// <summary>Avancement du geste en cours (0 au début, 1 à la fin) : poses des bras de la DA (FpsArms).</summary>
+        public float GestureProgress { get; private set; } = 1f;
+        /// <summary>Fermeture des doigts (°, lissée) : main droite et main gauche (repli des bras de la DA sans clips).</summary>
+        public float RightCurl => _rightCurl;
+        public float LeftCurl => _leftCurl;
 
         /// <summary>Image (Time.frameCount) où le dernier geste a commencé, et tick simulé qui l'a déclenché.</summary>
         public int LastGestureFrame { get; private set; } = -1;
@@ -287,6 +292,7 @@ namespace ItHunts.Player
                 : Gesture == HandGesture.Prise ? settings.grabGestureDuration
                 : 0f;
             float u = duration > 0f ? (Time.time - _gestureStart) / duration : 1f;
+            GestureProgress = Mathf.Clamp01(u);
             if (u >= 1f)
                 Gesture = HandGesture.Aucun;
             switch (Gesture)

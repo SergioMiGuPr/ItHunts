@@ -641,5 +641,29 @@ namespace ItHunts.Tests
             Vector3 b = EnemyMath.LeapVelocity(Vector3.zero, new Vector3(4f, 0f, 0f), 14f, 1f, 30f);
             Assert.That((a - b).magnitude, Is.LessThan(1e-3f), "même niveau : identique au bond au sol");
         }
+
+        [Test]
+        public void Goule_SignauxDeLAnnonce_EteintsALaRemiseAZeroEtAuRecyclage()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Niveau/Goule.prefab");
+            GameObject go = Object.Instantiate(prefab);
+            try
+            {
+                var g = go.GetComponent<Ghoul>();
+                var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                typeof(Ghoul).GetMethod("SetMode", flags).Invoke(g, new object[] { GhoulMode.Annonce });
+                typeof(Ghoul).GetMethod("UpdateVisual", flags).Invoke(g, null);
+                Assert.That(g.SignalsOn, Is.True, "annonce : yeux, gueule et disque allumés");
+                g.ClearSignals();
+                Assert.That(g.SignalsOn, Is.False, "mort ou recyclée : plus rien d'allumé (point rouge resté au sol)");
+                typeof(Ghoul).GetMethod("UpdateVisual", flags).Invoke(g, null);
+                Assert.That(g.SignalsOn, Is.True);
+                // Désactivée par la réserve : OnDisable (non appelé en mode édition), vérifié en jeu.
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+        }
     }
 }

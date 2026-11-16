@@ -16,6 +16,9 @@ namespace ItHunts.Level
         [Header("Pièces de base (4 m)")]
         [Tooltip("Mur de 4 × 4 m, 1 m d'épaisseur (pivot au pied, au milieu).")]
         public GameObject mur4x4;
+        [Tooltip("Demi-pièces de mur (SM_Kit_Mur2x4 : 2 × 4 m, SM_Kit_Mur4x3 : 4 × 3 m), pour les bouts de mur de cette taille.")]
+        public GameObject mur2x4;
+        public GameObject mur4x3;
         [Tooltip("Dalle de sol (ou de plafond) de 4 × 4 m, 1 m d'épaisseur (pivot au milieu du dessus).")]
         public GameObject sol4;
         [Tooltip("Marche d'escalier de 4 m de large, 0.25 m de haut, 1 m de profondeur (pivot au milieu du bas de la contremarche) ; étirée en profondeur selon la pente.")]

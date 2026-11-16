@@ -1,0 +1,16 @@
+couloir plat 100 m × 14,0 m, seed -1275952520
+goules disponibles : 285 ; PV d'une goule 60
+Lanterne : dégâts immédiats 0, brûlure 12 PV/s pendant 4 s (ticks 0,25 s), recharge 2,5 s, jet 0,6 s, portée 15 m, cône 25° ; barillet : 12 dégâts, portée 60 m
+  Lanterne, 1 goule à 5 m : cause de la mort de la 1re cible : dernier attaquant -95970584, brûlure 24, position (265.00, 1.66, -240.00)
+Lanterne, 1 goule à 5 m : tuées en 4,97 s (2 jets ; cibles touchées par jet : 1, 1)
+  Lanterne, groupe de 3 à 5 m : cause de la mort de la 1re cible : dernier attaquant -95970584, brûlure 24, position (264.30, 1.66, -240.00)
+Lanterne, groupe de 3 à 5 m : tuées en 4,99 s (2 jets ; cibles touchées par jet : 3, 3)
+Barillet, 1 goule à 5 m : tuées en 1,26 s (6 balles)
+Barillet, groupe de 3 à 5 m : tuées en 5,93 s (17 balles)
+  Lanterne, 1 goule à 15 m : cause de la mort de la 1re cible : dernier attaquant -95970584, brûlure 27, position (275.00, 1.66, -240.00)
+Lanterne, 1 goule à 15 m : tuées en 2,17 s (1 jets ; cibles touchées par jet : 1)
+  Lanterne, groupe de 3 à 15 m : cause de la mort de la 1re cible : dernier attaquant -95970584, brûlure 24, position (274.30, 1.66, -240.00)
+Lanterne, groupe de 3 à 15 m : tuées en 4,98 s (2 jets ; cibles touchées par jet : 3, 3)
+Barillet, 1 goule à 15 m : tuées en 1,28 s (6 balles)
+Barillet, groupe de 3 à 15 m : tuées en 5,65 s (16 balles)
+#fin

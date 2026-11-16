@@ -659,7 +659,7 @@ namespace ItHunts.EditorTools
             var run = new GameObject("État de la run").AddComponent<RunState>();
             SetRef(run, "pool", pool);
             SetRef(run, "characters", CharacterSetup.Roster());          // personnages (D-064)
-            RenderSetup.AddTo(null);                                     // ambiance de rendu intermédiaire (D-067)
+            RenderSetup.AddTo(null);                                     // ambiance de rendu par défaut : sombre (D-067, correctifs-rendu)
 
             // Joueur.
             var player = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
@@ -1030,6 +1030,8 @@ namespace ItHunts.EditorTools
             go.transform.localScale = size;
             go.GetComponent<MeshRenderer>().sharedMaterial = mat;
             MakeGrabbable(go, mass, anchored);
+            if (!anchored)
+                DecorModelInstaller.ApplyCrateModel(go);                 // caisse de la DA (SM_Caisse)
             return go;
         }
 

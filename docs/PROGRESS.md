@@ -4,6 +4,67 @@
 
 ## Étape en cours
 
+**Intégration du lot art de la PR #4 (`integration-lot` = `correctifs-rendu` + `main` après fusion de la PR #4) — 2026-11-16,
+non poussée, à tester en playtest.** PR #4 vérifiée (périmètre `Assets/Art/`, `docs/art/`, manifeste ; 111 assets avec `.meta` ;
+import sans erreur ; 386 tests), fusionnée dans `main` (commit de fusion, branche `art` gardée) et poussée. Un commit par bloc.
+- **1. Kit (`23528f6`) :** `SM_Kit_Mur4x4`, `Mur2x4`, `Mur4x3`, `Sol4`, `Escalier`, `Pont` (M_Pierre_Monde, M_Dalles_Monde) ;
+  escalier en marches répétées (0.25 m, pleines jusqu'au sol), collision = pente lisse ; 18 modules revalidés ; 5 seeds :
+  0 pièce hors fusion, faces confondues ≈ 1.5 m² par carte, raccords sans couture (captures `kit_*`).
+- **2. Props (`fe075d9`) :** décalages de la fiche (torche +0.545 m, lumière sur `FX_Flamme`), `M_Torche`, `SM_Caisse` (prefab et
+  207 caisses des scènes, lueur par le masque de la rune), échafaudage praticable (20/20 plateaux sur le NavMesh des goules, surface
+  minimale du NavMesh 1 m²) ; props de la DA étiquetés « DA ».
+- **3. Goule (`231bd23`) :** `SM_Goule` (prefab, constructeur, 978 goules des scènes) ; annonce : yeux et gueule par le masque ;
+  sur un mur, bornes à 0.39 m du mur.
+- **4. Traqueur (`835d27c`) :** pièces de la DA ; épaule `shoulderSide` 1.8 m, `shoulderHeight` 11.1 m ; main 4.9 × 1.5 × 4.5 m ;
+  pupilles par le masque. Esquive : 10/10 prises sans réaction, 0/20 en courant de côté après 0.15 s (comme avant). Couverture :
+  salle haute remplie corrigée (tours d'angle jusqu'au plafond) ; **4 cachettes sur 20 cartes** (coins des tours de 11 m des
+  étages en anneau, galeries hautes) : à trancher (voir points ouverts).
+- **5. Vue FPS (`af633d3`) :** bras du renard et du caméléon (`FpsArms`, poses cuites `FpsArmPoses`) ; seuls les clips
+  `Pose_Attraper` ont des courbes : repli sur la fermeture des doigts des mains greybox ; flamme de la lanterne à la couleur
+  du personnage, éteinte pendant la recharge ; calque « FPS » ; couverture 6.5 % (renard), 8.1 % (caméléon).
+- **6. Performance (`02df035`) :** solo 11.2 → 9.9 ms médiane (5 % les plus lents 15.0 → 12.8), écran partagé 18.8 → 16.8 ms
+  (23.7 → 21.7) avec une torche sur deux (`torchShare` 0.5) et le plafond des pas physiques (0.05 s) ; GPU Resident Drawer sans gain
+  (754 draw calls, fil principal identique), laissé coupé. Objectifs non atteints : fil principal (rendu URP 5.4 ms, FixedUpdate
+  2.6 ms). Unity du projet art ouvert pendant la mesure.
+- **Texturé :** murs, sols, escaliers, ponts, arcs, colonnes, portes, poutres et ponts d'égout du kit ; torches, cage, grille,
+  tapisserie, chaîne, tuyau, échafaudage, colonnes ; caisses attrapables ; arène du boss (herse, leviers, treuil, plateformes) ;
+  goule ; traqueur ; bras FPS (renard, caméléon) ; lanterne de feu, barillet.
+- **Encore greybox :** props Armoire, Autel, Banc, Caisse (fixe), Chaise attrapable, Chaudron, CoffreDeco, Etagere, Gravats,
+  Lanterne, Lit, MurEffondre, Paille, PileDeCaisses, Poutre (prop), Ratelier, Sarcophage, Statue, Table, Tonneau (+ attrapable) ;
+  coffres, marchands, lustres ; volant ; orbe (v2 à intégrer) ; bras du koala et du hibou (personnages pas encore jouables) ;
+  pièces non magnétiques du parcours ; murs de l'arène du boss.
+- **Points ouverts :** écarts transmis à la DA (ART-HANDOFF) : clips des bras vides, rune de la caisse sur une seule face, droits
+  « à confirmer », mains du traqueur peu lisibles en « sombre », LOD de la goule ; **cachettes du traqueur** (options : reach 15 m
+  depuis 2.5 m du centre, tours et galeries d'angle jusqu'au plafond, ou portée 15.5 m) ; performance (fil principal).
+- **Piège noté :** changer de branche avec une scène ouverte bloque l'éditeur (boîte « scène modifiée ») : ouvrir une scène vide
+  avant.
+
+**Correctifs du rendu (`correctifs-rendu`, depuis `main` après la fusion de `rendu-integration`) — 2026-11-16, non poussée, à
+tester par l'utilisateur dans `integration-lot`.** Un commit par point.
+- **Phase enragée (`a2a3175`) :** ambiance « horreur » en fondu de 2 s au passage en Enragé (`AmbianceSettings.enraged`,
+  `enragedTransition`), retour à la remise à zéro ; 4 signaux lisibles à 50 m en horreur.
+- **1. Scintillement (`775d5fa`) :** couloirs et repaire coupés à la face extérieure du mur de la salle (les embrasures
+  doublaient murs, sols et plafonds), pont d'égout +2 cm, cadres et toits des annexes, passages en hauteur, galeries, seuils,
+  étagère, lit, gradins de la salle haute remplie (revalidée). Détecteur de faces confondues (triangles coplanaires de même
+  orientation qui se recouvrent, visibles) : 5 seeds, 1 034 → 43 à 53 cas par carte (≈ 2 000 → 16 m², même matériau uni).
+  Props de la DA étiquetés « DA » (`PropLibrary.BuildAll` les écrasait).
+- **2. Arcs (`a223b70`) :** collision de l'anneau (boîtes sur sa ligne médiane relevée sur le maillage) pour les joueurs et les
+  objets, le traqueur passe au travers (`StalkerPassesThrough`) ; piédroits = `SM_Colonne` réduite (1.05 × hauteur × 1.6 m)
+  avec collision. 5 seeds : 1 459 arcs conformes.
+- **3. Galeries (`6163965`) :** eau à 16 m sous le couloir (`MapLayoutSettings.galleryWaterDepth`), retour au palier
+  seulement au contact de l'eau (avant : dès 1.5 m) ; 20 seeds conformes (0 traction, 0 cachette).
+- **4. Lueur après la mort (`65accfd`) :** goule (yeux, gueule, corps, disque), volant et colonne du traqueur éteints à la mort,
+  à la remise à zéro et au recyclage.
+- **5. Distance de lecture (`ba7009c`) :** textes en monde lisibles jusqu'à 20 m, invisibles à 35 m, jamais au-delà de
+  0.8 × la fin du brouillard ; yeux des goules et des volants sous le seuil du bloom hors annonce.
+- **6. Ambiance « sombre » (`14882c5`) :** par défaut (0.03, brouillard 6 → 45 m) ; horreur passée à 5 → 35 m pour rester
+  la plus sombre ; colonne lisible à 50 m, annonce du bond à 30 m.
+- **7. Références des modules (`29d135b`) :** `docs/design/level/references-modules.md` à remplir ; placement inchangé.
+- **8. Lanterne (`5c733c2`) :** 15 m, 25°, brûlure 4 s à 12 PV/s (ticks 0.25 s, relancée sans cumul), « Braises » +2 s ;
+  1 goule ou 3 en 5 s (2 jets) à 5 et 15 m ; barillet 1 s seul, 5.5 s pour 3.
+- **Pièges notés :** `BuildRandomLevelScene` refait `Sortie_Arene` en greybox (relancer *Décor : poser les modèles livrés*)
+  et invalide les modules ; `PropLibrary.BuildAll` ne garde que les props étiquetés « DA ».
+
 **Intégration du rendu et du lot de modélisation (`rendu-integration`, depuis `main` après fusion de la PR #3) — 2026-11-16, à
 valider en Play Mode, non poussée.** Un commit par bloc.
 - **Bloc 0 (`87f0bc4` sur `main`, poussé) :** PR #3 fusionnée (commit de fusion, branche `art` gardée) : 193 fichiers dans

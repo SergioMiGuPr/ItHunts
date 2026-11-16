@@ -16,6 +16,9 @@ namespace ItHunts.Orbs
     {
         [Tooltip("Figé (cinématique) jusqu'à ce qu'on l'attrape : objet suspendu ou accroché.")]
         [SerializeField] private bool startsAnchored;
+        [Tooltip("Lueur sur tout le modèle au lieu du masque d'émission de son matériau (repli ; SM_Caisse : la rune n'est que sur " +
+                 "la face avant, invisible des autres côtés).")]
+        [SerializeField] private bool glowWholeModel;
 
         [Header("Durabilité et zone (0 : selon la masse, DamageSettings)")]
         [Tooltip("Nombre de lancers tenus avant de se casser (0 : selon la masse).")]
@@ -353,9 +356,9 @@ namespace ItHunts.Orbs
         /// <summary>Couleur d'émission (HDR) de tous ses rendus.</summary>
         public void SetGlow(Color color)
         {
-            _block.SetColor(EmissionId, color);
+            // Shader toon de la DA : copie du matériau (EmissionGlow) ; repli glowWholeModel : tout le modèle.
             foreach (Renderer r in _renderers)
-                r.SetPropertyBlock(_block);
+                ItHunts.Combat.EmissionGlow.Set(r, color, glowWholeModel);
         }
     }
 }

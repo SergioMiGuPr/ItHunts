@@ -6,7 +6,7 @@ namespace ItHunts.Settings
     /// Ambiance de rendu d'une scène (docs/art/RENDU.md § 3, décision D-067) : lumière ambiante, brouillard linéaire, lune, torches
     /// et lampes (le shader toon dessine l'îlot d'une lumière ponctuelle sur sa portée), fondu du contour. Un asset partagé par
     /// toutes les scènes de jeu et par le générateur de la carte aléatoire (SceneAmbiance) ; « Ambiance_Intermediaire » est
-    /// retenue, « Ambiance_Horreur » est prête pour une éventuelle phase enragée (non activée). Modifiable en Play Mode.
+    /// retenue, « Ambiance_Horreur » est prise en fondu au passage en Enragé (champ enraged). Modifiable en Play Mode.
     /// </summary>
     [CreateAssetMenu(fileName = "Ambiance_", menuName = "ItHunts/Réglages/Ambiance de rendu")]
     public sealed class AmbianceSettings : ScriptableObject
@@ -33,5 +33,46 @@ namespace ItHunts.Settings
         [Tooltip("Fondu du contour avec la distance (m), réglé avec le brouillard. Réglé dans M_Contours pour l'ambiance retenue.")]
         [Min(0f)] public float contourFadeStart = 40f;
         [Min(0.1f)] public float contourFadeEnd = 100f;
+
+        [Header("Textes en monde (sortie, salles, coffres, marchand)")]
+        [Tooltip("Entièrement lisibles jusqu'à cette distance (m), puis fondu.")]
+        [Min(0f)] public float labelFullDistance = 20f;
+        [Tooltip("Invisibles au-delà (m). Jamais au-delà de labelFogShare × la fin du brouillard (pas à travers le brouillard).")]
+        [Min(0.1f)] public float labelHiddenDistance = 35f;
+        [Range(0.2f, 1f)] public float labelFogShare = 0.8f;
+
+        /// <summary>Opacité d'un texte en monde à la distance d (m) : 1 jusqu'à full, 0 à hidden (et avant la fin du brouillard).</summary>
+        public static float LabelAlpha(float d, float full, float hidden, float fogEnd, float fogShare)
+        {
+            float gone = Mathf.Min(hidden, fogEnd * fogShare);
+            float start = Mathf.Min(full, gone - 0.5f);
+            return 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(start, gone, d));
+        }
+
+        [Header("Phase enragée")]
+        [Tooltip("Ambiance prise au passage en Enragé (fin du timer de la zone) ; aucune : l'ambiance ne change pas.")]
+        public AmbianceSettings enraged;
+        [Tooltip("Durée du fondu vers l'ambiance enragée (s), et retour à la remise à zéro de la zone.")]
+        [Min(0f)] public float enragedTransition = 2f;
+
+        /// <summary>Mélange de deux ambiances (t = 0 : a, 1 : b) dans into (couleurs, distances, intensités, portées).</summary>
+        public static void Lerp(AmbianceSettings a, AmbianceSettings b, float t, AmbianceSettings into)
+        {
+            t = Mathf.Clamp01(t);
+            into.ambient = Color.Lerp(a.ambient, b.ambient, t);
+            into.fogColor = Color.Lerp(a.fogColor, b.fogColor, t);
+            into.fogStart = Mathf.Lerp(a.fogStart, b.fogStart, t);
+            into.fogEnd = Mathf.Lerp(a.fogEnd, b.fogEnd, t);
+            into.moonIntensity = Mathf.Lerp(a.moonIntensity, b.moonIntensity, t);
+            into.torchIntensity = Mathf.Lerp(a.torchIntensity, b.torchIntensity, t);
+            into.torchRange = Mathf.Lerp(a.torchRange, b.torchRange, t);
+            into.lampIntensity = Mathf.Lerp(a.lampIntensity, b.lampIntensity, t);
+            into.lampRange = Mathf.Lerp(a.lampRange, b.lampRange, t);
+            into.contourFadeStart = Mathf.Lerp(a.contourFadeStart, b.contourFadeStart, t);
+            into.contourFadeEnd = Mathf.Lerp(a.contourFadeEnd, b.contourFadeEnd, t);
+            into.labelFullDistance = Mathf.Lerp(a.labelFullDistance, b.labelFullDistance, t);
+            into.labelHiddenDistance = Mathf.Lerp(a.labelHiddenDistance, b.labelHiddenDistance, t);
+            into.labelFogShare = Mathf.Lerp(a.labelFogShare, b.labelFogShare, t);
+        }
     }
 }

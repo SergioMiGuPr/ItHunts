@@ -64,19 +64,27 @@ namespace ItHunts.Artifacts
                 if (enemy != null)
                 {
                     enemy.NoteAttacker(shooterId);                       // coop : il se retourne contre le tireur (D-041)
-                    float taken = enemy.ApplyDamage(enemy.ProjectileDamage(cfg.damage), time, out bool killed);   // volant : un coup
+                    // Dégâts immédiats (0 par défaut : tout passe par la brûlure) ; un volant meurt quand même en un coup.
+                    float dmg = enemy.ProjectileDamage(cfg.damage > 0f ? cfg.damage : enemy.DiesOnProjectileHit ? 1f : 0f);
+                    bool killed = false;
+                    float taken = dmg > 0f ? enemy.ApplyDamage(dmg, time, out killed) : 0f;
                     hit.Damage = taken;
                     hit.Killed = killed;
                     if (!killed && cfg.burnDps > 0f)
-                        Burning.Apply(enemy, cfg.burnDps, cfg.burnDuration, shooterId);   // amélioration « Braises »
+                        Burning.Apply(enemy, cfg.burnDps, cfg.burnDuration, shooterId, cfg.burnTick, cfg.burnEffect, time);   // brûlure (point 8)
                     if (taken > 0f)
                         DamageEvents.Raise(new DamageEvent
                         {
                             Target = enemy, Damage = taken, Point = point, Killed = killed, Tier = HitTier.Moyen, Time = time,
                         });
                 }
-                else if (player.TryHurt(shooterId, cfg.damage, point, time))
-                    hit.Damage = cfg.damage;                             // tir ami seulement (FriendlyFire)
+                else
+                {
+                    // Tir ami seulement (FriendlyFire) : un joueur prend la brûlure entière d'un coup (pas de brûlure sur les joueurs).
+                    float friendly = cfg.damage > 0f ? cfg.damage : cfg.burnDps * cfg.burnDuration;
+                    if (player.TryHurt(shooterId, friendly, point, time))
+                        hit.Damage = friendly;
+                }
 
                 touched++;
                 hits?.Add(hit);

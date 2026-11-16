@@ -248,6 +248,99 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Ambiance_PhaseEnragee_FonduDe2sVersLHorreur_PuisRetour()
+        {
+            var mid = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Intermediaire.asset");
+            var horror = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Horreur.asset");
+            Assert.That(mid.enraged, Is.EqualTo(horror), "phase enragée : ambiance horreur");
+            Assert.That(mid.enragedTransition, Is.EqualTo(2f));
+
+            Color ambient = RenderSettings.ambientLight, fog = RenderSettings.fogColor;
+            float fs = RenderSettings.fogStartDistance, fe = RenderSettings.fogEndDistance;
+            bool fogOn = RenderSettings.fog;
+            FogMode fm = RenderSettings.fogMode;
+            var am = RenderSettings.ambientMode;
+            var go = new GameObject("ambiance (test)");
+            try
+            {
+                var sa = go.AddComponent<ItHunts.Level.SceneAmbiance>();
+                typeof(ItHunts.Level.SceneAmbiance).GetField("ambiance", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(sa, mid);
+                sa.StepEnraged(true, 1f);
+                Assert.That(sa.EnragedBlend, Is.EqualTo(0.5f).Within(1e-4f), "à mi-chemin après 1 s");
+                Assert.That(RenderSettings.fogEndDistance, Is.EqualTo((mid.fogEnd + horror.fogEnd) * 0.5f).Within(1e-3f));
+                sa.StepEnraged(true, 1.5f);
+                Assert.That(sa.EnragedBlend, Is.EqualTo(1f));
+                Assert.That(RenderSettings.ambientLight.r, Is.EqualTo(horror.ambient.r).Within(1e-4f));
+                Assert.That(ItHunts.Level.SceneAmbiance.Active.torchRange, Is.EqualTo(horror.torchRange).Within(1e-4f));
+                sa.StepEnraged(false, 2f);
+                Assert.That(sa.EnragedBlend, Is.EqualTo(0f), "remise à zéro de la zone : retour");
+                Assert.That(ItHunts.Level.SceneAmbiance.Active, Is.EqualTo(mid), "l'asset lui-même, réglable en Play Mode");
+                Assert.That(RenderSettings.fogEndDistance, Is.EqualTo(mid.fogEnd).Within(1e-3f));
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                RenderSettings.ambientLight = ambient; RenderSettings.fogColor = fog; RenderSettings.fogStartDistance = fs;
+                RenderSettings.fogEndDistance = fe; RenderSettings.fog = fogOn; RenderSettings.fogMode = fm; RenderSettings.ambientMode = am;
+            }
+        }
+
+        [Test]
+        public void TextesEnMonde_LisiblesA20m_InvisiblesA35m_JamaisATraversLeBrouillard()
+        {
+            float A(float d, float fogEnd) => ItHunts.Settings.AmbianceSettings.LabelAlpha(d, 20f, 35f, fogEnd, 0.8f);
+            Assert.That(A(5f, 85f), Is.EqualTo(1f));
+            Assert.That(A(20f, 85f), Is.EqualTo(1f).Within(1e-4f));
+            Assert.That(A(27.5f, 85f), Is.InRange(0.3f, 0.7f));
+            Assert.That(A(35f, 85f), Is.EqualTo(0f).Within(1e-4f));
+            Assert.That(A(60f, 85f), Is.EqualTo(0f));
+            Assert.That(A(25f, 30f), Is.EqualTo(0f).Within(1e-4f), "brouillard court : effacé avant sa fin (0.8 × 30 m)");
+            var ghoul = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");
+            var flyer = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FlyerSettings>("Assets/_Project/Settings/Flyer_Default.asset");
+            Assert.That(ghoul.eyeColor.maxColorComponent, Is.LessThan(1f), "yeux sous le seuil du bloom hors annonce");
+            Assert.That(flyer.eyeColor.maxColorComponent, Is.LessThan(1f));
+            Assert.That(ghoul.leapGlowColor.maxColorComponent, Is.GreaterThan(1f), "annonce : au-delà du seuil du bloom");
+            Assert.That(flyer.diveGlowColor.maxColorComponent, Is.GreaterThan(1f));
+        }
+
+        [Test]
+        public void Ambiance_SombreParDefaut_EntreIntermediaireEtHorreur()
+        {
+            var mid = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Intermediaire.asset");
+            var dark = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Sombre.asset");
+            var horror = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Horreur.asset");
+            Assert.That(dark.ambient.r, Is.EqualTo(0.03f).Within(1e-4f));
+            Assert.That(dark.fogStart, Is.EqualTo(6f));
+            Assert.That(dark.fogEnd, Is.EqualTo(45f));
+            Assert.That(dark.ambient.r, Is.LessThan(mid.ambient.r).And.GreaterThan(horror.ambient.r));
+            Assert.That(dark.fogEnd, Is.LessThan(mid.fogEnd).And.GreaterThan(horror.fogEnd));
+            Assert.That(dark.enraged, Is.EqualTo(horror), "phase enragée : horreur");
+            foreach (string scene in new[] { "Assets/Scenes/Test_Movement.unity", "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+                Assert.That(System.IO.File.ReadAllText(scene).Contains(AssetDatabase.AssetPathToGUID("Assets/_Project/Settings/Ambiance_Sombre.asset")), Is.True, scene);
+        }
+
+        [Test]
+        public void BrasDeLaDA_RenardEtCameleon_FpsArmsSurLeJoueur_CalqueFPS()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");
+            var arms = prefab.GetComponentInChildren<FpsArms>(true);
+            Assert.That(arms, Is.Not.Null, "bras de la DA posés par FpsArms");
+            var poses = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FpsArmPoseSet>("Assets/_Project/Settings/FpsArmPoses.asset");
+            Assert.That(poses.right.bones.Length, Is.EqualTo(17));
+            Assert.That(poses.right.Find("Pose_Attraper_1"), Is.Not.Null);
+            Assert.That(poses.right.Find("Pose_Attraper_1").fromClip, Is.True, "Pose_Attraper a des courbes");
+            foreach (string id in new[] { "renard", "cameleon" })
+            {
+                var c = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.CharacterDefinition>($"Assets/_Project/Settings/Personnages/Character_{id}.asset");
+                Assert.That(c.fpsArmRight, Is.Not.Null, id);
+                Assert.That(c.fpsArmLeft, Is.Not.Null, id);
+            }
+
+            var tags = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+            Assert.That(tags.FindProperty("m_RenderingLayers").GetArrayElementAtIndex(1).stringValue, Is.EqualTo("FPS"), "calque de lumière des mains");
+        }
+
+        [Test]
         public void Reglages_ParDefaut()
         {
             var fps = AssetDatabase.LoadAssetAtPath<FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");

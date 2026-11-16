@@ -34,6 +34,7 @@ namespace ItHunts.EditorTools
         public const string OutlineMaterialPath = "Assets/_Project/Art/Rendu/M_ContourMains.mat";
         public const string IntermediatePath = SettingsDir + "/Ambiance_Intermediaire.asset";
         public const string HorrorPath = SettingsDir + "/Ambiance_Horreur.asset";
+        public const string DarkPath = SettingsDir + "/Ambiance_Sombre.asset";
         public const string ContoursName = "ItHunts Contours";
         public static readonly string[] GameScenes =
             { "Assets/Scenes/Test_Movement.unity", "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity", "Assets/Scenes/Level_01_Aleatoire.unity" };
@@ -215,8 +216,8 @@ namespace ItHunts.EditorTools
             a = ScriptableObject.CreateInstance<AmbianceSettings>();
             a.ambient = new Color(0.012f, 0.013f, 0.020f);
             a.fogColor = new Color(0.004f, 0.005f, 0.009f);
-            a.fogStart = 6f;
-            a.fogEnd = 55f;
+            a.fogStart = 5f;
+            a.fogEnd = 35f;                                           // plus court que « sombre » (6 → 45 m)
             a.moonIntensity = 0.12f;
             a.torchIntensity = 1.4f;
             a.torchRange = 9f;
@@ -228,11 +229,43 @@ namespace ItHunts.EditorTools
             return a;
         }
 
-        /// <summary>Ambiance intermédiaire dans toutes les scènes de jeu ; torches réglées par l'ambiance.</summary>
+        /// <summary>
+        /// Ambiance « sombre » (correctifs-rendu point 6), entre « intermédiaire » et « horreur », par défaut : on voit tout juste la
+        /// salle où l'on se trouve. Ambiance 0.03, brouillard 6 → 45 m.
+        /// </summary>
+        public static AmbianceSettings Dark()
+        {
+            var a = AssetDatabase.LoadAssetAtPath<AmbianceSettings>(DarkPath);
+            if (a != null)
+                return a;
+            a = ScriptableObject.CreateInstance<AmbianceSettings>();
+            a.ambient = new Color(0.030f, 0.032f, 0.045f);
+            a.fogColor = new Color(0.007f, 0.008f, 0.015f);
+            a.fogStart = 6f;
+            a.fogEnd = 45f;
+            a.moonIntensity = 0.18f;
+            a.torchIntensity = 1.6f;
+            a.torchRange = 10f;
+            a.lampIntensity = 1.6f;
+            a.lampRange = 11.5f;
+            a.contourFadeStart = 30f;
+            a.contourFadeEnd = 80f;
+            a.enraged = Horror();
+            AssetDatabase.CreateAsset(a, DarkPath);
+            return a;
+        }
+
+        /// <summary>Ambiance « sombre » dans toutes les scènes de jeu (phase enragée : horreur) ; torches réglées par l'ambiance.</summary>
         public static string Ambiance()
         {
             AmbianceSettings mid = Intermediate();
-            Horror();
+            if (mid.enraged == null)
+            {
+                mid.enraged = Horror();                               // phase enragée : fondu de 2 s vers l'horreur
+                EditorUtility.SetDirty(mid);
+                AssetDatabase.SaveAssets();
+            }
+            AmbianceSettings dark = Dark();
             // Torche : sa lumière suit l'ambiance (AmbianceLight).
             string torch = SettingsDir.Replace("Settings", "Prefabs") + "/Props/Prop_Torche.prefab";
             GameObject t = PrefabUtility.LoadPrefabContents(torch);
@@ -255,7 +288,7 @@ namespace ItHunts.EditorTools
             foreach (string path in GameScenes)
             {
                 var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
-                AddTo(AssetDatabase.LoadAssetAtPath<AmbianceSettings>(IntermediatePath));
+                AddTo(dark);
                 EditorSceneManager.SaveScene(scene);
                 n++;
             }
@@ -263,14 +296,14 @@ namespace ItHunts.EditorTools
             if (!string.IsNullOrEmpty(current))
                 EditorSceneManager.OpenScene(current, OpenSceneMode.Single);
             AssetDatabase.SaveAssets();
-            return $"ambiance intermédiaire dans {n} scènes (Ambiance_Horreur prête, non activée)";
+            return $"ambiance sombre dans {n} scènes (Ambiance_Horreur en phase enragée)";
         }
 
         /// <summary>Ambiance de la scène ouverte (constructeurs de scène) : objet SceneAmbiance et réglages de la scène.</summary>
         public static void AddTo(AmbianceSettings a)
         {
             if (a == null)
-                a = Intermediate();
+                a = Dark();                                           // par défaut : « sombre » (correctifs-rendu point 6)
             var amb = Object.FindFirstObjectByType<SceneAmbiance>(FindObjectsInactive.Include);
             if (amb == null)
                 amb = new GameObject("Ambiance de rendu (D-067)").AddComponent<SceneAmbiance>();

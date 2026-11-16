@@ -104,7 +104,11 @@ namespace ItHunts.Enemies
         private ItHunts.Orbs.Grabbable _grabbable;
 
         private void OnEnable() => All.Add(this);
-        private void OnDisable() => All.Remove(this);
+        private void OnDisable()
+        {
+            All.Remove(this);
+            ClearSignals();                                               // recyclée par la réserve : rien ne reste allumé
+        }
 
         private void Awake()
         {
@@ -167,6 +171,7 @@ namespace ItHunts.Enemies
             _nextLeap = 0f;
             _nextContact = 0f;
             SetMode(GhoulMode.Poste);
+            ClearSignals();
         }
 
         private void SetMode(GhoulMode m)
@@ -180,8 +185,13 @@ namespace ItHunts.Enemies
 
         private void FixedUpdate()
         {
-            if (settings == null || (_damageable != null && _damageable.Dead))
+            if (settings == null)
                 return;
+            if (_damageable != null && _damageable.Dead)
+            {
+                ClearSignals();                                           // morte pendant l'annonce : yeux, gueule, corps et disque éteints
+                return;
+            }
             if (ZoneState.Asleep && !_body.Busy)
             {
                 _move.Speed = 0f;                                          // salle de départ pas encore quittée (D-048)
@@ -1070,8 +1080,28 @@ namespace ItHunts.Enemies
         /// Lueur de l'annonce du bond (bloc 4) : yeux et gueule en rouge HDR, corps teinté de rouge ; lisible à 30 m et plus, sur la
         /// goule et pas seulement au sol. La gueule (greybox) est ajoutée sous la tête, sombre au repos.
         /// </summary>
+        private Renderer _model;
+        private bool _modelChecked;
+
         private void LeapGlow(bool on)
         {
+            // Modèle de la DA (SM_Goule, lot du 2026-11-16) : yeux et lueur entre les dents par le masque d'émission de M_Goule,
+            // sans teinter le corps (le masque suffit) ; la lueur passe par Damageable.ExtraGlow (émission de tous ses rendus).
+            if (!_modelChecked)
+            {
+                _modelChecked = true;
+                _model = GetComponentsInChildren<Renderer>(true).FirstOrDefault(r => r.name.StartsWith("SM_Goule"));
+            }
+
+            if (_model != null)
+            {
+                _glowShown = on;
+                _glowApplied = true;
+                if (_damageable != null && settings != null)
+                    _damageable.ExtraGlow = on ? settings.leapGlowColor : Color.black;
+                return;
+            }
+
             if (_glowParts == null)
             {
                 var eyes = GetComponentsInChildren<Renderer>(true).Where(r => r.name.StartsWith("Oeil")).ToList();
@@ -1125,9 +1155,34 @@ namespace ItHunts.Enemies
             }
         }
 
+        private bool _signalsOn = true;                                  // inconnu au départ : la première remise à zéro éteint tout
+
+        /// <summary>
+        /// Éteint les signaux de l'annonce (correctifs-rendu point 4) : à la mort, à la remise à zéro et au recyclage. Avant, une goule
+        /// morte pendant l'annonce gardait ses yeux rouges et son disque (sa mise à jour s'arrête à la mort).
+        /// </summary>
+        public void ClearSignals()
+        {
+            if (!_signalsOn)
+                return;
+            _signalsOn = false;
+            if (telegraph != null)
+                telegraph.enabled = false;
+            if (settings != null)
+                LeapGlow(false);
+            else if (_damageable != null)
+                _damageable.ExtraGlow = Color.black;
+        }
+
+        /// <summary>Signaux de l'annonce allumés (tests, mesures).</summary>
+        public bool SignalsOn => (telegraph != null && telegraph.enabled) || (_glowApplied && _glowShown)
+            || (_damageable != null && _damageable.ExtraGlow.maxColorComponent > 0.001f);
+
         private void UpdateVisual()
         {
             bool announcing = Mode == GhoulMode.Annonce;
+            if (announcing)
+                _signalsOn = true;
             LeapGlow(announcing && (_damageable == null || !_damageable.Dead));
             if (telegraph != null)
                 telegraph.enabled = announcing && (_damageable == null || !_damageable.Dead);

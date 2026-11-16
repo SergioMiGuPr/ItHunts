@@ -201,7 +201,7 @@ namespace ItHunts.EditorTools
             var runState = new GameObject("État de la run").AddComponent<RunState>();
             SetRef(runState, "pool", LoadOrCreate<ArtifactPool>(PoolPath));
             SetRef(runState, "characters", CharacterSetup.Roster());    // personnages (D-064)
-            RenderSetup.AddTo(null);                                     // ambiance de rendu intermédiaire (D-067)
+            RenderSetup.AddTo(null);                                     // ambiance de rendu par défaut : sombre (D-067, correctifs-rendu)
             SetRef(runState, "upgrades", UpgradePoolAsset());
             new GameObject("Minimap (brouillard de guerre)").AddComponent<MapDiscovery>().gameObject.AddComponent<ItHunts.Hud.MinimapHud>();
             new GameObject("Mesure de performance du niveau (build, -ithunts-perf-level)").AddComponent<ItHunts.Debugging.LevelPerfProbe>();
@@ -274,7 +274,7 @@ namespace ItHunts.EditorTools
                 s.width = 7f;
                 s.height = 14f;
                 s.eyeHeight = 12.5f;
-                s.shoulderHeight = 12f;
+                s.shoulderHeight = 11.1f;
                 s.handReach = 15f;
                 s.sightRange = 60f;
                 s.soundRange = 60f;
@@ -1167,6 +1167,7 @@ namespace ItHunts.EditorTools
             go.transform.localScale = Vector3.one * size;
             go.GetComponent<MeshRenderer>().sharedMaterial = mass >= 40f ? _heavy : _crate;
             MakeGrabbable(go, mass, false);
+            DecorModelInstaller.ApplyCrateModel(go);                     // caisse de la DA (SM_Caisse)
         }
 
         private static void Lustre(string name, Vector3 at, float ceiling, Transform parent)
@@ -1241,6 +1242,7 @@ namespace ItHunts.EditorTools
             SetRef(ghoul, "settings", _ghoul);
             SetRef(ghoul, "visual", visual);
             SetRef(ghoul, "telegraph", telegraph);
+            DecorModelInstaller.InstallGhoul(root);                     // modèle de la DA (SM_Goule) à la place de la greybox
         }
 
         /// <summary>
@@ -1413,6 +1415,7 @@ namespace ItHunts.EditorTools
             predicted.SetActive(false);
             SetRef(stalker, "predictedMarker", predicted.transform);
             root.AddComponent<StalkerAudio>();
+            DecorModelInstaller.InstallStalker(root);                    // pièces de la DA (corps, bras, mains)
         }
     }
 }

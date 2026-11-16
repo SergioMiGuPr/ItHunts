@@ -57,5 +57,5 @@ MonoBehaviour:
   maxHuntingTotal: 12
   aggroLoseDistance: 50
   aggroLoseTime: 5
-  eyeColor: {r: 3, g: 2, b: 0.4, a: 1}
+  eyeColor: {r: 0.5, g: 0.33, b: 0.07, a: 1}
   telegraphColor: {r: 4, g: 0.4, b: 0.2, a: 1}
