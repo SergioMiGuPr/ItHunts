@@ -35,8 +35,13 @@ namespace ItHunts.EditorTools
         public static string Build()
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-            AssetDatabase.DeleteAsset(ScenePath);
-            if (!AssetDatabase.CopyAsset(Source, ScenePath))
+            // Le fichier de la scène est remplacé, son .meta (et donc son identifiant, référencé par la liste du build) est gardé.
+            if (System.IO.File.Exists(ScenePath))
+            {
+                System.IO.File.Copy(Source, ScenePath, true);
+                AssetDatabase.ImportAsset(ScenePath, ImportAssetOptions.ForceSynchronousImport);
+            }
+            else if (!AssetDatabase.CopyAsset(Source, ScenePath))
                 return "copie de Test_Arena impossible";
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             GameObject[] roots = scene.GetRootGameObjects();
@@ -115,9 +120,8 @@ namespace ItHunts.EditorTools
         private static void AddToBuild()
         {
             var scenes = EditorBuildSettings.scenes.ToList();
-            if (scenes.Any(s => s.path == ScenePath))
-                return;
-            scenes.Add(new EditorBuildSettingsScene(ScenePath, true));
+            scenes.RemoveAll(s => s.path == ScenePath);
+            scenes.Add(new EditorBuildSettingsScene(new GUID(AssetDatabase.AssetPathToGUID(ScenePath)), true));
             EditorBuildSettings.scenes = scenes.ToArray();
         }
 
@@ -277,6 +281,20 @@ namespace ItHunts.EditorTools
 
         private static Vector3 Ground(float x, float z) => new Vector3(x, 0f, z);
 
+        /// <summary>Socle (dalle de 0.25 m) sous un ennemi de la vitrine ; renvoie le dessus.</summary>
+        private static Vector3 Socle(Vector3 at, float radius)
+        {
+            GameObject s = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            s.name = "Socle";
+            s.transform.SetParent(_root, false);
+            s.transform.position = at + Vector3.up * 0.125f;
+            s.transform.localScale = new Vector3(radius * 2f, 0.125f, radius * 2f);
+            var mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Greybox/Module_Pierre.mat");
+            if (mat != null)
+                s.GetComponent<Renderer>().sharedMaterial = mat;
+            return at + Vector3.up * 0.25f;
+        }
+
         private static string Ghouls(SerializedObject so, KitSet kit)
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Niveau/Goule.prefab");
@@ -289,6 +307,8 @@ namespace ItHunts.EditorTools
             for (int i = 0; i < states.Count; i++)
             {
                 Vector3 at = Ground(30f + i * 4.5f, 10f);
+                if (states[i] != VitrineGhoulState.Escalade)
+                    at = Socle(at, 1.6f);                                        // chaque animation sur son socle
                 var g = (GameObject)PrefabUtility.InstantiatePrefab(prefab, _root);
                 g.name = "Goule : " + states[i];
                 g.transform.SetPositionAndRotation(at, Quaternion.Euler(0f, 180f, 0f));
@@ -382,7 +402,7 @@ namespace ItHunts.EditorTools
             list.arraySize = poses.Count;
             for (int i = 0; i < poses.Count; i++)
             {
-                Vector3 at = Ground(20f + i * 22f, 70f);
+                Vector3 at = Socle(Ground(20f + i * 22f, 70f), 9f);
                 var s = Object.Instantiate(template.gameObject, _root);
                 s.name = "Traqueur : " + poses[i];
                 s.transform.SetPositionAndRotation(at, Quaternion.Euler(0f, 180f, 0f));
@@ -396,17 +416,23 @@ namespace ItHunts.EditorTools
 
             // Enclos : un traqueur qui poursuit vraiment le joueur (activable dans le panneau).
             Vector3 c = Ground(60f, 140f);
+            // Murs de 16 m (plus haut que lui, 14 m) tout autour ; le joueur entre par une porte de 4 × 3 m au sud, trop basse pour le
+            // traqueur (son agent fait 3.5 m de haut) : il reste dedans.
+            const float wallH = 16f, door = 4f, doorH = 3f;
             foreach ((Vector3 p, Vector3 sz) in new[]
                      {
-                         (c + new Vector3(0f, 1.5f, 30f), new Vector3(80f, 3f, 1f)), (c + new Vector3(0f, 1.5f, -30f), new Vector3(30f, 3f, 1f)),
-                         (c + new Vector3(-40f, 1.5f, 0f), new Vector3(1f, 3f, 60f)), (c + new Vector3(40f, 1.5f, 0f), new Vector3(1f, 3f, 60f)),
+                         (c + new Vector3(0f, wallH * 0.5f, 30f), new Vector3(81f, wallH, 1f)),
+                         (c + new Vector3(-(20f + door * 0.25f), wallH * 0.5f, -30f), new Vector3(40f - door * 0.5f, wallH, 1f)),
+                         (c + new Vector3(20f + door * 0.25f, wallH * 0.5f, -30f), new Vector3(40f - door * 0.5f, wallH, 1f)),
+                         (c + new Vector3(0f, doorH + (wallH - doorH) * 0.5f, -30f), new Vector3(door, wallH - doorH, 1f)),
+                         (c + new Vector3(-40f, wallH * 0.5f, 0f), new Vector3(1f, wallH, 61f)), (c + new Vector3(40f, wallH * 0.5f, 0f), new Vector3(1f, wallH, 61f)),
                      })
-                KitBuild.Box(_root, "Enclos du traqueur", p, sz, KitBuild.Kind.Mur, kit);
+                KitBuild.Box(_root, "Enclos du traqueur (16 m)", p, sz, KitBuild.Kind.Mur, kit);
             var chaser = Object.Instantiate(template.gameObject, _root);
             chaser.name = "Traqueur de l'enclos (poursuite)";
             chaser.transform.SetPositionAndRotation(c + new Vector3(0f, 0f, 15f), Quaternion.Euler(0f, 180f, 0f));
             so.FindProperty("chaser").objectReferenceValue = chaser.GetComponent<Stalker>();
-            Label(c + new Vector3(0f, 3.5f, -31f), "Enclos : le traqueur te poursuit vraiment (F1 : poursuite)", Title, 0.6f);
+            Label(c + new Vector3(0f, 4.2f, -31f), "Enclos : le traqueur te poursuit vraiment (F1 : poursuite) ; entrée par la porte", Title, 0.6f);
             return $"traqueurs : {poses.Count} poses + enclos";
         }
 
