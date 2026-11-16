@@ -12,6 +12,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Koala_Couture
+    second: {fileID: 2100000, guid: 74223d8bb9a9e2347a6b38132b15d317, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_BrasFPS_Koala_Cuir
     second: {fileID: 2100000, guid: 00305cf832c41ac4b8bf3f77095ec575, type: 2}
   - first:

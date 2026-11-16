@@ -17,6 +17,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Couture
+    second: {fileID: 2100000, guid: 58bd245316dbf6746a9a88332021b9f0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_BrasFPS_Renard_Cuir
     second: {fileID: 2100000, guid: 4ab11520f4b7fba42966b52b754eabf1, type: 2}
   - first:
@@ -49,6 +54,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_BrasFPS_Renard_Peau
     second: {fileID: 2100000, guid: 377222fc2278f7b48a8eea8164bcc060, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Poil
+    second: {fileID: 2100000, guid: 5fea3eae57e35c8429470c4431fdd5f7, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule

@@ -12,8 +12,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Couture
+    second: {fileID: 2100000, guid: d5ee8956da24d824a949d30b8f9ab1e0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_BrasFPS_Cameleon_Cuir
     second: {fileID: 2100000, guid: 3c0b6011efbd0164fa75e97258102b1f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Ecaille
+    second: {fileID: 2100000, guid: f315f37a1c88f984ba9467954e18ec18, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule

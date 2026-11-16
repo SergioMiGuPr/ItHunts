@@ -173,6 +173,13 @@ Noms identiques dans tous les FBX d'un même objet (clips Unity « `<Armature>|<
 
 ### Bras FPS (`SK_BrasFPS_<Perso>_D` / `_G`, armature `BrasFPS`, 17 os)
 
+**Détail (2026-11-16)** : mains et avant-bras repris d'après `fiches/planche_bras_fps_v01.png` (doigts arrondis à
+phalanges renflées et bout rond, gant sans doigts arrêté sur un bourrelet, coutures en pointillés sur le dos de la main et la
+manchette, paume arrondie et jointures, manche à plis en biais ; fourrure rousse (renard), collerette doublée (koala),
+bandes d'écailles (caméléon, hibou)) : 2 874 à 3 834 triangles par bras (budget 6 000) ; **même squelette, mêmes noms
+d'os, mêmes 14 clips**. Nouveaux aplats `M_BrasFPS_<Perso>_Couture`, `_Poil`, `_Ecaille` (`Materials/FPS/BrasFPS/`). Planche
+`rendus/Lot2/BrasFPS_Detail_avant_apres.jpg`.
+
 **Convention des poses de flottement** (rien n'est tenu, l'orbe et l'artefact flottent au-dessus de la paume) : dans
 `Pose_Repos`, `Pose_OrbePaume`, `Pose_Pistolet`, `Pose_PriseAnneau` et leurs boucles, l'avant-bras est tourné de 180° :
 **la paume regarde +Y du repère de la main** (`Socket_Poignet`), là où FpsView pose déjà l'orbe (`orbInHand` (0, 0.06,

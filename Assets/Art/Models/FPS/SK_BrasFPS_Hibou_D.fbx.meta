@@ -22,6 +22,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Hibou_Ecaille
+    second: {fileID: 2100000, guid: 6cbcf4e65ae49f3449834584ab8f30c4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_BrasFPS_Hibou_Griffe
     second: {fileID: 2100000, guid: 595a864250f4c0b4f8de1682261345aa, type: 2}
   - first:
