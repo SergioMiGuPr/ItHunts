@@ -160,6 +160,13 @@ namespace ItHunts.Combat
         public Color ExtraGlow { get; set; } = Color.black;
 
         /// <summary>
+        /// Mort animée (goule de la DA) : à la mort, les collisions s'éteignent tout de suite, les rendus après ce délai (s) ; 0 :
+        /// tout disparaît d'un coup.
+        /// </summary>
+        public float HideDelay { get; set; }
+        private float _hideAt;
+
+        /// <summary>
         /// Lueur propre à certains rendus (mains du traqueur : griffes ivoire, alors que ses pupilles sont rouges) ; remplace
         /// ExtraGlow pour eux. Le coup reçu et l'étourdissement l'emportent toujours.
         /// </summary>
@@ -167,6 +174,15 @@ namespace ItHunts.Combat
 
         private void Update()
         {
+            if (_hideAt > 0f && Time.time >= _hideAt)
+            {
+                _hideAt = 0f;
+                if (_health.Dead && _renderers != null)
+                    foreach (Renderer r in _renderers)
+                        if (r != null)
+                            r.enabled = false;
+            }
+
             if (_health.Dead && respawns && HealthState.TryRespawn(ref _health, Time.time, settings != null ? settings.respawnDelay : 3f))
             {
                 if (_body != null)
@@ -205,6 +221,9 @@ namespace ItHunts.Combat
             foreach (Collider c in _colliders)
                 if (c != null)
                     c.enabled = alive;
+            _hideAt = !alive && HideDelay > 0f ? Time.time + HideDelay : 0f;
+            if (!alive && HideDelay > 0f)
+                return;                                                   // le corps reste visible le temps de sa mort
             foreach (Renderer r in _renderers)
                 if (r != null)
                     r.enabled = alive;

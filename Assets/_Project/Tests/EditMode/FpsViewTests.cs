@@ -371,9 +371,18 @@ namespace ItHunts.Tests
             Assert.That(lod.x, Is.GreaterThan(lod.y));
             Assert.That(lod.y, Is.GreaterThan(lod.z));
             Assert.That(lod.z, Is.GreaterThan(0f));
-            // Mêmes distances de bascule que les seuils de la DA pour 1.1 m (0.20 / 0.08 / 0.01).
-            Assert.That(lod.x / ghoul.BodyScale, Is.EqualTo(0.20f).Within(0.01f));
-            Assert.That(lod.y / ghoul.BodyScale, Is.EqualTo(0.08f).Within(0.005f));
+            // Seuils conseillés par la DA pour la goule de 1.8 m (PR #6) : LOD1 à ≈ 5 m, LOD2 à ≈ 13 m, cachée au-delà de ≈ 105 m.
+            Assert.That(lod.x, Is.EqualTo(0.25f).Within(1e-3f));
+            Assert.That(lod.y, Is.EqualTo(0.10f).Within(1e-3f));
+            Assert.That(lod.z, Is.EqualTo(0.012f).Within(1e-4f));
+            // Modèle animé : SK_Goule, Animator et son contrôleur (9 clips), trois LOD skinnés.
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Niveau/Goule.prefab");
+            var anim = prefab.GetComponentInChildren<Animator>(true);
+            Assert.That(anim, Is.Not.Null);
+            Assert.That(anim.runtimeAnimatorController, Is.Not.Null);
+            Assert.That(anim.runtimeAnimatorController.animationClips.Length, Is.EqualTo(9));
+            Assert.That(prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length, Is.EqualTo(3), "trois LOD qui suivent le squelette");
+            Assert.That(ghoul.contactImpactDelay, Is.EqualTo(0.24f).Within(1e-4f), "dégâts à l'impact du clip Goule_Coup");
             foreach (string scene in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
             {
                 string text = System.IO.File.ReadAllText(scene);

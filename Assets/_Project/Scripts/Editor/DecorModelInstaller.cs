@@ -172,7 +172,7 @@ namespace ItHunts.EditorTools
         // ---------- Goule : SM_Goule (lot du 2026-11-16) ----------
 
         public const string GhoulPrefab = "Assets/_Project/Prefabs/Niveau/Goule.prefab";
-        public const string GhoulModel = "Assets/Art/Models/Ennemis/SM_Goule.fbx";
+        public const string GhoulModel = "Assets/Art/Models/Ennemis/SK_Goule.fbx";       // gréée et animée (PR #6)
 
         /// <summary>
         /// Goule (fiche § 4 ter) : SM_Goule en (0, 0, 0) sous « Corps (visuel) », rotation nulle ; la capsule, la tête et les yeux
@@ -195,8 +195,11 @@ namespace ItHunts.EditorTools
                 Object.DestroyImmediate(c);
             foreach (Renderer r in inst.GetComponentsInChildren<Renderer>(true))
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            foreach (SkinnedMeshRenderer r in inst.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                r.updateWhenOffscreen = false;
+            EnemyAnimationSetup.AddAnimator(inst, EnemyAnimationSetup.GhoulController);
             Bounds b = LocalBounds(inst.transform, root.transform);
-            return $"goule : SM_Goule {b.size.x:0.00} × {b.size.y:0.00} × {b.size.z:0.00} m, pied à {b.min.y:0.00} m";
+            return $"goule : SK_Goule {b.size.x:0.00} × {b.size.y:0.00} × {b.size.z:0.00} m, pied à {b.min.y:0.00} m";
         }
 
         [MenuItem("ItHunts/Décor : goule de la DA (SM_Goule)")]

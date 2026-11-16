@@ -131,6 +131,112 @@ namespace ItHunts.Enemies
             if (telegraph != null)
                 telegraph.enabled = false;
             ApplySize();
+            _anim = visual != null ? visual.GetComponentInChildren<Animator>(true) : GetComponentInChildren<Animator>(true);
+            if (_anim != null && _damageable != null && settings != null)
+                _damageable.HideDelay = settings.deathVisualTime;
+        }
+
+        // ---------- Animations (SK_Goule, PR #6) ----------
+
+        private Animator _anim;
+        private string _clip;
+        private GhoulMode _animMode;
+        private float _landedAt = -9f, _strikeAt = -9f, _crouch = 1f;
+        private string _forcedClip;
+
+        /// <summary>Clip joué (tests, vitrine) ; null sans modèle animé.</summary>
+        public string Clip => _clip;
+        public bool Animated => _anim != null;
+        /// <summary>Accroupissement dans un passage bas (1 : debout).</summary>
+        public float Crouch => _crouch;
+
+        /// <summary>Vitrine : impose un clip (Goule_Coup, Goule_Reception…) ; null rend la main à l'état.</summary>
+        public void ForceClip(string clip) => _forcedClip = clip;
+
+        /// <summary>Vitrine : rejoue un clip depuis le début (coup, annonce).</summary>
+        public void RestartClip(string clip)
+        {
+            _forcedClip = clip;
+            _clip = clip;
+            if (_anim != null && _anim.isActiveAndEnabled)
+                _anim.Play(clip, 0, 0f);
+        }
+
+        private void Play(string clip, float fade = 0.12f, float speed = 1f)
+        {
+            if (_anim == null || !_anim.isActiveAndEnabled)
+                return;
+            _anim.speed = speed;
+            if (_clip == clip)
+                return;
+            _clip = clip;
+            _anim.CrossFadeInFixedTime(clip, fade, 0);
+        }
+
+        /// <summary>
+        /// Clip selon l'état : mort, étourdie, annonce (calée sur leapTelegraph), bond (dernière image tenue en vol), réception
+        /// (0.33 s après l'atterrissage), escalade, coup (au contact), course (lecture selon la vitesse), repos.
+        /// </summary>
+        private void Animate()
+        {
+            if (_anim == null || settings == null)
+                return;
+            float now = Time.time;
+            if (_animMode == GhoulMode.Bond && Mode != GhoulMode.Bond)
+                _landedAt = now;
+            _animMode = Mode;
+            if (_forcedClip != null)
+            {
+                Play(_forcedClip);
+                return;
+            }
+
+            bool dead = _damageable != null && _damageable.Dead;
+            bool stunned = _body != null && (_body.Stunned || _body.Held);       // tenue : elle se débat
+            float speed = _rb != null ? new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.z).magnitude : 0f;
+            if (_move.Speed > speed)
+                speed = _move.Speed;
+            if (dead)
+                Play("Goule_Mort", 0.08f);
+            else if (stunned)
+                Play("Goule_Etourdie", 0.1f);
+            else if (Mode == GhoulMode.Annonce)
+                Play("Goule_Annonce", 0.05f, 0.3f / Mathf.Max(0.05f, settings.leapTelegraph));
+            else if (Mode == GhoulMode.Bond)
+                Play("Goule_Bond", 0.05f);
+            else if (Mode == GhoulMode.Mur)
+                Play("Goule_Escalade", 0.1f);
+            else if (now - _landedAt < 0.33f)
+                Play("Goule_Reception", 0.04f);
+            else if (now - _strikeAt < 0.47f)
+                Play("Goule_Coup", 0.06f);
+            else if (speed > 0.5f)
+                Play("Goule_Course", 0.15f, Mathf.Clamp(speed / Mathf.Max(0.1f, settings.runSpeed), 0.3f, 2f));
+            else
+                Play("Goule_Repos", 0.2f);
+        }
+
+        /// <summary>
+        /// Passage bas (retours du lot) : plafond au-dessus d'elle plus bas que sa taille : elle se baisse (visuel et capsule)
+        /// jusqu'à minCrouch, comme le traqueur sous un pont. Le NavMesh des goules la laisse passer partout où passait la goule de
+        /// 1.1 m (agent de 1.2 m).
+        /// </summary>
+        private void UpdateCrouch(float dt)
+        {
+            if (settings == null || _rb == null)
+                return;
+            float full = GhoulSettings.ModelHeight * settings.BodyScale;
+            float target = 1f;
+            if (Mode != GhoulMode.Mur && Physics.Raycast(_rb.position + Vector3.up * 0.3f, Vector3.up, out RaycastHit hit, full, ~0, QueryTriggerInteraction.Ignore)
+                && !hit.collider.transform.IsChildOf(transform))
+                target = Mathf.Clamp((hit.distance + 0.3f - 0.05f) / full, settings.minCrouch, 1f);
+            _crouch = dt <= 0f ? target : Mathf.MoveTowards(_crouch, target, settings.crouchRate * dt);
+            if (_capsule != null)
+            {
+                float h = full * _crouch;
+                _capsule.height = Mathf.Max(h, _capsule.radius * 2f);
+                _capsule.center = new Vector3(0f, _capsule.height * 0.5f, 0f);
+            }
         }
 
         private float _sizeApplied = -1f;
@@ -151,9 +257,9 @@ namespace ItHunts.Enemies
             _sizeApplied = s;
             if (_capsule != null)
             {
-                _capsule.height = GhoulSettings.ModelHeight * s;
+                _capsule.height = GhoulSettings.ModelHeight * s * _crouch;
                 _capsule.center = new Vector3(0f, _capsule.height * 0.5f, 0f);
-                _capsule.radius = Mathf.Min(settings.bodyRadius, _capsule.height * 0.5f);
+                _capsule.radius = Mathf.Min(settings.bodyRadius, GhoulSettings.ModelHeight * s * 0.5f);
             }
 
             if (visual != null)
@@ -1075,16 +1181,36 @@ namespace ItHunts.Enemies
             return seen;
         }
 
+        private PlayerHealth _strikeTarget;
+
+        /// <summary>
+        /// Coup au contact (Goule_Coup) : au contact, elle arme son coup ; les dégâts tombent à l'impact du clip (contactImpactDelay,
+        /// 0.24 s) si le joueur est encore à portée (un peu de marge), au plus une fois par contactInterval.
+        /// </summary>
         private void ContactDamage(float now)
         {
+            if (_strikeTarget != null)
+            {
+                if (now - _strikeAt < settings.contactImpactDelay)
+                    return;
+                PlayerHealth target = _strikeTarget;
+                _strikeTarget = null;
+                if (target != null && !target.Dead && Gap(target) <= settings.contactRange + 0.4f)
+                    target.TakeEnemyDamage(settings.contactDamage, target.Center, now);
+                return;
+            }
+
             if (now < _nextContact)
                 return;
             foreach (PlayerHealth p in PlayerHealth.All)
             {
                 if (p == null || p.Dead || Gap(p) > settings.contactRange)
                     continue;
-                if (p.TakeEnemyDamage(settings.contactDamage, p.Center, now))
-                    _nextContact = now + settings.contactInterval;
+                _strikeAt = now;
+                _strikeTarget = p;
+                _nextContact = now + settings.contactInterval;
+                if (settings.contactImpactDelay <= 0f)
+                    ContactDamage(now);
                 break;
             }
         }
@@ -1231,6 +1357,8 @@ namespace ItHunts.Enemies
         /// </summary>
         public void ShowPose(GhoulMode mode, float modeAge, Vector3 climbFrom, Vector3 climbTo, float squash = 1f)
         {
+            if (_anim != null)
+                squash = 1f;                                                  // le clip montre la réception
             Mode = mode;
             _modeSince = Time.time - modeAge;
             _climbFrom = climbFrom;
@@ -1248,11 +1376,16 @@ namespace ItHunts.Enemies
             LeapGlow(announcing && (_damageable == null || !_damageable.Dead));
             if (telegraph != null)
                 telegraph.enabled = announcing && (_damageable == null || !_damageable.Dead);
+            UpdateCrouch(Time.inFixedTimeStep ? Time.fixedDeltaTime : Time.deltaTime);
+            Animate();
             if (visual != null)
             {
-                float crouch = announcing ? Mathf.Lerp(1f, 0.6f, Mathf.Clamp01((Time.time - _modeSince) / Mathf.Max(0.01f, settings.leapTelegraph)))
+                // Modèle animé : l'accroupissement de l'annonce et l'étirement du bond sont dans les clips ; le code ne garde que la
+                // bascule sur les murs et le passage bas.
+                float crouch = _anim != null ? 1f
+                    : announcing ? Mathf.Lerp(1f, 0.6f, Mathf.Clamp01((Time.time - _modeSince) / Mathf.Max(0.01f, settings.leapTelegraph)))
                     : Mode == GhoulMode.Bond ? 1.15f : 1f;
-                visual.localScale = new Vector3(1f / Mathf.Sqrt(crouch), crouch, 1f / Mathf.Sqrt(crouch));
+                visual.localScale = new Vector3(1f / Mathf.Sqrt(crouch), crouch * _crouch, 1f / Mathf.Sqrt(crouch));
                 // Sur un mur : le corps se plaque contre la paroi (tête vers le haut en montant, vers le bas en descendant).
                 bool wall = Mode == GhoulMode.Mur;
                 float pitch = wall ? (_climbTo.y >= _climbFrom.y ? -80f : 80f) : 0f;

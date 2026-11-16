@@ -294,13 +294,22 @@ namespace ItHunts.Level
             switch (e.state)
             {
                 case VitrineGhoulState.Repos:
+                    g.ForceClip(null);
                     g.ShowPose(GhoulMode.Poste, 0f, home, home);
                     break;
                 case VitrineGhoulState.Course:
+                    g.ForceClip(g.Animated ? "Goule_Course" : null);
+                    if (g.Animated)
+                    {
+                        g.ShowPose(GhoulMode.Chasse, 0f, home, home);
+                        break;
+                    }
                     pos += Vector3.up * (Mathf.Abs(Mathf.Sin(u * Mathf.PI * 6f)) * 0.12f);
                     g.ShowPose(GhoulMode.Chasse, 0f, home, home, 1f - 0.06f * Mathf.Abs(Mathf.Cos(u * Mathf.PI * 6f)));
                     break;
                 case VitrineGhoulState.AnnonceDuBond:
+                    if (g.Animated && u * loop < Time.deltaTime * 1.5f)
+                        g.RestartClip("Goule_Annonce");
                     g.ShowPose(GhoulMode.Annonce, Mathf.Min(u * loop, 0.6f), home, home);
                     break;
                 case VitrineGhoulState.Bond:
@@ -327,11 +336,14 @@ namespace ItHunts.Level
                     break;
                 }
                 case VitrineGhoulState.Coup:
+                    if (g.Animated && Mathf.Repeat(now, loop * 0.5f) < Time.deltaTime * 1.5f)
+                        g.RestartClip("Goule_Coup");                               // le coup de la goule (impact à 0.24 s)
                     g.ShowPose(GhoulMode.Chasse, 0f, home, home);
                     if (dmg != null && Mathf.Repeat(now, loop * 0.5f) < Time.deltaTime * 1.5f)
                         dmg.Flash(new Color(2f, 2f, 2f), 0.12f);
                     break;
                 case VitrineGhoulState.Etourdie:
+                    g.ForceClip(g.Animated ? "Goule_Etourdie" : null);
                     g.ShowPose(GhoulMode.Chasse, 0f, home, home);
                     var body = g.GetComponent<EnemyBody>();
                     if (body != null && !body.Stunned)
@@ -340,6 +352,7 @@ namespace ItHunts.Level
                 case VitrineGhoulState.Tenue:
                     pos = home + Vector3.up * (1.6f + 0.08f * Mathf.Sin(now * 5f));
                     rot = rot * Quaternion.Euler(8f * Mathf.Sin(now * 7f), 0f, 10f * Mathf.Sin(now * 9f));
+                    g.ForceClip(g.Animated ? "Goule_Etourdie" : null);                 // tenue : elle se débat
                     g.ShowPose(GhoulMode.Chasse, 0f, home, home);
                     if (dmg != null)
                         dmg.ExtraGlow = new Color(0.7f, 0.25f, 1.6f);                // lueur violette de la télékinésie

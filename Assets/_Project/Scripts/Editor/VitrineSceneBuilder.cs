@@ -413,7 +413,7 @@ namespace ItHunts.EditorTools
         private static readonly Dictionary<string, string> Names = new Dictionary<string, string>
         {
             ["Repos"] = "Repos", ["Course"] = "Course (sur place)", ["AnnonceDuBond"] = "Annonce du bond", ["Bond"] = "Bond",
-            ["Reception"] = "Réception", ["Escalade"] = "Escalade sur un mur", ["Coup"] = "Coup reçu", ["Etourdie"] = "Étourdie",
+            ["Reception"] = "Réception", ["Escalade"] = "Escalade sur un mur", ["Coup"] = "Coup (frappe, impact à 0,24 s)", ["Etourdie"] = "Étourdie",
             ["Tenue"] = "Tenue (télékinésie)", ["Morte"] = "Morte",
             ["Ronde"] = "Ronde", ["AnnonceDuPique"] = "Annonce du piqué", ["Pique"] = "Piqué", ["EtourdiAuSol"] = "Étourdi au sol",
             ["Tenu"] = "Tenu (télékinésie)",
