@@ -2,9 +2,11 @@
 """Kit gothique du couloir de 14 m (d'après reference_couloir_gothique, plan 04 de la cinématique ; retours du
 2026-11-16) : voûte en ogive en tronçons, arcs-doubleaux, colonnes engagées, murs de travée à arcade ou à niche.
 
-Couloir : 14 m entre les murs, travées de 8 m. Les murs montent à la naissance de la voûte (8 m) ; la voûte en arc brisé
-(centres sur la ligne de naissance) a son intrados à 15.6 m à la clé ; les arcs-doubleaux (0.6 m sous la voûte) laissent
-**15.0 m libres** au centre (0.48 m d'arc + 0.12 m de boudin) (le traqueur passe). Toutes les pièces : pivot au sol ; UV en coordonnées monde (matériaux
+Couloir : 14 m entre les murs, travées de 8 m. Les murs montent à la naissance de la voûte (8 m) ; la voûte est un arc
+brisé en lancette (centres sur la ligne de naissance mais hors de la portée, à 7.66 m de l'axe de l'autre côté, R 14.66 m) :
+intrados à 20.5 m à la clé ; les arcs-doubleaux (0.6 m sous la voûte : 0.48 m d'arc + 0.12 m de boudin) laissent
+19.8 m libres au centre et 10.1 m de large à 14 m (le traqueur passe). Retours du 2026-11-16 : naissance gardée à 8 m,
+clé montée de 15.6 à 20.5 m pour approcher la référence. Toutes les pièces : pivot au sol ; UV en coordonnées monde (matériaux
 *_Monde du shader toon : M_Pierre_Monde, M_Voute_Briques_Monde) ; UV de repli fournies (projection monde du Builder).
 
 Repère Blender : x en travers du couloir (pièces de voûte) ou le long du mur (murs, colonne), y le long du couloir
@@ -26,7 +28,7 @@ C.RENDER_FMT = "JPEG"
 PARAMS = dict(
     demi_portee=7.0,        # m, du milieu du couloir à la face du mur
     naissance=8.0,          # m, hauteur des murs (naissance de la voûte, dessus des chapiteaux)
-    cle=15.6,               # m, intrados de la voûte à la clé
+    cle=20.5,               # m, intrados de la voûte à la clé (> naissance + demi_portee × √3 : lancette)
     voute_ep=0.6,           # m, épaisseur de la voûte
     doubleau=(0.8, 0.48),   # m, largeur (le long du couloir) et hauteur sous la voûte de l'arc-doubleau
     doubleau_filet=(0.4, 0.12),   # m, boudin sous l'arc : largeur, saillie

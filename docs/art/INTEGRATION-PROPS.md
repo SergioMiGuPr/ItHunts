@@ -65,7 +65,7 @@ calculer les UV en coordonnées monde dans le shader pour ces pièces (triplanai
 et compatible avec le raccourcissement des pièces du bord). La deuxième option règle aussi les pièces étirées
 (`Kit_Escalier`, `Kit_Pont`, pièces raccourcies).
 
-### Kit gothique du couloir 14 × 15 m (2026-11-16, d'après `reference_couloir_gothique`, plan 04 de la cinématique)
+### Kit gothique du couloir de 14 m, voûte en lancette (2026-11-16, d'après `reference_couloir_gothique`, plan 04 de la cinématique)
 
 Six pièces (`Assets/Art/Models/Niveau1/`, script `sm_gothique.py`), pour approcher la référence : **voûte en ogive** (et non
 plate ni en berceau) portée par des **arcs-doubleaux** sur **colonnes engagées**, et des **arcades** et **niches** en ogive
@@ -76,9 +76,9 @@ murs et colonne : face côté couloir vers **+Z**, le mur s'étend vers −Z.
 
 | Pièce | Dimensions (Unity) | Pivot | Usage | Triangles |
 |---|---|---|---|---|
-| `SM_Voute_Ogive_8m` | x −7.6..7.6, y 8..16.2, z −4..4 | au sol, milieu du couloir et de la travée | tronçon de voûte répétable tous les 8 m (intrados : arc brisé de la naissance à 8 m jusqu'à la clé à **15.6 m** ; 0.6 m d'épaisseur ; repose sur le dessus des murs) | 292 |
+| `SM_Voute_Ogive_8m` | x −7.6..7.6, y 8..21.2, z −4..4 | au sol, milieu du couloir et de la travée | tronçon de voûte répétable tous les 8 m (intrados : arc brisé en **lancette**, centres hors de la portée, de la naissance à 8 m jusqu'à la clé à **20.5 m** ; 0.6 m d'épaisseur ; repose sur le dessus des murs) | 292 |
 | `SM_Voute_Ogive_4m` | idem, z −2..2 | idem | demi-tronçon pour finir une longueur de couloir qui n'est pas un multiple de 8 m | 292 |
-| `SM_ArcDoubleau_14m` | x −7..7, y 8..15.6, z −0.4..0.4 | au sol, milieu du couloir | arc de structure sous la voûte, un par limite de travée (tous les 8 m, au-dessus des colonnes) ; 0.48 m d'arc + boudin de 0.12 m : **clé de l'intrados à 15.0 m** | 584 |
+| `SM_ArcDoubleau_14m` | x −7..7, y 8..20.5, z −0.4..0.4 | au sol, milieu du couloir | arc de structure sous la voûte, un par limite de travée (tous les 8 m, au-dessus des colonnes) ; 0.48 m d'arc + boudin de 0.12 m : **clé de l'intrados à 19.8 m** | 584 |
 | `SM_Colonne_Engagee_8m` | x −0.72..0.72, y 0..8, z 0..0.78 | au pied, sur la face du mur | une par mur sous chaque arc-doubleau (socle, base, fût demi-rond Ø 0.76 m, chapiteau et tailloir qui porte l'arc) ; tourner de ±90° pour l'adosser au mur gauche ou droit | 166 |
 | `SM_Mur_Arcade_8m` | x −4..4, y 0..8, z −1.2..0.2 | au sol, milieu de la travée, sur la face du mur | mur d'une travée percé d'un **passage en ogive de 4.4 m × 7 m** (naissance 4 m) vers une pièce annexe ; tableaux et intrados modelés, cordon d'archivolte et impostes | 478 |
 | `SM_Mur_Niche_8m` | idem | idem | mur d'une travée creusé d'une **niche en ogive** de 2.4 m × 4.7 m (appui à 0.9 m, clé à 5.6 m, 0.6 m de profondeur) : décor, statue, coffre, torche | 445 |
@@ -89,12 +89,16 @@ et +90° (gauche) ; pour chaque travée, un `SM_Voute_Ogive_8m` en (0, 0, 8k + 4
 `SM_Mur_Niche_8m`, ou des `SM_Kit_Mur4x4` pour un mur plein) en (±7, 0, 8k + 4), mêmes rotations. Sol : `SM_Kit_Sol4` /
 `M_Dalles_Monde`. Torches : sur les trumeaux, près des colonnes.
 
-**Passage du traqueur** : largeur libre sous les arcs-doubleaux (entre les intrados) 12.8 m à 8 m, **10.6 m à 11.75 m**
-(épaules), 8.6 m à 13 m, 6.1 m à 14 m, 4.1 m à 14.5 m ; clé à 15.0 m. Les colonnes réduisent la largeur de 14 à
-12.8 m au sol (socles) et 12.4 m au tailloir (8 m). **Point ouvert** : la voûte est un arc brisé peu pointu (naissance à 8 m, clé à 15.6 m
-pour 14 m de portée) ; la référence est plus aiguë. Baisser la naissance (murs de 7 m ou 6 m) la rend plus pointue sans
-monter la clé, mais resserre le haut du passage (à 14 m : 4.9 m de large avec une naissance à 7 m, 4.0 m à 6 m) : à
-trancher avec le gabarit du traqueur (`PARAMS["naissance"]` dans `sm_gothique.py`).
+**Passage du traqueur** : largeur libre sous les arcs-doubleaux (entre les intrados) 12.8 m à 8 m, **11.8 m à 11.75 m**
+(épaules), 11.0 m à 13 m, **10.1 m à 14 m**, 9.6 m à 14.5 m ; clé à **19.8 m** (15 m libres largement tenus). Les colonnes
+réduisent la largeur de 14 à 12.8 m au sol (socles) et 12.4 m au tailloir (8 m).
+
+**Pointe de la voûte (décision du 2026-11-16)** : naissance **gardée à 8 m** (le passage du traqueur passe avant) ; la
+voûte est rendue plus aiguë en **montant la clé** de 15.6 à **20.5 m** (intrados) : arc brisé en lancette, centres sur la
+ligne de naissance mais **hors de la portée** (à 7.66 m de l'axe, de l'autre côté ; rayon 14.66 m ; rapport flèche / demi-portée
+1.79, contre 1.09 avant). Dessus de la voûte (extrados) à 21.2 m : le prévoir sous le plafond de la salle
+ou le niveau supérieur. Avant / après et référence : `rendus/Lot2/Voute_Lancette_avant_apres.jpg`. Réglage :
+`PARAMS["cle"]` dans `sm_gothique.py` (au-delà de 8 + 7 × √3 = 20.1 m, les centres sortent de la portée).
 
 ## 2. Props du niveau (`Assets/_Project/Prefabs/Props/`)
 
