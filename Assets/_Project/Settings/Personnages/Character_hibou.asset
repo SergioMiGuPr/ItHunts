@@ -16,6 +16,8 @@ MonoBehaviour:
   displayName: Hibou
   color: {r: 0.25, g: 0.5, b: 1, a: 1}
   lanternColor: {r: 0.2, g: 0.4, b: 1, a: 1}
+  fpsArmRight: {fileID: 919132149155446097, guid: bae9ca71804417f43967c53790628988, type: 3}
+  fpsArmLeft: {fileID: 919132149155446097, guid: 22571ad2e5ca84042987b8fc376e3443, type: 3}
   artifact: {fileID: 0}
   artifactLabel: "artefact \xE0 concevoir"
   playable: 0
