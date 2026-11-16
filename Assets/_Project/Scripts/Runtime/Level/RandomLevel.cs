@@ -665,7 +665,9 @@ namespace ItHunts.Level
                 Vector3 wallAxis = wall == DoorSide.Nord || wall == DoorSide.Sud ? Vector3.right : Vector3.forward;
                 float a0 = Along(face + latS * (l.Width * 0.5f + T), wallAxis), a1 = Along(face + latS * (l.Width * 0.5f + T + DuctW), wallAxis);
                 AddCut(_roomCuts, (room, wall), new Cut(Mathf.Min(a0, a1) + 0.25f, Mathf.Max(a0, a1) - 0.25f, face.y + DuctY, face.y + DuctY + DuctH));
-                float c0 = Along(face + axis * (T + 4f), axis), c1 = Along(face + axis * (T + 7f), axis);
+                // Ouverture côté couloir de 4 m (T + 3.5 à T + 7.5) : à 3 m, le bout du conduit restait hors de portée de la main du
+                // traqueur sur une carte sur 20 (retours du lot, point 5).
+                float c0 = Along(face + axis * (T + 3.5f), axis), c1 = Along(face + axis * (T + 7.5f), axis);
                 AddCut(_corridorCuts, (p.Link, p.Side), new Cut(Mathf.Min(c0, c1), Mathf.Max(c0, c1), face.y + DuctY, face.y + DuctY + DuctH));
             }
 
@@ -734,8 +736,8 @@ namespace ItHunts.Level
                 NM($"{nm} : plaque (salle) droite", root, Pt(-0.08f, lc + (open + side) * 0.5f, DuctY + DuctH * 0.5f), Size(0.12f, side, DuctH), false);
                 NM($"{nm} : plaque (couloir)", root, Pt(ac, w * 0.5f - 0.08f, DuctY * 0.5f), Size(9f, 0.12f, DuctY), false);
                 NM($"{nm} : plaque (couloir) haut", root, Pt(ac, w * 0.5f - 0.08f, (DuctY + DuctH + top) * 0.5f), Size(9f, 0.12f, top - DuctY - DuctH), false);
-                NM($"{nm} : plaque (couloir) avant", root, Pt(T + 2.75f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2.5f, 0.12f, DuctH), false);
-                NM($"{nm} : plaque (couloir) arrière", root, Pt(T + 8.25f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2.5f, 0.12f, DuctH), false);
+                NM($"{nm} : plaque (couloir) avant", root, Pt(T + 2.5f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2f, 0.12f, DuctH), false);
+                NM($"{nm} : plaque (couloir) arrière", root, Pt(T + 8.5f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2f, 0.12f, DuctH), false);
                 if (kit != null && kit.torche != null)
                     KitBuild.Piece(kit.torche, root, Pt(T + 2f, w * 0.5f - 0.35f, DuctY - 1f), Mathf.Atan2(-latS.x, -latS.z) * Mathf.Rad2Deg);
             }
