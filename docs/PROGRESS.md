@@ -4,6 +4,34 @@
 
 ## Étape en cours
 
+**PR #8 et voûte gothique (`animations`) — 2026-11-16, non poussée, à tester.** PR #8 vérifiée :
+- périmètre `Assets/Art/`, `docs/art/` et manifeste ; `.meta` des 6 FBX présents (les sources sont dans `Source~`) ;
+- compilation sans erreur, 398 tests ;
+- fusionnée dans `main` (commit de fusion 32ed865, branche `art` gardée) et poussée ; `main` fusionnée dans `animations`.
+
+Un commit par point :
+- **Bras :** poses recuites (repos des doigts fléchi), écart avec les 14 clips 74.7° → 0.0° sur les 8 bras ; koala et hibou
+  branchés sur leurs bras de la DA ; captures `docs/design/features/vue-fps/captures/mains_pr8/`.
+- **Lumière (shader de la PR) :** plus de cercles nets au plafond.
+  - Lanterne du renard ramenée au rouge sang (0.72 ; 0.40 ; 0.33) : le ×1.35 de `_LightSaturation` la mettait dans la saturation
+    des yeux du traqueur.
+  - Captures dans les 3 ambiances : `captures/lumiere_pr8/`.
+- **Couloirs gothiques** (couloirs plats de 14 m, `gothicCorridors`) :
+  - voûte en lancette, arcs-doubleaux sur colonnes engagées, travées de 8 m (arcade aveugle, niche ou mur plein) ;
+  - torches sur les trumeaux à 4 m ; pignon au-dessus des portes ; plafond des galeries entré dans la voûte ;
+  - 5 seeds : 0 cachette, NavMesh complet (goule et traqueur), aucun trou, aucun module traversé par la voûte ;
+  - draw calls +27 % (solo) et +35 % (écran partagé), temps d'image inchangé ; mesures dans
+    `docs/design/features/run-et-niveaux/captures/couloir_gothique/`.
+- **Référence :** `docs/design/references-visuelles/reference_couloir_gothique.png`.
+- **Plantage noté :** un plantage du pilote GPU (D3D12, « device removed ») pendant une capture ; il ne s'est pas reproduit après
+  relance.
+- **Points ouverts :**
+  - **Avant tout build public :** confirmer les droits d'usage commercial des contenus Higgsfield (références, textures) selon
+    le forfait.
+  - Arcades des couloirs : elles sont aveugles (1.2 m de profondeur) ; si on veut les ouvrir sur des pièces annexes, il faudra
+    une décision de level design.
+  - Draw calls des couloirs gothiques (+27 à 35 %) : à surveiller avec le reste de la performance.
+
 **Animations (`animations`, depuis `main` après fusion de `retours-lot` et de la PR #6) — 2026-11-16, non poussée, à tester.**
 - **Goule animée** (`SK_Goule`, `Assets/_Project/Animation/Goule.controller`) : un clip par état (repos, course selon la vitesse,
   annonce calée sur `leapTelegraph`, bond, réception, escalade, coup avec dégâts à l'impact 0.24 s, étourdie ou tenue, mort visible
