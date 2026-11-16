@@ -34,6 +34,9 @@ namespace ItHunts.Level
             Build();
         }
 
+        /// <summary>Scène vitrine (retours du lot, point 9) : assets de la DA, ennemis dans chaque état, vue FPS.</summary>
+        public const string VitrineScene = "Test_Vitrine";
+
         private void Build()
         {
             _menu.Items.Clear();
@@ -52,6 +55,7 @@ namespace ItHunts.Level
             diff.Change = d => _difficulty = run == null || run.difficulties.Count == 0 ? 0 : (_difficulty + d + run.difficulties.Count) % run.difficulties.Count;
             _menu.Add("Lancer la run (niveau 1)", Launch);
             _menu.Add("Playtest : combat de boss", LaunchBossFight);
+            _menu.Add("Playtest : vitrine", () => Direct(VitrineScene));
             _menu.Add("Test_Movement (banc d'essai)", () => Direct(movementScene));
             _menu.Add("Test_Arena (labyrinthe)", () => Direct(arenaScene));
             _menu.Add("Level_01 (carte fixe de référence)", () => Direct(fixedLevelScene));

@@ -236,6 +236,98 @@ namespace ItHunts.Enemies
 
         private float _staggerUntil;
 
+        /// <summary>Poses de la vitrine (Test_Vitrine).</summary>
+        public enum ShowcasePose : byte
+        {
+            MarcheVoutee,
+            Prise,
+            MainPlantee,
+            MainsLevees,
+            Revers,
+            Baisse,
+        }
+
+        /// <summary>
+        /// Vitrine : pose sans l'IA (composant désactivé), phase de 0 à 1 en boucle : marche voûtée (bras qui balancent), prise
+        /// (la main s'abat sur la colonne rouge), main plantée, mains levées, revers (main gauche tendue, zone au sol), baissé (sous
+        /// un pont). Affichage seulement.
+        /// </summary>
+        public void ShowPose(ShowcasePose pose, float phase)
+        {
+            if (settings == null || _rb == null)
+                return;
+            _crouch = pose == ShowcasePose.Baisse ? 0.64f : 1f;
+            ApplyCrouch();
+            _grab = GrabPhase.Aucune;
+            Vector3 up = Vector3.up, fwd = transform.forward;
+            Vector3 ground = _rb.position + fwd * 12f;
+            Vector3 handOnGround = ground + up * HandHalfExtents().y;
+            bool leftDone = false;
+            float swing = Mathf.Sin(phase * Mathf.PI * 2f);
+            switch (pose)
+            {
+                case ShowcasePose.MarcheVoutee:
+                    PoseArm(RestHand() + fwd * (1.5f * swing), 0f);
+                    PoseLimb(leftArm, leftHand, LeftShoulder, LeftRestHand() - fwd * (1.5f * swing), transform.rotation);
+                    leftDone = true;
+                    break;
+                case ShowcasePose.Prise:
+                {
+                    float k = Mathf.Clamp01(phase * 1.6f);
+                    Vector3 raised = Shoulder + up * 4f + fwd * 2f;
+                    PoseArm(Vector3.Lerp(raised, handOnGround, k * k), k);
+                    _grab = k < 1f ? GrabPhase.Descente : GrabPhase.Aucune;
+                    if (grabMarker != null)
+                    {
+                        grabMarker.gameObject.SetActive(true);
+                        grabMarker.position = ground + up * 0.05f;
+                        GrabColumn(1f - k * 0.5f);
+                    }
+
+                    break;
+                }
+                case ShowcasePose.MainPlantee:
+                    PoseArm(handOnGround, 1f);
+                    _grab = GrabPhase.Descente;                               // griffes vives : la main est au sol
+                    break;
+                case ShowcasePose.MainsLevees:
+                    PoseArm(Shoulder + up * (4f + 0.5f * swing) + fwd * 2f, 0f);
+                    PoseLimb(leftArm, leftHand, LeftShoulder, LeftShoulder + up * (4f - 0.5f * swing) + fwd * 2f, transform.rotation);
+                    leftDone = true;
+                    break;
+                case ShowcasePose.Revers:
+                {
+                    PoseArm(RestHand(), 0f);
+                    Vector3 dir = Quaternion.AngleAxis(-120f * Mathf.Clamp01(phase * 1.5f), up) * transform.right;
+                    PoseLimb(leftArm, leftHand, LeftShoulder, _rb.position + dir * (Radius + settings.backhandReach * 0.6f) + up * 1.5f,
+                        Quaternion.LookRotation(dir, up));
+                    leftDone = true;
+                    if (backhandZone != null)
+                    {
+                        backhandZone.enabled = true;
+                        float d = 2f * (Radius + settings.backhandReach);
+                        Transform z = backhandZone.transform;
+                        z.position = _rb.position + up * 0.05f;
+                        Vector3 ps = z.parent != null ? z.parent.lossyScale : Vector3.one;
+                        z.localScale = new Vector3(d / Mathf.Max(0.01f, ps.x), 0.01f, d / Mathf.Max(0.01f, ps.z));
+                    }
+
+                    break;
+                }
+                default:
+                    PoseArm(RestHand(), 0f);
+                    break;
+            }
+
+            if (!leftDone)
+                PoseLimb(leftArm, leftHand, LeftShoulder, LeftRestHand(), transform.rotation);
+            if (pose != ShowcasePose.Revers && backhandZone != null)
+                backhandZone.enabled = false;
+            if (pose != ShowcasePose.Prise && grabMarker != null && grabMarker.gameObject.activeSelf)
+                grabMarker.gameObject.SetActive(false);
+            UpdateClawGlow(Time.deltaTime);
+        }
+
         private ItHunts.Combat.Damageable _dmg;
         private List<Renderer> _limbRenderers;
         private float _claw;

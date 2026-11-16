@@ -646,6 +646,13 @@ namespace ItHunts.Enemies
             }
         }
 
+        /// <summary>Vitrine (Test_Vitrine) : affiche un état sans l'IA (composant désactivé). Affichage seulement.</summary>
+        public void ShowPose(FlyerMode mode)
+        {
+            Mode = mode;
+            UpdateVisual(Time.time);
+        }
+
         private void UpdateVisual(float now)
         {
             if (telegraph != null)

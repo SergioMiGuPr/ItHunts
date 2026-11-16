@@ -1225,6 +1225,21 @@ namespace ItHunts.Enemies
         public bool SignalsOn => (telegraph != null && telegraph.enabled) || (_glowApplied && _glowShown)
             || (_model == null && _damageable != null && _damageable.ExtraGlow.maxColorComponent > 0.001f);
 
+        /// <summary>
+        /// Vitrine (Test_Vitrine) : affiche un état sans l'IA (composant désactivé) : mode, depuis combien de temps (annonce qui
+        /// s'écrase), mur (de climbFrom vers climbTo) et écrasement en plus (réception). Affichage seulement.
+        /// </summary>
+        public void ShowPose(GhoulMode mode, float modeAge, Vector3 climbFrom, Vector3 climbTo, float squash = 1f)
+        {
+            Mode = mode;
+            _modeSince = Time.time - modeAge;
+            _climbFrom = climbFrom;
+            _climbTo = climbTo;
+            UpdateVisual();
+            if (visual != null && !Mathf.Approximately(squash, 1f))
+                visual.localScale = Vector3.Scale(visual.localScale, new Vector3(1f / Mathf.Sqrt(squash), squash, 1f / Mathf.Sqrt(squash)));
+        }
+
         private void UpdateVisual()
         {
             bool announcing = Mode == GhoulMode.Annonce;

@@ -303,6 +303,25 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Vitrine_SceneDansLeBuild_EnnemisDansChaqueEtat_AccesMenus()
+        {
+            const string path = "Assets/Scenes/Test_Vitrine.unity";
+            Assert.That(EditorBuildSettings.scenes.Any(s => s.path == path && s.enabled), Is.True, "dans le build (menu principal, menu pause)");
+            string text = System.IO.File.ReadAllText(path);
+            Assert.That(text.Contains("m_Name: \"Vitrine (panneau F1"), Is.True, "composant de la vitrine");
+            foreach (string label in new[] { "Annonce du bond", "Escalade sur un mur", "Tenue (t", "Morte", "Piqu", "Main plant", "Mains lev", "Revers",
+                         "Baiss", "Enclos", "10 m", "50 m", "Architecture", "Mobilier", "Ar\\u00E8ne du boss", "Objets attrapables" })
+                Assert.That(text.Contains(label) || System.Text.RegularExpressions.Regex.Unescape(text).Contains(System.Text.RegularExpressions.Regex.Unescape(label)), Is.True, label);
+            Assert.That(System.Enum.GetValues(typeof(ItHunts.Level.VitrineGhoulState)).Length, Is.EqualTo(10));
+            Assert.That(System.Enum.GetValues(typeof(ItHunts.Level.VitrineFlyerState)).Length, Is.EqualTo(5));
+            Assert.That(ItHunts.Level.MainMenu.VitrineScene, Is.EqualTo("Test_Vitrine"));
+            string menu = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/MainMenu.cs");
+            Assert.That(menu.Contains("\"Playtest : vitrine\""), Is.True);
+            string pause = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/PauseMenu.cs");
+            Assert.That(pause.Contains("MainMenu.VitrineScene"), Is.True, "accès depuis le menu pause des scènes de test");
+        }
+
+        [Test]
         public void VueFps_OrbeEtArtefactFlottent_BarilletSansCanon_PosesPaumeVersLeHaut()
         {
             var fps = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");
