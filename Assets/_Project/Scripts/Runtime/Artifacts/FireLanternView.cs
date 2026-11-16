@@ -147,14 +147,12 @@ namespace ItHunts.Artifacts
 
             EnsurePuffs();
             FpsViewSettings fps = _view != null ? _view.Settings : null;
-            if (lanternRoot != null && fps != null)                         // réglable en Play Mode
-            {
-                lanternRoot.localPosition = fps.lanternInHand;
-                lanternRoot.localRotation = Quaternion.Euler(fps.lanternInHandEuler);
-                lanternRoot.localScale = Vector3.one * fps.lanternScale;
-            }
+            if (lanternRoot != null && fps != null)                         // réglable en Play Mode ; flotte au-dessus de la paume
+                BarrelView.PlaceFloating(lanternRoot, fps.lanternInHand, fps.lanternInHandEuler, fps.lanternScale, fps, _view);
 
             LanternState s = _holder.Lantern;
+            if (_view != null && _view.Preview == ViewPreview.Jet)
+                s.Jetting = true;                                            // aperçu de la vitrine (copie locale de l'état)
             int tick = _motor != null ? _motor.State.Tick : 0;
             float dt = Time.fixedDeltaTime;
             bool ready = FireLantern.Ready(s, tick, cfg, dt);

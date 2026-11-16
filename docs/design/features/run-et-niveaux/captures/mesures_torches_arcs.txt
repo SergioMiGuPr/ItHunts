@@ -1,0 +1,4 @@
+Torches à moins de 0.6 m d'un arc ou d'un pilier (collisions), toutes les torches (torchShare = 1), distance minimale 1.2 m :
+seed 104729 : 30 sur 1289 → 0 (287 déplacées le long du mur, 0 retirée)
+seed 209458 : 16 sur 1272 → 0 (260 déplacées, 0 retirée)
+seed 314187 : 6 sur 1306 → 0 (240 déplacées, 3 retirées)

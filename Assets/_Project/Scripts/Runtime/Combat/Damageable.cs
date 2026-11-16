@@ -159,6 +159,12 @@ namespace ItHunts.Combat
         /// <summary>Lueur d'un état de l'ennemi (annonce du bond de la goule, bloc 4) : émission quand il n'y a ni flash ni étourdissement.</summary>
         public Color ExtraGlow { get; set; } = Color.black;
 
+        /// <summary>
+        /// Lueur propre à certains rendus (mains du traqueur : griffes ivoire, alors que ses pupilles sont rouges) ; remplace
+        /// ExtraGlow pour eux. Le coup reçu et l'étourdissement l'emportent toujours.
+        /// </summary>
+        public readonly Dictionary<Renderer, Color> GlowOverrides = new Dictionary<Renderer, Color>();
+
         private void Update()
         {
             if (_health.Dead && respawns && HealthState.TryRespawn(ref _health, Time.time, settings != null ? settings.respawnDelay : 3f))
@@ -180,7 +186,7 @@ namespace ItHunts.Combat
                 if (r != null)
                 {
                     r.GetPropertyBlock(_block);                           // garde les autres propriétés (lueur du bond, D-bloc 4)
-                    _block.SetColor(EmissionId, glow);
+                    _block.SetColor(EmissionId, !whole && GlowOverrides.TryGetValue(r, out Color ownGlow) ? ownGlow : glow);
                     // Modèles à masque d'émission (goule de la DA) : le coup reçu et l'étourdissement allument tout le corps, la
                     // lueur d'un état (ExtraGlow : yeux et gueule pendant l'annonce) seulement le masque.
                     Material m = r.sharedMaterial;

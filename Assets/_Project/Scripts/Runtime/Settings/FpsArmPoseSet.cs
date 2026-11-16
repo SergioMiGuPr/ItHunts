@@ -29,12 +29,42 @@ namespace ItHunts.Settings
             public bool fromClips;
             public List<Pose> poses = new List<Pose>();
 
+            [Tooltip("Animations de la DA (clips « Anim_* » à plusieurs images, ex. Anim_Repos) : cuites en images, jouées en boucle.")]
+            public List<Animation> animations = new List<Animation>();
+
             public Pose Find(string name)
             {
                 foreach (Pose p in poses)
                     if (p.name == name)
                         return p;
                 return null;
+            }
+
+            public Animation FindAnimation(string name)
+            {
+                if (animations == null)
+                    return null;
+                foreach (Animation a in animations)
+                    if (a.name == name && a.frames != null && a.frames.Count > 0)
+                        return a;
+                return null;
+            }
+        }
+
+        /// <summary>Animation cuite : images à cadence fixe (rotations de chaque os), jouée en boucle.</summary>
+        [Serializable]
+        public sealed class Animation
+        {
+            public string name;
+            [Min(1f)] public float frameRate = 30f;
+            public List<Pose> frames = new List<Pose>();
+
+            public Pose FrameAt(float time)
+            {
+                if (frames == null || frames.Count == 0)
+                    return null;
+                int i = Mathf.FloorToInt(time * frameRate) % frames.Count;
+                return frames[i < 0 ? i + frames.Count : i];
             }
         }
 

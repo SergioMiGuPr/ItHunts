@@ -46,6 +46,10 @@ namespace ItHunts.Level
         [Range(4f, 30f)] public float galleryWaterDepth = 16f;
         [Tooltip("Part des torches gardées sur la carte (performance : 1 = toutes, 0.5 = une sur deux, dans l'ordre de construction).")]
         [Range(0f, 1f)] public float torchShare = 0.5f;
+        [Tooltip("Distance minimale (m) entre une torche et un arc, un pilier, une colonne ou un encadrement de porte (retours du lot, " +
+                 "point 7). Une torche trop proche glisse le long de son mur (jusqu'à torchSlide m), sinon elle est retirée.")]
+        [Min(0f)] public float torchClearance = 1.2f;
+        [Min(0f)] public float torchSlide = 4f;
         [Tooltip("Zones de parcours (salles de parcours + galeries) par salle de la carte : 0.5 = une zone pour deux salles. Les passages en hauteur s'ajoutent.")]
         [Range(0f, 1f)] public float zonesPerRoom = 0.5f;
         [Tooltip("Part des zones de parcours qui mènent à un coffre (au bout d'un saut, atteint seulement par le parcours).")]

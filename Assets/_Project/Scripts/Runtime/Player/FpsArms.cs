@@ -96,6 +96,7 @@ namespace ItHunts.Player
             _clipsUsable = Distinct(poses.right) || Distinct(poses.left);
             // L'orbe greybox sur Socket_Orbe (en attendant l'orbe v2).
             Transform socket = FindDeep(_right.transform, "Socket_Orbe");
+            _orbSocket = socket;
             if (orb != null && socket != null)
             {
                 if (_orbHome == null)
@@ -186,20 +187,26 @@ namespace ItHunts.Player
                 case HandGesture.Prise: right = gu < 0.5f ? "Pose_Attraper_1" : "Pose_Attraper_2"; break;
                 default:
                     gesture = false;
-                    right = m.RepelHolding ? "Pose_Repulsion"
-                        : _motor.State.Mode == MovementMode.Traction ? "Pose_Traction"
-                        : t.Holding ? "Pose_TenirObjet"
-                        : "Pose_Repos";
+                    // Pose de fond lue dans la vue (état simulé, ou aperçu forcé de la vitrine).
+                    bool repel = view != null ? view.ShowsRepelHold : m.RepelHolding;
+                    bool traction = view != null ? view.ShowsTraction : _motor.State.Mode == MovementMode.Traction;
+                    bool holding = view != null ? view.ShowsHolding : t.Holding;
+                    right = repel ? "Pose_Repulsion" : traction ? "Pose_Traction" : holding ? "Pose_TenirObjet" : "Pose_Repos";
                     break;
             }
 
-            string left = _holder.BarrelSettings != null ? "Pose_Pistolet" : _holder.LanternSettings != null ? "Pose_PriseAnneau" : "Pose_Repos";
+            // L'orbe et l'artefact flottent au-dessus des paumes (retours du lot, point 6) : paumes ouvertes vers le haut, doigts
+            // recourbés (Pose_OrbePaume de la DA) ; plus de prise du pistolet ni de l'anneau.
+            if (right == "Pose_Repos")
+                right = RestPose(poses.right);
+            string left = RestPose(poses.left);
             float dt = Time.deltaTime;
             RightPose = right;
             LeftPose = left;
             // Pose lue dans un clip (avec courbes) si elle existe ; sinon (clip vide à l'import) les doigts se ferment de l'angle des
             // mains greybox (FirstPersonView), autour de l'axe X de chaque phalange.
-            FpsArmPoseSet.Pose pr = poses.right.Find(right), pl = poses.left.Find(left);
+            FpsArmPoseSet.Pose pr = poses.right.Find(right) ?? poses.right.FindAnimation(right)?.FrameAt(Time.time),
+                pl = poses.left.Find(left) ?? poses.left.FindAnimation(left)?.FrameAt(Time.time);
             if (pr != null && pr.fromClip)
                 Apply(poses.right, _rightBones, right, 1f - Mathf.Exp(-(gesture ? poses.gestureBlendRate : poses.blendRate) * dt));
             else
@@ -209,6 +216,32 @@ namespace ItHunts.Player
             else
                 Curl(_leftBones, _leftBind, view != null ? view.LeftCurl : 25f);
             RightFromClip = pr != null && pr.fromClip;
+            FloatOrb();
+        }
+
+        /// <summary>
+        /// Pose de fond : la pose de repos animée de la DA quand elle arrivera (clip « Anim_Repos », cuit en images par FpsArmsSetup),
+        /// sinon Pose_OrbePaume, sinon Pose_Repos.
+        /// </summary>
+        private static string RestPose(FpsArmPoseSet.Side side)
+        {
+            if (side.FindAnimation("Anim_Repos") != null)
+                return "Anim_Repos";
+            return side.Find("Pose_OrbePaume") != null ? "Pose_OrbePaume" : "Pose_Repos";
+        }
+
+        private Transform _orbSocket;
+
+        /// <summary>L'orbe flotte au-dessus de la paume (Socket_Orbe) : montée et descente lentes, rotation lente.</summary>
+        private void FloatOrb()
+        {
+            Transform orb = view != null ? view.Orb : null;
+            FpsViewSettings cfg = view != null ? view.Settings : null;
+            if (orb == null || cfg == null || _orbSocket == null || orb.parent != _orbSocket)
+                return;
+            float sy = Mathf.Max(1e-4f, _orbSocket.lossyScale.y);
+            orb.localPosition = new Vector3(0f, ViewmodelMotion.FloatHeight(Time.time, cfg) / sy, 0f);
+            orb.localRotation = Quaternion.Euler(0f, Time.time * cfg.floatSpin, 0f);
         }
 
         private static bool Distinct(FpsArmPoseSet.Side side)
@@ -246,7 +279,9 @@ namespace ItHunts.Player
 
         private static void Apply(FpsArmPoseSet.Side side, Transform[] bones, string pose, float k)
         {
-            FpsArmPoseSet.Pose p = side.Find(pose) ?? side.Find("Pose_Repos");
+            // Animation de la DA (clip à plusieurs images, cuit par FpsArmsSetup) : jouée en boucle.
+            FpsArmPoseSet.Animation anim = side.FindAnimation(pose);
+            FpsArmPoseSet.Pose p = anim != null ? anim.FrameAt(Time.time) : side.Find(pose) ?? side.Find("Pose_Repos");
             if (p == null || bones == null)
                 return;
             for (int i = 0; i < bones.Length && i < p.rotations.Length; i++)

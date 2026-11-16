@@ -20,7 +20,7 @@ namespace ItHunts.Enemies
         [SerializeField] private LayerMask layers = ~0;
         [Header("Ennemis de taille humaine (goule)")]
         [SerializeField, Min(0.1f)] private float smallRadius = 0.45f;
-        [SerializeField, Min(0.1f)] private float smallHeight = 1.2f;
+        [SerializeField, Min(0.1f)] private float smallHeight = 1.5f;
         [Header("Traqueur")]
         [SerializeField, Min(0.1f)] private float stalkerRadius = 1.25f;
         [Tooltip("Hauteur de passage du traqueur (m) : sa hauteur baissé (D-035), pas sa taille debout.")]

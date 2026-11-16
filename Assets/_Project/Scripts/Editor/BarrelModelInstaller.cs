@@ -104,14 +104,12 @@ namespace ItHunts.EditorTools
                 chambers[i] = c != null ? c.GetComponent<Renderer>() : null;
             }
 
-            // Canon greybox (provisoire, pas encore modélisé) : dans l'axe de la chambre du haut, devant le barillet.
-            Material metal = TestMovementSceneBuilder.Mat("Greybox_Barrel", new Color(0.18f, 0.17f, 0.2f));
+            // Pas de canon (retours du lot, point 6) : seul le barillet flotte dans la main ; la traînée part de la face avant de la
+            // chambre du haut (la chambre active).
             float front = ModelLength * 0.5f;
-            TestMovementSceneBuilder.Part(PrimitiveType.Cylinder, "Canon", barrelRoot, new Vector3(0f, TopChamberHeight, front + 0.05f),
-                new Vector3(0.022f, 0.05f, 0.022f), new Vector3(90f, 0f, 0f), metal);
-            var muzzle = new GameObject("Bouche du canon").transform;
+            var muzzle = new GameObject("Bouche (chambre active)").transform;
             muzzle.SetParent(barrelRoot, false);
-            muzzle.localPosition = new Vector3(0f, TopChamberHeight, front + 0.101f);
+            muzzle.localPosition = new Vector3(0f, TopChamberHeight, front + 0.005f);
             return new Parts { Spin = model.transform, Muzzle = muzzle, Chambers = chambers };
         }
 

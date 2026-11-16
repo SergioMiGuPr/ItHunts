@@ -48,6 +48,26 @@ namespace ItHunts.Artifacts
         private MaterialPropertyBlock _chamberBlock;
         private Material _chamberMaterial;
 
+        private int _previewShots;
+
+        /// <summary>
+        /// Tir d'aperçu (vitrine) : traînée de la chambre active jusqu'à 20 m devant la vue, un cran de rotation, recul de la main ;
+        /// rien dans la simulation.
+        /// </summary>
+        public void PreviewShot()
+        {
+            _previewShots++;
+            _shotTime = Time.time;
+            Transform cam = _view != null && _view.ViewRoot != null ? _view.ViewRoot : transform;
+            _tracerFrom = muzzle != null && _view != null ? _view.ViewToWorld(muzzle.position) : cam.position;
+            _tracerTo = cam.position + cam.forward * 20f;
+            if (_view != null)
+                _view.PreviewRecoil();
+            BarrelSettings cfg = _holder != null ? _holder.BarrelSettings : null;
+            if (cfg != null)
+                _audio.PlayOneShot(_shot, cfg.shotVolume);
+        }
+
         /// <summary>Mesures : angle affiché du barillet (Z local, degrés) et nombre de chambres allumées.</summary>
         public float ShownAngle { get; private set; }
         public int ShownLit { get; private set; }
@@ -125,6 +145,22 @@ namespace ItHunts.Artifacts
             return on;
         }
 
+        /// <summary>
+        /// Artefact qui flotte au-dessus de la paume gauche (retours du lot, point 6) : point de la paume (réglage), plus la hauteur
+        /// de flottement le long de la normale de la paume ; orienté comme la vue (il vise toujours devant), avec une légère
+        /// oscillation. Partagé par la lanterne de feu.
+        /// </summary>
+        public static void PlaceFloating(Transform root, Vector3 inHand, Vector3 euler, float scale, FpsViewSettings fps, FirstPersonView view)
+        {
+            Transform hand = root.parent;
+            float t = Time.time;
+            float h = ViewmodelMotion.FloatHeight(t, fps, fps.floatPhaseOffset);
+            root.localPosition = inHand + Vector3.up * h;
+            Quaternion facing = view != null && view.ViewRoot != null ? view.ViewRoot.rotation : hand != null ? hand.rotation : root.rotation;
+            root.rotation = facing * Quaternion.Euler(euler + ViewmodelMotion.FloatWobble(t, fps, fps.floatPhaseOffset));
+            root.localScale = Vector3.one * scale;
+        }
+
         private void LateUpdate()
         {
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
@@ -138,11 +174,7 @@ namespace ItHunts.Artifacts
             int tick = _motor != null ? _motor.State.Tick : 0;
             FpsViewSettings fps = _view != null ? _view.Settings : null;
             if (barrelRoot != null && fps != null)                          // réglable en Play Mode
-            {
-                barrelRoot.localPosition = fps.barrelInHand;
-                barrelRoot.localRotation = Quaternion.Euler(fps.barrelInHandEuler);
-                barrelRoot.localScale = Vector3.one * fps.barrelScale;
-            }
+                PlaceFloating(barrelRoot, fps.barrelInHand, fps.barrelInHandEuler, fps.barrelScale, fps, _view);
 
             // Nouveau tir : traînée, impact, son, un cran de rotation.
             if (b.LastShotTick != MovementState.NeverTick && b.LastShotTick != _seenShotTick)
@@ -210,11 +242,11 @@ namespace ItHunts.Artifacts
             }
 
             // Rotation d'un cran (−60°) par tir, et chambres : tout vient de l'état simulé (munitions, tirs, rechargement).
-            _spin.Follow(b.ShotCount, Time.time, cfg.spinDuration, cfg.spinCurve);
+            _spin.Follow(b.ShotCount + _previewShots, Time.time, cfg.spinDuration, cfg.spinCurve);
             ShownAngle = _spin.Angle(Time.time, cfg.spinDuration, cfg.spinCurve);
             float progress = Barrel.ReloadProgress(b, tick, cfg, Time.fixedDeltaTime);
             int lit = BarrelModel.Lit(b.Rounds, b.Reloading, progress);
-            ShownLit = ApplyModel(cylinder, chambers, _chamberBlock, ShownAngle, b.ShotCount, lit, b.Inactive, cfg);
+            ShownLit = ApplyModel(cylinder, chambers, _chamberBlock, ShownAngle, b.ShotCount + _previewShots, _previewShots > 0 ? BarrelModel.Chambers : lit, b.Inactive, cfg);
         }
     }
 }

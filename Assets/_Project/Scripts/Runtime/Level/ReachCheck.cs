@@ -110,7 +110,7 @@ namespace ItHunts.Level
                 int n = physics.Raycast(sh, d.normalized, Hits, d.magnitude, ~0, QueryTriggerInteraction.Ignore);
                 sb.Append($"épaule → joueur {d.magnitude:0.0} m, obstacles : ");
                 for (int i = 0; i < n; i++)
-                    sb.Append(Hits[i].collider.name).Append(PlayerSight.IsDecor(Hits[i].collider) ? "" : " (ignoré)").Append(", ");
+                    sb.Append(Hits[i].collider.name).Append(Blocks(Hits[i].collider) ? "" : " (ignoré)").Append(", ");
             }
             else
                 sb.Append("aucun NavMesh du traqueur à moins de 27 m");
@@ -181,6 +181,13 @@ namespace ItHunts.Level
             return y;
         }
 
+        /// <summary>
+        /// Obstacle pour le bras du traqueur : un décor, sauf ce qu'il traverse (StalkerPassesThrough : anneaux et écoinçons des arcs),
+        /// comme en jeu (Stalker.Solid). Avant, la mesure comptait les écoinçons comme des murs (cachette fausse, retours du lot, point 5).
+        /// </summary>
+        private static bool Blocks(Collider c) =>
+            PlayerSight.IsDecor(c) && c.GetComponentInParent<ItHunts.Enemies.StalkerPassesThrough>() == null;
+
         private static bool Blocked(PhysicsScene physics, Vector3 from, Vector3 to)
         {
             Vector3 d = to - from;
@@ -189,7 +196,7 @@ namespace ItHunts.Level
                 return false;
             int n = physics.Raycast(from, d / len, Hits, len, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < n; i++)
-                if (PlayerSight.IsDecor(Hits[i].collider))
+                if (Blocks(Hits[i].collider))
                     return true;
             return false;
         }

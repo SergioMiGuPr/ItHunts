@@ -209,10 +209,16 @@ namespace ItHunts.Enemies
 
         private void Start()
         {
-            // Pupilles rouges du modèle de la DA : Damageable écrit l'émission de tous ses rendus à chaque image (noir par défaut).
+            // Pupilles du modèle de la DA (rouge sombre) : Damageable écrit l'émission de tous ses rendus à chaque image ; les bras et
+            // les mains (M_Traqueur_Mains : griffes) ont leur propre lueur ivoire (UpdateClawGlow).
             var dmg = GetComponent<ItHunts.Combat.Damageable>();
+            _dmg = dmg;
             if (dmg != null && settings != null)
-                dmg.ExtraGlow = settings.pupilGlow;
+            {
+                dmg.ExtraGlow = settings.pupilGlow * settings.pupilGlowIntensity;
+                _claw = settings.clawGlowRest;
+                UpdateClawGlow(0f);
+            }
             // Mains de la DA (boîtes unité) : la taille réglée est celle de la main visible, qui est aussi la zone qui tue.
             if (settings != null)
             {
@@ -229,6 +235,129 @@ namespace ItHunts.Enemies
         }
 
         private float _staggerUntil;
+
+        /// <summary>Poses de la vitrine (Test_Vitrine).</summary>
+        public enum ShowcasePose : byte
+        {
+            MarcheVoutee,
+            Prise,
+            MainPlantee,
+            MainsLevees,
+            Revers,
+            Baisse,
+        }
+
+        /// <summary>
+        /// Vitrine : pose sans l'IA (composant désactivé), phase de 0 à 1 en boucle : marche voûtée (bras qui balancent), prise
+        /// (la main s'abat sur la colonne rouge), main plantée, mains levées, revers (main gauche tendue, zone au sol), baissé (sous
+        /// un pont). Affichage seulement.
+        /// </summary>
+        public void ShowPose(ShowcasePose pose, float phase)
+        {
+            if (settings == null || _rb == null)
+                return;
+            _crouch = pose == ShowcasePose.Baisse ? 0.64f : 1f;
+            ApplyCrouch();
+            _grab = GrabPhase.Aucune;
+            Vector3 up = Vector3.up, fwd = transform.forward;
+            Vector3 ground = _rb.position + fwd * 12f;
+            Vector3 handOnGround = ground + up * HandHalfExtents().y;
+            bool leftDone = false;
+            float swing = Mathf.Sin(phase * Mathf.PI * 2f);
+            switch (pose)
+            {
+                case ShowcasePose.MarcheVoutee:
+                    PoseArm(RestHand() + fwd * (1.5f * swing), 0f);
+                    PoseLimb(leftArm, leftHand, LeftShoulder, LeftRestHand() - fwd * (1.5f * swing), transform.rotation);
+                    leftDone = true;
+                    break;
+                case ShowcasePose.Prise:
+                {
+                    float k = Mathf.Clamp01(phase * 1.6f);
+                    Vector3 raised = Shoulder + up * 4f + fwd * 2f;
+                    PoseArm(Vector3.Lerp(raised, handOnGround, k * k), k);
+                    _grab = k < 1f ? GrabPhase.Descente : GrabPhase.Aucune;
+                    if (grabMarker != null)
+                    {
+                        grabMarker.gameObject.SetActive(true);
+                        grabMarker.position = ground + up * 0.05f;
+                        GrabColumn(1f - k * 0.5f);
+                    }
+
+                    break;
+                }
+                case ShowcasePose.MainPlantee:
+                    PoseArm(handOnGround, 1f);
+                    _grab = GrabPhase.Descente;                               // griffes vives : la main est au sol
+                    break;
+                case ShowcasePose.MainsLevees:
+                    PoseArm(Shoulder + up * (4f + 0.5f * swing) + fwd * 2f, 0f);
+                    PoseLimb(leftArm, leftHand, LeftShoulder, LeftShoulder + up * (4f - 0.5f * swing) + fwd * 2f, transform.rotation);
+                    leftDone = true;
+                    break;
+                case ShowcasePose.Revers:
+                {
+                    PoseArm(RestHand(), 0f);
+                    Vector3 dir = Quaternion.AngleAxis(-120f * Mathf.Clamp01(phase * 1.5f), up) * transform.right;
+                    PoseLimb(leftArm, leftHand, LeftShoulder, _rb.position + dir * (Radius + settings.backhandReach * 0.6f) + up * 1.5f,
+                        Quaternion.LookRotation(dir, up));
+                    leftDone = true;
+                    if (backhandZone != null)
+                    {
+                        backhandZone.enabled = true;
+                        float d = 2f * (Radius + settings.backhandReach);
+                        Transform z = backhandZone.transform;
+                        z.position = _rb.position + up * 0.05f;
+                        Vector3 ps = z.parent != null ? z.parent.lossyScale : Vector3.one;
+                        z.localScale = new Vector3(d / Mathf.Max(0.01f, ps.x), 0.01f, d / Mathf.Max(0.01f, ps.z));
+                    }
+
+                    break;
+                }
+                default:
+                    PoseArm(RestHand(), 0f);
+                    break;
+            }
+
+            if (!leftDone)
+                PoseLimb(leftArm, leftHand, LeftShoulder, LeftRestHand(), transform.rotation);
+            if (pose != ShowcasePose.Revers && backhandZone != null)
+                backhandZone.enabled = false;
+            if (pose != ShowcasePose.Prise && grabMarker != null && grabMarker.gameObject.activeSelf)
+                grabMarker.gameObject.SetActive(false);
+            UpdateClawGlow(Time.deltaTime);
+        }
+
+        private ItHunts.Combat.Damageable _dmg;
+        private List<Renderer> _limbRenderers;
+        private float _claw;
+
+        /// <summary>Intensité courante de la lueur des griffes (retours du lot, point 3).</summary>
+        public float ClawGlow => _claw;
+
+        private void LateUpdate() => UpdateClawGlow(Time.deltaTime);
+
+        /// <summary>
+        /// Griffes ivoire (masque de M_Traqueur_Mains) : faibles au repos, plus intenses pendant la prise (annonce, descente, main au
+        /// sol). Jamais de rouge sur les mains : le signal de danger reste la colonne rouge au sol.
+        /// </summary>
+        private void UpdateClawGlow(float dt)
+        {
+            if (settings == null || _dmg == null)
+                return;
+            if (_limbRenderers == null)
+            {
+                _limbRenderers = new List<Renderer>();
+                foreach (Transform t in new[] { arm, hand, leftArm, leftHand })
+                    if (t != null && t.GetComponent<Renderer>() != null)
+                        _limbRenderers.Add(t.GetComponent<Renderer>());
+            }
+
+            float target = _grab != GrabPhase.Aucune || Planted ? settings.clawGlowGrab : settings.clawGlowRest;
+            _claw = dt <= 0f ? target : Mathf.Lerp(_claw, target, 1f - Mathf.Exp(-settings.clawGlowRate * dt));
+            foreach (Renderer r in _limbRenderers)
+                _dmg.GlowOverrides[r] = settings.clawGlow * _claw;
+        }
 
         /// <summary>Pression du combat de boss : recharges de la prise, des mains levées et de la pointe × ce facteur (1 hors combat).</summary>
         public float CooldownScale { get; set; } = 1f;

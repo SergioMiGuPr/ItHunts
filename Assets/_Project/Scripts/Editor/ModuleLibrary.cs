@@ -59,6 +59,17 @@ namespace ItHunts.EditorTools
         public static string BuildAll()
         {
             PropLibrary.BuildAll();
+            return Build(null);
+        }
+
+        /// <summary>
+        /// Reconstruit seulement ces modules (ids de Builders), sans reconstruire les props (PropLibrary.BuildAll remet les greybox à
+        /// la place des modèles de la DA).
+        /// </summary>
+        public static string BuildOnly(params string[] ids) => Build(new HashSet<string>(ids));
+
+        private static string Build(HashSet<string> only)
+        {
             if (!AssetDatabase.IsValidFolder(Dir))
                 AssetDatabase.CreateFolder("Assets/_Project/Prefabs", "Modules");
             _stone = Mat("Module_Pierre", new Color(0.27f, 0.26f, 0.29f));
@@ -70,8 +81,12 @@ namespace ItHunts.EditorTools
             _kit = TestArenaSceneBuilder.BuildKit();
             TestArenaSceneBuilder.UseEditorSpawner();
             var report = new List<string>();
+            int built = 0;
             foreach ((string id, Action<RoomModule> build) in Builders)
             {
+                if (only != null && !only.Contains(id))
+                    continue;
+                built++;
                 var root = new GameObject($"Module_{id}");
                 _m = root.transform;
                 RoomModule mod = root.AddComponent<RoomModule>();
@@ -88,7 +103,7 @@ namespace ItHunts.EditorTools
 
             KitBuild.Spawner = (prefab, parent) => Object.Instantiate(prefab, parent, false);
             AssetDatabase.SaveAssets();
-            return $"{Builders.Length} modules" + (report.Count > 0 ? " ; à vérifier : " + string.Join(" | ", report) : " ; voies dégagées partout");
+            return $"{built} modules" + (report.Count > 0 ? " ; à vérifier : " + string.Join(" | ", report) : " ; voies dégagées partout");
         }
 
         /// <summary>Entrées aux ouvertures actuelles : le milieu de chaque côté de chaque case (ModuleDoor, aimantées).</summary>
@@ -377,14 +392,18 @@ namespace ItHunts.EditorTools
 
         // ---------- Modules ----------
 
-        /// <summary>Anneau d'étages : tours d'angle de 11 m, mezzanines de 5.5 m entre elles, escaliers, ponts à 10 m au-dessus des voies.</summary>
+        /// <summary>
+        /// Anneau d'étages : tours d'angle jusqu'au plafond, mezzanines de 5.5 m entre elles, escaliers, ponts à 10 m au-dessus des voies.
+        /// Tours montées au plafond (retours du lot, point 5) : leur dessus à 11 m était une cachette, hors de portée de la main du
+        /// traqueur (épaule à 1.8 m du centre et 11.1 m de haut, portée 15 m).
+        /// </summary>
         private static void EtagesAnneau(RoomModule m)
         {
             Setup(m, "Étages en anneau", 56f, shape: ModuleShape.Etages);
             float h = _h, lane = 5.5f;
             Quad((sx, sz, q) =>
             {
-                Block($"Tour d'angle {q}", sx * (h - 9f), sx * h, sz * (h - 9f), sz * h, 11f);
+                Block($"Tour d'angle {q}", sx * (h - 9f), sx * h, sz * (h - 9f), sz * h, Ceil);
                 Block($"Mezzanine le long de z {q}", sx * (h - 5f), sx * h, sz * lane, sz * (h - 9f), 5.5f);
                 Block($"Mezzanine le long de x {q}", sx * lane, sx * (h - 9f), sz * (h - 5f), sz * h, 5.5f);
                 Stairs($"Escalier {q}", new Vector3(sx * (h - 5f - 1.5f), 0f, sz * 9f), new Vector3(-sx, 0f, 0f) * 0f + new Vector3(0f, 0f, sz), 5.5f);
@@ -403,21 +422,26 @@ namespace ItHunts.EditorTools
             Bridge("sud", new Vector3(-(h - 9f), 0f, -(h - 4.5f)), new Vector3(h - 9f, 0f, -(h - 4.5f)));
             Bridge("est", new Vector3(h - 4.5f, 0f, -(h - 9f)), new Vector3(h - 4.5f, 0f, h - 9f));
             Bridge("ouest", new Vector3(-(h - 4.5f), 0f, -(h - 9f)), new Vector3(-(h - 4.5f), 0f, h - 9f));
-            ChestAt(h - 3f, h - 3f, 225f, 11f);
+            ChestAt(h - 12.5f, h - 2.2f, 180f, 5.5f);                    // sur la mezzanine (la tour monte au plafond)
             ChestAt(-(h - 2.2f), -(h - 12.5f), 90f, 5.5f);
             WallTorches();
             Common(8, 3, 5);
         }
 
-        /// <summary>Galeries hautes (11 m) à l'est et à l'ouest, reliées par deux ponts ; échafaudages pour monter.</summary>
+        /// <summary>
+        /// Galeries hautes (11 m) à l'est et à l'ouest, reliées par deux ponts ; échafaudages pour monter. Carré d'angle de chaque
+        /// galerie (6 × 6 m) monté au plafond (retours du lot, point 5) : c'était une cachette hors de portée du traqueur.
+        /// </summary>
         private static void EtagesGaleries(RoomModule m)
         {
             Setup(m, "Galeries hautes", 64f, shape: ModuleShape.Etages);
             float h = _h, lane = 5.5f;
             foreach (float sx in new[] { 1f, -1f })
             {
-                Block($"Galerie {sx} nord", sx * (h - 6f), sx * h, lane, h, 11f);
-                Block($"Galerie {sx} sud", sx * (h - 6f), sx * h, -h, -lane, 11f);
+                Block($"Galerie {sx} nord", sx * (h - 6f), sx * h, lane, h - 6f, 11f);
+                Block($"Galerie {sx} sud", sx * (h - 6f), sx * h, -(h - 6f), -lane, 11f);
+                Block($"Angle {sx} nord (jusqu'au plafond)", sx * (h - 6f), sx * h, h - 6f, h, Ceil);
+                Block($"Angle {sx} sud (jusqu'au plafond)", sx * (h - 6f), sx * h, -h, -(h - 6f), Ceil);
                 foreach (float sz in new[] { 1f, -1f })
                 {
                     Block($"Mezzanine {sx} {sz}", sx * lane, sx * (h - 6f), sz * (h - 5f), sz * h, 5.5f);
@@ -434,8 +458,8 @@ namespace ItHunts.EditorTools
 
             Bridge("nord", new Vector3(-(h - 6f), 0f, 16f), new Vector3(h - 6f, 0f, 16f));
             Bridge("sud", new Vector3(-(h - 6f), 0f, -16f), new Vector3(h - 6f, 0f, -16f));
-            ChestAt(h - 3f, h - 4f, 270f, 11f);
-            ChestAt(-(h - 3f), -(h - 4f), 90f, 11f);
+            ChestAt(h - 3f, h - 9f, 270f, 11f);                          // hors du carré d'angle (monté au plafond)
+            ChestAt(-(h - 3f), -(h - 9f), 90f, 11f);
             WallTorches(12f);
             Common(10, 4, 5);
         }

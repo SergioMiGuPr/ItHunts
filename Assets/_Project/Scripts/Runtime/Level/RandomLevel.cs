@@ -247,6 +247,7 @@ namespace ItHunts.Level
             Progress = 0.88f;
             if (async)
                 yield return null;
+            ClearTorches();
             ThinTorches();
             Batch();
             Physics.SyncTransforms();
@@ -665,7 +666,9 @@ namespace ItHunts.Level
                 Vector3 wallAxis = wall == DoorSide.Nord || wall == DoorSide.Sud ? Vector3.right : Vector3.forward;
                 float a0 = Along(face + latS * (l.Width * 0.5f + T), wallAxis), a1 = Along(face + latS * (l.Width * 0.5f + T + DuctW), wallAxis);
                 AddCut(_roomCuts, (room, wall), new Cut(Mathf.Min(a0, a1) + 0.25f, Mathf.Max(a0, a1) - 0.25f, face.y + DuctY, face.y + DuctY + DuctH));
-                float c0 = Along(face + axis * (T + 4f), axis), c1 = Along(face + axis * (T + 7f), axis);
+                // Ouverture côté couloir de 4 m (T + 3.5 à T + 7.5) : à 3 m, le bout du conduit restait hors de portée de la main du
+                // traqueur sur une carte sur 20 (retours du lot, point 5).
+                float c0 = Along(face + axis * (T + 3.5f), axis), c1 = Along(face + axis * (T + 7.5f), axis);
                 AddCut(_corridorCuts, (p.Link, p.Side), new Cut(Mathf.Min(c0, c1), Mathf.Max(c0, c1), face.y + DuctY, face.y + DuctY + DuctH));
             }
 
@@ -734,8 +737,8 @@ namespace ItHunts.Level
                 NM($"{nm} : plaque (salle) droite", root, Pt(-0.08f, lc + (open + side) * 0.5f, DuctY + DuctH * 0.5f), Size(0.12f, side, DuctH), false);
                 NM($"{nm} : plaque (couloir)", root, Pt(ac, w * 0.5f - 0.08f, DuctY * 0.5f), Size(9f, 0.12f, DuctY), false);
                 NM($"{nm} : plaque (couloir) haut", root, Pt(ac, w * 0.5f - 0.08f, (DuctY + DuctH + top) * 0.5f), Size(9f, 0.12f, top - DuctY - DuctH), false);
-                NM($"{nm} : plaque (couloir) avant", root, Pt(T + 2.75f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2.5f, 0.12f, DuctH), false);
-                NM($"{nm} : plaque (couloir) arrière", root, Pt(T + 8.25f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2.5f, 0.12f, DuctH), false);
+                NM($"{nm} : plaque (couloir) avant", root, Pt(T + 2.5f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2f, 0.12f, DuctH), false);
+                NM($"{nm} : plaque (couloir) arrière", root, Pt(T + 8.5f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2f, 0.12f, DuctH), false);
                 if (kit != null && kit.torche != null)
                     KitBuild.Piece(kit.torche, root, Pt(T + 2f, w * 0.5f - 0.35f, DuctY - 1f), Mathf.Atan2(-latS.x, -latS.z) * Mathf.Rad2Deg);
             }
@@ -1141,6 +1144,100 @@ namespace ItHunts.Level
         /// </summary>
         /// <summary>Torches retirées (performance, MapLayoutSettings.torchShare) : une sur deux par défaut, dans l'ordre de construction.</summary>
         public int RemovedTorches { get; private set; }
+
+        /// <summary>Torches déplacées ou retirées parce qu'elles touchaient un arc, un pilier ou un encadrement (mesures).</summary>
+        public int MovedTorches { get; private set; }
+        public int DroppedTorches { get; private set; }
+
+        /// <summary>Préfixes des pièces dont les torches s'écartent : arcs (anneau, écoinçons, piédroits), piliers, colonnes, portes.</summary>
+        public static readonly string[] TorchObstacles =
+            { "Arc (porte la voûte)", "Kit_Arc", "Kit_Pilier", "Pilier", "Piédroit", "Prop_Colonne", "Colonne", "Kit_PortePiece", "Kit_GrandePorte", "Cadre" };
+
+        private static bool IsTorchObstacle(Transform t)
+        {
+            for (Transform a = t; a != null; a = a.parent)
+                foreach (string p in TorchObstacles)
+                    if (a.name.StartsWith(p))
+                        return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Torches écartées des arcs, des piliers, des colonnes et des encadrements de porte (retours du lot, point 7) : une torche
+        /// à moins de torchClearance glisse le long de son mur (pas de 0.5 m, jusqu'à torchSlide, toujours contre un mur), sinon
+        /// elle est retirée. Avant le regroupement du décor (les pièces ont encore leurs propres rendus).
+        /// </summary>
+        private void ClearTorches()
+        {
+            MovedTorches = DroppedTorches = 0;
+            if (settings == null || settings.torchClearance <= 0f)
+                return;
+            var obstacles = new List<Bounds>();
+            foreach (Renderer r in _root.GetComponentsInChildren<Renderer>(true))
+                if (!r.name.StartsWith("Prop_Torche") && IsTorchObstacle(r.transform) && !IsTorchPart(r.transform))
+                    obstacles.Add(r.bounds);
+            Physics.SyncTransforms();
+            foreach (Transform t in _root.GetComponentsInChildren<Transform>(true))
+            {
+                if (!t.name.StartsWith("Prop_Torche") || !t.gameObject.activeInHierarchy)
+                    continue;
+                if (Clear(TorchBounds(t), obstacles))
+                    continue;
+                Vector3 home = t.position;
+                bool placed = false;
+                for (float d = 0.5f; d <= settings.torchSlide + 1e-3f && !placed; d += 0.5f)
+                    foreach (float side in new[] { 1f, -1f })
+                    {
+                        Vector3 at = home + t.right * (side * d);
+                        // Toujours contre un mur : derrière la torche (son dos), à moins de 0.8 m.
+                        if (!Physics.Raycast(at + t.forward * 0.3f + Vector3.up * 0.3f, -t.forward, 1.1f, ~0, QueryTriggerInteraction.Ignore))
+                            continue;
+                        t.position = at;
+                        if (Clear(TorchBounds(t), obstacles))
+                        {
+                            placed = true;
+                            break;
+                        }
+                    }
+
+                if (placed)
+                    MovedTorches++;
+                else
+                {
+                    t.position = home;
+                    t.gameObject.SetActive(false);
+                    DroppedTorches++;
+                }
+            }
+
+            bool Clear(Bounds torch, List<Bounds> list)
+            {
+                torch.Expand(2f * settings.torchClearance);
+                foreach (Bounds b in list)
+                    if (b.Intersects(torch))
+                        return false;
+                return true;
+            }
+        }
+
+        private static bool IsTorchPart(Transform t)
+        {
+            for (Transform a = t; a != null; a = a.parent)
+                if (a.name.StartsWith("Prop_Torche"))
+                    return true;
+            return false;
+        }
+
+        private static Bounds TorchBounds(Transform torch)
+        {
+            Renderer[] rs = torch.GetComponentsInChildren<Renderer>(true);
+            if (rs.Length == 0)
+                return new Bounds(torch.position, Vector3.one * 0.3f);
+            Bounds b = rs[0].bounds;
+            foreach (Renderer r in rs)
+                b.Encapsulate(r.bounds);
+            return b;
+        }
 
         private void ThinTorches()
         {
