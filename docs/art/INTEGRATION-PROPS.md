@@ -235,6 +235,39 @@ rig de contrôle pour retoucher les animations à la main ; les os exportés res
 
 Planches : `docs/art/rendus/Lot2/Goule_<Animation>.jpg` (5 images réparties sur chaque clip, à 1.8 m).
 
+### Traqueur (`SK_Traqueur`, armature `Traqueur`, 32 os)
+
+**Modèle à utiliser :** `SK_Traqueur` remplace `SM_Traqueur_Corps` et les pièces `SM_Traqueur_Bras`, `_Main_D`, `_Main_G`
+(gardées pour l'aperçu, plus à jour). En (0, 0, 0) sous « Corps (se baisse) », rotation nulle (avant +Z). Deux
+`SkinnedMeshRenderer` : `SK_Traqueur` (24 804 triangles ; `M_Traqueur` sur le corps, `M_Traqueur_Mains` sur les bras et
+les mains) et `SK_Traqueur_Cheveux` (7 mèches, 1 344 triangles, `M_Traqueur_Cheveux`). Import réglé : *Generic*,
+*Bake Axis Conversion*, boucles.
+
+**Géant voûté** (pose de repos = pose voûtée) : ≈ 20 m debout ; épaule **11.7 m**, yeux **12.3 m**, sommet du crâne
+**13.9 m** (tient dans 14 m), genou 3.8 m, bout des doigts 4.0 m (au genou). Avec des yeux à 13 m, le crâne dépasserait
+14 m (2 m de crâne au-dessus des yeux) : j'ai gardé 14 m comme limite. Mains : 4.4 m du poignet au bout des doigts.
+Écart avec le code : l'épaule de `Stalker.cs` est à 12 m de haut et `width` × 0.4 = 2.8 m du centre ; celle du modèle
+est à 11.7 m et **2.6 m** du centre, **4 m devant le pivot** (dos voûté).
+
+**Os que le code oriente** (après l'`Animator`, dans `LateUpdate`) : `Epaule.R/L` (clavicule), `Bras.R/L` (épaule),
+`AvantBras.R/L` (coude), `Main.R/L` (poignet) ; la main droite est celle de la prise. Doigts : `Doigts_1`, `Doigts_2`,
+`Pouce_1`, `Pouce_2` (les quatre doigts groupés). `Machoire` (déboîtée au repos : ouverte et décalée).
+
+| Clip (`Traqueur|…`) | Durée | Boucle | Contenu | À caler sur le jeu |
+|---|---|---|---|---|
+| `Traqueur_Repos` | 3.0 s | oui | respiration, tête et bras qui oscillent | — |
+| `Traqueur_Marche` | 2.0 s | oui | marche voûtée lourde (sans déplacement de la racine) | vitesse de lecture ∝ vitesse de poursuite |
+| `Traqueur_Prise` | **0.5 s** | non | bras droit tendu vers l'avant (0 → 0.32 s), **griffes qui se referment de 0.32 à 0.5 s** | annonce de la prise (0.5 s) ; le code oriente ensuite `Bras.R` → `Main.R` vers la cible |
+| `Traqueur_MainsLevees` | **0.2 s** | non | deux mains au-dessus de la tête (dernière image tenue) | mains levées (0.2 s) |
+| `Traqueur_MainPlantee` | 2.0 s | non | main droite frappée au sol (**impact à 0.2 s**), **plantée de 0.2 à 1.7 s (1.5 s)**, relevée de 1.7 à 2.0 s | main plantée (1.5 s) |
+| `Traqueur_Revers` | **0.2 s** | non | revers du bras gauche, de travers à l'extérieur | revers (0.2 s) |
+| `Traqueur_PassageBas` | 2.4 s | oui | marche accroupie, sommet ≈ **8.6 m** (passages de 9 m) | passage baissé |
+| `Traqueur_Machoire` | 2.4 s | oui | **mâchoire seule** (balancement de côté, ouverture) | sur un calque additionnel avec un masque limité à `Machoire` |
+
+Lueurs : pupilles par `_EmissionColor` de `M_Traqueur` (rouge par défaut) ; griffes par `_EmissionColor` de
+`M_Traqueur_Mains` (repos (0.35, 0.32, 0.25), prise (3.5, 0.49, 0.21)). Planches : `rendus/Lot2/Traqueur_<Animation>.jpg`,
+`Traqueur_texture_gros_plans.jpg`.
+
 ## 5. Props encore à produire (catalogue d'`ART-HANDOFF`)
 
 Greybox actuelles (bornes de leur maillage) : à garder comme cotes et pivots. **Attrapables** : gardent leur Rigidbody,
