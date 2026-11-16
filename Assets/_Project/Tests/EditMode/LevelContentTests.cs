@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -109,6 +110,45 @@ namespace ItHunts.Tests
             Assert.That(Count(Base, rt + "Level/FallVoid.cs"), Is.GreaterThanOrEqualTo(6), "galeries et fosses de parcours");
             Assert.That(Count(Base, rt + "Level/CrumblePlatform.cs"), Is.GreaterThanOrEqualTo(30));
             Assert.That(text.Contains("voie au sol"), Is.False, "pentes sur toute la largeur : plus de vide à côté");
+        }
+
+        [Test]
+        public void Arc_Ecoincons_DeLExtradosAuPlafond_DUnMurALAutre()
+        {
+            const float width = 14f, height = 15f, sx = 1f, rise = 4f;
+            List<Vector2> outline = KitBuild.SpandrelOutline(width, sx, rise, height);
+            Assert.That(outline[0].x, Is.EqualTo(-7.1f).Within(1e-3f), "part du mur (dans son épaisseur)");
+            Assert.That(outline[outline.Count - 1].x, Is.EqualTo(0f).Within(1e-3f), "jusqu'à la clé");
+            Vector2[] e = KitBuild.ArchExtrados();
+            for (int i = 0; i < outline.Count; i++)
+            {
+                if (i > 0)
+                    Assert.That(outline[i].x, Is.GreaterThan(outline[i - 1].x));
+                Assert.That(outline[i].y, Is.LessThanOrEqualTo(height), "sous le plafond");
+            }
+            // Le bas reste dans l'anneau (sous l'extrados, au-dessus de l'intrados) : pas de jour entre l'arc et le mur de pierre.
+            for (int i = 1; i < e.Length; i++)
+            {
+                float yLow = KitBuild.ArchMidline[i].y + rise - KitBuild.ArchRingThickness * 0.5f;
+                float yHigh = e[i].y + rise;
+                Vector2 p = outline.First(o => Mathf.Abs(o.x - e[i].x * sx) < 1e-3f);
+                Assert.That(p.y, Is.InRange(yLow, yHigh), $"point {i}");
+            }
+
+            var root = new GameObject("arc (test)").transform;
+            try
+            {
+                Transform col = KitBuild.Spandrels(root, null, width, height, sx, rise);
+                var boxes = col.GetComponentsInChildren<BoxCollider>();
+                Assert.That(boxes.Length, Is.GreaterThanOrEqualTo(2 * (KitBuild.ArchMidline.Length - 1)));
+                Assert.That(col.GetComponent<StalkerPassesThrough>(), Is.Not.Null);
+                Assert.That(boxes.Max(b => b.transform.localPosition.y + b.size.y * 0.5f), Is.GreaterThan(height), "entre dans le plafond");
+                Assert.That(boxes.Min(b => b.transform.localPosition.y - b.size.y * 0.5f), Is.GreaterThan(rise - KitBuild.SpandrelTuck - 0.01f), "rien sous la naissance de l'arc");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root.gameObject);
+            }
         }
 
         [Test]

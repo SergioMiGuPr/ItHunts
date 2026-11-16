@@ -17,6 +17,19 @@ namespace ItHunts.Player
     }
 
     /// <summary>
+    /// Aperçu forcé de la vue (scène vitrine, captures) : une pose de fond ou un état de l'artefact sans passer par la simulation.
+    /// Aucun : la vue suit l'état simulé du joueur (en jeu).
+    /// </summary>
+    public enum ViewPreview : byte
+    {
+        Aucun,
+        Traction,
+        RepulsionTenue,
+        ObjetTenu,
+        Jet,
+    }
+
+    /// <summary>
     /// Vue première personne (greybox, étape 5) : deux mains, l'orbe dans la paume droite, sur une couche propre à chaque
     /// joueur (FirstPersonP1..P4). Option 2 (D-028, après mesure dans un build) : pas de caméra en plus ; une passe
     /// « Render Objects » du renderer URP dessine la couche des mains à 60°, après une passe qui efface la profondeur
@@ -72,8 +85,23 @@ namespace ItHunts.Player
         public FpsViewSettings Settings => settings;
         public Camera OverlayCamera => overlayCamera;
         public Transform Orb => orb;
+        /// <summary>Racine des mains (repère de la vue) : l'artefact qui flotte reste pointé vers l'avant de la vue.</summary>
+        public Transform ViewRoot => viewRoot;
         public int Layer => _layer;
         public HandGesture Gesture { get; private set; }
+
+        /// <summary>Aperçu forcé (vitrine) : pose de fond ou jet de la lanterne, sans la simulation.</summary>
+        public ViewPreview Preview { get; set; }
+        /// <summary>Pose de fond affichée (lue par les bras de la DA) : traction, répulsion maintenue, objet tenu.</summary>
+        public bool ShowsTraction { get; private set; }
+        public bool ShowsRepelHold { get; private set; }
+        public bool ShowsHolding { get; private set; }
+        /// <summary>Jet de la lanterne affiché (simulation ou aperçu).</summary>
+        public bool ShowsJet => Preview == ViewPreview.Jet || (_artifact != null && _artifact.LanternSettings != null && _artifact.Lantern.Jetting);
+
+        /// <summary>Joue un geste de la main droite (vitrine) ; le recul d'un tir du barillet avec PreviewRecoil.</summary>
+        public void PlayGesture(HandGesture gesture) => StartGesture(gesture, MovementState.NeverTick);
+        public void PreviewRecoil() => _recoilStart = Time.time;
         /// <summary>Avancement du geste en cours (0 au début, 1 à la fin) : poses des bras de la DA (FpsArms).</summary>
         public float GestureProgress { get; private set; } = 1f;
         /// <summary>Fermeture des doigts (°, lissée) : main droite et main gauche (repli des bras de la DA sans clips).</summary>
@@ -266,19 +294,22 @@ namespace ItHunts.Player
             // Pose de fond de la main droite : traction (bras tendu), objet tenu (main relevée), repos.
             Vector3 baseOffset = Vector3.zero, baseEuler = Vector3.zero;
             float curl = 25f;                                            // doigts un peu fermés au repos
-            if (m.RepelHolding)
+            ShowsRepelHold = m.RepelHolding || Preview == ViewPreview.RepulsionTenue;
+            ShowsTraction = !ShowsRepelHold && (s.Mode == MovementMode.Traction || Preview == ViewPreview.Traction);
+            ShowsHolding = !ShowsRepelHold && !ShowsTraction && (t.Holding || Preview == ViewPreview.ObjetTenu);
+            if (ShowsRepelHold)
             {
                 baseOffset = settings.tractionOffset + new Vector3(0f, -0.04f, 0.02f);
                 baseEuler = new Vector3(-70f, 0f, 0f);                     // paume tendue vers l'avant : on repousse
                 curl = 0f;
             }
-            else if (s.Mode == MovementMode.Traction)
+            else if (ShowsTraction)
             {
                 baseOffset = settings.tractionOffset;
                 baseEuler = new Vector3(-55f, 0f, 0f);                     // paume vers l'avant
                 curl = 0f;
             }
-            else if (t.Holding)
+            else if (ShowsHolding)
             {
                 baseOffset = settings.holdOffset;
                 baseEuler = new Vector3(-35f, 0f, 0f);
@@ -359,7 +390,7 @@ namespace ItHunts.Player
             {
                 leftCurl = 70f;
                 ItHunts.Artifacts.LanternState ls = _artifact.Lantern;
-                _jetPush = Mathf.Lerp(_jetPush, ls.Jetting ? 1f : 0f, 1f - Mathf.Exp(-20f * Time.deltaTime));
+                _jetPush = Mathf.Lerp(_jetPush, ShowsJet ? 1f : 0f, 1f - Mathf.Exp(-20f * Time.deltaTime));
                 float shake = Mathf.Sin(Time.time * 60f) * 0.004f * _jetPush;
                 leftOffset += new Vector3(shake, 0.01f * _jetPush, lantern.jetPush * _jetPush);
                 leftEuler += new Vector3(-6f * _jetPush, 0f, 0f);

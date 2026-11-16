@@ -132,6 +132,10 @@ namespace ItHunts.Level
             int index = IndexOf(pi);
             if (index > 0 && PlayerInput.all.Count > 1 && SplitScreen.Current != null)
                 o.Menu.Add("Quitter l'écran partagé", () => LeaveSplit(o));
+            // Scènes de test (Test_*) : accès direct à la vitrine (retours du lot, point 9).
+            string active = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (active.StartsWith("Test_") && active != MainMenu.VitrineScene)
+                o.Menu.Add("Vitrine (assets et ennemis)", () => { RunSession.End(); RunSession.Load(MainMenu.VitrineScene); });
             o.Menu.Add("Retour au menu principal", ToMenu);
             o.Menu.FocusFirst();
             _open.Add(o);

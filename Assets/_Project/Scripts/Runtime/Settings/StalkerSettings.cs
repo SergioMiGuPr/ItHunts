@@ -87,8 +87,17 @@ namespace ItHunts.Settings
         [Min(0f)] public float shoulderHeight = 11.1f;
         [Tooltip("Écart latéral de l'épaule au centre (m) : 1.8 m, l'épaule visible du modèle (avant : 0.4 × la largeur, 2.8 m).")]
         [Min(0f)] public float shoulderSide = 1.8f;
-        [Tooltip("Pupilles rouges (émission HDR par le masque de M_Traqueur), toujours allumées.")]
-        [ColorUsage(false, true)] public Color pupilGlow = new Color(4f, 0.25f, 0.15f);
+        [Tooltip("Pupilles (émission par le masque de M_Traqueur), toujours allumées : rouge sombre et discret (retours du lot, point 3).")]
+        [ColorUsage(false, true)] public Color pupilGlow = new Color(0.55f, 0.05f, 0.03f);
+        [Tooltip("Intensité des pupilles (× la couleur).")]
+        [Range(0f, 2f)] public float pupilGlowIntensity = 0.6f;
+        [Tooltip("Griffes (masque d'émission de M_Traqueur_Mains) : ivoire. Pas de rouge sur les mains : la colonne au sol est le signal.")]
+        [ColorUsage(false, true)] public Color clawGlow = new Color(1f, 0.93f, 0.78f);
+        [Tooltip("Intensité des griffes au repos, puis pendant la prise (annonce, descente, main au sol).")]
+        [Range(0f, 3f)] public float clawGlowRest = 0.15f;
+        [Range(0f, 3f)] public float clawGlowGrab = 0.7f;
+        [Tooltip("Vitesse de passage d'une intensité à l'autre (1/s).")]
+        [Min(0.1f)] public float clawGlowRate = 8f;
         [Min(0f)] public float handReach = 15f;
         [Tooltip("Annonce : le bras se lève et une lueur rouge marque la zone visée pendant ce temps (s).")]
         [Min(0f)] public float grabTelegraph = 0.5f;

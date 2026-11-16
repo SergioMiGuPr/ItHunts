@@ -130,10 +130,55 @@ namespace ItHunts.Enemies
             _hiss = ItHunts.Audio.ProceduralSfx.ToClip("Goule : sifflement", ItHunts.Audio.ProceduralSfx.GhoulHiss());
             if (telegraph != null)
                 telegraph.enabled = false;
+            ApplySize();
+        }
+
+        private float _sizeApplied = -1f;
+        private Vector3 _telegraphBase;
+
+        /// <summary>
+        /// Taille réglée (GhoulSettings.bodyHeight, retours du lot, point 4) : capsule (hauteur, centre, rayon), modèle sous
+        /// « Corps (visuel) » (mis à l'échelle, le code garde l'écrasement de l'annonce et la bascule sur les murs) et disque d'annonce.
+        /// Rejouée si le réglage change en Play Mode.
+        /// </summary>
+        public void ApplySize()
+        {
+            if (settings == null)
+                return;
+            float s = settings.BodyScale;
+            if (Mathf.Approximately(s, _sizeApplied) && _capsule != null && Mathf.Approximately(_capsule.radius, settings.bodyRadius))
+                return;
+            _sizeApplied = s;
+            if (_capsule != null)
+            {
+                _capsule.height = GhoulSettings.ModelHeight * s;
+                _capsule.center = new Vector3(0f, _capsule.height * 0.5f, 0f);
+                _capsule.radius = Mathf.Min(settings.bodyRadius, _capsule.height * 0.5f);
+            }
+
+            if (visual != null)
+                foreach (Transform child in visual)
+                    child.localScale = Vector3.one * s;
+            // Seuils de LOD réglables (la DA les règle à l'import pour 1.1 m ; le .meta de son modèle ne se touche pas sur main).
+            foreach (LODGroup group in GetComponentsInChildren<LODGroup>(true))
+            {
+                LOD[] lods = group.GetLODs();
+                for (int i = 0; i < lods.Length && i < 3; i++)
+                    lods[i].screenRelativeTransitionHeight = settings.lodTransitions[i];
+                group.SetLODs(lods);
+                group.RecalculateBounds();
+            }
+            if (telegraph != null)
+            {
+                if (_telegraphBase == Vector3.zero)
+                    _telegraphBase = telegraph.transform.localScale;
+                telegraph.transform.localScale = new Vector3(_telegraphBase.x * s, _telegraphBase.y, _telegraphBase.z * s);
+            }
         }
 
         private void Start()
         {
+            ApplySize();
             _move.StayOnMesh = true;
             _nav = FindFirstObjectByType<ZoneNavMesh>();
             if (_nav != null)
@@ -1097,8 +1142,10 @@ namespace ItHunts.Enemies
             {
                 _glowShown = on;
                 _glowApplied = true;
+                // Rouge sombre et discret, au repos comme pendant l'annonce (retours du lot, point 3) : une légère montée signale le
+                // bond, avec la gueule (même masque) et le disque au sol ; les trois LOD partagent le matériau et le masque.
                 if (_damageable != null && settings != null)
-                    _damageable.ExtraGlow = on ? settings.leapGlowColor : Color.black;
+                    _damageable.ExtraGlow = settings.eyeGlowColor * (on ? settings.eyeGlowAnnounce : settings.eyeGlowRest);
                 return;
             }
 
@@ -1176,7 +1223,22 @@ namespace ItHunts.Enemies
 
         /// <summary>Signaux de l'annonce allumés (tests, mesures).</summary>
         public bool SignalsOn => (telegraph != null && telegraph.enabled) || (_glowApplied && _glowShown)
-            || (_damageable != null && _damageable.ExtraGlow.maxColorComponent > 0.001f);
+            || (_model == null && _damageable != null && _damageable.ExtraGlow.maxColorComponent > 0.001f);
+
+        /// <summary>
+        /// Vitrine (Test_Vitrine) : affiche un état sans l'IA (composant désactivé) : mode, depuis combien de temps (annonce qui
+        /// s'écrase), mur (de climbFrom vers climbTo) et écrasement en plus (réception). Affichage seulement.
+        /// </summary>
+        public void ShowPose(GhoulMode mode, float modeAge, Vector3 climbFrom, Vector3 climbTo, float squash = 1f)
+        {
+            Mode = mode;
+            _modeSince = Time.time - modeAge;
+            _climbFrom = climbFrom;
+            _climbTo = climbTo;
+            UpdateVisual();
+            if (visual != null && !Mathf.Approximately(squash, 1f))
+                visual.localScale = Vector3.Scale(visual.localScale, new Vector3(1f / Mathf.Sqrt(squash), squash, 1f / Mathf.Sqrt(squash)));
+        }
 
         private void UpdateVisual()
         {

@@ -4,6 +4,30 @@
 
 ## Étape en cours
 
+**Retours du lot (`retours-lot`, depuis `main` après fusion de `correctifs-rendu`, `integration-lot` et de la PR #5) — 2026-11-16,
+non poussée, à tester en playtest.** PR #5 vérifiée (périmètre, `.meta`, import sans erreur, 392 tests) et fusionnée (commit de
+fusion, branche `art` gardée), `main` poussé ; branches locales `correctifs-rendu` et `integration-lot` supprimées. Un commit par point :
+- **1. Ambiance « sombre » :** ambiance 0.022, brouillard 6 → 38 m ; colonne du traqueur et âmes nettes à 50 m, caisse à 30 m, annonce
+  du bond (disque) à 20 m.
+- **2. Arcs :** cause = forme (anneau en ogive sous un plafond plat, 3 à 6 m de vide) ; écoinçons de pierre posés par le jeu
+  (`KitBuild.Spandrels`, collision traversée par le traqueur) ; demande d'un arc à écoinçons pleins à la DA (ART-HANDOFF).
+- **3. Lueurs :** yeux de la goule et pupilles du traqueur en rouge sombre réglable (`eyeGlowRest/Announce`, `pupilGlowIntensity`) ;
+  griffes ivoire (`M_Traqueur_Mains` posé sur les bras et les mains, `clawGlowRest` 0.15 → `clawGlowGrab` 0.7) ; 3 LOD de la goule.
+- **4. Goule à 1.8 m :** `bodyHeight` (modèle × 1.64, capsule 0.55 × 1.8 m, disque) ; LOD réglés par le jeu (0.33 / 0.13 / 0.016) ;
+  agent NavMesh 0.45 × 1.5 m (à 1.9 m, des couloirs en pente se fermaient) ; masse inchangée (50 kg).
+- **5. Cachettes :** tours des Étages en anneau et angles des Galeries hautes au plafond, ouverture des passages côté couloir à 4 m,
+  ReachCheck aligné sur le jeu (arcs traversés) ; **0 cachette sur 20 seeds**.
+- **6. Vue FPS :** mains plus hautes (avant-bras visibles), paumes vers le haut (`Pose_OrbePaume`), orbe et artefact qui flottent
+  (`floatHeight/Amplitude/Period/Spin/Wobble`), barillet sans canon (tir depuis la chambre active), poses de la PR #5 branchées,
+  clips `Anim_*` prévus (cuits par le menu des bras, `Anim_Repos` remplace le repos) ; couverture 9.1 %, viseur dégagé.
+- **7. Torches :** écartées des arcs, piliers, colonnes et encadrements (`torchClearance` 1.2 m, glissent jusqu'à 4 m, sinon retirées).
+- **8. Parcours :** rien (level design module par module).
+- **9. Vitrine `Test_Vitrine` :** menu principal (« Playtest : vitrine ») et menu pause des scènes de test ; constructeur *ItHunts >
+  Reconstruire la scène Test_Vitrine* ; panneau F1 (personnage, gestes, ambiance, figé, poursuite).
+- **Aussi :** Échap / Start ouvrent la pause partout ; Play part de MainMenu (*ItHunts > Play démarre depuis MainMenu*).
+- **Piège noté :** ne jamais modifier une scène ouverte sur le disque (boîte « scène modifiée » qui bloque l'éditeur) : ouvrir une
+  scène vide d'abord.
+
 **Intégration du lot art de la PR #4 (`integration-lot` = `correctifs-rendu` + `main` après fusion de la PR #4) — 2026-11-16,
 non poussée, à tester en playtest.** PR #4 vérifiée (périmètre `Assets/Art/`, `docs/art/`, manifeste ; 111 assets avec `.meta` ;
 import sans erreur ; 386 tests), fusionnée dans `main` (commit de fusion, branche `art` gardée) et poussée. Un commit par bloc.

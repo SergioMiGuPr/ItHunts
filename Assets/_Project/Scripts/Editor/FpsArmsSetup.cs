@@ -61,6 +61,7 @@ namespace ItHunts.EditorTools
                 so.FindProperty("leftHand").objectReferenceValue = vso.FindProperty("leftHand").objectReferenceValue;
                 so.FindProperty("outline").objectReferenceValue = root.GetComponentInChildren<HandsOutline>(true);
                 so.ApplyModifiedPropertiesWithoutUndo();
+                BarrelWithoutCanon(root);
                 PrefabUtility.SaveAsPrefabAsset(root, playerPath);
             }
             finally
@@ -70,6 +71,46 @@ namespace ItHunts.EditorTools
 
             AssetDatabase.SaveAssets();
             return $"poses : {r} ; {chars} personnages avec bras ; FpsArms sur le joueur";
+        }
+
+        /// <summary>
+        /// Barillet sans canon (retours du lot, point 6) : seul le barillet flotte dans la main ; le canon greybox est retiré et la
+        /// bouche (départ de la traînée) se pose sur la face avant de la chambre du haut, la chambre active (le barillet tourne
+        /// sous elle). Le tir reste sous le viseur (il part de la caméra). Renvoie la position locale de la bouche.
+        /// </summary>
+        public static Vector3 BarrelWithoutCanon(GameObject player)
+        {
+            var view = player.GetComponent<ItHunts.Artifacts.BarrelView>();
+            if (view == null)
+                return Vector3.zero;
+            var so = new SerializedObject(view);
+            var root = so.FindProperty("barrelRoot").objectReferenceValue as Transform;
+            var muzzle = so.FindProperty("muzzle").objectReferenceValue as Transform;
+            if (root == null)
+                return Vector3.zero;
+            Transform canon = root.Find("Canon");
+            if (canon != null)
+                Object.DestroyImmediate(canon.gameObject);
+            if (muzzle == null)
+                return Vector3.zero;
+            // Chambre du haut au repos (SM_Barillet_Chambre_01) et avant du modèle (bornes du maillage, repère de la racine).
+            Transform top = root.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name.EndsWith("Chambre_01"));
+            float front = 0f;
+            foreach (MeshFilter mf in root.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (mf.sharedMesh == null)
+                    continue;
+                Bounds b = mf.sharedMesh.bounds;
+                Matrix4x4 m = root.worldToLocalMatrix * mf.transform.localToWorldMatrix;
+                for (int i = 0; i < 8; i++)
+                    front = Mathf.Max(front, m.MultiplyPoint3x4(b.center + Vector3.Scale(b.extents,
+                        new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1))).z);
+            }
+
+            float y = top != null ? root.InverseTransformPoint(top.position).y : 0.031f;
+            muzzle.localPosition = new Vector3(0f, y, front + 0.005f);
+            muzzle.name = "Bouche (chambre active)";
+            return muzzle.localPosition;
         }
 
         /// <summary>Rotation locale de chaque os pour chaque clip (Pose_Attraper : 3 clés).</summary>
@@ -87,8 +128,25 @@ namespace ItHunts.EditorTools
                 side.bones = bones.Select(b => b.name).ToArray();
                 side.fromClips = clips.Any(c => !c.empty);
                 side.poses.Clear();
+                side.animations.Clear();
                 foreach (AnimationClip clip in clips)
                 {
+                    // Animations de la DA (clips « Anim_* » : repos animé, gestes) : cuites à 30 images/s, jouées en boucle par FpsArms.
+                    string clipName = clip.name.Contains("|") ? clip.name.Substring(clip.name.IndexOf('|') + 1) : clip.name;
+                    if (clipName.StartsWith("Anim_") && !clip.empty)
+                    {
+                        var anim = new FpsArmPoseSet.Animation { name = clipName, frameRate = 30f };
+                        int n = Mathf.Max(1, Mathf.RoundToInt(clip.length * anim.frameRate));
+                        for (int f = 0; f < n; f++)
+                        {
+                            clip.SampleAnimation(inst, f / anim.frameRate);
+                            anim.frames.Add(new FpsArmPoseSet.Pose { name = $"{clipName}_{f}", rotations = bones.Select(b => b.localRotation).ToArray(), fromClip = true });
+                        }
+
+                        side.animations.Add(anim);
+                        continue;
+                    }
+
                     string name = clip.name.Contains("|") ? clip.name.Substring(clip.name.IndexOf('|') + 1) : clip.name;
                     float[] times = name == "Pose_Attraper" ? new[] { 0f, clip.length * 0.5f, clip.length } : new[] { 0f };
                     for (int k = 0; k < times.Length; k++)

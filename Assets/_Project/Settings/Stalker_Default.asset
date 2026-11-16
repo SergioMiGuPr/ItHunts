@@ -76,7 +76,7 @@ MonoBehaviour:
   loseSightTime: 1.5
   shoulderHeight: 11.1
   shoulderSide: 1.8
-  pupilGlow: {r: 4, g: 0.25, b: 0.15, a: 1}
+  pupilGlow: {r: 0.55, g: 0.05, b: 0.03, a: 1}
   handReach: 15
   grabTelegraph: 0.5
   grabSlam: 0.12

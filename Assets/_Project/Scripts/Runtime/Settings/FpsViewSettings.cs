@@ -17,10 +17,10 @@ namespace ItHunts.Settings
         [Min(0.001f)] public float viewmodelNearClip = 0.01f;
 
         [Header("Position de repos (repère caméra)")]
-        public Vector3 rightHandRest = new Vector3(0.21f, -0.22f, 0.47f);
-        public Vector3 rightHandRestEuler = new Vector3(-15f, -10f, 0f);
-        public Vector3 leftHandRest = new Vector3(-0.23f, -0.25f, 0.45f);
-        public Vector3 leftHandRestEuler = new Vector3(-10f, 12f, 0f);
+        public Vector3 rightHandRest = new Vector3(0.19f, -0.16f, 0.43f);           // retours du lot, point 6 : mains plus hautes, avant-bras visibles
+        public Vector3 rightHandRestEuler = new Vector3(-30f, -22f, 28f);       // paume vers le haut et vers le centre
+        public Vector3 leftHandRest = new Vector3(-0.19f, -0.17f, 0.42f);
+        public Vector3 leftHandRestEuler = new Vector3(-28f, 22f, -28f);
 
         [Header("Barillet (main gauche, modèle SM_Barillet)")]
         [Tooltip("Centre du barillet dans le repère de la main gauche (m) ; son axe de tir (+Z) suit les doigts.")]
@@ -43,6 +43,18 @@ namespace ItHunts.Settings
         [Min(0.01f)] public float orbDiameter = 0.08f;
         [Tooltip("Centre de l'orbe dans le repère de la main droite (au-dessus de la paume).")]
         public Vector3 orbInHand = new Vector3(0f, 0.06f, 0.045f);
+
+        [Header("Flottement de l'orbe et de l'artefact (retours du lot, point 6) : ils ne sont pas tenus")]
+        [Tooltip("Hauteur au-dessus de la paume (m), en plus du point de la DA (Socket_Orbe, Socket_Artefact) ou du réglage greybox.")]
+        public float floatHeight = 0.03f;
+        [Tooltip("Montée et descente lentes : amplitude (m) et période (s).")]
+        [Min(0f)] public float floatAmplitude = 0.007f;
+        [Min(0.1f)] public float floatPeriod = 2.6f;
+        [Tooltip("Rotation lente de l'orbe (°/s) ; légère oscillation de l'artefact (°), qui reste pointé vers l'avant.")]
+        public float floatSpin = 25f;
+        [Min(0f)] public float floatWobble = 4f;
+        [Tooltip("Décalage de phase entre l'orbe et l'artefact (fraction de période) : ils ne montent pas ensemble.")]
+        [Range(0f, 1f)] public float floatPhaseOffset = 0.35f;
 
         [Header("Balancement (rotation de la vue) — suit l'intensité du mouvement des mains")]
         [Tooltip("Décalage par degré de rotation de la vue sur une image (m/°).")]

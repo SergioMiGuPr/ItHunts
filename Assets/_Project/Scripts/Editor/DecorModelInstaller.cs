@@ -285,12 +285,60 @@ namespace ItHunts.EditorTools
                 if (t == null || m == null)
                     continue;
                 t.GetComponent<MeshFilter>().sharedMesh = m;
-                t.GetComponent<MeshRenderer>().sharedMaterial = mat;
                 n++;
             }
 
+            ApplyStalkerLimbMaterial(root);
+
             Bounds b = LocalBounds(inst.transform, root.transform);
             return $"traqueur : SM_Traqueur_Corps {b.size.x:0.0} × {b.size.y:0.0} × {b.size.z:0.0} m, {n} bras et mains";
+        }
+
+        public const string StalkerLimbMaterial = "Assets/Art/Materials/Ennemis/M_Traqueur_Mains.mat";
+        private static readonly string[] StalkerLimbs = { "Bras qui attrape", "Bras gauche", "Main (zone de prise)", "Main gauche" };
+
+        /// <summary>
+        /// Bras et mains du traqueur : M_Traqueur_Mains (PR #5 : griffes éclaircies, liseré, masque d'émission des griffes) à la
+        /// place de M_Traqueur (dont le masque des pupilles allumait des taches rouges sur les mains). Renvoie le nombre de rendus.
+        /// </summary>
+        public static int ApplyStalkerLimbMaterial(GameObject root)
+        {
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(StalkerLimbMaterial);
+            if (mat == null)
+                mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Ennemis/M_Traqueur.mat");
+            int n = 0;
+            foreach (string part in StalkerLimbs)
+            {
+                Transform t = root.transform.Find(part);
+                var r = t != null ? t.GetComponent<MeshRenderer>() : null;
+                if (r == null || mat == null)
+                    continue;
+                r.sharedMaterial = mat;
+                n++;
+            }
+
+            return n;
+        }
+
+        /// <summary>Le matériau des bras et des mains sur tous les traqueurs des scènes de jeu (sans toucher au reste).</summary>
+        public static string ApplyStalkerLimbMaterialEverywhere()
+        {
+            string current = EditorSceneManager.GetActiveScene().path;
+            var lines = new List<string>();
+            foreach (string path in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+            {
+                var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                int here = 0;
+                foreach (ItHunts.Enemies.Stalker st in Object.FindObjectsByType<ItHunts.Enemies.Stalker>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    here += ApplyStalkerLimbMaterial(st.gameObject);
+                if (here > 0)
+                    EditorSceneManager.SaveScene(scene);
+                lines.Add($"{System.IO.Path.GetFileNameWithoutExtension(path)} : {here}");
+            }
+
+            if (!string.IsNullOrEmpty(current))
+                EditorSceneManager.OpenScene(current, OpenSceneMode.Single);
+            return string.Join(" | ", lines);
         }
 
         /// <summary>Tous les traqueurs des scènes de jeu.</summary>

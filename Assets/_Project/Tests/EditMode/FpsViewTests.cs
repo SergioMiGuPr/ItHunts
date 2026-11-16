@@ -299,8 +299,120 @@ namespace ItHunts.Tests
             var flyer = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FlyerSettings>("Assets/_Project/Settings/Flyer_Default.asset");
             Assert.That(ghoul.eyeColor.maxColorComponent, Is.LessThan(1f), "yeux sous le seuil du bloom hors annonce");
             Assert.That(flyer.eyeColor.maxColorComponent, Is.LessThan(1f));
-            Assert.That(ghoul.leapGlowColor.maxColorComponent, Is.GreaterThan(1f), "annonce : au-delà du seuil du bloom");
             Assert.That(flyer.diveGlowColor.maxColorComponent, Is.GreaterThan(1f));
+        }
+
+        [Test]
+        public void Vitrine_SceneDansLeBuild_EnnemisDansChaqueEtat_AccesMenus()
+        {
+            const string path = "Assets/Scenes/Test_Vitrine.unity";
+            Assert.That(EditorBuildSettings.scenes.Any(s => s.path == path && s.enabled), Is.True, "dans le build (menu principal, menu pause)");
+            string text = System.IO.File.ReadAllText(path);
+            Assert.That(text.Contains("m_Name: \"Vitrine (panneau F1"), Is.True, "composant de la vitrine");
+            foreach (string label in new[] { "Annonce du bond", "Escalade sur un mur", "Tenue (t", "Morte", "Piqu", "Main plant", "Mains lev", "Revers",
+                         "Baiss", "Enclos", "10 m", "50 m", "Architecture", "Mobilier", "Ar\\u00E8ne du boss", "Objets attrapables" })
+                Assert.That(text.Contains(label) || System.Text.RegularExpressions.Regex.Unescape(text).Contains(System.Text.RegularExpressions.Regex.Unescape(label)), Is.True, label);
+            Assert.That(System.Enum.GetValues(typeof(ItHunts.Level.VitrineGhoulState)).Length, Is.EqualTo(10));
+            Assert.That(System.Enum.GetValues(typeof(ItHunts.Level.VitrineFlyerState)).Length, Is.EqualTo(5));
+            Assert.That(ItHunts.Level.MainMenu.VitrineScene, Is.EqualTo("Test_Vitrine"));
+            string menu = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/MainMenu.cs");
+            Assert.That(menu.Contains("\"Playtest : vitrine\""), Is.True);
+            string pause = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/PauseMenu.cs");
+            Assert.That(pause.Contains("MainMenu.VitrineScene"), Is.True, "accès depuis le menu pause des scènes de test");
+        }
+
+        [Test]
+        public void VueFps_OrbeEtArtefactFlottent_BarilletSansCanon_PosesPaumeVersLeHaut()
+        {
+            var fps = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");
+            Assert.That(fps.floatAmplitude, Is.GreaterThan(0f));
+            float lo = float.MaxValue, hi = float.MinValue;
+            for (float t = 0f; t < fps.floatPeriod; t += 0.05f)
+            {
+                float h = ItHunts.Player.ViewmodelMotion.FloatHeight(t, fps);
+                lo = Mathf.Min(lo, h);
+                hi = Mathf.Max(hi, h);
+            }
+            Assert.That(hi - lo, Is.EqualTo(2f * fps.floatAmplitude).Within(0.002f), "monte et descend");
+            Assert.That(lo, Is.GreaterThan(0f), "toujours au-dessus de la paume");
+            Assert.That(fps.rightHandRest.y, Is.GreaterThan(-0.2f), "mains plus hautes");
+
+            var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");
+            Assert.That(player.GetComponentsInChildren<Transform>(true).Any(t => t.name == "Canon"), Is.False, "plus de canon greybox");
+            var so = new SerializedObject(player.GetComponent<ItHunts.Artifacts.BarrelView>());
+            var muzzle = (Transform)so.FindProperty("muzzle").objectReferenceValue;
+            Assert.That(muzzle.localPosition.y, Is.EqualTo(0.031f).Within(0.005f), "bouche sur la chambre du haut (active)");
+            Assert.That(muzzle.localPosition.z, Is.LessThan(0.08f), "à l'avant du barillet, pas au bout d'un canon");
+
+            var poses = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FpsArmPoseSet>("Assets/_Project/Settings/FpsArmPoses.asset");
+            foreach (var side in new[] { poses.right, poses.left })
+            {
+                Assert.That(side.fromClips, Is.True, "clips de la PR #5 avec leurs courbes");
+                Assert.That(side.Find("Pose_OrbePaume"), Is.Not.Null);
+                Assert.That(side.Find("Pose_OrbePaume").fromClip, Is.True);
+            }
+
+            // Animations à venir (clips « Anim_* ») : jouées en boucle à leur cadence.
+            var anim = new ItHunts.Settings.FpsArmPoseSet.Animation { name = "Anim_Repos", frameRate = 10f };
+            for (int i = 0; i < 4; i++)
+                anim.frames.Add(new ItHunts.Settings.FpsArmPoseSet.Pose { name = "f" + i });
+            Assert.That(anim.FrameAt(0.25f).name, Is.EqualTo("f2"));
+            Assert.That(anim.FrameAt(0.45f).name, Is.EqualTo("f0"), "en boucle");
+        }
+
+        [Test]
+        public void Goule_1m80_CapsuleEtLODReglables_NavMeshDesGoules()
+        {
+            var ghoul = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");
+            Assert.That(ghoul.bodyHeight, Is.EqualTo(1.8f).Within(1e-3f), "à la taille du joueur");
+            Assert.That(ghoul.BodyScale, Is.EqualTo(1.8f / 1.1f).Within(1e-3f));
+            Assert.That(ghoul.bodyRadius, Is.InRange(0.4f, 0.7f));
+            Vector3 lod = ghoul.lodTransitions;
+            Assert.That(lod.x, Is.GreaterThan(lod.y));
+            Assert.That(lod.y, Is.GreaterThan(lod.z));
+            Assert.That(lod.z, Is.GreaterThan(0f));
+            // Mêmes distances de bascule que les seuils de la DA pour 1.1 m (0.20 / 0.08 / 0.01).
+            Assert.That(lod.x / ghoul.BodyScale, Is.EqualTo(0.20f).Within(0.01f));
+            Assert.That(lod.y / ghoul.BodyScale, Is.EqualTo(0.08f).Within(0.005f));
+            foreach (string scene in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+            {
+                string text = System.IO.File.ReadAllText(scene);
+                Assert.That(text.Contains("smallRadius: 0.45"), Is.True, scene);
+                Assert.That(text.Contains("smallHeight: 1.5"), Is.True, scene + " : agent des goules 0.45 × 1.5 m");
+            }
+        }
+
+        [Test]
+        public void Lueurs_YeuxRougeSombre_GriffesIvoire_TroisLODDeLaGoule()
+        {
+            var ghoul = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");
+            var stalker = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
+            Color rest = ghoul.eyeGlowColor * ghoul.eyeGlowRest, announce = ghoul.eyeGlowColor * ghoul.eyeGlowAnnounce;
+            Assert.That(announce.maxColorComponent, Is.LessThan(1f), "jamais un rouge vif (sous le seuil du bloom), même pendant l'annonce");
+            Assert.That(announce.maxColorComponent, Is.GreaterThan(rest.maxColorComponent * 1.3f), "légère montée pendant l'annonce");
+            Assert.That(ghoul.eyeGlowColor.r, Is.GreaterThan(ghoul.eyeGlowColor.g * 5f), "rouge");
+            Color pupils = stalker.pupilGlow * stalker.pupilGlowIntensity;
+            Assert.That(pupils.maxColorComponent, Is.LessThan(1f));
+            Assert.That(stalker.clawGlowGrab, Is.GreaterThan(stalker.clawGlowRest * 2f), "griffes plus vives pendant la prise");
+            Assert.That(stalker.clawGlow.b, Is.GreaterThan(stalker.clawGlow.r * 0.6f), "ivoire, pas rouge");
+
+            // Les trois LOD de la goule sont des rendus de la goule (Damageable écrit l'émission sur chacun), même matériau à masque.
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Niveau/Goule.prefab");
+            var lods = prefab.GetComponentsInChildren<LODGroup>(true);
+            Assert.That(lods.Length, Is.EqualTo(1));
+            LOD[] levels = lods[0].GetLODs();
+            Assert.That(levels.Length, Is.EqualTo(3));
+            foreach (LOD l in levels)
+                foreach (Renderer r in l.renderers)
+                {
+                    Assert.That(r.transform.IsChildOf(prefab.transform), Is.True);
+                    Assert.That(r.sharedMaterial.GetTexture("_EmissionMap"), Is.Not.Null, r.name + " : masque des yeux et de la gueule");
+                }
+
+            // Bras et mains du traqueur : M_Traqueur_Mains dans les scènes de jeu.
+            string guid = AssetDatabase.AssetPathToGUID("Assets/Art/Materials/Ennemis/M_Traqueur_Mains.mat");
+            foreach (string scene in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+                Assert.That(System.Text.RegularExpressions.Regex.Matches(System.IO.File.ReadAllText(scene), guid).Count, Is.GreaterThanOrEqualTo(4), scene);
         }
 
         [Test]
@@ -309,9 +421,9 @@ namespace ItHunts.Tests
             var mid = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Intermediaire.asset");
             var dark = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Sombre.asset");
             var horror = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Horreur.asset");
-            Assert.That(dark.ambient.r, Is.EqualTo(0.03f).Within(1e-4f));
+            Assert.That(dark.ambient.r, Is.EqualTo(0.022f).Within(1e-4f));
             Assert.That(dark.fogStart, Is.EqualTo(6f));
-            Assert.That(dark.fogEnd, Is.EqualTo(45f));
+            Assert.That(dark.fogEnd, Is.EqualTo(38f));
             Assert.That(dark.ambient.r, Is.LessThan(mid.ambient.r).And.GreaterThan(horror.ambient.r));
             Assert.That(dark.fogEnd, Is.LessThan(mid.fogEnd).And.GreaterThan(horror.fogEnd));
             Assert.That(dark.enraged, Is.EqualTo(horror), "phase enragée : horreur");
