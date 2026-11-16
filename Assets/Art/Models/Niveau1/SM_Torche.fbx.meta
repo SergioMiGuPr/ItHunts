@@ -7,23 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Bois_Brut
-    second: {fileID: 2100000, guid: f0c0e5a4af5406c4c81421ca66ac639d, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Chiffon_Brule
-    second: {fileID: 2100000, guid: f25be4ba97e28244db40f85eba349c2e, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Corde
-    second: {fileID: 2100000, guid: 177efb7386d703441a942bd61cf8f4af, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_FerRouille
-    second: {fileID: 2100000, guid: 3802ef6c252a9674bb78558a2900fcde, type: 2}
+      name: M_Torche
+    second: {fileID: 2100000, guid: 5bb460e53c91a7a4392a7a0de72c421c, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -51,7 +36,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 0
+    isReadable: 1
   meshes:
     lODScreenPercentages: []
     globalScale: 1

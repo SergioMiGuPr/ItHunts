@@ -17,6 +17,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_LanterneFeu_Flamme
+    second: {fileID: 2100000, guid: 4c36d5e45d12bf9418367cac6b221119, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_LanterneFeu_Meche
     second: {fileID: 2100000, guid: 5cf306aa47e23e04984a5dfd07924dfa, type: 2}
   - first:

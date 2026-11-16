@@ -40,6 +40,13 @@ Shader "ItHunts/Toon"
         _EmissionMap ("Masque d'émission", 2D) = "white" {}
         _EmissionThroughFog ("Émission à travers le brouillard", Range(0, 1)) = 0
 
+        [Header(UV en coordonnees monde (architecture))]
+        [Toggle(_WORLD_UV)] _WorldUV ("UV en coordonnées monde", Float) = 0
+        _TileSize ("Taille de la tuile en mètres (x : largeur, y : hauteur ou profondeur)", Vector) = (4, 4, 0, 0)
+        _TileOffset ("Décalage de la grille en mètres (x, y, z)", Vector) = (0, 0, 0, 0)
+        [Enum(0 deg, 0, 90 deg, 1, 180 deg, 2, 270 deg, 3)] _TopRotation ("Rotation des dalles (dessus et dessous)", Float) = 0
+        [Toggle] _TopRandomRotation ("Quart de tour au hasard par tuile (dessus et dessous)", Float) = 0
+
         [Header(Rendu)]
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Faces", Float) = 2
         // Translucide (verre de la lanterne) : SrcAlpha / OneMinusSrcAlpha, ZWrite Off, file 3000, et passes
@@ -70,6 +77,7 @@ Shader "ItHunts/Toon"
             #pragma shader_feature_local_fragment _RIM_ON
             #pragma shader_feature_local_fragment _EMISSION
             #pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
+            #pragma shader_feature_local_fragment _WORLD_UV
 
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
@@ -77,6 +85,7 @@ Shader "ItHunts/Toon"
             #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
+            #pragma multi_compile_fragment _ _LIGHT_LAYERS
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"

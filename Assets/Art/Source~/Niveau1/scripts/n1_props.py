@@ -140,3 +140,59 @@ def run(name, build, params, views=("face", "cote", "34"), render_objects=None):
     res = C.run_piece(name, build, params, name, render_objects=render_objects, views=views)
     print(F.verify_empties(os.path.join(C.MODELS_DIR, name + ".fbx")))
     return res
+
+
+def bake_atlas(ob, mat_name, tex_name, size=512, margin=0.02, px_margin=4):
+    """Regroupe tous les matériaux d'un objet en un seul (atlas) : nouveau dépliage « Atlas » (projection intelligente),
+    couleur de base de chaque matériau cuite dessus (Cycles, passe couleur seule : aucune lumière), puis l'objet ne
+    garde que ce dépliage et un matériau unique `mat_name` (texture `tex_name`.png, `size` px). Les textures d'origine,
+    souvent répétées (UV en échelle monde), sont lues par leur propre dépliage pendant la cuisson."""
+    me = ob.data
+    src = me.uv_layers.active
+    src_name = src.name
+    src.active_render = True
+    atlas = me.uv_layers.new(name="Atlas")
+    me.uv_layers.active = atlas
+    if bpy.context.window is not None and ob.users_scene:     # la pièce est construite dans sa propre scène
+        bpy.context.window.scene = ob.users_scene[0]
+    vl = bpy.context.view_layer
+    for o in vl.objects:
+        o.select_set(o == ob)
+    vl.objects.active = ob
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=margin, scale_to_bounds=False)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    img = bpy.data.images.new(tex_name, size, size, alpha=False)
+    for slot in ob.material_slots:
+        nt = slot.material.node_tree
+        n = nt.nodes.new("ShaderNodeTexImage")
+        n.image = img
+        nt.nodes.active = n
+    sc = ob.users_scene[0] if ob.users_scene else bpy.context.scene
+    vl = sc.view_layers[0]
+    engine = sc.render.engine
+    sc.render.engine = "CYCLES"
+    sc.cycles.samples = 1
+    sc.cycles.device = "CPU"
+    print("cuisson : sélection %s, visible %s, scène %s" % (ob.select_get(), ob.visible_get(), sc.name))
+    with bpy.context.temp_override(scene=sc, view_layer=vl, object=ob, active_object=ob, selected_objects=[ob],
+                                   selected_editable_objects=[ob]):
+        bpy.ops.object.bake(type="DIFFUSE", pass_filter={"COLOR"}, margin=px_margin, use_clear=True)
+    sc.render.engine = engine
+    path = os.path.join(TEX_N1, tex_name + ".png")
+    img.filepath_raw = path
+    img.file_format = "PNG"
+    img.save()
+    for slot in ob.material_slots:            # retirer le nœud de cuisson des matériaux d'origine
+        nt = slot.material.node_tree
+        for n in [n for n in nt.nodes if n.type == "TEX_IMAGE" and n.image == img]:
+            nt.nodes.remove(n)
+    bpy.data.images.remove(img)
+    me.uv_layers.remove(me.uv_layers[src_name])
+    me.uv_layers["Atlas"].active = True
+    me.uv_layers["Atlas"].active_render = True
+    mat = C.make_material(mat_name, path)
+    me.materials.clear()
+    me.materials.append(mat)
+    return path
