@@ -245,6 +245,78 @@ namespace ItHunts.EditorTools
             return r + $" ; {n} goules dans les scènes";
         }
 
+        // ---------- Traqueur : pièces de la DA (lot du 2026-11-16) ----------
+
+        private const string StalkerModels = "Assets/Art/Models/Ennemis/";
+
+        private static Mesh MeshOf(string model)
+        {
+            var go = AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + model + ".fbx");
+            var mf = go != null ? go.GetComponentInChildren<MeshFilter>() : null;
+            return mf != null ? mf.sharedMesh : null;
+        }
+
+        /// <summary>
+        /// Traqueur (fiche § 4 ter, version recommandée) : SM_Traqueur_Corps (sans les bras) sous « Corps (se baisse) » à la place des
+        /// greybox ; maillages des bras (boîte unité, SM_Traqueur_Bras) et des mains (SM_Traqueur_Main_D / _G, boîtes unité) sur les
+        /// objets que le code pose (PoseLimb, handSize) ; matériau M_Traqueur (pupilles rouges par son masque d'émission).
+        /// </summary>
+        public static string InstallStalker(GameObject root)
+        {
+            var corps = AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + "SM_Traqueur_Corps.fbx");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Ennemis/M_Traqueur.mat");
+            Transform body = root.transform.Find("Corps (se baisse)");
+            if (corps == null || body == null || mat == null)
+                return "traqueur : modèle, matériau ou « Corps (se baisse) » absent";
+            foreach (Transform c in body.Cast<Transform>().ToList())
+                Object.DestroyImmediate(c.gameObject);
+            var inst = (GameObject)PrefabUtility.InstantiatePrefab(corps, body);
+            inst.transform.localPosition = Vector3.zero;
+            inst.transform.localRotation = Quaternion.identity;
+            inst.transform.localScale = Vector3.one;
+            foreach (Collider c in inst.GetComponentsInChildren<Collider>(true))
+                Object.DestroyImmediate(c);
+            int n = 0;
+            foreach ((string part, string model) in new[] { ("Bras qui attrape", "SM_Traqueur_Bras"), ("Bras gauche", "SM_Traqueur_Bras"),
+                         ("Main (zone de prise)", "SM_Traqueur_Main_D"), ("Main gauche", "SM_Traqueur_Main_G") })
+            {
+                Transform t = root.transform.Find(part);
+                Mesh m = MeshOf(model);
+                if (t == null || m == null)
+                    continue;
+                t.GetComponent<MeshFilter>().sharedMesh = m;
+                t.GetComponent<MeshRenderer>().sharedMaterial = mat;
+                n++;
+            }
+
+            Bounds b = LocalBounds(inst.transform, root.transform);
+            return $"traqueur : SM_Traqueur_Corps {b.size.x:0.0} × {b.size.y:0.0} × {b.size.z:0.0} m, {n} bras et mains";
+        }
+
+        /// <summary>Tous les traqueurs des scènes de jeu.</summary>
+        public static string InstallStalkersEverywhere()
+        {
+            string current = EditorSceneManager.GetActiveScene().path;
+            var lines = new List<string>();
+            foreach (string path in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+            {
+                var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                int here = 0;
+                foreach (ItHunts.Enemies.Stalker st in Object.FindObjectsByType<ItHunts.Enemies.Stalker>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                {
+                    lines.Add(System.IO.Path.GetFileNameWithoutExtension(path) + " : " + InstallStalker(st.gameObject));
+                    here++;
+                }
+
+                if (here > 0)
+                    EditorSceneManager.SaveScene(scene);
+            }
+
+            if (!string.IsNullOrEmpty(current))
+                EditorSceneManager.OpenScene(current, OpenSceneMode.Single);
+            return string.Join(" | ", lines);
+        }
+
         // ---------- Caisses attrapables : SM_Caisse ----------
 
         public const string CrateModelPath = Models + "SM_Caisse.fbx";

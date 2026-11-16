@@ -274,7 +274,7 @@ namespace ItHunts.EditorTools
                 s.width = 7f;
                 s.height = 14f;
                 s.eyeHeight = 12.5f;
-                s.shoulderHeight = 12f;
+                s.shoulderHeight = 11.1f;
                 s.handReach = 15f;
                 s.sightRange = 60f;
                 s.soundRange = 60f;
@@ -1415,6 +1415,7 @@ namespace ItHunts.EditorTools
             predicted.SetActive(false);
             SetRef(stalker, "predictedMarker", predicted.transform);
             root.AddComponent<StalkerAudio>();
+            DecorModelInstaller.InstallStalker(root);                    // pièces de la DA (corps, bras, mains)
         }
     }
 }

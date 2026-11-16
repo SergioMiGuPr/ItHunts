@@ -222,10 +222,10 @@ MonoBehaviour:
   laneHalfWidth: 5
   parkour: 0
   validated: 1
-  validatedHash: 2fb5777b
-  validationReport: "VALID\xC9 (2026-11-16 02:54)\nAvertissement : 1 point(s) d'apparition
+  validatedHash: 4d5fb722
+  validationReport: "VALID\xC9 (2026-11-16 03:24)\nAvertissement : 1 point(s) d'apparition
     (2 au moins conseill\xE9s)\nNavMesh : 6 paires d'entr\xE9es reli\xE9es\ncachettes
-    : 0 sur 99 points\n4 entr\xE9es, 1 apparitions, 0 habitants, 0 coffres, 2136
+    : 0 sur 99 points\n4 entr\xE9es, 1 apparitions, 0 habitants, 0 coffres, 8084
     triangles"
 --- !u!1 &7895276586369330790
 GameObject:

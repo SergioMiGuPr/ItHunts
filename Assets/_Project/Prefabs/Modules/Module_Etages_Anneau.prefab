@@ -1695,10 +1695,10 @@ MonoBehaviour:
   laneHalfWidth: 5
   parkour: 0
   validated: 1
-  validatedHash: 412226df
-  validationReport: "VALID\xC9 (2026-11-16 02:54)\nNavMesh : 6 paires d'entr\xE9es
+  validatedHash: 3a80402f
+  validationReport: "VALID\xC9 (2026-11-16 03:24)\nNavMesh : 6 paires d'entr\xE9es
     reli\xE9es\ncachettes : 0 sur 833 points\n4 entr\xE9es, 11 apparitions, 5 habitants,
-    2 coffres, 32784 triangles"
+    2 coffres, 44680 triangles"
 --- !u!1 &5772731534356474996
 GameObject:
   m_ObjectHideFlags: 0

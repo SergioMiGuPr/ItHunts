@@ -82,8 +82,13 @@ namespace ItHunts.Settings
         [Min(0f)] public float loseSightTime = 1.5f;
 
         [Header("Prise à la main (D-034) : elle tue quels que soient les PV")]
-        [Tooltip("Hauteur de l'épaule (m) ; la main atteint tout point à moins de handReach de l'épaule, en hauteur aussi.")]
-        [Min(0f)] public float shoulderHeight = 12f;
+        [Tooltip("Hauteur de l'épaule (m) ; la main atteint tout point à moins de handReach de l'épaule, en hauteur aussi. " +
+                 "11.1 m : l'épaule du modèle de la DA (SM_Traqueur_Corps).")]
+        [Min(0f)] public float shoulderHeight = 11.1f;
+        [Tooltip("Écart latéral de l'épaule au centre (m) : 1.8 m, l'épaule visible du modèle (avant : 0.4 × la largeur, 2.8 m).")]
+        [Min(0f)] public float shoulderSide = 1.8f;
+        [Tooltip("Pupilles rouges (émission HDR par le masque de M_Traqueur), toujours allumées.")]
+        [ColorUsage(false, true)] public Color pupilGlow = new Color(4f, 0.25f, 0.15f);
         [Min(0f)] public float handReach = 15f;
         [Tooltip("Annonce : le bras se lève et une lueur rouge marque la zone visée pendant ce temps (s).")]
         [Min(0f)] public float grabTelegraph = 0.5f;
@@ -116,7 +121,7 @@ namespace ItHunts.Settings
         [Range(0f, 1f)] public float grabMoveFactor = 0.3f;
         [Tooltip("Taille de la main (m, largeur × épaisseur × longueur) : la zone de prise est la main elle-même, posée sur " +
                  "le point visé.")]
-        public Vector3 handSize = new Vector3(4f, 2.2f, 4.5f);
+        public Vector3 handSize = new Vector3(4.9f, 1.5f, 4.5f);   // la main visible de SM_Traqueur_Main (décision du 2026-11-16)
 
         [Header("Mains au-dessus de la tête (D-037) : on ne passe plus par-dessus lui")]
         [Tooltip("Zone surveillée : cylindre autour de lui (rayon, m), d'une hauteur minimale au-dessus de ses pieds jusqu'à " +

@@ -1,0 +1,6 @@
+salle F7 (64 m) ; prise : annonce 0,5 s, visée corrigée 0,15 s avant, descente 0,12 s
+ancienne main, sans réaction : 10/10 prises réussies (0 % d'esquive)
+ancienne main, course de côté après 0.15 s : 0/20 prises réussies (100 % d'esquive)
+main de la DA, sans réaction : 10/10 prises réussies (0 % d'esquive)
+main de la DA, course de côté après 0.15 s : 0/20 prises réussies (100 % d'esquive)
+#fin

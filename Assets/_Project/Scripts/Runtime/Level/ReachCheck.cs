@@ -23,6 +23,8 @@ namespace ItHunts.Level
         private static readonly RaycastHit[] Hits = new RaycastHit[16];
         /// <summary>Rayon du corps du traqueur (m) : l'épaule est à son bord.</summary>
         public const float BodyRadius = 3.5f;
+        /// <summary>Épaule du traqueur (StalkerSettings.shoulderHeight, shoulderSide) : hauteur debout (m) et écart au centre (m).</summary>
+        public static float ShoulderHeight = 11.1f, ShoulderSide = 1.8f;
 
         /// <summary>Points où un joueur tient debout dans la zone (grille de step m, tous les étages).</summary>
         public static List<Vector3> StandPoints(PhysicsScene physics, Bounds area, float step)
@@ -140,12 +142,12 @@ namespace ItHunts.Level
             bool openAbove = !physics.Raycast(body, Vector3.up, out RaycastHit above, Mathf.Max(3f, top - body.y), ~0, QueryTriggerInteraction.Ignore)
                              || !PlayerSight.IsDecor(above.collider);
             foreach (Vector3 s in candidates)
-            foreach (float shoulder in new[] { 12f, 7f })
+            foreach (float shoulder in new[] { ShoulderHeight, ShoulderHeight * 0.6f })
             {
-                // L'épaule est au bord du corps (Ø 7 m), du côté du joueur.
+                // L'épaule du modèle de la DA : 11.1 m de haut (6.7 m baissé), à 1.8 m du centre, du côté du joueur.
                 Vector3 toward = new Vector3(body.x - s.x, 0f, body.z - s.z);
                 float hd = toward.magnitude;
-                Vector3 sh = s + Vector3.up * shoulder + (hd > 0.01f ? toward / hd * Mathf.Min(BodyRadius, hd) : Vector3.zero);
+                Vector3 sh = s + Vector3.up * shoulder + (hd > 0.01f ? toward / hd * Mathf.Min(ShoulderSide, hd) : Vector3.zero);
                 Vector3 d = body - sh;
                 float len = d.magnitude;
                 if (len > reach)
