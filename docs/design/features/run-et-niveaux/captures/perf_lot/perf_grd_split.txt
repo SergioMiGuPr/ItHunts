@@ -1,0 +1,7 @@
+Niveau Level_01_Aleatoire, 1920×1080, écran partagé à 2 ; salle D4 ; timer à 13:45, pic ACTIF
+image : médiane 17,4 ms, 95 % 22,3 ms, max 43,1 ms ; images > 16.6 ms : 876/1103
+fil principal (FrameTiming) : médiane 17,3 ms, 95 % 22,3 ms ; fil de rendu : médiane 4,1 ms ; GPU : médiane 6,3 ms, 95 % 6,8 ms
+Main Thread (profileur) médiane 17,3 ms ; physique 0,29 ms ; draw calls 1127, batches 1129
+marqueurs (médiane ms) : Ghoul 0,52, Stalker 0,13, Waves 0,27, Flyer 0,02, Souls 0,00, PlayerHud 0,12, FixedUpdate.ScriptRunBehaviourFixedUpdate 3,23, Update.ScriptRunBehaviourUpdate 0,51, PreLateUpdate.ScriptRunBehaviourLateUpdate 0,53, FixedUpdate.PhysicsFixedUpdate 0,75, PostLateUpdate.FinishFrameRendering 9,99, Camera.Render 0,00, CullScriptable 3,05, RenderPipelineManager.DoRenderLoop_Internal() 0,00, UpdateRendererBoundingVolumes 3,07, GUI.Repaint 0,39, UGUI.Rendering.UpdateBatches 0,14
+ennemis actifs 92 ; au pic False ; lumières 1000 ; joueurs 2
+#fin
