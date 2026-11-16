@@ -947,7 +947,8 @@ namespace ItHunts.Enemies
 
         private bool Solid(Collider c) =>
             c != null && !c.transform.IsChildOf(transform) && c.GetComponentInParent<PlayerHealth>() == null
-            && c.GetComponentInParent<ItHunts.Orbs.Grabbable>() == null && c.GetComponentInParent<Damageable>() == null;
+            && c.GetComponentInParent<ItHunts.Orbs.Grabbable>() == null && c.GetComponentInParent<Damageable>() == null
+            && c.GetComponentInParent<StalkerPassesThrough>() == null;
 
         /// <summary>La main s'abat : vrai si elle a attrapé quelqu'un.</summary>
         private bool ResolveGrab(float now)
