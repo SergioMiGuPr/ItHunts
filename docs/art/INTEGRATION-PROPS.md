@@ -121,7 +121,7 @@ cadenas de la cage et de la grille qui dépassent de 2 à 3 cm à l'avant.
 |---|---|---|---|---|
 | Orbe (main droite, sur `Orb_Socket`) | `SM_Orbe` (racine vide) | pivot au centre de l'orbe sur `Orb_Socket` ; **échelle à régler dans FpsView** : la greybox fait Ø 0.08 m, le modèle 0.18 m (anneaux) et 0.295 × 0.228 × 0.182 m avec les tablettes | `SM_Orbe_Anneau_1` (axe **X**), `_2` (**Y**), `_3` (**Z**), modélisés à leur pose de repos ; `SM_Orbe_Tablette_01` à `_06` (positions de la couronne) ; repère `FX_Orbe` au centre | `M_Orbe_Energie` (`_EmissionColor`, couleur du personnage) ; glyphe de chaque tablette : **index de matériau 1** de `SM_Orbe_Tablette_0X` (`M_Orbe_Tablette_0X`) ; jauge et animations : `MATERIAUX.md`, planche `Orbe_Poses_*.jpg` |
 | Lanterne de feu (artefact du renard, main gauche) | `SM_LanterneFeu` | pivot au centre de l'anneau de portage (la lanterne pend dessous) | — | `M_LanterneFeu_Verre` : translucide (file 3000) et `_EmissionColor` ; **`M_LanterneFeu_Flamme`** (enfant `SM_LanterneFeu_Flamme`, flamme en goutte au-dessus de la mèche, depuis le 2026-11-16) : `_EmissionColor` = couleur du personnage (par défaut, orange du renard) ; **passe transparente des mains à ajouter** (la passe « ItHunts Mains : mains » ne dessine que l'opaque) ; repères `FX_Flamme` (mèche) et `FX_Jet` (départ du jet, +Z = avant, dégagé sur 6 m) |
-| Bras des 4 personnages (remplacent les mains greybox) | `SK_BrasFPS_<Perso>_D` / `_G` (armature `BrasFPS`, 17 os, mêmes noms partout) | placer le FBX pour que **`Socket_Poignet` coïncide avec la main greybox** (position et rotation de repos de FpsView, § 5 bis d'ART-HANDOFF) : le pivot est au coude, `Socket_Poignet` est en (0, 0, 0.27) dans le FBX, axes de l'ancrage (+Z doigts, +Y dos de la main) ; aucun recalage d'axe | os des doigts : remplacent l'angle unique `rightFingers` / `leftFingers` (rotation X) par les clips `BrasFPS|Pose_*` (mêmes clips pour les 4 personnages ; un jeu de clips par côté, le gauche est le miroir) ; `Pose_Attraper` a 3 clés (repos, ouverte, refermée), les 9 poses fixes 2 clés identiques (images 1 et 2) pour que chaque clip garde ses 180 courbes à l'import ; 4 boucles de flottement et nouvelle convention des poses au § 4 quater ; les déplacements de la main entière restent dans FirstPersonView | `M_BrasFPS_<Perso>_*` (aplats) ; contour par coque inversée (RENDU.md § 5 bis) ; repères fixes enfants de `BrasFPS` : `Socket_Orbe` (0, 0.06, 0.045) depuis le poignet (droit), `Socket_Artefact` (0, 0.055, 0.05) et `Socket_Artefact_Anneau` (0, −0.05, 0.105) pour l'anneau de la lanterne dans `Pose_PriseAnneau` (gauche, à ajuster en jeu) ; planches `BrasFPS_*.jpg` |
+| Bras des 4 personnages (remplacent les mains greybox) | `SK_BrasFPS_<Perso>_D` / `_G` (armature `BrasFPS`, 17 os, mêmes noms partout) | placer le FBX pour que **`Socket_Poignet` coïncide avec la main greybox** (position et rotation de repos de FpsView, § 5 bis d'ART-HANDOFF) : le pivot est au coude, `Socket_Poignet` est en (0, 0, 0.27) dans le FBX, axes de l'ancrage (+Z doigts, +Y dos de la main) ; aucun recalage d'axe | os des doigts : remplacent l'angle unique `rightFingers` / `leftFingers` (rotation X) par les clips `BrasFPS|Pose_*` (mêmes clips pour les 4 personnages ; un jeu de clips par côté, le gauche est le miroir) ; `Pose_Attraper` a 3 clés (repos, ouverte, refermée), les 9 poses fixes 2 clés identiques (images 1 et 2) pour que chaque clip garde ses 180 courbes à l'import ; 4 boucles de flottement et nouvelle convention des poses au § 4 quater ; les déplacements de la main entière restent dans FirstPersonView | `M_BrasFPS_<Perso>` (texture peinte, un matériau par personnage) ; contour par coque inversée (RENDU.md § 5 bis) ; repères fixes enfants de `BrasFPS` : `Socket_Orbe` (0, 0.06, 0.045) depuis le poignet (droit), `Socket_Artefact` (0, 0.055, 0.05) et `Socket_Artefact_Anneau` (0, −0.05, 0.105) pour l'anneau de la lanterne dans `Pose_PriseAnneau` (gauche, à ajuster en jeu) ; planches `BrasFPS_*.jpg` |
 | Barillet (caméléon, main gauche) | `SM_Barillet` | intégré sur `main` (branche `barillet-modele`) | | |
 
 ## 4 bis. Caisse attrapable : `SM_Caisse` (modèle généré par IA avec Tripo, nettoyé le 2026-11-15)
@@ -173,6 +173,13 @@ Noms identiques dans tous les FBX d'un même objet (clips Unity « `<Armature>|<
 
 ### Bras FPS (`SK_BrasFPS_<Perso>_D` / `_G`, armature `BrasFPS`, 17 os)
 
+**Détail (2026-11-16)** : mains et avant-bras repris d'après `fiches/planche_bras_fps_v01.png` (doigts arrondis à
+phalanges renflées et bout rond, gant sans doigts arrêté sur un bourrelet, coutures en pointillés sur le dos de la main et la
+manchette, paume arrondie et jointures, manche à plis en biais ; fourrure rousse (renard), collerette doublée (koala),
+bandes d'écailles (caméléon, hibou)) : 2 874 à 3 834 triangles par bras (budget 6 000) ; **même squelette, mêmes noms
+d'os, mêmes 14 clips**. (Ces aplats, dont `_Couture`, `_Poil`, `_Ecaille`, sont remplacés plus bas par la texture peinte et le matériau unique.) Planche
+`rendus/Lot2/BrasFPS_Detail_avant_apres.jpg`.
+
 **Convention des poses de flottement** (rien n'est tenu, l'orbe et l'artefact flottent au-dessus de la paume) : dans
 `Pose_Repos`, `Pose_OrbePaume`, `Pose_Pistolet`, `Pose_PriseAnneau` et leurs boucles, l'avant-bras est tourné de 180° :
 **la paume regarde +Y du repère de la main** (`Socket_Poignet`), là où FpsView pose déjà l'orbe (`orbInHand` (0, 0.06,
@@ -182,15 +189,28 @@ suivent la même convention** (`Pose_Traction`, `Pose_Repulsion`, `Pose_Attraper
 `Pose_TenirObjet`, `Pose_Lancer` : paume vers +Y, forme de la main gardée) : plus de demi-tour de l'avant-bras d'une pose
 à l'autre (planche `rendus/Lot2/BrasFPS_Poses_action_avant_apres.jpg`). Seule `Pose_Poing` garde l'ancienne convention.
 
-**Placement conseillé** (mains levées devant la caméra, paumes l'une vers l'autre et un peu vers le haut, une bonne partie
-de l'avant-bras visible ; vérifié à `viewmodelFov` 60, planches `rendus/Lot2/BrasFPS_*.jpg`), dans `FpsView_Default` :
+**Placement conseillé, d'après `docs/design/references-visuelles/reference_bras_fps.png`** (2026-11-16 : avant-bras qui
+entrent par les coins bas, paumes ouvertes vers le haut et l'une vers l'autre, doigts écartés et détendus ; vérifié à
+`viewmodelFov` 60, planche `rendus/Lot2/BrasFPS_Cadrage_reference.jpg`), dans `FpsView_Default` :
 
 | Réglage | Main droite | Main gauche |
 |---|---|---|
-| `…HandRest` (position du poignet, repère caméra) | (0.12, −0.115, 0.40) | (−0.12, −0.115, 0.40) |
-| `…HandRestEuler` | (−24, −8, 54.4) | (−24, 8, −54.4) |
+| `…HandRest` (position du poignet, repère caméra) | (0.21, −0.09, 0.34) | (−0.21, −0.09, 0.34) |
+| `…HandRestEuler` | (−45.1, −21.0, 39.7) | (−45.1, 21.0, −39.7) |
+| objet qui flotte au-dessus de la paume | `orbInHand` **(0, 0.14, 0.045)** | `lanternInHand` **(0, 0.16, 0.05)**, `barrelInHand` (0, 0.14, 0.05) |
 
-(paume à 50° de la verticale vers l'intérieur, doigts levés de 24° et tournés de 8° vers le centre.)
+(doigts vers (−0.25, 0.7, 0.65) et paume vers (−0.45, 0.7, −0.55) dans le repère caméra, main droite ; les objets montent de
+0.06–0.075 à 0.14–0.16 m pour flotter sans toucher les doigts, comme sur la référence.)
+
+**Aspect (2026-11-16)** : doigts sculptés (pli à chaque articulation entre deux renflements, phalange affinée, bout rond,
+griffe ou ongle qui sort du bout du doigt : plus de taches sombres), paume ronde, gants de cuir sans doigts à bourrelet ;
+**une texture peinte par personnage**, `T_BrasFPS_<Perso>_BaseColor` (2048 px, partagée par les deux bras), **un seul
+matériau** `M_BrasFPS_<Perso>` (cuir marbré et éraflé, tissu à trame et plis, fourrure en mèches, écailles, plumes, coutures
+peintes, plis d'encre aux articulations). Lisible dans l'ambiance sombre sans émission : couleurs relevées, liseré discret
+(0.4, non lié à la lumière), ambiance comptée double et plancher de la bande d'ombre (0.22) sur ce matériau. Les anciens aplats
+`M_BrasFPS_<Perso>_<Pièce>` sont supprimés. **Conseil côté `main`** : en ambiance sombre, une lumière d'appoint faible sur le
+calque « FPS » (directionnelle depuis la caméra, ≈ 0.3) rendrait les mains encore plus lisibles sans toucher au décor.
+Renard d'après la référence : manche rouge déchirée, gant de cuir brun, fourrure rousse aux poignets et au bord de la manche.
 
 | Clip | Durée | Boucle | Contenu |
 |---|---|---|---|
