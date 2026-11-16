@@ -102,7 +102,7 @@ est réservé à la télékinésie et la lueur passe par l'émission (`sm_caisse
 | `M_Traqueur_Cheveux` (`Ennemis/`) | `SK_Traqueur_Cheveux` (7 mèches) | aucune : noir bleuté (0.075, 0.065, 0.08) | double face ; liseré discret (0.42, 0.40, 0.52), largeur 0.25, intensité 0.25 | non |
 | `M_Traqueur_Mains` (`Ennemis/`) | bras et mains : `SM_Traqueur_Bras`, `_Main_D`, `_Main_G`, et le second emplacement de `SM_Traqueur` | `T_Traqueur_BaseColor` (griffes éclaircies vers l'os clair) | **liseré** (`_RIM_ON`) couleur (0.58, 0.54, 0.72), largeur 0.30, bord 0.05, intensité 0.35, même dans le noir (`_RimLitOnly` 0) | mot-clé actif, `_EmissionMap` = `T_Traqueur_Griffes_Emission` (2048 px : griffes des deux mains) ; **repos (0.35, 0.32, 0.25)**, **prise (3.5, 0.49, 0.21)** écrit par le jeu ; à travers le brouillard 0.6 |
 | `M_LanterneFeu_Flamme` (`FPS/`) | `SM_LanterneFeu_Flamme` | aucune (couleur (1, 0.76, 0.48)) | double face | mot-clé actif, **orange du renard (3, 0.96, 0.24) par défaut** ; le jeu écrit `_EmissionColor` à la couleur du personnage ; à travers le brouillard 1 |
-| `M_BrasFPS_<Perso>_<Partie>` (`FPS/BrasFPS/`, 37 matériaux) | `SK_BrasFPS_<Perso>_D` / `_G` | aucune (aplats) | couleur de base reprise des aplats du FBX | non |
+| `M_BrasFPS_<Perso>` (`FPS/BrasFPS/`, 4 matériaux, un par personnage ; les anciens aplats par pièce sont supprimés) | `SK_BrasFPS_<Perso>_D` / `_G` | `T_BrasFPS_<Perso>_BaseColor` (2048 px, peinte par script, partagée par les deux bras) | liseré 0.4 (sans lumière), largeur 0.32 ; ambiance × 2 ; bande d'ombre (0.22, 0.20, 0.22) : lisibles dans l'ambiance sombre | non |
 
 ### Lanterne de feu et orbe, vue FPS (`Assets/Art/Materials/FPS/`, lot de modélisation, groupe A)
 
