@@ -6,6 +6,7 @@ Plaque murale carrée en fer rouillé à 4 rivets, dos parfaitement plat (contre
 jambe de force sous le bras ; anneau (collier) ouvert dessus et dessous qui tient le manche ; manche en bois
 brut de 0.6 m incliné de 20° vers l'avant (le haut s'écarte du mur) ; tête en chiffons noircis ficelés
 (2 tours de corde), sans flamme. Repère FX_Flamme au sommet de la tête (+Z local = hors du mur).
+Un seul matériau `M_Torche` (atlas `T_Torche_BaseColor`, 512 px) : fer, bois, chiffon et corde cuits ensemble.
 
 Pivot : au centre du dos de la plaque (sur le mur). +Z (Unity) hors du mur : en Blender, le mur est le plan
 y = 0 et la torche avance vers -Y.
@@ -32,6 +33,7 @@ PARAMS = dict(
     tete=dict(r=0.043, debut=0.22, fin=0.40, cotes=7, bosses=0.006),        # le long de l'axe depuis l'anneau
     cordes=dict(positions=(0.25, 0.30), r=0.046, fil=0.005),
     fx_dz=0.03,
+    atlas=512,
 )
 
 
@@ -91,6 +93,8 @@ def build(P):
         ring = [c + (ref_u * math.cos(2 * math.pi * k / 8) + ref_v * math.sin(2 * math.pi * k / 8)) * Cd["r"] for k in range(8)]
         C.tube(B, ring, Cd["fil"], 3, "corde", closed=True, up=axis)
     ob = B.finish("SM_Torche", mats)
+    # un seul matériau (atlas de 512 px) au lieu de 4 : 1 231 torches, un seul draw par torche (2026-11-16)
+    N.bake_atlas(ob, "M_Torche", "T_Torche_BaseColor", size=P["atlas"])
     fx = F.empty("FX_Flamme", tuple(top + axis * P["fx_dz"]), ob)
     print("torche : %d triangles ; FX_Flamme à %s (Blender)" % (C.tri_count(ob), tuple(round(x, 3) for x in fx.matrix_world.translation)))
     return [ob, fx]
