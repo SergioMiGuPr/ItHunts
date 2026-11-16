@@ -20,6 +20,8 @@ namespace ItHunts.Level
     public sealed class RandomLevel : MonoBehaviour
     {
         private const float T = 1f;                       // épaisseur des murs
+        /// <summary>Décalage des modèles posés sur une surface du kit (pont d'égout) : pas deux faces au même endroit.</summary>
+        public const float BridgeLift = 0.02f;
         private const float ExitDoorWidth = 10f, ExitDoorHeight = 10f, AnnexDoor = 3f;
 
         [SerializeField] private MapLayoutSettings settings;
@@ -424,8 +426,10 @@ namespace ItHunts.Level
             KitBuild.Box(parent, "Pont du canal (petit)", new Vector3(c.x + hx * 0.65f, y - 0.5f, c.z + zc), new Vector3(4f, 1f, w + 2f), KitBuild.Kind.Sol, null);
             if (kit != null)
             {
-                KitBuild.Piece(kit.pontEgout14, parent, new Vector3(c.x, y, c.z + zc), 90f);
-                KitBuild.Piece(kit.pontEgout4, parent, new Vector3(c.x + hx * 0.65f, y, c.z + zc), 90f);
+                // Tablier du modèle au niveau de son pivot : 2 cm au-dessus des dalles des rives (sinon il scintille avec elles).
+                // Et 0.5 % plus étroit : ses bouts (8 m) restent dans les bords du canal au lieu d'affleurer leur face.
+                KitBuild.Piece(kit.pontEgout14, parent, new Vector3(c.x, y + BridgeLift, c.z + zc), 90f, new Vector3(0.995f, 1f, 1f));
+                KitBuild.Piece(kit.pontEgout4, parent, new Vector3(c.x + hx * 0.65f, y + BridgeLift, c.z + zc), 90f, new Vector3(0.995f, 1f, 1f));
             }
 
             Lamp(parent, new Vector3(c.x - hx * 0.5f, y + 4f, c.z + zc), new Color(0.3f, 0.7f, 0.8f), 3f, 25f);
@@ -499,11 +503,15 @@ namespace ItHunts.Level
             Vector3 mid = (flatStart + flatEnd) * 0.5f;
             Vector3 Point(float t, float side = 0f) => Vector3.Lerp(flatStart, flatEnd, t) + Vector3.up * Mathf.Lerp(ya, yb, t) + lateral * side;
 
+            // Le couloir va de la face intérieure du mur d'une salle à l'autre ; ses murs, son sol et son plafond s'arrêtent à la face
+            // extérieure (épaisseur T) : dans l'embrasure, seules les pièces de la salle (sol, linteau, tableaux de la porte). Sinon
+            // deux faces au même endroit scintillent (contours de porte, correctifs-rendu point 1).
+            float inner = Mathf.Max(0f, len - 2f * T);
             if (!l.Slope)
             {
-                Vector3 along = alongX ? new Vector3(len, 1f, w) : new Vector3(w, 1f, len);
+                Vector3 along = alongX ? new Vector3(inner, 1f, w) : new Vector3(w, 1f, inner);
                 if (ya > 0.1f)
-                    KitBuild.Box(parent, "Sol (bloc)", mid + Vector3.up * (ya * 0.5f), alongX ? new Vector3(len, ya, w) : new Vector3(w, ya, len), KitBuild.Kind.Bloc, kit);
+                    KitBuild.Box(parent, "Sol (bloc)", mid + Vector3.up * (ya * 0.5f), alongX ? new Vector3(inner, ya, w) : new Vector3(w, ya, inner), KitBuild.Kind.Bloc, kit);
                 else
                     KitBuild.Box(parent, "Sol", mid + Vector3.down * 0.5f, along, KitBuild.Kind.Sol, kit);
                 KitBuild.Box(parent, "Plafond", mid + Vector3.up * (ya + h + 0.5f), along + (alongX ? new Vector3(0f, 0f, 2f * T) : new Vector3(2f * T, 0f, 0f)),
@@ -532,7 +540,8 @@ namespace ItHunts.Level
                     continue;
                 Vector3 p = Point(an.T);
                 float along = alongX ? p.x : p.z;
-                (an.Side > 0 ? plus : minus).Add(new Cut(along - AnnexDoor * 0.5f, along + AnnexDoor * 0.5f, p.y, p.y + AnnexDoor));
+                // 2 cm de plus que le passage du cadre (SM_Porte_Piece) : les tableaux du mur restent cachés dans le cadre.
+                (an.Side > 0 ? plus : minus).Add(new Cut(along - AnnexDoor * 0.5f - 0.02f, along + AnnexDoor * 0.5f + 0.02f, p.y, p.y + AnnexDoor + 0.02f));
                 BuildAnnex(parent, p, lateral * an.Side, w, an.Locked);
             }
 
@@ -541,8 +550,8 @@ namespace ItHunts.Level
             if (_corridorCuts.TryGetValue((li, -1), out List<Cut> moreMinus))
                 minus.AddRange(moreMinus);
             float yLow = Mathf.Min(ya, yb), yTop = Mathf.Max(ya, yb) + h;
-            float from = alongX ? Mathf.Min(flatStart.x, flatEnd.x) : Mathf.Min(flatStart.z, flatEnd.z);
-            float to = alongX ? Mathf.Max(flatStart.x, flatEnd.x) : Mathf.Max(flatStart.z, flatEnd.z);
+            float from = (alongX ? Mathf.Min(flatStart.x, flatEnd.x) : Mathf.Min(flatStart.z, flatEnd.z)) + T;
+            float to = (alongX ? Mathf.Max(flatStart.x, flatEnd.x) : Mathf.Max(flatStart.z, flatEnd.z)) - T;
             float sideCoord = alongX ? mid.z : mid.x;
             // Côté +latéral : nord si le couloir va vers +x (latéral = (−dz, 0, dx)).
             float sgn = alongX ? lateral.z : lateral.x;
@@ -713,7 +722,8 @@ namespace ItHunts.Level
                 }
 
                 KitBuild.Box(root, $"{nm} : sol", Pt(T + DuctLen * 0.5f, lc, DuctY - 0.25f), Size(DuctLen, DuctW, 0.5f), KitBuild.Kind.Sol, kit);
-                KitBuild.Box(root, $"{nm} : plafond", Pt(T + DuctLen * 0.5f, lc, DuctY + DuctH + 0.25f), Size(DuctLen + 1f, DuctW + 1f, 0.5f), KitBuild.Kind.Sol, kit, walkable: false);
+                // Plafond à partir de la face extérieure du mur de la salle (pas sous son linteau : faces confondues).
+                KitBuild.Box(root, $"{nm} : plafond", Pt(T + DuctLen * 0.5f + 0.5f, lc + 0.5f, DuctY + DuctH + 0.25f), Size(DuctLen + 1f, DuctW + 1f, 0.5f), KitBuild.Kind.Sol, kit, walkable: false);
                 KitBuild.Box(root, $"{nm} : mur extérieur", Pt(T + (DuctLen + 1f) * 0.5f, l1 + 0.5f, DuctY + DuctH * 0.5f), Size(DuctLen + 1f, 1f, DuctH + 1f), KitBuild.Kind.Mur, kit, walkable: false);
                 KitBuild.Box(root, $"{nm} : mur du fond", Pt(T + DuctLen + 0.5f, lc, DuctY + DuctH * 0.5f), Size(1f, DuctW, DuctH + 1f), KitBuild.Kind.Mur, kit, walkable: false);
                 float top = DuctY + DuctH + 1.5f, side = 2.5f, open = DuctW - 0.5f, ac = T + 5.5f;
@@ -757,10 +767,11 @@ namespace ItHunts.Level
                 Vector3 Size(float axLen, float latLen, float hgt) => Mathf.Abs(axis.x) > 0.5f ? new Vector3(axLen, hgt, latLen) : new Vector3(latLen, hgt, axLen);
                 float l0 = w * 0.5f, l1 = l0 + T + GalleryWidth, a0 = 3f, a1 = len - 3f, landing = 5f, line = l0 + 9f;
                 NM($"{nm} : mur extérieur", root, Pt((a0 + a1) * 0.5f, l1 + 0.5f, (H - depth) * 0.5f), Size(a1 - a0 + 2f, 1f, H + depth), false);
-                NM($"{nm} : bout 1", root, Pt(a0 - 0.5f, (l0 + l1) * 0.5f, (H - depth) * 0.5f), Size(1f, l1 - l0, H + depth), false);
-                NM($"{nm} : bout 2", root, Pt(a1 + 0.5f, (l0 + l1) * 0.5f, (H - depth) * 0.5f), Size(1f, l1 - l0, H + depth), false);
-                NM($"{nm} : plafond", root, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H + 0.5f), Size(a1 - a0 + 2f, l1 - l0 + 2f, 1f), false);
-                NM($"{nm} : parapet", root, Pt((a0 + a1) * 0.5f, l0 - 0.25f, 0.5f), Size(a1 - a0 - 2f * landing, 0.5f, 1f), false);
+                // Bouts 2 cm devant les bouts du mur coupé du couloir, plafond 2 cm sous le sien : pas de faces confondues (scintillement).
+                NM($"{nm} : bout 1", root, Pt(a0 - 0.49f, (l0 + 0.02f + l1) * 0.5f, (H - depth) * 0.5f), Size(1.02f, l1 - l0 - 0.02f, H + depth), false);
+                NM($"{nm} : bout 2", root, Pt(a1 + 0.49f, (l0 + 0.02f + l1) * 0.5f, (H - depth) * 0.5f), Size(1.02f, l1 - l0 - 0.02f, H + depth), false);
+                NM($"{nm} : plafond", root, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H + 0.48f), Size(a1 - a0 + 2f, l1 - l0 + 2f, 1f), false);
+                NM($"{nm} : parapet", root, Pt((a0 + a1) * 0.5f, l0 - 0.27f, 0.5f), Size(a1 - a0 - 2f * landing, 0.5f, 1f), false);
                 KitBuild.Box(root, $"{nm} : fond du vide", Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth - 0.5f), Size(a1 - a0, l1 - l0, 1f), KitBuild.Kind.Sol, kit, walkable: false);
 
                 // Paliers (au niveau du couloir, à portée) : de la porte du couloir jusqu'à la ligne du parcours.
@@ -854,18 +865,14 @@ namespace ItHunts.Level
                     float other = dl.A == i ? dl.To.y : dl.From.y, here = dl.A == i ? dl.From.y : dl.To.y;
                     float tan = dl.Slope ? (other - here) / Mathf.Max(1f, dl.Length) : 0f;
                     Quaternion tilt = Quaternion.FromToRotation(o, (o + Vector3.up * tan).normalized);
-                    Vector3 at = d.Position + o * 0.525f + Vector3.up * (tan * 0.525f);           // de 0.25 m dans la salle à 1.3 m dans le couloir
-                    NM($"seuil (sol) {d.Side}", room, at + Vector3.up * 0.03f, SizeD(1.55f, dw, 0.06f)).transform.rotation = tilt;
-                    NM($"seuil (plafond) {d.Side}", room, at + Vector3.up * (H - 0.03f), SizeD(1.55f, dw, 0.06f), false).transform.rotation = tilt;
+                    // De 2 cm dans l'embrasure (pièces de la salle, déjà non magnétiques) à 1.3 m dans le couloir.
+                    Vector3 at = d.Position + o * 0.66f + Vector3.up * (tan * 0.66f);
+                    NM($"seuil (sol) {d.Side}", room, at + Vector3.up * 0.03f, SizeD(1.28f, dw, 0.06f)).transform.rotation = tilt;
+                    NM($"seuil (plafond) {d.Side}", room, at + Vector3.up * (H - 0.03f), SizeD(1.28f, dw, 0.06f), false).transform.rotation = tilt;
                     foreach (float sgn in new[] { -1f, 1f })
                     {
-                        NM($"seuil (côté) {d.Side}", room, at + across * sgn * (dw * 0.5f - 0.03f) + Vector3.up * (H * 0.5f), SizeD(1.55f, 0.06f, H + 1f), false);
-                        // Bouts des murs du couloir, dans le plan du mur de la salle (et jusqu'à 0.1 m dedans) : cache côté salle.
-                        NM($"seuil (bout de mur) {d.Side}", room, d.Position - o * 0.2f + across * sgn * (dw * 0.5f + T * 0.5f) + Vector3.up * ((H + 5f) * 0.5f - 1f),
-                            SizeD(0.06f, T + 0.4f, H + 5f), false);
+                        NM($"seuil (côté) {d.Side}", room, at + across * sgn * (dw * 0.5f - 0.03f) + Vector3.up * (H * 0.5f), SizeD(1.28f, 0.06f, H + 1f), false);
                     }
-
-                    NM($"seuil (bout du plafond) {d.Side}", room, d.Position - o * 0.2f + Vector3.up * (H + 1.5f), SizeD(0.06f, dw + 2f * T + 0.4f, 3.2f), false);
                 }
 
                 // Passages en hauteur qui débouchent dans cette salle : leurs pièces aussi.
@@ -951,11 +958,12 @@ namespace ItHunts.Level
             parent.SetParent(_root, false);
             bool alongX = Mathf.Abs(o.x) > 0.5f;
             Vector3 Size(float along, float sy, float across) => alongX ? new Vector3(along, sy, across) : new Vector3(across, sy, along);
+            // Sol et plafond à partir de la face extérieure du mur de la salle hôte : l'embrasure est à la salle (sinon faces confondues).
             if (y > 0.1f)
-                KitBuild.Box(parent, "Sol (bloc)", new Vector3(c.x, y * 0.5f, c.z) - o * (T * 0.5f), Size(depth + T, y, width + 2f * T), KitBuild.Kind.Bloc, kit);
+                KitBuild.Box(parent, "Sol (bloc)", new Vector3(c.x, y * 0.5f, c.z), Size(depth, y, width + 2f * T), KitBuild.Kind.Bloc, kit);
             else
-                KitBuild.Box(parent, "Sol", new Vector3(c.x, -0.5f, c.z) - o * (T * 0.5f), Size(depth + T, 1f, width + 2f * T), KitBuild.Kind.Sol, kit);
-            KitBuild.Box(parent, "Plafond", c + Vector3.up * (h + 0.5f), Size(depth + 2f * T, 1f, width + 2f * T), KitBuild.Kind.Sol, kit, walkable: false);
+                KitBuild.Box(parent, "Sol", new Vector3(c.x, -0.5f, c.z), Size(depth, 1f, width + 2f * T), KitBuild.Kind.Sol, kit);
+            KitBuild.Box(parent, "Plafond", c + o * (T * 0.5f) + Vector3.up * (h + 0.5f), Size(depth + T, 1f, width + 2f * T), KitBuild.Kind.Sol, kit, walkable: false);
             KitBuild.Box(parent, "Mur du fond", c + o * (depth * 0.5f + T * 0.5f) + Vector3.up * ((h - y) * 0.5f), Size(T, h + y, width + 2f * T), KitBuild.Kind.Mur, kit, walkable: false);
             foreach (int s in new[] { 1, -1 })
                 KitBuild.Box(parent, "Mur", c + lat * s * (width * 0.5f + T * 0.5f) + Vector3.up * ((h - y) * 0.5f), Size(depth, h + y, T), KitBuild.Kind.Mur, kit, walkable: false);

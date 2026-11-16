@@ -190,7 +190,7 @@ namespace ItHunts.EditorTools
                     for (int i = 0; i < 4; i++)
                     {
                         float y = 0.2f + i * 0.95f;
-                        Part(t, PrimitiveType.Cube, new Vector3(0f, y, 0f), new Vector3(s.x, 0.08f, s.z), _wood);
+                        Part(t, PrimitiveType.Cube, new Vector3(0f, y, 0f), new Vector3(s.x - 0.2f, 0.08f, s.z - 0.02f), _wood);   // entre les montants (pas de faces confondues)
                         Part(t, PrimitiveType.Cube, new Vector3(-0.6f + 0.4f * i, y + 0.25f, 0f), new Vector3(0.35f, 0.4f, 0.4f), i % 2 == 0 ? _cloth : _straw);
                     }
                     break;
@@ -208,7 +208,7 @@ namespace ItHunts.EditorTools
                 case "Lit":
                     Part(t, PrimitiveType.Cube, new Vector3(0f, 0.25f, 0f), new Vector3(s.x, 0.5f, s.z), _darkWood);
                     Part(t, PrimitiveType.Cube, new Vector3(0f, 0.58f, 0.1f), new Vector3(s.x * 0.92f, 0.16f, s.z * 0.85f), _cloth);
-                    Part(t, PrimitiveType.Cube, new Vector3(0f, 0.6f, -s.z / 2f + 0.05f), new Vector3(s.x, 1.2f, 0.1f), _darkWood);
+                    Part(t, PrimitiveType.Cube, new Vector3(0f, 0.6f, -s.z / 2f + 0.04f), new Vector3(s.x + 0.02f, 1.2f, 0.1f), _darkWood);   // dépasse de 1 cm
                     break;
                 case "CoffreDeco":
                     Part(t, PrimitiveType.Cube, new Vector3(0f, 0.32f, 0f), new Vector3(s.x, 0.64f, s.z), _darkWood);

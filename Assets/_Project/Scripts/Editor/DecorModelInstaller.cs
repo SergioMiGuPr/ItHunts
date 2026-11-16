@@ -58,6 +58,12 @@ namespace ItHunts.EditorTools
                 {
                     PrefabUtility.UnloadPrefabContents(root);
                 }
+
+                // Étiquette « DA » : PropLibrary.BuildAll garde ce prop au lieu de le refaire en greybox.
+                var saved = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                string[] labels = AssetDatabase.GetLabels(saved);
+                if (System.Array.IndexOf(labels, "DA") < 0)
+                    AssetDatabase.SetLabels(saved, labels.Concat(new[] { "DA" }).ToArray());
             }
 
             AssetDatabase.SaveAssets();
