@@ -202,6 +202,39 @@ de l'avant-bras visible ; vérifié à `viewmodelFov` 60, planches `rendus/Lot2/
 
 Événements : aucun (les déplacements de la main entière restent dans FirstPersonView).
 
+### Goule (`SK_Goule`, armature `Goule`, 26 os)
+
+**Modèle à utiliser :** `SK_Goule` (gréé) à la place de `SM_Goule` (statique, gardé pour les aperçus), en (0, 0, 0) sous
+« Corps (visuel) », rotation nulle (avant +Z). Le FBX contient l'armature `Goule` et `SM_Goule_LOD0` (22 000 triangles),
+`_LOD1` (11 000), `_LOD2` (5 000) en `SkinnedMeshRenderer` (mêmes 26 os), avec un `LODGroup` à la racine. Import réglé :
+*Generic*, *Bake Axis Conversion*, boucles. Ajouter un `Animator` (contrôleur côté `main`) ; pas de déplacement de la racine
+(le code déplace la goule), sauf `Goule_Mort` qui couche le corps sur le flanc.
+
+**Échelle de 1.8 m** (le jeu agrandit la goule de 1.1 à ≈ 1.8 m, × 1.64) : vérifiée (planches ci-dessous, à 1.8 m) ; la
+texture de 2048 px reste nette de près (`Goule_texture_gros_plans.jpg`) ; proportions inchangées (allongée, bras jusqu'au sol).
+**Seuils de LOD conseillés à 1.8 m** (hauteur d'écran, champ de vision de 70°) : **LOD1 sous 0.25 (≈ 5 m), LOD2 sous 0.10
+(≈ 13 m), disparition sous 0.012 (≈ 105 m)** ; le `LODGroup` mesure l'objet mis à l'échelle, ces seuils s'entendent donc
+avec l'échelle du jeu (ils remplacent ceux conseillés à 1.1 m au § 4 ter).
+
+**Squelette :** `Racine` (au sol) → `Bassin` → `Dos_1` → `Dos_2` → `Poitrine` → `Cou` → `Tete` → `Machoire` ;
+`Epaule.L/R` → `Bras` → `AvantBras` → `Main` → `Doigts` ; `Bassin` → `Cuisse.L/R` → `Jambe` → `Pied` → `Orteils`
+(`.L` = gauche du personnage). Métarig Rigify (types des chaînes posés) : dans le `.blend`, *Rigify > Generate* donne un
+rig de contrôle pour retoucher les animations à la main ; les os exportés restent ceux de ce squelette.
+
+| Clip (`Goule|…`) | Durée | Boucle | Contenu | À caler sur le jeu |
+|---|---|---|---|---|
+| `Goule_Repos` | 2.0 s | oui | respiration, tête qui oscille, mâchoire et doigts qui bougent | — |
+| `Goule_Course` | 0.6 s | oui | galop sur 4 pattes (avant et arrière en opposition, dos qui ondule) | vitesse de lecture ∝ vitesse de course (0.6 s à la vitesse de chasse) |
+| `Goule_Annonce` | **0.3 s** | non | s'accroupit, gueule qui s'ouvre (dernière image tenue) | annonce du bond (0.3 s), en même temps que la lueur des yeux |
+| `Goule_Bond` | 0.4 s | non | détente : bras tendus en avant, jambes en arrière (dernière image tenue en vol) | départ du bond ; garder la dernière image jusqu'à l'atterrissage |
+| `Goule_Reception` | 0.33 s | non | choc à 0.12 s (accroupie), retour au repos | atterrissage |
+| `Goule_Escalade` | 0.8 s | oui | reptation en diagonale, dos qui ondule (le code bascule le visuel de 80° sur le mur) | sur un mur |
+| `Goule_Coup` | 0.47 s | non | armé du bras droit (0 → 0.15 s), frappe (**impact à 0.24 s**), retour | dégâts au contact à 0.24 s |
+| `Goule_Etourdie` | 1.2 s | oui | tête qui roule, corps qui tangue, mâchoire pendante | étourdissement |
+| `Goule_Mort` | 1.0 s | non | jambes qui cèdent (0.3 s), chute sur le flanc (dernière image tenue) | mort, avant la disparition |
+
+Planches : `docs/art/rendus/Lot2/Goule_<Animation>.jpg` (5 images réparties sur chaque clip, à 1.8 m).
+
 ## 5. Props encore à produire (catalogue d'`ART-HANDOFF`)
 
 Greybox actuelles (bornes de leur maillage) : à garder comme cotes et pivots. **Attrapables** : gardent leur Rigidbody,
