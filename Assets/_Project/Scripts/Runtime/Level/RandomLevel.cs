@@ -655,6 +655,16 @@ namespace ItHunts.Level
         /// </summary>
         private const float GothicCenter = 7.66f, VaultInner = 14.66f, VaultOuter = 15.26f, ArcInner = 14.06f;
 
+        /// <summary>
+        /// Noms des pièces visuelles du couloir gothique : comme les pièces Kit_*, elles sont fusionnées par matériau et par couloir
+        /// (Batch) ; leurs collisions sont sur des objets à part.
+        /// </summary>
+        public const string GothicVault = "Voûte en ogive", GothicArc = "Arc-doubleau", GothicColumn = "Colonne engagée",
+            GothicArcadeWall = "Mur à arcade", GothicNicheWall = "Mur à niche", GothicDoorFill = "Coins de la porte (pierre)";
+
+        private static readonly HashSet<string> GothicMerged =
+            new HashSet<string> { GothicVault, GothicArc, GothicColumn, GothicArcadeWall, GothicNicheWall, GothicDoorFill };
+
         private sealed class GothicBay
         {
             public float D0, D1;
@@ -733,7 +743,7 @@ namespace ItHunts.Level
 
             // Voûte : un tronçon par travée (étiré à la longueur de la travée, UV monde), une collision sur tout le couloir.
             foreach (GothicBay b in bays)
-                KitBuild.Piece(kit.voute8, root, P((b.D0 + b.D1) * 0.5f), yaw, new Vector3(1f, 1f, (b.D1 - b.D0) / GothicBayLength)).name = "Voûte en ogive";
+                KitBuild.Piece(kit.voute8, root, P((b.D0 + b.D1) * 0.5f), yaw, new Vector3(1f, 1f, (b.D1 - b.D0) / GothicBayLength)).name = GothicVault;
             RingCollision(root, "Collision de la voûte", P(len * 0.5f), yaw, VaultInner, VaultOuter, inner);
 
             // Arcs-doubleaux : à chaque limite de travée et contre chaque bout (ils encadrent la porte de la salle).
@@ -741,7 +751,7 @@ namespace ItHunts.Level
             arcs.AddRange(bays.Skip(1).Select(b => b.D0));
             foreach (float d in arcs)
             {
-                KitBuild.Piece(kit.arcDoubleau, root, P(d), yaw).name = "Arc-doubleau";
+                KitBuild.Piece(kit.arcDoubleau, root, P(d), yaw).name = GothicArc;
                 RingCollision(root, "Collision de l'arc-doubleau", P(d), yaw, ArcInner, VaultInner + 0.05f, 0.8f);
             }
 
@@ -756,8 +766,12 @@ namespace ItHunts.Level
                     float yawIn = Mathf.Atan2(inward.x, inward.z) * Mathf.Rad2Deg;
                     if (b.Column[s])
                     {
-                        GameObject col = KitBuild.Piece(kit.colonneEngagee, root, P(b.D0, side * w * 0.5f), yawIn);
-                        col.name = "Colonne engagée";
+                        KitBuild.Piece(kit.colonneEngagee, root, P(b.D0, side * w * 0.5f), yawIn).name = GothicColumn;
+                        // Collision à part : la pièce visuelle est fusionnée puis détruite (Batch).
+                        var col = new GameObject("Collision de la colonne");
+                        col.transform.SetParent(root, false);
+                        col.transform.localPosition = P(b.D0, side * w * 0.5f);
+                        col.transform.localRotation = Quaternion.Euler(0f, yawIn, 0f);
                         var box = col.AddComponent<BoxCollider>();
                         box.center = new Vector3(0f, GothicSpring * 0.5f, 0.39f);
                         box.size = new Vector3(1.44f, GothicSpring, 0.78f);
@@ -822,7 +836,7 @@ namespace ItHunts.Level
         private void GothicWall(Transform root, Vector3 pivot, float yawIn, Vector3 inward, float bay, bool arcade)
         {
             GameObject piece = KitBuild.Piece(arcade ? kit.murArcade : kit.murNiche, root, pivot, yawIn, new Vector3(bay / GothicBayLength, 1f, 1f));
-            piece.name = arcade ? "Mur à arcade" : "Mur à niche";
+            piece.name = arcade ? GothicArcadeWall : GothicNicheWall;
             var col = new GameObject("Collision du mur").transform;
             col.SetParent(piece.transform.parent, false);
             col.localPosition = pivot;
@@ -924,9 +938,12 @@ namespace ItHunts.Level
             mesh.SetNormals(Enumerable.Repeat(Vector3.back, v.Count).ToList());
             mesh.SetUVs(0, v.Select(p => new Vector2(p.x, p.y)).ToList());
             mesh.RecalculateBounds();
-            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            // Maillage sur un enfant (fusionné par Batch) ; la collision reste sur go.
+            var fill = new GameObject(GothicDoorFill);
+            fill.transform.SetParent(go.transform, false);
+            fill.AddComponent<MeshFilter>().sharedMesh = mesh;
             Renderer stone = kit.arcDoubleau.GetComponentInChildren<Renderer>();
-            go.AddComponent<MeshRenderer>().sharedMaterial = stone != null ? stone.sharedMaterial : null;
+            fill.AddComponent<MeshRenderer>().sharedMaterial = stone != null ? stone.sharedMaterial : null;
             go.AddComponent<NotWalkable>();
             go.AddComponent<StalkerPassesThrough>();
         }
@@ -1596,7 +1613,8 @@ namespace ItHunts.Level
                 var pieces = new List<GameObject>();
                 foreach (Transform t in group.GetComponentsInChildren<Transform>(true))
                 {
-                    if (!t.name.StartsWith("Kit_") || (t.parent != null && t.parent.name.StartsWith("Kit_")))
+                    bool piece = t.name.StartsWith("Kit_") || GothicMerged.Contains(t.name);
+                    if (!piece || (t.parent != null && (t.parent.name.StartsWith("Kit_") || GothicMerged.Contains(t.parent.name))))
                         continue;
                     // Maillage non lisible (modèle importé sans Read/Write) : Unity ne peut pas le combiner ; la pièce reste telle
                     // quelle au lieu de disparaître (cause des arcs invisibles, voir LevelModelImport).

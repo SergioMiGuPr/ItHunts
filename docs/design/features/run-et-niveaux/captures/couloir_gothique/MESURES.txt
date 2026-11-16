@@ -26,3 +26,19 @@ Image (médiane / 95e centile) et draw calls, avant → après :
 - écran partagé : 26.9 / 47.2 ms → 24.5 / 47.0 ms ; GPU 6.6 → 6.5 ms ; draw calls 4 915 → 6 654.
 Le temps d'image reste dans le bruit de la mesure (fil principal, scripts). Les draw calls montent d'un tiers :
 nouvelles pièces (voûte, arcs, colonnes, murs), regroupées par matériau.
+
+Fusion des pièces gothiques (2026-11-17). Voûte, arcs, colonnes, murs de travée et coins des portes sont fusionnés par couloir et par
+matériau, comme les pièces Kit_*. Les collisions sont sur des objets à part.
+Mesure dans l'éditeur : seed 104729, ennemis coupés, moyenne de 20 images, 6 poses fixes (salle D4 vers 4 directions, couloir B1 – C1
+dans l'axe et vers la voûte).
+- Plafond plat (avant la voûte) : 4 258 draw calls en moyenne, 5 405 rendus actifs.
+- Voûte non fusionnée : 4 855 draw calls, 7 278 rendus.
+- Voûte fusionnée : 3 182 draw calls (−34 %, et −25 % par rapport au plafond plat), 4 576 rendus.
+- Couloir B1 – C1 dans l'axe : 9 299 (plat), 7 053 (non fusionné), 4 619 (fusionné).
+Inchangés après fusion :
+- colliders : 33 468, même somme de contrôle ;
+- NavMesh : 55 038 sommets, 25 488 triangles, 248 965 m² ;
+- liens d'escalade : 812 ; torches actives : 529.
+5 seeds : 0 cachette, NavMesh goule 11 530/11 530, traqueur 299/299, 0 fuite.
+Capture après fusion : fusion_axe.png (identique à gothique_axe.png).
+Temps d'image : à mesurer en build, A/B en alternance (voir PROGRESS).
