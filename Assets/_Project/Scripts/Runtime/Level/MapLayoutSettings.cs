@@ -86,6 +86,13 @@ namespace ItHunts.Level
         public float slopeCorridorWidth = 16f;
         [Tooltip("Hauteur des couloirs (m) : 15 m au moins, le traqueur fait 14 m (sinon il se baisse partout ; était 19 m).")]
         [Min(15f)] public float corridorHeight = 15f;
+        [Tooltip("Couloirs plats de 14 m en voûte gothique (kit de la PR #8 : voûte en lancette, clé à 20.5 m, dessus à 21.2 m ; " +
+                 "arcs-doubleaux sur colonnes engagées tous les 8 m, 19.8 m libres). Sinon plafond plat à corridorHeight.")]
+        public bool gothicCorridors = true;
+        [Tooltip("Part des travées (hors portes, galeries et passages) dont le mur est une arcade aveugle (renfoncement de 1.5 m).")]
+        [Range(0f, 1f)] public float gothicArcadeShare = 0.25f;
+        [Tooltip("Part des travées dont le mur est creusé d'une niche (décor). Le reste : mur plein.")]
+        [Range(0f, 1f)] public float gothicNicheShare = 0.35f;
         [Tooltip("Longueur d'un tronçon de couloir (volume de salle, D-047).")]
         public float corridorSegmentLength = 40f;
         public float lairDepth = 26f;

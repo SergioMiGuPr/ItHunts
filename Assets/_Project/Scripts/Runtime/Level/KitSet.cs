@@ -42,6 +42,21 @@ namespace ItHunts.Level
         [Tooltip("Pont d'égout de 14 m (SM_Pont_Egout_14m : 8 × 4.6 × 14 m).")]
         public GameObject pontEgout14;
 
+        [Header("Kit gothique des couloirs de 14 m (PR #8, travées de 8 m, naissance à 8 m)")]
+        [Tooltip("SM_Voute_Ogive_8m : tronçon de voûte en lancette (x −7.6..7.6, y 8..21.2, z −4..4), pivot au sol au milieu.")]
+        public GameObject voute8;
+        [Tooltip("SM_ArcDoubleau_14m : arc-doubleau sous la voûte (clé de l'intrados à 19.8 m), pivot au sol au milieu.")]
+        public GameObject arcDoubleau;
+        [Tooltip("SM_Colonne_Engagee_8m : colonne contre le mur sous chaque arc-doubleau (pivot au pied sur la face du mur, +Z vers le couloir).")]
+        public GameObject colonneEngagee;
+        [Tooltip("SM_Mur_Arcade_8m : mur d'une travée percé d'une arcade en ogive de 4.4 × 7 m (face côté couloir vers +Z).")]
+        public GameObject murArcade;
+        [Tooltip("SM_Mur_Niche_8m : mur d'une travée creusé d'une niche en ogive (décor).")]
+        public GameObject murNiche;
+
+        /// <summary>Toutes les pièces du kit gothique sont là : les couloirs plats de 14 m prennent la voûte en ogive.</summary>
+        public bool HasGothic => voute8 != null && arcDoubleau != null && colonneEngagee != null && murArcade != null && murNiche != null;
+
         [Header("Divers")]
         [Tooltip("Torche murale (décor des couloirs).")]
         public GameObject torche;

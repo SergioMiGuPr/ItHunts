@@ -1,0 +1,28 @@
+Couloirs gothiques (kit de la PR #8), 2026-11-16. Couloirs plats de 14 m : 299 sur 335 couloirs (5 seeds, 104729 × k).
+Pièces posées sur ces 5 cartes : 1 082 arcades aveugles, 1 511 niches, 4 587 colonnes engagées.
+
+Dessus de la voûte (volume de 8 à 21.4 m, ±7.6 m) :
+- aucun étage, aucune salle, aucun module voisin, aucune galerie d'un autre couloir ne le traverse ;
+- seulement les pièces attendues :
+  - plafond de la galerie du couloir lui-même, qui entre dans l'épaisseur de la voûte, voulu (270) ;
+  - arcs d'entrée des salles, dans l'embrasure de la porte (19 136 boîtes) ;
+  - seuils non magnétiques des salles de parcours, 0.3 m dans le couloir (216).
+Cachettes (ReachCheck, grille de 4 m, toute la carte) : 0 sur 57 383 points.
+NavMesh :
+- goule : 11 530 chemins complets sur 11 530 (chaque arcade aveugle, chaque travée au pied du mur) ;
+- traqueur : 299 couloirs sur 299 de bout en bout, sous les arcs-doubleaux.
+Trous : 0 rayon sur 363 960 (vers le haut et les côtés, depuis 2, 10 et 16 m) ne sort de la carte.
+Traqueur : sommet 15.1 m (boîte englobante) sous 19.8 m libres.
+Textes en monde, depuis l'axe d'un couloir :
+- à 35 m : 16 sur 16 invisibles ;
+- à 20 m : opacité 1 pour les 8 ;
+  - 2 en ligne de vue directe, lisibles ;
+  - les 6 autres sont décalés de 8 à 18 m dans la salle, derrière les murs, comme avant la voûte.
+- texte le plus haut : 7.7 m.
+
+Performance (build de développement, seed 104729, 1920 × 1080, ambiance sombre).
+Image (médiane / 95e centile) et draw calls, avant → après :
+- solo : 15.0 / 29.9 ms → 14.4 / 18.6 ms ; GPU 4.0 → 3.9 ms ; draw calls 3 670 → 4 651 ; lumières 995 → 880.
+- écran partagé : 26.9 / 47.2 ms → 24.5 / 47.0 ms ; GPU 6.6 → 6.5 ms ; draw calls 4 915 → 6 654.
+Le temps d'image reste dans le bruit de la mesure (fil principal, scripts). Les draw calls montent d'un tiers :
+nouvelles pièces (voûte, arcs, colonnes, murs), regroupées par matériau.

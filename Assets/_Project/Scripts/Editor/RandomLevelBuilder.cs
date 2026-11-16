@@ -57,6 +57,12 @@ namespace ItHunts.EditorTools
             kit.poutre = ModelPiece("Kit_Poutre", "SM_Poutre");
             kit.pontEgout4 = ModelPiece("Kit_PontEgout4", "SM_Pont_Egout_4m");
             kit.pontEgout14 = ModelPiece("Kit_PontEgout14", "SM_Pont_Egout_14m");
+            // Kit gothique des couloirs (PR #8) : voûte en lancette, arcs-doubleaux, colonnes engagées, murs à arcade et à niche.
+            kit.voute8 = ModelPiece("Kit_Voute_Ogive_8m", "SM_Voute_Ogive_8m");
+            kit.arcDoubleau = ModelPiece("Kit_ArcDoubleau_14m", "SM_ArcDoubleau_14m");
+            kit.colonneEngagee = ModelPiece("Kit_Colonne_Engagee_8m", "SM_Colonne_Engagee_8m");
+            kit.murArcade = ModelPiece("Kit_Mur_Arcade_8m", "SM_Mur_Arcade_8m");
+            kit.murNiche = ModelPiece("Kit_Mur_Niche_8m", "SM_Mur_Niche_8m");
             kit.torche = AssetDatabase.LoadAssetAtPath<GameObject>(PropLibrary.Dir + "/Prop_Torche.prefab");
             EditorUtility.SetDirty(kit);
             AssetDatabase.SaveAssets();

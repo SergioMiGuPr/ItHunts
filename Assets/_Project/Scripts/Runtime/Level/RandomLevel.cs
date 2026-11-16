@@ -514,6 +514,8 @@ namespace ItHunts.Level
             Vector3 flatStart = new Vector3(start.x, 0f, start.z), flatEnd = new Vector3(end.x, 0f, end.z);
             Vector3 mid = (flatStart + flatEnd) * 0.5f;
             Vector3 Point(float t, float side = 0f) => Vector3.Lerp(flatStart, flatEnd, t) + Vector3.up * Mathf.Lerp(ya, yb, t) + lateral * side;
+            // Couloir plat de 14 m : voûte gothique du kit de la PR #8 (murs jusqu'à la naissance, 8 m ; voûte au-dessus).
+            bool gothic = IsGothic(li);
 
             // Le couloir va de la face intérieure du mur d'une salle à l'autre ; ses murs, son sol et son plafond s'arrêtent à la face
             // extérieure (épaisseur T) : dans l'embrasure, seules les pièces de la salle (sol, linteau, tableaux de la porte). Sinon
@@ -526,8 +528,9 @@ namespace ItHunts.Level
                     KitBuild.Box(parent, "Sol (bloc)", mid + Vector3.up * (ya * 0.5f), alongX ? new Vector3(inner, ya, w) : new Vector3(w, ya, inner), KitBuild.Kind.Bloc, kit);
                 else
                     KitBuild.Box(parent, "Sol", mid + Vector3.down * 0.5f, along, KitBuild.Kind.Sol, kit);
-                KitBuild.Box(parent, "Plafond", mid + Vector3.up * (ya + h + 0.5f), along + (alongX ? new Vector3(0f, 0f, 2f * T) : new Vector3(2f * T, 0f, 0f)),
-                    KitBuild.Kind.Sol, kit, walkable: false);
+                if (!gothic)
+                    KitBuild.Box(parent, "Plafond", mid + Vector3.up * (ya + h + 0.5f), along + (alongX ? new Vector3(0f, 0f, 2f * T) : new Vector3(2f * T, 0f, 0f)),
+                        KitBuild.Kind.Sol, kit, walkable: false);
             }
             else
             {
@@ -567,8 +570,19 @@ namespace ItHunts.Level
             float sideCoord = alongX ? mid.z : mid.x;
             // Côté +latéral : nord si le couloir va vers +x (latéral = (−dz, 0, dx)).
             float sgn = alongX ? lateral.z : lateral.x;
+            // Voûte gothique : murs jusqu'à la naissance (8 m) ; les travées à arcade ou à niche sont retirées du mur (pièces du kit).
+            List<GothicBay> bays = null;
+            if (gothic)
+            {
+                yTop = ya + GothicSpring;
+                bays = PlanGothicBays(li, len, ya, t => Along(Point(t), alongX ? Vector3.right : Vector3.forward), plus, minus);
+            }
+
             Wall(parent, "Mur 1", alongX, sideCoord + sgn * (w * 0.5f + T * 0.5f), from, to, yLow > 0.1f ? 0f : yLow, yTop, plus);
             Wall(parent, "Mur 2", alongX, sideCoord - sgn * (w * 0.5f + T * 0.5f), from, to, yLow > 0.1f ? 0f : yLow, yTop, minus);
+            bool Open(int side, float d) => Plan.Galleries.Any(g => g.Link == li && g.Side == side) && d > 2f && d < len - 2f;
+            if (gothic)
+                BuildGothic(parent, len, w, h, ya, dir, lateral, (t, s) => Point(t, s), bays, Open);
 
             // Tronçons (volumes, D-047), lumières, arcs et torches, apparitions.
             int segments = Mathf.Max(1, Mathf.CeilToInt(len / settings.corridorSegmentLength - 0.05f));
@@ -588,7 +602,7 @@ namespace ItHunts.Level
             float yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
             // Arcs tous les 20 m. En pente (20° au plus), plafond parallèle à la rampe : l'arc (1.6 m d'épaisseur) descend de 0.3 m
             // pour que ses deux bords restent sous le plafond, et ses piédroits s'enfoncent d'autant côté haut (posés côté bas).
-            if (kit != null)
+            if (kit != null && !gothic)
                 for (float d = 20f; d < len - 10f; d += 20f)
                 {
                     // Pas d'arc devant la porte d'une pièce annexe : son piédroit la bouchait pour les goules (retours, animations point 2).
@@ -601,8 +615,7 @@ namespace ItHunts.Level
                     float sink = l.Slope ? 0.3f : 0f;
                     KitBuild.Arch(parent, kit, Point(d / len) - Vector3.up * sink, yaw, w, h, l.Slope);
                 }
-            bool Open(int side, float d) => Plan.Galleries.Any(g => g.Link == li && g.Side == side) && d > 2f && d < len - 2f;
-            if (kit != null && kit.torche != null)
+            if (kit != null && kit.torche != null && !gothic)
                 for (float d = 6f; d < len - 4f; d += 12f)
                     foreach (int s in new[] { 1, -1 })
                     {
@@ -630,6 +643,292 @@ namespace ItHunts.Level
                 else
                     KitBuild.Box(parent, $"Pont (dessous à {settings.bridgeBottom:0} m)", p, alongX ? new Vector3(settings.bridgeWidth, 1f, w) : new Vector3(w, 1f, settings.bridgeWidth), KitBuild.Kind.Pont, kit);
             }
+        }
+
+        // ---------- Couloir gothique (kit de la PR #8, docs/art/INTEGRATION-PROPS.md) ----------
+
+        /// <summary>Naissance de la voûte (haut des murs), largeur du couloir, longueur d'une travée (m).</summary>
+        private const float GothicSpring = 8f, GothicWidth = 14f, GothicBayLength = 8f;
+        /// <summary>
+        /// Profil de la voûte en lancette : arcs de cercle centrés sur la ligne de naissance à 7.66 m de l'axe, de l'autre côté ;
+        /// intrados R 14.66 (clé à 20.5 m), extrados R 15.26 (dessus à 21.2 m) ; intrados de l'arc-doubleau R 14.06 (clé à 19.8 m).
+        /// </summary>
+        private const float GothicCenter = 7.66f, VaultInner = 14.66f, VaultOuter = 15.26f, ArcInner = 14.06f;
+
+        private sealed class GothicBay
+        {
+            public float D0, D1;
+            /// <summary>Mur de la travée, côté +latéral [0] et −latéral [1] : 0 plein (mur du couloir), 1 arcade, 2 niche.</summary>
+            public readonly int[] Kind = new int[2];
+            /// <summary>Colonne engagée au début de la travée (sous l'arc-doubleau), par côté.</summary>
+            public readonly bool[] Column = new bool[2];
+        }
+
+        /// <summary>Couloir plat de 14 m (ni pente ni dénivelé) et kit gothique livré : voûte en ogive.</summary>
+        private bool IsGothic(int li)
+        {
+            PlanLink l = Plan.Links[li];
+            return settings.gothicCorridors && kit != null && kit.HasGothic && !l.Slope && Mathf.Abs(l.Width - GothicWidth) < 0.6f
+                   && Mathf.Abs(l.From.y - l.To.y) < 0.05f;
+        }
+
+        /// <summary>Largeur libre de l'intrados à une hauteur au-dessus de la naissance (demi-largeur, m).</summary>
+        private static float GothicHalfWidth(float radius, float aboveSpring) =>
+            Mathf.Sqrt(Mathf.Max(0f, radius * radius - aboveSpring * aboveSpring)) - GothicCenter;
+
+        /// <summary>
+        /// Travées de 8 m (ajustées pour remplir le couloir d'une face de salle à l'autre). Une travée sans ouverture (porte de pièce,
+        /// galerie, passage, à 0.7 m près pour les cadres) reçoit, par côté, un mur à arcade aveugle, à niche ou plein ; les deux
+        /// premiers sont retirés du mur du couloir (coupe ajoutée). Colonne au début de la travée sauf devant une petite ouverture.
+        /// Tirage propre au couloir (seed de la carte) : n'entame pas celui du reste de la carte.
+        /// </summary>
+        private List<GothicBay> PlanGothicBays(int li, float len, float ya, System.Func<float, float> along, List<Cut> plus, List<Cut> minus)
+        {
+            float inner = len - 2f * T;
+            int n = Mathf.Max(1, Mathf.RoundToInt(inner / GothicBayLength));
+            float bay = inner / n;
+            var rng = new System.Random(Plan.Seed * 7919 + li * 131 + 17);
+            var bays = new List<GothicBay>(n);
+            var original = new[] { plus.ToList(), minus.ToList() };
+            bool Hits(List<Cut> cuts, float d0, float d1, float margin, bool shortOnly)
+            {
+                float a0 = along(d0 / len), a1 = along(d1 / len), lo = Mathf.Min(a0, a1) - margin, hi = Mathf.Max(a0, a1) + margin;
+                return cuts.Any(c => c.A < hi && c.B > lo && (!shortOnly || c.Y1 - c.Y0 < 12f));
+            }
+
+            for (int i = 0; i < n; i++)
+            {
+                var b = new GothicBay { D0 = T + i * bay, D1 = T + (i + 1) * bay };
+                for (int s = 0; s < 2; s++)
+                {
+                    double r = rng.NextDouble();
+                    bool blocked = Hits(original[s], b.D0, b.D1, 0.7f, false);
+                    b.Kind[s] = blocked ? 0 : r < settings.gothicArcadeShare ? 1 : r < settings.gothicArcadeShare + settings.gothicNicheShare ? 2 : 0;
+                    b.Column[s] = i > 0 && !Hits(original[s], b.D0 - 0.72f, b.D0 + 0.72f, 0.7f, true);
+                    if (b.Kind[s] != 0)
+                    {
+                        float a0 = along(b.D0 / len), a1 = along(b.D1 / len);
+                        (s == 0 ? plus : minus).Add(new Cut(Mathf.Min(a0, a1), Mathf.Max(a0, a1), ya, ya + GothicSpring));
+                    }
+                }
+
+                bays.Add(b);
+            }
+
+            return bays;
+        }
+
+        /// <summary>
+        /// Voûte en lancette, arcs-doubleaux sur colonnes engagées, murs de travée (arcade aveugle, niche), torches sur les trumeaux
+        /// à 4 m, fermetures des bouts (coins de la porte de 14 × 15 m hors de la voûte, pignon au-dessus de la porte). Collision : anneaux
+        /// de boîtes (voûte, arcs : le traqueur passe au travers, comme les anciens arcs), boîtes des murs et des colonnes.
+        /// </summary>
+        private void BuildGothic(Transform parent, float len, float w, float h, float ya, Vector3 dir, Vector3 lateral,
+            System.Func<float, float, Vector3> point, List<GothicBay> bays, System.Func<int, float, bool> open)
+        {
+            var root = new GameObject("Voûte gothique").transform;
+            root.SetParent(parent, false);
+            float yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg, inner = len - 2f * T;
+            Vector3 P(float d, float side = 0f) => point(d / len, side);
+
+            // Voûte : un tronçon par travée (étiré à la longueur de la travée, UV monde), une collision sur tout le couloir.
+            foreach (GothicBay b in bays)
+                KitBuild.Piece(kit.voute8, root, P((b.D0 + b.D1) * 0.5f), yaw, new Vector3(1f, 1f, (b.D1 - b.D0) / GothicBayLength)).name = "Voûte en ogive";
+            RingCollision(root, "Collision de la voûte", P(len * 0.5f), yaw, VaultInner, VaultOuter, inner);
+
+            // Arcs-doubleaux : à chaque limite de travée et contre chaque bout (ils encadrent la porte de la salle).
+            var arcs = new List<float> { T + 0.4f, len - T - 0.4f };
+            arcs.AddRange(bays.Skip(1).Select(b => b.D0));
+            foreach (float d in arcs)
+            {
+                KitBuild.Piece(kit.arcDoubleau, root, P(d), yaw).name = "Arc-doubleau";
+                RingCollision(root, "Collision de l'arc-doubleau", P(d), yaw, ArcInner, VaultInner + 0.05f, 0.8f);
+            }
+
+            for (int i = 0; i < bays.Count; i++)
+            {
+                GothicBay b = bays[i];
+                float bay = b.D1 - b.D0;
+                for (int s = 0; s < 2; s++)
+                {
+                    float side = s == 0 ? 1f : -1f;
+                    Vector3 inward = -lateral * side;
+                    float yawIn = Mathf.Atan2(inward.x, inward.z) * Mathf.Rad2Deg;
+                    if (b.Column[s])
+                    {
+                        GameObject col = KitBuild.Piece(kit.colonneEngagee, root, P(b.D0, side * w * 0.5f), yawIn);
+                        col.name = "Colonne engagée";
+                        var box = col.AddComponent<BoxCollider>();
+                        box.center = new Vector3(0f, GothicSpring * 0.5f, 0.39f);
+                        box.size = new Vector3(1.44f, GothicSpring, 0.78f);
+                        col.AddComponent<NotWalkable>();
+                    }
+
+                    if (b.Kind[s] != 0)
+                        GothicWall(root, P((b.D0 + b.D1) * 0.5f, side * w * 0.5f), yawIn, inward, bay, b.Kind[s] == 1);
+
+                    // Torche sur le trumeau, à 4 m, près de la colonne (une travée sur deux, en quinconce ; pas sur une arcade ni
+                    // du côté ouvert d'une galerie). ClearTorches l'écarte encore des colonnes et des cadres si besoin.
+                    float td = b.D0 + 2.2f;
+                    if (kit.torche != null && (i + s) % 2 == 0 && b.Kind[s] != 1 && !open(s == 0 ? 1 : -1, td))
+                        KitBuild.Piece(kit.torche, parent, P(td, side * (w * 0.5f - 0.3f)) + Vector3.up * 4f, yawIn);
+                }
+            }
+
+            // Bouts : la porte de la salle fait 14 × h m ; au-dessus de la naissance, ses coins sont hors de la voûte.
+            foreach (bool atStart in new[] { true, false })
+            {
+                float d = atStart ? T : len - T;
+                Vector3 axis = atStart ? dir : -dir;
+                GothicEnd(root, P(d), Mathf.Atan2(axis.x, axis.z) * Mathf.Rad2Deg, h);
+                // Pignon : au-dessus de la porte, la voûte monte plus haut que le mur de la salle (plafond de 16 à 22 m).
+                Vector3 across = alongXOf(dir) ? new Vector3(0.3f, 21.6f - h, 11f) : new Vector3(11f, 21.6f - h, 0.3f);
+                KitBuild.Box(root, "Pignon de la voûte", P(d) + axis * 0.15f + Vector3.up * ((h + 21.6f) * 0.5f), across, KitBuild.Kind.Mur, kit, walkable: false);
+            }
+
+            static bool alongXOf(Vector3 v) => Mathf.Abs(v.x) > 0.5f;
+        }
+
+        /// <summary>Anneau de collision de la voûte ou d'un arc (deux moitiés en lancette), de profondeur depth le long du couloir.</summary>
+        private static void RingCollision(Transform parent, string name, Vector3 at, float yaw, float rIn, float rOut, float depth)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = at;
+            go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            go.AddComponent<StalkerPassesThrough>();
+            go.AddComponent<NotWalkable>();
+            float r = (rIn + rOut) * 0.5f, top = Mathf.Acos(GothicCenter / r);
+            const int segments = 10;
+            foreach (float side in new[] { -1f, 1f })
+                for (int k = 0; k < segments; k++)
+                {
+                    float a = top * k / segments, b = top * (k + 1) / segments;
+                    var pa = new Vector2(side * (r * Mathf.Cos(a) - GothicCenter), GothicSpring + r * Mathf.Sin(a));
+                    var pb = new Vector2(side * (r * Mathf.Cos(b) - GothicCenter), GothicSpring + r * Mathf.Sin(b));
+                    Vector2 d = pb - pa;
+                    var seg = new GameObject($"Anneau {(side < 0 ? "gauche" : "droite")} {k + 1}");
+                    seg.transform.SetParent(go.transform, false);
+                    seg.transform.localPosition = new Vector3((pa.x + pb.x) * 0.5f, (pa.y + pb.y) * 0.5f, 0f);
+                    seg.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg);
+                    seg.AddComponent<BoxCollider>().size = new Vector3(d.magnitude + 0.15f, rOut - rIn, depth);
+                }
+        }
+
+        /// <summary>
+        /// Mur d'une travée : pièce du kit (étirée à la travée) et sa collision. Arcade : passage en ogive de 4.4 × 7 m (naissance 4 m)
+        /// fermé derrière l'épaisseur du mur (arcade aveugle, 1.2 m de profondeur, sol et fond) ; niche : collision au nu du mur.
+        /// </summary>
+        private void GothicWall(Transform root, Vector3 pivot, float yawIn, Vector3 inward, float bay, bool arcade)
+        {
+            GameObject piece = KitBuild.Piece(arcade ? kit.murArcade : kit.murNiche, root, pivot, yawIn, new Vector3(bay / GothicBayLength, 1f, 1f));
+            piece.name = arcade ? "Mur à arcade" : "Mur à niche";
+            var col = new GameObject("Collision du mur").transform;
+            col.SetParent(piece.transform.parent, false);
+            col.localPosition = pivot;
+            col.localRotation = Quaternion.Euler(0f, yawIn, 0f);
+            col.gameObject.AddComponent<NotWalkable>();
+            void Box(float x0, float x1, float y0, float y1)
+            {
+                if (x1 - x0 < 0.01f || y1 - y0 < 0.01f)
+                    return;
+                var go = new GameObject("Bloc");
+                go.transform.SetParent(col, false);
+                var bc = go.AddComponent<BoxCollider>();
+                bc.center = new Vector3((x0 + x1) * 0.5f, (y0 + y1) * 0.5f, -T * 0.5f);
+                bc.size = new Vector3(x1 - x0, y1 - y0, T);
+            }
+
+            float half = bay * 0.5f;
+            if (!arcade)
+            {
+                Box(-half, half, 0f, GothicSpring);
+                return;
+            }
+
+            // Arcade : ouverture de 2.2 m de demi-largeur (à l'échelle de la travée), arc brisé de la naissance (4 m) à la clé (7 m) :
+            // centres à 0.945 m de l'axe, rayon 3.145 m. Piédroits, bandes de 0.25 m sous l'arc, plein au-dessus de la clé.
+            float sx = bay / GothicBayLength, open = 2.2f * sx;
+            Box(-half, -open, 0f, GothicSpring);
+            Box(open, half, 0f, GothicSpring);
+            for (float y = 4f; y < 7f - 1e-3f; y += 0.25f)
+            {
+                float rise = y + 0.25f - 4f, hw = Mathf.Max(0f, Mathf.Sqrt(Mathf.Max(0f, 3.145f * 3.145f - rise * rise)) - 0.945f) * sx;
+                Box(-open, -hw, y, y + 0.25f);
+                Box(hw, open, y, y + 0.25f);
+            }
+
+            Box(-open, open, 7f, GothicSpring);
+            // Fond et sol de l'arcade aveugle, derrière l'épaisseur de la pièce (1.2 m).
+            Vector3 outward = -inward;
+            bool alongX = Mathf.Abs(inward.z) > 0.5f;                   // mur le long de x : son épaisseur est en z
+            float wide = 2f * open + 0.4f;
+            KitBuild.Box(root, "Arcade aveugle (fond)", pivot + outward * 1.35f + Vector3.up * 3.6f,
+                alongX ? new Vector3(wide, 7.2f, 0.3f) : new Vector3(0.3f, 7.2f, wide), KitBuild.Kind.Mur, kit, walkable: false);
+            KitBuild.Box(root, "Arcade aveugle (sol)", pivot + outward * 0.75f + Vector3.down * 0.5f,
+                alongX ? new Vector3(wide, 1f, 1.5f) : new Vector3(1.5f, 1f, wide), KitBuild.Kind.Sol, kit);
+        }
+
+        /// <summary>
+        /// Coins de la porte d'un bout de couloir (14 × h m) entre la porte et l'intrados de la voûte : remplissage en pierre tourné vers
+        /// la salle (maillage en bande, matériau de l'arc-doubleau) et sa collision en bandes de 0.5 m (pas de passage derrière la voûte).
+        /// </summary>
+        private void GothicEnd(Transform root, Vector3 at, float yaw, float h)
+        {
+            var go = new GameObject("Coins de la porte (sous la voûte)");
+            go.transform.SetParent(root, false);
+            go.transform.localPosition = at;
+            go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            const float edge = 7.3f, depth = 0.6f;
+            float top = h + 0.3f;
+            var v = new List<Vector3>();
+            var tri = new List<int>();
+            foreach (float side in new[] { -1f, 1f })
+            {
+                int first = v.Count, rows = 0;
+                for (float y = GothicSpring; ; y = Mathf.Min(top, y + 0.25f))
+                {
+                    float x = Mathf.Min(edge, GothicHalfWidth(VaultInner, y - GothicSpring));
+                    v.Add(new Vector3(side * x, y, 0f));
+                    v.Add(new Vector3(side * edge, y, 0f));
+                    rows++;
+                    if (y >= top - 1e-4f)
+                        break;
+                }
+
+                // Faces tournées vers −Z (la salle) : sens horaire vu de −Z.
+                for (int k = 0; k + 1 < rows; k++)
+                {
+                    int a = first + 2 * k, b = a + 1, c = a + 2, e = a + 3;
+                    if (side > 0)
+                        tri.AddRange(new[] { a, c, b, b, c, e });
+                    else
+                        tri.AddRange(new[] { a, b, c, b, e, c });
+                }
+
+                // Collision en bandes de 0.5 m (bord intérieur au plus près de l'axe sur la bande).
+                for (float y = GothicSpring; y < top - 1e-3f; y += 0.5f)
+                {
+                    float y1 = Mathf.Min(top, y + 0.5f), x = GothicHalfWidth(VaultInner, y1 - GothicSpring);
+                    var band = new GameObject("Bande");
+                    band.transform.SetParent(go.transform, false);
+                    var bc = band.AddComponent<BoxCollider>();
+                    bc.center = new Vector3(side * (x + edge) * 0.5f, (y + y1) * 0.5f, depth * 0.5f);
+                    bc.size = new Vector3(edge - x, y1 - y, depth);
+                }
+            }
+
+            var mesh = new Mesh { name = "Coins de la porte" };
+            mesh.SetVertices(v);
+            mesh.SetTriangles(tri, 0);
+            mesh.SetNormals(Enumerable.Repeat(Vector3.back, v.Count).ToList());
+            mesh.SetUVs(0, v.Select(p => new Vector2(p.x, p.y)).ToList());
+            mesh.RecalculateBounds();
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            Renderer stone = kit.arcDoubleau.GetComponentInChildren<Renderer>();
+            go.AddComponent<MeshRenderer>().sharedMaterial = stone != null ? stone.sharedMaterial : null;
+            go.AddComponent<NotWalkable>();
+            go.AddComponent<StalkerPassesThrough>();
         }
 
         /// <summary>Pièce annexe (prefab : origine sur la face extérieure du mur du couloir, au pied de la porte, +Z vers l'intérieur).</summary>
@@ -753,7 +1052,9 @@ namespace ItHunts.Level
                 NM($"{nm} : plaque (salle) gauche", root, Pt(-0.08f, lc - (open + side) * 0.5f, DuctY + DuctH * 0.5f), Size(0.12f, side, DuctH), false);
                 NM($"{nm} : plaque (salle) droite", root, Pt(-0.08f, lc + (open + side) * 0.5f, DuctY + DuctH * 0.5f), Size(0.12f, side, DuctH), false);
                 NM($"{nm} : plaque (couloir)", root, Pt(ac, w * 0.5f - 0.08f, DuctY * 0.5f), Size(9f, 0.12f, DuctY), false);
-                NM($"{nm} : plaque (couloir) haut", root, Pt(ac, w * 0.5f - 0.08f, (DuctY + DuctH + top) * 0.5f), Size(9f, 0.12f, top - DuctY - DuctH), false);
+                // Couloir gothique : la voûte commence à 8 m, la plaque s'arrête à la naissance (sinon elle dépasse devant la voûte).
+                float topC = IsGothic(p.Link) ? Mathf.Min(top, GothicSpring) : top;
+                NM($"{nm} : plaque (couloir) haut", root, Pt(ac, w * 0.5f - 0.08f, (DuctY + DuctH + topC) * 0.5f), Size(9f, 0.12f, topC - DuctY - DuctH), false);
                 NM($"{nm} : plaque (couloir) avant", root, Pt(T + 2.5f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2f, 0.12f, DuctH), false);
                 NM($"{nm} : plaque (couloir) arrière", root, Pt(T + 8.5f, w * 0.5f - 0.08f, DuctY + DuctH * 0.5f), Size(2f, 0.12f, DuctH), false);
                 if (kit != null && kit.torche != null)
@@ -791,7 +1092,10 @@ namespace ItHunts.Level
                 // Bouts 2 cm devant les bouts du mur coupé du couloir, plafond 2 cm sous le sien : pas de faces confondues (scintillement).
                 NM($"{nm} : bout 1", root, Pt(a0 - 0.49f, (l0 + 0.02f + l1) * 0.5f, (H - depth - pool) * 0.5f), Size(1.02f, l1 - l0 - 0.02f, H + depth + pool), false);
                 NM($"{nm} : bout 2", root, Pt(a1 + 0.49f, (l0 + 0.02f + l1) * 0.5f, (H - depth - pool) * 0.5f), Size(1.02f, l1 - l0 - 0.02f, H + depth + pool), false);
-                NM($"{nm} : plafond", root, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H + 0.48f), Size(a1 - a0 + 2f, l1 - l0 + 2f, 1f), false);
+                // Couloir gothique : le plafond de la galerie entre dans l'épaisseur de la voûte (bord à 5.4 m de l'axe, entre son
+                // intrados et son extrados à 15 m) ; avec un bord à 6 m, une fente restait entre l'extrados et le plafond.
+                float inside = IsGothic(g.Link) ? l0 - 1.6f : l0 - 1f;
+                NM($"{nm} : plafond", root, Pt((a0 + a1) * 0.5f, (inside + l1 + 1f) * 0.5f, H + 0.48f), Size(a1 - a0 + 2f, l1 + 1f - inside, 1f), false);
                 NM($"{nm} : parapet", root, Pt((a0 + a1) * 0.5f, l0 - 0.27f, 0.5f), Size(a1 - a0 - 2f * landing, 0.5f, 1f), false);
                 KitBuild.Box(root, $"{nm} : fond du vide", Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth - pool - 0.5f), Size(a1 - a0, l1 - l0, 1f), KitBuild.Kind.Sol, kit, walkable: false);
                 // Eau au fond (correctifs-rendu point 3) : surface à depth sous le couloir, 2 m d'eau.
