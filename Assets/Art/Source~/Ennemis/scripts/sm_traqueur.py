@@ -6,7 +6,8 @@ Retouches communes : mèches de cheveux devant le visage retirées ; peau ramen�
 dents et griffes inchangés) ; deux petites pupilles rouges peintes au fond des orbites noires, avec leur masque
 d'émission (T_Traqueur_Emission) ; texture de couleur gardée en 4096 px.
 
-Livrables (1 unité = 1 m, avant vers -Y Blender = +Z Unity, matériau unique M_Traqueur) :
+Livrables (1 unité = 1 m, avant vers -Y Blender = +Z Unity ; M_Traqueur pour le corps, M_Traqueur_Mains pour les bras et les mains, avec
+  le masque des griffes T_Traqueur_Griffes_Emission) :
 - SM_Traqueur : le géant d'un seul tenant, 14 m de haut (capsule de jeu Ø 7 × 14 m), pivot au sol au centre ; bras
   baissés le long du corps (bout des doigts au genou), épaissis à 1.5 m, mains à 0.67 de leur taille d'origine.
 - Pièces pour le code (Stalker.cs pose lui-même les bras et les mains) :
@@ -43,6 +44,9 @@ PARAMS = dict(
     meches=dict(x_min=0.012, z_max=0.262, y_max=0.05),
     yeux=dict(z=(0.222, 0.260), y=(0.003, 0.022), x_min=0.025, sombre=0.14, pupille=0.32),
     coupe_bras=(0.20, 0.92), coupe_main=0.97,
+    # griffes (lisibilité dans le noir) : ivoire terne de la texture d'origine, cherché seulement sur les mains (|y| > 0.22
+    # en pose A) ; éclaircies dans la couleur, masque d'émission à part (M_Traqueur_Mains, piloté par le jeu)
+    griffes=dict(y_min=0.22, teinte=(25.0, 90.0), sat_max=0.32, val=(0.33, 0.45), eclaircir=0.30, etaler=6),
 )
 CACHE = {}
 
@@ -136,6 +140,36 @@ def pupils(px_base, em_size, pos, P):
     em = np.zeros((S, S, 4), dtype=np.float32); em[..., 3] = 1
     em[..., 0] = em[..., 1] = em[..., 2] = mask
     return base, em, info
+
+
+def claws(px_src, base, pos, P):
+    """Griffes : texels ivoire (teinte, saturation faible, valeur) des faces des mains ; éclaircies vers l'os clair dans la
+    couleur (base) et masque blanc, étalé dans les marges des îlots UV (pas de couture aux niveaux de mip)."""
+    G = P["griffes"]
+    h, s, v = E.hsv(px_src[..., :3])
+    ok = ~np.isnan(pos[..., 0])
+    hue = (h > G["teinte"][0]) & (h < G["teinte"][1]) & (s < G["sat_max"])
+    m = (ok & hue).astype(np.float32) * np.clip((v - G["val"][0]) / (G["val"][1] - G["val"][0]), 0, 1)
+    m = np.maximum(m, E.blur(m, 1) * 0.9) * ok                           # bords adoucis, sans déborder des mains
+    out = base.copy()
+    bone = np.array([0.93, 0.90, 0.80], dtype=np.float32)
+    k = (m * G["eclaircir"])[..., None]
+    out[..., :3] = out[..., :3] * (1 - k) + bone * k
+    for _ in range(G["etaler"]):                                         # marges : max des voisins hors des triangles
+        nb = np.maximum.reduce([np.roll(m, 1, 0), np.roll(m, -1, 0), np.roll(m, 1, 1), np.roll(m, -1, 1)])
+        m = np.where(ok, m, np.maximum(m, nb))
+    em = np.zeros(base.shape, dtype=np.float32); em[..., 3] = 1
+    em[..., 0] = em[..., 1] = em[..., 2] = m
+    return out, em, "griffes : %d texels (masque > 0.5), %.2f %% des texels des mains" % (
+        int((m > 0.5).sum()), 100 * float((m[ok] > 0.5).mean()))
+
+
+def resize_px(px, size):
+    im = bpy.data.images.new("_rs", px.shape[1], px.shape[0], alpha=False)
+    im.pixels.foreach_set(np.ascontiguousarray(px, dtype=np.float32).ravel()); im.scale(size, size)
+    out = np.array(im.pixels[:], dtype=np.float32).reshape(size, size, 4)
+    bpy.data.images.remove(im)
+    return out
 
 
 def arm_frame(P, sgn):
@@ -324,19 +358,19 @@ def build_all(P):
     base, part = E.skin_to_mauve(px, sat_max=0.45)
     pos = E.rasterize(ob, S, lambda c: c.x > 0.0 and c.z > 0.20 and abs(c.y) < 0.06)
     base, em, info = pupils(base, P["masque"], pos, P)
+    pos_h = E.rasterize(ob, S, lambda c: abs(c.y) > P["griffes"]["y_min"])
+    base, em_g, info_g = claws(px, base, pos_h, P)
     p_base = E.save_png(base, "T_Traqueur_BaseColor")
-    em_small = bpy.data.images.new("_em", S, S, alpha=False)
-    em_small.pixels.foreach_set(em.ravel()); em_small.scale(P["masque"], P["masque"])
-    em_px = np.array(em_small.pixels[:], dtype=np.float32).reshape(P["masque"], P["masque"], 4)
-    bpy.data.images.remove(em_small)
-    E.save_png(em_px, "T_Traqueur_Emission")
+    E.save_png(resize_px(em, P["masque"]), "T_Traqueur_Emission")
+    E.save_png(resize_px(em_g, P["masque"]), "T_Traqueur_Griffes_Emission")
     mat = C.make_material("M_Traqueur", p_base)
+    mat_m = C.make_material("M_Traqueur_Mains", p_base)                 # bras et mains : griffes et liseré (Unity)
     E.smooth_shading(ob, 60)
     ob.data.materials.clear(); ob.data.materials.append(mat)
     k = P["hauteur"] / H
     log = ["mèches retirées : %d faces (masse des cheveux : %d faces)" % (n_hair, n_mass),
            "peau recolorée : %.1f %% des texels" % (100 * part), "hauteur brute %.4f -> échelle × %.3f" % (H, k)]
-    log += ["pupille %s : %s" % kv for kv in info.items()]
+    log += ["pupille %s : %s" % kv for kv in info.items()] + [info_g]
     # pièces pour le code, prises sur le modèle d'origine (avant de baisser les bras)
     parts = {}
     for sgn, nom in ((-1, "SM_Traqueur_Main_D"), (1, "SM_Traqueur_Main_G")):
@@ -351,6 +385,7 @@ def build_all(P):
         # paume vers le bas, doigts vers l'avant : main droite, pouce à gauche (dos = f × T) ; main gauche, l'inverse
         up = f.cross(T) if sgn < 0 else T.cross(f)
         s = to_unit_box(h, Wv, f, up)
+        h.data.materials.clear(); h.data.materials.append(mat_m)
         parts[nom] = (h, s * k)
     a = dup(ob, "SM_Traqueur_Bras")
     Sv, Wv, L, d = arm_frame(P, -1)
@@ -358,12 +393,25 @@ def build_all(P):
     bisect_keep(a, Sv + d * (L * P["coupe_bras"][1]), -d)
     keep_nearest(a, Sv + d * (L * 0.55))
     s = to_unit_box(a, Sv, d, Vector((0, 0, 1)))
+    a.data.materials.clear(); a.data.materials.append(mat_m)
     parts["SM_Traqueur_Bras"] = (a, s * k)
     body = dup(ob, "SM_Traqueur_Corps")
     n_cut = remove_arms(body, P)
     log.append("corps sans bras : %d sommets retirés" % n_cut)
     E.face_front_and_ground(body, scale=k)
     parts["SM_Traqueur_Corps"] = (body, None)
+    # modèle d'un seul tenant : bras et mains sur le second matériau (mêmes sommets que lower_arms déplace)
+    V = verts(ob.data)
+    w = np.zeros(len(V))
+    for sgn in (-1, 1):
+        Sv, Wv, L, d = arm_frame(P, sgn)
+        w = np.maximum(w, arm_params(V, Sv, d, L, sgn)[4])
+    ob.data.materials.append(mat_m)
+    n_m = 0
+    for f in ob.data.polygons:
+        if np.mean(w[list(f.vertices)]) > 0.5:
+            f.material_index = 1; n_m += 1
+    log.append("SM_Traqueur : %d faces des bras et des mains sur M_Traqueur_Mains" % n_m)
     log += lower_arms(ob, P, H, zmin)
     kk, size = E.face_front_and_ground(ob, scale=k)
     ob.name = ob.data.name = "SM_Traqueur"

@@ -10,6 +10,9 @@ nettoyée dans Blender.
   axe (le GLB faisait 1.00 × 0.995 × 0.943). Pivot : au sol, au centre.
 - Textures (512 px) : T_Caisse_BaseColor (couleur ; la rune violette rendue neutre, gravée dans le bois) et
   T_Caisse_Emission (masque blanc de la rune, pour l'émission que le jeu pilote sur les objets attrapables).
+- La rune du GLB n'est que sur la face avant : elle est relevée sur cette face (coordonnées de la face, par la position 3D
+  de chaque texel) puis reportée sur les trois autres faces latérales, même sens de lecture : une caisse attrapable se
+  reconnaît sous n'importe quel angle.
 
 Lancer dans Blender (avec l'interface ; le script de reprise en arrière-plan le fait aussi) :
     p = r"<dépôt>/Assets/Art/Source~/Niveau1/scripts/sm_caisse.py"
@@ -30,6 +33,7 @@ PARAMS = dict(
     cote=0.8, triangles=1500, texture=512,
     couleur="T_Caisse_BaseColor", masque="T_Caisse_Emission",
     rune_teinte=(0.22, 0.17, 0.13),       # bois sombre, gravé (sRGB)
+    grille=512, retrait=(0.03, 0.14),     # profondeur des panneaux gravés derrière le cadre (m)                           # relevé de la rune de la face avant (cases par côté)
 )
 
 
@@ -73,6 +77,11 @@ def textures(img, P, ob=None):
     core = np.clip(blur(m.astype(np.float32), 2) * 3.0, 0, 1)
     mask = np.zeros_like(px); mask[..., 3] = 1.0
     mask[..., 0] = mask[..., 1] = mask[..., 2] = core
+    return base, mask, k, int(m.sum())
+
+
+def save_textures(base, mask, P):
+    h, w = base.shape[:2]
     out = {}
     for name, data in ((P["couleur"], base), (P["masque"], mask)):
         im = bpy.data.images.new(name, w, h, alpha=False)
@@ -82,7 +91,97 @@ def textures(img, P, ob=None):
         im.filepath_raw = path; im.file_format = "PNG"; im.save()
         bpy.data.images.remove(im)
         out[name] = path
-    return out, int(m.sum())
+    return out
+
+
+def rasterize(ob, size, keep):
+    """Position 3D de chaque texel couvert par un triangle qui vérifie keep(centre, normale) (NaN ailleurs)."""
+    me = ob.data
+    me.calc_loop_triangles()
+    uv = me.uv_layers.active.data
+    pos = np.full((size, size, 3), np.nan, dtype=np.float32)
+    for tri in me.loop_triangles:
+        P3 = [me.vertices[i].co for i in tri.vertices]
+        nrm = (P3[1] - P3[0]).cross(P3[2] - P3[0])
+        if nrm.length < 1e-12 or not keep((P3[0] + P3[1] + P3[2]) / 3, nrm.normalized()):
+            continue
+        U = np.array([uv[l].uv[:] for l in tri.loops], dtype=np.float64) * size
+        x0, y0 = np.maximum(np.floor(U.min(0)).astype(int), 0)
+        x1, y1 = np.minimum(np.ceil(U.max(0)).astype(int), size - 1)
+        if x1 < x0 or y1 < y0:
+            continue
+        xs, ys = np.meshgrid(np.arange(x0, x1 + 1) + 0.5, np.arange(y0, y1 + 1) + 0.5)
+        (ax, ay), (bx, by), (cx, cy) = U
+        d = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy)
+        if abs(d) < 1e-12:
+            continue
+        l0 = ((by - cy) * (xs - cx) + (cx - bx) * (ys - cy)) / d
+        l1 = ((cy - ay) * (xs - cx) + (ax - cx) * (ys - cy)) / d
+        l2 = 1 - l0 - l1
+        inside = (l0 >= -0.01) & (l1 >= -0.01) & (l2 >= -0.01)
+        if not inside.any():
+            continue
+        Pm = np.array([q[:] for q in P3], dtype=np.float32)
+        q = l0[..., None] * Pm[0] + l1[..., None] * Pm[1] + l2[..., None] * Pm[2]
+        yy, xx = np.nonzero(inside)
+        pos[y0 + yy, x0 + xx] = q[yy, xx]
+    return pos
+
+
+# faces latérales : normale (Blender) ; la face avant regarde vers -Y
+SIDES = {"avant": (0, -1), "droite": (1, 0), "arriere": (0, 1), "gauche": (-1, 0)}
+
+
+def runes_on_sides(ob, base, mask, k, P):
+    """Relève la rune de la face avant sur une grille (u : vers la droite de qui regarde la face, v : hauteur), puis la
+    reporte sur les trois autres faces latérales : gravure dans la couleur (poids k) et masque d'émission."""
+    S = base.shape[0]
+    half = P["cote"] / 2
+    G = P["grille"]
+    depth = P["retrait"]
+
+    def face_uv(pos, n):
+        right = np.array((-n[1], n[0]))           # (-n) × haut, dans le plan horizontal
+        u = pos[..., 0] * right[0] + pos[..., 1] * right[1]
+        return (u / P["cote"] + 0.5), pos[..., 2] / P["cote"]
+
+    def on(n):
+        # faces tournées vers n (panneau en retrait compris : la rune est gravée 6 à 10 cm derrière le cadre)
+        # (les faces saillantes, cadre et corde de la poignée, ne la reçoivent pas)
+        return lambda c, nr: (nr.x * n[0] + nr.y * n[1]) > 0.7 and half - depth[1] < (c.x * n[0] + c.y * n[1]) < half - depth[0]
+    # relevé sur la face avant
+    pf = rasterize(ob, S, on(SIDES["avant"]))
+    okf = ~np.isnan(pf[..., 0])
+    u, v = face_uv(pf, SIDES["avant"])
+    iu = np.clip((u[okf] * G).astype(int), 0, G - 1); iv = np.clip((v[okf] * G).astype(int), 0, G - 1)
+    g_col = np.zeros((G, G, 3), np.float32); g_k = np.zeros((G, G), np.float32); g_m = np.zeros((G, G), np.float32)
+    g_n = np.zeros((G, G), np.float32)
+    np.add.at(g_col, (iv, iu), base[okf][:, :3]); np.add.at(g_n, (iv, iu), 1)
+    np.maximum.at(g_k, (iv, iu), k[okf]); np.maximum.at(g_m, (iv, iu), mask[okf][:, 0])
+    g_col /= np.maximum(g_n, 1)[..., None]
+    allp = rasterize(ob, S, lambda c, nr: True)
+    okm = (mask[..., 0] > 0.5) & ~np.isnan(allp[..., 0])
+    cm = allp[okm]
+    info = ["face avant : %d texels relevés, rune sur la face %d texels ; rune sur le modèle : %d texels, centre %s, min %s, max %s"
+            % (okf.sum(), int((mask[okf][:, 0] > 0.5).sum()), okm.sum(), cm.mean(0).round(3) if len(cm) else None,
+               cm.min(0).round(3) if len(cm) else None, cm.max(0).round(3) if len(cm) else None)]
+    out_b, out_m = base.copy(), mask.copy()
+    for name, n in SIDES.items():
+        if name == "avant":
+            continue
+        ps = rasterize(ob, S, on(n))
+        ok = ~np.isnan(ps[..., 0])
+        u, v = face_uv(ps, n)
+        ju = np.clip((u[ok] * G).astype(int), 0, G - 1); jv = np.clip((v[ok] * G).astype(int), 0, G - 1)
+        kk = g_k[jv, ju] * (g_n[jv, ju] > 0)
+        col = out_b[ok]
+        col[:, :3] = col[:, :3] * (1 - kk[:, None]) + g_col[jv, ju] * kk[:, None]
+        out_b[ok] = col
+        mm = out_m[ok]
+        mm[:, :3] = np.maximum(mm[:, :3], (g_m[jv, ju] * (g_n[jv, ju] > 0))[:, None])
+        out_m[ok] = mm
+        info.append("face %s : %d texels, rune %d texels" % (name, ok.sum(), int((g_m[jv, ju] > 0.5).sum())))
+    return out_b, out_m, info
 
 
 def build(P):
@@ -98,7 +197,7 @@ def build(P):
     ob.data.transform(mw); ob.matrix_world = Matrix()
     # textures (avant de remplacer le matériau)
     src = next(n.image for n in ob.material_slots[0].material.node_tree.nodes if n.type == "TEX_IMAGE" and n.image)
-    tex, n_rune = textures(src, P)
+    base, mask, k_rune, n_rune = textures(src, P)
     # orientation : face avant (+X) -> -Y
     ob.data.transform(Matrix.Rotation(math.radians(-90), 4, "Z"))
     # soudure des coutures, trous rebouchés
@@ -155,6 +254,10 @@ def build(P):
         if len(e.link_faces) != 2 or e.calc_face_angle(math.pi) > math.radians(30):
             e.smooth = False
     bm.to_mesh(ob.data); bm.free()
+    # rune sur les quatre faces latérales, puis textures
+    base, mask, info = runes_on_sides(ob, base, mask, k_rune, P)
+    print(" ; ".join(info))
+    tex = save_textures(base, mask, P)
     # matériau : couleur de base seule (le masque d'émission est pour le .mat d'Unity)
     mat = C.make_material("M_Caisse", tex[P["couleur"]])
     ob.data.materials.clear(); ob.data.materials.append(mat)

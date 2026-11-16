@@ -492,7 +492,9 @@ def make_actions(arm_ob, mirror):
         act = bpy.data.actions.new(name)
         act.use_fake_user = False
         arm_ob.animation_data.action = act
-        frames = FRAMES.get(name, (1,))
+        frames = FRAMES.get(name, (1, 2))
+        if len(keys) == 1:                   # pose fixe : deux clés identiques (une seule image donne un clip vide dans Unity)
+            keys = keys * len(frames)
         for f, spec in zip(frames, keys):
             apply_pose(arm_ob, spec, mirror)
             for pb in arm_ob.pose.bones:
