@@ -232,7 +232,12 @@ namespace ItHunts.EditorTools
         public static string Ambiance()
         {
             AmbianceSettings mid = Intermediate();
-            Horror();
+            if (mid.enraged == null)
+            {
+                mid.enraged = Horror();                               // phase enragée : fondu de 2 s vers l'horreur
+                EditorUtility.SetDirty(mid);
+                AssetDatabase.SaveAssets();
+            }
             // Torche : sa lumière suit l'ambiance (AmbianceLight).
             string torch = SettingsDir.Replace("Settings", "Prefabs") + "/Props/Prop_Torche.prefab";
             GameObject t = PrefabUtility.LoadPrefabContents(torch);
@@ -263,7 +268,7 @@ namespace ItHunts.EditorTools
             if (!string.IsNullOrEmpty(current))
                 EditorSceneManager.OpenScene(current, OpenSceneMode.Single);
             AssetDatabase.SaveAssets();
-            return $"ambiance intermédiaire dans {n} scènes (Ambiance_Horreur prête, non activée)";
+            return $"ambiance intermédiaire dans {n} scènes (Ambiance_Horreur en phase enragée)";
         }
 
         /// <summary>Ambiance de la scène ouverte (constructeurs de scène) : objet SceneAmbiance et réglages de la scène.</summary>

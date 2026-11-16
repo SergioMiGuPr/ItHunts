@@ -248,6 +248,44 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Ambiance_PhaseEnragee_FonduDe2sVersLHorreur_PuisRetour()
+        {
+            var mid = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Intermediaire.asset");
+            var horror = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Horreur.asset");
+            Assert.That(mid.enraged, Is.EqualTo(horror), "phase enragée : ambiance horreur");
+            Assert.That(mid.enragedTransition, Is.EqualTo(2f));
+
+            Color ambient = RenderSettings.ambientLight, fog = RenderSettings.fogColor;
+            float fs = RenderSettings.fogStartDistance, fe = RenderSettings.fogEndDistance;
+            bool fogOn = RenderSettings.fog;
+            FogMode fm = RenderSettings.fogMode;
+            var am = RenderSettings.ambientMode;
+            var go = new GameObject("ambiance (test)");
+            try
+            {
+                var sa = go.AddComponent<ItHunts.Level.SceneAmbiance>();
+                typeof(ItHunts.Level.SceneAmbiance).GetField("ambiance", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).SetValue(sa, mid);
+                sa.StepEnraged(true, 1f);
+                Assert.That(sa.EnragedBlend, Is.EqualTo(0.5f).Within(1e-4f), "à mi-chemin après 1 s");
+                Assert.That(RenderSettings.fogEndDistance, Is.EqualTo((mid.fogEnd + horror.fogEnd) * 0.5f).Within(1e-3f));
+                sa.StepEnraged(true, 1.5f);
+                Assert.That(sa.EnragedBlend, Is.EqualTo(1f));
+                Assert.That(RenderSettings.ambientLight.r, Is.EqualTo(horror.ambient.r).Within(1e-4f));
+                Assert.That(ItHunts.Level.SceneAmbiance.Active.torchRange, Is.EqualTo(horror.torchRange).Within(1e-4f));
+                sa.StepEnraged(false, 2f);
+                Assert.That(sa.EnragedBlend, Is.EqualTo(0f), "remise à zéro de la zone : retour");
+                Assert.That(ItHunts.Level.SceneAmbiance.Active, Is.EqualTo(mid), "l'asset lui-même, réglable en Play Mode");
+                Assert.That(RenderSettings.fogEndDistance, Is.EqualTo(mid.fogEnd).Within(1e-3f));
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+                RenderSettings.ambientLight = ambient; RenderSettings.fogColor = fog; RenderSettings.fogStartDistance = fs;
+                RenderSettings.fogEndDistance = fe; RenderSettings.fog = fogOn; RenderSettings.fogMode = fm; RenderSettings.ambientMode = am;
+            }
+        }
+
+        [Test]
         public void Reglages_ParDefaut()
         {
             var fps = AssetDatabase.LoadAssetAtPath<FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");
