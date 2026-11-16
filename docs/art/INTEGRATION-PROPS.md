@@ -245,7 +245,18 @@ Renard d'après la référence : manche rouge déchirée, gant de cuir brun, fou
 
 Événements : aucun (les déplacements de la main entière restent dans FirstPersonView).
 
-### Goule (`SK_Goule`, armature `Goule`, 26 os)
+### Goule (`SK_Goule`, armature `Goule`, 26 os + 10 os d'aide)
+
+**Gréement refait (2026-11-16)** : base = chaleur sur le maillage d'origine (bouche ouverte, mâchoire et hanches nettes),
+copie étanche en voxels (`poids_lisses.py`) là où la chaleur échoue et sous les genoux ; 4 os au plus par sommet.
+**Os d'aide** `Bras_Aide`, `AvantBras_Aide`, `Main_Aide`, `Jambe_Aide`, `Pied_Aide` (.L/.R : épaules, coudes, poignets,
+genoux, chevilles) : même position que l'os, même parent, ils copient la **moitié** de sa rotation (contrainte Copy Rotation
+0.5 dans le .blend, cuite dans les clips à l'export) ; les sommets du pli passent sur eux, chaque côté du pli ne tourne que de
+la moitié de l'angle : moins d'écrasement. **Rien à piloter côté Unity** (ils sont dans les clips) ; une animation faite
+dans Blender (vidéos de référence) les entraîne d'elle-même. Pic de distorsion des triangles autour des articulations
+(98e centile de |log2 aire/aire au repos|), avant → après : épaules (bras levés) 1.67/1.78 → 1.30/1.55, genoux 0.79–1.53 →
+0.70–1.18 (sauf `Goule_Mort`, genou gauche replié à plus de 140° : 1.78 → 2.17), coude 0.69 → 0.64, mâchoire et hanches
+inchangées. Planche `rendus/Lot2/Goule_Greement_avant_apres.jpg`.
 
 **Modèle à utiliser :** `SK_Goule` (gréé) à la place de `SM_Goule` (statique, gardé pour les aperçus), en (0, 0, 0) sous
 « Corps (visuel) », rotation nulle (avant +Z). Le FBX contient l'armature `Goule` et `SM_Goule_LOD0` (22 000 triangles),
@@ -278,7 +289,16 @@ rig de contrôle pour retoucher les animations à la main ; les os exportés res
 
 Planches : `docs/art/rendus/Lot2/Goule_<Animation>.jpg` (5 images réparties sur chaque clip, à 1.8 m).
 
-### Traqueur (`SK_Traqueur`, armature `Traqueur`, 32 os)
+### Traqueur (`SK_Traqueur`, armature `Traqueur`, 32 os + 10 os d'aide)
+
+**Gréement refait (2026-11-16)** : poids « chaleur » sur une copie étanche en voxels, **masqués par régions** (un bras ne
+tire jamais le torse, ni la mâchoire le crâne), poids doux par distance là où la chaleur échoue, lissés (12 passes) ; une
+première fois debout pour voûter le modèle sans bosses, puis recalculés sur le modèle voûté avec les **os d'aide** (mêmes
+noms et même principe que la goule). **Épaules** : géométrie lissée (Taubin, sans rétrécir) autour de chaque épaule après
+la mise en voûte. Pic de distorsion, avant → après : épaules bras levés 1.01/1.80 → 0.02/0.36, revers 0.51 → 0.10, genoux
+du passage bas 0.61/1.05 → 0.50/0.58, doigts 1.18/0.80 → 1.15/0.66 ; pouce 0.88 → 1.51 (petit, à reprendre si visible).
+Mesures après : épaule 11.75 m, yeux 12.4 m, sommet 13.96 m (tient dans 14 m). Planche
+`rendus/Lot2/Traqueur_Greement_avant_apres.jpg`.
 
 **Modèle à utiliser :** `SK_Traqueur` remplace `SM_Traqueur_Corps` et les pièces `SM_Traqueur_Bras`, `_Main_D`, `_Main_G`
 (gardées pour l'aperçu, plus à jour). En (0, 0, 0) sous « Corps (se baisse) », rotation nulle (avant +Z). Deux
