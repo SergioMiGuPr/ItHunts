@@ -28,9 +28,12 @@ TILES = {
     "pierre": ("texture_mur_pierre_v01_tuile.png", 4.0, 3.0),
     "egout": ("texture_mur_egout_v01_tuile.png", 2.0, 2.0),
     "dalles": ("texture_sol_dalles_v01_tuile.png", 4.0, 4.0),
-    "fer": ("texture_fer_rouille_v01_tuile.png", 1.0, 1.0),
+    "fer": ("texture_fer_rouille_v01_tuile.png", 1.0, 1.0),       # 256 px (256 px/m) depuis la retouche du 2026-11-15
+    "voute": ("texture_voute_briques_v01_tuile.png", 3.0, 3.0),   # 16 assises : briques de 0.44 × 0.19 m, 341 px/m
+    "eau": ("texture_eau_egout_v01_tuile.png", 4.0, 4.0),         # 256 px/m ; écume en quinconce (retouche)
 }
-MAT_NAMES = {"pierre": "M_Pierre", "egout": "M_Egout", "dalles": "M_Dalles", "fer": "M_FerRouille"}
+MAT_NAMES = {"pierre": "M_Pierre", "egout": "M_Egout", "dalles": "M_Dalles", "fer": "M_FerRouille",
+             "voute": "M_Voute_Briques", "eau": "M_Eau_Egout"}
 
 
 # --------------------------------------------------------------------------- matériaux
@@ -276,7 +279,9 @@ class Builder:
             if edges:
                 bmesh.ops.bevel(bm, geom=edges, offset=w, offset_type="OFFSET", segments=1, profile=0.5,
                                 affect="EDGES", clamp_overlap=True)
-        # UV en projection monde pour les faces sans UV donnés
+        # UV en projection monde pour les faces sans UV donnés. Les normales doivent être calculées AVANT : une face
+        # neuve a une normale nulle, et toutes recevaient la projection du dessus (corrigé le 2026-11-15)
+        bm.normal_update()
         for f in bm.faces:
             if f[self.mode] == 1:
                 key = self.mats[f.material_index]

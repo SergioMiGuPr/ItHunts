@@ -90,7 +90,15 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
-    half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor;
+#if defined(_WORLD_UV)
+    // Architecture : UV calculées en coordonnées monde (les UV du modèle et le tiling du matériau sont ignorés)
+    float2 uvDdx, uvDdy;
+    float2 uv = ToonWorldUV(input.positionWS, normalize(input.normalWS), uvDdx, uvDdy);
+    half4 albedo = SAMPLE_TEXTURE2D_GRAD(_BaseMap, sampler_BaseMap, uv, uvDdx, uvDdy) * _BaseColor;
+#else
+    float2 uv = input.uv;
+    half4 albedo = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv) * _BaseColor;
+#endif
 #if defined(_ALPHATEST_ON)
     clip(albedo.a - _Cutoff);
 #endif
@@ -120,12 +128,20 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
     half lightPresence = 0.0h;
 
     // Lumière principale (la lune) : ombre reçue comprise dans l'entrée, donc ombres en bandes elles aussi.
+    // Calques de lumière (Rendering Layers) : une lumière n'éclaire que les objets dont un calque est dans son masque
+    // (la lanterne du joueur exclut le calque des mains et des artefacts de la vue FPS).
+    uint meshRenderingLayers = GetMeshRenderingLayer();
+
     Light mainLight = GetMainLight(inputData.shadowCoord, positionWS, shadowMask);
 #if defined(_RECEIVE_SHADOWS_OFF)
     mainLight.shadowAttenuation = 1.0h;
 #endif
     half mainX = saturate(dot(normalWS, mainLight.direction)) * mainLight.shadowAttenuation * mainLight.distanceAttenuation;
     half mainBand = ToonSteps(mainX, _BandCount - 1.0h, _BandThreshold, _BandSoftness);
+#if defined(_LIGHT_LAYERS)
+    if (!IsMatchingLightLayer(mainLight.layerMask, meshRenderingLayers))
+        mainBand = 0.0h;
+#endif
     lighting += mainLight.color * mainBand;
     lightPresence = max(lightPresence, mainBand);
 
@@ -138,6 +154,10 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
         Light dirLight = GetAdditionalLight(dirIndex, positionWS, shadowMask);
         half dx = saturate(dot(normalWS, dirLight.direction)) * dirLight.shadowAttenuation;
         half dBand = ToonSteps(dx, _BandCount - 1.0h, _BandThreshold, _BandSoftness);
+        #if defined(_LIGHT_LAYERS)
+        if (!IsMatchingLightLayer(dirLight.layerMask, meshRenderingLayers))
+            dBand = 0.0h;
+        #endif
         lighting += dirLight.color * dBand;
         lightPresence = max(lightPresence, dBand);
     }
@@ -154,6 +174,10 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
         half ndl = saturate((dot(normalWS, light.direction) + _PointWrap) / (1.0h + _PointWrap));
         half face = ToonSteps(ndl * light.shadowAttenuation, 1.0h, _BandThreshold, _BandSoftness);
         half contribution = att * face;
+        #if defined(_LIGHT_LAYERS)
+        if (!IsMatchingLightLayer(light.layerMask, meshRenderingLayers))
+            contribution = 0.0h;
+        #endif
         lighting += light.color * contribution;
         lightPresence = max(lightPresence, contribution);
     LIGHT_LOOP_END
@@ -174,7 +198,11 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
 #if defined(_EMISSION)
     // L'émission traverse plus ou moins le brouillard (0 : comme le décor ; 1 : pas du tout atténuée).
     half fogVisibility = MixFogColor(half3(1, 1, 1), half3(0, 0, 0), fogFactor).r;
-    half3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, input.uv).rgb * _EmissionColor.rgb;
+#if defined(_WORLD_UV)
+    half3 emission = SAMPLE_TEXTURE2D_GRAD(_EmissionMap, sampler_EmissionMap, uv, uvDdx, uvDdy).rgb * _EmissionColor.rgb;
+#else
+    half3 emission = SAMPLE_TEXTURE2D(_EmissionMap, sampler_EmissionMap, uv).rgb * _EmissionColor.rgb;
+#endif
     color += emission * lerp(fogVisibility, 1.0h, _EmissionThroughFog);
 #endif
 

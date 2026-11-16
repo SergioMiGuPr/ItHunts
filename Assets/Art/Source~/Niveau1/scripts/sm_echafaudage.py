@@ -3,9 +3,10 @@
 
 6 poteaux en bois équarri de 0.15 m ; deux plateaux à 3 m et 6 m (dessus à ces hauteurs), plats et pleins :
 planches de 0.25 m dans le sens de la profondeur, posées sur un plancher continu (aucun trou) et sur des
-longerons ; croisillons en X sur les deux petits côtés et sur l'arrière ; échelle intégrée sur la face avant
-(à droite), du sol au plateau du haut ; ligatures de corde autour des poteaux à chaque niveau et au croisement
-de chaque X. Bois : M_Bois_Brut (tuile peinte, 256 px/m) ; corde : M_Corde.
+longerons ; **variante praticable** (INTEGRATION-PROPS.md, 2026-11-15) : croisillons en X seulement à l'étage (petits
+côtés et arrière), jambes de force courtes sous le plateau du bas ; le rez-de-chaussée est libre (2.9 m de passage)
+pour le joueur et les goules ; échelle intégrée sur la face avant (à droite), du sol au plateau du haut ; ligatures de
+corde autour des poteaux à chaque niveau et au croisement de chaque X. Bois : M_Bois_Brut (tuile peinte, 256 px/m) ; corde : M_Corde.
 
 Pivot : au sol, au centre de l'emprise. Avant (échelle) vers -Y (Blender) = +Z (Unity).
 
@@ -61,8 +62,18 @@ def build(P):
             B.box((x0, -hd, z_pl), (x1, hd, zt), "bois", skip=("-z",))
     # croisillons en X : petits côtés et arrière, contre la face intérieure des poteaux, deux étages
     cw, ce = P["croisillon"]
-    levels = [(0.25, P["niveaux"][0] - 0.4), (P["niveaux"][0] + 0.15, P["niveaux"][1] - 0.4)]
+    # variante praticable (INTEGRATION-PROPS.md) : croisillons seulement à l'étage (3 → 6 m) ; le rez-de-chaussée reste
+    # libre (2.9 m sous le plateau du bas, entre les poteaux), comme les collisions : on y passe, les goules aussi
+    levels = [(P["niveaux"][0] + 0.15, P["niveaux"][1] - 0.4)]
     Lg = P["ligature"]
+    # jambes de force sous le plateau du bas, dans le plan avant et arrière : du poteau (à 2.1 m) au longeron (à 0.7 m)
+    zl0 = P["niveaux"][0] - Pl["e"] - P["plancher"] - lh
+    for y in ys:
+        for x in xs:
+            for d in (-1, 1):
+                if abs(x + d * 0.7) > hw - p / 2:
+                    continue
+                N.beam(B, (x + d * p / 2, y, zl0 - 0.75), (x + d * 0.7, y, zl0 - 0.02), 0.09, 0.09, "bois", up=(0, 1, 0))
     for z0, z1 in levels:
         for sx in (-1, 1):
             x = sx * (hw - p - ce / 2)            # contre la face intérieure des poteaux : l'emprise reste de 4 m

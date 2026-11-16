@@ -9,7 +9,9 @@ anneau de portage dans le plan de face (on le voit en entier de face, comme sur 
 Objets : SM_LanterneFeu (corps, racine, pivot au centre de l'anneau), enfants SM_LanterneFeu_Verre
 (M_LanterneFeu_Verre, rouge sang, translucide en jeu ; même pivot) et SM_LanterneFeu_Meche (mèche,
 pivot à son pied) ; repères FX_Flamme (au-dessus de la mèche) et FX_Jet (face avant du verre, +Z
-vers l'avant).
+vers l'avant). Depuis le 2026-11-16 : SM_LanterneFeu_Flamme (flamme en goutte au-dessus de la mèche, visible à
+travers le verre ; M_LanterneFeu_Flamme, émission pilotée par le jeu à la couleur du personnage ; pivot au bout de
+la mèche).
 
 Lancer dans Blender :
     p = r"<dépôt>/Assets/Art/Source~/FPS/scripts/sm_lanternefeu.py"
@@ -39,8 +41,10 @@ PARAMS = dict(
     support=[(0.024, 0.036), (0.024, 0.046), (0.017, 0.046), (0.017, 0.060)],   # coupelle de la mèche (fer)
     meche=dict(r=0.0018, pts=[(0.0, 0.060), (0.002, 0.068), (0.005, 0.075), (0.003, 0.081)]),
     fx_flamme_dz=0.012,                              # au-dessus du bout de la mèche
+    # flamme : profil (r, dz) depuis le bout de la mèche, révolution autour de l'axe de la lanterne
+    flamme=[(0.0, -0.004), (0.008, 0.004), (0.013, 0.014), (0.0125, 0.024), (0.009, 0.034), (0.0045, 0.043), (0.0, 0.052)],
     fx_jet_z=0.105,                                  # hauteur du jet sur la face avant du verre
-    couleurs=dict(verre="#7A0A12", meche="#17110D"),   # fer et cuivre : tuiles peintes (fps_common.PAINT)
+    couleurs=dict(verre="#7A0A12", meche="#17110D", flamme="#FFC27A"),   # fer et cuivre : tuiles peintes (fps_common.PAINT)
     alpha_verre=0.55,
 )
 
@@ -54,7 +58,8 @@ def build(P):
     mats = {"fer": F.tex_material("M_LanterneFeu_Fer", "T_LanterneFeu_Fer_BaseColor"),
             "cuivre": F.tex_material("M_LanterneFeu_Cuivre", "T_LanterneFeu_Cuivre_BaseColor"),
             "verre": F.flat_material("M_LanterneFeu_Verre", col["verre"], P["alpha_verre"]),
-            "meche": F.flat_material("M_LanterneFeu_Meche", col["meche"])}
+            "meche": F.flat_material("M_LanterneFeu_Meche", col["meche"]),
+            "flamme": F.flat_material("M_LanterneFeu_Flamme", col["flamme"])}
     seg = P["segs"]
     A = P["anneau"]
     zc = A["haut"] - A["rayon"] - A["fil"]          # centre de l'anneau = pivot
@@ -106,15 +111,22 @@ def build(P):
     C.tube(Bm, mp, P["meche"]["r"], 4, "meche", up=Vector((0, 1, 0)))
     meche = Bm.finish("SM_LanterneFeu_Meche", mats, origin=tuple(mp[0]))
 
-    for ob in (verre, meche):
-        F.attach(ob, body)
+    # ---- flamme (cœur lumineux vu à travers le verre)
     tip = mp[-1]
+    Bf = C.Builder()
+    Bf.set_uv_params("flamme", 0.1, 0.1)
+    C.revolve(Bf, [(r, tip.z + dz) for r, dz in P["flamme"]], 12, "flamme")
+    flamme = Bf.finish("SM_LanterneFeu_Flamme", mats, origin=(0.0, 0.0, tip.z))
+
+    for ob in (verre, meche, flamme):
+        F.attach(ob, body)
     fx_f = F.empty("FX_Flamme", (tip.x, 0.0, tip.z + P["fx_flamme_dz"]), body)
     fx_j = F.empty("FX_Jet", (0.0, -rv, P["fx_jet_z"]), body)
     bpy.context.view_layer.update()
     body.location = (0.0, 0.0, 0.0)          # le pivot (centre de l'anneau) à l'origine du fichier
-    print("corps %d, verre %d, mèche %d triangles" % (C.tri_count(body), C.tri_count(verre), C.tri_count(meche)))
-    return [body, verre, meche, fx_f, fx_j]
+    print("corps %d, verre %d, mèche %d, flamme %d triangles" % (C.tri_count(body), C.tri_count(verre), C.tri_count(meche),
+                                                                  C.tri_count(flamme)))
+    return [body, verre, meche, flamme, fx_f, fx_j]
 
 
 if __name__ == "__main__":

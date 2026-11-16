@@ -82,6 +82,26 @@ matériaux, tous sur `ItHunts/Toon`, ni métal ni brillance :
 | `M_Levier_Lueur` | cristal et anneau de rune de `SM_Levier` (arène, groupe C) | aucune | #5A3420 (ambre sombre, éteint) | **mot-clé actif, couleur noire** : orange (prêt) puis vert (activé) en jeu ; traverse un peu le brouillard (0.6) |
 | `M_Tapisserie` | `SM_Tapisserie` | `texture_tapisserie_v02_alpha` (import : alpha transparent, bord en Clamp) | blanc | **découpe alpha** (seuil 0.5), **double face** (Cull Off), file AlphaTest |
 
+### Caisse attrapable (`SM_Caisse`, modèle Tripo nettoyé ; `M_Caisse` créé le 2026-11-16)
+
+| Matériau | Utilisé par | Texture | Émission |
+|---|---|---|---|
+| `M_Caisse` | `SM_Caisse` | `T_Caisse_BaseColor` (512 px, tiling (1, 1)) : bois, fer, corde ; **rune gravée, neutre (sans violet)** | **mot-clé actif, couleur noire** ; `_EmissionMap` = `T_Caisse_Emission` (512 px, blanc = cœur de la rune) : le jeu écrit `_EmissionColor` (lueur des objets attrapables), seule la rune s'allume |
+
+Le violet de la rune peinte par Tripo (et ses reflets mauves) a été ramené au brun du bois dans la couleur : le violet
+est réservé à la télékinésie et la lueur passe par l'émission (`sm_caisse.py`, fonction `textures`).
+
+### Lot du 2026-11-16 (UV monde, torche, ennemis, flamme de la lanterne, bras FPS)
+
+| Matériau | Utilisé par | Texture | Réglages | Émission |
+|---|---|---|---|---|
+| `M_Pierre_Monde`, `M_Dalles_Monde`, `M_Voute_Briques_Monde`, `M_Egout_Monde` (`Niveau1/`) | pièces du kit `SM_Kit_*` (pierre et dalles) ; voûte et égout prêts pour l'architecture construite par le code | celles de `M_Pierre`, `M_Dalles`, `M_Voute_Briques`, `M_Egout` | **`_WORLD_UV` actif**, `_TileSize` (4, 3), (4, 4), (3, 3), (2, 2) m ; `_TileOffset` (0, 0, 0) ; `_TopRotation` 0 | non |
+| `M_Torche` (`Niveau1/`) | `SM_Torche` (remplace `M_FerRouille`, `M_Bois_Brut`, `M_Chiffon_Brule`, `M_Corde` sur la torche seulement) | `T_Torche_BaseColor` (atlas de 512 px, couleurs des 4 matériaux cuites dans Blender, `n1_props.bake_atlas`) | tiling (1, 1) | non |
+| `M_Goule` (`Ennemis/`) | `SM_Goule` | `T_Goule_BaseColor` (2048 px, peau gris-mauve) | — | mot-clé actif, **noir** ; `_EmissionMap` = `T_Goule_Emission` (yeux : disque 0.55 et pupille 1 ; entre les dents 0.8) ; à travers le brouillard 0.8 |
+| `M_Traqueur` (`Ennemis/`) | `SM_Traqueur`, `SM_Traqueur_Corps`, `_Bras`, `_Main_D`, `_Main_G` | `T_Traqueur_BaseColor` (4096 px, peau gris-mauve, pupilles rouges peintes) | — | mot-clé actif, **rouge HDR (4, 0.25, 0.15) par défaut** ; `_EmissionMap` = `T_Traqueur_Emission` (2048 px : pupilles et petit halo) ; le code peut l'augmenter (enragé) |
+| `M_LanterneFeu_Flamme` (`FPS/`) | `SM_LanterneFeu_Flamme` | aucune (couleur (1, 0.76, 0.48)) | double face | mot-clé actif, **orange du renard (3, 0.96, 0.24) par défaut** ; le jeu écrit `_EmissionColor` à la couleur du personnage ; à travers le brouillard 1 |
+| `M_BrasFPS_<Perso>_<Partie>` (`FPS/BrasFPS/`, 37 matériaux) | `SK_BrasFPS_<Perso>_D` / `_G` | aucune (aplats) | couleur de base reprise des aplats du FBX | non |
+
 ### Lanterne de feu et orbe, vue FPS (`Assets/Art/Materials/FPS/`, lot de modélisation, groupe A)
 
 Tous sur `ItHunts/Toon`, ni métal ni brillance, tiling (1, 1) / offset (0, 0) : les UV des FBX sont en échelle monde
@@ -147,6 +167,10 @@ en vision périphérique à pleine vitesse, plutôt que des détails.
 
 Interpolations : courbes franches (sortie rapide) pour les déclenchements, amorties pour les retours. Vitesses et
 durées : des points de départ pour le playtest.
+
+**Planche des poses** (couleur du caméléon, vue de l'œil du joueur, mouvement en surimpression de 3 instants) :
+`docs/art/rendus/FPS/Orbe_Poses_Planche.jpg` et une image par état (`Orbe_Poses_01_Repos.jpg` à
+`Orbe_Poses_08_ChargeRechargee.jpg`) ; scripts `sm_orbe_poses.py` (Blender) puis `orbe_poses_legendes.py` (légendes).
 
 ### Jauge des tablettes : les 6 charges du jeu
 
@@ -230,14 +254,26 @@ mêmes endroits que dans Blender.
 |---|---|---|
 | `T_GrandePorte_Bois_BaseColor` | **≈ 50 à 80 px/m** pour des battants de 10 × 12.7 m, loin des 256–512 px/m visés : flou de près (la porte de sortie se voit de près) | 2048 × 2048, ou une tuile de planches répétée + ferrures en trim |
 | `T_Poutre_Bois_BaseColor` | ≈ 170 px/m sur la longueur (6 m sur 1024 px) | 2048 × 512, ou tuile de bois répétable |
-| `texture_fer_rouille_v01_tuile` | **1024 px/m**, 4 fois plus dense que la pierre (256 px/m) : la rouille paraît plus fine que tout le reste | tuile de 2 × 2 m (changer `TILES` dans `it_common.py` puis réexporter), ou texture refaite à plus gros grain |
+| `texture_fer_rouille_v01_tuile` | ~~1024 px/m, 4 fois plus dense que la pierre~~ | **Fait (2026-11-15)** : image ramenée à 256 × 256 px pour la tuile de 1 m, soit **256 px/m**, la densité de la pierre ; UV des modèles inchangées. Avant / après : `rendus/Textures/Retouche_Fer.jpg` |
 | `texture_mur_egout_v01_tuile` | 512 px/m, deux fois plus dense que la pierre : écart visible là où égout et pierre se touchent (culées du pont) | tuile de 4 × 4 m, ou garder (contraste voulu entre égout et pierre ?) |
-| `texture_mur_pierre_v01_tuile` | répétition visible sur les longs murs : la grande tache blanche revient tous les 4 m (couloir de 160 m dans `Test_Rendu`) | 1 ou 2 variantes de tuile, ou taches en décalques |
+| `texture_mur_pierre_v01_tuile` | ~~la grande coulure blanche revient tous les 4 m~~ | **Fait (2026-11-15)** : coulure effacée (≈ 11 800 px, assise du bas, à cheval sur les bords), par diffusion périodique et grain d'une pierre propre ; joints et contours gardés. Avant / après : `rendus/Textures/Retouche_Pierre.jpg` |
 | `texture_sol_dalles_v01_tuile` | raccord de bord légèrement visible (changement de ton entre dalles au raccord) | retouche du bord |
-| `texture_voute_briques_v01_tuile`, `texture_eau_egout_v01_tuile` | taille de tuile non définie | la fixer dans `TILES` (2 × 2 m proposé) |
-| `texture_eau_egout_v01_tuile` | motif très contrasté : sous une bougie, la répétition tous les 2 m fait un damier | tuile plus grande et moins contrastée, ou eau en shader |
+| `texture_voute_briques_v01_tuile`, `texture_eau_egout_v01_tuile` | ~~taille de tuile non définie~~ | **Fixé (2026-11-15) dans `TILES`** : voûte **3 × 3 m** (16 assises : briques de 0.44 × 0.19 m, 341 px/m, lisibles à pleine vitesse) ; eau **4 × 4 m** (256 px/m) |
+| `texture_eau_egout_v01_tuile` | ~~damier~~ : la tuile se répétait elle-même tous les 512 px en hauteur | **Fait (2026-11-15)** : moitié basse = moitié haute décalée de 352 px, raccords recousus par une coupe d'erreur minimale (traits nets) ; plus de répétition interne (écart 51 au lieu de 4.8), écume en quinconce irrégulier ; avec la tuile de 4 m, une tache d'écume tous les 2 à 4 m en diagonale. Avant / après : `rendus/Textures/Retouche_Eau.jpg` |
 
 Coutures : pas de couture visible sur les tuiles de pierre, d'égout, de fer et de voûte (mosaïques 2 × 2 contrôlées).
+
+Les retouches sont faites par `Assets/Art/Source~/Niveau1/scripts/textures_retouches.py` (Pillow et numpy), sur les
+fichiers en place (mêmes noms, mêmes GUID : les matériaux suivent sans réglage). Les originaux sont dans l'historique
+git (`git show <commit>:<fichier> | git lfs smudge`).
+
+**UV des modèles (défaut corrigé le 2026-11-15).** `it_common.Builder.finish` choisissait la projection monde d'après
+la normale de chaque face **avant** de l'avoir calculée : toutes les faces sans UV explicites recevaient la projection
+du dessus, et les faces verticales des boîtes, prismes, tubes et révolutions avaient des UV dégénérées (texture étirée
+en traînées). Corrigé et réexporté : kit, échafaudage, groupes A à C (props, arène, lanterne, orbe, bras). **Restent à
+réexporter**, déjà sur `main` (contenu des FBX seulement, `.meta` inchangés) : `SM_GrandePorte` (1 076 faces : ferrures,
+serrure, flancs du bois, un peu de pierre), `SM_Poutre` (288, ferrures), `SM_Porte_Piece` (48, pierre),
+`SM_Colonne` (6, anneau). Le barillet (72 faces de son atlas calé à la main) n'est pas concerné.
 
 ## Captures du réglage retenu
 
@@ -270,7 +306,7 @@ matériaux définitifs, réglage intermédiaire, contours clairs dans le noir. P
      la même couleur ;
    - ambiance (0.055, 0.058, 0.080) en mode Flat ; lune 0.25 ; torches et bougies vers 1.8 d'intensité, 9 à 13 m de
      portée (le toon dessine l'îlot sur la portée).
-2. **Après la fusion, les FBX remappés apportent leurs matériaux** : les prefabs de kit (`Assets/Prefabs/Kit/`) qui
+2. **Après la fusion, les FBX remappés apportent leurs matériaux** : les prefabs du kit (`Assets/_Project/Prefabs/Kit/Kit_*`, voir `docs/art/INTEGRATION-PROPS.md`) qui
    contiennent ces FBX passent au toon sans rien faire, **sauf** s'ils ont des remplacements de matériaux sur leurs
    renderers (à vérifier : un remplacement l'emporte sur le remappage).
 3. **Barillet : `BarrelView` doit écrire `_EmissionColor` au lieu de `_BaseColor`** pour les chambres. Aujourd'hui il
