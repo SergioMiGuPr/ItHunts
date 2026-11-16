@@ -133,7 +133,7 @@ namespace ItHunts.EditorTools
                 {
                     // Animations de la DA (clips « Anim_* » : repos animé, gestes) : cuites à 30 images/s, jouées en boucle par FpsArms.
                     string clipName = clip.name.Contains("|") ? clip.name.Substring(clip.name.IndexOf('|') + 1) : clip.name;
-                    if (clipName.StartsWith("Anim_") && !clip.empty)
+                    if ((clipName.StartsWith("Anim_") || clipName.StartsWith("Boucle_")) && !clip.empty)
                     {
                         var anim = new FpsArmPoseSet.Animation { name = clipName, frameRate = 30f };
                         int n = Mathf.Max(1, Mathf.RoundToInt(clip.length * anim.frameRate));

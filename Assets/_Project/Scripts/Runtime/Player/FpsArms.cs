@@ -198,8 +198,8 @@ namespace ItHunts.Player
             // L'orbe et l'artefact flottent au-dessus des paumes (retours du lot, point 6) : paumes ouvertes vers le haut, doigts
             // recourbés (Pose_OrbePaume de la DA) ; plus de prise du pistolet ni de l'anneau.
             if (right == "Pose_Repos")
-                right = RestPose(poses.right);
-            string left = RestPose(poses.left);
+                right = RestPose(poses.right, "OrbePaume");
+            string left = RestPose(poses.left, _holder.BarrelSettings != null ? "Pistolet" : _holder.LanternSettings != null ? "PriseAnneau" : "Repos");
             float dt = Time.deltaTime;
             RightPose = right;
             LeftPose = left;
@@ -220,14 +220,17 @@ namespace ItHunts.Player
         }
 
         /// <summary>
-        /// Pose de fond : la pose de repos animée de la DA quand elle arrivera (clip « Anim_Repos », cuit en images par FpsArmsSetup),
-        /// sinon Pose_OrbePaume, sinon Pose_Repos.
+        /// Pose de fond (PR #6) : la boucle de la DA (Boucle_OrbePaume à droite ; Boucle_Pistolet, Boucle_PriseAnneau ou Boucle_Repos à
+        /// gauche selon l'artefact : respiration, doigts qui ondulent), sinon la pose fixe du même nom, sinon Pose_Repos. Un clip
+        /// « Anim_Repos » livré plus tard passe devant.
         /// </summary>
-        private static string RestPose(FpsArmPoseSet.Side side)
+        private static string RestPose(FpsArmPoseSet.Side side, string name)
         {
             if (side.FindAnimation("Anim_Repos") != null)
                 return "Anim_Repos";
-            return side.Find("Pose_OrbePaume") != null ? "Pose_OrbePaume" : "Pose_Repos";
+            if (side.FindAnimation("Boucle_" + name) != null)
+                return "Boucle_" + name;
+            return side.Find("Pose_" + name) != null ? "Pose_" + name : "Pose_Repos";
         }
 
         private Transform _orbSocket;

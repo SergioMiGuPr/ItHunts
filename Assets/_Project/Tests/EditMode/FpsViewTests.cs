@@ -355,7 +355,7 @@ namespace ItHunts.Tests
                 hi = Mathf.Max(hi, h);
             }
             Assert.That(hi - lo, Is.EqualTo(2f * fps.floatAmplitude).Within(0.002f), "monte et descend");
-            Assert.That(lo, Is.GreaterThan(0f), "toujours au-dessus de la paume");
+            Assert.That(lo, Is.GreaterThanOrEqualTo(-fps.floatAmplitude - 1e-4f), "autour du point de la DA au-dessus de la paume (Socket_Orbe, Socket_Artefact)");
             Assert.That(fps.rightHandRest.y, Is.GreaterThan(-0.2f), "mains plus hautes");
 
             var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");
