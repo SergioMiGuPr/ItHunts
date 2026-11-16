@@ -540,6 +540,20 @@ namespace ItHunts.Enemies
                 return;
             }
 
+            // À portée de frappe (playtest des animations) : elle s'arrête face au joueur et frappe (ContactDamage), au lieu d'avancer
+            // contre lui et de le pousser. Elle repart quand il sort de portée (écart > contactRange).
+            float gap = Gap(_target);
+            if (gap <= settings.attackStopGap || (_holdingAttack && gap <= settings.contactRange))
+            {
+                _holdingAttack = true;
+                _move.Speed = 0f;
+                Face(targetPos, dt);
+                DebugBranch = "à portée : frappe";
+                return;
+            }
+
+            _holdingAttack = false;
+
             // Hors du NavMesh (posée sur une plateforme après un bond, ou tombée) : marche droit ou chute.
             if (!_move.Snap(pos, 0.6f, out _))
             {
@@ -1182,6 +1196,12 @@ namespace ItHunts.Enemies
         }
 
         private PlayerHealth _strikeTarget;
+        private bool _holdingAttack;
+
+        /// <summary>Coups portés au contact (mesures).</summary>
+        public int Strikes { get; private set; }
+        /// <summary>À l'arrêt, à portée de frappe (mesures).</summary>
+        public bool HoldingAttack => _holdingAttack;
 
         /// <summary>
         /// Coup au contact (Goule_Coup) : au contact, elle arme son coup ; les dégâts tombent à l'impact du clip (contactImpactDelay,
@@ -1208,6 +1228,7 @@ namespace ItHunts.Enemies
                     continue;
                 _strikeAt = now;
                 _strikeTarget = p;
+                Strikes++;
                 _nextContact = now + settings.contactInterval;
                 if (settings.contactImpactDelay <= 0f)
                     ContactDamage(now);

@@ -25,6 +25,9 @@ namespace ItHunts.Settings
         [Header("Animations (SK_Goule, PR #6) et passages bas")]
         [Tooltip("Coup au contact : délai entre le début du geste (Goule_Coup) et les dégâts (impact du clip à 0.24 s).")]
         [Min(0f)] public float contactImpactDelay = 0.24f;
+        [Tooltip("Distance d'arrêt (écart entre les capsules, m) : à portée, elle s'arrête et frappe au lieu d'avancer contre le joueur " +
+                 "(elle le poussait). Elle repart quand l'écart dépasse contactRange.")]
+        [Min(0f)] public float attackStopGap = 0.2f;
         [Tooltip("Mort : le corps reste visible ce temps (Goule_Mort, 1 s) avant de disparaître ; ses collisions s'éteignent tout de suite.")]
         [Min(0f)] public float deathVisualTime = 1f;
         [Tooltip("Passages bas : la goule se baisse sous un plafond plus bas que sa taille, jusqu'à cette part de sa hauteur.")]

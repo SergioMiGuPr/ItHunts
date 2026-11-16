@@ -1,0 +1,2 @@
+partie : joueur immobile 8 s, déplacé de 0,00 m au plus ; 1 goule(s) au contact, 1 à l'arrêt ; coups portés 8 ; clips : Goule_Coup ; distances 1,09 m
+vitrine : joueur immobile 8 s, déplacé de 0,00 m au plus ; 1 goule(s) au contact, 1 à l'arrêt ; coups portés 8 ; clips : Goule_Repos ; distances 1,06 m
