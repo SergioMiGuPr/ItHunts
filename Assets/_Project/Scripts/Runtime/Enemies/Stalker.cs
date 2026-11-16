@@ -1301,6 +1301,13 @@ namespace ItHunts.Enemies
             _column.SetPropertyBlock(_columnBlock);
         }
 
+        private void OnDisable()
+        {
+            // Zone de prise et sa colonne : jamais allumées sans traqueur actif (fin de zone, remise à zéro).
+            if (grabMarker != null && grabMarker.gameObject.activeSelf)
+                grabMarker.gameObject.SetActive(false);
+        }
+
         private void UpdateMarker()
         {
             if (predictedMarker == null)

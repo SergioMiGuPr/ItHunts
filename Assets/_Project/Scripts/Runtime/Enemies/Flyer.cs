@@ -90,7 +90,12 @@ namespace ItHunts.Enemies
         public bool Dead => _damageable != null && _damageable.Dead;
 
         private void OnEnable() => All.Add(this);
-        private void OnDisable() => All.Remove(this);
+        private void OnDisable()
+        {
+            All.Remove(this);
+            if (telegraph != null)
+                telegraph.enabled = false;                                 // recyclé par la réserve
+        }
 
         private void Awake()
         {
@@ -159,6 +164,8 @@ namespace ItHunts.Enemies
 
         private void FixedUpdate()
         {
+            if (Dead && telegraph != null && telegraph.enabled)
+                telegraph.enabled = false;                                 // mort pendant l'annonce : plus de signal (correctifs-rendu point 4)
             if (settings == null || Dead || ZoneState.Asleep)
                 return;                                                    // salle de départ pas encore quittée (D-048)
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
