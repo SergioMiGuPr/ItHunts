@@ -2738,6 +2738,8 @@ MonoBehaviour:
   splashRadiusOverride: 4
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &211422993
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4511,6 +4513,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &387738407
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4776,6 +4780,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Combat.EnemyBody
   settings: {fileID: 11400000, guid: cb6fa1d7c287a414a82b3497abea3ed9, type: 2}
   returnHome: 1
+  wallDamageWhileStunned: 0
 --- !u!114 &389609329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4807,6 +4812,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 0
   isEnemy: 1
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &389609331
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7246,6 +7253,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &561743461
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -8635,6 +8644,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Combat.EnemyBody
   settings: {fileID: 11400000, guid: cb6fa1d7c287a414a82b3497abea3ed9, type: 2}
   returnHome: 1
+  wallDamageWhileStunned: 0
 --- !u!114 &651334043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8666,6 +8676,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 0
   isEnemy: 1
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &651334045
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -10198,6 +10210,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &758423215
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -10461,6 +10475,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &772613504
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -11040,6 +11056,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &796008250
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -11895,6 +11913,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Combat.EnemyBody
   settings: {fileID: 11400000, guid: cb6fa1d7c287a414a82b3497abea3ed9, type: 2}
   returnHome: 0
+  wallDamageWhileStunned: 0
 --- !u!114 &863339405
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11926,6 +11945,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 0
   isEnemy: 1
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &863339407
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -12595,6 +12616,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &899129839
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -13194,6 +13217,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &930524654
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -13367,6 +13392,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &936908033
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -14596,6 +14623,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &1061708568
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -15489,6 +15518,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Combat.EnemyBody
   settings: {fileID: 11400000, guid: cb6fa1d7c287a414a82b3497abea3ed9, type: 2}
   returnHome: 1
+  wallDamageWhileStunned: 0
 --- !u!114 &1128249950
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15520,6 +15550,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 0
   isEnemy: 1
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &1128249952
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -16145,6 +16177,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Combat.EnemyBody
   settings: {fileID: 11400000, guid: cb6fa1d7c287a414a82b3497abea3ed9, type: 2}
   returnHome: 1
+  wallDamageWhileStunned: 0
 --- !u!114 &1148481210
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16176,6 +16209,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 0
   isEnemy: 1
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &1148481212
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -18367,7 +18402,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c374b56fe9b8a1489b95b9fbe9d579e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Artifacts.RunState
+  characters: {fileID: 11400000, guid: 6d2a5f019e0ca2e47b68a7a5c1317c71, type: 2}
   pool: {fileID: 11400000, guid: 2fee0a83251912048aacce9c2a571f95, type: 2}
+  upgrades: {fileID: 0}
   randomSeed: 1
   seed: 1
 --- !u!4 &1352676848
@@ -18655,6 +18692,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &1386324846
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -18830,6 +18869,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &1388844246
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -20458,6 +20499,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &1493548385
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -20745,6 +20788,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &1533652567
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -21726,6 +21771,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Combat.EnemyBody
   settings: {fileID: 11400000, guid: cb6fa1d7c287a414a82b3497abea3ed9, type: 2}
   returnHome: 1
+  wallDamageWhileStunned: 0
 --- !u!114 &1608170277
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21757,6 +21803,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 0
   isEnemy: 1
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &1608170279
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -23231,6 +23279,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 4
   isEnemy: 0
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &1754524005
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -23406,6 +23456,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Combat.EnemyBody
   settings: {fileID: 11400000, guid: cb6fa1d7c287a414a82b3497abea3ed9, type: 2}
   returnHome: 1
+  wallDamageWhileStunned: 0
 --- !u!114 &1754592430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23437,6 +23488,8 @@ MonoBehaviour:
   splashRadiusOverride: 0
   respawnAfterBreak: 0
   isEnemy: 1
+  grabbableAnytime: 0
+  holdDurationOverride: 0
 --- !u!54 &1754592432
 Rigidbody:
   m_ObjectHideFlags: 0

@@ -298,6 +298,15 @@ namespace ItHunts.Enemies
                 _zone = FindFirstObjectByType<ZoneState>();
             if (_graph == null)
                 _graph = FindFirstObjectByType<MazeGraph>();
+            // NavMesh reconstruit après son Start (carte régénérée) : nouvel identifiant d'agent, comme les goules.
+            if (_nav == null)
+                _nav = FindFirstObjectByType<ZoneNavMesh>();
+            if (_nav != null && _nav.Built && _move.AgentType != _nav.StalkerAgent)
+            {
+                _move.AgentType = _nav.StalkerAgent;
+                _move.Clear();
+            }
+
             bool grace = _zone != null && _zone.InGrace;
             bool enraged = _zone != null && _zone.Enraged;
             Vector3 pos = _rb.position;

@@ -4,6 +4,89 @@
 
 ## Étape en cours
 
+**Suite de la carte (`carte-suite`) — 2026-11-15, playtestée** (hauteurs, chargement, fluidité, menu validés ; arcs disparus, coop
+bloquée, zones de parcours trop rares → corrigés ci-dessous), **fusionnée dans `main`**.
+- **Après le playtest (2026-11-15) :**
+  - **Arcs** : la fusion du décor ne peut pas combiner un maillage importé sans *Read/Write* (modèles de la DA) ; ces pièces
+    (≈ 500 par carte : arcs, colonnes, portes, poutres, ponts) restent séparées au lieu de disparaître ; arcs aussi dans les couloirs
+    en pente. 5 seeds : 1 465 arcs visibles, sur deux piédroits, sommet à 0.3 m au plus du plafond. Demande à la DA (ART-HANDOFF) :
+    *Read/Write* sur `Assets/Art/Models/Niveau1` pour qu'ils soient fusionnés aussi.
+  - **Coop** : au menu, le joueur 2 choisit avec sa manette (◀ ▶, A valide, B change) et la partie ne part qu'après sa
+    validation ; en jeu, menu de choix dans sa moitié d'écran (`CharacterSelectMenu`, personnages pris grisés). Cause du blocage :
+    le Start d'une nouvelle manette faisait basculer le joueur 1 (clavier) sur elle (changement automatique de l'Input System).
+  - **Zones de parcours** : 24 par carte (6 salles de parcours entièrement non magnétiques, 18 galeries ouvertes sur le couloir),
+    au moins 2 par tiers, 8 coffres de parcours ; parcours exigeants (`ParkourCourse` : poutre étroite, marches qui tombent, deux
+    murs plus longs qu'un double saut, vide à dash) vérifiés sans traction. 20/20 seeds : 3 045 sauts faisables, 0 surface
+    magnétique sur 45 695 rayons dans les salles de parcours, 0 cachette.
+  - **Lanterne** : 32 PV, recharge 2.5 s, cône depuis la lanterne : goule 3.1 s (barillet 1 s), groupe de 3 3.1 s (5.4 s),
+    goule qui rampe à 1 m touchée. **Améliorations** au marchand (portée, cône, recharge, brûlure) ; le marchand vend celles de
+    l'artefact du joueur. 385 tests EditMode (384 + 1 non concluant voulu).
+- **Point 1 (`26a7b85`) — arcs au sol :** l'arc du kit (11 m) était posé au niveau du sol dans des couloirs de 19 m (portique isolé),
+  et les arcs de porte entraient de 1,8 m dans les couloirs en pente. `KitBuild.Arch` : sommet sous le plafond, sur deux piédroits ;
+  arcs de porte dans l'épaisseur du mur. 5 seeds : 0 pièce mal posée.
+- **Point 2 (`a2ee72f`) — hauteurs :** plafond par type de module (`ModuleShape` : simple 18 m, étages 22 m, égout 16 m, réglable par
+  module avec `ceilingOverride`), croisements 16 m, couloirs 15 m (minimum 15). Avant : salles 36, croisements 24, couloirs 19.
+  18/18 modules validés ; traqueur accroupi 1,3 % du trajet avant et après (3,9 s sur ≈ 440 s).
+- **Point 3 (`400aea6`) — galeries et passages en hauteur :** `PlanBypass` (6 galeries, 10 passages, minimum 6 zones et une dans chaque
+  tiers départ → sortie) ; passage fermé s'il est bloqué par un module. 20/20 seeds conformes, 16 à 19 zones par carte.
+- **Point 4 (`0785cf2`) — écran de chargement :** `LoadingScreen` (titre, étape, barre) ; construction par tranches de 50 ms, systèmes
+  de jeu sous une racine inactive activée à la fin. 6,7 à 7,5 s dans l'éditeur, 5,1 s en build.
+- **Point 5 — performance :** fusion du décor par groupe (salle, couloir…) et par matériau au chargement (`RandomLevel.Batch`), à la
+  place du batching statique : ≈ 53 600 pièces → 529 renderers. Build de développement, seed 104729, 1920 × 1080, timer à 13:40 :
+  solo **19,2 → 8,0 ms** médiane (95 % 14,8 ; GPU 2,9 ; 2 555 draw calls au lieu de 4 940) ; écran partagé **13,4 ms** médiane
+  (95 % 16,1 ; GPU 4,1). Reste : `FinishFrameRendering` 4,1 ms (8,1 à deux), 1 718 lumières, ≈ 4 600 renderers hors kit.
+- **Décisions D-064 à D-066 :** un artefact par personnage, choisi avant la run, jamais deux fois le même en coop (renard rouge :
+  lanterne de feu ; caméléon orange : barillet ; koala vert et hibou bleu : à concevoir) ; variété par les améliorations et la
+  carte ; orbe à la couleur du personnage avec l'orbe v2 (anneaux et runes pour les actions, 6 tablettes : 2 traction,
+  1 répulsion, 3 mouvement), code couleur actuel gardé d'ici là. GDD, fiches artefacts et orbes, ART-HANDOFF.
+- **Lanterne de feu et choix du personnage :** menu (joueur 1 et joueur 2, cartes des 4 personnages, koala et hibou grisés) ;
+  `CharacterDefinition` / `CharacterRoster` / `CharacterPick` ; `RunSession.Characters` ; lanterne (`FireLantern`,
+  `FireLanternJet`, `FireLanternView`, `FireLantern_Default` : 5 m, 40°, 0.6 s, 25 PV, 3 s) en greybox dans la main gauche ;
+  HUD, debug ; marchand : soin seulement pour le renard. Outil *ItHunts > Personnages : …* (assets, prefab, scènes).
+  **Mesuré :** goule seule 7.2 s (3 jets) contre 1.0 s au barillet ; groupe de 3 : 7.2 s contre 5.4 s ; un jet dans un couloir :
+  8/8 d'une meute (visée au groupe), 4/5 d'une file, 2/6 d'un groupe étalé sur 14 m. 377 tests EditMode (376 + 1 non concluant
+  voulu). **À trancher en playtest :** équilibre de la lanterne contre une goule seule ; teintes des personnages face aux
+  couleurs réservées (rouge = annonce d'attaque).
+
+**Carte aléatoire — 2026-11-15, validée en playtest le 2026-11-15 et fusionnée dans `main`** (branche `carte-aleatoire` supprimée ;
+réserve : ça rame un peu, mesuré avec Blender et deux projets Unity ouverts — mesure de performance dans `carte-suite`). Fiche : `docs/design/features/run-et-niveaux/` (design « Carte aléatoire », testing « Carte aléatoire »).
+- **Bloc 1 (`ae95e8c`) :** format des modules (empreinte 1 × 1, 1 × 2, 2 × 2 ; entrées `ModuleDoor` ; contraintes ; résultat de
+  validation), kit (`KitSet`, `KitBuild`), catalogue `ModuleCatalog_Niveau1`, outil *ItHunts > Modules : valider…* (format, voies du
+  traqueur, cachettes `ReachCheck`, NavMesh entre les entrées, pièces hors kit, contenu).
+- **Bloc 2 (`d4732dc`) :** `MapPlanner` (déterministe, seed de la run × numéro du niveau ; boucles sans pont ; sortie à 6 salles au
+  moins tirée au hasard ; repaire au bord ; pentes ≤ 20° ; niveau haut seulement pour les modules qui le déclarent) ; `RandomLevel`
+  (construction avant tous les systèmes) ; scène `Level_01_Aleatoire` (niveau 1 de la run) ; `Level_01` = carte fixe de référence
+  (menu) ; prefabs du kit avec les modèles livrés (colonne, arc, porte de pièce, grande porte, poutre, ponts d'égout).
+- **Bloc 3 :** les 15 modules en pièces du kit (structure), entrées aux ouvertures actuelles, escaliers des modules en collision lisse
+  avec marches visuelles, 3 modèles vides à dupliquer (1 × 1, 1 × 2, 2 × 2, poids 0) ; 18/18 validés (corrigés : gravats dans une voie,
+  statues sur les tours, poche d'angle de l'habillage) ; ART-HANDOFF : section « Kit de construction » (pièces par priorité, pas de 4 m).
+- **Mesuré :** 20/20 cartes conformes (et 5/5 avec grandes salles), 0 couloir hors boucle, départ–sortie 6 à 10 salles, pente max
+  14°, 0 cachette sur 244 357 points (hors zone de sortie et fosses de parcours) ; tirage 2 à 6 ms, construction 3.4 s (5 s au plus),
+  NavMesh 1.7 s (2.8 s au plus) dans l'éditeur ; escaliers : même vitesse qu'une pente nue (avant : bloqué au pied en montée).
+- **Limites connues :** pas d'écran de chargement (≈ 5 s figé) ; galeries de parcours le long des couloirs et passages en hauteur
+  (Level_01) pas encore dans la carte aléatoire ; aucun vrai module de grande salle (seulement les modèles) ; ≈ 65 000 pièces du kit
+  par carte (à réduire avec les demi-pièces ou des pièces plus grandes) ; `Level_01` reprend les modules convertis (prefabs liés).
+- **Unity, à retenir :** régénérer une carte plusieurs fois dans la même session sans libérer les maillages combinés a fait planter
+  l'éditeur (corrigé : `Resources.UnloadUnusedAssets` à chaque régénération).
+
+**Modèle du barillet (demande de la session art) — 2026-11-15, validé en playtest (barillet, chambres, rotation, rechargement,
+lisibilité) et fusionné dans `main`** (branche `barillet-modele` supprimée).
+- `SM_Barillet` (PR #2) remplace le barillet greybox en main gauche (`BarrelModelInstaller`, menu *ItHunts > Barillet :
+  installer le modèle…* ; le prefab Player est modifié en place, le constructeur l'utilise aussi). Logique de tir inchangée.
+- Chambre chargée = émission (blanc chaud (1, 0.86, 0.66) × 3) ; vide = couleur de base #1A120C ; inactif (objet tenu) ×0.2 ;
+  un matériau partagé (copie de `M_Barillet_Chambre`, émission activée) et un MaterialPropertyBlock par chambre.
+- −60° autour du Z local par tir, 0.08 s, courbe réglable (`BarrelSpin`) ; rechargement : les chambres se rallument une à une.
+- État visuel dérivé du compteur de munitions et de tirs du joueur (`BarrelModel`), sans état à part (coop en ligne).
+- Laiton : `Assets/_Project/Art/Barillet/M_Barillet_Laiton.mat` (couleur de base seule) posé sur l'instance ; le FBX n'est pas
+  modifié. **Canon encore greybox** (aligné sur la chambre du haut).
+- Réglages : `Barrel_Default` (émission, intensité, part inactive, couleur de base, durée et courbe de rotation),
+  `FpsView_Default` (position (0, 0.065, 0.05), rotation, échelle 1 du barillet).
+- Mesuré en Play Mode (Test_Movement, tirs réels) : chambres conformes après 1, 3 et 6 tirs et après le rechargement ;
+  rechargement ······ → 1····· → … → 123456 ; 30 tirs rapides avec une rotation allongée à 0.4 s (29 tirs pendant
+  l'animation) : angle final 0°, écart 0° à un multiple de 60° ; à 20 m/s (FOV du monde 81.4°), mains dessinées à 60°,
+  barillet à 0.385 m devant la caméra au plus près (plan proche 0.01 m).
+- Tests : 7 nouveaux (`ModeleBarillet_*`), 363 au total, 362 passent, 1 non concluant à dessein.
+
 **Corrections après le playtest des étapes 8 et 9 — terminées le 2026-11-15, fusionnées dans `main`** (branche `correctifs-8-9`,
 supprimée après la fusion). Playtest du 2026-11-15 : vagues, ennemis endormis, chasseurs, pression au début de zone **bons** ;
 goules en hauteur **bonnes** (plus de goule coincée ni de téléportation visible) ; aide à la visée à la manette pas encore testée.

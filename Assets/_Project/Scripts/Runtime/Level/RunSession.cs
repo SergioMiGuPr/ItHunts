@@ -15,7 +15,12 @@ namespace ItHunts.Level
         public static RunDefinition Definition { get; private set; }
         public static int DifficultyIndex { get; private set; }
         public static int LevelIndex { get; private set; }
-        public static int CharacterIndex { get; private set; }
+        /// <summary>
+        /// Personnage demandé par chaque joueur (indice dans la liste des personnages ; −1 : rien choisi), choisi dans le menu
+        /// (D-064). Gardé d'une run à l'autre et pour les scènes de test ouvertes depuis le menu. RunState en déduit les
+        /// personnages réels (CharacterPick : jamais deux fois le même).
+        /// </summary>
+        public static int[] Characters { get; set; } = { -1, -1 };
         /// <summary>Manette du 2e joueur, rejoint dans le menu (étape 9) ; l'écran partagé l'ajoute au chargement du niveau.</summary>
         public static UnityEngine.InputSystem.InputDevice CoopDevice { get; set; }
         public static bool Active => Definition != null;
@@ -34,7 +39,7 @@ namespace ItHunts.Level
         public static string MenuScene => Definition != null && !string.IsNullOrEmpty(Definition.menuScene) ? Definition.menuScene : "MainMenu";
 
         /// <summary>Démarre une run (menu) ; renvoie la scène du premier niveau, ou null si la difficulté n'est pas jouable.</summary>
-        public static string Begin(RunDefinition definition, int difficulty, int character = 0)
+        public static string Begin(RunDefinition definition, int difficulty)
         {
             if (definition == null || difficulty < 0 || difficulty >= definition.difficulties.Count || !definition.difficulties[difficulty].playable)
                 return null;
@@ -43,7 +48,6 @@ namespace ItHunts.Level
             ItHunts.Player.PlayerHealth.ResetDebugFlags();
             Definition = definition;
             DifficultyIndex = difficulty;
-            CharacterIndex = character;
             LevelIndex = 0;
             return definition.levels[0].sceneName;
         }
@@ -83,7 +87,7 @@ namespace ItHunts.Level
             Definition = null;
             DifficultyIndex = 0;
             LevelIndex = 0;
-            CharacterIndex = 0;
+            Characters = new[] { -1, -1 };
         }
     }
 }

@@ -19,6 +19,11 @@ namespace ItHunts.Settings
         CadenceBarillet,        // intervalle entre deux tirs × (1 − amount)
         RechargementBarillet,   // temps de rechargement × (1 − amount)
         PorteeBarillet,         // portée + amount m
+        // Améliorations de la lanterne de feu (renard, D-065), au même marchand ; provisoires.
+        PorteeLanterne,         // portée du jet + amount m
+        ConeLanterne,           // ouverture du cône + amount °
+        RechargeLanterne,       // recharge entre deux jets − amount s
+        BrulureLanterne,        // brûlure : amount PV/s pendant la durée de brûlure de la lanterne (3 s)
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 # Run et niveaux
 
-**Status:** in progress · **Updated:** 2026-11-13 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md) · D-046, D-048 à D-053
+**Status:** in progress · **Updated:** 2026-11-15 · [Implementation](implementation.md) · [Testing](testing.md) · [GDD](../../GDD.md) · D-046, D-048 à D-053
 
 ## Résumé
 
@@ -20,6 +20,72 @@ Le traqueur est lâché à 3 min et la porte de sortie se déverrouille à 10 mi
   profondeur), toujours lisibles à 10 m quand rien ne les cache.
 - **Menu pause** par joueur (Échap / Start), le jeu continue ; « Quitter l'écran partagé » pour le joueur 2.
 - **Affichage de debug (F3)** éteint au lancement.
+
+## Carte aléatoire (2026-11-15, branche `carte-aleatoire`)
+
+Les vraies parties sont **tirées au hasard** : le niveau 1 de la run charge `Level_01_Aleatoire`, dont la carte est construite au
+chargement à partir de la seed (seed de la run mêlée au numéro du niveau ; `-ithunts-seed N` pour rejouer une carte). `Level_01`
+reste une **carte fixe de référence** (menu : « Level_01 (carte fixe de référence) »), pour comparer les réglages.
+
+**Règles du tirage** (`MapPlanner`, réglages `Settings/MapLayout_Niveau1.asset`, un asset par niveau) :
+- grille de **120 m** (7 × 7 = 49 cases pour le niveau 1, réglable) ; salles de **1, 2 ou 4 cases** (1 × 2, 2 × 2 : la salle couvre
+  aussi l'espace entre les cases) ; carrefours de 20 m (part réglable) ;
+- couloirs entre deux entrées face à face ; une entrée non reliée est fermée par un mur du kit ;
+- **chaque couloir est dans une boucle** (aucun couloir hors boucle : le traqueur peut toujours tourner) ;
+- **sortie** tirée au hasard parmi les salles à **6 salles au moins** du départ (réglable) qui ont une entrée sur le bord ; l'escalier
+  et l'arène du boss sont derrière ;
+- **repaire** du traqueur en cul-de-sac sur le bord, le plus loin possible du départ ;
+- **niveau haut (+16 m)** seulement pour les modules qui le déclarent ; **pente de liaison plafonnée à 20°** (réglable) : en pratique
+  13 à 14° sur toutes les cartes mesurées ;
+- **zones de parcours** (seuls endroits où l'on peut dépasser le traqueur ; point 4 de `carte-suite`) : environ **une pour deux
+  salles** (`zonesPerRoom` 0.5 : 24 par carte), **au moins une par tiers** du trajet départ – sortie :
+  - **salles de parcours** (6, `parkourHalls`) : fosse de 30 × 30 m traversée en diagonale ; **toute la salle est non magnétique**
+    (sol, murs, plafond, objets fixes, coffres, seuils des portes, conduits qui y débouchent : la traction y est refusée partout) ;
+  - **galeries** (le reste, au plus `galleries`) le long des couloirs plats de 55 m et plus (hors départ et sortie), **ouvertes sur
+    le couloir** (parapet de 1 m que la main du traqueur passe) au-dessus d'un vide de 10 m : le parcours est parallèle à sa voie ;
+  - **parcours exigeants, toujours faisables sans traction** (`ParkourCourse`, écarts calculés depuis les réglages de mouvement) :
+    poutre étroite (0.45 m), marches qui tombent, **passage entre deux murs plus long qu'un double saut** (sauts muraux en chaîne ou
+    course sur le mur), **vide qui demande un dash** (plus long qu'un double saut), poteaux étroits qui tombent, poutre d'arrivée ;
+  - **coffres de parcours** : environ une zone sur trois (`parkourChestShare` 0.34) ; socle plus haut que le tracé, hors d'atteinte
+    depuis le sol (et le parapet), non magnétique ;
+  - **pas de cachette** : hors de portée de la main du traqueur, on ne se pose que sur des plateformes qui tombent (0.6 s) ; les
+    murs de saut montent jusqu'au plafond (pas de dessus) ;
+  - **passages en hauteur** en saut mural (10 au plus, au bout d'un couloir, côté salle ; refermés si un étage du module bouche
+    l'ouverture) en plus ;
+- tout vient de `System.Random(seed)` dans un ordre fixe : chaque machine refait la même carte (jeu en ligne) ; 20 essais, puis une
+  carte de secours.
+
+**Construction** (`RandomLevel`, avant tous les autres systèmes) : coques des salles, couloirs, pentes, pièces annexes et salles
+verrouillées, repaire, sortie et arène (prefab), marchand, coffres, habitants, apparitions, volumes, lumières ; tout en pièces du
+kit (`Kit_*`, voir ART-HANDOFF). **Pentes et escaliers** : collision lisse, marches visuelles (`Kit_Escalier`) ; même vitesse que
+sur une pente nue du même angle (mesuré).
+
+### Créer un module sans code
+
+1. Dans `Assets/_Project/Prefabs/Modules`, **dupliquer un modèle** (Ctrl+D) : `Module_Modele` (1 case), `Module_Modele_1x2` ou
+   `Module_Modele_2x2`, et le renommer sans le préfixe `Module_` (le constructeur ne recrée que ceux-là).
+2. Sur la racine, régler `RoomModule` :
+   - nom, salle ou carrefour, côté (48, 56 ou 64 m, multiple de 4 ; 20 m pour un carrefour), **empreinte** (1 × 1, 1 × 2, 2 × 2) ;
+   - niveau (sol, haut à +16 m, ou les deux), **poids** (0 : jamais tiré ; les modèles sont à 0) ;
+   - contraintes : nombre minimal et maximal par carte, distance minimale au départ, sortie permise ;
+   - sol percé (canal, fosse), zone de parcours.
+3. **Entrées** : les objets `Entrée …` (composant `ModuleDoor`) ; les déplacer ou en supprimer (2 au moins) ; ils s'aimantent au milieu
+   du bord d'une case. Cocher « obligatoire » pour une entrée que le générateur doit toujours relier.
+4. **Meubler** avec les prefabs `Prop_*` et la **structure en pièces du kit** (`Kit_Mur4x4`, `Kit_Sol4`, `Kit_Pilier`, `Kit_Pont`,
+   `Kit_Escalier`…) glissées depuis `Assets/_Project/Prefabs/Kit`, plus une **boîte de collision** (BoxCollider) sur un objet parent
+   pour chaque volume plein. Règles : sol à y = 0 au centre ; voies de 11 m dégagées sous 10 m entre les entrées et le centre ;
+   étages pleins jusqu'au sol ; ponts dont le dessous est à 10 m ; rien qui ferme un angle.
+5. Poser des objets vides avec `SpawnPoint` (goule ou volant), `ResidentSpot` (habitant), `ChestSpot` (coffre).
+6. Ajouter le module au catalogue `Settings/ModuleCatalog_Niveau1.asset` (les nouveaux du dossier y sont ajoutés tout seuls).
+7. Sélectionner le prefab et lancer **ItHunts > Modules : valider le module sélectionné**. Le rapport s'écrit dans `RoomModule`
+   (champ « Validation ») : format, entrées, voies du traqueur, **cachettes** (portée de la main du traqueur), **NavMesh entre chaque
+   paire d'entrées**, pièces hors kit, contenu, triangles. **Seul un module validé et inchangé depuis entre dans le tirage** (toute
+   retouche le remet « à valider »).
+
+**Ajouter un niveau** : dupliquer `MapLayout_Niveau1` (taille de la grille, distance départ–sortie, pentes…) et le catalogue, puis
+une scène construite comme `Level_01_Aleatoire` (*ItHunts > Carte aléatoire : reconstruire…*).
+
+**Mesures (2026-11-15, éditeur)** : voir [testing.md](testing.md), « Carte aléatoire ».
 
 ## Règles
 
@@ -142,6 +208,7 @@ Le traqueur est lâché à 3 min et la porte de sortie se déverrouille à 10 mi
          possible, derrière un obstacle).
       5. Relancer *ItHunts > Générer le niveau 1* : le module est tiré comme les autres.
       6. Vérifier la portée de la main du traqueur avec la mesure habituelle (aucun recoin hors de portée).
+      (Remplacé pour la carte aléatoire par « Créer un module sans code », plus haut.)
 15. **Passages en hauteur (D-056).** Il y en a 10, à côté de l'entrée d'un couloir dans une salle :
     - une ouverture de 3 × 3 m à 4.5 m du sol, dans le mur de la salle, mène par un conduit de 8 m à une ouverture à la même
       hauteur dans le mur du couloir ;

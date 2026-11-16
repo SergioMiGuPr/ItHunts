@@ -1,6 +1,6 @@
 # Carte aléatoire assemblée à partir de modules : plan (rien de codé)
 
-**Updated:** 2026-11-15 · [Design](design.md) · statut : **plan, en attente de la réponse de l'utilisateur**
+**Updated:** 2026-11-15 · [Design](design.md) · statut : **codé le 2026-11-15** (branche `carte-aleatoire`, voir design.md « Carte aléatoire ») ; réponses de l'utilisateur : grille de 120 m avec salles de 1 × 2 et 2 × 2 ; 49 cases pour le niveau 1 (réglable par niveau) ; Level_01 = carte fixe de référence ; niveau haut seulement pour les modules qui le déclarent ; sortie à 6 salles au moins, tirée au hasard
 
 But : créer les salles et les couloirs séparément (modules), puis les assembler au hasard avec la seed de la run, pour une
 carte différente à chaque partie, en respectant les règles du jeu.

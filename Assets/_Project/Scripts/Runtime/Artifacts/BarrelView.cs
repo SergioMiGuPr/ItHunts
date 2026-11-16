@@ -9,18 +9,22 @@ namespace ItHunts.Artifacts
     /// <summary>
     /// Retour visuel et sonore du barillet (D-032), sur le prefab du joueur. Lit l'état simulé (ArtifactHolder) à chaque
     /// image, n'écrit rien dans la simulation.
-    /// - Munitions lisibles sur le barillet : 6 chambres sur la face arrière, allumées si chargées, éteintes si vides ; en
-    ///   rechargement, elles se rallument une à une ; grisées quand le barillet est inactif (l'orbe tient un objet).
-    /// - Le barillet tourne d'un cran à chaque tir ; traînée lumineuse brève de la bouche au point touché ; éclat à
-    ///   l'impact ; sons provisoires (tir, rechargement, fin de rechargement).
+    /// - Modèle SM_Barillet (étape 10) en main gauche : position, rotation et échelle réglables (FpsViewSettings).
+    /// - Munitions lisibles sur les 6 chambres : chargée = émission allumée (BarrelSettings) ; vide = couleur de base seule
+    ///   (#1A120C) ; en rechargement, elles se rallument une à une ; atténuées quand le barillet est inactif (objet tenu).
+    ///   Un matériau partagé (copie de celui des chambres, émission activée) et un MaterialPropertyBlock par chambre.
+    /// - −60° autour du Z local à chaque tir (BarrelSpin : animation courte, toujours finie sur un multiple de 60°).
+    /// - L'état visuel est dérivé du compteur de munitions et de tirs du joueur (BarrelModel), sans état à part (coop).
+    /// - Traînée lumineuse brève de la bouche au point touché ; éclat à l'impact ; sons provisoires.
     /// Le barillet entier est caché si l'artefact du joueur n'est pas le barillet.
     /// </summary>
     [DefaultExecutionOrder(150)]
     public sealed class BarrelView : MonoBehaviour
     {
         [SerializeField] private Transform barrelRoot;
-        [Tooltip("Partie qui tourne d'un cran (360° / munitions) à chaque tir.")]
+        [Tooltip("Partie qui tourne de −60° à chaque tir (le modèle SM_Barillet).")]
         [SerializeField] private Transform cylinder;
+        [Tooltip("Les 6 chambres, dans l'ordre 01 à 06 (01 en haut au repos).")]
         [SerializeField] private Renderer[] chambers;
         [Tooltip("Bouche du canon : départ de la traînée.")]
         [SerializeField] private Transform muzzle;
@@ -29,6 +33,7 @@ namespace ItHunts.Artifacts
 
         private static readonly Unity.Profiling.ProfilerMarker Marker = new Unity.Profiling.ProfilerMarker("ItHunts.BarrelView");
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
         private ArtifactHolder _holder;
         private PlayerMotor _motor;
         private FirstPersonView _view;
@@ -39,7 +44,13 @@ namespace ItHunts.Artifacts
         private int _seenReloadStart = MovementState.NeverTick, _seenReloadDone = MovementState.NeverTick;
         private float _shotTime = float.NegativeInfinity;
         private Vector3 _tracerFrom, _tracerTo;
-        private float _angle;
+        private BarrelSpin _spin;
+        private MaterialPropertyBlock _chamberBlock;
+        private Material _chamberMaterial;
+
+        /// <summary>Mesures : angle affiché du barillet (Z local, degrés) et nombre de chambres allumées.</summary>
+        public float ShownAngle { get; private set; }
+        public int ShownLit { get; private set; }
 
         private void Awake()
         {
@@ -57,6 +68,61 @@ namespace ItHunts.Artifacts
                 tracer.enabled = false;
             if (impact != null)
                 impact.enabled = false;
+            _chamberBlock = new MaterialPropertyBlock();
+            _chamberMaterial = ChamberMaterial(chambers);
+        }
+
+        private void OnDestroy()
+        {
+            if (_chamberMaterial != null)
+                Destroy(_chamberMaterial);
+        }
+
+        /// <summary>
+        /// Matériau des chambres : une copie de celui du modèle (M_Barillet_Chambre), émission activée, partagée par les 6 ;
+        /// chaque chambre règle son émission par un MaterialPropertyBlock (elles ne s'allument pas toutes ensemble).
+        /// </summary>
+        public static Material ChamberMaterial(Renderer[] chambers)
+        {
+            if (chambers == null || chambers.Length == 0 || chambers[0] == null || chambers[0].sharedMaterial == null)
+                return null;
+            var m = new Material(chambers[0].sharedMaterial) { name = chambers[0].sharedMaterial.name + " (chambres, émission)" };
+            m.EnableKeyword("_EMISSION");
+            m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+            m.SetColor(EmissionColorId, Color.black);
+            foreach (Renderer r in chambers)
+                if (r != null)
+                    r.sharedMaterial = m;
+            return m;
+        }
+
+        /// <summary>
+        /// Applique l'état au modèle : rotation (Z local) et chambres (émission des chargées, couleur de base de toutes).
+        /// Renvoie le nombre de chambres allumées. Ne dépend que de ses arguments (testable).
+        /// </summary>
+        public static int ApplyModel(Transform spin, Renderer[] chambers, MaterialPropertyBlock block, float angle, int shotCount,
+            int lit, bool inactive, BarrelSettings cfg)
+        {
+            if (spin != null)
+                spin.localRotation = Quaternion.Euler(0f, 0f, angle);
+            int on = 0;
+            if (chambers == null)
+                return 0;
+            Color glow = cfg.chamberEmission * cfg.chamberEmissionIntensity * (inactive ? cfg.chamberInactiveFactor : 1f);
+            for (int i = 0; i < chambers.Length; i++)
+            {
+                if (chambers[i] == null)
+                    continue;
+                bool loaded = BarrelModel.Loaded(i, shotCount, lit);
+                if (loaded)
+                    on++;
+                chambers[i].GetPropertyBlock(block);
+                block.SetColor(BaseColorId, cfg.chamberBaseColor);
+                block.SetColor(EmissionColorId, loaded ? glow : Color.black);
+                chambers[i].SetPropertyBlock(block);
+            }
+
+            return on;
         }
 
         private void LateUpdate()
@@ -70,6 +136,13 @@ namespace ItHunts.Artifacts
 
             BarrelState b = _holder.Barrel;
             int tick = _motor != null ? _motor.State.Tick : 0;
+            FpsViewSettings fps = _view != null ? _view.Settings : null;
+            if (barrelRoot != null && fps != null)                          // réglable en Play Mode
+            {
+                barrelRoot.localPosition = fps.barrelInHand;
+                barrelRoot.localRotation = Quaternion.Euler(fps.barrelInHandEuler);
+                barrelRoot.localScale = Vector3.one * fps.barrelScale;
+            }
 
             // Nouveau tir : traînée, impact, son, un cran de rotation.
             if (b.LastShotTick != MovementState.NeverTick && b.LastShotTick != _seenShotTick)
@@ -136,28 +209,12 @@ namespace ItHunts.Artifacts
                 }
             }
 
-            // Rotation d'un cran par tir.
-            float target = b.ShotCount * 360f / Mathf.Max(1, cfg.rounds);
-            _angle = Mathf.MoveTowards(_angle, target, 360f / Mathf.Max(1, cfg.rounds) / 0.06f * Time.deltaTime);
-            if (cylinder != null)
-                cylinder.localRotation = Quaternion.Euler(0f, 0f, -_angle);
-
-            // Chambres : munitions restantes (en rechargement, elles se rallument une à une).
-            if (chambers == null)
-                return;
+            // Rotation d'un cran (−60°) par tir, et chambres : tout vient de l'état simulé (munitions, tirs, rechargement).
+            _spin.Follow(b.ShotCount, Time.time, cfg.spinDuration, cfg.spinCurve);
+            ShownAngle = _spin.Angle(Time.time, cfg.spinDuration, cfg.spinCurve);
             float progress = Barrel.ReloadProgress(b, tick, cfg, Time.fixedDeltaTime);
-            int lit = b.Reloading ? Mathf.FloorToInt(progress * cfg.rounds) : b.Rounds;
-            for (int i = 0; i < chambers.Length; i++)
-            {
-                if (chambers[i] == null)
-                    continue;
-                // Les chambres tournent avec le barillet : celle en haut est la prochaine à tirer (après k tirs, la chambre k).
-                int fromTop = ((i - b.ShotCount) % cfg.rounds + cfg.rounds) % cfg.rounds;
-                bool loaded = fromTop < lit;
-                Color c = !loaded ? cfg.emptyColor : b.Inactive ? cfg.inactiveColor : cfg.loadedColor;
-                _block.SetColor(BaseColorId, c);
-                chambers[i].SetPropertyBlock(_block);
-            }
+            int lit = BarrelModel.Lit(b.Rounds, b.Reloading, progress);
+            ShownLit = ApplyModel(cylinder, chambers, _chamberBlock, ShownAngle, b.ShotCount, lit, b.Inactive, cfg);
         }
     }
 }

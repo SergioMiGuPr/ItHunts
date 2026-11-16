@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d781f9cefa5d72419bbb450cfebaa8d, type: 3}
+  m_Name: Characters_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.CharacterRoster
+  characters:
+  - {fileID: 11400000, guid: 6f28191930315b64c8e310c091d1eabe, type: 2}
+  - {fileID: 11400000, guid: 01d44e360ebfb824d9ffabfe58926312, type: 2}
+  - {fileID: 11400000, guid: ce2fa2ddd39706d4ea7702a7ec65ac21, type: 2}
+  - {fileID: 11400000, guid: fc5be2b3b6d6d5e419a499b58f67f5de, type: 2}
+  defaultIndex: 1

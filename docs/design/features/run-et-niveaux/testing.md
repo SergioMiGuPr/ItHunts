@@ -46,3 +46,41 @@
 6. **Niveau 1 :** traversée, canaux (−20 PV, retour sur la rive), coffres derrière les murets, zones de parcours, minimap
    (Tab), taille de la carte.
 7. **Mort :** écran de fin, Menu principal ou Rejouer.
+
+## Carte aléatoire (2026-11-15, branche `carte-aleatoire`)
+
+### Mesures (éditeur, Play Mode)
+
+| Mesure | Résultat |
+|---|---|
+| 20 seeds (catalogue de 15 modules) | **20/20 cartes conformes**, aucun échec d'assemblage (tout au premier essai) |
+| 5 seeds avec les modèles de grande salle tirables | **5/5 conformes** (3 grandes salles par carte) |
+| Couloirs hors boucle | 0 sur toutes les cartes |
+| Départ – sortie | 6 à 10 salles (minimum demandé : 6) |
+| Pente de liaison la plus raide | **14.0°** (plafond 20°) ; 0 à 15 pentes par carte |
+| Cachettes (toute la carte, grille de 4 m, NavMesh du traqueur) | **0 sur 244 357 points** ; à part : 26 derrière la grande porte de sortie (escalier vers l'arène, ouvert en payant) et 6 dans les fosses de parcours (permis) ; arène du boss exclue (poches voulues) |
+| Contournement | couloirs de 14 m (16 m en pente) partout ; seuls endroits pour échapper au traqueur : les fosses des modules de parcours |
+| Temps de tirage | 2 à 6 ms |
+| Temps de construction | 3.4 s en moyenne, 5.0 s au plus (≈ 65 000 pièces du kit, batching compris) |
+| NavMesh (goules, traqueur, liens d'escalade) | 1.7 s en moyenne, 2.8 s au plus |
+| Chargement total | ≈ 5 s en moyenne, 7.8 s au plus (dans l'éditeur ; à mesurer en build) |
+| Escaliers (35.5° et 14°) | course et glissade, montée et descente : **même vitesse que la pente nue du même angle** (écart < 0.01 m/s) ; avant : marches pleines, **bloqué au pied en montée**, glissade en descente 8.94 m/s de moyenne contre 10.55 |
+| Validation des modules | 18/18 validés (15 convertis au kit + 3 modèles) ; corrigés : gravats dans une voie (Carrefour à niches), statues qui cachaient le joueur sur les tours (Salle haute remplie), poche d'angle fermée par l'habillage (Grand hall) |
+
+Captures (vue de dessus, plafonds masqués ; vert : départ, orange : sortie, rouge : repaire) : `captures/carte_aleatoire_104729.png`,
+`captures/carte_aleatoire_1152019_pentes.png` (6 salles hautes, 15 pentes), `captures/carte_aleatoire_104736_grandes_salles.png` ;
+vue du départ : `captures/carte_aleatoire_vue_depart.png`.
+
+### Checklist de playtest
+
+1. Menu > Lancer la run : la carte est différente à chaque lancement ; noter le chargement (quelques secondes, écran figé : pas
+   encore d'écran de chargement).
+2. Sortir de la salle de départ, parcourir : couloirs et salles cohérents, entrées inutilisées fermées par un mur, aucun trou.
+3. Pentes de liaison : elles ressemblent à des escaliers ; courir, glisser, bunny hop dessus comme sur une pente.
+4. Escaliers des modules (Étages en anneau, Armurerie, Prison…) : se montent maintenant en courant.
+5. Le traqueur tourne en boucle sans jamais être coincé ; le repaire est loin du départ.
+6. Trouver la sortie (minimap : visible dès le départ pour les tests) : au moins 6 salles du départ.
+7. Pièces annexes et salles verrouillées le long des couloirs ; coffres dans les salles ; habitants.
+8. Menu > Level_01 (carte fixe de référence) : la carte de référence fonctionne toujours.
+9. Créer un module en dupliquant `Module_Modele`, le valider (ItHunts > Modules : valider le module sélectionné), lui donner un
+   poids : il apparaît dans les parties suivantes.

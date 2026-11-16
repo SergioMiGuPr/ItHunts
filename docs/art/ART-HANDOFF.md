@@ -19,6 +19,20 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 > - **`.meta` des assets art (nouvelle règle, commit `94cebbf`)** : les `.meta` de `Assets/Art/` sont générés et commités par la
 >   session principale (Unity), juste après la fusion d'une PR art. La branche `art` fait un **pull de `main` avant chaque
 >   nouveau lot** ; ne jamais générer de `.meta` sur `art` sans avoir tiré `main` (détail au § 1).
+> - **Demande à la DA : « Read/Write » activé à l'import des modèles du décor** (`Assets/Art/Models/Niveau1/*.fbx`, case *Read/Write*
+>   de l'onglet Model). La carte aléatoire fusionne les pièces du kit par salle et par matériau (performance) ; Unity ne peut pas
+>   fusionner un maillage non lisible : ces pièces restent aujourd'hui des objets séparés (≈ 500 par carte : arcs, colonnes, portes,
+>   poutres, ponts). C'est un réglage de vos `.meta`, donc à faire sur `art`.
+> - **Personnages et orbe (D-064 à D-066, `carte-suite`)** : chaque personnage a son artefact et sa couleur — **renard rouge
+>   (lanterne de feu), caméléon orange (barillet), koala vert, hibou bleu** (artefacts à concevoir). Avec l'**orbe v2**, l'orbe
+>   gardera **la couleur du personnage en permanence** ; les actions se liront au **mouvement des anneaux et des runes** ; les
+>   **6 tablettes** servent de jauge (**2 traction, 1 répulsion, 3 mouvement**). Le code couleur par action (§ 0 quater) reste
+>   jusqu'à l'intégration de l'orbe v2. **Lanterne de feu** : mesures au § 5 bis (greybox en place, modèle attendu par PR).
+> - **Hauteurs abaissées (`carte-suite`, charte « caves à l'échelle humaine »)** : salles simples 18 m, à étages 22 m, d'égout 16 m,
+>   carrefours 16 m, couloirs 15 m (§ 0) ; les arcs de couloir portent la voûte (sommet au plafond, deux piédroits de 1 × 1.6 m).
+> - **Carte aléatoire (`carte-aleatoire`)** : nouvelle section « Kit de construction » : toute la structure en pièces `Kit_*` (4 m),
+>   à remplacer par les vrais modèles ; liste des pièces par priorité.
+> - **Barillet (`barillet-modele`)** : `SM_Barillet` branché dans la vue FPS (§ 5 bis) ; le canon reste greybox, à modéliser.
 > - **Catalogue des props** : `Prop_TorcheEteinte` (flamme sans lumière, une torche sur deux dans les bases régénérées).
 > - Goules : elles grimpent aussi les flancs des plateformes et les murs proches d'un joueur hors d'atteinte, puis **bondissent
 >   depuis le mur** (même annonce de 0.3 s) : garder les murs et flancs de plateforme **pleins**, sans trou ni rebord qui coupe.
@@ -41,8 +55,8 @@ Un modèle doit tenir dans ces volumes (± 10 %), sauf mention contraire. Pivot 
 | **Marchand** (au hasard, retiré à l'étape 8) / **marchand de l'artefact** (salle de départ) | silhouette **0.9 × 2.2 m** + enseigne **1.6 × 0.4 m**, centrée à **5.5 m** de haut, 1.6 m devant lui (au-dessus de la rangée d'offres, dans leur plan) | scènes | 4 offres à 1.6 m de haut, 1.6 m devant lui ; l'enseigne ne doit cacher aucune étiquette d'offre |
 | **Grande porte de sortie** | **10 × 10 m** | `Level01Builder` | escalier de 20 marches de 0.4 × 1.6 m, 10 m de large, palier de 12 m |
 | **Portes des pièces** (annexes, salles verrouillées) | **3 × 3 m** dans un mur de 1 m ; fenêtre 3 × 1.5 m | constructeurs | sous la porte, le jeu ajoute un seuil pour les goules : ne pas y mettre de marche ni d'objet |
-| **Couloirs** | **14 m de large, 19 m de haut** (16 m de large en pente) ; tronçons de 40 m au plus | `LevelLayoutSettings` | voie centrale de 8 m, décor dans une bande de 3 m le long des murs |
-| **Salles** | **46 à 66 m** de côté (modules de 48, 56, 64 m), plafond **36 m** ; carrefours **20 m**, plafond 24 m ; niveau haut à **+16 m** | `LevelLayoutSettings` | voies dégagées en croix de 11 m entre les ouvertures |
+| **Couloirs** | **14 m de large, 15 m de haut** (16 m de large en pente ; 15 m au moins : le traqueur fait 14 m) ; tronçons de 40 m au plus | `MapLayout_Niveau1` | voie centrale de 8 m, décor dans une bande de 3 m le long des murs |
+| **Salles** | **46 à 66 m** de côté (modules de 48, 56, 64 m) ; plafond par type : **salle simple 18 m, salle à étages 22 m, salle d'égout 16 m** ; carrefours **20 m**, plafond **16 m** ; niveau haut à **+16 m** | `MapLayout_Niveau1` | voies dégagées en croix de 11 m entre les ouvertures |
 | **Pièces annexes** | **12 × 12 m, 6 m de haut** | constructeurs | profondeur ≤ 15 m depuis une ouverture |
 | **Passages en hauteur** | ouverture **3 × 3 m à 4.5 m** du sol, conduit 8 × 3.5 × 3 m | `LevelParkour` | murs autour non magnétiques |
 | **Arène du boss** | **80 × 80 m, 30 m** de haut ; fosse de 18 m de large, 8 m de profondeur | `BossArenaBuilder` | leviers : plaque 1.2 × 0.8 × 1.2 m sur un socle de 1.2 m |
@@ -82,6 +96,10 @@ Le jeu décide du moment des coups ; l'animation doit montrer l'annonce **pendan
 | **Libération d'un ennemi tenu** | goule **3 s** (elle se débat les **0.5 s** d'avant : clignote et tremble) ; volant **2 s** | elle se débat |
 
 ## 0 quater. Couleurs : orbe par action (D-024) et codes du jeu
+
+> **À venir (D-066) :** avec l'orbe v2, l'orbe prend la **couleur du personnage** (rouge, orange, vert, bleu) en permanence et
+> les actions passent par les anneaux et les runes ; le tableau ci-dessous vaut jusque-là. Attention aux couleurs réservées
+> (rouge = annonce d'attaque et refus) : la teinte exacte des personnages est à choisir avec la DA.
 
 | Couleur | Sens |
 |---|---|
@@ -239,21 +257,47 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
 - **Orbe :** sphère de **Ø 0.08 m**, centre en (0, 0.06, 0.045) dans le repère de la main droite (au-dessus de la
   paume). Prévoir un point d'attache nommé `Orb_Socket` à cet endroit ; l'orbe reste un objet séparé (le jeu change sa
   couleur, HDR, bloom).
-- **Barillet (premier artefact, main gauche, D-032) :** tenu dans la paume gauche, pointé dans le sens des doigts
-  (+z de la main). Repère `Barillet (vue)` en (0, 0.055, 0.05) dans le repère de la main gauche. Mesures (m) :
+- **Barillet (premier artefact, main gauche, D-032) : modèle `SM_Barillet` branché (2026-11-15, branche `barillet-modele`).**
+  Tenu dans la paume gauche, axe de tir (+Z) dans le sens des doigts. Repère `Barillet (vue)` en **(0, 0.065, 0.05)** dans
+  le repère de la main gauche, rotation (0, 0, 0), échelle 1 (= 0.10 m de diamètre) : réglables dans `FpsView_Default`
+  (« Barillet »). Le modèle entier tourne de **−60° autour de son Z local à chaque tir** (sens horaire vu du joueur), en
+  0.08 s (courbe réglable, `Barrel_Default`), et finit toujours sur un multiple de 60°. Mesures (m) :
 
   | Pièce | Taille | Position (repère du barillet) |
   |---|---|---|
-  | Corps (tourne d'un cran de 60° à chaque tir, autour de z) | cylindre Ø 0.075 × 0.07 | centre (0, 0, 0) |
-  | 6 chambres (face arrière, vers la caméra) | Ø 0.016, au rayon 0.024 | z −0.037 ; chambre 1 en haut, puis tous les 60° |
-  | Canon | cylindre Ø 0.022 × 0.10 | centre (0, 0.022, 0.085) |
-  | Bouche du canon (départ de la traînée) | — | (0, 0.022, 0.136) |
+  | `SM_Barillet` (modèle livré, pivot au centre) | 0.100 × 0.100 × 0.111 | centre (0, 0, 0) |
+  | 6 chambres `SM_Barillet_Chambre_01` à `_06` | maillage propre à chacune | 01 en haut (0, 0.0307), puis tous les 60° |
+  | Canon (**greybox, à modéliser**) | cylindre Ø 0.022 × 0.10 | centre (0, 0.0307, 0.1055), dans l'axe de la chambre du haut |
+  | Bouche du canon (départ de la traînée) | — | (0, 0.0307, 0.1565) |
 
-  **Les munitions se lisent sur les chambres** : une chambre chargée s'allume (couleur HDR orangée, bloom), une vide
-  est noire, et elles sont grisées quand l'orbe tient un objet (barillet inactif). Prévoir dans le modèle : 6
-  chambres **séparées** (le jeu change leur couleur une à une), le corps qui tourne en pièce séparée, un point
-  d'attache `Barrel_Muzzle` au bout du canon, pivot du corps sur son axe. Budget proposé : 3 000 à 5 000 triangles,
-  texture 1024. Recul géré par le code (la main recule de 3.5 cm et se relève de 8° à chaque tir).
+  **Les munitions se lisent sur les chambres** : chargée = **émission** (blanc chaud provisoire (1, 0.86, 0.66) × 3,
+  au-delà du seuil de bloom, réglable dans `Barrel_Default`, pas le violet de la télékinésie) ; vide = **couleur de base
+  seule #1A120C** ; barillet inactif (objet tenu) : émission × 0.2. La chambre du haut est la prochaine à tirer ; au
+  rechargement, les chambres se rallument une à une. Matériaux (provisoires, la liste sera validée avec la DA) : le corps
+  utilise `Assets/_Project/Art/Barillet/M_Barillet_Laiton` (texture `T_Barillet_Laiton_BaseColor` seulement, ni métal ni
+  brillance), les runes gardent le matériau du FBX, les chambres une copie de `M_Barillet_Chambre` avec l'émission activée
+  (une couleur par chambre via MaterialPropertyBlock). **Reste à livrer :** le canon (point d'attache `Barrel_Muzzle` au
+  bout). Recul géré par le code (la main recule de 3.5 cm et se relève de 8° à chaque tir).
+- **Lanterne de feu (renard, D-065), greybox à remplacer :** tenue dans la paume gauche comme le barillet, centre à
+  **(0, 0.075, 0.05)** dans le repère de la main gauche (réglable dans `FpsView_Default` : `lanternInHand`, rotation,
+  échelle). Mesures (m) :
+
+  | Pièce | Taille | Position (repère de la lanterne) |
+  |---|---|---|
+  | Socle et chapeau | 0.07 × 0.012 × 0.07 | y = −0.045 et +0.045 |
+  | Toit | 0.04 × 0.012 × 0.04 | y = 0.056 |
+  | 4 montants | 0.007 × 0.08 × 0.007 | aux coins (±0.03, ±0.03) |
+  | Anse | cylindre Ø 0.006 × 0.044 | y = 0.068 |
+  | **Flamme** (émission réglée par le code) | 0.032 × 0.045 × 0.032 | centre (0, −0.005, 0) |
+  | Sortie du jet (point d'attache) | — | (0, 0.03, 0.05) |
+
+  **Le jet part de la lanterne** (le cône du code part de 0.45 m sous les yeux, 0.22 m à gauche, 0.35 m devant) : le point
+  `FX_Jet` du modèle doit être à cet endroit, en haut de la lanterne. Recharge **2.5 s** (et non 3 s).
+  **États à lire sur le modèle :** flamme **allumée** (prête, émission orangée HDR (4, 1.7, 0.4)), **vive** pendant le jet
+  (× 1.4), **éteinte** à la fin du jet puis **se rallume en 3 s** (taille et émission), **atténuée** (× 0.25) quand l'orbe tient
+  un objet. La cage doit laisser voir la flamme (côtés ouverts ou vitres claires). Le **jet** (5 m, cône de 40°, 0.6 s) est
+  fait de bouffées de flammes par le code (sphères additives, jaune → rouge) : un effet de particules dessiné à la main
+  pourra les remplacer. Recul géré par le code (main poussée de 3 cm, tremblement).
 - **Livraison des mains :** `SK_Mains` (bras et mains, squelette avec poignet et doigts), pivot au poignet de chaque
   main, mêmes axes ; budget 15 000 à 20 000 triangles, texture 2048. Les gestes sont faits par le code (positions et
   rotations du poignet, ouverture des doigts) : des animations faites à la main pourront venir plus tard.
@@ -442,6 +486,42 @@ leurs options sont à vérifier dans le connecteur au moment de s'en servir.
 - **Salle de départ :** marchand de l'artefact (silhouette violette de 2.2 m, enseigne) ; 3 orbes d'offre par joueur.
 - **Menus et minimap :** greybox IMGUI (`MainMenu`, écran de fin, minimap en haut à gauche), à refaire à l'étape 10 ;
   aucun menu ne met le jeu en pause.
+
+## Kit de construction de la carte aléatoire (2026-11-15, branche `carte-aleatoire`)
+
+La carte du niveau est maintenant **tirée au hasard** à chaque partie à partir de **modules** (salles, carrefours) et de couloirs,
+sur une **grille de 120 m**. Toute la structure (murs, sols, plafonds, piliers, arcs, portes, ponts, poutres, escaliers) est faite
+d'**instances des prefabs du kit** (`Assets/_Project/Prefabs/Kit/Kit_*.prefab`, liste dans `Settings/Kit_Niveau1.asset`) :
+**remplacer le contenu d'un prefab `Kit_*` par le vrai modèle met à jour toutes les salles, tous les couloirs et tous les modules
+d'un coup.** Les pièces du kit sont **visuelles** : la collision est une boîte fusionnée posée par le code (ne pas mettre de
+collider dans le modèle). Le batching statique est fait au chargement.
+
+**Compatibilité avec un pas de 4 m :** 120 m = 30 pièces de 4 m ; salles de 48, 56 et 64 m, carrefours de 20 m, plafonds de 36 et
+24 m, couloirs en pente de 16 m, pièces annexes de 12 m : **multiples de 4**. Ne le sont pas : couloirs plats de **14 m** de large
+(3.5 pièces), **19 m** de haut (4.75), pièces annexes de **6 m** de haut (1.5), repaire de **26 m** de profondeur (6.5), et la
+longueur d'un couloir entre un carrefour (20 m) et une salle (82 m, 102 m…). Le code pave avec des pièces entières et **comble le
+reste par une seule pièce raccourcie au bord** (pièce mise à l'échelle) : prévoir des modèles qui supportent un raccourcissement,
+ou livrer les demi-pièces de la liste ci-dessous.
+
+**Pièces dont les modules et la carte ont besoin, par ordre de priorité** (nombre posé sur une carte de 49 cases : environ 60 000
+pièces au total) :
+
+| Priorité | Prefab | Cotes et pivot | Usage | État |
+|---|---|---|---|---|
+| 1 | `Kit_Mur4x4` | **4 × 4 m, 1 m d'épaisseur** ; pivot au pied, au milieu (x −2..2, y 0..4, z −0.5..0.5) | murs des salles, des couloirs, du repaire, des annexes ; côtés des étages pleins | greybox |
+| 2 | `Kit_Sol4` | **4 × 4 m, 1 m d'épaisseur** ; pivot au milieu du dessus (y −1..0) | sols, plafonds, paliers, dessus des étages pleins | greybox |
+| 3 | `Kit_Escalier` | marche de **4 m de large, 0.25 m de haut, 1 m de profondeur** ; pivot au milieu du bas de la contremarche (x −2..2, y 0..0.25, z 0..1) ; **étirée** en hauteur (marche pleine jusqu'au sol) et en profondeur selon la pente | toutes les pentes de liaison et les escaliers des modules : la collision est une pente lisse, les marches sont visuelles et restent sous la pente (les pieds ne s'y enfoncent pas) | greybox |
+| 4 | `Kit_Arc` | `SM_Arc_Couloir` (14 × 11 × 1.6 m) | entrée de chaque couloir et tous les 20 m dans les couloirs plats | **livré** |
+| 5 | `Kit_Pilier` | `SM_Colonne` (1.4 × 8 × 1.4 m) | colonnes des modules | **livré** |
+| 6 | `Kit_Pont` | passerelle de **4 m de long, 3 m de large, tablier de 1 m** ; pivot au milieu du dessus ; étirée en largeur | ponts des modules et des couloirs (dessous à 10 m) | greybox |
+| 7 | `Kit_Poutre` | `SM_Poutre` (6 × 0.5 × 0.5 m) | poutres des couloirs et des carrefours | **livré** |
+| 8 | `Kit_PortePiece` | `SM_Porte_Piece` (4.4 × 5 × 1 m, ouverture 3 × 3 m) | porte des pièces annexes et des salles verrouillées | **livré** |
+| 9 | `Kit_GrandePorte` | `SM_GrandePorte` (cadre 13 × 14 × 2 m) | sortie du niveau | **livré** |
+| 10 | `Kit_PontEgout4` / `Kit_PontEgout14` | `SM_Pont_Egout_4m` / `_14m` | ponts des salles à canal | **livré** |
+| 11 (à faire) | `Kit_Mur2x4`, `Kit_Mur4x3` | 2 × 4 m et 4 × 3 m, 1 m d'épaisseur | demi-pièces des couloirs de 14 m × 19 m, des annexes de 6 m, des longueurs non multiples de 4 | à créer |
+
+Les pièces de **parcours** (poutres et plateformes non magnétiques, plateformes qui s'effondrent) restent hors du kit : ce sont des
+objets de jeu (matériau rayé, D-051).
 
 ## Catalogue des props (après le playtest de l'étape 8) : modèles à produire
 
