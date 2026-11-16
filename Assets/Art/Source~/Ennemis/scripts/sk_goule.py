@@ -7,7 +7,8 @@
   type Rigify (colonne basic_spine, cou et tête super_head, mâchoire et épaules super_copy, bras front_paw, jambes
   rear_paw) ; Rigify > Generate en tire un rig de contrôle pour animer à la main. Les os exportés sont ceux du métarig.
 - Peau (2026-11-16) : poids lissés (poids_lisses : chaleur sur une copie étanche en voxels, report sur le LOD0, lissage,
-  4 os par sommet), recopiés sur les LOD1 et LOD2.
+  4 os par sommet), recopiés sur les LOD1 et LOD2 ; os d'aide à demi-rotation et os correcteurs du creux des genoux
+  (Jambe_Pli, voir PLI_SEUIL).
 - Animations (30 images/s, sans déplacement de la racine sauf la mort) : Goule_Repos, Goule_Course, Goule_Annonce,
   Goule_Bond, Goule_Reception, Goule_Escalade, Goule_Coup, Goule_Etourdie, Goule_Mort (durées et événements :
   INTEGRATION-PROPS.md § 4 quater).
@@ -33,6 +34,13 @@ FPS = 30
 VOXEL = 0.006          # copie étanche pour la chaleur (modèle de 1.1 m)
 SMOOTH_IT = 0          # passes de lissage des poids (0 : la chaleur est déjà diffuse ; lisser élargit le pli des genoux)
 HELPERS = [n + s for n in ("Bras", "AvantBras", "Main", "Jambe", "Pied") for s in (".L", ".R")]   # épaules, coudes, poignets, genoux, chevilles
+# Genou très replié (retours du 2026-11-16, PR #8 : genou gauche de Goule_Mort passé de 1.78 à 2.17) : os correcteur
+# Jambe_Pli.L/.R, enfant de Jambe_Aide, même repos. Il prend la part de l'aide sur le côté comprimé du genou (−Z local de
+# Jambe, rampe sur PLI_LARGEUR m) ; un pilote (driver) le pousse le long de son Z local de PLI_GAIN m par radian au-delà de
+# PLI_SEUIL degrés entre la cuisse et la jambe. Sous le seuil il suit l'aide exactement : les clips dont le genou reste
+# sous le seuil (tous sauf Goule_Mort : Escalade monte à 101.3°, Mort à 106.2°) ne changent pas. L'export FBX cuit le
+# pilote dans les clips ; une animation faite dans Blender (vidéos de référence) le déclenche d'elle-même.
+PLI_SEUIL, PLI_GAIN, PLI_LARGEUR = 101.5, 0.11, 0.02
 
 # ----------------------------------------------------------------------------- squelette (modèle de 1.1 m, gauche = +X)
 SPINE = [  # nom, tête, queue, parent, relié
@@ -127,7 +135,65 @@ def skin(meshes, arm_ob):
     rep += " ; %d os d'aide (%s)" % (len(made), ", ".join(h for h, _ in made))
     co, tris = PL.surface(lod0)
     PL.copy_to(meshes[1:], co, tris, W, names, arm_ob)
+    knee_correctives(arm_ob, meshes)
+    rep += " ; os correcteurs des genoux (Jambe_Pli), seuil %.1f°" % PLI_SEUIL
     return rep
+
+
+def knee_correctives(arm_ob, meshes):
+    """Os correcteurs du creux des genoux (voir PLI_SEUIL), puis partage des poids sur chaque maillage (LOD compris)."""
+    vl = bpy.context.view_layer
+    for o in vl.objects:
+        o.select_set(o == arm_ob)
+    vl.objects.active = arm_ob
+    bpy.ops.object.mode_set(mode="EDIT")
+    eb = arm_ob.data.edit_bones
+    for s_ in ("L", "R"):
+        a_ = eb["Jambe_Aide." + s_]
+        h = eb.new("Jambe_Pli." + s_)
+        h.head, h.tail, h.roll = a_.head.copy(), a_.tail.copy(), a_.roll
+        h.parent = a_; h.use_connect = False; h.use_deform = True
+    bpy.ops.object.mode_set(mode="OBJECT")
+    for s_ in ("L", "R"):
+        nm, aide, joint, parent = "Jambe_Pli." + s_, "Jambe_Aide." + s_, "Jambe." + s_, "Cuisse." + s_
+        pb = arm_ob.pose.bones[nm]
+        pb.rotation_mode = "QUATERNION"
+        dr = pb.driver_add("location", 2).driver
+        dr.type = "SCRIPTED"
+        v = dr.variables.new(); v.name = "a"; v.type = "ROTATION_DIFF"
+        v.targets[0].id = arm_ob; v.targets[0].bone_target = parent
+        v.targets[1].id = arm_ob; v.targets[1].bone_target = joint
+        dr.expression = "max(0.0, a - %f) * %f" % (math.radians(PLI_SEUIL), PLI_GAIN)
+    for ob in meshes:
+        knee_split(arm_ob, ob)
+
+
+def knee_split(arm_ob, ob):
+    """Part de Jambe_Aide passée à Jambe_Pli sur le côté comprimé du genou ; jamais de 5e influence ni de part sous le
+    seuil de nettoyage (sous PLI_SEUIL, la déformation reste exactement celle d'avant)."""
+    me = ob.data
+    names = [g.name for g in ob.vertex_groups]
+    W = np.zeros((len(me.vertices), len(names)), np.float32)
+    for v in me.vertices:
+        for g in v.groups:
+            W[v.index, g.group] = g.weight
+    co = np.array([v.co[:] for v in me.vertices])
+    for s_ in ("L", "R"):
+        nm, aide, joint = "Jambe_Pli." + s_, "Jambe_Aide." + s_, "Jambe." + s_
+        bj = arm_ob.data.bones[joint]
+        side = (co - np.array(bj.head_local[:])) @ (-np.array(bj.matrix_local.col[2][:3]))
+        x = np.clip(side / PLI_LARGEUR, 0, 1)
+        f = x * x * (3 - 2 * x)
+        hcol = names.index(aide)
+        nnz = (W > 0.01).sum(1)
+        f = np.where((nnz >= 4) & (f > 0), 1.0, f)                 # pas de 5e influence
+        move = W[:, hcol] * f
+        keep = W[:, hcol] - move
+        move = np.where(move < 0.015, 0.0, np.where(keep < 0.015, W[:, hcol], move))   # rien sous le seuil de nettoyage
+        W = np.concatenate([W, move[:, None].astype(W.dtype)], 1)
+        W[:, hcol] -= move
+        names.append(nm)
+    PL.write_groups(ob, arm_ob, names, PL.prune(W))
 
 
 # ----------------------------------------------------------------------------- poses (rotations en axes de l'armature)
@@ -338,6 +404,8 @@ def make_actions(arm_ob):
             spec, root = fn(f / FPS if not loop or f < n else 0.0)    # boucle : dernière image = première
             apply_pose(arm_ob, spec, root)
             for pb in arm_ob.pose.bones:
+                if "_Pli" in pb.name:                               # pilotés (driver) : pas de clés
+                    continue
                 pb.keyframe_insert("rotation_quaternion", frame=1 + f)
                 pb.keyframe_insert("location", frame=1 + f)
         acts.append(act)

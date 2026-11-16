@@ -290,8 +290,15 @@ genoux, chevilles) : même position que l'os, même parent, ils copient la **moi
 la moitié de l'angle : moins d'écrasement. **Rien à piloter côté Unity** (ils sont dans les clips) ; une animation faite
 dans Blender (vidéos de référence) les entraîne d'elle-même. Pic de distorsion des triangles autour des articulations
 (98e centile de |log2 aire/aire au repos|), avant → après : épaules (bras levés) 1.67/1.78 → 1.30/1.55, genoux 0.79–1.53 →
-0.70–1.18 (sauf `Goule_Mort`, genou gauche replié à plus de 140° : 1.78 → 2.17), coude 0.69 → 0.64, mâchoire et hanches
-inchangées. Planche `rendus/Lot2/Goule_Greement_avant_apres.jpg`.
+0.70–1.18, coude 0.69 → 0.64, mâchoire et hanches inchangées. Planche `rendus/Lot2/Goule_Greement_avant_apres.jpg`.
+
+**Os correcteurs du creux des genoux (branche `art-fix`)** `Jambe_Pli.L/.R` : enfants de `Jambe_Aide`, même repos. Ils
+prennent la part de l'aide sur le côté comprimé du genou ; un pilote (driver) les pousse vers l'extérieur du pli au-delà de
+**101.5°** entre la cuisse et la jambe (`PLI_SEUIL`, `PLI_GAIN` 0.11 m/rad, `PLI_LARGEUR` 0.02 m dans `sk_goule.py`), cuit
+dans les clips à l'export. Seul `Goule_Mort` dépasse ce seuil (106.2° ; `Escalade` 101.3° au plus) : **les autres clips
+sont identiques au sommet près** (3 LOD). `Goule_Mort`, image extrême : genou gauche 2.17 → **0.88**, droit 1.26 → 0.99 ;
+pic sur tout le clip 2.17 → 1.94 (avant la PR #8 : 2.04). Rien à piloter côté Unity ; 28 os déformants + 10 aides + 2
+correcteurs. Planche `rendus/Lot2/Goule_Genou_Mort_avant_apres.jpg` (carte de déformation, courbes image par image).
 
 **Modèle à utiliser :** `SK_Goule` (gréé) à la place de `SM_Goule` (statique, gardé pour les aperçus), en (0, 0, 0) sous
 « Corps (visuel) », rotation nulle (avant +Z). Le FBX contient l'armature `Goule` et `SM_Goule_LOD0` (22 000 triangles),
