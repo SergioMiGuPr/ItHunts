@@ -1,6 +1,9 @@
 // ItHunts : passe principale du shader toon (Forward et Forward+).
-// Éclairage : couleur de base × (teinte d'ombre + ambiance + lumière principale en bandes + lumières ponctuelles en
-// paliers) + rim + émission, puis brouillard. Ni métal ni reflet spéculaire (règle de style).
+// Éclairage : couleur de base × (teinte d'ombre + ambiance + lumière principale en bandes + lumières ponctuelles) + rim +
+// émission, puis brouillard. Ni métal ni reflet spéculaire (règle de style).
+// Retours du 2026-11-16 (lumière coupée net, cercles durs) : chaque terme mélange des paliers peints (ToonSteps) et un
+// dégradé continu (_BandGradient, _PointGradient) ; l'atténuation des lumières ponctuelles est douce jusqu'au bord de la
+// portée (pente nulle : aucun bord) ; la couleur des lumières est saturée (_LightSaturation) pour teinter les surfaces.
 #ifndef ITHUNTS_TOON_FORWARD_PASS_INCLUDED
 #define ITHUNTS_TOON_FORWARD_PASS_INCLUDED
 
@@ -26,13 +29,14 @@ struct Varyings
     UNITY_VERTEX_OUTPUT_STEREO
 };
 
-// Somme de marches nettes : 0, 1/n, 2/n … 1. La marche k tombe à x = (k - 1 + seuil) / n.
+// Somme de marches : 0, 1/n, 2/n … 1. La marche k tombe à x = (k - 1 + seuil) / n ; softness : demi-largeur de chaque
+// transition (grande : marches fondues en dégradé).
 half ToonSteps(half x, half steps, half threshold, half softness)
 {
     half n = max(1.0h, round(steps));
     half w = max(softness, 1e-3h);
     half sum = 0.0h;
-    [unroll] for (int k = 1; k <= 5; k++)
+    [unroll] for (int k = 1; k <= 8; k++)
     {
         if (k <= n)
         {
@@ -67,6 +71,19 @@ float ToonRangeFraction(uint lightIndex, float3 positionWS, out half spotAttenua
     spotAttenuation = AngleAttenuation(spotDirection.xyz, lightDirection, attenuation.zw);
     // attenuation.x = 1 / portée² (URP) : distance² × x = (d / portée)².
     return sqrt(saturate(distanceSqr * attenuation.x));
+}
+
+// Dégradé de la lumière principale : Lambert légèrement décalé par le seuil des bandes (même ligne d'ombre).
+half MainGradient(half x)
+{
+    return smoothstep(_BandThreshold * 0.5h, 1.0h, x);
+}
+
+// Couleur de la lumière plus ou moins saturée, à luminance égale (la lanterne teinte la surface de sa couleur).
+half3 LightTint(half3 c)
+{
+    half l = dot(c, half3(0.299h, 0.587h, 0.114h));
+    return max(0.0h, lerp(l.xxx, c, _LightSaturation));
 }
 
 Varyings ToonVert(Attributes input)
@@ -137,12 +154,12 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
     mainLight.shadowAttenuation = 1.0h;
 #endif
     half mainX = saturate(dot(normalWS, mainLight.direction)) * mainLight.shadowAttenuation * mainLight.distanceAttenuation;
-    half mainBand = ToonSteps(mainX, _BandCount - 1.0h, _BandThreshold, _BandSoftness);
+    half mainBand = lerp(ToonSteps(mainX, _BandCount - 1.0h, _BandThreshold, _BandSoftness), MainGradient(mainX), _BandGradient);
 #if defined(_LIGHT_LAYERS)
     if (!IsMatchingLightLayer(mainLight.layerMask, meshRenderingLayers))
         mainBand = 0.0h;
 #endif
-    lighting += mainLight.color * mainBand;
+    lighting += LightTint(mainLight.color) * mainBand;
     lightPresence = max(lightPresence, mainBand);
 
 #if defined(_ADDITIONAL_LIGHTS)
@@ -153,12 +170,12 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
     {
         Light dirLight = GetAdditionalLight(dirIndex, positionWS, shadowMask);
         half dx = saturate(dot(normalWS, dirLight.direction)) * dirLight.shadowAttenuation;
-        half dBand = ToonSteps(dx, _BandCount - 1.0h, _BandThreshold, _BandSoftness);
+        half dBand = lerp(ToonSteps(dx, _BandCount - 1.0h, _BandThreshold, _BandSoftness), MainGradient(dx), _BandGradient);
         #if defined(_LIGHT_LAYERS)
         if (!IsMatchingLightLayer(dirLight.layerMask, meshRenderingLayers))
             dBand = 0.0h;
         #endif
-        lighting += dirLight.color * dBand;
+        lighting += LightTint(dirLight.color) * dBand;
         lightPresence = max(lightPresence, dBand);
     }
     #endif
@@ -167,18 +184,20 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
         Light light = GetAdditionalLight(lightIndex, positionWS, shadowMask);
         half spot;
         half range = ToonRangeFraction(lightIndex, positionWS, spot);
-        // Atténuation en paliers : îlots de lumière à bord net autour de la bougie.
-        half falloff = pow(saturate(1.0h - range), max(_PointFalloff, 0.05h)) * spot;
-        half att = ToonSteps(falloff, _PointSteps, _PointThreshold, _PointSoftness);
-        // Face tournée vers la lumière : une seule marche nette (ombre portée comprise).
-        half ndl = saturate((dot(normalWS, light.direction) + _PointWrap) / (1.0h + _PointWrap));
-        half face = ToonSteps(ndl * light.shadowAttenuation, 1.0h, _BandThreshold, _BandSoftness);
+        // Atténuation : fenêtre douce (1 - r²)² (pente nulle au bord de la portée : la lumière s'éteint jusqu'au noir sans
+        // cercle), courbée par _PointFalloff ; les paliers peints se superposent selon _PointGradient.
+        half window = saturate(1.0h - range * range);
+        half falloff = pow(window * window, max(_PointFalloff, 0.2h)) * spot;
+        half att = lerp(ToonSteps(falloff, _PointSteps, _PointThreshold, _PointSoftness), falloff, _PointGradient);
+        // Face tournée vers la lumière (ombre portée comprise) : une marche, fondue par _PointGradient.
+        half ndl = saturate((dot(normalWS, light.direction) + _PointWrap) / (1.0h + _PointWrap)) * light.shadowAttenuation;
+        half face = lerp(ToonSteps(ndl, 1.0h, _BandThreshold, _BandSoftness), smoothstep(0.0h, 0.6h, ndl), _PointGradient);
         half contribution = att * face;
         #if defined(_LIGHT_LAYERS)
         if (!IsMatchingLightLayer(light.layerMask, meshRenderingLayers))
             contribution = 0.0h;
         #endif
-        lighting += light.color * contribution;
+        lighting += LightTint(light.color) * contribution;
         lightPresence = max(lightPresence, contribution);
     LIGHT_LOOP_END
 #endif

@@ -24,11 +24,18 @@ for _m in ("sm_traqueur", "peinture", "ennemis_common"):
 import sm_traqueur as T
 E, C = T.E, T.C
 import peinture as W
+sys.modules.pop("poids_lisses", None)
+import poids_lisses as PL
 import bpy, bmesh
 import numpy as np
 from mathutils import Vector, Quaternion, Matrix, kdtree
 
 FPS = 30
+VOXEL = 0.07           # m, copie étanche pour la chaleur (géant de 20 m debout)
+SMOOTH_IT = 12         # passes de lissage des poids (raccords chaleur / distance)
+SHOULDER_IT = 12       # passes de Taubin sur les épaules
+SHOULDER_R = 0.45      # rayon du lissage des épaules, en longueur du bras (épaule-coude)
+HELPERS = [n + s for n in ("Bras", "AvantBras", "Main", "Jambe", "Pied") for s in (".L", ".R")]   # épaules, coudes, poignets, genoux, chevilles
 P = dict(T.PARAMS)
 P.update(
     hauteur_debout=20.0, texture=4096, masque=2048,
@@ -274,22 +281,18 @@ def seg_dist(P3, a, b):
     return np.linalg.norm(P3 - (a + t[:, None] * ab), axis=1)
 
 
-def region_skin(ob, arm_ob, Vraw, wa):
-    """Poids déterministes : chaque sommet est classé par région sur le modèle brut (bras, jambe, tête, mâchoire,
-    tronc ; côté par le signe de y) et pondéré par 1/d^4 sur les 3 os autorisés les plus proches (d : distance au
-    segment de l'os, pose debout)."""
+def region_allowed(ob, arm_ob, Vraw, wa):
+    """Os permis par sommet, classé par région sur le modèle brut (bras, jambe, tête, mâchoire, tronc ; côté par le
+    signe de y) : un bras ne tire jamais le torse, une jambe jamais l'autre, la mâchoire jamais le crâne."""
     x, y, z = Vraw.T
     side = np.where(y >= 0, "L", "R")
     arm = wa > 0.3
     head = (z > 0.200) & ~arm
     jaw = head & (x > 0.005) & (z < 0.232)
     leg = (z < 0.03) & ~arm & (np.abs(y) > 0.004)
-    bones = {b.name: (np.array(b.head_local[:]), np.array(b.tail_local[:])) for b in arm_ob.data.bones}
-    names = [n for n in bones if n != "Racine"]
-    Vf = np.array([v.co[:] for v in ob.data.vertices])
-    D = np.stack([seg_dist(Vf, *bones[n]) for n in names], 1)
+    names = [b.name for b in arm_ob.data.bones if b.name != "Racine" and "_Aide" not in b.name]
     idx = {n: i for i, n in enumerate(names)}
-    allowed = np.zeros_like(D, dtype=bool)
+    allowed = np.zeros((len(Vraw), len(names)), dtype=bool)
     spine = ["Bassin", "Dos_1", "Dos_2", "Poitrine", "Cou", "Epaule.L", "Epaule.R", "Cuisse.L", "Cuisse.R"]
     for n in spine:
         allowed[:, idx[n]] = True
@@ -308,22 +311,33 @@ def region_skin(ob, arm_ob, Vraw, wa):
     for n in ("Cou", "Tete"):
         allowed[head, idx[n]] = True
     allowed[jaw, idx["Machoire"]] = True
-    Wt = np.where(allowed, 1.0 / (D + 0.05) ** 4, 0.0)
-    order = np.argsort(-Wt, axis=1)
-    keep = np.zeros_like(Wt, dtype=bool)
-    np.put_along_axis(keep, order[:, :3], True, axis=1)
-    Wt = np.where(keep, Wt, 0.0)
-    Wt /= np.maximum(Wt.sum(1, keepdims=True), 1e-12)
-    ob.vertex_groups.clear()
-    groups = {n: ob.vertex_groups.new(name=n) for n in names}
-    for j, n in enumerate(names):
-        nz = np.nonzero(Wt[:, j] > 0.01)[0]
-        for i in nz:
-            groups[n].add([int(i)], float(Wt[i, j]), "REPLACE")
-    ob.parent = arm_ob
-    ob.matrix_parent_inverse.identity()
-    m = ob.modifiers.new("Armature", "ARMATURE"); m.object = arm_ob
-    return int((Wt.sum(1) < 0.5).sum())
+    return names, allowed
+
+
+def smooth_shoulders(ob, arm_ob, it=SHOULDER_IT):
+    """Épaules boursouflées (retours du 2026-11-16) : lissage de Taubin (sans rétrécir) de la géométrie autour de
+    chaque épaule, dégressif avec la distance à l'articulation."""
+    me = ob.data
+    co = np.array([v.co[:] for v in me.vertices])
+    f = np.zeros(len(co))
+    for s in ("L", "R"):
+        b = arm_ob.data.bones["Bras." + s]
+        r = (b.tail_local - b.head_local).length * SHOULDER_R
+        d = np.linalg.norm(co - np.array(b.head_local[:]), axis=1)
+        f = np.maximum(f, np.clip(1 - d / r, 0, 1) ** 1.5)
+    edges = np.array([e.vertices[:] for e in me.edges])
+    i, j = edges[:, 0], edges[:, 1]
+    deg = np.bincount(np.concatenate([i, j]), minlength=len(co)).astype(float)
+    for k in range(it * 2):
+        acc = np.zeros_like(co)
+        np.add.at(acc, i, co[j]); np.add.at(acc, j, co[i])
+        lap = np.where(deg[:, None] > 0, acc / np.maximum(deg[:, None], 1) - co, 0)
+        lam = 0.5 if k % 2 == 0 else -0.53
+        co = co + lam * f[:, None] * lap
+    for v, p in zip(me.vertices, co):
+        v.co = p
+    me.update()
+    return int((f > 0).sum())
 
 
 # ----------------------------------------------------------------------------- squelette (coordonnées brutes)
@@ -756,8 +770,18 @@ def run():
     ob.name = me.name = "SK_Traqueur"
     table = bone_table(J)
     arm_ob = make_armature(table)
-    empty = region_skin(ob, arm_ob, V, wa)
+    # 1. poids lissés, debout (pour voûter le modèle sans bosses), masqués par régions
+    names, allowed = region_allowed(ob, arm_ob, V, wa)
+    _, _, rep = PL.skin_lisse(ob, arm_ob, VOXEL, names=names, allowed=allowed, smooth_it=SMOOTH_IT)
+    log.append("debout : " + rep)
     zmin = apply_rest(arm_ob, [ob], HUNCH)
+    # 2. épaules lissées, puis poids recalculés sur le modèle voûté (pose de repos), avec os d'aide
+    log.append("épaules lissées : %d sommets" % smooth_shoulders(ob, arm_ob))
+    made = PL.add_helpers(arm_ob, HELPERS)
+    for m in [m for m in ob.modifiers if m.type == "ARMATURE"]:
+        ob.modifiers.remove(m)
+    _, _, rep = PL.skin_lisse(ob, arm_ob, VOXEL, names=names, allowed=allowed, smooth_it=SMOOTH_IT, helpers=made)
+    log.append("voûté : " + rep + " ; %d os d'aide" % len(made))
     hair = hair_strands(arm_ob)
     meas = measure(arm_ob, None, [ob, hair])
     meas["yeux"] = me.vertices[eye_idx].co.z
@@ -774,8 +798,7 @@ def run():
     sc2.use_fake_user = True
     bpy.data.libraries.write(os.path.join(C.SOURCE_DIR, "SK_Traqueur.blend"), blocks, path_remap="RELATIVE_ALL",
                              fake_user=True, compress=True)
-    log.append("SK_Traqueur : %d os ; corps %d triangles, mèches %d ; %d sommets sans poids"
-               % (len(arm_ob.data.bones), E.tri_count(ob), E.tri_count(hair), empty))
+    log.append("SK_Traqueur : %d os ; corps %d triangles, mèches %d" % (len(arm_ob.data.bones), E.tri_count(ob), E.tri_count(hair)))
     print("\n".join(log))
     return arm_ob, ob, hair
 

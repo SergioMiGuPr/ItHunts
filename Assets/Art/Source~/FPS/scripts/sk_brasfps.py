@@ -80,6 +80,11 @@ FINGERS = [  # nom, x (main droite : pouce côté x négatif), longueur, y de l'
     ("Auriculaire", 0.0285, 0.055, 0.0, -1.0),
 ]
 PHAL = (0.45, 0.31, 0.24)
+# Repos : doigts fléchis de REST_CURL degrés à chaque articulation (jointure, 2e, 3e phalange). Un pli de 90° ne demande
+# alors que 70° environ de rotation, ce qui limite l'écrasement du skinning linéaire d'Unity. Les poses sont données en
+# angles absolus (comme avant) : fingers_pose retire le pli de repos.
+REST_CURL = (16.0, 20.0, 12.0)
+FAN = {"Index": -6.0, "Majeur": -2.0, "Annulaire": 2.5, "Auriculaire": 7.0}      # degrés, vers le pouce < 0
 THUMB = [(-0.033, -0.004, 0.018), (-0.051, -0.006, 0.043), (-0.061, -0.007, 0.064), (-0.066, -0.008, 0.082)]   # sur le côté de la paume
 
 
@@ -91,13 +96,17 @@ def UH(x, y, z):
 def bones_right():
     b = {"Avant_Bras": (UH(0, 0, ELBOW), UH(0, 0, 0), None), "Poignet": (UH(0, 0, 0), UH(0, 0, KNUCKLE_Z), "Avant_Bras")}
     for name, x, L, y, _ in FINGERS:
-        z = KNUCKLE_Z
+        fa = math.radians(FAN[name])                 # doigts en léger éventail au repos : séparés dès la 1re phalange
+        px, py, pz = x, y, KNUCKLE_Z
         prev = "Poignet"
+        phi = 0.0
         for i, f in enumerate(PHAL):
-            z1 = z + L * f
-            b["%s_%d" % (name, i + 1)] = (UH(x, y - 0.0015 * i, z), UH(x, y - 0.0015 * (i + 1), z1), prev)
+            phi += math.radians(REST_CURL[i])         # et légèrement fléchis (moins de pincement en flexion)
+            l = L * f
+            nx, ny, nz = px + math.sin(fa) * l, py - 0.0015 - math.cos(fa) * l * math.sin(phi), pz + math.cos(fa) * l * math.cos(phi)
+            b["%s_%d" % (name, i + 1)] = (UH(px, py, pz), UH(nx, ny, nz), prev)
             prev = "%s_%d" % (name, i + 1)
-            z = z1
+            px, py, pz = nx, ny, nz
     prev = "Poignet"
     for i in range(3):
         b["Pouce_%d" % (i + 1)] = (UH(*THUMB[i]), UH(*THUMB[i + 1]), prev)
@@ -118,29 +127,117 @@ def ring(cz, rx, ry, n, phase=0.0, yoff=0.0, jag=None, droop=0.0):
     return pts
 
 
-def fold_ring(cz, r, n, seed=0):
-    """Anneau de manche avec plis en biais (ondulations décalées d'un anneau à l'autre)."""
+# ----------------------------------------------------------------------------- géométrie (repère de la main)
+# Le bras est un maillage d'un seul tenant (retours du 2026-11-16) : manche, brassard, gant, paume, doigts et pouce sont
+# une seule surface fermée, soudée, sans coupure aux articulations. Anneaux de NB sommets du coude aux jointures ; à
+# l'extrémité de la paume, chaque doigt part d'un « port » de NF sommets (4 sur le dos, 4 sous la paume, 2 sur les côtés,
+# partagés avec le doigt voisin : la palmure) ; le pouce part d'un trou de NF sommets percé sur le côté de la paume.
+# Seuls les décors restent des coques à part, collées au bras : sangles, boucles, poils, plumes, liserés, griffes. Ils
+# reçoivent les poids du point du bras le plus proche (ou de la dernière phalange pour les griffes).
+NB = 34
+NF = 10
+JAG18 = (0.0, 0.012, 0.004, 0.019, 0.002, 0.011, 0.006, 0.016, 0.0, 0.009, 0.014, 0.003, 0.018, 0.007, 0.001, 0.013, 0.005, 0.017)
+REG_ARM, REG_PALM, REG_THUMB = 1, 2, 20          # régions du corps (doigts : 10 + indice du doigt)
+
+
+def ang(k, n):
+    """Angle du sommet k d'un anneau de n : 0 = côté pouce (x < 0), puis le dos de la main (y > 0), puis la paume."""
+    return math.pi - 2 * math.pi * k / n
+
+
+def hv(p):
+    return Vector(p)
+
+
+def circ_ring(z, rx, ry, jag=False, droop=0.0, fold=None):
     pts = []
-    for k in range(n):
-        a = 2 * math.pi * k / n
-        f = 1 + 0.055 * math.sin(3 * a + 1.3 * seed) + 0.03 * math.sin(7 * a - 2.1 * seed) + 0.015 * math.sin(11 * a + seed)
-        pts.append(UH(r * f * math.cos(a), r * f * 0.95 * math.sin(a), cz))
+    for k in range(NB):
+        a = ang(k, NB)
+        c, s = math.cos(a), math.sin(a)
+        f = 1.0
+        if fold is not None:              # plis en biais de la manche, décalés d'un anneau à l'autre
+            f = 1 + 0.055 * math.sin(3 * a + 1.3 * fold) + 0.03 * math.sin(7 * a - 2.1 * fold) + 0.015 * math.sin(11 * a + fold)
+        zz = z - (JAG18[(k * 18) // NB] if jag else 0.0) - droop * max(0.0, -s)
+        pts.append(Vector((rx * f * c, ry * f * 0.95 * s if fold is not None else ry * s, zz)))
     return pts
 
 
-def path_rings(path, radii, n, up=Vector((0, 0, 1)), flat=1.0):
-    """Anneaux perpendiculaires à un chemin (Blender) ; flat < 1 aplatit le profil vers le dos de la main."""
-    rings = []
-    for i, p in enumerate(path):
-        t = (path[min(i + 1, len(path) - 1)] - path[max(i - 1, 0)]).normalized()
-        side = t.cross(up)
-        if side.length < 1e-6:
-            side = Vector((1, 0, 0))
-        side.normalize()
-        nrm = side.cross(t).normalized()
-        rings.append([p + side * radii[i] * math.cos(2 * math.pi * k / n) + nrm * radii[i] * flat * math.sin(2 * math.pi * k / n)
-                      for k in range(n)])
-    return rings
+def palm_sec(z, w, tb, tp):
+    pts = []
+    for k in range(NB):
+        a = ang(k, NB)
+        c, s = math.cos(a), math.sin(a)
+        x = w / 2 * math.copysign(abs(c) ** 0.78, c)
+        y = (tb if s > 0 else tp) * math.copysign(abs(s) ** 0.8, s)
+        pts.append(Vector((x, y, z)))
+    return pts
+
+
+def frame(d, up=Vector((0, 1, 0))):
+    d = d.normalized()
+    side = up.cross(d)
+    if side.length < 1e-6:
+        side = Vector((1, 0, 0))
+    side.normalize()
+    return d, side, d.cross(side).normalized()
+
+
+def tube_ring(c, d, r, n=NF, up_f=0.88, down_f=0.9):
+    d, side, u = frame(d)
+    pts = []
+    for j in range(n):
+        a = ang(j, n)
+        s = math.sin(a)
+        pts.append(c + side * r * math.cos(a) + u * r * (up_f if s > 0 else down_f) * s)
+    return pts
+
+
+def chain_hand(bones, chain):
+    """Points (repère de la main) de la chaîne : tête du 1er os puis la queue de chaque os."""
+    pts = [hs(bones[chain[0]][0])] + [hs(bones[b][1]) for b in chain]
+    return pts
+
+
+def hs(vb):
+    """Blender (modèle) -> repère de la main (inverse de UH)."""
+    return Vector((-vb[0], vb[2], ELBOW - vb[1]))
+
+
+def finger_profile(pts, rj, start, glove_to, bour):
+    """Échantillons (point, rayon, seg, direction) le long d'une chaîne de 3 phalanges : plis aux articulations (anneau
+    sur l'articulation, renflements de part et d'autre), phalange plus fine au milieu, bout rond. seg = i + t."""
+    S = []
+    for i in range(3):
+        if i == 0:
+            ts = ([(start, 1.08), (start + (1 - start) * 0.4, 0.96), (start + (1 - start) * 0.72, 0.97)] if start < 0.3
+                  else [(start, 1.08), (start + (1 - start) * 0.45, 0.98)])
+        else:
+            ts = [(-0.08, 1.1), (0.0, 1.02), (0.08, 1.1), (0.4, 0.92), (0.72, 0.96)]
+        for t, f in ts:
+            S.append((i + t, f))
+    if bour is not None:                                  # bourrelet du gant sans doigts (bord roulé)
+        S = [s for s in S if not (glove_to - 0.05 < s[0] < glove_to + 0.14)]
+        S += [(glove_to - 0.03, 1.02), (glove_to, 1.17), (glove_to + 0.08, 1.12), (glove_to + 0.13, 0.98)]
+        S.sort()
+    out = []
+    for seg, f in S:
+        i = min(int(math.floor(seg + 1e-9)), 2) if seg >= 0 else 0
+        t = seg - i
+        a, b = pts[i], pts[i + 1]
+        p = a.lerp(b, t)
+        r = (rj[i] + (rj[i + 1] - rj[i]) * max(0.0, t)) * f
+        out.append((p, r, seg, (b - a).normalized()))
+    d = (pts[3] - pts[2]).normalized()
+    for t, f in ((0.0, 1.04), (0.35, 0.97), (0.65, 0.8), (0.88, 0.5)):      # bout rond (pulpe)
+        out.append((pts[3] + d * rj[3] * t, rj[3] * f, 3.0, d))
+    # directions lissées (tangente du chemin)
+    P = [o[0] for o in out]
+    res = []
+    for k, (p, r, seg, d0) in enumerate(out):
+        t = (P[min(k + 1, len(P) - 1)] - P[max(k - 1, 0)])
+        res.append((p, r, seg, t.normalized() if t.length > 1e-9 else d0))
+    tip = pts[3] + d * rj[3] * 1.05
+    return res, tip
 
 
 class Arm:
@@ -148,8 +245,11 @@ class Arm:
         self.p = perso
         self.st = STYLE[perso]
         self.B = C.Builder()
-        self.parts = []            # (début, fin, os candidats)
+        self.reg = self.B.bm.verts.layers.int.new("region")
+        self.parts = []            # (début, fin, os candidats | "BODY" | "COPY")
         self.mats = {}
+        self.body_faces = []
+        self.hole_center = None
 
     def mat(self, key, hexa):
         name = "M_BrasFPS_%s_%s" % (self.p, key.capitalize())
@@ -168,38 +268,163 @@ class Arm:
     def sweep(self, rings, key, caps=(False, False)):
         self.B.sweep(rings, key, caps=caps)
 
-    # ---- pièces
-    def sleeve(self):
-        st = self.st
-        jag = lambda k: (0.0, 0.012, 0.004, 0.019, 0.002, 0.011, 0.006, 0.016, 0.0, 0.009, 0.014, 0.003, 0.018, 0.007, 0.001, 0.013, 0.005, 0.017)[k % 18]
-        n = 18
-        if st.get("extras") and "plumes" in st["extras"]:
-            return self.feathers()
-        key = self.mat("manche", st["manche"])
-        n = 24
-        J = lambda k: jag(k * 18 // n)
-        zs = [ELBOW, -0.257, -0.243, -0.229, -0.215, -0.2, -0.185, -0.172]
-        rs = [0.043, 0.0428, 0.0425, 0.042, 0.0408, 0.0398, 0.0388, 0.0383]
-        rings = [fold_ring(z, r, n, seed=i) for i, (z, r) in enumerate(zip(zs, rs))]      # plis en biais
-        hem = ring(-0.16, 0.038, 0.036, n, jag=J, droop=0.02)
-        rings.append(hem)
-        self.part(["Avant_Bras"], lambda: self.sweep(rings, key, caps=(True, False)))
-        # doublure (intérieur de l'ourlet déchiré, visible de près)
-        rin = [ring(-0.185, 0.0345, 0.033, n), ring(-0.16, 0.0345, 0.033, n, jag=J, droop=0.02)]
-        key2 = self.mat("ourlet", st["ourlet"]) if "ourlet" in st else key
-        self.part(["Avant_Bras"], lambda: self.sweep(rin, key2))
-        if "lisere" in st.get("extras", ()):
-            lk = self.mat("lisere", st["lisere"])
-            lr = [ring(-0.205, 0.0405, 0.0385, n), ring(-0.195, 0.0402, 0.0382, n)]
-            self.part(["Avant_Bras"], lambda: self.sweep(lr, lk))
-        if "ourlet" in st.get("extras", ()):
-            ok = self.mat("ourlet", st["ourlet"])
-            orr = [ring(-0.158, 0.0388, 0.0368, n, jag=J, droop=0.02), ring(-0.153, 0.0386, 0.0366, n, jag=J, droop=0.02)]
-            self.part(["Avant_Bras"], lambda: self.sweep(orr, ok))
-        # fond de la manche, au coude (le bout coupé)
-        cap = self.mat("fond", "#120E0E")
-        self.part(["Avant_Bras"], lambda: self.B.face(ring(ELBOW + 0.0005, 0.04, 0.038, n), cap, UH(0, 0, -1) - UH(0, 0, 0)))
+    # ---- corps d'un seul tenant
+    def bf(self, pts, key, nrm, tag):
+        """Face du corps : points dans le repère de la main."""
+        f = self.B.face([UH(*p) for p in pts], key, UH(*nrm) - UH(0, 0, 0))
+        if f is not None:
+            self.body_faces.append(f)
+            for v in f.verts:
+                if v[self.reg] == 0:
+                    v[self.reg] = tag
+        return f
 
+    def band(self, ra, rb, key, tag, keys=None):
+        n = len(ra)
+        ca, cb = sum(ra, Vector()) / n, sum(rb, Vector()) / n
+        for k in range(n):
+            k2 = (k + 1) % n
+            q = [ra[k], ra[k2], rb[k2], rb[k]]
+            self.bf(q, keys[k] if keys else key, sum(q, Vector()) / 4 - (ca + cb) / 2, tag)
+
+    def bridge(self, loop, ring, key, tag):
+        """Relie une boucle de bord (trou) à un anneau de même taille, avec le décalage qui tord le moins."""
+        n = len(loop)
+        best = None
+        for rr in (ring, ring[::-1]):
+            for o in range(n):
+                s = sum((loop[j] - rr[(j + o) % n]).length for j in range(n))
+                if best is None or s < best[0]:
+                    best = (s, [rr[(j + o) % n] for j in range(n)])
+        rb = best[1]
+        c = (sum(loop, Vector()) + sum(rb, Vector())) / (2 * n)
+        for j in range(n):
+            j2 = (j + 1) % n
+            q = [loop[j], loop[j2], rb[j2], rb[j]]
+            self.bf(q, key, sum(q, Vector()) / 4 - c, tag)
+
+    def body(self, bones):
+        st = self.st
+        gk = self.mat("gant", st["gant"]) if "gant" in st else self.mat("peau", st["peau"])
+        skin = self.mat("peau", st["peau"])
+        ck = self.mat("cuir", st["cuir"])
+        scale = self.mat("ecaille", st["ecaille"]) if "ecaille" in st else None
+        fond = self.mat("fond", "#120E0E")
+        fin = st.get("doigts_fins", 1.0)
+        self.B.new_shell()
+        # -- avant-bras : manche (ou corps sous les plumes), ourlet replié vers l'intérieur, brassard, manchette du gant
+        rings, keys = [], []
+        if "plumes" in st.get("extras", ()):
+            k2 = self.mat("plume2", st["plume2"])
+            for z, r in ((ELBOW, 0.036), (-0.23, 0.036), (-0.2, 0.0355), (-0.175, 0.0345)):
+                rings.append(circ_ring(z, r, r * 0.94)); keys.append(k2)
+        else:
+            mk = self.mat("manche", st["manche"])
+            lip = self.mat("ourlet", st["ourlet"]) if "ourlet" in st else mk
+            zs = [ELBOW, -0.257, -0.243, -0.229, -0.215, -0.2, -0.185, -0.172]
+            rs = [0.043, 0.0428, 0.0425, 0.042, 0.0408, 0.0398, 0.0388, 0.0383]
+            for i, (z, r) in enumerate(zip(zs, rs)):
+                rings.append(circ_ring(z, r, r, fold=i)); keys.append(mk)
+            rings.append(circ_ring(-0.16, 0.038, 0.036, jag=True, droop=0.02)); keys.append(lip)      # ourlet déchiré
+            rings.append(circ_ring(-0.166, 0.0348, 0.0335, jag=True, droop=0.02)); keys.append(ck)    # doublure (repli)
+        for z, r in ((-0.158, 0.0336), (-0.12, 0.0325), (-0.085, 0.0318), (-0.06, 0.0311), (-0.047, 0.0308)):
+            rings.append(circ_ring(z, r, r * 0.92)); keys.append(ck)
+        keys[-1] = gk
+        for z, r in ((-0.044, 0.0322), (-0.037, 0.0329), (-0.027, 0.0318), (-0.013, 0.0306)):
+            rings.append(circ_ring(z, r, r * 0.9)); keys.append(gk)
+        # -- paume : coupes arrondies ; la dernière se rapproche des ports des doigts
+        secs = [palm_sec(0.002, 0.058, 0.014, 0.013), palm_sec(0.015, 0.068, 0.0155, 0.0145), palm_sec(0.03, 0.076, 0.0165, 0.0158),
+                palm_sec(0.048, 0.082, 0.0168, 0.0155), palm_sec(0.065, 0.086, 0.0165, 0.0145), palm_sec(0.078, 0.086, 0.016, 0.013)]
+        zk = KNUCKLE_Z
+        ports = []
+        for i, (name, x, L, y, s) in enumerate(FINGERS):
+            pr = []
+            for j in range(NF):
+                a = ang(j, NF)
+                c, sn = math.cos(a), math.sin(a)
+                p = Vector((x + 0.0095 * c, (0.0128 if sn > 0 else 0.0118) * sn, zk))
+                if (j == 0 and i > 0) or (j == 5 and i < 3):       # palmure entre deux doigts : un peu plus en avant
+                    p = Vector((p.x, -0.002, zk + 0.007))
+                pr.append(p)
+            ports.append(pr)
+        knu = [None] * NB
+        knu[0] = ports[0][0]
+        knu[17] = ports[3][5]
+        for i in range(4):
+            for q in range(4):
+                knu[1 + 4 * i + q] = ports[i][1 + q]             # dos de la main
+                knu[33 - (4 * i + q)] = ports[i][9 - q]          # paume
+        secs[-1] = [p.lerp(Vector((kp.x, kp.y * 1.15, p.z)), 0.45) for p, kp in zip(secs[-1], knu)]
+        # tube du coude à la paume
+        allr = rings + secs
+        for i in range(len(allr) - 1):
+            tag = REG_ARM if i < len(rings) - 1 else REG_PALM
+            key = keys[i] if i < len(rings) - 1 else gk
+            sa, sb = allr[i], allr[i + 1]
+            # trou du pouce : faces des colonnes 32, 33, 0 entre les coupes 1-2 et 2-3 de la paume
+            hole_rows = (len(rings) + 1, len(rings) + 2)
+            n = NB
+            ca, cb = sum(sa, Vector()) / n, sum(sb, Vector()) / n
+            for k in range(n):
+                if i in hole_rows and k in (32, 33, 0):
+                    continue
+                k2 = (k + 1) % n
+                qd = [sa[k], sa[k2], sb[k2], sb[k]]
+                self.bf(qd, key, sum(qd, Vector()) / 4 - (ca + cb) / 2, tag)
+        self.bf(rings[0], fond if "plumes" not in st.get("extras", ()) else keys[0], Vector((0, 0, -1)), REG_ARM)   # fond (coude)
+        # jointures : bande paume -> ports, triangles de palmure
+        self.band(secs[-1], knu, gk, REG_PALM)
+        for i in range(3):
+            w = ports[i][5]
+            self.bf([knu[4 + 4 * i], knu[5 + 4 * i], w], gk, Vector((0, 1, 0.3)), REG_PALM)
+            self.bf([knu[29 - 4 * i], knu[30 - 4 * i], w], gk, Vector((0, -1, 0.3)), REG_PALM)
+        # -- doigts
+        glove_to = None
+        for i, (name, x, L, y, s) in enumerate(FINGERS):
+            chain = ["%s_%d" % (name, k) for k in (1, 2, 3)]
+            pts = chain_hand(bones, chain)
+            r = 0.0098 * fin
+            rj = [r * 1.04, r * 0.94, r * 0.86, r * 0.78]
+            gt = (0.6 if st["sans_doigts"] else (9.0 if "gant" in st else -1.0))
+            prof, tip = finger_profile(pts, rj, 0.12, gt, gt if st["sans_doigts"] else None)
+            self.tube(ports[i], prof, tip, 10 + i, gk, skin, scale, gt)
+        # -- pouce : trou sur le côté de la paume
+        A, Bs, Cs = secs[1], secs[2], secs[3]
+        loop = [A[32], A[33], A[0], A[1], Bs[1], Cs[1], Cs[0], Cs[33], Cs[32], Bs[32]]
+        self.hole_center = sum(loop, Vector()) / len(loop)
+        chain = ["Pouce_1", "Pouce_2", "Pouce_3"]
+        pts = chain_hand(bones, chain)
+        r = 0.0106 * fin
+        rj = [r * 1.25, r * 1.0, r * 0.92, r * 0.8]
+        gt = 0.66 if st["sans_doigts"] else (9.0 if "gant" in st else -1.0)
+        prof, tip = finger_profile(pts, rj, 0.55, gt, gt if st["sans_doigts"] else None)
+        self.tube(loop, prof, tip, REG_THUMB, gk, skin, scale, gt, bridge=True)
+        bmesh.ops.recalc_face_normals(self.B.bm, faces=[f for f in self.body_faces if f.is_valid])
+
+    def tube(self, port, prof, tip, tag, gk, skin, scale, glove_to, bridge=False):
+        rings = [tube_ring(p, d, r) for p, r, seg, d in prof]
+        segs = [seg for p, r, seg, d in prof]
+
+        def key(k):
+            seg = segs[k]
+            if seg < glove_to + (0.1 if glove_to < 3 else 0):
+                return gk
+            if scale and abs((seg % 1.0) - 0.4) < 0.17 and seg < 3:      # écailles : une bande au milieu de chaque phalange
+                return scale
+            return skin
+        if bridge:
+            self.bridge(port, rings[0], gk, tag)
+        else:
+            self.band(port, rings[0], gk, tag)
+        for k in range(len(rings) - 1):
+            self.band(rings[k], rings[k + 1], key(k), tag)
+        last = rings[-1]
+        c = sum(last, Vector()) / len(last)
+        for k in range(len(last)):
+            tri = [last[k], last[(k + 1) % len(last)], tip]
+            self.bf(tri, key(len(rings) - 1), sum(tri, Vector()) / 3 - c + (tip - c) * 0.5, tag)
+
+    # ---- décors (coques collées au corps)
     def feathers(self):
         """Hibou : manche en rangs de plumes qui se recouvrent (pointes vers le poignet), deux tons."""
         st = self.st
@@ -222,49 +447,55 @@ class Arm:
                     out = UH(math.cos(am), math.sin(am), 0) - UH(0, 0, 0)
                     self.B.face([base0, base1, mid1, tip, mid0], key, out)
                     self.B.face([base0, mid0, tip, mid1, base1], key, -out)       # revers (feuille double face)
-                self.part(["Avant_Bras"], mk)
-        # corps sous les plumes et fond
-        core = [ring(z, 0.036, 0.034, n) for z in (ELBOW, -0.2, -0.17)]
-        self.part(["Avant_Bras"], lambda: self.sweep(core, k2, caps=(True, False)))
+                self.part(["COPY"], mk)
 
-    def bracer(self):
+    def decor(self):
         st = self.st
         n = 16
-        ck, sk, bk = self.mat("cuir", st["cuir"]), self.mat("sangle", st["sangle"]), self.mat("boucle", st["boucle"])
-        rings = [ring(z, r, r * 0.92, n) for z, r in ((-0.19, 0.0335), (-0.12, 0.0325), (-0.06, 0.031), (-0.02, 0.0305))]
-        self.part(["Avant_Bras"], lambda: self.sweep(rings, ck))
-        straps = (-0.165, -0.11, -0.055) if self.p == "Renard" else (-0.15, -0.075)
+        ex = st.get("extras", ())
+        if "plumes" in ex:
+            self.feathers()
+        if "lisere" in ex:
+            lk = self.mat("lisere", st["lisere"])
+            lr = [ring(-0.205, 0.0405, 0.0385, 24), ring(-0.195, 0.0402, 0.0382, 24)]
+            self.part(["COPY"], lambda: self.sweep(lr, lk))
+        if "ourlet" in ex:
+            ok = self.mat("ourlet", st["ourlet"])
+            J = lambda k: JAG18[k * 18 // 24]
+            orr = [ring(-0.158, 0.0388, 0.0368, 24, jag=J, droop=0.02), ring(-0.153, 0.0386, 0.0366, 24, jag=J, droop=0.02)]
+            self.part(["COPY"], lambda: self.sweep(orr, ok))
+        sk, bk = self.mat("sangle", st["sangle"]), self.mat("boucle", st["boucle"])
+        straps = (-0.14, -0.105, -0.07) if self.p == "Renard" else (-0.13, -0.075)
         for i, z in enumerate(straps):
-            r = 0.0345 - 0.0012 * i
+            r = 0.0334 - 0.0012 * i
             sr = [ring(z - 0.006, r, r * 0.93, n), ring(z + 0.006, r, r * 0.93, n)]
-            self.part(["Avant_Bras"], lambda sr=sr: self.sweep(sr, sk))
+            self.part(["COPY"], lambda sr=sr: self.sweep(sr, sk))
             big = self.p == "Koala" and i == 0
             w, h = (0.016, 0.012) if big else (0.011, 0.009)
             c = UH(0.008 if i % 2 else -0.006, r * 0.93 + 0.002, z)
-            self.part(["Avant_Bras"], lambda c=c, w=w, h=h: self.B.box(c - Vector((w / 2, h / 2, 0.0)), c + Vector((w / 2, h / 2, 0.005)), bk))
-        if "bandage" in st.get("extras", ()):
+            self.part(["COPY"], lambda c=c, w=w, h=h: self.B.box(c - Vector((w / 2, h / 2, 0.0)), c + Vector((w / 2, h / 2, 0.005)), bk))
+        if "bandage" in ex:
             bd = self.mat("bandage", st["bandage"])
-            br = [ring(-0.205, 0.0345, 0.0325, n, phase=0.2), ring(-0.188, 0.0352, 0.033, n, phase=0.2)]
-            self.part(["Avant_Bras"], lambda: self.sweep(br, bd))
-        if "fourrure" in st.get("extras", ()):
+            br = [ring(-0.205, 0.0352, 0.0335, n, phase=0.2), ring(-0.188, 0.0356, 0.0337, n, phase=0.2)]
+            self.part(["COPY"], lambda: self.sweep(br, bd))
+        if "fourrure" in ex:
             self.fur(-0.19, 0.036, 0.052, "fourrure", st["fourrure"], 28)
             self.fur(-0.183, 0.035, 0.047, "fourrure", st["fourrure"], 22, phase=0.5)
-        if "poil" in st.get("extras", ()):                       # renard : fourrure rousse au bord de la manche (planche)
+        if "poil" in ex:                       # renard : fourrure rousse au bord de la manche, et aux poignets (référence)
             self.fur(-0.168, 0.036, 0.046, "poil", st["poil"], 40)
             self.fur(-0.163, 0.0355, 0.043, "poil", st["poil"], 34, phase=0.5)
-            self.fur(-0.05, 0.0325, 0.041, "poil", st["poil"], 40, bones=["Avant_Bras", "Poignet"])   # et aux poignets (référence)
-            self.fur(-0.045, 0.032, 0.039, "poil", st["poil"], 34, bones=["Avant_Bras", "Poignet"], phase=0.5)
-        if "rayures" in st.get("extras", ()):
-            # manche intérieure rayée qui dépasse entre l'ourlet et le brassard (anneaux alternés)
+            self.fur(-0.05, 0.0318, 0.041, "poil", st["poil"], 40)
+            self.fur(-0.045, 0.0318, 0.039, "poil", st["poil"], 34, phase=0.5)
+        if "rayures" in ex:
             k1, k2 = self.mat("rayure1", st["rayure1"]), self.mat("rayure2", st["rayure2"])
             zs = [-0.205 + 0.006 * i for i in range(6)]
             for i in range(len(zs) - 1):
                 rr = [ring(zs[i], 0.0355, 0.034, n), ring(zs[i + 1], 0.0352, 0.0337, n)]
-                self.part(["Avant_Bras"], lambda rr=rr, i=i: self.sweep(rr, k1 if i % 2 == 0 else k2))
-        if "duvet" in st.get("extras", ()):
-            self.fur(-0.012, 0.031, 0.04, "duvet", st["duvet"], 16, bones=["Avant_Bras", "Poignet"])
+                self.part(["COPY"], lambda rr=rr, i=i: self.sweep(rr, k1 if i % 2 == 0 else k2))
+        if "duvet" in ex:
+            self.fur(-0.012, 0.0308, 0.04, "duvet", st["duvet"], 16)
 
-    def fur(self, z, r0, r1, key, hexa, n, bones=("Avant_Bras",), phase=0.0):
+    def fur(self, z, r0, r1, key, hexa, n, phase=0.0):
         """Collerette de poils en pointes (deux faces), autour de l'avant-bras."""
         k = self.mat(key, hexa)
         def mk():
@@ -275,127 +506,54 @@ class Arm:
                 am = (a0 + a1) / 2
                 b0 = UH(r0 * math.cos(a0), r0 * math.sin(a0), z - 0.008)
                 b1 = UH(r0 * math.cos(a1), r0 * math.sin(a1), z - 0.008)
-                rt = r1 * (0.86 + 0.14 * ((i * 7) % 5) / 4)                  # mèches de longueurs variées, plus fines
+                rt = r1 * (0.86 + 0.14 * ((i * 7) % 5) / 4)
                 tip = UH(rt * math.cos(am), rt * math.sin(am), z + 0.009 + 0.004 * ((i * 3) % 4) / 3)
                 out = UH(math.cos(am), math.sin(am), 0.4) - UH(0, 0, 0)
                 self.B.face([b0, b1, tip], k, out)
                 self.B.face([b0, tip, b1], k, -out)
-        self.part(list(bones), mk)
+        self.part(["COPY"], mk)
 
-    def hand(self):
+    def claws(self, bones):
         st = self.st
-        n = 24
-        gk = self.mat("gant", st["gant"]) if "gant" in st else self.mat("peau", st["peau"])
-        # manchette du gant (bord roulé) puis paume en coupes arrondies
-        cuff = [ring(z, r, r * 0.9, n) for z, r in ((-0.04, 0.0322), (-0.034, 0.0328), (-0.026, 0.0318), (-0.005, 0.0306), (0.012, 0.03))]
-        self.part(["Avant_Bras", "Poignet"], lambda: self.sweep(cuff, gk))
-
-        def section(z, w, tb, tp, bump=0.0):
-            pts = []
-            for k in range(n):
-                a = 2 * math.pi * k / n
-                c, sn = math.cos(a), math.sin(a)
-                x = w / 2 * math.copysign(abs(c) ** 0.78, c)               # coupe plus ronde (moins « bloc »)
-                y = (tb if sn > 0 else tp) * math.copysign(abs(sn) ** 0.8, sn)
-                if bump and sn > 0.2:                                # jointures : ondulation sur le dos de la main
-                    y += bump * max(0.0, math.cos(x / (w / 2) * math.pi * 2.0)) * sn
-                pts.append(UH(x, y, z))
-            return pts
-        secs = [section(0.0, 0.058, 0.014, 0.013), section(0.015, 0.068, 0.0155, 0.0145), section(0.03, 0.076, 0.0165, 0.0158),
-                section(0.048, 0.082, 0.0168, 0.0155), section(0.065, 0.086, 0.0165, 0.0145), section(0.08, 0.086, 0.016, 0.013, bump=0.003),
-                section(0.092, 0.082, 0.0135, 0.012, bump=0.002)]
-        self.part(["Poignet"], lambda: self.sweep(secs, gk, caps=(False, True)))
-        # coutures : peintes dans la texture (peinture_bras)
-
-    def fingers(self, bones):
-        st = self.st
-        n = 12
-        fin = st.get("doigts_fins", 1.0)
-        skin = self.mat("peau", st["peau"])
-        glove = self.mat("gant", st["gant"]) if "gant" in st else skin
+        L = st["griffes"]
+        if L <= 0:
+            return
         claw = self.mat("griffe", st["griffe"])
-        scale = self.mat("ecaille", st["ecaille"]) if "ecaille" in st else None
-        chains = [(name, ["%s_%d" % (name, i) for i in (1, 2, 3)], 0.0102) for name, *_ in FINGERS]
-        chains.append(("Pouce", ["Pouce_1", "Pouce_2", "Pouce_3"], 0.0108))
-        for name, chain, r in chains:
-            pts = [bones[chain[0]][0]] + [bones[b][1] for b in chain]
-            if name == "Pouce":
-                rj = [r * 1.25 * fin, r * fin, r * 0.92 * fin, r * 0.8 * fin]
-            else:
-                rj = [r * fin, r * 0.94 * fin, r * 0.86 * fin, r * 0.78 * fin]
-            # chemin détaillé : articulation renflée (x 1.1), milieu de phalange plus fin (x 0.9), bout arrondi
-            path, radii, seg = [], [], []
-            for i in range(3):
-                a, b = pts[i], pts[i + 1]
-                pts_t = ((0.0, 1.0),) if i == 0 else ((-0.06, 1.12), (0.0, 1.0), (0.06, 1.12))     # pli entre deux renflements
-                for t, f in pts_t + ((0.22, 1.0), (0.5, 0.9), (0.8, 0.97)):
-                    path.append(a.lerp(b, t)); radii.append((rj[i] + (rj[i + 1] - rj[i]) * t) * f); seg.append(i + t)
+        fin = st.get("doigts_fins", 1.0)
+        for name, *_ in FINGERS + [("Pouce",)]:
+            chain = ["%s_%d" % (name, i) for i in (1, 2, 3)]
+            pts = [bones[chain[0]][0]] + [bones[b][1] for b in chain]       # Blender
+            r = (0.0106 if name == "Pouce" else 0.0098) * fin * 0.78
             d = (pts[-1] - pts[-2]).normalized()
-            for t, f in ((0.0, 1.06), (0.3, 1.0), (0.6, 0.86), (0.85, 0.62), (0.98, 0.32)):   # bout rond (pulpe)
-                path.append(pts[-1] + d * rj[-1] * t); radii.append(rj[-1] * f); seg.append(3.0)
-            tip = pts[-1] + d * rj[-1] * 1.06
-            rings = path_rings(path, radii, n, flat=0.85)
-            glove_to = ((0.45 if name == "Pouce" else 0.6) if st["sans_doigts"]           # gant sans doigts : 1re phalange
-                        else (9.0 if "gant" in st else -1.0))
-            def band_mat(k, seg=seg, glove_to=glove_to):
-                pos = seg[k]
-                if pos < glove_to:
-                    return glove
-                return scale if (scale and k % 4 == 2) else skin            # écailles : une bande par phalange
-            def mk(rings=rings, tip=tip, pts=pts, band_mat=band_mat, path=path):
+            up = Vector((0, 0, 1)); down = -up
+            base_c = pts[-1] + d * r * 0.55 + up * r * 0.22
+            side = d.cross(up).normalized()
+            w = r * 0.55
+            if st.get("serres"):
+                path = [base_c, base_c + d * L * 0.55 + down * L * 0.15, base_c + d * L * 0.9 + down * L * 0.6]
+            else:
+                path = [base_c, base_c + d * L * 0.6 + down * L * 0.1, base_c + d * L + down * L * 0.45]
+            def mkc(path=path, w=w, side=side):
                 self.B.new_shell()
-                for i in range(len(rings) - 1):
-                    c = (sum(rings[i], Vector()) + sum(rings[i + 1], Vector())) / (2 * n)
-                    m_ = band_mat(i)
-                    for k in range(n):
-                        q = [rings[i][k], rings[i][(k + 1) % n], rings[i + 1][(k + 1) % n], rings[i + 1][k]]
-                        self.B.face(q, m_, sum(q, Vector()) / 4 - c)
-                for k in range(n):
-                    tri = [rings[-1][k], rings[-1][(k + 1) % n], tip]
-                    self.B.face(tri, band_mat(len(rings) - 2), sum(tri, Vector()) / 3 - path[-1] + (tip - path[-1]) * 0.5)
-                self.B.face(rings[0], band_mat(0), pts[0] - pts[1])        # base du doigt (cachée dans la paume)
-            self.part(chain + ["Poignet"], mk)
-            if st["sans_doigts"]:                                        # bourrelet du gant sur la 1re phalange
-                e = pts[0].lerp(pts[1], glove_to)
-                e2 = pts[0].lerp(pts[1], glove_to + 0.08)
-                rr = path_rings([e, e2], [rj[0] * 1.16, rj[0] * 1.1], n, flat=0.85)
-                self.part([chain[0]], lambda rr=rr: self.sweep(rr, glove))
-            radii = rj
-            L = st["griffes"]
-            if L > 0:
-                up = Vector((0, 0, 1))
-                down = -up
-                base_c = pts[-1] + d * radii[-1] * 0.55 + up * radii[-1] * 0.22
-                side = d.cross(up).normalized()
-                w = radii[-1] * 0.55
-                if st.get("serres"):
-                    path = [base_c, base_c + d * L * 0.55 + down * L * 0.15, base_c + d * L * 0.9 + down * L * 0.6]
-                else:
-                    path = [base_c, base_c + d * L * 0.6 + down * L * 0.1, base_c + d * L + down * L * 0.45]
-                def mkc(path=path, w=w, side=side):
-                    self.B.new_shell()
-                    r0 = [path[0] + side * w, path[0] + up * w * 0.8, path[0] - side * w, path[0] + down * w * 0.6]
-                    r1 = [path[1] + side * w * 0.55, path[1] + up * w * 0.45, path[1] - side * w * 0.55, path[1] + down * w * 0.3]
-                    apex = path[2]
-                    cen = (path[0] + path[1]) / 2
-                    for k in range(4):
-                        q = [r0[k], r0[(k + 1) % 4], r1[(k + 1) % 4], r1[k]]
-                        self.B.face(q, claw, sum(q, Vector()) / 4 - cen)
-                        tri = [r1[k], r1[(k + 1) % 4], apex]
-                        self.B.face(tri, claw, sum(tri, Vector()) / 3 - path[1])
-                self.part([chain[-1]], mkc)
-            elif "griffe" in st and name != "Pouce":
-                pass
+                r0 = [path[0] + side * w, path[0] + up * w * 0.8, path[0] - side * w, path[0] + down * w * 0.6]
+                r1 = [path[1] + side * w * 0.55, path[1] + up * w * 0.45, path[1] - side * w * 0.55, path[1] + down * w * 0.3]
+                apex = path[2]
+                cen = (path[0] + path[1]) / 2
+                for k in range(4):
+                    q = [r0[k], r0[(k + 1) % 4], r1[(k + 1) % 4], r1[k]]
+                    self.B.face(q, claw, sum(q, Vector()) / 4 - cen)
+                    tri = [r1[k], r1[(k + 1) % 4], apex]
+                    self.B.face(tri, claw, sum(tri, Vector()) / 3 - path[1])
+            self.part([chain[-1]], mkc)
 
     # ---- construction
     def build(self, paint=True):
         bones = bones_right()
-        self.sleeve()
-        self.bracer()
-        self.hand()
-        self.fingers(bones)
+        self.part(["BODY"], lambda: self.body(bones))
+        self.decor()
+        self.claws(bones)
         name = "SK_BrasFPS_%s_D" % self.p
-        ob = self.B.finish(name, self.mats, sharp_angle=60.0)
+        ob = self.B.finish(name, self.mats, sharp_angle=75.0)
         self.painted(ob, bones, paint)
         return ob, bones
 
@@ -462,36 +620,139 @@ class Arm:
         me.materials.clear(); me.materials.append(mat)
 
 
+
 # ----------------------------------------------------------------------------- poids
-def seg_dist(p, a, b):
-    ab = b - a
-    t = max(0.0, min(1.0, (p - a).dot(ab) / ab.length_squared))
-    return (p - (a + ab * t)).length, (p - a).dot(ab) / ab.length_squared
+# Poids calculés le long des chaînes d'os puis lissés (retours du 2026-11-16 : les doigts plient comme une vraie main).
+# À chaque articulation, le passage d'un os à l'autre est une rampe douce (smoothstep) centrée sur l'articulation,
+# plus large côté dos (jointure arrondie) que côté paume (pli net, sans écrasement) : demi-largeurs en mètres.
+H_MCP = (0.011, 0.005)       # jointures (Poignet -> phalange 1) : dos, paume
+H_PIP = (0.0075, 0.0032)
+H_DIP = (0.006, 0.0028)
+H_WRIST = 0.017              # poignet (Avant_Bras -> Poignet)
+H_CMC = 0.02                 # base du pouce (Poignet -> Pouce_1), décalée de CMC_OFF vers le pouce
+CMC_OFF = 0.006
+MAX_INF = 4                  # influences par sommet (Unity : 4 os)
+SMOOTH_IT = 6
 
 
-def skin(ob, parts, bones):
+def sstep(e0, e1, x):
+    t = min(1.0, max(0.0, (x - e0) / (e1 - e0)))
+    return t * t * (3 - 2 * t)
+
+
+def joint_s(p, J, D, h, off=0.0):
+    """Part de l'os enfant à une articulation J (direction D de l'os enfant), rampe asymétrique dos / paume."""
+    v = p - J
+    a = v.dot(D) - off
+    if isinstance(h, tuple):
+        u = Vector((0, 1, 0)) - D * D.y
+        u = u.normalized() if u.length > 1e-6 else Vector((0, 1, 0))
+        dor = sstep(-0.005, 0.005, v.dot(u))
+        h = h[1] + (h[0] - h[1]) * dor
+    return sstep(-h, h, a)
+
+
+def chain_weights(p, names, J, D, H, off0=0.0):
+    s = [joint_s(p, J[k], D[k], H[k], off0 if k == 0 else 0.0) for k in range(3)]
+    return {names[0]: 1 - s[0], names[1]: s[0] * (1 - s[1]), names[2]: s[0] * s[1] * (1 - s[2]), names[3]: s[0] * s[1] * s[2]}
+
+
+def skin(ob, parts, bones, hole_center):
+    from mathutils import kdtree
     for name in bones:
         if name not in ob.vertex_groups:
             ob.vertex_groups.new(name=name)
-    vg = ob.vertex_groups
-    verts = ob.data.vertices
+    me = ob.data
+    reg = [d.value for d in me.attributes["region"].data]
+    me.attributes.remove(me.attributes["region"])
+    H = [hs(v.co) for v in me.vertices]
+    chains = {}
+    for name, *_ in FINGERS:
+        c = ["%s_%d" % (name, k) for k in (1, 2, 3)]
+        P = chain_hand(bones, c)
+        chains[name] = (["Poignet"] + c, P, [(P[k + 1] - P[k]).normalized() for k in range(3)])
+    c = ["Pouce_1", "Pouce_2", "Pouce_3"]
+    P = chain_hand(bones, c)
+    thumb = (["Poignet"] + c, P, [(P[k + 1] - P[k]).normalized() for k in range(3)])
+    body = set()
     for a, b, cands in parts:
+        if cands == ["BODY"]:
+            body.update(range(a, b))
+    W = {}
+    for i in body:
+        p = H[i]
+        r = reg[i]
+        sw = sstep(-H_WRIST, H_WRIST, p.z)
+        w = {"Avant_Bras": 1 - sw}
+        if r >= 10 and r < 20:
+            name = FINGERS[r - 10][0]
+            names, P, D = chains[name]
+            for k, v in chain_weights(p, names, P[:3], D, (H_MCP, H_PIP, H_DIP)).items():
+                w[k] = w.get(k, 0) + sw * v
+        elif r == REG_THUMB:
+            names, P, D = thumb
+            for k, v in chain_weights(p, names, P[:3], D, (H_CMC, 0.0065, 0.0055), off0=CMC_OFF).items():
+                w[k] = w.get(k, 0) + sw * v
+        else:
+            rest = 1.0
+            if r == REG_PALM:
+                g = [math.exp(-((p.x - chains[n][1][0].x) / 0.0085) ** 2) for n, *_ in FINGERS]
+                gs = sum(g) or 1.0
+                for (n, *_), gi in zip(FINGERS, g):
+                    names, P, D = chains[n]
+                    s0 = joint_s(p, P[0], D[0], H_MCP)
+                    v = s0 * gi / gs
+                    if v > 1e-4:
+                        w[names[1]] = w.get(names[1], 0) + sw * v
+                        rest -= v
+                tw = 0.5 * math.exp(-((p - hole_center).length / 0.016) ** 2)
+                if tw > 1e-4:
+                    w["Pouce_1"] = w.get("Pouce_1", 0) + sw * tw
+                    rest -= tw
+            w["Poignet"] = w.get("Poignet", 0) + sw * max(0.0, rest)
+        W[i] = w
+    # lissage (paume, avant-bras, base du pouce ; les doigts gardent leurs rampes)
+    adj = {i: [] for i in body}
+    for e in me.edges:
+        a, b = e.vertices
+        if a in body and b in body:
+            adj[a].append(b); adj[b].append(a)
+    mask = [i for i in body if reg[i] in (REG_ARM, REG_PALM) or (reg[i] == REG_THUMB and (H[i] - hole_center).length < 0.026)]
+    for it in range(SMOOTH_IT):
+        new = {}
+        for i in mask:
+            nb = adj[i]
+            if not nb:
+                continue
+            acc = {}
+            for j in nb:
+                for k, v in W[j].items():
+                    acc[k] = acc.get(k, 0) + v / len(nb)
+            m = {}
+            for k in set(acc) | set(W[i]):
+                m[k] = 0.5 * W[i].get(k, 0) + 0.5 * acc.get(k, 0)
+            new[i] = m
+        W.update(new)
+    # décors : poids du point du corps le plus proche ; griffes : dernière phalange
+    kd = kdtree.KDTree(len(body))
+    for i in body:
+        kd.insert(me.vertices[i].co, i)
+    kd.balance()
+    for a, b, cands in parts:
+        if cands == ["BODY"]:
+            continue
         for i in range(a, b):
-            p = verts[i].co
-            best, bt = None, 0.0
-            bd = 1e9
-            for n in cands:
-                h, t = bones[n][0], bones[n][1]
-                d, tt = seg_dist(p, h, t)
-                if d < bd - 1e-9:
-                    bd, best, bt = d, n, tt
-            parent = bones[best][2]
-            if parent in cands and bt < 0.3:
-                w = 0.5 + max(0.0, bt) / 0.6
-                vg[best].add([i], w, "REPLACE")
-                vg[parent].add([i], 1.0 - w, "REPLACE")
+            if cands == ["COPY"]:
+                _, j, _ = kd.find(me.vertices[i].co)
+                W[i] = dict(W[j])
             else:
-                vg[best].add([i], 1.0, "REPLACE")
+                W[i] = {cands[0]: 1.0}
+    vg = ob.vertex_groups
+    for i, w in W.items():
+        items = sorted(((k, v) for k, v in w.items() if v > 0.01), key=lambda kv: -kv[1])[:MAX_INF]
+        s = sum(v for k, v in items) or 1.0
+        for k, v in items:
+            vg[k].add([i], v / s, "REPLACE")
 
 
 # ----------------------------------------------------------------------------- armature
@@ -541,9 +802,9 @@ def fingers_pose(c1, c2, c3, spread=0.0, only=None):
     for name, x, L, y, s in FINGERS:
         if only and name not in only:
             continue
-        d["%s_1" % name] = [("curl", c1), ("spread", spread * s)]
-        d["%s_2" % name] = [("curl", c2)]
-        d["%s_3" % name] = [("curl", c3)]
+        d["%s_1" % name] = [("curl", c1 - REST_CURL[0]), ("spread", spread * s)]
+        d["%s_2" % name] = [("curl", c2 - REST_CURL[1])]
+        d["%s_3" % name] = [("curl", c3 - REST_CURL[2])]
     return d
 
 
@@ -589,7 +850,7 @@ POSES = {
                       merge(PALM_UP, fingers_pose(42, 62, 42, -2), thumb(curl=32, abd=-8, c1=14), {"Poignet": [("curl", -8)]})],
     "Pose_TenirObjet": [merge(PALM_UP, fingers_pose(20, 36, 26, 10), thumb(curl=16, abd=20, c1=10), {"Poignet": [("curl", -14)]})],
     "Pose_Lancer": [merge(PALM_UP, fingers_pose(0, 4, 0, 10), thumb(curl=4, abd=18), {"Poignet": [("curl", 14)]})],
-    "Pose_Poing": [merge(fingers_pose(88, 100, 75, -1), thumb(curl=45, abd=-18, c1=24))],
+    "Pose_Poing": [merge(fingers_pose(88, 100, 75, -1), thumb(curl=35, abd=-80, c1=-20))],      # pouce replié sur les doigts
 }
 FRAMES = {"Pose_Attraper": (1, 4, 8)}
 
@@ -795,9 +1056,10 @@ def build_side(perso, side):
     sc = C.new_scene("SK_BrasFPS_%s_%s" % (perso, side))
     sc.render.fps = FPS_ANIM
     clear_actions()
-    A = Arm(perso)
+    global LAST_ARM
+    A = LAST_ARM = Arm(perso)
     mesh_ob, bones = A.build(paint=(side == "D"))
-    skin(mesh_ob, A.parts, bones)
+    skin(mesh_ob, A.parts, bones, A.hole_center)
     mirror = side == "G"
     mesh_ob.data.transform(RX)
     bones = {n: (RX @ h, RX @ t, par) for n, (h, t, par) in bones.items()}

@@ -32,17 +32,20 @@ changer le code.
 |---|---|---|---|
 | Couleur | `_BaseMap`, `_BaseColor` | blanc | texture peinte et teinte |
 | | `_AlphaClip`, `_Cutoff` | non, 0.5 | découpe alpha (grilles, chaînes) |
-| Bandes (lune) | `_BandCount` | **3** | nombre de bandes, ombre comprise (2 à 4) |
+| Bandes (lune) | `_BandCount` | **3** | nombre de bandes, ombre comprise (2 à **8**) |
 | | `_BandThreshold` | **0.15** | position de la 1re transition (0 = sur la ligne d'ombre) |
-| | `_BandSoftness` | **0.02** | largeur des transitions (0.001 = coupure franche) |
+| | `_BandSoftness` | **0.02** | largeur des transitions (0.001 = coupure franche ; jusqu'à 0.5 : bandes fondues) |
+| | `_BandGradient` | **0.45** | 2026-11-16 : part du dégradé continu sous les bandes (0 = bandes nettes, 1 = dégradé seul) |
 | | `_ShadowColor` | **(0.028, 0.034, 0.075)** bleu nuit | teinte de la bande d'ombre, jamais du noir pur |
 | | `_AmbientInfluence` | **1** | part de l'ambiance de la scène (0 à 2) |
 | | `_ReceiveShadows` | oui | ombres reçues (elles passent dans les bandes : ombres en aplats) |
-| Bougies | `_PointSteps` | **3** | paliers d'atténuation des lumières ponctuelles (1 à 5) |
+| Bougies | `_PointSteps` | **3** | paliers d'atténuation des lumières ponctuelles (1 à **8**) |
 | | `_PointThreshold` | **0.35** | position du 1er palier : le bord de l'îlot est vers 93 % de la portée |
 | | `_PointSoftness` | **0.015** | bord des paliers (net) |
 | | `_PointFalloff` | **0.8** | courbe de la portée (< 1 : îlots plus larges et plus pleins) |
 | | `_PointWrap` | **0.2** | éclaire un peu les faces de biais |
+| | `_PointGradient` | **0.8** | 2026-11-16 : 0 = paliers nets (ancien rendu, cercles durs) ; 1 = dégradé continu jusqu'au noir ; entre les deux, les paliers peints restent visibles en léger relief |
+| | `_LightSaturation` | **1.35** | 2026-11-16 : saturation de la couleur des lumières sur les surfaces, à luminance égale (la lanterne de chaque personnage teinte ce qu'elle éclaire) ; 1 = couleur telle quelle |
 | Rim | `_Rim` | **désactivé** | liseré de silhouette |
 | | `_RimColor` | (0.35, 0.45, 0.7) HDR | |
 | | `_RimWidth`, `_RimSoftness` | 0.25, 0.02 | |
@@ -54,8 +57,14 @@ changer le code.
 | | `_EmissionThroughFog` | **0** | 0 : s'efface dans le brouillard comme le décor ; 1 : le traverse (yeux du traqueur : 0.7) |
 | Rendu | `_Cull` | Back | |
 
-Les lumières ponctuelles utilisent leur **portée (Range)** pour l'îlot, pas l'atténuation physique en 1/d² : une bougie
-dessine une tache nette de la taille de sa portée, en 3 paliers. Ombres des bougies : activées dans la scène de test
+Les lumières ponctuelles utilisent leur **portée (Range)** pour l'îlot, pas l'atténuation physique en 1/d². **Depuis le
+2026-11-16** (retour « lumière coupée net, cercles durs ») : l'atténuation est une fenêtre douce (1 − r²)² (r = distance /
+portée), courbée par `_PointFalloff`, dont la pente est nulle au bord de la portée : la lumière s'éteint jusqu'au noir, sans
+cercle ; les paliers peints (`_PointSteps`…) s'y mêlent selon `_PointGradient`, et la marche de la face éclairée est fondue
+de même. La lune garde ses bandes, adoucies par `_BandGradient`. Les nouvelles propriétés ont leur valeur de départ dans
+tous les matériaux existants (aucun `.mat` modifié) ; `_PointGradient` 0 et `_BandGradient` 0 redonnent l'ancien rendu.
+Planche `rendus/Lot2/Shader_Lumiere_avant_apres.jpg` (ambiance « sombre », torches 1.6 / 10 m, lanternes 0.6 / 6 m aux
+couleurs de `CharacterSetup`). Ombres des bougies : activées dans la scène de test
 (ombres douces, coupées en aplats par le shader).
 
 ## 2. Contours : `ItHunts/Contours`

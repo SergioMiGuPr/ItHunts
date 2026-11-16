@@ -99,14 +99,24 @@ def paint(key, H, base, joints, seams, sc=1.0):
         col = col * (0.9 + 0.4 * W.vnoise(H, 200.0, 61)[:, None])
     elif key == "peau":
         col = col * (0.9 + 0.18 * W.fbm(H, 120.0, 71, 2)[:, None])
-    # plis d'encre aux articulations des doigts (peau, gant, écailles)
+    # plis aux articulations des doigts (peau, gant, écailles) : un pli net sous le doigt (côté paume) et deux petites
+    # rides sur la jointure, jamais un anneau complet (un anneau se lit comme une coupure entre deux pièces)
     if key in ("peau", "gant", "ecaille") and joints:
         line = np.zeros(n, np.float32)
         for J, D, r in joints:
             rel = H - J
             along = rel @ D
-            radial = np.linalg.norm(rel - along[:, None] * D, axis=1)
-            line = np.maximum(line, (1 - W.smoothstep(0.0004, 0.0009, np.abs(along))) * (radial < r * 1.4))
+            perp = rel - along[:, None] * D
+            radial = np.linalg.norm(perp, axis=1)
+            u = np.array([0.0, 1.0, 0.0]) - D * D[1]
+            u = u / max(np.linalg.norm(u), 1e-6)
+            cosu = (perp @ u) / np.maximum(radial, 1e-6)
+            near = radial < r * 1.4
+            palm = (1 - W.smoothstep(0.0003, 0.0008, np.abs(along))) * W.smoothstep(-0.2, -0.5, cosu) * 0.8
+            wob = 0.0003 * np.sin(np.arctan2(perp @ np.cross(D, u), perp @ u) * 5.0)
+            dors = sum((1 - W.smoothstep(0.00018, 0.0004, np.abs(along - o + wob))) for o in (-0.0016, 0.0014))
+            dors = dors * W.smoothstep(0.35, 0.75, cosu) * 0.45
+            line = np.maximum(line, np.maximum(palm, dors) * near)
         col = col * (1 - 0.75 * line[:, None]) + ink * 0.75 * line[:, None]
     # coutures peintes (pointillés clairs) sur le gant et la manchette
     if key == "gant" and seams is not None:
