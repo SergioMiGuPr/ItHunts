@@ -82,7 +82,7 @@ matériaux, tous sur `ItHunts/Toon`, ni métal ni brillance :
 | `M_Levier_Lueur` | cristal et anneau de rune de `SM_Levier` (arène, groupe C) | aucune | #5A3420 (ambre sombre, éteint) | **mot-clé actif, couleur noire** : orange (prêt) puis vert (activé) en jeu ; traverse un peu le brouillard (0.6) |
 | `M_Tapisserie` | `SM_Tapisserie` | `texture_tapisserie_v02_alpha` (import : alpha transparent, bord en Clamp) | blanc | **découpe alpha** (seuil 0.5), **double face** (Cull Off), file AlphaTest |
 
-### Caisse attrapable (`SM_Caisse`, modèle Tripo nettoyé ; `.mat` à créer à la prochaine ouverture d'Unity)
+### Caisse attrapable (`SM_Caisse`, modèle Tripo nettoyé ; `M_Caisse` créé le 2026-11-16)
 
 | Matériau | Utilisé par | Texture | Émission |
 |---|---|---|---|
@@ -90,6 +90,17 @@ matériaux, tous sur `ItHunts/Toon`, ni métal ni brillance :
 
 Le violet de la rune peinte par Tripo (et ses reflets mauves) a été ramené au brun du bois dans la couleur : le violet
 est réservé à la télékinésie et la lueur passe par l'émission (`sm_caisse.py`, fonction `textures`).
+
+### Lot du 2026-11-16 (UV monde, torche, ennemis, flamme de la lanterne, bras FPS)
+
+| Matériau | Utilisé par | Texture | Réglages | Émission |
+|---|---|---|---|---|
+| `M_Pierre_Monde`, `M_Dalles_Monde`, `M_Voute_Briques_Monde`, `M_Egout_Monde` (`Niveau1/`) | pièces du kit `SM_Kit_*` (pierre et dalles) ; voûte et égout prêts pour l'architecture construite par le code | celles de `M_Pierre`, `M_Dalles`, `M_Voute_Briques`, `M_Egout` | **`_WORLD_UV` actif**, `_TileSize` (4, 3), (4, 4), (3, 3), (2, 2) m ; `_TileOffset` (0, 0, 0) ; `_TopRotation` 0 | non |
+| `M_Torche` (`Niveau1/`) | `SM_Torche` (remplace `M_FerRouille`, `M_Bois_Brut`, `M_Chiffon_Brule`, `M_Corde` sur la torche seulement) | `T_Torche_BaseColor` (atlas de 512 px, couleurs des 4 matériaux cuites dans Blender, `n1_props.bake_atlas`) | tiling (1, 1) | non |
+| `M_Goule` (`Ennemis/`) | `SM_Goule` | `T_Goule_BaseColor` (2048 px, peau gris-mauve) | — | mot-clé actif, **noir** ; `_EmissionMap` = `T_Goule_Emission` (yeux : disque 0.55 et pupille 1 ; entre les dents 0.8) ; à travers le brouillard 0.8 |
+| `M_Traqueur` (`Ennemis/`) | `SM_Traqueur`, `SM_Traqueur_Corps`, `_Bras`, `_Main_D`, `_Main_G` | `T_Traqueur_BaseColor` (4096 px, peau gris-mauve, pupilles rouges peintes) | — | mot-clé actif, **rouge HDR (4, 0.25, 0.15) par défaut** ; `_EmissionMap` = `T_Traqueur_Emission` (2048 px : pupilles et petit halo) ; le code peut l'augmenter (enragé) |
+| `M_LanterneFeu_Flamme` (`FPS/`) | `SM_LanterneFeu_Flamme` | aucune (couleur (1, 0.76, 0.48)) | double face | mot-clé actif, **orange du renard (3, 0.96, 0.24) par défaut** ; le jeu écrit `_EmissionColor` à la couleur du personnage ; à travers le brouillard 1 |
+| `M_BrasFPS_<Perso>_<Partie>` (`FPS/BrasFPS/`, 37 matériaux) | `SK_BrasFPS_<Perso>_D` / `_G` | aucune (aplats) | couleur de base reprise des aplats du FBX | non |
 
 ### Lanterne de feu et orbe, vue FPS (`Assets/Art/Materials/FPS/`, lot de modélisation, groupe A)
 

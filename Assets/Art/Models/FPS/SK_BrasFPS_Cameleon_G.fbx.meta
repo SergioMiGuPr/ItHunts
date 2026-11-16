@@ -3,7 +3,57 @@ guid: a741e4d184b8f7e4e81a8a56ca7ff52d
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Boucle
+    second: {fileID: 2100000, guid: fd8e28ead3c57d448a3aaa2c18cec6ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Cuir
+    second: {fileID: 2100000, guid: 3c0b6011efbd0164fa75e97258102b1f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Fond
+    second: {fileID: 2100000, guid: 18f97feca5e41724dbf9166965550242, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Gant
+    second: {fileID: 2100000, guid: f6ba956bc5e06b14099a9da9fe2efac5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Manche
+    second: {fileID: 2100000, guid: 3c05df60102b5f14a8208d79afe7244c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Ourlet
+    second: {fileID: 2100000, guid: 190101628fe52914991aa753c5f836b9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Peau
+    second: {fileID: 2100000, guid: ce3c7d509c9d0b64fb97daa913e89913, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Rayure1
+    second: {fileID: 2100000, guid: ad1903a47b255e643b59ce82ed7345a8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Rayure2
+    second: {fileID: 2100000, guid: 3ce9d19bf67d90944b72019e8ebda3c1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Cameleon_Sangle
+    second: {fileID: 2100000, guid: 4943f33582076d1459bb6fdad8a7225d, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,57 @@ guid: 2e7af90a6aec561409351bfd663b3a2a
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Bandage
+    second: {fileID: 2100000, guid: 45d6bab4ccfe02d40a6f584b4adf932e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Boucle
+    second: {fileID: 2100000, guid: 9a69670f131dd284eb76217b512a2801, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Cuir
+    second: {fileID: 2100000, guid: 4ab11520f4b7fba42966b52b754eabf1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Fond
+    second: {fileID: 2100000, guid: aa72f3e62588fb94e8232b7223036b06, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Gant
+    second: {fileID: 2100000, guid: fdd70b35a789ea54399dd3daae20d31a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Griffe
+    second: {fileID: 2100000, guid: 54da71c49caaf9d488a18e11baf8aad1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Lisere
+    second: {fileID: 2100000, guid: 120e0066e37de7849898d6ea0f6dd86c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Manche
+    second: {fileID: 2100000, guid: 200beb6732715b04a8e9321e9b4b4b6d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Peau
+    second: {fileID: 2100000, guid: 377222fc2278f7b48a8eea8164bcc060, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BrasFPS_Renard_Sangle
+    second: {fileID: 2100000, guid: b827694cea4270444bd374a30cd11762, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
