@@ -263,7 +263,7 @@ namespace ItHunts.EditorTools
             GameObject annex = AnnexPrefab(kit, false);
             GameObject locked = AnnexPrefab(kit, true);
             KitBuild.Spawner = (prefab, parent) => Object.Instantiate(prefab, parent, false);
-            var water = UnlitMat("Level_Water", "Universal Render Pipeline/Unlit", new Color(0.05f, 0.18f, 0.22f));
+            var water = UnlitMat("Level_Water", "Universal Render Pipeline/Unlit", new Color(0.12f, 0.42f, 0.5f));   // lisible au fond des vides (animations, point 6)
             var zoneSettings = LoadOrCreate<ZoneSettings>(Level01ZonePath);
 
             // Gestion de la zone (comme FinishScene, sans la carte : elle est tirée au chargement).

@@ -351,7 +351,7 @@ namespace ItHunts.Level
             if (r.Hole == ModuleHole.Canal && mod != null)
                 CanalFloor(parent, r, mod.holeRect.center.y, mod.holeRect.height, settings, kit, water);
             else if (r.Hole == ModuleHole.Vide && mod != null)
-                PitFloor(parent, r, mod, settings, kit);
+                PitFloor(parent, r, mod, settings, kit, water);
             else if (y > 0.1f)
                 KitBuild.Box(parent, "Sol (bloc)", new Vector3(c.x, y * 0.5f, c.z), new Vector3(2f * hx, y, 2f * hz), KitBuild.Kind.Bloc, kit);
             else
@@ -437,7 +437,7 @@ namespace ItHunts.Level
             Lamp(parent, new Vector3(c.x - hx * 0.5f, y + 4f, c.z + zc), new Color(0.3f, 0.7f, 0.8f), 3f, 25f);
         }
 
-        private static void PitFloor(Transform parent, PlanRoom r, RoomModule mod, MapLayoutSettings settings, KitSet kit)
+        private static void PitFloor(Transform parent, PlanRoom r, RoomModule mod, MapLayoutSettings settings, KitSet kit, Material water)
         {
             float hx = r.Extent.x * 0.5f, hz = r.Extent.y * 0.5f, y = r.Center.y, d = mod.holeDepth;
             Vector3 c = r.Center;
@@ -465,12 +465,22 @@ namespace ItHunts.Level
             KitBuild.Box(parent, "Bord est de la fosse", new Vector3(c.x + x1 + 0.5f, (bottom + y - 1f) * 0.5f, c.z + cz), new Vector3(1f, d - 1f, wz + 2f), KitBuild.Kind.Mur, kit, walkable: false);
             KitBuild.Box(parent, "Bord sud de la fosse", new Vector3(c.x + cx, (bottom + y - 1f) * 0.5f, c.z + za - 0.5f), new Vector3(wx, d - 1f, 1f), KitBuild.Kind.Mur, kit, walkable: false);
             KitBuild.Box(parent, "Bord nord de la fosse", new Vector3(c.x + cx, (bottom + y - 1f) * 0.5f, c.z + zb + 0.5f), new Vector3(wx, d - 1f, 1f), KitBuild.Kind.Mur, kit, walkable: false);
-            var trig = new GameObject("Vide de la fosse");
+            // Eau au fond (animations, point 6) : 1 m d'eau ; on ne revient en haut qu'en la touchant (avant : dès 1.5 m sous le sol).
+            const float pool = 1f;
+            var surface = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            surface.name = "Eau de la fosse";
+            DestroyImmediate(surface.GetComponent<Collider>());
+            surface.transform.SetParent(parent, false);
+            surface.transform.position = new Vector3(c.x + cx, bottom + pool - 0.025f, c.z + cz);
+            surface.transform.localScale = new Vector3(wx, 0.05f, wz);
+            if (water != null)
+                surface.GetComponent<MeshRenderer>().sharedMaterial = water;
+            var trig = new GameObject("Vide de la fosse : eau (retour au bord)");
             trig.transform.SetParent(parent, false);
-            trig.transform.position = new Vector3(c.x + cx, (bottom + y - 1.5f) * 0.5f, c.z + cz);
+            trig.transform.position = new Vector3(c.x + cx, bottom + (pool + 0.3f) * 0.5f, c.z + cz);
             var box = trig.AddComponent<BoxCollider>();
             box.isTrigger = true;
-            box.size = new Vector3(wx, y - 1.5f - bottom, wz);
+            box.size = new Vector3(wx, pool + 0.3f, wz);
             var respawns = new List<Transform>();
             foreach (Vector3 p in new[] { new Vector3(x0 - 2.5f, 0f, cz), new Vector3(x1 + 2.5f, 0f, cz), new Vector3(cx, 0f, za - 2.5f), new Vector3(cx, 0f, zb + 2.5f) })
             {

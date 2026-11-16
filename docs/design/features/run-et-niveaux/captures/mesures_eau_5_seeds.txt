@@ -1,0 +1,7 @@
+seed 104729 : 24 vides, 24 avec de l'eau au fond, 0 qui renvoient avant le contact de l'eau
+seed 209458 : 24 vides, 24 avec de l'eau au fond, 0 qui renvoient avant le contact de l'eau
+seed 314187 : 24 vides, 24 avec de l'eau au fond, 0 qui renvoient avant le contact de l'eau
+seed 418916 : 24 vides, 24 avec de l'eau au fond, 0 qui renvoient avant le contact de l'eau
+seed 523645 : 24 vides, 24 avec de l'eau au fond, 0 qui renvoient avant le contact de l'eau
+TOTAL : 120 vides, 120 avec de l'eau, 0 renvoient avant l'eau
+#fin

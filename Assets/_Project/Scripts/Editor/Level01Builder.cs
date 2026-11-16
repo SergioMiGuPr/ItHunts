@@ -62,7 +62,7 @@ namespace ItHunts.EditorTools
             _canalDepth = P.canalDepth;
             _waterDamage = P.waterDamage;
             _chestCount = _canalCount = _parkourCount = 0;
-            _water = UnlitMat("Level_Water", "Universal Render Pipeline/Unlit", new Color(0.05f, 0.18f, 0.22f));
+            _water = UnlitMat("Level_Water", "Universal Render Pipeline/Unlit", new Color(0.12f, 0.42f, 0.5f));   // lisible au fond des vides (animations, point 6)
             var zoneSettings = LoadOrCreate<ZoneSettings>(Level01ZonePath);
 
             DefineLevel01(out List<RoomDef> rooms, out HashSet<int> chestHalls, out HashSet<int> parkourHalls);
