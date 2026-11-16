@@ -169,6 +169,82 @@ namespace ItHunts.EditorTools
             Box("échelle", new Vector3(-1f, 3f, 1.013f), new Vector3(0.57f, 6f, 0.05f), false);
         }
 
+        // ---------- Goule : SM_Goule (lot du 2026-11-16) ----------
+
+        public const string GhoulPrefab = "Assets/_Project/Prefabs/Niveau/Goule.prefab";
+        public const string GhoulModel = "Assets/Art/Models/Ennemis/SM_Goule.fbx";
+
+        /// <summary>
+        /// Goule (fiche § 4 ter) : SM_Goule en (0, 0, 0) sous « Corps (visuel) », rotation nulle ; la capsule, la tête et les yeux
+        /// greybox sont retirés. Le code garde l'écrasement de l'annonce et la bascule de 80° sur les murs (sur « Corps (visuel) ») ;
+        /// l'annonce du bond allume les yeux et la gueule par le masque d'émission de M_Goule.
+        /// </summary>
+        public static string InstallGhoul(GameObject root)
+        {
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(GhoulModel);
+            Transform visual = root.transform.Find("Corps (visuel)");
+            if (model == null || visual == null)
+                return "goule : modèle ou « Corps (visuel) » absent";
+            foreach (Transform c in visual.Cast<Transform>().ToList())
+                Object.DestroyImmediate(c.gameObject);
+            var inst = (GameObject)PrefabUtility.InstantiatePrefab(model, visual);
+            inst.transform.localPosition = Vector3.zero;
+            inst.transform.localRotation = Quaternion.identity;
+            inst.transform.localScale = Vector3.one;
+            foreach (Collider c in inst.GetComponentsInChildren<Collider>(true))
+                Object.DestroyImmediate(c);
+            foreach (Renderer r in inst.GetComponentsInChildren<Renderer>(true))
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            Bounds b = LocalBounds(inst.transform, root.transform);
+            return $"goule : SM_Goule {b.size.x:0.00} × {b.size.y:0.00} × {b.size.z:0.00} m, pied à {b.min.y:0.00} m";
+        }
+
+        [MenuItem("ItHunts/Décor : goule de la DA (SM_Goule)")]
+        public static void GhoulMenu() => Debug.Log(InstallGhoulPrefab());
+
+        public static string InstallGhoulPrefab()
+        {
+            GameObject root = PrefabUtility.LoadPrefabContents(GhoulPrefab);
+            try
+            {
+                string r = InstallGhoul(root);
+                PrefabUtility.SaveAsPrefabAsset(root, GhoulPrefab);
+                return r;
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        /// <summary>Le prefab de la goule et toutes les goules des scènes de jeu (réserves comprises : des copies, pas des instances).</summary>
+        public static string InstallGhoulsEverywhere()
+        {
+            string r = InstallGhoulPrefab();
+            string current = EditorSceneManager.GetActiveScene().path;
+            int n = 0;
+            foreach (string path in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+            {
+                var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                int here = 0;
+                foreach (ItHunts.Enemies.Ghoul g in Object.FindObjectsByType<ItHunts.Enemies.Ghoul>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                {
+                    if (PrefabUtility.IsPartOfPrefabInstance(g.gameObject))
+                        continue;
+                    InstallGhoul(g.gameObject);
+                    here++;
+                }
+
+                if (here > 0)
+                    EditorSceneManager.SaveScene(scene);
+                n += here;
+            }
+
+            if (!string.IsNullOrEmpty(current))
+                EditorSceneManager.OpenScene(current, OpenSceneMode.Single);
+            return r + $" ; {n} goules dans les scènes";
+        }
+
         // ---------- Caisses attrapables : SM_Caisse ----------
 
         public const string CrateModelPath = Models + "SM_Caisse.fbx";

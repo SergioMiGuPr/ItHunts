@@ -1242,6 +1242,7 @@ namespace ItHunts.EditorTools
             SetRef(ghoul, "settings", _ghoul);
             SetRef(ghoul, "visual", visual);
             SetRef(ghoul, "telegraph", telegraph);
+            DecorModelInstaller.InstallGhoul(root);                     // modèle de la DA (SM_Goule) à la place de la greybox
         }
 
         /// <summary>
