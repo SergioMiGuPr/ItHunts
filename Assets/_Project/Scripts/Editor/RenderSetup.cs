@@ -239,10 +239,10 @@ namespace ItHunts.EditorTools
             if (a != null)
                 return a;
             a = ScriptableObject.CreateInstance<AmbianceSettings>();
-            a.ambient = new Color(0.030f, 0.032f, 0.045f);
-            a.fogColor = new Color(0.007f, 0.008f, 0.015f);
+            a.ambient = new Color(0.022f, 0.0235f, 0.033f);
+            a.fogColor = new Color(0.006f, 0.007f, 0.013f);
             a.fogStart = 6f;
-            a.fogEnd = 45f;
+            a.fogEnd = 38f;
             a.moonIntensity = 0.18f;
             a.torchIntensity = 1.6f;
             a.torchRange = 10f;
