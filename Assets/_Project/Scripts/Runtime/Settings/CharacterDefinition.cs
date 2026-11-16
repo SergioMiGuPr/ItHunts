@@ -18,6 +18,9 @@ namespace ItHunts.Settings
         public Color color = Color.white;
         [Tooltip("Couleur de la lumière « lanterne » portée par le joueur (D-067) : plus sombre que la couleur du personnage.")]
         public Color lanternColor = new Color(0.62f, 0.16f, 0.07f);
+        [Tooltip("Bras FPS de la DA (SK_BrasFPS_<personnage>_D et _G) ; vides : les mains greybox.")]
+        public GameObject fpsArmRight;
+        public GameObject fpsArmLeft;
         [Tooltip("Son artefact (main gauche). Vide : artefact à concevoir (le personnage n'est pas jouable).")]
         public ArtifactDefinition artifact;
         [Tooltip("Nom de l'artefact affiché quand il n'existe pas encore.")]

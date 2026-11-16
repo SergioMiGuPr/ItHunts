@@ -320,6 +320,27 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void BrasDeLaDA_RenardEtCameleon_FpsArmsSurLeJoueur_CalqueFPS()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");
+            var arms = prefab.GetComponentInChildren<FpsArms>(true);
+            Assert.That(arms, Is.Not.Null, "bras de la DA posés par FpsArms");
+            var poses = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FpsArmPoseSet>("Assets/_Project/Settings/FpsArmPoses.asset");
+            Assert.That(poses.right.bones.Length, Is.EqualTo(17));
+            Assert.That(poses.right.Find("Pose_Attraper_1"), Is.Not.Null);
+            Assert.That(poses.right.Find("Pose_Attraper_1").fromClip, Is.True, "Pose_Attraper a des courbes");
+            foreach (string id in new[] { "renard", "cameleon" })
+            {
+                var c = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.CharacterDefinition>($"Assets/_Project/Settings/Personnages/Character_{id}.asset");
+                Assert.That(c.fpsArmRight, Is.Not.Null, id);
+                Assert.That(c.fpsArmLeft, Is.Not.Null, id);
+            }
+
+            var tags = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+            Assert.That(tags.FindProperty("m_RenderingLayers").GetArrayElementAtIndex(1).stringValue, Is.EqualTo("FPS"), "calque de lumière des mains");
+        }
+
+        [Test]
         public void Reglages_ParDefaut()
         {
             var fps = AssetDatabase.LoadAssetAtPath<FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");

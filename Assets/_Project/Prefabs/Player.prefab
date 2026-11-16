@@ -1670,6 +1670,7 @@ GameObject:
   - component: {fileID: 7856980766071455774}
   - component: {fileID: 8007984224956139238}
   - component: {fileID: 6065823669421373103}
+  - component: {fileID: 2871147801486767660}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2001,6 +2002,7 @@ MonoBehaviour:
   glassIntensity: 2.5
   puffMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   puffMaterial: {fileID: 2100000, guid: 586e11c557bf5b94cb61252398cd073e, type: 2}
+  flameIntensity: 4
 --- !u!114 &8007984224956139238
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2030,6 +2032,23 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: 135b1bd281f23dc4e80df0ab72cbfc39, type: 2}
   lanternLight: {fileID: 8736043667785152671}
   viewRoot: {fileID: 3973218913037281014}
+--- !u!114 &2871147801486767660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4554349776337732255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdff3d068c4de0d4bb84633021b7ccff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Player.FpsArms
+  view: {fileID: 7530118224598268044}
+  poses: {fileID: 11400000, guid: d9e58a1c01549874388e89918d7e2b11, type: 2}
+  rightHand: {fileID: 6828939858124000614}
+  leftHand: {fileID: 6381289494443217325}
+  outline: {fileID: 8007984224956139238}
 --- !u!1 &4845387433230401943
 GameObject:
   m_ObjectHideFlags: 0
