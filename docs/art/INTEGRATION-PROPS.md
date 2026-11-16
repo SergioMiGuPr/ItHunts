@@ -65,6 +65,37 @@ calculer les UV en coordonnées monde dans le shader pour ces pièces (triplanai
 et compatible avec le raccourcissement des pièces du bord). La deuxième option règle aussi les pièces étirées
 (`Kit_Escalier`, `Kit_Pont`, pièces raccourcies).
 
+### Kit gothique du couloir 14 × 15 m (2026-11-16, d'après `reference_couloir_gothique`, plan 04 de la cinématique)
+
+Six pièces (`Assets/Art/Models/Niveau1/`, script `sm_gothique.py`), pour approcher la référence : **voûte en ogive** (et non
+plate ni en berceau) portée par des **arcs-doubleaux** sur **colonnes engagées**, et des **arcades** et **niches** en ogive
+dans les murs. **Travée de 8 m** le long du couloir ; murs latéraux à x = ±7 m, hauteur 8 m (naissance de la voûte).
+Pivot au sol pour toutes ; **UV en coordonnées monde** : `M_Pierre_Monde`, et `M_Voute_Briques_Monde` sous la voûte
+(remap fait dans les `.meta`) ; Read/Write activé. Repère Unity : pièces de voûte en travers du couloir (x), le long de z ;
+murs et colonne : face côté couloir vers **+Z**, le mur s'étend vers −Z.
+
+| Pièce | Dimensions (Unity) | Pivot | Usage | Triangles |
+|---|---|---|---|---|
+| `SM_Voute_Ogive_8m` | x −7.6..7.6, y 8..16.2, z −4..4 | au sol, milieu du couloir et de la travée | tronçon de voûte répétable tous les 8 m (intrados : arc brisé de la naissance à 8 m jusqu'à la clé à **15.6 m** ; 0.6 m d'épaisseur ; repose sur le dessus des murs) | 292 |
+| `SM_Voute_Ogive_4m` | idem, z −2..2 | idem | demi-tronçon pour finir une longueur de couloir qui n'est pas un multiple de 8 m | 292 |
+| `SM_ArcDoubleau_14m` | x −7..7, y 8..15.6, z −0.4..0.4 | au sol, milieu du couloir | arc de structure sous la voûte, un par limite de travée (tous les 8 m, au-dessus des colonnes) ; 0.48 m d'arc + boudin de 0.12 m : **clé de l'intrados à 15.0 m** | 584 |
+| `SM_Colonne_Engagee_8m` | x −0.72..0.72, y 0..8, z 0..0.78 | au pied, sur la face du mur | une par mur sous chaque arc-doubleau (socle, base, fût demi-rond Ø 0.76 m, chapiteau et tailloir qui porte l'arc) ; tourner de ±90° pour l'adosser au mur gauche ou droit | 166 |
+| `SM_Mur_Arcade_8m` | x −4..4, y 0..8, z −1.2..0.2 | au sol, milieu de la travée, sur la face du mur | mur d'une travée percé d'un **passage en ogive de 4.4 m × 7 m** (naissance 4 m) vers une pièce annexe ; tableaux et intrados modelés, cordon d'archivolte et impostes | 478 |
+| `SM_Mur_Niche_8m` | idem | idem | mur d'une travée creusé d'une **niche en ogive** de 2.4 m × 4.7 m (appui à 0.9 m, clé à 5.6 m, 0.6 m de profondeur) : décor, statue, coffre, torche | 445 |
+
+**Montage d'un couloir** (planche `rendus/Lot2/Kit_Gothique_Couloir.jpg`, 5 travées) : pour chaque limite de travée
+z = 8k, un `SM_ArcDoubleau_14m` en (0, 0, 8k) et deux `SM_Colonne_Engagee_8m` en (±7, 0, 8k), tournées de −90° (droite)
+et +90° (gauche) ; pour chaque travée, un `SM_Voute_Ogive_8m` en (0, 0, 8k + 4) et deux murs (`SM_Mur_Arcade_8m`,
+`SM_Mur_Niche_8m`, ou des `SM_Kit_Mur4x4` pour un mur plein) en (±7, 0, 8k + 4), mêmes rotations. Sol : `SM_Kit_Sol4` /
+`M_Dalles_Monde`. Torches : sur les trumeaux, près des colonnes.
+
+**Passage du traqueur** : largeur libre sous les arcs-doubleaux (entre les intrados) 12.8 m à 8 m, **10.6 m à 11.75 m**
+(épaules), 8.6 m à 13 m, 6.1 m à 14 m, 4.1 m à 14.5 m ; clé à 15.0 m. Les colonnes réduisent la largeur de 14 à
+12.8 m au sol (socles) et 12.4 m au tailloir (8 m). **Point ouvert** : la voûte est un arc brisé peu pointu (naissance à 8 m, clé à 15.6 m
+pour 14 m de portée) ; la référence est plus aiguë. Baisser la naissance (murs de 7 m ou 6 m) la rend plus pointue sans
+monter la clé, mais resserre le haut du passage (à 14 m : 4.9 m de large avec une naissance à 7 m, 4.0 m à 6 m) : à
+trancher avec le gabarit du traqueur (`PARAMS["naissance"]` dans `sm_gothique.py`).
+
 ## 2. Props du niveau (`Assets/_Project/Prefabs/Props/`)
 
 | Prefab | Modèle (FBX `Assets/Art/Models/Niveau1/`) | Décalage du modèle | Boîte de collision conseillée (centre ; taille) | Repères FX | Objets mobiles (axe) | Matériaux | Attrapable |
