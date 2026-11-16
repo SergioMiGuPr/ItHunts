@@ -51,7 +51,7 @@ namespace ItHunts.Player
     {
         public const string LayerPrefix = "FirstPersonP";
         private const string IntensityKey = "ItHunts.HandMotionIntensity.P";
-        private const string FramingKey = "ItHunts.HandFraming.P";
+        private const string FramingKey = "ItHunts.HandFraming2.P";      // v2 : « écarté » par défaut (playtest des animations)
         private HandFraming _framing;
 
         /// <summary>Cadrage des mains, enregistré par joueur (menu pause, vitrine).</summary>
@@ -163,7 +163,7 @@ namespace ItHunts.Player
             _mainCamera = playerInput != null ? playerInput.camera : null;
             _playerIndex = playerInput != null ? Mathf.Max(0, playerInput.playerIndex) : 0;
             handMotionIntensity = PlayerPrefs.GetFloat(IntensityKey + _playerIndex, handMotionIntensity);
-            _framing = (HandFraming)Mathf.Clamp(PlayerPrefs.GetInt(FramingKey + _playerIndex, 0), 0, 1);
+            _framing = (HandFraming)Mathf.Clamp(PlayerPrefs.GetInt(FramingKey + _playerIndex, (int)HandFraming.Ecarte), 0, 1);
             SetupCameras();
             SetupFillLight();
             if (orb != null && settings != null)
