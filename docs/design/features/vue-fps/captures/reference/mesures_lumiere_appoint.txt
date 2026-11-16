@@ -1,0 +1,4 @@
+ambiance : Ambiance_Sombre
+Renard : luminance moyenne des mains 0,0725 → 0,0864 avec l'appoint (×1,19) ; décor seul 0,14282 → 0,14282
+Caméléon : luminance moyenne des mains 0,0710 → 0,1132 avec l'appoint (×1,59) ; décor seul 0,14506 → 0,14506
+#fin

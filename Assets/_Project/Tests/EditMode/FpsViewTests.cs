@@ -357,6 +357,9 @@ namespace ItHunts.Tests
             Assert.That(hi - lo, Is.EqualTo(2f * fps.floatAmplitude).Within(0.002f), "monte et descend");
             Assert.That(lo, Is.GreaterThanOrEqualTo(-fps.floatAmplitude - 1e-4f), "autour du point de la DA au-dessus de la paume (Socket_Orbe, Socket_Artefact)");
             Assert.That(fps.rightHandRest.y, Is.GreaterThan(-0.2f), "mains plus hautes");
+            Assert.That(fps.fillLight, Is.True, "lumière d'appoint de la vue (calque FPS seulement)");
+            Assert.That(fps.fillLightIntensity, Is.InRange(0.05f, 2f), "faible");
+            Assert.That(fps.fillLightRange, Is.LessThan(3f), "n'atteint que les mains et les artefacts");
 
             var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");
             Assert.That(player.GetComponentsInChildren<Transform>(true).Any(t => t.name == "Canon"), Is.False, "plus de canon greybox");

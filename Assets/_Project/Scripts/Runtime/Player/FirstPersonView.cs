@@ -133,6 +133,7 @@ namespace ItHunts.Player
             _playerIndex = playerInput != null ? Mathf.Max(0, playerInput.playerIndex) : 0;
             handMotionIntensity = PlayerPrefs.GetFloat(IntensityKey + _playerIndex, handMotionIntensity);
             SetupCameras();
+            SetupFillLight();
             if (orb != null && settings != null)
             {
                 orb.localPosition = settings.orbInHand;
@@ -185,6 +186,37 @@ namespace ItHunts.Player
                 if (!baseData.cameraStack.Contains(overlayCamera))
                     baseData.cameraStack.Add(overlayCamera);
             }
+        }
+
+        private Light _fill;
+
+        /// <summary>Lumière d'appoint de la vue (point lumineux sans ombre, enfant de la caméra) : n'éclaire que le calque « FPS ».</summary>
+        public Light FillLight => _fill;
+
+        private void SetupFillLight()
+        {
+            Transform cam = viewRoot != null && viewRoot.parent != null ? viewRoot.parent : transform;
+            var go = new GameObject("Lumière d'appoint (vue FPS)");
+            go.transform.SetParent(cam, false);
+            _fill = go.AddComponent<Light>();
+            _fill.type = LightType.Point;
+            _fill.shadows = LightShadows.None;
+            uint fps = 1u << ItHunts.Level.AmbianceLight.FpsRenderingLayer;
+            _fill.renderingLayerMask = (int)fps;
+            var data = go.AddComponent<UniversalAdditionalLightData>();
+            data.renderingLayers = fps;
+            UpdateFillLight();
+        }
+
+        private void UpdateFillLight()
+        {
+            if (_fill == null || settings == null)
+                return;
+            _fill.enabled = settings.fillLight;
+            _fill.intensity = settings.fillLightIntensity;
+            _fill.range = settings.fillLightRange;
+            _fill.color = settings.fillLightColor;
+            _fill.transform.localPosition = settings.fillLightOffset;
         }
 
         /// <summary>Affiche ou cache les mains (mesures de performance).</summary>
@@ -268,6 +300,7 @@ namespace ItHunts.Player
             viewRoot.localRotation = Quaternion.Euler(_swayEuler + new Vector3(0f, 0f, settings.slideRoll * _slide));
 
             UpdateHands(s, kp);
+            UpdateFillLight();                                           // réglable en Play Mode
         }
 
         private void UpdateHands(in MovementState s, float kp)
