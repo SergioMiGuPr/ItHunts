@@ -177,7 +177,7 @@ Noms identiques dans tous les FBX d'un même objet (clips Unity « `<Armature>|<
 phalanges renflées et bout rond, gant sans doigts arrêté sur un bourrelet, coutures en pointillés sur le dos de la main et la
 manchette, paume arrondie et jointures, manche à plis en biais ; fourrure rousse (renard), collerette doublée (koala),
 bandes d'écailles (caméléon, hibou)) : 2 874 à 3 834 triangles par bras (budget 6 000) ; **même squelette, mêmes noms
-d'os, mêmes 14 clips**. Nouveaux aplats `M_BrasFPS_<Perso>_Couture`, `_Poil`, `_Ecaille` (`Materials/FPS/BrasFPS/`). Planche
+d'os, mêmes 14 clips**. (Ces aplats, dont `_Couture`, `_Poil`, `_Ecaille`, sont remplacés plus bas par la texture peinte et le matériau unique.) Planche
 `rendus/Lot2/BrasFPS_Detail_avant_apres.jpg`.
 
 **Convention des poses de flottement** (rien n'est tenu, l'orbe et l'artefact flottent au-dessus de la paume) : dans
@@ -189,15 +189,28 @@ suivent la même convention** (`Pose_Traction`, `Pose_Repulsion`, `Pose_Attraper
 `Pose_TenirObjet`, `Pose_Lancer` : paume vers +Y, forme de la main gardée) : plus de demi-tour de l'avant-bras d'une pose
 à l'autre (planche `rendus/Lot2/BrasFPS_Poses_action_avant_apres.jpg`). Seule `Pose_Poing` garde l'ancienne convention.
 
-**Placement conseillé** (mains levées devant la caméra, paumes l'une vers l'autre et un peu vers le haut, une bonne partie
-de l'avant-bras visible ; vérifié à `viewmodelFov` 60, planches `rendus/Lot2/BrasFPS_*.jpg`), dans `FpsView_Default` :
+**Placement conseillé, d'après `docs/design/references-visuelles/reference_bras_fps.png`** (2026-11-16 : avant-bras qui
+entrent par les coins bas, paumes ouvertes vers le haut et l'une vers l'autre, doigts écartés et détendus ; vérifié à
+`viewmodelFov` 60, planche `rendus/Lot2/BrasFPS_Cadrage_reference.jpg`), dans `FpsView_Default` :
 
 | Réglage | Main droite | Main gauche |
 |---|---|---|
-| `…HandRest` (position du poignet, repère caméra) | (0.12, −0.115, 0.40) | (−0.12, −0.115, 0.40) |
-| `…HandRestEuler` | (−24, −8, 54.4) | (−24, 8, −54.4) |
+| `…HandRest` (position du poignet, repère caméra) | (0.21, −0.09, 0.34) | (−0.21, −0.09, 0.34) |
+| `…HandRestEuler` | (−45.1, −21.0, 39.7) | (−45.1, 21.0, −39.7) |
+| objet qui flotte au-dessus de la paume | `orbInHand` **(0, 0.14, 0.045)** | `lanternInHand` **(0, 0.16, 0.05)**, `barrelInHand` (0, 0.14, 0.05) |
 
-(paume à 50° de la verticale vers l'intérieur, doigts levés de 24° et tournés de 8° vers le centre.)
+(doigts vers (−0.25, 0.7, 0.65) et paume vers (−0.45, 0.7, −0.55) dans le repère caméra, main droite ; les objets montent de
+0.06–0.075 à 0.14–0.16 m pour flotter sans toucher les doigts, comme sur la référence.)
+
+**Aspect (2026-11-16)** : doigts sculptés (pli à chaque articulation entre deux renflements, phalange affinée, bout rond,
+griffe ou ongle qui sort du bout du doigt : plus de taches sombres), paume ronde, gants de cuir sans doigts à bourrelet ;
+**une texture peinte par personnage**, `T_BrasFPS_<Perso>_BaseColor` (2048 px, partagée par les deux bras), **un seul
+matériau** `M_BrasFPS_<Perso>` (cuir marbré et éraflé, tissu à trame et plis, fourrure en mèches, écailles, plumes, coutures
+peintes, plis d'encre aux articulations). Lisible dans l'ambiance sombre sans émission : couleurs relevées, liseré discret
+(0.4, non lié à la lumière), ambiance comptée double et plancher de la bande d'ombre (0.22) sur ce matériau. Les anciens aplats
+`M_BrasFPS_<Perso>_<Pièce>` ne servent plus. **Conseil côté `main`** : en ambiance sombre, une lumière d'appoint faible sur le
+calque « FPS » (directionnelle depuis la caméra, ≈ 0.3) rendrait les mains encore plus lisibles sans toucher au décor.
+Renard d'après la référence : manche rouge déchirée, gant de cuir brun, fourrure rousse aux poignets et au bord de la manche.
 
 | Clip | Durée | Boucle | Contenu |
 |---|---|---|---|
