@@ -114,7 +114,16 @@ namespace ItHunts.Debugging
 
             if (zone != null)
                 zone.DebugAdvance(820f - zone.Elapsed);
-            Write($"Niveau {gameObject.scene.name}, {Screen.width}×{Screen.height}, {(_split ? "écran partagé à 2" : "1 joueur")} ; salle {mid.RoomName} ; timer avancé à 13:40 (pic de 13:40 à 14:00){variant}");
+            // Pic de vague réellement actif : on avance encore par pas de 5 s jusqu'au prochain pic (selon les réglages des vagues).
+            var director = FindFirstObjectByType<ItHunts.Enemies.WaveDirector>();
+            for (int k = 0; k < 120 && zone != null && director != null && !director.InPeak; k++)
+            {
+                zone.DebugAdvance(5f);
+                yield return new WaitForSeconds(0.1f);
+            }
+
+            float elapsedAt = zone != null ? zone.Elapsed : 0f;
+            Write($"Niveau {gameObject.scene.name}, {Screen.width}×{Screen.height}, {(_split ? "écran partagé à 2" : "1 joueur")} ; salle {mid.RoomName} ; timer à {Mathf.FloorToInt(elapsedAt / 60f)}:{Mathf.FloorToInt(elapsedAt % 60f):00}, pic {(director != null && director.InPeak ? "ACTIF" : "non")}{variant}");
             yield return new WaitForSeconds(5f);
 
             var main = ProfilerRecorder.StartNew(ProfilerCategory.Internal, "Main Thread", 15);

@@ -205,16 +205,46 @@ namespace ItHunts.Tests
                 var clear = data.rendererFeatures.OfType<FirstPersonDepthClearFeature>().SingleOrDefault();
                 Assert.That(clear, Is.Not.Null, $"{path} : profondeur effacée avant les mains");
                 var passes = data.rendererFeatures.OfType<RenderObjects>().Where(r => r.name.StartsWith("ItHunts Mains")).ToList();
-                Assert.That(passes.Count, Is.EqualTo(2));
+                Assert.That(passes.Count, Is.EqualTo(3), "mains, transparents des mains (verre), HUD");
                 RenderObjects hands = passes.Single(r => r.settings.filterSettings.RenderQueueType == RenderQueueType.Opaque);
+                Assert.That(hands.settings.filterSettings.PassNames, Does.Contain("ItHuntsOutline"), "contour des mains (coque inversée)");
+                RenderObjects glass = passes.Single(r => r.name.EndsWith("transparents"));
+                Assert.That(glass.settings.cameraSettings.overrideCamera && glass.settings.cameraSettings.cameraFieldOfView == 60f, Is.True, "verre au FOV des mains");
+                Assert.That(glass.settings.enableWrite, Is.False);
                 Assert.That(hands.settings.cameraSettings.overrideCamera, Is.True);
                 Assert.That(hands.settings.cameraSettings.cameraFieldOfView, Is.EqualTo(60f), "mains à 60°");
                 Assert.That(hands.settings.filterSettings.LayerMask.value, Is.EqualTo(mask));
                 Assert.That(data.rendererFeatures.IndexOf(clear), Is.LessThan(data.rendererFeatures.IndexOf(hands)), "effacer avant de dessiner");
-                RenderObjects hudPass = passes.Single(r => r.settings.filterSettings.RenderQueueType == RenderQueueType.Transparent);
+                RenderObjects hudPass = passes.Single(r => r.name.EndsWith("HUD"));
+                Assert.That(hudPass.settings.filterSettings.PassNames, Is.EqualTo(new[] { "SRPDefaultUnlit" }), "le HUD ne redessine pas le verre");
                 Assert.That(hudPass.settings.cameraSettings.overrideCamera, Is.False, "le HUD garde la caméra du joueur");
                 Assert.That(data.rendererFeatures.IndexOf(hudPass), Is.GreaterThan(data.rendererFeatures.IndexOf(hands)), "HUD après les mains");
             }
+        }
+
+        [Test]
+        public void Rendu_ContoursPrePasseGpuResidentDrawerAmbiance()
+        {
+            var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
+            var contours = data.rendererFeatures.OfType<FullScreenPassRendererFeature>().Single(f => f.name == "ItHunts Contours");
+            Assert.That(contours.passMaterial, Is.Not.Null);
+            Assert.That(contours.passMaterial.name, Is.EqualTo("M_Contours"));
+            Assert.That(contours.injectionPoint, Is.EqualTo(FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingTransparents));
+            Assert.That(contours.requirements, Is.EqualTo(ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal));
+            var so = new SerializedObject(data);
+            Assert.That(so.FindProperty("m_PrepassLayerMask.m_Bits").longValue, Is.EqualTo(so.FindProperty("m_OpaqueLayerMask.m_Bits").longValue),
+                "pré-passe sans les couches des mains (contours fantômes, SSAO)");
+            var rp = new SerializedObject(AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>("Assets/Settings/PC_RPAsset.asset"));
+            Assert.That(rp.FindProperty("m_GPUResidentDrawerMode").intValue, Is.EqualTo(0), "GPU Resident Drawer coupé : mesuré 37 ms contre 9 ms sur la carte aléatoire");
+            var gs = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset")[0]);
+            Assert.That(gs.FindProperty("m_BrgStripping").intValue, Is.EqualTo(2), "BatchRendererGroup Variants : Keep All");
+            var mid = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Intermediaire.asset");
+            Assert.That(mid.ambient.r, Is.EqualTo(0.055f).Within(1e-4f));
+            Assert.That(mid.fogStart, Is.EqualTo(10f));
+            Assert.That(mid.fogEnd, Is.EqualTo(85f));
+            Assert.That(AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Horreur.asset"), Is.Not.Null);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");
+            Assert.That(prefab.GetComponent<HandsOutline>(), Is.Not.Null, "contour des mains et des artefacts");
         }
 
         [Test]

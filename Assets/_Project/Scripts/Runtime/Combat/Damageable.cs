@@ -155,6 +155,9 @@ namespace ItHunts.Combat
             _flashUntil = Time.time + duration;
         }
 
+        /// <summary>Lueur d'un état de l'ennemi (annonce du bond de la goule, bloc 4) : émission quand il n'y a ni flash ni étourdissement.</summary>
+        public Color ExtraGlow { get; set; } = Color.black;
+
         private void Update()
         {
             if (_health.Dead && respawns && HealthState.TryRespawn(ref _health, Time.time, settings != null ? settings.respawnDelay : 3f))
@@ -170,11 +173,14 @@ namespace ItHunts.Combat
                 return;                                                  // tenu : sa lueur vient de la télékinésie
             Color glow = Time.time < _flashUntil ? _flashColor
                 : Stunned ? stunColor * (stunGlowIntensity * (0.6f + 0.4f * Mathf.Sin(Time.time * 18f)))
-                : Color.black;
-            _block.SetColor(EmissionId, glow);
+                : ExtraGlow;
             foreach (Renderer r in _renderers)
                 if (r != null)
+                {
+                    r.GetPropertyBlock(_block);                           // garde les autres propriétés (lueur du bond, D-bloc 4)
+                    _block.SetColor(EmissionId, glow);
                     r.SetPropertyBlock(_block);
+                }
         }
 
         private void SetAlive(bool alive)

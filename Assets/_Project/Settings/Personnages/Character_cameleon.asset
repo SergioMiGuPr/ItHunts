@@ -15,6 +15,7 @@ MonoBehaviour:
   id: cameleon
   displayName: "Cam\xE9l\xE9on"
   color: {r: 1, g: 0.55, b: 0.12, a: 1}
+  lanternColor: {r: 0.66, g: 0.34, b: 0.08, a: 1}
   artifact: {fileID: 11400000, guid: 89cfb0254aa64984a862b239ac896e4a, type: 2}
   artifactLabel: "artefact \xE0 concevoir"
   playable: 1

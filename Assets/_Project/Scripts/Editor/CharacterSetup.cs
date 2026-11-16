@@ -16,12 +16,25 @@ namespace ItHunts.EditorTools
     /// </summary>
     public static class CharacterSetup
     {
+        /// <summary>Composant existant ou ajouté (pas de « ?? » : GetComponent renvoie un faux null dans l'éditeur).</summary>
+        private static T Comp<T>(Component c) where T : Component => Comp<T>(c.gameObject);
+
+        private static T Comp<T>(GameObject go) where T : Component
+        {
+            T t = go.GetComponent<T>();
+            return t != null ? t : go.AddComponent<T>();
+        }
+
         public const string LanternPath = SettingsDir + "/FireLantern_Default.asset";
         public const string CharactersDir = SettingsDir + "/Personnages";
         public const string RosterPath = CharactersDir + "/Characters_Default.asset";
         private const string BarrelPath = SettingsDir + "/Barrel_Default.asset";
         private const string PlayerPrefab = "Assets/_Project/Prefabs/Player.prefab";
         public const string LanternRootName = "Lanterne de feu (vue)";
+        public const string LanternModelPath = "Assets/Art/Models/FPS/SM_LanterneFeu.fbx";
+        public const string PlayerLanternPath = SettingsDir + "/PlayerLantern_Default.asset";
+        /// <summary>Le modèle pend sous son pivot (anneau de portage) : on le remonte pour que le corps soit au centre de la racine.</summary>
+        public const float LanternModelLift = 0.16f;
 
         [MenuItem("ItHunts/Personnages : créer les assets, poser la lanterne, brancher les scènes")]
         public static void Menu() => Debug.Log(SetupAll());
@@ -29,6 +42,17 @@ namespace ItHunts.EditorTools
         public static string SetupAll()
         {
             CharacterRoster roster = Roster();
+            var lanternColors = new System.Collections.Generic.Dictionary<string, Color>
+            {
+                { "renard", new Color(0.62f, 0.16f, 0.07f) }, { "cameleon", new Color(0.66f, 0.34f, 0.08f) },
+                { "koala", new Color(0.16f, 0.42f, 0.14f) }, { "hibou", new Color(0.12f, 0.24f, 0.60f) },
+            };
+            foreach (CharacterDefinition c in roster.characters)
+                if (c != null && lanternColors.TryGetValue(c.id, out Color lc) && c.lanternColor != lc)
+                {
+                    c.lanternColor = lc;
+                    EditorUtility.SetDirty(c);
+                }
             RunDefinition run = AssetDatabase.LoadAssetAtPath<RunDefinition>(MainMenuSceneBuilder.RunPath);
             if (run != null && run.characters != roster)
             {
@@ -163,6 +187,7 @@ namespace ItHunts.EditorTools
                 if (leftHand == null)
                     return "ERREUR : « Main gauche » absente du prefab Player.";
                 BuildLantern(leftHand, root);
+                InstallPlayerLight(root);
                 PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefab);
                 return $"lanterne posée dans {PlayerPrefab}";
             }
@@ -184,6 +209,13 @@ namespace ItHunts.EditorTools
             var root = new GameObject(LanternRootName).transform;
             root.SetParent(leftHand, false);
             root.localPosition = new Vector3(0f, 0.075f, 0.05f);
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(LanternModelPath);
+            if (model != null)
+            {
+                BuildLanternModel(root, model, player, leftHand.gameObject.layer);
+                return;
+            }
+
             Material metal = Mat("Lantern_Metal", new Color(0.16f, 0.13f, 0.11f));
             Material brass = Mat("Lantern_Brass", new Color(0.55f, 0.38f, 0.16f));
             Part(PrimitiveType.Cube, "Socle", root, new Vector3(0f, -0.045f, 0f), new Vector3(0.07f, 0.012f, 0.07f), Vector3.zero, metal);
@@ -217,6 +249,73 @@ namespace ItHunts.EditorTools
             int layer = leftHand.gameObject.layer;
             foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
                 t.gameObject.layer = layer;
+        }
+
+        /// <summary>
+        /// Modèle SM_LanterneFeu (lot de la DA) à la place de la greybox : flamme (petite sphère émissive) sur FX_Flamme, sortie du
+        /// jet sur FX_Jet, verre (SM_LanterneFeu_Verre) allumé par le code. Le FBX n'est pas modifié.
+        /// </summary>
+        private static void BuildLanternModel(Transform root, GameObject model, GameObject player, int layer)
+        {
+            var inst = (GameObject)PrefabUtility.InstantiatePrefab(model, root);
+            inst.transform.localPosition = new Vector3(0f, LanternModelLift, 0f);
+            inst.transform.localRotation = Quaternion.identity;
+            Transform[] all = inst.GetComponentsInChildren<Transform>(true);
+            Transform fxFlame = all.FirstOrDefault(t => t.name == "FX_Flamme");
+            Transform fxJet = all.FirstOrDefault(t => t.name == "FX_Jet");
+            Renderer glass = all.Select(t => t.GetComponent<Renderer>()).FirstOrDefault(r => r != null && r.name.Contains("Verre"));
+            Material flameMat = UnlitMat("Lantern_Flame", "Universal Render Pipeline/Unlit", new Color(1f, 0.6f, 0.2f));
+            GameObject flameGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            flameGo.name = "Flamme";
+            Object.DestroyImmediate(flameGo.GetComponent<Collider>());
+            flameGo.transform.SetParent(fxFlame != null ? fxFlame : root, false);
+            flameGo.transform.localPosition = new Vector3(0f, 0.012f, 0f);
+            flameGo.transform.localScale = new Vector3(0.018f, 0.028f, 0.018f);
+            var flame = flameGo.GetComponent<MeshRenderer>();
+            flame.sharedMaterial = flameMat;
+            flame.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var view = Comp<FireLanternView>(player);
+            SetRef(view, "lanternRoot", root);
+            SetRef(view, "flame", flame);
+            SetRef(view, "muzzle", fxJet != null ? fxJet : root);
+            SetRef(view, "glass", glass);
+            GameObject tmp = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            Mesh sphere = tmp.GetComponent<MeshFilter>().sharedMesh;
+            Object.DestroyImmediate(tmp);
+            SetRef(view, "puffMesh", sphere);
+            SetRef(view, "puffMaterial", PuffMaterial());
+            foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
+                t.gameObject.layer = layer;
+        }
+
+        /// <summary>Lumière « lanterne » du joueur (D-067) : enfant du prefab, réglages PlayerLantern_Default, couleur du personnage.</summary>
+        public static void InstallPlayerLight(GameObject player)
+        {
+            var settings = AssetDatabase.LoadAssetAtPath<PlayerLanternSettings>(PlayerLanternPath);
+            if (settings == null)
+            {
+                settings = ScriptableObject.CreateInstance<PlayerLanternSettings>();
+                AssetDatabase.CreateAsset(settings, PlayerLanternPath);
+            }
+
+            Transform old = player.transform.Find("Lanterne (lumière du joueur)");
+            if (old == null)
+            {
+                old = new GameObject("Lanterne (lumière du joueur)").transform;
+                old.SetParent(player.transform, false);
+            }
+
+            old.localPosition = settings.position;
+            var l = Comp<Light>(old);
+            l.type = LightType.Point;
+            l.shadows = LightShadows.None;
+            l.intensity = settings.intensity;
+            l.range = settings.range;
+            l.color = settings.fallbackColor;
+            var comp = Comp<ItHunts.Player.PlayerLanternLight>(player);
+            SetRef(comp, "settings", settings);
+            SetRef(comp, "lanternLight", l);
+            SetRef(comp, "viewRoot", player.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Mains (vue)"));
         }
 
         /// <summary>Matériau des bouffées : Particles/Unlit transparent additif (la couleur HDR vient du code).</summary>

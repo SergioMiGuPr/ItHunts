@@ -845,6 +845,7 @@ namespace ItHunts.Enemies
                 {
                     grabMarker.position = _grabTarget + Vector3.up * 0.05f;
                     grabMarker.rotation = HandRotation();
+                    GrabColumn(Planted ? 1f - Mathf.Clamp01((now - _grabStart) / Mathf.Max(0.01f, _holdTime)) : 1f);
                     float fade = Planted ? 1f - Mathf.Clamp01((now - _grabStart) / Mathf.Max(0.01f, _holdTime)) : 1f;
                     Transform glow = grabMarker.Find("Lueur"), dust = grabMarker.Find("Poussière");
                     if (glow != null)
@@ -1264,6 +1265,39 @@ namespace ItHunts.Enemies
                 _rb.MoveRotation(r);
                 transform.rotation = r;
             }
+        }
+
+        private Renderer _column;
+        private MaterialPropertyBlock _columnBlock;
+
+        /// <summary>
+        /// Colonne de lumière rouge au-dessus de la zone de prise (bloc 4) : un disque au sol vu de loin devient une ligne ; la colonne
+        /// se lit à 50 m. Hauteur, intensité et couleur dans StalkerSettings. Créée à la première annonce, enfant du repère.
+        /// </summary>
+        private void GrabColumn(float fade)
+        {
+            if (settings == null || !settings.grabColumn || settings.grabColumnMaterial == null || grabMarker == null)
+                return;
+            if (_column == null)
+            {
+                GameObject c = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                c.name = "Colonne de lumière (zone de prise)";
+                Destroy(c.GetComponent<Collider>());
+                c.transform.SetParent(grabMarker, false);
+                _column = c.GetComponent<Renderer>();
+                _column.sharedMaterial = settings.grabColumnMaterial;
+                _column.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                _column.receiveShadows = false;
+                _columnBlock = new MaterialPropertyBlock();
+            }
+
+            float d = settings.grabColumnDiameter;
+            Vector3 ls = grabMarker.lossyScale;
+            _column.transform.localScale = new Vector3(d / Mathf.Max(0.01f, ls.x), settings.grabColumnHeight * 0.5f / Mathf.Max(0.01f, ls.y), d / Mathf.Max(0.01f, ls.z));
+            _column.transform.localPosition = new Vector3(0f, settings.grabColumnHeight * 0.5f / Mathf.Max(0.01f, ls.y), 0f);
+            _column.transform.rotation = Quaternion.identity;
+            _columnBlock.SetColor("_BaseColor", settings.grabColumnColor * (settings.grabColumnIntensity * fade));
+            _column.SetPropertyBlock(_columnBlock);
         }
 
         private void UpdateMarker()

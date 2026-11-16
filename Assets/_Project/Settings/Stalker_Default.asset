@@ -28,7 +28,6 @@ MonoBehaviour:
   targetSwitchMargin: 15
   targetGiveUpDistance: 60
   targetSwitchCooldown: 3
-  lullRetreatDistance: 10
   roamSpeed: 3
   alertSpeed: 6
   chaseSpeed: 9
@@ -116,3 +115,9 @@ MonoBehaviour:
   shakeRange: 25
   shakeStrength: 0.6
   stepsPerSecondAtChase: 0.9
+  grabColumn: 1
+  grabColumnHeight: 12
+  grabColumnDiameter: 4
+  grabColumnIntensity: 0.3
+  grabColumnColor: {r: 1.6, g: 0.08, b: 0.04, a: 1}
+  grabColumnMaterial: {fileID: 2100000, guid: 5c43649757e142f468eaa83c26afcee2, type: 2}

@@ -552,6 +552,36 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void ModeleBarillet_ShaderToon_ChambresEnBlancChaud_ParLEmission()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/Models/FPS/SM_Barillet.fbx");
+            var model = Object.Instantiate(asset);
+            Material mat = null;
+            try
+            {
+                var chambers = Enumerable.Range(1, 6).Select(i => model.transform.Find($"SM_Barillet_Chambre_{i:00}").GetComponent<Renderer>()).ToArray();
+                Assert.That(chambers[0].sharedMaterial.shader.name, Is.EqualTo("ItHunts/Toon"), "matériau définitif de la DA (toon)");
+                mat = BarrelView.ChamberMaterial(chambers);
+                Assert.That(mat.shader.name, Is.EqualTo("ItHunts/Toon"));
+                Assert.That(mat.IsKeywordEnabled("_EMISSION"), Is.True, "émission active : le code écrit seulement _EmissionColor");
+                var cfg = AssetDatabase.LoadAssetAtPath<BarrelSettings>("Assets/_Project/Settings/Barrel_Default.asset");
+                BarrelView.ApplyModel(model.transform, chambers, new MaterialPropertyBlock(), 0f, 0, 6, false, cfg);
+                var block = new MaterialPropertyBlock();
+                chambers[0].GetPropertyBlock(block);
+                Color e = block.GetColor(Shader.PropertyToID("_EmissionColor"));
+                Assert.That(e.maxColorComponent, Is.GreaterThan(1f), "au-delà du seuil du bloom");
+                Assert.That(e.g / e.r, Is.EqualTo(0.86f).Within(0.02f), "blanc chaud (1, 0.86, 0.66)");
+                Assert.That(e.b / e.r, Is.EqualTo(0.66f).Within(0.02f));
+            }
+            finally
+            {
+                Object.DestroyImmediate(model);
+                if (mat != null)
+                    Object.DestroyImmediate(mat);
+            }
+        }
+
+        [Test]
         public void ModeleBarillet_Rechargement_SeRallumeUneAUne_SansEteindreLesChargees()
         {
             Assert.That(BarrelModel.Lit(2, true, 0f), Is.EqualTo(2), "les 2 coups restants restent allumés");

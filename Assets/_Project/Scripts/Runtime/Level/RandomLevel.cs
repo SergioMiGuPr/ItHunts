@@ -1206,6 +1206,7 @@ namespace ItHunts.Level
             l.intensity = intensity;
             l.color = color;
             l.shadows = LightShadows.None;
+            go.AddComponent<AmbianceLight>().kind = AmbianceLight.Kind.Lampe;   // intensité et portée de l'ambiance de la scène (D-067)
         }
 
         private static void Spawn(Transform parent, Vector3 at, SpawnKinds kinds)

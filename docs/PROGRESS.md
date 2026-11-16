@@ -4,6 +4,45 @@
 
 ## Étape en cours
 
+**Intégration du rendu et du lot de modélisation (`rendu-integration`, depuis `main` après fusion de la PR #3) — 2026-11-16, à
+valider en Play Mode, non poussée.** Un commit par bloc.
+- **Bloc 0 (`87f0bc4` sur `main`, poussé) :** PR #3 fusionnée (commit de fusion, branche `art` gardée) : 193 fichiers dans
+  `Assets/Art/`, 108 dans `docs/art/`, `MANIFEST.md` ; chaque asset a son `.meta` ; réimport sans erreur ni avertissement.
+- **Bloc 1 (`6019565`, `ddbd56e`) :** contours plein écran (`M_Contours`, clair dans le noir), pré-passe sans les couches des mains
+  (captures avant/après : `docs/design/features/vue-fps/captures/rendu_mains_mur_avant_apres_prepasse.png`), ambiance intermédiaire
+  partagée (`Ambiance_Intermediaire` : 0.055, brouillard 10 → 85 m ; `Ambiance_Horreur` prête, non activée), passe transparente des
+  mains, contour par coque inversée (`ItHunts/ContourMains`). **GPU Resident Drawer essayé puis coupé** (37 ms par image en solo
+  avec, 9,0 ms sans) ; variantes BRG gardées.
+- **Bloc 2 (`32eff09`) :** lanterne du joueur (`PlayerLantern_Default` : 0.6, 6 m, sans ombres, à la hanche, couleur du personnage,
+  une par joueur, exclue des mains par les calques de rendu) ; `SM_LanterneFeu` en main (`FX_Flamme`, `FX_Jet`, verre allumé par
+  `_EmissionColor`, éteint pendant la recharge) ; test EditMode du barillet en toon.
+- **Bloc 3 (`de92ab4`) :** `DecorModelInstaller` : props et arène du boss remplacés par les modèles (herse, 6 leviers ±35° et lueur,
+  treuil, 5 plateformes qui tombent). `INTEGRATION-PROPS.md` absent de la PR : repères repris du manifeste (torche +0.545 m).
+  Herse : bas de la grille à 16 m ouverte (traqueur 14 m), même passage de 10 m. Collisions du jeu gardées (échafaudage : boîte pleine).
+  - **Texturé :** kit Arc, Pilier, PortePiece, GrandePorte, Poutre, PontEgout4/14 ; props Torche, TorcheEteinte, Cage, Grille,
+    Tapisserie, Chaine, Tuyau, Echafaudage, ColonneBrisee, Colonne ; arène (herse, leviers, treuil, plateformes) ; barillet, lanterne.
+  - **Encore greybox :** Kit_Mur4x4, Kit_Sol4, Kit_Escalier, Kit_Pont ; props Armoire, Autel, Banc, Caisse (+ attrapable),
+    Chaise attrapable, Chaudron, CoffreDeco, Etagere, Gravats, Lanterne, Lit, MurEffondre, Paille, PileDeCaisses, Poutre, Ratelier,
+    Sarcophage, Statue, Table, Tonneau (+ attrapable) ; coffres, marchands, grand lustre ; goule, volant, traqueur ; mains ; orbe
+    (`SM_Orbe` livré, pas intégré) ; pièces non magnétiques du parcours.
+- **Bloc 4 (`226605d`) :** signaux lisibles à 50 m (planches 10/30/50 m, arrêt et course : `docs/design/features/vue-fps/captures/signaux/`) :
+  colonne rouge de la zone de prise (12 m, 4 m, 0.3), goule qui luit pendant l'annonce (yeux, gueule, corps), lueur à portée des
+  caisses 1.0, halo des âmes (1.4 m, 0.35).
+- **Bloc 5 :** D-067 (rendu) au GDD, règle 8 de `CLAUDE.md` alignée sur ART-HANDOFF § 1, demandes à la DA dans ART-HANDOFF.
+- **Performance finale** (build de développement, seed 104729, 1920 × 1080, pic de vague actif) : solo **13,8 ms** médiane (5 % les plus
+  lents 26,9 ; GPU 3,8 ; 7 235 draw calls), écran partagé **16,4 ms** (22,6 ; GPU 5,3 ; 8 372). Avant le bloc 1 : 22,2 ms (mesure
+  peut-être perturbée) ; après le bloc 1 : 9,0 ms (13,1) et 15,7 ms (22,7). **Objectifs non atteints** (< 10 ms et < 16,6 ms, 5 % compris) :
+  CPU, pas GPU ; cause principale les modèles de torche (4 matériaux × ≈ 1 645 torches) et les maillages de la DA non fusionnables.
+- **Points ouverts :**
+  - textures à refaire (`docs/art/MATERIAUX.md`) ;
+  - questions à la DA : rouge du renard contre rouge du danger (colonne, goule), `IsMatchingLightLayer` dans le shader toon (la
+    lanterne éclaire encore les artefacts), *Read/Write* sur `Assets/Art/Models/Niveau1`, `INTEGRATION-PROPS.md` manquant,
+    normales lissées des FBX de vue FPS ;
+  - réglage « horreur » pour la phase enragée du traqueur (à décider) ;
+  - orbe v2 et bras FPS à intégrer plus tard (modèles, couleur du personnage, animations des anneaux, jauge en tablettes, poses des mains) ;
+  - performance : fusion des modèles (Read/Write), moins de torches ou de lumières, regrouper les matériaux de la torche, réessayer le
+    GPU Resident Drawer après la fusion, plafonner les pas fixes.
+
 **Suite de la carte (`carte-suite`) — 2026-11-15, playtestée** (hauteurs, chargement, fluidité, menu validés ; arcs disparus, coop
 bloquée, zones de parcours trop rares → corrigés ci-dessous), **fusionnée dans `main`**.
 - **Après le playtest (2026-11-15) :**

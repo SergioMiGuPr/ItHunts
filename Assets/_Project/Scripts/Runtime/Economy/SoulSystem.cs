@@ -37,6 +37,9 @@ namespace ItHunts.Economy
         private readonly Dictionary<int, int> _collectedBy = new Dictionary<int, int>();
         private readonly List<PlayerHealth> _alive = new List<PlayerHealth>();
         private Mesh _mesh;
+        private Matrix4x4[] _haloMatrices;
+        private MaterialPropertyBlock _haloBlock;
+        private static readonly int HaloColorId = Shader.PropertyToID("_BaseColor");
         private ZoneState _zone;
         private System.Random _rng = new System.Random(3);
         private AudioClip _pickup;
@@ -244,6 +247,19 @@ namespace ItHunts.Economy
                 return;
             var rp = new RenderParams(soulMaterial) { camera = cam, shadowCastingMode = ShadowCastingMode.Off, receiveShadows = false };
             Graphics.RenderMeshInstanced(rp, _mesh, 0, _matrices, n);
+            // Halo (bloc 4) : sphère additive plus grande, même centre ; lisible de loin à travers le brouillard.
+            if (settings.soulHaloMaterial != null && settings.soulHaloSize > 0f && settings.soulHaloIntensity > 0f)
+            {
+                _haloBlock ??= new MaterialPropertyBlock();
+                _haloBlock.SetColor(HaloColorId, settings.soulColor * settings.soulHaloIntensity);
+                float k = settings.soulHaloSize / Mathf.Max(0.01f, settings.soulSize);
+                if (_haloMatrices == null || _haloMatrices.Length < _matrices.Length)
+                    _haloMatrices = new Matrix4x4[_matrices.Length];
+                for (int i = 0; i < n; i++)
+                    _haloMatrices[i] = _matrices[i] * Matrix4x4.Scale(Vector3.one * k);
+                var hp = new RenderParams(settings.soulHaloMaterial) { camera = cam, shadowCastingMode = ShadowCastingMode.Off, receiveShadows = false, matProps = _haloBlock };
+                Graphics.RenderMeshInstanced(hp, _mesh, 0, _haloMatrices, n);
+            }
         }
     }
 }

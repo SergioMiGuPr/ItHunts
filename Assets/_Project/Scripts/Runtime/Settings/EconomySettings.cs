@@ -26,6 +26,10 @@ namespace ItHunts.Settings
         [Min(0f)] public float scatterSpeed = 4f;
         [Min(0.05f)] public float soulSize = 0.25f;
         [ColorUsage(false, true)] public Color soulColor = new Color(0.4f, 2.6f, 3.2f);
+        [Tooltip("Halo des éclats (bloc 4) : diamètre (m) et part de la couleur de l'éclat ; lueur additive qui traverse le brouillard.")]
+        [Min(0f)] public float soulHaloSize = 1.1f;
+        [Min(0f)] public float soulHaloIntensity = 0.35f;
+        public Material soulHaloMaterial;
 
         [Header("Prix")]
         [Min(0)] public int chestPrice = 30;
