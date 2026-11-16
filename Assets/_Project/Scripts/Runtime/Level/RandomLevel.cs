@@ -247,6 +247,7 @@ namespace ItHunts.Level
             Progress = 0.88f;
             if (async)
                 yield return null;
+            ClearTorches();
             ThinTorches();
             Batch();
             Physics.SyncTransforms();
@@ -1143,6 +1144,100 @@ namespace ItHunts.Level
         /// </summary>
         /// <summary>Torches retirées (performance, MapLayoutSettings.torchShare) : une sur deux par défaut, dans l'ordre de construction.</summary>
         public int RemovedTorches { get; private set; }
+
+        /// <summary>Torches déplacées ou retirées parce qu'elles touchaient un arc, un pilier ou un encadrement (mesures).</summary>
+        public int MovedTorches { get; private set; }
+        public int DroppedTorches { get; private set; }
+
+        /// <summary>Préfixes des pièces dont les torches s'écartent : arcs (anneau, écoinçons, piédroits), piliers, colonnes, portes.</summary>
+        public static readonly string[] TorchObstacles =
+            { "Arc (porte la voûte)", "Kit_Arc", "Kit_Pilier", "Pilier", "Piédroit", "Prop_Colonne", "Colonne", "Kit_PortePiece", "Kit_GrandePorte", "Cadre" };
+
+        private static bool IsTorchObstacle(Transform t)
+        {
+            for (Transform a = t; a != null; a = a.parent)
+                foreach (string p in TorchObstacles)
+                    if (a.name.StartsWith(p))
+                        return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Torches écartées des arcs, des piliers, des colonnes et des encadrements de porte (retours du lot, point 7) : une torche
+        /// à moins de torchClearance glisse le long de son mur (pas de 0.5 m, jusqu'à torchSlide, toujours contre un mur), sinon
+        /// elle est retirée. Avant le regroupement du décor (les pièces ont encore leurs propres rendus).
+        /// </summary>
+        private void ClearTorches()
+        {
+            MovedTorches = DroppedTorches = 0;
+            if (settings == null || settings.torchClearance <= 0f)
+                return;
+            var obstacles = new List<Bounds>();
+            foreach (Renderer r in _root.GetComponentsInChildren<Renderer>(true))
+                if (!r.name.StartsWith("Prop_Torche") && IsTorchObstacle(r.transform) && !IsTorchPart(r.transform))
+                    obstacles.Add(r.bounds);
+            Physics.SyncTransforms();
+            foreach (Transform t in _root.GetComponentsInChildren<Transform>(true))
+            {
+                if (!t.name.StartsWith("Prop_Torche") || !t.gameObject.activeInHierarchy)
+                    continue;
+                if (Clear(TorchBounds(t), obstacles))
+                    continue;
+                Vector3 home = t.position;
+                bool placed = false;
+                for (float d = 0.5f; d <= settings.torchSlide + 1e-3f && !placed; d += 0.5f)
+                    foreach (float side in new[] { 1f, -1f })
+                    {
+                        Vector3 at = home + t.right * (side * d);
+                        // Toujours contre un mur : derrière la torche (son dos), à moins de 0.8 m.
+                        if (!Physics.Raycast(at + t.forward * 0.3f + Vector3.up * 0.3f, -t.forward, 1.1f, ~0, QueryTriggerInteraction.Ignore))
+                            continue;
+                        t.position = at;
+                        if (Clear(TorchBounds(t), obstacles))
+                        {
+                            placed = true;
+                            break;
+                        }
+                    }
+
+                if (placed)
+                    MovedTorches++;
+                else
+                {
+                    t.position = home;
+                    t.gameObject.SetActive(false);
+                    DroppedTorches++;
+                }
+            }
+
+            bool Clear(Bounds torch, List<Bounds> list)
+            {
+                torch.Expand(2f * settings.torchClearance);
+                foreach (Bounds b in list)
+                    if (b.Intersects(torch))
+                        return false;
+                return true;
+            }
+        }
+
+        private static bool IsTorchPart(Transform t)
+        {
+            for (Transform a = t; a != null; a = a.parent)
+                if (a.name.StartsWith("Prop_Torche"))
+                    return true;
+            return false;
+        }
+
+        private static Bounds TorchBounds(Transform torch)
+        {
+            Renderer[] rs = torch.GetComponentsInChildren<Renderer>(true);
+            if (rs.Length == 0)
+                return new Bounds(torch.position, Vector3.one * 0.3f);
+            Bounds b = rs[0].bounds;
+            foreach (Renderer r in rs)
+                b.Encapsulate(r.bounds);
+            return b;
+        }
 
         private void ThinTorches()
         {
