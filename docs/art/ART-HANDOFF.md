@@ -31,6 +31,13 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 >   - **Lueurs** : yeux de la goule et pupilles du traqueur en **rouge sombre** (sous le seuil du bloom, réglable) ; griffes du
 >     traqueur (`M_Traqueur_Mains`, posé par le jeu sur les bras et les mains) en **ivoire**, faibles au repos, plus vives pendant
 >     la prise.
+>   - **Bras FPS** : les poses de la PR #5 sont branchées. **Repos = `Pose_OrbePaume`** (paumes vers le haut, des deux
+>     côtés), traction, répulsion, attraper (3 clés), tenir un objet, lancer. `Pose_Pistolet` et `Pose_PriseAnneau` ne
+>     servent plus : l'orbe et l'artefact **flottent** au-dessus de la paume (`Socket_Orbe`, `Socket_Artefact` + hauteur de
+>     flottement réglée par le jeu), le barillet n'a plus de canon. **Pour les animations à venir :** les livrer dans les mêmes
+>     FBX, en clips nommés **`Anim_<nom>`** (ex. **`Anim_Repos`** pour le repos animé, en boucle) ; le menu *ItHunts > Vue
+>     FPS : bras de la DA* les cuit à 30 images/s et le jeu joue `Anim_Repos` à la place de `Pose_OrbePaume` dès qu'il existe.
+>     Une nouvelle pose fixe garde le nom `Pose_*` (deux clés).
 > - **Intégration du lot de la PR #4 (branche `integration-lot`, 2026-11-16)** : kit `SM_Kit_*` (UV monde) dans toute la carte, props
 >   calés sur `INTEGRATION-PROPS.md` (torche +0.545 m, lumière sur `FX_Flamme`), `SM_Caisse` sur toutes les caisses attrapables,
 >   échafaudage praticable (plateaux dessus à 3 et 6 m, épaissis de 0.07 à 0.3 m vers le bas pour le NavMesh), goule `SM_Goule`,

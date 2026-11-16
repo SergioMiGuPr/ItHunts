@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.FpsViewSettings
   viewmodelFov: 60
   viewmodelNearClip: 0.01
-  rightHandRest: {x: 0.21, y: -0.22, z: 0.47}
-  rightHandRestEuler: {x: -15, y: -10, z: 0}
-  leftHandRest: {x: -0.23, y: -0.25, z: 0.45}
-  leftHandRestEuler: {x: -10, y: 12, z: 0}
+  rightHandRest: {x: 0.19, y: -0.16, z: 0.43}
+  rightHandRestEuler: {x: -30, y: -22, z: 28}
+  leftHandRest: {x: -0.19, y: -0.17, z: 0.42}
+  leftHandRestEuler: {x: -28, y: 22, z: -28}
   barrelInHand: {x: 0, y: 0.065, z: 0.05}
   barrelInHandEuler: {x: 0, y: 0, z: 0}
   barrelScale: 1
@@ -26,6 +26,12 @@ MonoBehaviour:
   lanternScale: 0.6
   orbDiameter: 0.08
   orbInHand: {x: 0, y: 0.06, z: 0.045}
+  floatHeight: 0.03
+  floatAmplitude: 0.007
+  floatPeriod: 2.6
+  floatSpin: 25
+  floatWobble: 4
+  floatPhaseOffset: 0.35
   swayPerDegree: 0.002
   swayMaxOffset: 0.04
   swayMaxAngle: 4

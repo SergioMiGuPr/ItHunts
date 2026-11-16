@@ -303,6 +303,45 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void VueFps_OrbeEtArtefactFlottent_BarilletSansCanon_PosesPaumeVersLeHaut()
+        {
+            var fps = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");
+            Assert.That(fps.floatAmplitude, Is.GreaterThan(0f));
+            float lo = float.MaxValue, hi = float.MinValue;
+            for (float t = 0f; t < fps.floatPeriod; t += 0.05f)
+            {
+                float h = ItHunts.Player.ViewmodelMotion.FloatHeight(t, fps);
+                lo = Mathf.Min(lo, h);
+                hi = Mathf.Max(hi, h);
+            }
+            Assert.That(hi - lo, Is.EqualTo(2f * fps.floatAmplitude).Within(0.002f), "monte et descend");
+            Assert.That(lo, Is.GreaterThan(0f), "toujours au-dessus de la paume");
+            Assert.That(fps.rightHandRest.y, Is.GreaterThan(-0.2f), "mains plus hautes");
+
+            var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");
+            Assert.That(player.GetComponentsInChildren<Transform>(true).Any(t => t.name == "Canon"), Is.False, "plus de canon greybox");
+            var so = new SerializedObject(player.GetComponent<ItHunts.Artifacts.BarrelView>());
+            var muzzle = (Transform)so.FindProperty("muzzle").objectReferenceValue;
+            Assert.That(muzzle.localPosition.y, Is.EqualTo(0.031f).Within(0.005f), "bouche sur la chambre du haut (active)");
+            Assert.That(muzzle.localPosition.z, Is.LessThan(0.08f), "à l'avant du barillet, pas au bout d'un canon");
+
+            var poses = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FpsArmPoseSet>("Assets/_Project/Settings/FpsArmPoses.asset");
+            foreach (var side in new[] { poses.right, poses.left })
+            {
+                Assert.That(side.fromClips, Is.True, "clips de la PR #5 avec leurs courbes");
+                Assert.That(side.Find("Pose_OrbePaume"), Is.Not.Null);
+                Assert.That(side.Find("Pose_OrbePaume").fromClip, Is.True);
+            }
+
+            // Animations à venir (clips « Anim_* ») : jouées en boucle à leur cadence.
+            var anim = new ItHunts.Settings.FpsArmPoseSet.Animation { name = "Anim_Repos", frameRate = 10f };
+            for (int i = 0; i < 4; i++)
+                anim.frames.Add(new ItHunts.Settings.FpsArmPoseSet.Pose { name = "f" + i });
+            Assert.That(anim.FrameAt(0.25f).name, Is.EqualTo("f2"));
+            Assert.That(anim.FrameAt(0.45f).name, Is.EqualTo("f0"), "en boucle");
+        }
+
+        [Test]
         public void Goule_1m80_CapsuleEtLODReglables_NavMeshDesGoules()
         {
             var ghoul = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");

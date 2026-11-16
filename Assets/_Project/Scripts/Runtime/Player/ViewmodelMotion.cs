@@ -57,6 +57,17 @@ namespace ItHunts.Player
             -localVelocity / 20f * cfg.speedLagAt20;
 
         /// <summary>Courbe d'aller-retour d'un geste (0 → 1 → 0), t de 0 à 1.</summary>
+        /// <summary>Flottement (retours du lot, point 6) : hauteur au-dessus de la paume (m) à l'instant t (phase en fraction de période).</summary>
+        public static float FloatHeight(float t, FpsViewSettings cfg, float phase = 0f) =>
+            cfg.floatHeight + cfg.floatAmplitude * Mathf.Sin(2f * Mathf.PI * (t / Mathf.Max(0.1f, cfg.floatPeriod) + phase));
+
+        /// <summary>Légère oscillation d'un artefact qui flotte (degrés, x : tangage, y : lacet, z : roulis).</summary>
+        public static Vector3 FloatWobble(float t, FpsViewSettings cfg, float phase = 0f)
+        {
+            float w = 2f * Mathf.PI * (t / Mathf.Max(0.1f, cfg.floatPeriod) + phase);
+            return new Vector3(Mathf.Sin(w * 0.7f) * 0.5f, Mathf.Sin(w * 0.5f + 1f), Mathf.Sin(w)) * cfg.floatWobble;
+        }
+
         public static float Punch(float t) => t <= 0f || t >= 1f ? 0f : Mathf.Sin(Mathf.PI * t);
 
         /// <summary>Lancer : recul au premier tiers, puis poussée (−windup → +push → 0).</summary>
