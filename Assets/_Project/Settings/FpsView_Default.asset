@@ -32,6 +32,11 @@ MonoBehaviour:
   floatSpin: 25
   floatWobble: 4
   floatPhaseOffset: 0.35
+  fillLight: 1
+  fillLightIntensity: 1.8
+  fillLightRange: 2.2
+  fillLightColor: {r: 0.78, g: 0.84, b: 1, a: 1}
+  fillLightOffset: {x: 0, y: 0.55, z: -0.25}
   swayPerDegree: 0.002
   swayMaxOffset: 0.04
   swayMaxAngle: 4

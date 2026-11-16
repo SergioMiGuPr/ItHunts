@@ -59,11 +59,11 @@ namespace ItHunts.Settings
         [Header("Lumière d'appoint de la vue FPS (calque de rendu « FPS » seulement : jamais le décor)")]
         [Tooltip("Une lumière faible qui n'éclaire que les mains, l'orbe et l'artefact, pour qu'ils se lisent même quand seule la lune éclaire.")]
         public bool fillLight = true;
-        [Min(0f)] public float fillLightIntensity = 0.5f;
-        [Min(0.1f)] public float fillLightRange = 1.5f;
+        [Min(0f)] public float fillLightIntensity = 1.8f;                  // bras peints de la PR #7 : lisibles quand seule la lune éclaire
+        [Min(0.1f)] public float fillLightRange = 2.2f;
         public Color fillLightColor = new Color(0.78f, 0.84f, 1f);
-        [Tooltip("Position de la lumière dans le repère de la caméra (m) : au-dessus et un peu devant les mains.")]
-        public Vector3 fillLightOffset = new Vector3(0f, 0.25f, 0.15f);
+        [Tooltip("Position de la lumière dans le repère de la caméra (m) : au-dessus et un peu derrière, pour un éclairage égal des mains et des objets.")]
+        public Vector3 fillLightOffset = new Vector3(0f, 0.55f, -0.25f);   // loin des objets : éclairage égal, barillet non brûlé
 
         [Header("Balancement (rotation de la vue) — suit l'intensité du mouvement des mains")]
         [Tooltip("Décalage par degré de rotation de la vue sur une image (m/°).")]
