@@ -177,9 +177,10 @@ Noms identiques dans tous les FBX d'un même objet (clips Unity « `<Armature>|<
 `Pose_Repos`, `Pose_OrbePaume`, `Pose_Pistolet`, `Pose_PriseAnneau` et leurs boucles, l'avant-bras est tourné de 180° :
 **la paume regarde +Y du repère de la main** (`Socket_Poignet`), là où FpsView pose déjà l'orbe (`orbInHand` (0, 0.06,
 0.045)), le barillet (`barrelInHand`) et la lanterne (`lanternInHand`). `Socket_Artefact_Anneau` est passé en (0, 0.075,
-0.05) depuis le poignet (anneau de la lanterne au-dessus de la paume). Les poses d'action (`Pose_Traction`,
-`Pose_Repulsion`, `Pose_Attraper`, `Pose_TenirObjet`, `Pose_Lancer`, `Pose_Poing`) gardent l'ancienne convention (paume
-vers −Y) : le fondu entre une pose de flottement et une pose d'action fait tourner l'avant-bras d'un demi-tour.
+0.05) depuis le poignet (anneau de la lanterne au-dessus de la paume). **Depuis le 2026-11-16, les poses d'action
+suivent la même convention** (`Pose_Traction`, `Pose_Repulsion`, `Pose_Attraper` — sa première clé est `Pose_Repos` —,
+`Pose_TenirObjet`, `Pose_Lancer` : paume vers +Y, forme de la main gardée) : plus de demi-tour de l'avant-bras d'une pose
+à l'autre (planche `rendus/Lot2/BrasFPS_Poses_action_avant_apres.jpg`). Seule `Pose_Poing` garde l'ancienne convention.
 
 **Placement conseillé** (mains levées devant la caméra, paumes l'une vers l'autre et un peu vers le haut, une bonne partie
 de l'avant-bras visible ; vérifié à `viewmodelFov` 60, planches `rendus/Lot2/BrasFPS_*.jpg`), dans `FpsView_Default` :

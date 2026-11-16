@@ -464,13 +464,15 @@ POSES = {
     "Pose_OrbePaume": [FLOAT["Pose_OrbePaume"]],
     "Pose_Pistolet": [FLOAT["Pose_Pistolet"]],
     "Pose_PriseAnneau": [FLOAT["Pose_PriseAnneau"]],
-    "Pose_Traction": [merge(fingers_pose(-4, 0, 0, 10), thumb(curl=0, abd=16), {"Poignet": [("curl", -12)]})],
-    "Pose_Repulsion": [merge(fingers_pose(-14, -6, 0, 18), thumb(curl=-4, abd=26), {"Poignet": [("curl", -28)]})],
-    "Pose_Attraper": [merge(fingers_pose(12, 14, 8, 2), thumb(curl=10, abd=4)),
-                      merge(fingers_pose(-6, 0, 0, 14), thumb(curl=0, abd=22)),
-                      merge(fingers_pose(42, 62, 42, -2), thumb(curl=32, abd=-8, c1=14))],
-    "Pose_TenirObjet": [merge(fingers_pose(22, 55, 45, 12), thumb(curl=30, abd=12), {"Poignet": [("curl", -10)]})],
-    "Pose_Lancer": [merge(fingers_pose(0, 4, 0, 8), thumb(curl=4, abd=10), {"Poignet": [("curl", 18)]})],
+    # poses d'action (2026-11-16) : même convention que le flottement (paume vers +Y : vers le haut ou le centre), pour
+    # qu'aucun fondu ne fasse tourner l'avant-bras d'un demi-tour ; la forme de la main est gardée
+    "Pose_Traction": [merge(PALM_UP, fingers_pose(-4, 4, 2, 12), thumb(curl=0, abd=24), {"Poignet": [("curl", -14)]})],
+    "Pose_Repulsion": [merge(PALM_UP, fingers_pose(-14, -6, 0, 18), thumb(curl=-4, abd=30), {"Poignet": [("curl", -30)]})],
+    "Pose_Attraper": [FLOAT["Pose_Repos"],
+                      merge(PALM_UP, fingers_pose(-6, 0, 0, 14), thumb(curl=0, abd=26), {"Poignet": [("curl", -14)]}),
+                      merge(PALM_UP, fingers_pose(42, 62, 42, -2), thumb(curl=32, abd=-8, c1=14), {"Poignet": [("curl", -8)]})],
+    "Pose_TenirObjet": [merge(PALM_UP, fingers_pose(20, 36, 26, 10), thumb(curl=16, abd=20, c1=10), {"Poignet": [("curl", -14)]})],
+    "Pose_Lancer": [merge(PALM_UP, fingers_pose(0, 4, 0, 10), thumb(curl=4, abd=18), {"Poignet": [("curl", 14)]})],
     "Pose_Poing": [merge(fingers_pose(88, 100, 75, -1), thumb(curl=45, abd=-18, c1=24))],
 }
 FRAMES = {"Pose_Attraper": (1, 4, 8)}
