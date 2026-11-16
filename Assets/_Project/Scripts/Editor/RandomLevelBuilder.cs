@@ -42,10 +42,13 @@ namespace ItHunts.EditorTools
             Material wood = Mat("Prop_BoisSombre", new Color(0.22f, 0.15f, 0.1f));
             Material step = Mat("Kit_Marche", new Color(0.3f, 0.28f, 0.3f));
             var kit = LoadOrCreate<KitSet>(KitPath);
-            kit.mur4x4 = CubePiece("Kit_Mur4x4", new Vector3(0f, 2f, 0f), new Vector3(4f, 4f, 1f), stone);
-            kit.sol4 = CubePiece("Kit_Sol4", new Vector3(0f, -0.5f, 0f), new Vector3(4f, 1f, 4f), slab);
-            kit.escalier = CubePiece("Kit_Escalier", new Vector3(0f, 0.125f, 0.5f), new Vector3(4f, 0.25f, 1f), step);
-            kit.pont = CubePiece("Kit_Pont", new Vector3(0f, -0.5f, 0f), new Vector3(3f, 1f, 4f), wood);
+            // Pièces de la DA (lot du 2026-11-16, UV en coordonnées monde, mêmes cotes et pivots que les greybox) ; greybox sinon.
+            kit.mur4x4 = ModelPiece("Kit_Mur4x4", "SM_Kit_Mur4x4") ?? CubePiece("Kit_Mur4x4", new Vector3(0f, 2f, 0f), new Vector3(4f, 4f, 1f), stone);
+            kit.mur2x4 = ModelPiece("Kit_Mur2x4", "SM_Kit_Mur2x4");
+            kit.mur4x3 = ModelPiece("Kit_Mur4x3", "SM_Kit_Mur4x3");
+            kit.sol4 = ModelPiece("Kit_Sol4", "SM_Kit_Sol4") ?? CubePiece("Kit_Sol4", new Vector3(0f, -0.5f, 0f), new Vector3(4f, 1f, 4f), slab);
+            kit.escalier = ModelPiece("Kit_Escalier", "SM_Kit_Escalier") ?? CubePiece("Kit_Escalier", new Vector3(0f, 0.125f, 0.5f), new Vector3(4f, 0.25f, 1f), step);
+            kit.pont = ModelPiece("Kit_Pont", "SM_Kit_Pont") ?? CubePiece("Kit_Pont", new Vector3(0f, -0.5f, 0f), new Vector3(3f, 1f, 4f), wood);
             kit.pilier = ModelPiece("Kit_Pilier", "SM_Colonne");
             kit.arc = ModelPiece("Kit_Arc", "SM_Arc_Couloir");
             kit.portePiece = ModelPiece("Kit_PortePiece", "SM_Porte_Piece");
