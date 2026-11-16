@@ -18,6 +18,8 @@ MonoBehaviour:
   rightHandRestEuler: {x: -45.1, y: -21, z: 39.7}
   leftHandRest: {x: -0.21, y: -0.09, z: 0.34}
   leftHandRestEuler: {x: -45.1, y: 21, z: -39.7}
+  wideRightHandRest: {x: 0.29, y: -0.15, z: 0.42}
+  wideRightHandRestEuler: {x: -45.1, y: -21, z: 39.7}
   barrelInHand: {x: 0, y: 0.14, z: 0.05}
   barrelInHandEuler: {x: 0, y: 0, z: 0}
   barrelScale: 1

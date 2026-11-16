@@ -129,6 +129,14 @@ namespace ItHunts.Level
                 return;
             var o = new Open { Player = pi, Menu = new GreyboxMenu { Owner = OwnerOf(pi) }, Frame = Time.frameCount };
             o.Menu.Add("Reprendre", () => Close(o, true));
+            var fpv = pi.GetComponent<FirstPersonView>();
+            if (fpv != null)
+            {
+                GreyboxMenu.Item framing = o.Menu.Add("Cadrage des mains", null);
+                framing.Value = () => FirstPersonView.FramingLabel(fpv.Framing);
+                framing.Change = d => fpv.Framing = fpv.Framing == HandFraming.Reference ? HandFraming.Ecarte : HandFraming.Reference;
+                framing.Submit = () => framing.Change(1);
+            }
             int index = IndexOf(pi);
             if (index > 0 && PlayerInput.all.Count > 1 && SplitScreen.Current != null)
                 o.Menu.Add("Quitter l'écran partagé", () => LeaveSplit(o));

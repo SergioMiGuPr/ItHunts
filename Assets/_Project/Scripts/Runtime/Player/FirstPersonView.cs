@@ -16,6 +16,13 @@ namespace ItHunts.Player
         Prise,
     }
 
+    /// <summary>Cadrage des mains (menu pause, vitrine) : référence (reference_bras_fps.png) ou écarté.</summary>
+    public enum HandFraming : byte
+    {
+        Reference,
+        Ecarte,
+    }
+
     /// <summary>
     /// Aperçu forcé de la vue (scène vitrine, captures) : une pose de fond ou un état de l'artefact sans passer par la simulation.
     /// Aucun : la vue suit l'état simulé du joueur (en jeu).
@@ -44,6 +51,30 @@ namespace ItHunts.Player
     {
         public const string LayerPrefix = "FirstPersonP";
         private const string IntensityKey = "ItHunts.HandMotionIntensity.P";
+        private const string FramingKey = "ItHunts.HandFraming.P";
+        private HandFraming _framing;
+
+        /// <summary>Cadrage des mains, enregistré par joueur (menu pause, vitrine).</summary>
+        public HandFraming Framing
+        {
+            get => _framing;
+            set
+            {
+                _framing = value;
+                PlayerPrefs.SetInt(FramingKey + _playerIndex, (int)value);
+            }
+        }
+
+        public static string FramingLabel(HandFraming f) => f == HandFraming.Ecarte ? "écarté" : "référence";
+
+        /// <summary>Position et angles de repos d'une main selon le cadrage (gauche : miroir du préréglage droit).</summary>
+        private Vector3 RestPos(bool right) => _framing == HandFraming.Ecarte
+            ? (right ? settings.wideRightHandRest : Vector3.Scale(settings.wideRightHandRest, new Vector3(-1f, 1f, 1f)))
+            : right ? settings.rightHandRest : settings.leftHandRest;
+
+        private Vector3 RestEuler(bool right) => _framing == HandFraming.Ecarte
+            ? (right ? settings.wideRightHandRestEuler : Vector3.Scale(settings.wideRightHandRestEuler, new Vector3(1f, -1f, -1f)))
+            : right ? settings.rightHandRestEuler : settings.leftHandRestEuler;
 
         [SerializeField] private FpsViewSettings settings;
         [SerializeField] private Camera overlayCamera;
@@ -132,6 +163,7 @@ namespace ItHunts.Player
             _mainCamera = playerInput != null ? playerInput.camera : null;
             _playerIndex = playerInput != null ? Mathf.Max(0, playerInput.playerIndex) : 0;
             handMotionIntensity = PlayerPrefs.GetFloat(IntensityKey + _playerIndex, handMotionIntensity);
+            _framing = (HandFraming)Mathf.Clamp(PlayerPrefs.GetInt(FramingKey + _playerIndex, 0), 0, 1);
             SetupCameras();
             SetupFillLight();
             if (orb != null && settings != null)
@@ -382,8 +414,8 @@ namespace ItHunts.Player
             _rightCurl = Mathf.Lerp(_rightCurl, curl, kp);
             if (rightHand != null)
             {
-                rightHand.localPosition = settings.rightHandRest + _rightOffset + gesture;
-                rightHand.localRotation = Quaternion.Euler(settings.rightHandRestEuler + _rightEuler);
+                rightHand.localPosition = RestPos(true) + _rightOffset + gesture;
+                rightHand.localRotation = Quaternion.Euler(RestEuler(true) + _rightEuler);
             }
 
             if (rightFingers != null)
@@ -435,8 +467,8 @@ namespace ItHunts.Player
             _leftCurl = Mathf.Lerp(_leftCurl, leftCurl, kp);
             if (leftHand != null)
             {
-                leftHand.localPosition = settings.leftHandRest + leftOffset;
-                leftHand.localRotation = Quaternion.Euler(settings.leftHandRestEuler + leftEuler);
+                leftHand.localPosition = RestPos(false) + leftOffset;
+                leftHand.localRotation = Quaternion.Euler(RestEuler(false) + leftEuler);
             }
 
             if (leftFingers != null)

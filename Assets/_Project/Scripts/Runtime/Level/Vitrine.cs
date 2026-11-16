@@ -528,6 +528,20 @@ namespace ItHunts.Level
                 GUILayout.EndHorizontal();
             }
 
+            GUILayout.Label("Cadrage des mains");
+            var view = PlayerHealth.All.Count > 0 ? PlayerHealth.All[0].GetComponent<FirstPersonView>() : null;
+            if (view != null)
+            {
+                GUILayout.BeginHorizontal();
+                foreach (HandFraming f in new[] { HandFraming.Reference, HandFraming.Ecarte })
+                    if (GUILayout.Toggle(view.Framing == f, FirstPersonView.FramingLabel(f), GUI.skin.button) && view.Framing != f)
+                    {
+                        view.Framing = f;
+                        _status = "Cadrage : " + FirstPersonView.FramingLabel(f);
+                    }
+                GUILayout.EndHorizontal();
+            }
+
             GUILayout.Label("Ambiance");
             GUILayout.BeginHorizontal();
             for (int i = 0; i < ambiances.Count; i++)
