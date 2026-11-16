@@ -1,0 +1,10 @@
+goule au repos : émission RGBA(0.248, 0.023, 0.014, 0.450)
+goule pendant l'annonce : émission RGBA(0.550, 0.050, 0.030, 1.000)
+  SM_Goule_LOD0 : émission RGBA(0.550, 0.050, 0.030, 1.000)
+  SM_Goule_LOD1 : émission RGBA(0.550, 0.050, 0.030, 1.000)
+  SM_Goule_LOD2 : émission RGBA(0.550, 0.050, 0.030, 1.000)
+pupilles : RGBA(0.330, 0.030, 0.018, 0.600)
+griffes au repos : 0,15 ; main à (-118.00, 0.80, -232.00)
+griffes pendant la prise : 0,70
+  main : matériau M_Traqueur_Mains, émission RGBA(0.700, 0.651, 0.546, 0.700)
+#fin

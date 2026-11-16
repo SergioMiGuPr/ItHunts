@@ -98,5 +98,14 @@ namespace ItHunts.Settings
         [ColorUsage(false, true)] public Color leapGlowColor = new Color(4f, 0.25f, 0.12f);
         [Tooltip("Teinte rouge du corps pendant l'annonce (0 : aucune, 1 : rouge plein).")]
         [Range(0f, 1f)] public float leapBodyTint = 0.55f;
+
+        [Header("Lueur des yeux et de la gueule (modèle de la DA, masque d'émission ; retours du lot, point 3)")]
+        [Tooltip("Rouge sombre et discret, sous le seuil du bloom : jamais un rouge vif. Le signal du bond est la gueule, le disque au " +
+                 "sol et une légère montée de cette lueur.")]
+        [ColorUsage(false, true)] public Color eyeGlowColor = new Color(0.55f, 0.05f, 0.03f);
+        [Tooltip("Intensité de la lueur au repos (× la couleur).")]
+        [Range(0f, 2f)] public float eyeGlowRest = 0.45f;
+        [Tooltip("Intensité pendant l'annonce du bond (× la couleur) : une légère montée.")]
+        [Range(0f, 2f)] public float eyeGlowAnnounce = 1f;
     }
 }

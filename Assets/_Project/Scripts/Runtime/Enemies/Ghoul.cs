@@ -1097,8 +1097,10 @@ namespace ItHunts.Enemies
             {
                 _glowShown = on;
                 _glowApplied = true;
+                // Rouge sombre et discret, au repos comme pendant l'annonce (retours du lot, point 3) : une légère montée signale le
+                // bond, avec la gueule (même masque) et le disque au sol ; les trois LOD partagent le matériau et le masque.
                 if (_damageable != null && settings != null)
-                    _damageable.ExtraGlow = on ? settings.leapGlowColor : Color.black;
+                    _damageable.ExtraGlow = settings.eyeGlowColor * (on ? settings.eyeGlowAnnounce : settings.eyeGlowRest);
                 return;
             }
 
@@ -1176,7 +1178,7 @@ namespace ItHunts.Enemies
 
         /// <summary>Signaux de l'annonce allumés (tests, mesures).</summary>
         public bool SignalsOn => (telegraph != null && telegraph.enabled) || (_glowApplied && _glowShown)
-            || (_damageable != null && _damageable.ExtraGlow.maxColorComponent > 0.001f);
+            || (_model == null && _damageable != null && _damageable.ExtraGlow.maxColorComponent > 0.001f);
 
         private void UpdateVisual()
         {

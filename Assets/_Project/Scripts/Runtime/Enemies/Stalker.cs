@@ -209,10 +209,16 @@ namespace ItHunts.Enemies
 
         private void Start()
         {
-            // Pupilles rouges du modèle de la DA : Damageable écrit l'émission de tous ses rendus à chaque image (noir par défaut).
+            // Pupilles du modèle de la DA (rouge sombre) : Damageable écrit l'émission de tous ses rendus à chaque image ; les bras et
+            // les mains (M_Traqueur_Mains : griffes) ont leur propre lueur ivoire (UpdateClawGlow).
             var dmg = GetComponent<ItHunts.Combat.Damageable>();
+            _dmg = dmg;
             if (dmg != null && settings != null)
-                dmg.ExtraGlow = settings.pupilGlow;
+            {
+                dmg.ExtraGlow = settings.pupilGlow * settings.pupilGlowIntensity;
+                _claw = settings.clawGlowRest;
+                UpdateClawGlow(0f);
+            }
             // Mains de la DA (boîtes unité) : la taille réglée est celle de la main visible, qui est aussi la zone qui tue.
             if (settings != null)
             {
@@ -229,6 +235,37 @@ namespace ItHunts.Enemies
         }
 
         private float _staggerUntil;
+
+        private ItHunts.Combat.Damageable _dmg;
+        private List<Renderer> _limbRenderers;
+        private float _claw;
+
+        /// <summary>Intensité courante de la lueur des griffes (retours du lot, point 3).</summary>
+        public float ClawGlow => _claw;
+
+        private void LateUpdate() => UpdateClawGlow(Time.deltaTime);
+
+        /// <summary>
+        /// Griffes ivoire (masque de M_Traqueur_Mains) : faibles au repos, plus intenses pendant la prise (annonce, descente, main au
+        /// sol). Jamais de rouge sur les mains : le signal de danger reste la colonne rouge au sol.
+        /// </summary>
+        private void UpdateClawGlow(float dt)
+        {
+            if (settings == null || _dmg == null)
+                return;
+            if (_limbRenderers == null)
+            {
+                _limbRenderers = new List<Renderer>();
+                foreach (Transform t in new[] { arm, hand, leftArm, leftHand })
+                    if (t != null && t.GetComponent<Renderer>() != null)
+                        _limbRenderers.Add(t.GetComponent<Renderer>());
+            }
+
+            float target = _grab != GrabPhase.Aucune || Planted ? settings.clawGlowGrab : settings.clawGlowRest;
+            _claw = dt <= 0f ? target : Mathf.Lerp(_claw, target, 1f - Mathf.Exp(-settings.clawGlowRate * dt));
+            foreach (Renderer r in _limbRenderers)
+                _dmg.GlowOverrides[r] = settings.clawGlow * _claw;
+        }
 
         /// <summary>Pression du combat de boss : recharges de la prise, des mains levées et de la pointe × ce facteur (1 hors combat).</summary>
         public float CooldownScale { get; set; } = 1f;

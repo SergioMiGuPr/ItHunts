@@ -299,8 +299,40 @@ namespace ItHunts.Tests
             var flyer = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FlyerSettings>("Assets/_Project/Settings/Flyer_Default.asset");
             Assert.That(ghoul.eyeColor.maxColorComponent, Is.LessThan(1f), "yeux sous le seuil du bloom hors annonce");
             Assert.That(flyer.eyeColor.maxColorComponent, Is.LessThan(1f));
-            Assert.That(ghoul.leapGlowColor.maxColorComponent, Is.GreaterThan(1f), "annonce : au-delà du seuil du bloom");
             Assert.That(flyer.diveGlowColor.maxColorComponent, Is.GreaterThan(1f));
+        }
+
+        [Test]
+        public void Lueurs_YeuxRougeSombre_GriffesIvoire_TroisLODDeLaGoule()
+        {
+            var ghoul = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");
+            var stalker = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
+            Color rest = ghoul.eyeGlowColor * ghoul.eyeGlowRest, announce = ghoul.eyeGlowColor * ghoul.eyeGlowAnnounce;
+            Assert.That(announce.maxColorComponent, Is.LessThan(1f), "jamais un rouge vif (sous le seuil du bloom), même pendant l'annonce");
+            Assert.That(announce.maxColorComponent, Is.GreaterThan(rest.maxColorComponent * 1.3f), "légère montée pendant l'annonce");
+            Assert.That(ghoul.eyeGlowColor.r, Is.GreaterThan(ghoul.eyeGlowColor.g * 5f), "rouge");
+            Color pupils = stalker.pupilGlow * stalker.pupilGlowIntensity;
+            Assert.That(pupils.maxColorComponent, Is.LessThan(1f));
+            Assert.That(stalker.clawGlowGrab, Is.GreaterThan(stalker.clawGlowRest * 2f), "griffes plus vives pendant la prise");
+            Assert.That(stalker.clawGlow.b, Is.GreaterThan(stalker.clawGlow.r * 0.6f), "ivoire, pas rouge");
+
+            // Les trois LOD de la goule sont des rendus de la goule (Damageable écrit l'émission sur chacun), même matériau à masque.
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Niveau/Goule.prefab");
+            var lods = prefab.GetComponentsInChildren<LODGroup>(true);
+            Assert.That(lods.Length, Is.EqualTo(1));
+            LOD[] levels = lods[0].GetLODs();
+            Assert.That(levels.Length, Is.EqualTo(3));
+            foreach (LOD l in levels)
+                foreach (Renderer r in l.renderers)
+                {
+                    Assert.That(r.transform.IsChildOf(prefab.transform), Is.True);
+                    Assert.That(r.sharedMaterial.GetTexture("_EmissionMap"), Is.Not.Null, r.name + " : masque des yeux et de la gueule");
+                }
+
+            // Bras et mains du traqueur : M_Traqueur_Mains dans les scènes de jeu.
+            string guid = AssetDatabase.AssetPathToGUID("Assets/Art/Materials/Ennemis/M_Traqueur_Mains.mat");
+            foreach (string scene in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+                Assert.That(System.Text.RegularExpressions.Regex.Matches(System.IO.File.ReadAllText(scene), guid).Count, Is.GreaterThanOrEqualTo(4), scene);
         }
 
         [Test]
