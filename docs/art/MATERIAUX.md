@@ -86,7 +86,7 @@ matériaux, tous sur `ItHunts/Toon`, ni métal ni brillance :
 
 | Matériau | Utilisé par | Texture | Émission |
 |---|---|---|---|
-| `M_Caisse` | `SM_Caisse` | `T_Caisse_BaseColor` (512 px, tiling (1, 1)) : bois, fer, corde ; **rune gravée, neutre (sans violet)** | **mot-clé actif, couleur noire** ; `_EmissionMap` = `T_Caisse_Emission` (512 px, blanc = cœur de la rune) : le jeu écrit `_EmissionColor` (lueur des objets attrapables), seule la rune s'allume |
+| `M_Caisse` | `SM_Caisse` | `T_Caisse_BaseColor` (512 px, tiling (1, 1)) : bois, fer, corde ; **rune gravée, neutre (sans violet), sur les quatre faces latérales** | **mot-clé actif, couleur noire** ; `_EmissionMap` = `T_Caisse_Emission` (512 px, blanc = cœur de la rune) : le jeu écrit `_EmissionColor` (lueur des objets attrapables), seule la rune s'allume |
 
 Le violet de la rune peinte par Tripo (et ses reflets mauves) a été ramené au brun du bois dans la couleur : le violet
 est réservé à la télékinésie et la lueur passe par l'émission (`sm_caisse.py`, fonction `textures`).

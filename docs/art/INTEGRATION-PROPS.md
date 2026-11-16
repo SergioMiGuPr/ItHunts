@@ -127,7 +127,7 @@ cadenas de la cage et de la grille qui dépassent de 2 à 3 cm à l'avant.
 
 | Prefab | Modèle | Décalage du modèle | Boîte de collision | Matériau | Attrapable |
 |---|---|---|---|---|---|
-| `Prop_Caisse_Attrapable` (cube unité à l'échelle 0.8 : **pivot au centre du cube**) | `SM_Caisse` (cube exact de 0.8 m, **pivot au sol, au centre**, +Z vers l'avant = face à la rune) | **(0, −0.4, 0)** dans un prefab dont la racine n'est pas mise à l'échelle ; si la racine garde son échelle 0.8, mettre le modèle à l'échelle 1.25 et à (0, −0.5, 0) | celle de la greybox : 0.8 m (centre (0, 0, 0)) | `M_Caisse` (créé le 2026-11-16 ; capture `rendus/Lot/Caisse_eteinte_et_lueur.jpg`) | **oui** (Rigidbody, `Grabbable`, 15 kg, lueur pilotée par le jeu via le masque de la rune) |
+| `Prop_Caisse_Attrapable` (cube unité à l'échelle 0.8 : **pivot au centre du cube**) | `SM_Caisse` (cube exact de 0.8 m, **pivot au sol, au centre**, +Z vers l'avant ; **rune sur les quatre faces latérales**, même sens de lecture, planche `Caisse_rune_4_faces.jpg`) | **(0, −0.4, 0)** dans un prefab dont la racine n'est pas mise à l'échelle ; si la racine garde son échelle 0.8, mettre le modèle à l'échelle 1.25 et à (0, −0.5, 0) | celle de la greybox : 0.8 m (centre (0, 0, 0)) | `M_Caisse` (créé le 2026-11-16 ; capture `rendus/Lot/Caisse_eteinte_et_lueur.jpg`) | **oui** (Rigidbody, `Grabbable`, 15 kg, lueur pilotée par le jeu via le masque de la rune) |
 
 - **Autres caisses du jeu** (cubes de 0.5, 0.7, 0.9, 1.1 m posés par le code selon la masse : 5, 15, 25, 40 kg) : le même
   modèle mis à l'échelle convient (× 0.625, 0.875, 1.125, 1.375), puisque toutes sont des cubes.
