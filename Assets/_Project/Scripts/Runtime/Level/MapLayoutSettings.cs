@@ -42,6 +42,8 @@ namespace ItHunts.Level
         [Range(0, 20)] public int parkourHalls = 6;
         [Tooltip("Galeries de parcours au plus, le long des couloirs plats de 55 m et plus (hors départ et sortie), ouvertes sur le couloir.")]
         [Range(0, 40)] public int galleries = 30;
+        [Tooltip("Galeries : eau au fond du vide, à cette profondeur sous le sol du couloir (m). On ne revient au palier qu'en la touchant.")]
+        [Range(4f, 30f)] public float galleryWaterDepth = 16f;
         [Tooltip("Zones de parcours (salles de parcours + galeries) par salle de la carte : 0.5 = une zone pour deux salles. Les passages en hauteur s'ajoutent.")]
         [Range(0f, 1f)] public float zonesPerRoom = 0.5f;
         [Tooltip("Part des zones de parcours qui mènent à un coffre (au bout d'un saut, atteint seulement par le parcours).")]

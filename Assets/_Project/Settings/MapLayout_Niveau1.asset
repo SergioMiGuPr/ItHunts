@@ -27,6 +27,7 @@ MonoBehaviour:
   canalHalls: 7
   parkourHalls: 6
   galleries: 30
+  galleryWaterDepth: 16
   zonesPerRoom: 0.5
   parkourChestShare: 0.34
   passages: 10

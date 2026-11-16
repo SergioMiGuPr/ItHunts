@@ -758,7 +758,7 @@ namespace ItHunts.Level
             {
                 PlanGallery g = Plan.Galleries[k];
                 Frame(g.Link, true, out Vector3 face, out Vector3 axis, out Vector3 lateral, out float len);
-                float w = Plan.Links[g.Link].Width, H = settings.corridorHeight, depth = 10f;
+                float w = Plan.Links[g.Link].Width, H = settings.corridorHeight, depth = settings.galleryWaterDepth, pool = 2f;
                 Vector3 latS = lateral * g.Side;
                 string nm = $"Galerie de parcours {k + 1}";
                 var root = new GameObject(nm).transform;
@@ -766,13 +766,22 @@ namespace ItHunts.Level
                 Vector3 Pt(float a, float lt, float up) => face + axis * a + latS * lt + Vector3.up * up;
                 Vector3 Size(float axLen, float latLen, float hgt) => Mathf.Abs(axis.x) > 0.5f ? new Vector3(axLen, hgt, latLen) : new Vector3(latLen, hgt, axLen);
                 float l0 = w * 0.5f, l1 = l0 + T + GalleryWidth, a0 = 3f, a1 = len - 3f, landing = 5f, line = l0 + 9f;
-                NM($"{nm} : mur extérieur", root, Pt((a0 + a1) * 0.5f, l1 + 0.5f, (H - depth) * 0.5f), Size(a1 - a0 + 2f, 1f, H + depth), false);
+                NM($"{nm} : mur extérieur", root, Pt((a0 + a1) * 0.5f, l1 + 0.5f, (H - depth - pool) * 0.5f), Size(a1 - a0 + 2f, 1f, H + depth + pool), false);
                 // Bouts 2 cm devant les bouts du mur coupé du couloir, plafond 2 cm sous le sien : pas de faces confondues (scintillement).
-                NM($"{nm} : bout 1", root, Pt(a0 - 0.49f, (l0 + 0.02f + l1) * 0.5f, (H - depth) * 0.5f), Size(1.02f, l1 - l0 - 0.02f, H + depth), false);
-                NM($"{nm} : bout 2", root, Pt(a1 + 0.49f, (l0 + 0.02f + l1) * 0.5f, (H - depth) * 0.5f), Size(1.02f, l1 - l0 - 0.02f, H + depth), false);
+                NM($"{nm} : bout 1", root, Pt(a0 - 0.49f, (l0 + 0.02f + l1) * 0.5f, (H - depth - pool) * 0.5f), Size(1.02f, l1 - l0 - 0.02f, H + depth + pool), false);
+                NM($"{nm} : bout 2", root, Pt(a1 + 0.49f, (l0 + 0.02f + l1) * 0.5f, (H - depth - pool) * 0.5f), Size(1.02f, l1 - l0 - 0.02f, H + depth + pool), false);
                 NM($"{nm} : plafond", root, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H + 0.48f), Size(a1 - a0 + 2f, l1 - l0 + 2f, 1f), false);
                 NM($"{nm} : parapet", root, Pt((a0 + a1) * 0.5f, l0 - 0.27f, 0.5f), Size(a1 - a0 - 2f * landing, 0.5f, 1f), false);
-                KitBuild.Box(root, $"{nm} : fond du vide", Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth - 0.5f), Size(a1 - a0, l1 - l0, 1f), KitBuild.Kind.Sol, kit, walkable: false);
+                KitBuild.Box(root, $"{nm} : fond du vide", Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth - pool - 0.5f), Size(a1 - a0, l1 - l0, 1f), KitBuild.Kind.Sol, kit, walkable: false);
+                // Eau au fond (correctifs-rendu point 3) : surface à depth sous le couloir, 2 m d'eau.
+                var waterSurface = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                waterSurface.name = $"{nm} : eau";
+                Destroy(waterSurface.GetComponent<Collider>());
+                waterSurface.transform.SetParent(root, false);
+                waterSurface.transform.position = Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth - 0.025f);
+                waterSurface.transform.localScale = Size(a1 - a0, l1 - l0, 0.05f);
+                if (water != null)
+                    waterSurface.GetComponent<MeshRenderer>().sharedMaterial = water;
 
                 // Paliers (au niveau du couloir, à portée) : de la porte du couloir jusqu'à la ligne du parcours.
                 var respawns = new List<Transform>();
@@ -808,12 +817,13 @@ namespace ItHunts.Level
                     BuildCourse(root, nm, Pt(a0 + landing, line, 0f), axis, latS, pieces, report);
                 Courses.Add(report);
 
-                var trig = new GameObject($"{nm} : vide");
+                // Retour au palier seulement au contact de l'eau (avant : dès 1.5 m sous le couloir) : de 0.3 m au-dessus de la surface au fond.
+                var trig = new GameObject($"{nm} : eau (retour au palier)");
                 trig.transform.SetParent(root, false);
-                trig.transform.position = Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth * 0.5f - 0.75f);
+                trig.transform.position = Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, -depth + 0.3f - (pool + 0.3f) * 0.5f);
                 var box = trig.AddComponent<BoxCollider>();
                 box.isTrigger = true;
-                box.size = Size(a1 - a0, l1 - l0, depth - 1.5f);
+                box.size = Size(a1 - a0, l1 - l0, pool + 0.3f);
                 trig.AddComponent<FallVoid>().Configure(settings.waterDamage, respawns.ToArray());
                 trig.AddComponent<NotWalkable>();
                 Volume(root, nm, Pt((a0 + a1) * 0.5f, (l0 + l1) * 0.5f, H * 0.5f), Size(a1 - a0, l1 - l0, H), RoomKind.Parcours);
@@ -865,14 +875,19 @@ namespace ItHunts.Level
                     float other = dl.A == i ? dl.To.y : dl.From.y, here = dl.A == i ? dl.From.y : dl.To.y;
                     float tan = dl.Slope ? (other - here) / Mathf.Max(1f, dl.Length) : 0f;
                     Quaternion tilt = Quaternion.FromToRotation(o, (o + Vector3.up * tan).normalized);
-                    // De 2 cm dans l'embrasure (pièces de la salle, déjà non magnétiques) à 1.3 m dans le couloir.
+                    // Sol et plafond : de 0.25 m dans la salle à 1.3 m dans le couloir (la rampe d'un couloir en pente commence dans
+                    // l'embrasure) ; côtés : de 2 cm dans l'embrasure (dans la salle, ils doublaient le mur : scintillement).
                     Vector3 at = d.Position + o * 0.66f + Vector3.up * (tan * 0.66f);
-                    NM($"seuil (sol) {d.Side}", room, at + Vector3.up * 0.03f, SizeD(1.28f, dw, 0.06f)).transform.rotation = tilt;
-                    NM($"seuil (plafond) {d.Side}", room, at + Vector3.up * (H - 0.03f), SizeD(1.28f, dw, 0.06f), false).transform.rotation = tilt;
+                    Vector3 atFloor = d.Position + o * 0.525f + Vector3.up * (tan * 0.525f);
+                    NM($"seuil (sol) {d.Side}", room, atFloor + Vector3.up * 0.03f, SizeD(1.55f, dw, 0.06f)).transform.rotation = tilt;
+                    NM($"seuil (plafond) {d.Side}", room, atFloor + Vector3.up * (H - 0.03f), SizeD(1.55f, dw, 0.06f), false).transform.rotation = tilt;
                     foreach (float sgn in new[] { -1f, 1f })
                     {
                         NM($"seuil (côté) {d.Side}", room, at + across * sgn * (dw * 0.5f - 0.03f) + Vector3.up * (H * 0.5f), SizeD(1.28f, 0.06f, H + 1f), false);
                     }
+
+                    // Au-dessus du linteau, côté salle : cache le plafond incliné d'un couloir en pente (magnétique) vu par la porte.
+                    NM($"seuil (bout du plafond) {d.Side}", room, d.Position - o * 0.2f + Vector3.up * (H + 1.5f), SizeD(0.06f, dw + 2f * T + 0.4f, 3.2f), false);
                 }
 
                 // Passages en hauteur qui débouchent dans cette salle : leurs pièces aussi.
