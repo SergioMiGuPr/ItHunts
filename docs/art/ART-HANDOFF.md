@@ -16,6 +16,11 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 >   en plus du test de profondeur. Lignes de 0.28 m (sortie 0.5 m), toujours face à l'écran, **toujours à l'échelle du monde**
 >   (même posés sur une porte étirée). Sur une porte (sortie, salle verrouillée), **un texte devant chaque face**, à 0.12 m : un
 >   modèle de porte doit donc avoir une **collision pleine** (sinon le texte de l'autre face se voit à travers).
+> - **Animations (PR #6, branche `animations`, 2026-11-16)** : goule et traqueur gréés branchés (contrôleurs dans
+>   `Assets/_Project/Animation/`, un état par clip, fondus par le code) ; épaule du traqueur lue sur l'os `Bras.R` : **3.55 m devant le
+>   pivot** dans la pose de repos animée (4 m annoncés) ; bras du traqueur étirés par le code au-delà de leur longueur quand la main va
+>   à 15 m. Bras FPS : cadrage de `reference_bras_fps.png` appliqué ; avec la lanterne (échelle 0.6) et le barillet, **17 à 26 % de
+>   l'écran** est couvert (objectif du jeu : 15 %) : à voir avec l'utilisateur (objets plus petits ou mains plus écartées).
 > - **Retours du lot (branche `retours-lot`, 2026-11-16)** :
 >   - **Arc de couloir (`SM_Arc_Couloir`)** : le plafond des couloirs est **plat** (15 m), l'arc est un **anneau en ogive** de
 >     14 × 11 m posé sur des piédroits de 4 m : seule la clé touchait le plafond, il restait 3 à 6 m de vide de chaque côté entre

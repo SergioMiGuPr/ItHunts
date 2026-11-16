@@ -4,6 +4,25 @@
 
 ## Étape en cours
 
+**Animations (`animations`, depuis `main` après fusion de `retours-lot` et de la PR #6) — 2026-11-16, non poussée, à tester.**
+- **Goule animée** (`SK_Goule`, `Assets/_Project/Animation/Goule.controller`) : un clip par état (repos, course selon la vitesse,
+  annonce calée sur `leapTelegraph`, bond, réception, escalade, coup avec dégâts à l'impact 0.24 s, étourdie ou tenue, mort visible
+  1 s avant de disparaître) ; LOD 0.25 / 0.10 / 0.012 (DA, 1.8 m) ; elle se baisse sous un plafond bas (`minCrouch`).
+- **Passages bas :** agent des goules 0.45 × 1.2 m, porte des salles verrouillées hors de leur NavMesh, pas d'arc devant les portes
+  annexes ; 20 seeds : la goule atteint les 3 425 volumes que le joueur atteint à pied.
+- **Traqueur animé** (`SK_Traqueur`, `Traqueur.controller`, calque `Mâchoire`) : IK épaule-coude-poignet vers les zones de main du
+  code, bras étiré au-delà de sa longueur (portée 15 m) ; épaule lue sur l'os `Bras.R` (2.6 m de côté, 11.66 m, 3.55 m devant) ;
+  lueurs par matériau (pupilles, griffes) ; 0 cachette sur 20 seeds ; esquive 10/10 sans réaction, 0/20 en courant de côté.
+- **Bras FPS :** boucles `Boucle_*` au repos, poses d'action paume vers le haut ; cadrage de la référence
+  (`docs/design/references-visuelles/reference_bras_fps.png`, valeurs de la DA) : viseur dégagé pour tous les gestes, **couverture
+  17 à 26 %** (au-dessus de 15 % : à trancher) ; orbe à `orbInHand` ; lumière d'appoint sur le calque « FPS » (`fillLight*`).
+- **Arcs :** `SM_Arc_Couloir_Ecoincons` (les blocs provisoires ne restent que dans les couloirs en pente, cachés derrière) ; 0 vide
+  sur 1 460 arcs (5 seeds).
+- **Eau :** fosses de parcours avec eau (retour au seul contact), eau plus claire ; 120 vides sur 120 avec de l'eau (5 seeds).
+- **Vitrine :** enclos fermé (murs de 16 m, porte de 4 × 3 m), socles sous les goules et traqueurs animés, scène sous le même GUID.
+- **Build Windows release 0.1.0** : `Builds/ItHunts_0.1.0_Windows.zip` (non suivi par git), LISEZ-MOI.txt.
+- **En attente :** PR #7 (bras peints des 4 personnages), puis fusion de `main` dans `animations`.
+
 **Retours du lot (`retours-lot`, depuis `main` après fusion de `correctifs-rendu`, `integration-lot` et de la PR #5) — 2026-11-16,
 non poussée, à tester en playtest.** PR #5 vérifiée (périmètre, `.meta`, import sans erreur, 392 tests) et fusionnée (commit de
 fusion, branche `art` gardée), `main` poussé ; branches locales `correctifs-rendu` et `integration-lot` supprimées. Un commit par point :
