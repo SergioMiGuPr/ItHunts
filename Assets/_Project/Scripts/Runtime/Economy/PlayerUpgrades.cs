@@ -27,7 +27,7 @@ namespace ItHunts.Economy
         public float LanternRangeBonus { get; private set; }
         public float LanternConeBonus { get; private set; }
         public float LanternCooldownCut { get; private set; }
-        public float LanternBurnDps { get; private set; }
+        public float LanternBurnDuration { get; private set; }
 
         private MovementSettings _moveOrig, _moveCopy;
         private MagnetismOrbSettings _magOrig, _magCopy;
@@ -84,7 +84,7 @@ namespace ItHunts.Economy
                 case UpgradeKind.PorteeLanterne: LanternRangeBonus += d.amount; break;
                 case UpgradeKind.ConeLanterne: LanternConeBonus += d.amount; break;
                 case UpgradeKind.RechargeLanterne: LanternCooldownCut += d.amount; break;
-                case UpgradeKind.BrulureLanterne: LanternBurnDps += d.amount; break;
+                case UpgradeKind.DureeBrulureLanterne: LanternBurnDuration += d.amount; break;
             }
 
             Refresh(d.kind);
@@ -128,7 +128,7 @@ namespace ItHunts.Economy
             }
 
             if (changed == UpgradeKind.PorteeLanterne || changed == UpgradeKind.ConeLanterne || changed == UpgradeKind.RechargeLanterne
-                || changed == UpgradeKind.BrulureLanterne)
+                || changed == UpgradeKind.DureeBrulureLanterne)
                 RefreshLantern();
 
             if (changed == UpgradeKind.BallesBarillet || changed == UpgradeKind.DegatsBarillet || changed == UpgradeKind.CadenceBarillet
@@ -173,7 +173,7 @@ namespace ItHunts.Economy
             copy.range = f.range + LanternRangeBonus;
             copy.coneAngle = Mathf.Min(170f, f.coneAngle + LanternConeBonus);
             copy.cooldown = Mathf.Max(0.3f, f.cooldown - LanternCooldownCut);
-            copy.burnDps = f.burnDps + LanternBurnDps;
+            copy.burnDuration = f.burnDuration + LanternBurnDuration;
             _artCopy = copy;
             holder.Equip(copy);
         }

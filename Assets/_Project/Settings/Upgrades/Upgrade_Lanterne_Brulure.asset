@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Upgrade_Lanterne_Brulure
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
   displayName: Braises
-  description: "Les ennemis touch\xE9s br\xFBlent : 5 PV/s pendant 3 s."
-  iconSymbol: ~
+  description: "Br\xFBlure de la lanterne : +2 s."
+  iconSymbol: +2 s
   color: {r: 3.6, g: 0.7, b: 0.2, a: 1}
   kind: 15
-  amount: 5
+  amount: 2
   merchantPrice: 60

@@ -120,13 +120,16 @@ namespace ItHunts.Tests
         // ---------- Valeurs de départ ----------
 
         [Test]
-        public void ValeursDeDepart_5m_40deg_06s_32PV_25s()
+        public void ValeursDeDepart_15m_25deg_06s_Brulure12PVs4s_25s()
         {
-            Assert.That(_cfg.range, Is.EqualTo(5f));
-            Assert.That(_cfg.coneAngle, Is.EqualTo(40f));
-            Assert.That(_cfg.HalfAngle, Is.EqualTo(20f));
+            Assert.That(_cfg.range, Is.EqualTo(15f), "portée × 3 (correctifs-rendu point 8)");
+            Assert.That(_cfg.coneAngle, Is.EqualTo(25f));
+            Assert.That(_cfg.HalfAngle, Is.EqualTo(12.5f));
             Assert.That(_cfg.jetDuration, Is.EqualTo(0.6f));
-            Assert.That(_cfg.damage, Is.EqualTo(32f), "une goule de 60 PV en 2 jets");
+            Assert.That(_cfg.damage, Is.EqualTo(0f), "tout passe par la brûlure");
+            Assert.That(_cfg.burnDps, Is.EqualTo(12f));
+            Assert.That(_cfg.burnDuration, Is.EqualTo(4f));
+            Assert.That(_cfg.burnTick, Is.EqualTo(0.25f));
             Assert.That(_cfg.cooldown, Is.EqualTo(2.5f));
             Assert.That(_cfg.Origin(Vector3.up * 1.6f, Vector3.forward).y, Is.EqualTo(1.15f).Within(1e-3f), "le cône part de la lanterne, sous les yeux");
         }
@@ -139,34 +142,33 @@ namespace ItHunts.Tests
             var dummyCfg = Asset<TrainingDummySettings>();
             PlayerHealth shooter = Player(Vector3.zero, Asset<CoopSettings>());
             Vector3 eye = new Vector3(0f, 0.9f, 0f);
-            // Devant à 3 m ; à 15° du viseur à 4 m ; à 35° (hors du cône de 40°) ; à 7 m (hors de portée) ; derrière.
+            // Devant à 3 m ; à 8° du viseur à 12 m ; à 20° (hors du cône de 25°) ; à 17 m (hors de portée) ; derrière.
             Damageable front = Dummy(new Vector3(0f, 0f, 3f), dummyCfg);
-            Damageable side = Dummy(Quaternion.Euler(0f, 15f, 0f) * new Vector3(0f, 0f, 4f), dummyCfg);
-            Damageable wide = Dummy(Quaternion.Euler(0f, 35f, 0f) * new Vector3(0f, 0f, 4f), dummyCfg);
-            Damageable far = Dummy(new Vector3(0f, 0f, 7f), dummyCfg);
+            Damageable side = Dummy(Quaternion.Euler(0f, 8f, 0f) * new Vector3(0f, 0f, 12f), dummyCfg);
+            Damageable wide = Dummy(Quaternion.Euler(0f, 20f, 0f) * new Vector3(0f, 0f, 8f), dummyCfg);
+            Damageable far = Dummy(new Vector3(0f, 0f, 17f), dummyCfg);
             Damageable behind = Dummy(new Vector3(0f, 0f, -3f), dummyCfg);
             Physics.SyncTransforms();
             var burned = new HashSet<int>();
 
+            bool Burns(Damageable d) => d.GetComponent<Burning>() != null && d.GetComponent<Burning>().enabled;
             int n = Sweep(eye, Vector3.forward, shooter.transform, shooter.PlayerId, burned);
-            Assert.That(n, Is.EqualTo(2), "devant et à 15°");
-            Assert.That(front.Health.Current, Is.EqualTo(front.Health.Max - _cfg.damage).Within(1e-3f));
-            Assert.That(side.Health.Current, Is.EqualTo(side.Health.Max - _cfg.damage).Within(1e-3f));
-            Assert.That(wide.Health.Current, Is.EqualTo(wide.Health.Max), "à 35° : hors du cône (20° de chaque côté)");
-            Assert.That(far.Health.Current, Is.EqualTo(far.Health.Max), "à 7 m : hors de portée");
-            Assert.That(behind.Health.Current, Is.EqualTo(behind.Health.Max));
+            Assert.That(n, Is.EqualTo(2), "devant et à 8° à 12 m");
+            Assert.That(Burns(front) && Burns(side), Is.True, "les ennemis touchés brûlent");
+            Assert.That(front.Health.Current, Is.EqualTo(front.Health.Max), "pas de dégâts immédiats : tout passe par la brûlure");
+            Assert.That(Burns(wide), Is.False, "à 20° : hors du cône (12.5° de chaque côté)");
+            Assert.That(Burns(far), Is.False, "à 17 m : hors de portée");
+            Assert.That(Burns(behind), Is.False);
 
             // Les ticks suivants du même jet ne retouchent pas les mêmes ennemis ; un nouveau jet (liste vidée) les retouche.
             Assert.That(Sweep(eye, Vector3.forward, shooter.transform, shooter.PlayerId, burned, 0.1f), Is.EqualTo(0));
-            Assert.That(front.Health.Current, Is.EqualTo(front.Health.Max - _cfg.damage).Within(1e-3f));
             burned.Clear();
             Assert.That(Sweep(eye, Vector3.forward, shooter.transform, shooter.PlayerId, burned, 4f), Is.EqualTo(2));
-            Assert.That(front.Health.Current, Is.EqualTo(front.Health.Max - 2f * _cfg.damage).Within(1e-3f));
 
-            // Viser à 35° : l'ennemi « large » entre dans le cône.
+            // Viser à 20° : l'ennemi « large » entre dans le cône.
             burned.Clear();
-            Sweep(eye, Quaternion.Euler(0f, 35f, 0f) * Vector3.forward, shooter.transform, shooter.PlayerId, burned, 8f);
-            Assert.That(wide.Health.Current, Is.EqualTo(wide.Health.Max - _cfg.damage).Within(1e-3f));
+            Sweep(eye, Quaternion.Euler(0f, 20f, 0f) * Vector3.forward, shooter.transform, shooter.PlayerId, burned, 8f);
+            Assert.That(Burns(wide), Is.True);
         }
 
         // ---------- Murs ----------
@@ -192,8 +194,8 @@ namespace ItHunts.Tests
             int n = Sweep(eye, Vector3.forward, shooter.transform, shooter.PlayerId, new HashSet<int>());
             Assert.That(n, Is.EqualTo(3), "les trois goules du couloir");
             foreach (Damageable d in new[] { a, b, c })
-                Assert.That(d.Health.Current, Is.LessThan(d.Health.Max));
-            Assert.That(hidden.Health.Current, Is.EqualTo(hidden.Health.Max), "le mur arrête le jet");
+                Assert.That(d.GetComponent<Burning>(), Is.Not.Null);
+            Assert.That(hidden.GetComponent<Burning>(), Is.Null, "le mur arrête le jet");
 
             // Un mur plein en travers : plus personne derrière lui.
             Wall(new Vector3(0f, 1.5f, 0.8f), new Vector3(6f, 3f, 0.2f));
@@ -217,7 +219,7 @@ namespace ItHunts.Tests
             int n = Sweep(new Vector3(0f, 0.9f, 0f), Vector3.forward, shooter.transform, shooter.PlayerId, new HashSet<int>());
             Assert.That(n, Is.EqualTo(1), "seul le volant");
             Assert.That(stalker.Health.Current, Is.EqualTo(stalker.Health.Max), "le traqueur n'est pas touché");
-            Assert.That(flyer.Dead, Is.True, "un volant meurt en un coup (60 PV, jet de 32)");
+            Assert.That(flyer.Dead, Is.True, "un volant meurt en un coup, même sans dégâts immédiats");
             Assert.That(flyer.LastAttackerId, Is.EqualTo(shooter.PlayerId), "attribué au joueur (aggro, coop)");
         }
 
@@ -236,7 +238,7 @@ namespace ItHunts.Tests
 
             coop.friendlyFire = true;
             Sweep(eye, Vector3.forward, p1.transform, p1.PlayerId, new HashSet<int>(), 1f);
-            Assert.That(p2.Health.Current, Is.EqualTo(p2.Health.Max - _cfg.damage).Within(1e-3f), "tir ami activé : 32 PV");
+            Assert.That(p2.Health.Current, Is.EqualTo(Mathf.Max(0f, p2.Health.Max - _cfg.burnDps * _cfg.burnDuration)).Within(1e-3f), "tir ami activé : la brûlure entière d'un coup");
             Assert.That(p1.Health.Current, Is.EqualTo(p1.Health.Max), "jamais soi-même, même dans son propre cône");
         }
 
@@ -388,30 +390,46 @@ namespace ItHunts.Tests
             up.Apply(U(UpgradeKind.PorteeLanterne, 1.5f));
             up.Apply(U(UpgradeKind.ConeLanterne, 15f));
             up.Apply(U(UpgradeKind.RechargeLanterne, 0.5f));
-            up.Apply(U(UpgradeKind.BrulureLanterne, 5f));
+            up.Apply(U(UpgradeKind.DureeBrulureLanterne, 2f));
             FireLanternSettings c = holder.LanternSettings;
             Assert.That(c, Is.Not.SameAs(_cfg), "copie pour ce joueur seul");
-            Assert.That(c.range, Is.EqualTo(6.5f).Within(1e-4f));
-            Assert.That(c.coneAngle, Is.EqualTo(55f).Within(1e-4f));
+            Assert.That(c.range, Is.EqualTo(16.5f).Within(1e-4f));
+            Assert.That(c.coneAngle, Is.EqualTo(40f).Within(1e-4f));
             Assert.That(c.cooldown, Is.EqualTo(2f).Within(1e-4f));
-            Assert.That(c.burnDps, Is.EqualTo(5f).Within(1e-4f));
-            Assert.That(_cfg.range, Is.EqualTo(5f), "l'asset partagé ne change pas");
+            Assert.That(c.burnDuration, Is.EqualTo(6f).Within(1e-4f), "« Braises » : +2 s de brûlure");
+            Assert.That(_cfg.range, Is.EqualTo(15f), "l'asset partagé ne change pas");
             Object.DestroyImmediate(c);
         }
 
         [Test]
-        public void Brulure_5PVParSeconde_3s_TraqueurJamais()
+        public void Brulure_12PVs_4s_Ticks025_RelanceSansCumul_TraqueurJamais()
         {
-            Damageable d = Dummy(new Vector3(0f, 0f, 3f), Asset<TrainingDummySettings>());
-            Burning b = Burning.Apply(d, 5f, 3f, 7);
+            var dummy = Asset<TrainingDummySettings>();
+            dummy.maxHealth = 1000f;
+            Damageable d = Dummy(new Vector3(0f, 0f, 3f), dummy);
+            const float t = 100f;
+            Burning b = Burning.Apply(d, 12f, 4f, 7, 0.25f, null, t);
             Assert.That(b, Is.Not.Null);
-            float t = Time.time, total = 0f;
-            for (int i = 0; i < 200; i++)
-                total += b.Tick(0.02f, t + i * 0.02f);
-            Assert.That(total, Is.EqualTo(15f).Within(0.2f), "5 PV/s pendant 3 s");
+            Assert.That(b.Step(0f, t + 0.2f), Is.EqualTo(0f), "premier tick 0.25 s après le contact");
+            Assert.That(b.Step(0f, t + 0.25f), Is.EqualTo(3f).Within(1e-4f), "3 PV par tick de 0.25 s");
+            float total = 3f;
+            for (int i = 2; i <= 30; i++)
+                total += b.Step(0.25f, t + i * 0.25f);
+            Assert.That(total, Is.EqualTo(48f).Within(1e-3f), "12 PV/s pendant 4 s : 16 ticks");
             Assert.That(d.LastAttackerId, Is.EqualTo(7), "attribuée au joueur (âmes, aggro)");
+
+            // Relance sans cumul : touché de nouveau à 2 s, la brûlure dure jusqu'à 6 s, au même rythme.
+            Damageable e = Dummy(new Vector3(1f, 0f, 3f), dummy);
+            Burning c = Burning.Apply(e, 12f, 4f, 7, 0.25f, null, t);
+            float sum = 0f;
+            for (int i = 1; i <= 8; i++)
+                sum += c.Step(0.25f, t + i * 0.25f);
+            Burning.Apply(e, 12f, 4f, 7, 0.25f, null, t + 2f);
+            for (int i = 9; i <= 40; i++)
+                sum += c.Step(0.25f, t + i * 0.25f);
+            Assert.That(sum, Is.EqualTo(72f).Within(1e-3f), "6 s × 12 PV/s, pas de double brûlure");
             Damageable stalker = Dummy(new Vector3(2f, 0f, 3f), Asset<TrainingDummySettings>(), stalker: true);
-            Assert.That(Burning.Apply(stalker, 5f, 3f, 7), Is.Null, "le traqueur ne brûle pas");
+            Assert.That(Burning.Apply(stalker, 12f, 4f, 7), Is.Null, "le traqueur ne brûle pas");
         }
 
         [Test]
@@ -427,7 +445,7 @@ namespace ItHunts.Tests
             Assert.That(ItHunts.Economy.ArtifactMerchant.PoolFor(_cfg, barrelPool), Is.Null, "artefact sans liste : le soin seulement");
             var project = AssetDatabase.LoadAssetAtPath<FireLanternSettings>("Assets/_Project/Settings/FireLantern_Default.asset");
             Assert.That(project.upgrades, Is.Not.Null);
-            Assert.That(project.upgrades.upgrades.Select(u => u.kind), Is.EquivalentTo(new[] { UpgradeKind.PorteeLanterne, UpgradeKind.ConeLanterne, UpgradeKind.RechargeLanterne, UpgradeKind.BrulureLanterne }));
+            Assert.That(project.upgrades.upgrades.Select(u => u.kind), Is.EquivalentTo(new[] { UpgradeKind.PorteeLanterne, UpgradeKind.ConeLanterne, UpgradeKind.RechargeLanterne, UpgradeKind.DureeBrulureLanterne }));
         }
 
         // ---------- Assets du projet ----------

@@ -23,7 +23,7 @@ namespace ItHunts.Settings
         PorteeLanterne,         // portée du jet + amount m
         ConeLanterne,           // ouverture du cône + amount °
         RechargeLanterne,       // recharge entre deux jets − amount s
-        BrulureLanterne,        // brûlure : amount PV/s pendant la durée de brûlure de la lanterne (3 s)
+        DureeBrulureLanterne,   // brûlure de la lanterne : + amount s de durée (correctifs-rendu point 8 ; avant : + PV/s)
     }
 
     /// <summary>

@@ -49,12 +49,15 @@ dégâts directs ; les artefacts et les améliorations en ajoutent (D-022). Déc
      rechargement, fin de rechargement).
    - Le **traqueur ignore les balles** (elles l'atteignent sans le blesser).
 6. **Lanterne de feu** (renard, D-065) : la main gauche tient une lanterne.
-   - **Clic gauche / RT sans objet tenu** : **jet de flammes** de **0.6 s** dans un **cône de 40°** (20° de chaque côté
-     du viseur), **portée 5 m** **depuis la lanterne** (main gauche : 0.22 m à gauche, 0.45 m sous les yeux, 0.35 m devant,
-     `originOffset`) pour toucher une goule qui rampe tout près ; **32 dégâts par ennemi** (une goule de 60 PV en 2 jets),
-     **une fois par jet** (un ennemi qui entre dans le cône pendant le jet est touché aussi) ; **recharge de 2.5 s** comptée
-     depuis la fin du jet ; un clic un peu trop tôt part dès que possible (0.12 s). *Équilibre revu après le playtest
-     (25 → 32 PV, 3 → 2.5 s, départ du cône à la lanterne).*
+   - **Clic gauche / RT sans objet tenu** : **jet de flammes** de **0.6 s** dans un **cône de 25°** (12.5° de chaque côté
+     du viseur ; à 15 m, 6.6 m de large pour un couloir de 14 m), **portée 15 m** **depuis la lanterne** (main gauche : 0.22 m
+     à gauche, 0.45 m sous les yeux, 0.35 m devant, `originOffset`) ; **pas de dégâts immédiats : chaque ennemi touché
+     brûle** pendant **4 s à 12 PV/s, par ticks de 0.25 s** (3 PV par tick, 48 PV) ; le toucher de nouveau **relance la
+     durée sans cumuler** ; flammes sur l'ennemi tant qu'il brûle. Touché **une fois par jet** (un ennemi qui entre dans le
+     cône pendant le jet est touché aussi) ; **recharge de 2.5 s** comptée depuis la fin du jet ; un clic un peu trop tôt
+     part dès que possible (0.12 s). Une goule de 60 PV meurt en 5 s (2 jets), à 5 comme à 15 m ; un groupe de 3 aussi.
+     *Revu deux fois : 25 → 32 PV et 3 → 2.5 s après le premier playtest ; portée × 3, cône 25° et brûlure (correctifs-rendu,
+     point 8).*
    - **Le jet traverse les ennemis, les joueurs et les objets (Rigidbody), pas le décor** (collider solide sans
      Rigidbody : même règle que les textes en monde).
    - Comme toute attaque d'un joueur : **un volant meurt en un coup**, le **traqueur n'est pas touché**, le **tir ami** est
@@ -67,8 +70,8 @@ dégâts directs ; les artefacts et les améliorations en ajoutent (D-022). Déc
      (souffle, rallumage). Le modèle de la DA arrivera par une PR (lanterne greybox de 6 × 9 × 6 cm en attendant).
    - **Marchand de l'artefact** (D-050) : il propose **les améliorations de l'artefact du joueur qui achète** (une liste par
      artefact, `ArtifactDefinition.upgrades`). Lanterne, 4 provisoires (`UpgradePool_Lanterne`) : **Long souffle** (portée
-     +1.5 m, 45 âmes), **Flamme large** (cône +15°, 50), **Mèche vive** (recharge −0.5 s, 55), **Braises** (les ennemis touchés
-     brûlent 5 PV/s pendant 3 s, 60 ; pas le traqueur ; chiffres toutes les 0.5 s). Elles se cumulent sur une copie des
+     +1.5 m, 45 âmes), **Flamme large** (cône +15°, 50), **Mèche vive** (recharge −0.5 s, 55), **Braises** (durée de la
+     brûlure +2 s, 60 ; pas le traqueur ; chiffres toutes les 0.5 s). Elles se cumulent sur une copie des
      réglages du joueur.
 7. **Tir ami** (réglage coop `Coop_Default`, **désactivé par défaut**) : les balles, les objets lancés (zone
    comprise) et les objets repoussés d'un joueur blessent les autres joueurs s'il est activé ; **jamais le joueur
