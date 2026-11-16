@@ -15,12 +15,12 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
   m_Fog: 1
-  m_FogColor: {r: 0.012, g: 0.014, b: 0.024, a: 1}
+  m_FogColor: {r: 0.007, g: 0.008, b: 0.015, a: 1}
   m_FogMode: 1
   m_FogDensity: 0.01
-  m_LinearFogStart: 10
-  m_LinearFogEnd: 85
-  m_AmbientSkyColor: {r: 0.055, g: 0.058, b: 0.08, a: 1}
+  m_LinearFogStart: 6
+  m_LinearFogEnd: 45
+  m_AmbientSkyColor: {r: 0.03, g: 0.032, b: 0.045, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
@@ -92487,7 +92487,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1242a9a8dc2bcf3408f7f439d0f2db82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.SceneAmbiance
-  ambiance: {fileID: 11400000, guid: 3dccc791420108142a36fe16642616a4, type: 2}
+  ambiance: {fileID: 11400000, guid: fa56d647b3507154f9029c2c77f12f5d, type: 2}
 --- !u!4 &301341909
 Transform:
   m_ObjectHideFlags: 0

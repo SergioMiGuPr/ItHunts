@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9181e00e108934d91e4524c0f3cfbc, type: 3}
+  m_Name: Ambiance_Sombre
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.AmbianceSettings
+  ambient: {r: 0.03, g: 0.032, b: 0.045, a: 1}
+  fogColor: {r: 0.007, g: 0.008, b: 0.015, a: 1}
+  fogStart: 6
+  fogEnd: 45
+  moonIntensity: 0.18
+  torchIntensity: 1.6
+  torchRange: 10
+  lampIntensity: 1.6
+  lampRange: 11.5
+  contourFadeStart: 30
+  contourFadeEnd: 80
+  labelFullDistance: 20
+  labelHiddenDistance: 35
+  labelFogShare: 0.8
+  enraged: {fileID: 11400000, guid: 4c6285ce5cc774d4e9a7245cf108d409, type: 2}
+  enragedTransition: 2

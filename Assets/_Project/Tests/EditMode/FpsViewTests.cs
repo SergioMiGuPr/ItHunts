@@ -304,6 +304,22 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Ambiance_SombreParDefaut_EntreIntermediaireEtHorreur()
+        {
+            var mid = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Intermediaire.asset");
+            var dark = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Sombre.asset");
+            var horror = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Horreur.asset");
+            Assert.That(dark.ambient.r, Is.EqualTo(0.03f).Within(1e-4f));
+            Assert.That(dark.fogStart, Is.EqualTo(6f));
+            Assert.That(dark.fogEnd, Is.EqualTo(45f));
+            Assert.That(dark.ambient.r, Is.LessThan(mid.ambient.r).And.GreaterThan(horror.ambient.r));
+            Assert.That(dark.fogEnd, Is.LessThan(mid.fogEnd).And.GreaterThan(horror.fogEnd));
+            Assert.That(dark.enraged, Is.EqualTo(horror), "phase enragée : horreur");
+            foreach (string scene in new[] { "Assets/Scenes/Test_Movement.unity", "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+                Assert.That(System.IO.File.ReadAllText(scene).Contains(AssetDatabase.AssetPathToGUID("Assets/_Project/Settings/Ambiance_Sombre.asset")), Is.True, scene);
+        }
+
+        [Test]
         public void Reglages_ParDefaut()
         {
             var fps = AssetDatabase.LoadAssetAtPath<FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");
