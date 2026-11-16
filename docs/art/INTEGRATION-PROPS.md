@@ -331,7 +331,11 @@ tire jamais le torse, ni la mâchoire le crâne), poids doux par distance là o�
 première fois debout pour voûter le modèle sans bosses, puis recalculés sur le modèle voûté avec les **os d'aide** (mêmes
 noms et même principe que la goule). **Épaules** : géométrie lissée (Taubin, sans rétrécir) autour de chaque épaule après
 la mise en voûte. Pic de distorsion, avant → après : épaules bras levés 1.01/1.80 → 0.02/0.36, revers 0.51 → 0.10, genoux
-du passage bas 0.61/1.05 → 0.50/0.58, doigts 1.18/0.80 → 1.15/0.66 ; pouce 0.88 → 1.51 (petit, à reprendre si visible).
+du passage bas 0.61/1.05 → 0.50/0.58, doigts 1.18/0.80 → 1.15/0.66. **Pouce (branche `art-fix`)** : poids recalculés le
+long de l'axe du pouce (rampe main → pouce large, rampe `Pouce_1` → `Pouce_2` ; `POUCE_*` dans `sk_traqueur.py`), fondus
+dans les poids d'origine, sommets tenus par les doigts gardés : `Traqueur_Prise` pouce 1.51 → **0.65** (avant la PR #8 :
+0.88), base du pouce 1.03 → 0.80, doigts inchangés (1.15/0.66), poignet 0.76 → 0.41 (Prise), 0.31 → 0.30 (main plantée).
+Pas de nouvel os. Planche `rendus/Lot2/Traqueur_Pouce_avant_apres.jpg`.
 Mesures après : épaule 11.75 m, yeux 12.4 m, sommet 13.96 m (tient dans 14 m). Planche
 `rendus/Lot2/Traqueur_Greement_avant_apres.jpg`.
 
