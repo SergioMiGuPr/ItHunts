@@ -17,10 +17,10 @@ MonoBehaviour:
   fogStart: 10
   fogEnd: 85
   moonIntensity: 0.25
-  torchIntensity: 1.8
-  torchRange: 11
-  lampIntensity: 1.8
-  lampRange: 13
+  torchIntensity: 1.35
+  torchRange: 15.4
+  lampIntensity: 1.17
+  lampRange: 18.2
   contourFadeStart: 40
   contourFadeEnd: 100
   enraged: {fileID: 11400000, guid: 4c6285ce5cc774d4e9a7245cf108d409, type: 2}

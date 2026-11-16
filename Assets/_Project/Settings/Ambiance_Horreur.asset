@@ -17,9 +17,9 @@ MonoBehaviour:
   fogStart: 5
   fogEnd: 35
   moonIntensity: 0.12
-  torchIntensity: 1.4
-  torchRange: 9
-  lampIntensity: 1.4
-  lampRange: 10
+  torchIntensity: 1.05
+  torchRange: 12.6
+  lampIntensity: 0.91
+  lampRange: 14.0
   contourFadeStart: 30
   contourFadeEnd: 70

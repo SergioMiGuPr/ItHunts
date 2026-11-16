@@ -15,7 +15,7 @@ MonoBehaviour:
   id: koala
   displayName: Koala
   color: {r: 0.35, g: 0.78, b: 0.35, a: 1}
-  lanternColor: {r: 0.16, g: 0.42, b: 0.14, a: 1}
+  lanternColor: {r: 0.38, g: 1, b: 0.33, a: 1}
   artifact: {fileID: 0}
   artifactLabel: "artefact \xE0 concevoir"
   playable: 0
