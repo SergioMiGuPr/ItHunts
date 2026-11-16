@@ -12,7 +12,7 @@ namespace ItHunts.Settings
     {
         [Header("Taille (retours du lot, point 4)")]
         [Tooltip("Hauteur de la goule (m), à la taille du joueur : le modèle (1.1 m à l'import), la capsule (zone où on la touche) et " +
-                 "le disque d'annonce suivent. Le NavMesh des goules (ZoneNavMesh, petit agent) : 0.45 × 1.5 m (goule voûtée en course ; à 1.9 m, des passages se fermaient).")]
+                 "le disque d'annonce suivent. Le NavMesh des goules (ZoneNavMesh, petit agent) : 0.45 × 1.2 m ; sous un plafond plus bas que sa taille, elle se baisse (minCrouch).")]
         [Min(0.3f)] public float bodyHeight = 1.8f;
         [Tooltip("Rayon de la capsule (m).")]
         [Min(0.1f)] public float bodyRadius = 0.55f;

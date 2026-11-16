@@ -387,7 +387,7 @@ namespace ItHunts.Tests
             {
                 string text = System.IO.File.ReadAllText(scene);
                 Assert.That(text.Contains("smallRadius: 0.45"), Is.True, scene);
-                Assert.That(text.Contains("smallHeight: 1.5"), Is.True, scene + " : agent des goules 0.45 × 1.5 m");
+                Assert.That(text.Contains("smallHeight: 1.2"), Is.True, scene + " : agent des goules 0.45 × 1.2 m (elle se baisse)");
             }
         }
 

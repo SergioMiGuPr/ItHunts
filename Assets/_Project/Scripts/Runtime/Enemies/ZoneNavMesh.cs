@@ -20,7 +20,7 @@ namespace ItHunts.Enemies
         [SerializeField] private LayerMask layers = ~0;
         [Header("Ennemis de taille humaine (goule)")]
         [SerializeField, Min(0.1f)] private float smallRadius = 0.45f;
-        [SerializeField, Min(0.1f)] private float smallHeight = 1.5f;
+        [SerializeField, Min(0.1f)] private float smallHeight = 1.2f;
         [Header("Traqueur")]
         [SerializeField, Min(0.1f)] private float stalkerRadius = 1.25f;
         [Tooltip("Hauteur de passage du traqueur (m) : sa hauteur baissé (D-035), pas sa taille debout.")]
@@ -89,7 +89,10 @@ namespace ItHunts.Enemies
                 NavMeshBuildSource src = s;
                 if (c.GetComponentInParent<NotWalkable>() != null)
                     src.area = 1;                                       // plafonds, toits, murs : obstacle, jamais un sol
-                common.Add(src);
+                // Porte d'une salle verrouillée : hors du NavMesh des goules (il n'est pas refait à l'ouverture ; fermée, la porte
+                // bloque par sa collision et la salle est un cul-de-sac où aucun joueur ne se trouve encore).
+                if (c.GetComponentInParent<ItHunts.Economy.LockedDoor>() == null)
+                    common.Add(src);
                 if (c.GetComponentInParent<StalkerShortcut>() == null)
                     stalker.Add(src);
             }

@@ -581,6 +581,13 @@ namespace ItHunts.Level
             if (kit != null)
                 for (float d = 20f; d < len - 10f; d += 20f)
                 {
+                    // Pas d'arc devant la porte d'une pièce annexe : son piédroit la bouchait pour les goules (retours, animations point 2).
+                    bool nearAnnex = false;
+                    foreach (PlanAnnex an in Plan.Annexes)
+                        if (an.Link == li && Mathf.Abs(an.T * len - d) < AnnexDoor * 0.5f + 1.6f)
+                            nearAnnex = true;
+                    if (nearAnnex)
+                        continue;
                     float sink = l.Slope ? 0.3f : 0f;
                     KitBuild.Arch(parent, kit, Point(d / len) - Vector3.up * sink, yaw, w, h);
                 }

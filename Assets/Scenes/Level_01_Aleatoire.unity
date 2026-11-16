@@ -56250,7 +56250,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   smallRadius: 0.45
-  smallHeight: 1.5
+  smallHeight: 1.2
   stalkerRadius: 3.5
   stalkerHeight: 9
   stepHeight: 0.45
