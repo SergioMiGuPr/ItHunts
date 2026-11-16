@@ -303,6 +303,28 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Goule_1m80_CapsuleEtLODReglables_NavMeshDesGoules()
+        {
+            var ghoul = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");
+            Assert.That(ghoul.bodyHeight, Is.EqualTo(1.8f).Within(1e-3f), "à la taille du joueur");
+            Assert.That(ghoul.BodyScale, Is.EqualTo(1.8f / 1.1f).Within(1e-3f));
+            Assert.That(ghoul.bodyRadius, Is.InRange(0.4f, 0.7f));
+            Vector3 lod = ghoul.lodTransitions;
+            Assert.That(lod.x, Is.GreaterThan(lod.y));
+            Assert.That(lod.y, Is.GreaterThan(lod.z));
+            Assert.That(lod.z, Is.GreaterThan(0f));
+            // Mêmes distances de bascule que les seuils de la DA pour 1.1 m (0.20 / 0.08 / 0.01).
+            Assert.That(lod.x / ghoul.BodyScale, Is.EqualTo(0.20f).Within(0.01f));
+            Assert.That(lod.y / ghoul.BodyScale, Is.EqualTo(0.08f).Within(0.005f));
+            foreach (string scene in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+            {
+                string text = System.IO.File.ReadAllText(scene);
+                Assert.That(text.Contains("smallRadius: 0.45"), Is.True, scene);
+                Assert.That(text.Contains("smallHeight: 1.5"), Is.True, scene + " : agent des goules 0.45 × 1.5 m");
+            }
+        }
+
+        [Test]
         public void Lueurs_YeuxRougeSombre_GriffesIvoire_TroisLODDeLaGoule()
         {
             var ghoul = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");

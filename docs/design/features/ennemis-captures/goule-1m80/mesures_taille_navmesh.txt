@@ -1,0 +1,21 @@
+goule : capsule 0,55 × 1,80 m (centre 0,90) ; modèle 1,09 × 1,80 × 1,15 m (haut à 1,80 m) ; masse 50 kg
+joueur : capsule 0,40 × 1,80 m
+mur : bornes du modèle jusqu'à -0,45 m du plan du mur ; sommet le plus enfoncé -9,00 m (positif = dans le mur) ; racine à 0,55 m du mur
+#fin
+
+NavMesh des goules, ancien agent 0.45 × 1.2 m contre le nouveau 0.45 × 1.5 m (5 seeds) :
+seed 104729 agent 0,45×1,2 : volumes 231, sur le NavMesh 207, atteints depuis le départ 182 ; échafaudages 26 : plateaux sur le NavMesh 26, atteints 18 ; liens d'escalade 1298 (auto 1298) ; NavMesh total 260953 m² (tous agents)
+seed 104729 agent 0,45×1,5 : volumes 231, sur le NavMesh 207, atteints depuis le départ 181 ; échafaudages 26 : plateaux sur le NavMesh 26, atteints 18 ; liens d'escalade 1298 (auto 1298) ; NavMesh total 260873 m² (tous agents)
+   perdu avec 1.8 m : Volume de salle : Couloir A4 – B4, tronçon 1/2 @(-315, 12, 0)
+seed 209458 agent 0,45×1,2 : volumes 234, sur le NavMesh 210, atteints depuis le départ 202 ; échafaudages 58 : plateaux sur le NavMesh 58, atteints 43 ; liens d'escalade 1176 (auto 1176) ; NavMesh total 266189 m² (tous agents)
+seed 209458 agent 0,45×1,5 : volumes 234, sur le NavMesh 210, atteints depuis le départ 202 ; échafaudages 58 : plateaux sur le NavMesh 58, atteints 43 ; liens d'escalade 1176 (auto 1176) ; NavMesh total 266117 m² (tous agents)
+seed 314187 agent 0,45×1,2 : volumes 228, sur le NavMesh 205, atteints depuis le départ 182 ; échafaudages 22 : plateaux sur le NavMesh 22, atteints 17 ; liens d'escalade 1598 (auto 1598) ; NavMesh total 281755 m² (tous agents)
+seed 314187 agent 0,45×1,5 : volumes 228, sur le NavMesh 204, atteints depuis le départ 181 ; échafaudages 22 : plateaux sur le NavMesh 22, atteints 17 ; liens d'escalade 1598 (auto 1598) ; NavMesh total 281666 m² (tous agents)
+   perdu avec 1.8 m : Volume de salle : Couloir B1 – B2, tronçon 2/2 @(-240, 20, -280)
+seed 418916 agent 0,45×1,2 : volumes 227, sur le NavMesh 203, atteints depuis le départ 198 ; échafaudages 30 : plateaux sur le NavMesh 30, atteints 22 ; liens d'escalade 1304 (auto 1304) ; NavMesh total 271628 m² (tous agents)
+seed 418916 agent 0,45×1,5 : volumes 227, sur le NavMesh 203, atteints depuis le départ 198 ; échafaudages 30 : plateaux sur le NavMesh 30, atteints 22 ; liens d'escalade 1304 (auto 1304) ; NavMesh total 271544 m² (tous agents)
+seed 523645 agent 0,45×1,2 : volumes 222, sur le NavMesh 198, atteints depuis le départ 148 ; échafaudages 14 : plateaux sur le NavMesh 14, atteints 4 ; liens d'escalade 1929 (auto 1929) ; NavMesh total 286487 m² (tous agents)
+seed 523645 agent 0,45×1,5 : volumes 222, sur le NavMesh 198, atteints depuis le départ 148 ; échafaudages 14 : plateaux sur le NavMesh 14, atteints 4 ; liens d'escalade 1929 (auto 1929) ; NavMesh total 286386 m² (tous agents)
+#fin
+
+Essais : 0.55 × 1.9 m (5 tronçons perdus sur 3 seeds), 0.45 × 1.9 m (idem), 0.55 × 1.6 m et 0.55 × 1.4 m (2 tronçons) ; les 2 tronçons restants n'étaient atteints que par le dessus des anneaux d'arc (hauteur libre 1.2 à 1.5 m sous le plafond).

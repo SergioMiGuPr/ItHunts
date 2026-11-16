@@ -25,6 +25,12 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 >     sur 11 m de haut** (le haut plat affleure le plafond, les côtés affleurent les murs), écoinçons en retrait de 0.1 m sur
 >     chaque face pour que l'anneau reste en saillie, pivot inchangé (au sol, au centre), matériau des murs (`M_Pierre_Monde`, UV
 >     monde) ; le jeu l'élargit comme l'arc actuel (échelle x = largeur / 14).
+>   - **Goule à 1.8 m** (au lieu de 1.1 m) : le jeu agrandit `SM_Goule` × 1.64 (réglage `bodyHeight` de `Ghoul_Default`) ; rien à
+>     refaire, mais les **seuils de LOD de l'import (0.25 / 0.125 / 0.01)** sont remplacés par le jeu (0.33 / 0.13 / 0.016 : les
+>     distances de bascule conseillées par la DA pour 1.1 m) ; une version livrée directement à 1.8 m est possible plus tard.
+>   - **Lueurs** : yeux de la goule et pupilles du traqueur en **rouge sombre** (sous le seuil du bloom, réglable) ; griffes du
+>     traqueur (`M_Traqueur_Mains`, posé par le jeu sur les bras et les mains) en **ivoire**, faibles au repos, plus vives pendant
+>     la prise.
 > - **Intégration du lot de la PR #4 (branche `integration-lot`, 2026-11-16)** : kit `SM_Kit_*` (UV monde) dans toute la carte, props
 >   calés sur `INTEGRATION-PROPS.md` (torche +0.545 m, lumière sur `FX_Flamme`), `SM_Caisse` sur toutes les caisses attrapables,
 >   échafaudage praticable (plateaux dessus à 3 et 6 m, épaissis de 0.07 à 0.3 m vers le bas pour le NavMesh), goule `SM_Goule`,
@@ -75,7 +81,7 @@ Un modèle doit tenir dans ces volumes (± 10 %), sauf mention contraire. Pivot 
 |---|---|---|---|
 | **Joueur** | capsule **1.8 × 0.8 m** (rayon 0.4) ; yeux à 1.6 m ; accroupi 0.9 m, yeux à 0.75 m | `Movement_Default` | § 2 ; en écran partagé, l'autre joueur est vu comme une capsule (provisoire, à remplacer par un corps) |
 | **Traqueur** (boss) | capsule **7 × 14 m** (Ø 7, 14 de haut) ; **se baisse jusqu'à 9 m** ; épaule à 12 m ; **portée de main 15 m** depuis l'épaule (et 15 m dans une pièce depuis l'ouverture) | `Stalker_Default` | mains : boîtes de 4 × 2.2 × 4.5 m, bras de 1.5 m d'épaisseur (§ 5 ter) |
-| **Goule** | capsule **Ø 0.9 × 1.1 m** | `Ghoul_Default` | basse, rampe, grimpe aux murs (visuel basculé de 80°) |
+| **Goule** | capsule **Ø 1.1 × 1.8 m** (modèle 1.1 m mis à l'échelle × 1.64 par le jeu, `bodyHeight`) | `Ghoul_Default` | basse, rampe, grimpe aux murs (visuel basculé de 80°) |
 | **Volant** | corps 0.6 × 0.45 × 0.8 m (sphère de collision de 0.4 m de rayon) ; ailes de 0.9 × 0.5 m ; **envergure 2.3 m** | `Flyer_Default`, constructeur | zone de touche : corps + une boîte de 0.9 × 0.1 × 0.55 m par aile |
 | **Caisses attrapables** | cubes de **0.5 / 0.7 / 0.8 / 0.9 / 1.1 m** ; caisse trop lourde 1.3 m | scènes, props | § 5 et catalogue |
 | **Tonneau attrapable** | Ø 0.6 × 0.9 m | `Prop_Tonneau_Attrapable` | |
@@ -344,7 +350,7 @@ volumes (± 10 %), pivot **aux pieds**, avant vers **+z**.
 
 | Créature | Volume de collision | Notes |
 |---|---|---|
-| Goule | capsule Ø 0.9 × 1.1 m de haut, 50 kg | basse, rampe ; yeux lumineux ; posture accroupie avant le bond (le code écrase le visuel à 60 % en hauteur) ; **grimpe aux murs** : le code bascule le visuel de 80° (plaquée contre la paroi) |
+| Goule | capsule Ø 1.1 × 1.8 m de haut (retours du lot : à la taille du joueur ; `SM_Goule` de 1.1 m agrandi × 1.64 par le jeu ; seuils de LOD réglés par le jeu, `lodTransitions`), 50 kg | basse, rampe ; yeux lumineux ; posture accroupie avant le bond (le code écrase le visuel à 60 % en hauteur) ; **grimpe aux murs** : le code bascule le visuel de 80° (plaquée contre la paroi) |
 | **Traqueur (géant)** | capsule **Ø 7 × 14 m** ; **baissé : 9 m** | intuable ; yeux rouges vers 13 m ; **épaule à 12 m** ; il ne grimpe pas ; **se baisse** sous les ponts (le code écrase le corps jusqu'à 9 m : prévoir une pose accroupie) |
 | Mains du traqueur (deux) | **boîtes de 4 × 2.2 × 4.5 m** (largeur × épaisseur × longueur) ; bras de **1.5 m** d'épaisseur | elles tuent au contact, comme le corps et les bras (D-037) : garder ces volumes ; bras de l'épaule à la main (le code l'étire), **portée 15 m depuis l'épaule** ; pose **deux mains levées au-dessus de la tête** (geste contre ceux qui passent par-dessus) |
 | Volant (D-040) | sphère de **0.4 m** de rayon (corps 0.6 × 0.45 × 0.8 m, **ailes de 0.9 m** chacune, **envergure 2.3 m**), 8 kg ; **zone de touche** : sphère du corps + une boîte de 0.9 × 0.1 × 0.55 m par aile, qui suit le battement (garder les ailes à ces dimensions, ou prévenir) | vole en ronde **8 m au-dessus du joueur** (rayon 8 m) ; attrapable à tout moment comme une caisse ; ailes animées par le code (battement, repliées en piqué) ; yeux lumineux, **lueur rouge** à l'annonce du piqué ; éclate (zone de 3 m) quand il est lancé |

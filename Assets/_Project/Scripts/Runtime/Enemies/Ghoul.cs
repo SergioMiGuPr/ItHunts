@@ -130,10 +130,55 @@ namespace ItHunts.Enemies
             _hiss = ItHunts.Audio.ProceduralSfx.ToClip("Goule : sifflement", ItHunts.Audio.ProceduralSfx.GhoulHiss());
             if (telegraph != null)
                 telegraph.enabled = false;
+            ApplySize();
+        }
+
+        private float _sizeApplied = -1f;
+        private Vector3 _telegraphBase;
+
+        /// <summary>
+        /// Taille réglée (GhoulSettings.bodyHeight, retours du lot, point 4) : capsule (hauteur, centre, rayon), modèle sous
+        /// « Corps (visuel) » (mis à l'échelle, le code garde l'écrasement de l'annonce et la bascule sur les murs) et disque d'annonce.
+        /// Rejouée si le réglage change en Play Mode.
+        /// </summary>
+        public void ApplySize()
+        {
+            if (settings == null)
+                return;
+            float s = settings.BodyScale;
+            if (Mathf.Approximately(s, _sizeApplied) && _capsule != null && Mathf.Approximately(_capsule.radius, settings.bodyRadius))
+                return;
+            _sizeApplied = s;
+            if (_capsule != null)
+            {
+                _capsule.height = GhoulSettings.ModelHeight * s;
+                _capsule.center = new Vector3(0f, _capsule.height * 0.5f, 0f);
+                _capsule.radius = Mathf.Min(settings.bodyRadius, _capsule.height * 0.5f);
+            }
+
+            if (visual != null)
+                foreach (Transform child in visual)
+                    child.localScale = Vector3.one * s;
+            // Seuils de LOD réglables (la DA les règle à l'import pour 1.1 m ; le .meta de son modèle ne se touche pas sur main).
+            foreach (LODGroup group in GetComponentsInChildren<LODGroup>(true))
+            {
+                LOD[] lods = group.GetLODs();
+                for (int i = 0; i < lods.Length && i < 3; i++)
+                    lods[i].screenRelativeTransitionHeight = settings.lodTransitions[i];
+                group.SetLODs(lods);
+                group.RecalculateBounds();
+            }
+            if (telegraph != null)
+            {
+                if (_telegraphBase == Vector3.zero)
+                    _telegraphBase = telegraph.transform.localScale;
+                telegraph.transform.localScale = new Vector3(_telegraphBase.x * s, _telegraphBase.y, _telegraphBase.z * s);
+            }
         }
 
         private void Start()
         {
+            ApplySize();
             _move.StayOnMesh = true;
             _nav = FindFirstObjectByType<ZoneNavMesh>();
             if (_nav != null)

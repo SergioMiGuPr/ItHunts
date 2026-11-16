@@ -10,6 +10,22 @@ namespace ItHunts.Settings
     [CreateAssetMenu(fileName = "Ghoul_Default", menuName = "ItHunts/Ennemis/Goule")]
     public sealed class GhoulSettings : EnemySettings
     {
+        [Header("Taille (retours du lot, point 4)")]
+        [Tooltip("Hauteur de la goule (m), à la taille du joueur : le modèle (1.1 m à l'import), la capsule (zone où on la touche) et " +
+                 "le disque d'annonce suivent. Le NavMesh des goules (ZoneNavMesh, petit agent) : 0.45 × 1.5 m (goule voûtée en course ; à 1.9 m, des passages se fermaient).")]
+        [Min(0.3f)] public float bodyHeight = 1.8f;
+        [Tooltip("Rayon de la capsule (m).")]
+        [Min(0.1f)] public float bodyRadius = 0.55f;
+
+        [Tooltip("Seuils de LOD de SM_Goule (part de la hauteur de l'écran, LOD0 → LOD1 → LOD2 → caché). La DA conseille 0.20 / " +
+                 "0.08 / 0.01 pour une goule de 1.1 m ; recalés pour 1.8 m (× 1.64) afin de garder les mêmes distances de bascule : " +
+                 "LOD1 à 4 m, LOD2 à 10 m, cachée au-delà de 78 m (champ de vision de 70°).")]
+        public Vector3 lodTransitions = new Vector3(0.33f, 0.13f, 0.016f);
+
+        /// <summary>Hauteur du modèle et de la capsule du prefab (m), avant mise à l'échelle.</summary>
+        public const float ModelHeight = 1.1f;
+        public float BodyScale => bodyHeight / ModelHeight;
+
         [Header("Déplacement au sol")]
         [Tooltip("Vitesse de course (m/s). Course du joueur : 7.5 ; plafond des gains : 20.")]
         [Min(0f)] public float runSpeed = 10f;
