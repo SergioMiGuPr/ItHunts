@@ -1,0 +1,33 @@
+Cadrage de la DA (reference_bras_fps.png), lanterne à 0.6 : couverture de l'écran par la couche des mains (sans post-traitement) ; pixels dans les carrés centraux de 240 et 60 px (viseur) :
+Renard — repos : 21,9 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — traction : 18,0 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — répulsion : 17,1 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — prise : 18,9 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — objet tenu : 19,9 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — lancer : 19,1 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — jet de la lanterne : 19,9 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — repos : 21,7 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — traction : 18,8 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — répulsion : 18,5 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — prise : 20,2 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — objet tenu : 20,9 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — lancer : 18,9 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — tir : 25,9 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+#fin
+
+Variante mesurée : mains à (±0.27, −0.13, 0.40), mêmes angles :
+Renard — repos : 14,6 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — traction : 12,8 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — répulsion : 11,8 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — prise : 12,9 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — objet tenu : 13,4 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — lancer : 12,7 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard — jet de la lanterne : 13,9 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — repos : 15,0 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — traction : 13,0 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — répulsion : 12,2 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — prise : 13,6 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — objet tenu : 14,3 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — lancer : 13,3 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon — tir : 17,1 % ; carré de 240 px : 0 px ; viseur (60 px) : 0 px
+#fin

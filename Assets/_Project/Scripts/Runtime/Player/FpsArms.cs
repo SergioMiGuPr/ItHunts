@@ -242,9 +242,11 @@ namespace ItHunts.Player
             FpsViewSettings cfg = view != null ? view.Settings : null;
             if (orb == null || cfg == null || _orbSocket == null || orb.parent != _orbSocket)
                 return;
-            float sy = Mathf.Max(1e-4f, _orbSocket.lossyScale.y);
-            orb.localPosition = new Vector3(0f, ViewmodelMotion.FloatHeight(Time.time, cfg) / sy, 0f);
-            orb.localRotation = Quaternion.Euler(0f, Time.time * cfg.floatSpin, 0f);
+            // Au-dessus de la paume, à orbInHand dans le repère du poignet (Socket_Poignet = main droite de la vue), comme le barillet
+            // et la lanterne ; la hauteur se règle dans FpsViewSettings (cadrage de la référence : 0.14 m).
+            Transform wrist = rightHand != null ? rightHand : _orbSocket;
+            orb.position = wrist.TransformPoint(cfg.orbInHand + Vector3.up * ViewmodelMotion.FloatHeight(Time.time, cfg));
+            orb.rotation = wrist.rotation * Quaternion.Euler(0f, Time.time * cfg.floatSpin, 0f);
         }
 
         private static bool Distinct(FpsArmPoseSet.Side side)
