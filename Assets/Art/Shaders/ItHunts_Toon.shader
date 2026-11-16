@@ -1,4 +1,5 @@
-// ItHunts : cel-shading (bandes nettes, îlots des lumières ponctuelles, rim, émission HDR).
+// ItHunts : cel-shading peint (bandes réglables du net au dégradé, lumières ponctuelles qui s'éteignent en douceur
+// jusqu'au noir et teintent les surfaces, rim, émission HDR).
 // Noms de propriétés d'URP Lit gardés (_BaseMap, _BaseColor, _EmissionColor, mot-clé _EMISSION) : le code du jeu les
 // pilote (lueurs des objets attrapables, chambres du barillet, retour de dégâts).
 Shader "ItHunts/Toon"
@@ -12,19 +13,22 @@ Shader "ItHunts/Toon"
         _Cutoff ("Seuil de découpe", Range(0, 1)) = 0.5
 
         [Header(Bandes de la lumiere principale)]
-        [IntRange] _BandCount ("Nombre de bandes (ombre comprise)", Range(2, 4)) = 3
+        [IntRange] _BandCount ("Nombre de bandes (ombre comprise)", Range(2, 8)) = 3
         _BandThreshold ("Seuil de la première bande", Range(0, 1)) = 0.15
-        _BandSoftness ("Largeur des transitions", Range(0.001, 0.25)) = 0.02
+        _BandSoftness ("Largeur des transitions", Range(0.001, 0.5)) = 0.02
+        _BandGradient ("Dégradé sous les bandes (0 : net, 1 : continu)", Range(0, 1)) = 0.45
         _ShadowColor ("Teinte de la bande d'ombre", Color) = (0.028, 0.034, 0.075, 1)
         _AmbientInfluence ("Part de l'ambiance de la scène", Range(0, 2)) = 1
         [ToggleOff(_RECEIVE_SHADOWS_OFF)] _ReceiveShadows ("Reçoit les ombres", Float) = 1
 
         [Header(Lumieres ponctuelles)]
-        [IntRange] _PointSteps ("Paliers d'atténuation", Range(1, 5)) = 3
+        [IntRange] _PointSteps ("Paliers d'atténuation", Range(1, 8)) = 3
         _PointThreshold ("Position du premier palier", Range(0.05, 1)) = 0.35
-        _PointSoftness ("Bord des paliers", Range(0.001, 0.2)) = 0.015
-        _PointFalloff ("Courbe de portée (< 1 : îlots larges)", Range(0.2, 3)) = 0.8
+        _PointSoftness ("Bord des paliers", Range(0.001, 0.5)) = 0.015
+        _PointFalloff ("Courbe de portée (< 1 : halo large, > 1 : resserré)", Range(0.2, 3)) = 0.8
         _PointWrap ("Enveloppe (faces de biais)", Range(0, 1)) = 0.2
+        _PointGradient ("Dégradé jusqu'au noir (0 : paliers nets, 1 : continu)", Range(0, 1)) = 0.8
+        _LightSaturation ("Couleur des lumières sur les surfaces (saturation)", Range(0, 2)) = 1.35
 
         [Header(Rim light)]
         [Toggle(_RIM_ON)] _Rim ("Rim light", Float) = 0

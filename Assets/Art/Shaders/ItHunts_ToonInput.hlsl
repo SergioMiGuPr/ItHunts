@@ -13,18 +13,21 @@ CBUFFER_START(UnityPerMaterial)
     half   _Cutoff;
 
     // Ombrage en bandes (lumière principale)
-    half   _BandCount;        // nombre de bandes, ombre comprise (2 à 4)
+    half   _BandCount;        // nombre de bandes, ombre comprise (2 à 8)
     half   _BandThreshold;    // où tombe la première transition (0 = sur la ligne d'ombre)
     half   _BandSoftness;     // largeur des transitions
     half4  _ShadowColor;      // teinte de la bande d'ombre (plancher d'éclairage)
     half   _AmbientInfluence; // part de l'ambiance de la scène (Environment Lighting)
+    half   _BandGradient;     // 0 : bandes nettes ; 1 : dégradé continu (lumière principale)
 
-    // Lumières ponctuelles : îlots à bord net
-    half   _PointSteps;       // paliers d'atténuation (1 à 5)
+    // Lumières ponctuelles : atténuation douce jusqu'au noir, paliers peints en option
+    half   _PointSteps;       // paliers d'atténuation (1 à 8)
     half   _PointThreshold;   // position du premier palier (0..1 d'un palier)
     half   _PointSoftness;    // largeur du bord des paliers
     half   _PointFalloff;     // courbe de la portée (< 1 : îlots plus larges)
     half   _PointWrap;        // éclaire un peu les faces de biais (0 = Lambert strict)
+    half   _PointGradient;    // 0 : paliers nets (ancien rendu) ; 1 : dégradé continu jusqu'au noir
+    half   _LightSaturation;  // saturation de la couleur des lumières sur les surfaces (1 : telle quelle)
 
     // Rim light
     half4  _RimColor;

@@ -65,6 +65,41 @@ calculer les UV en coordonnées monde dans le shader pour ces pièces (triplanai
 et compatible avec le raccourcissement des pièces du bord). La deuxième option règle aussi les pièces étirées
 (`Kit_Escalier`, `Kit_Pont`, pièces raccourcies).
 
+### Kit gothique du couloir de 14 m, voûte en lancette (2026-11-16, d'après `reference_couloir_gothique`, plan 04 de la cinématique)
+
+Six pièces (`Assets/Art/Models/Niveau1/`, script `sm_gothique.py`), pour approcher la référence : **voûte en ogive** (et non
+plate ni en berceau) portée par des **arcs-doubleaux** sur **colonnes engagées**, et des **arcades** et **niches** en ogive
+dans les murs. **Travée de 8 m** le long du couloir ; murs latéraux à x = ±7 m, hauteur 8 m (naissance de la voûte).
+Pivot au sol pour toutes ; **UV en coordonnées monde** : `M_Pierre_Monde`, et `M_Voute_Briques_Monde` sous la voûte
+(remap fait dans les `.meta`) ; Read/Write activé. Repère Unity : pièces de voûte en travers du couloir (x), le long de z ;
+murs et colonne : face côté couloir vers **+Z**, le mur s'étend vers −Z.
+
+| Pièce | Dimensions (Unity) | Pivot | Usage | Triangles |
+|---|---|---|---|---|
+| `SM_Voute_Ogive_8m` | x −7.6..7.6, y 8..21.2, z −4..4 | au sol, milieu du couloir et de la travée | tronçon de voûte répétable tous les 8 m (intrados : arc brisé en **lancette**, centres hors de la portée, de la naissance à 8 m jusqu'à la clé à **20.5 m** ; 0.6 m d'épaisseur ; repose sur le dessus des murs) | 292 |
+| `SM_Voute_Ogive_4m` | idem, z −2..2 | idem | demi-tronçon pour finir une longueur de couloir qui n'est pas un multiple de 8 m | 292 |
+| `SM_ArcDoubleau_14m` | x −7..7, y 8..20.5, z −0.4..0.4 | au sol, milieu du couloir | arc de structure sous la voûte, un par limite de travée (tous les 8 m, au-dessus des colonnes) ; 0.48 m d'arc + boudin de 0.12 m : **clé de l'intrados à 19.8 m** | 584 |
+| `SM_Colonne_Engagee_8m` | x −0.72..0.72, y 0..8, z 0..0.78 | au pied, sur la face du mur | une par mur sous chaque arc-doubleau (socle, base, fût demi-rond Ø 0.76 m, chapiteau et tailloir qui porte l'arc) ; tourner de ±90° pour l'adosser au mur gauche ou droit | 166 |
+| `SM_Mur_Arcade_8m` | x −4..4, y 0..8, z −1.2..0.2 | au sol, milieu de la travée, sur la face du mur | mur d'une travée percé d'un **passage en ogive de 4.4 m × 7 m** (naissance 4 m) vers une pièce annexe ; tableaux et intrados modelés, cordon d'archivolte et impostes | 478 |
+| `SM_Mur_Niche_8m` | idem | idem | mur d'une travée creusé d'une **niche en ogive** de 2.4 m × 4.7 m (appui à 0.9 m, clé à 5.6 m, 0.6 m de profondeur) : décor, statue, coffre, torche | 445 |
+
+**Montage d'un couloir** (planche `rendus/Lot2/Kit_Gothique_Couloir.jpg`, 5 travées) : pour chaque limite de travée
+z = 8k, un `SM_ArcDoubleau_14m` en (0, 0, 8k) et deux `SM_Colonne_Engagee_8m` en (±7, 0, 8k), tournées de −90° (droite)
+et +90° (gauche) ; pour chaque travée, un `SM_Voute_Ogive_8m` en (0, 0, 8k + 4) et deux murs (`SM_Mur_Arcade_8m`,
+`SM_Mur_Niche_8m`, ou des `SM_Kit_Mur4x4` pour un mur plein) en (±7, 0, 8k + 4), mêmes rotations. Sol : `SM_Kit_Sol4` /
+`M_Dalles_Monde`. Torches : sur les trumeaux, près des colonnes.
+
+**Passage du traqueur** : largeur libre sous les arcs-doubleaux (entre les intrados) 12.8 m à 8 m, **11.8 m à 11.75 m**
+(épaules), 11.0 m à 13 m, **10.1 m à 14 m**, 9.6 m à 14.5 m ; clé à **19.8 m** (15 m libres largement tenus). Les colonnes
+réduisent la largeur de 14 à 12.8 m au sol (socles) et 12.4 m au tailloir (8 m).
+
+**Pointe de la voûte (décision du 2026-11-16)** : naissance **gardée à 8 m** (le passage du traqueur passe avant) ; la
+voûte est rendue plus aiguë en **montant la clé** de 15.6 à **20.5 m** (intrados) : arc brisé en lancette, centres sur la
+ligne de naissance mais **hors de la portée** (à 7.66 m de l'axe, de l'autre côté ; rayon 14.66 m ; rapport flèche / demi-portée
+1.79, contre 1.09 avant). Dessus de la voûte (extrados) à 21.2 m : le prévoir sous le plafond de la salle
+ou le niveau supérieur. Avant / après et référence : `rendus/Lot2/Voute_Lancette_avant_apres.jpg`. Réglage :
+`PARAMS["cle"]` dans `sm_gothique.py` (au-delà de 8 + 7 × √3 = 20.1 m, les centres sortent de la portée).
+
 ## 2. Props du niveau (`Assets/_Project/Prefabs/Props/`)
 
 | Prefab | Modèle (FBX `Assets/Art/Models/Niveau1/`) | Décalage du modèle | Boîte de collision conseillée (centre ; taille) | Repères FX | Objets mobiles (axe) | Matériaux | Attrapable |
@@ -180,6 +215,27 @@ bandes d'écailles (caméléon, hibou)) : 2 874 à 3 834 triangles par bras (bud
 d'os, mêmes 14 clips**. (Ces aplats, dont `_Couture`, `_Poil`, `_Ecaille`, sont remplacés plus bas par la texture peinte et le matériau unique.) Planche
 `rendus/Lot2/BrasFPS_Detail_avant_apres.jpg`.
 
+**Maillage d'un seul tenant et poids lissés (2026-11-16)** : chaque bras est une seule surface fermée (manche, ourlet
+replié, brassard, gant, paume, doigts et pouce soudés : plus aucune coupure aux articulations) ; seuls les décors restent
+des coques collées (sangles, boucles, poils, plumes, liserés, griffes), qui prennent les poids du point du bras le plus proche.
+Poids : rampes douces à chaque articulation, plus larges côté dos (jointure arrondie) que côté paume (pli net), lissées sur
+la paume et la base du pouce ; 4 influences au plus par sommet. **Repos légèrement fléchi** (16° à la jointure, 20° et 12°
+aux phalanges suivantes, doigts en léger éventail) : un pli de 90° ne demande que 70° environ de rotation, ce qui limite
+l'écrasement du skinning linéaire d'Unity. Les poses gardent les mêmes angles absolus (le script retire le pli de repos) :
+**rebaker `FpsArmPoseSet`** (les rotations locales de repos des os des doigts changent). `Pose_Poing` : pouce replié sur
+les doigts. Mesures (doigt plié 90/90/70°) : rayon à l'articulation 0.91 à 0.97 du repos (0.72 à 0.80 sans le repos
+fléchi), volume du doigt −5 à −8 % (pli intérieur compris) ; poignet ±60° : −0.8 % sur le bras. Triangles : renard 4 256,
+caméléon 4 132, koala 3 702, hibou 3 356. Planche `rendus/Lot2/BrasFPS_Un_seul_tenant_flexions.jpg`.
+
+**Os à ajouter pour des mains plus expressives (proposition, non faite)** : le squelette actuel (17 os) suffit pour plier
+et écarter les doigts (`spread` sur les phalanges 1). Il ne sait pas creuser la paume ni rapprocher le pouce de
+l'auriculaire. Proposition : `Metacarpe_Annulaire` et `Metacarpe_Auriculaire` (enfants de `Poignet`, parents des
+phalanges 1 correspondantes : la paume se creuse, la main se referme en coupe) et `Paume_Pouce` (éminence sous le pouce,
+suit `Pouce_1` à moitié). Côté code : `FpsArmsSetup` lit les os par la hiérarchie, les nouveaux os sont cuits sans
+changement ; `FpsArms` ferme les doigts par préfixe de nom (`Index`, `Majeur`…), donc les métacarpes ne bougeraient que
+par les clips ; les tableaux de rotations de `FpsArmPoseSet` changent de longueur : rebaker. Avec les vidéos de Sergio,
+ces 3 os rendraient le creux de la paume et l'opposition du pouce.
+
 **Convention des poses de flottement** (rien n'est tenu, l'orbe et l'artefact flottent au-dessus de la paume) : dans
 `Pose_Repos`, `Pose_OrbePaume`, `Pose_Pistolet`, `Pose_PriseAnneau` et leurs boucles, l'avant-bras est tourné de 180° :
 **la paume regarde +Y du repère de la main** (`Socket_Poignet`), là où FpsView pose déjà l'orbe (`orbInHand` (0, 0.06,
@@ -187,7 +243,7 @@ d'os, mêmes 14 clips**. (Ces aplats, dont `_Couture`, `_Poil`, `_Ecaille`, sont
 0.05) depuis le poignet (anneau de la lanterne au-dessus de la paume). **Depuis le 2026-11-16, les poses d'action
 suivent la même convention** (`Pose_Traction`, `Pose_Repulsion`, `Pose_Attraper` — sa première clé est `Pose_Repos` —,
 `Pose_TenirObjet`, `Pose_Lancer` : paume vers +Y, forme de la main gardée) : plus de demi-tour de l'avant-bras d'une pose
-à l'autre (planche `rendus/Lot2/BrasFPS_Poses_action_avant_apres.jpg`). Seule `Pose_Poing` garde l'ancienne convention.
+à l'autre (planche `rendus/Lot2/BrasFPS_Poses_action_avant_apres.jpg`). Seule `Pose_Poing` garde l'ancienne convention (poing fermé, pouce replié sur les doigts).
 
 **Placement conseillé, d'après `docs/design/references-visuelles/reference_bras_fps.png`** (2026-11-16 : avant-bras qui
 entrent par les coins bas, paumes ouvertes vers le haut et l'une vers l'autre, doigts écartés et détendus ; vérifié à
@@ -224,7 +280,18 @@ Renard d'après la référence : manche rouge déchirée, gant de cuir brun, fou
 
 Événements : aucun (les déplacements de la main entière restent dans FirstPersonView).
 
-### Goule (`SK_Goule`, armature `Goule`, 26 os)
+### Goule (`SK_Goule`, armature `Goule`, 26 os + 10 os d'aide)
+
+**Gréement refait (2026-11-16)** : base = chaleur sur le maillage d'origine (bouche ouverte, mâchoire et hanches nettes),
+copie étanche en voxels (`poids_lisses.py`) là où la chaleur échoue et sous les genoux ; 4 os au plus par sommet.
+**Os d'aide** `Bras_Aide`, `AvantBras_Aide`, `Main_Aide`, `Jambe_Aide`, `Pied_Aide` (.L/.R : épaules, coudes, poignets,
+genoux, chevilles) : même position que l'os, même parent, ils copient la **moitié** de sa rotation (contrainte Copy Rotation
+0.5 dans le .blend, cuite dans les clips à l'export) ; les sommets du pli passent sur eux, chaque côté du pli ne tourne que de
+la moitié de l'angle : moins d'écrasement. **Rien à piloter côté Unity** (ils sont dans les clips) ; une animation faite
+dans Blender (vidéos de référence) les entraîne d'elle-même. Pic de distorsion des triangles autour des articulations
+(98e centile de |log2 aire/aire au repos|), avant → après : épaules (bras levés) 1.67/1.78 → 1.30/1.55, genoux 0.79–1.53 →
+0.70–1.18 (sauf `Goule_Mort`, genou gauche replié à plus de 140° : 1.78 → 2.17), coude 0.69 → 0.64, mâchoire et hanches
+inchangées. Planche `rendus/Lot2/Goule_Greement_avant_apres.jpg`.
 
 **Modèle à utiliser :** `SK_Goule` (gréé) à la place de `SM_Goule` (statique, gardé pour les aperçus), en (0, 0, 0) sous
 « Corps (visuel) », rotation nulle (avant +Z). Le FBX contient l'armature `Goule` et `SM_Goule_LOD0` (22 000 triangles),
@@ -257,7 +324,16 @@ rig de contrôle pour retoucher les animations à la main ; les os exportés res
 
 Planches : `docs/art/rendus/Lot2/Goule_<Animation>.jpg` (5 images réparties sur chaque clip, à 1.8 m).
 
-### Traqueur (`SK_Traqueur`, armature `Traqueur`, 32 os)
+### Traqueur (`SK_Traqueur`, armature `Traqueur`, 32 os + 10 os d'aide)
+
+**Gréement refait (2026-11-16)** : poids « chaleur » sur une copie étanche en voxels, **masqués par régions** (un bras ne
+tire jamais le torse, ni la mâchoire le crâne), poids doux par distance là où la chaleur échoue, lissés (12 passes) ; une
+première fois debout pour voûter le modèle sans bosses, puis recalculés sur le modèle voûté avec les **os d'aide** (mêmes
+noms et même principe que la goule). **Épaules** : géométrie lissée (Taubin, sans rétrécir) autour de chaque épaule après
+la mise en voûte. Pic de distorsion, avant → après : épaules bras levés 1.01/1.80 → 0.02/0.36, revers 0.51 → 0.10, genoux
+du passage bas 0.61/1.05 → 0.50/0.58, doigts 1.18/0.80 → 1.15/0.66 ; pouce 0.88 → 1.51 (petit, à reprendre si visible).
+Mesures après : épaule 11.75 m, yeux 12.4 m, sommet 13.96 m (tient dans 14 m). Planche
+`rendus/Lot2/Traqueur_Greement_avant_apres.jpg`.
 
 **Modèle à utiliser :** `SK_Traqueur` remplace `SM_Traqueur_Corps` et les pièces `SM_Traqueur_Bras`, `_Main_D`, `_Main_G`
 (gardées pour l'aperçu, plus à jour). En (0, 0, 0) sous « Corps (se baisse) », rotation nulle (avant +Z). Deux

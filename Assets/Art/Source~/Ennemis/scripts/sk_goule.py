@@ -6,7 +6,8 @@
 - Squelette « Goule » (26 os, tous déformants), placé à la main sur le modèle ; métarig Rigify : chaque chaîne porte son
   type Rigify (colonne basic_spine, cou et tête super_head, mâchoire et épaules super_copy, bras front_paw, jambes
   rear_paw) ; Rigify > Generate en tire un rig de contrôle pour animer à la main. Les os exportés sont ceux du métarig.
-- Peau : poids automatiques (chaleur) sur le LOD0, recopiés sur les LOD1 et LOD2 (sommet le plus proche).
+- Peau (2026-11-16) : poids lissés (poids_lisses : chaleur sur une copie étanche en voxels, report sur le LOD0, lissage,
+  4 os par sommet), recopiés sur les LOD1 et LOD2.
 - Animations (30 images/s, sans déplacement de la racine sauf la mort) : Goule_Repos, Goule_Course, Goule_Annonce,
   Goule_Bond, Goule_Reception, Goule_Escalade, Goule_Coup, Goule_Etourdie, Goule_Mort (durées et événements :
   INTEGRATION-PROPS.md § 4 quater).
@@ -21,12 +22,17 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 for _m in ("sm_goule", "peinture", "ennemis_common"):
     sys.modules.pop(_m, None)
 import sm_goule as G
+sys.modules.pop("poids_lisses", None)
+import poids_lisses as PL
 E, C = G.E, G.C
 import bpy
 import numpy as np
 from mathutils import Vector, Quaternion, Matrix, kdtree
 
 FPS = 30
+VOXEL = 0.006          # copie étanche pour la chaleur (modèle de 1.1 m)
+SMOOTH_IT = 0          # passes de lissage des poids (0 : la chaleur est déjà diffuse ; lisser élargit le pli des genoux)
+HELPERS = [n + s for n in ("Bras", "AvantBras", "Main", "Jambe", "Pied") for s in (".L", ".R")]   # épaules, coudes, poignets, genoux, chevilles
 
 # ----------------------------------------------------------------------------- squelette (modèle de 1.1 m, gauche = +X)
 SPINE = [  # nom, tête, queue, parent, relié
@@ -103,46 +109,25 @@ def make_armature(name="Goule"):
 
 # ----------------------------------------------------------------------------- peau
 def skin(meshes, arm_ob):
+    """Poids lissés (module poids_lisses : chaleur sur une copie étanche en voxels, report, lissage, 4 os) sur le LOD0,
+    recopiés sur les LOD1 et LOD2 (point le plus proche de la surface du LOD0)."""
     lod0 = meshes[0]
-    vl = bpy.context.view_layer
-    for o in vl.objects:
-        o.select_set(False)
-    lod0.select_set(True); arm_ob.select_set(True); vl.objects.active = arm_ob
-    with bpy.context.temp_override(selected_objects=[lod0, arm_ob], selected_editable_objects=[lod0, arm_ob],
-                                   active_object=arm_ob, object=arm_ob):
-        bpy.ops.object.parent_set(type="ARMATURE_AUTO")
-    names = [b.name for b in arm_ob.data.bones]
-    me = lod0.data
-    W = np.zeros((len(me.vertices), len(names)), np.float32)
-    gi = {g.index: g.name for g in lod0.vertex_groups}
-    for v in me.vertices:
-        for g in v.groups:
-            if gi[g.group] in names:
-                W[v.index, names.index(gi[g.group])] = g.weight
-    empty = int((W.sum(1) < 1e-4).sum())
-    if empty:                                                 # sommets oubliés par la chaleur : os le plus proche
-        heads = np.array([(arm_ob.data.bones[n].head_local + arm_ob.data.bones[n].tail_local)[:] for n in names]) / 2
-        for i in np.nonzero(W.sum(1) < 1e-4)[0]:
-            j = int(np.argmin(np.linalg.norm(heads - np.array(me.vertices[i].co[:]), axis=1)))
-            lod0.vertex_groups[names[j]].add([int(i)], 1.0, "REPLACE")
-    # LOD1, LOD2 : poids du sommet le plus proche du LOD0
-    kd = kdtree.KDTree(len(me.vertices))
-    for v in me.vertices:
-        kd.insert(v.co, v.index)
-    kd.balance()
-    W0 = [{gi[g.group]: g.weight for g in v.groups} for v in me.vertices]
-    for o in meshes[1:]:
-        o.vertex_groups.clear()
-        groups = {n: o.vertex_groups.new(name=n) for n in names}
-        for v in o.data.vertices:
-            _, idx, _ = kd.find(v.co)
-            for n, w in W0[idx].items():
-                if n in groups:
-                    groups[n].add([v.index], w, "REPLACE")
-        o.parent = arm_ob
-        o.matrix_parent_inverse.identity()
-        m = o.modifiers.new("Armature", "ARMATURE"); m.object = arm_ob
-    return empty
+    made = PL.add_helpers(arm_ob, HELPERS)
+    names = [b.name for b in arm_ob.data.bones if b.name != "Racine" and "_Aide" not in b.name]
+    def base_original(co_, W_, names_):
+        # base : la chaleur sur le maillage d'origine (bouche ouverte, hanches nettes) ; la copie en voxels comble les
+        # sommets où elle a échoué (trous du maillage Tripo)
+        Wo = PL.heat_original(lod0, arm_ob, names_)
+        ok = Wo.sum(1, keepdims=True) > 0.5
+        # jambes (sous le genou) : la copie en voxels, plus régulière autour du genou
+        leg = sum(W_[:, names_.index(n + s)] for n in ("Jambe", "Pied", "Orteils") for s in (".L", ".R"))[:, None]
+        return np.where(ok, leg * W_ + (1 - leg) * Wo, W_)
+    names, W, rep = PL.skin_lisse(lod0, arm_ob, VOXEL, names=names, smooth_it=SMOOTH_IT, helpers=made,
+                                  mix=base_original)
+    rep += " ; %d os d'aide (%s)" % (len(made), ", ".join(h for h, _ in made))
+    co, tris = PL.surface(lod0)
+    PL.copy_to(meshes[1:], co, tris, W, names, arm_ob)
+    return rep
 
 
 # ----------------------------------------------------------------------------- poses (rotations en axes de l'armature)
@@ -390,7 +375,7 @@ def run():
     for o in meshes:
         o.data.transform(Matrix.Rotation(math.pi, 4, "Z"))
     arm_ob = make_armature()
-    empty = skin(meshes, arm_ob)
+    rep = skin(meshes, arm_ob)
     acts = make_actions(arm_ob)
     path = os.path.join(C.MODELS_DIR, "SK_Goule.fbx")
     export([arm_ob] + meshes, path)
@@ -398,8 +383,7 @@ def run():
     sc2.use_fake_user = True
     bpy.data.libraries.write(os.path.join(C.SOURCE_DIR, "SK_Goule.blend"), blocks, path_remap="RELATIVE_ALL",
                              fake_user=True, compress=True)              # .blend avec les 9 actions
-    print("SK_Goule : %d os ; LOD %s triangles ; %d sommets sans poids après la chaleur (rattachés à l'os le plus proche)"
-          % (len(arm_ob.data.bones), [E.tri_count(o) for o in meshes], empty))
+    print("SK_Goule : %d os ; LOD %s triangles ; %s" % (len(arm_ob.data.bones), [E.tri_count(o) for o in meshes], rep))
     print("animations : " + ", ".join("%s %.2f s%s" % (n, d, " boucle" if l else "") for n, _, d, l in ANIMS))
     return arm_ob, meshes
 
