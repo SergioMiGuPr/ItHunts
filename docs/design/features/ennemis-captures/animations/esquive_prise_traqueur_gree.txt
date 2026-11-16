@@ -1,0 +1,5 @@
+salle E2 (64 m) ; prise : annonce 0,5 s, visée corrigée 0,15 s avant, descente 0,12 s
+épaule lue sur l'os : (2.60, 11.66, 3.55) (côté, hauteur, devant) ; ReachCheck 2,604156 / 11,66298 / 3,554993
+modèle gréé, sans réaction : 10/10 prises réussies (0 % d'esquive)
+modèle gréé, course de côté après 0.15 s : 0/20 prises réussies (100 % d'esquive)
+#fin

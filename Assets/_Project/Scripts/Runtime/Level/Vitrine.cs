@@ -281,6 +281,18 @@ namespace ItHunts.Level
                 chaser.ShowPose(Stalker.ShowcasePose.MarcheVoutee, Mathf.Repeat(now / (loop * 1.5f), 1f));
         }
 
+        private void LateUpdate()
+        {
+            if (!_ready)
+                return;
+            if (Frozen)
+                foreach (StalkerEntry e in stalkers)
+                    if (e.stalker != null)
+                        e.stalker.ShowcaseLate();
+            if (!Chasing && chaser != null)
+                chaser.ShowcaseLate();
+        }
+
         private void ShowGhoul(GhoulEntry e, float now)
         {
             Ghoul g = e.ghoul;

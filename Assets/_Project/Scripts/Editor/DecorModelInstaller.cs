@@ -266,7 +266,10 @@ namespace ItHunts.EditorTools
         /// </summary>
         public static string InstallStalker(GameObject root)
         {
-            var corps = AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + "SM_Traqueur_Corps.fbx");
+            // Gréé et animé (PR #6) : SK_Traqueur remplace le corps et les pièces des bras ; les boîtes des bras et des mains restent
+            // les zones qui tuent (le jeu ne les dessine plus), le code oriente les os des bras vers elles.
+            var corps = AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + "SK_Traqueur.fbx")
+                        ?? AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + "SM_Traqueur_Corps.fbx");
             var mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Ennemis/M_Traqueur.mat");
             Transform body = root.transform.Find("Corps (se baisse)");
             if (corps == null || body == null || mat == null)
@@ -279,6 +282,13 @@ namespace ItHunts.EditorTools
             inst.transform.localScale = Vector3.one;
             foreach (Collider c in inst.GetComponentsInChildren<Collider>(true))
                 Object.DestroyImmediate(c);
+            if (corps.name.StartsWith("SK_"))
+            {
+                EnemyAnimationSetup.AddAnimator(inst, EnemyAnimationSetup.StalkerController);
+                foreach (SkinnedMeshRenderer r in inst.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                    r.updateWhenOffscreen = true;                          // 14 m de haut, bras étirés : pas de disparition au bord de l'écran
+            }
+
             int n = 0;
             foreach ((string part, string model) in new[] { ("Bras qui attrape", "SM_Traqueur_Bras"), ("Bras gauche", "SM_Traqueur_Bras"),
                          ("Main (zone de prise)", "SM_Traqueur_Main_D"), ("Main gauche", "SM_Traqueur_Main_G") })
@@ -294,7 +304,7 @@ namespace ItHunts.EditorTools
             ApplyStalkerLimbMaterial(root);
 
             Bounds b = LocalBounds(inst.transform, root.transform);
-            return $"traqueur : SM_Traqueur_Corps {b.size.x:0.0} × {b.size.y:0.0} × {b.size.z:0.0} m, {n} bras et mains";
+            return $"traqueur : {corps.name} {b.size.x:0.0} × {b.size.y:0.0} × {b.size.z:0.0} m, {n} bras et mains";
         }
 
         public const string StalkerLimbMaterial = "Assets/Art/Materials/Ennemis/M_Traqueur_Mains.mat";

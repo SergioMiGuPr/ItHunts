@@ -180,7 +180,15 @@ namespace ItHunts.Enemies
 
         private float Radius => settings != null ? settings.width * 0.5f : 1.25f;
         private float Height => (settings != null ? settings.height : 3.5f) * _crouch;
-        private float ShoulderHeight => settings.shoulderHeight * _crouch;
+        private float ShoulderHeight => ShoulderOffset.y * _crouch;
+
+        /// <summary>
+        /// Épaule droite dans le repère du traqueur (x : côté, y : hauteur, z : devant), lue au départ sur l'os Bras.R du modèle
+        /// gréé (SK_Traqueur, pose de repos : 2.6 m du centre, 11.7 m, 4 m devant le pivot) ; réglages en repli sans modèle.
+        /// </summary>
+        public Vector3 ShoulderOffset => _shoulderOffset.sqrMagnitude > 0.01f ? _shoulderOffset
+            : settings != null ? new Vector3(settings.shoulderSide, settings.shoulderHeight, 0f) : new Vector3(2.6f, 11.7f, 4f);
+        private Vector3 _shoulderOffset;
 
         /// <summary>Épaule pour la portée : il pivote le buste vers le point visé. Portée = handReach depuis ce point.</summary>
         public Vector3 ReachShoulder(Vector3 target) => ShoulderFrom(_rb != null ? _rb.position : transform.position, target);
@@ -190,11 +198,13 @@ namespace ItHunts.Enemies
             Vector3 flat = target - feet;
             flat.y = 0f;
             Vector3 dir = flat.sqrMagnitude > 0.01f ? flat.normalized : transform.forward;
-            return feet + Vector3.up * ShoulderHeight + dir * (settings.shoulderSide);
+            Vector3 o = ShoulderOffset;
+            return feet + Vector3.up * (o.y * _crouch) + dir * o.z + Vector3.Cross(Vector3.up, dir) * o.x;
         }
 
-        /// <summary>Épaule du bras qui attrape (droite).</summary>
-        public Vector3 Shoulder => _rb.position + Vector3.up * ShoulderHeight + transform.right * (settings.shoulderSide);
+        /// <summary>Épaule du bras qui attrape (droite) : l'os du modèle s'il est gréé, sinon le réglage.</summary>
+        public Vector3 Shoulder => _boneR[0] != null ? _boneR[0].position
+            : _rb.position + transform.rotation * Vector3.Scale(ShoulderOffset, new Vector3(1f, _crouch, 1f));
 
         private void Awake()
         {
@@ -213,6 +223,7 @@ namespace ItHunts.Enemies
             // les mains (M_Traqueur_Mains : griffes) ont leur propre lueur ivoire (UpdateClawGlow).
             var dmg = GetComponent<ItHunts.Combat.Damageable>();
             _dmg = dmg;
+            SetupModel();
             if (dmg != null && settings != null)
             {
                 dmg.ExtraGlow = settings.pupilGlow * settings.pupilGlowIntensity;
@@ -245,6 +256,20 @@ namespace ItHunts.Enemies
             MainsLevees,
             Revers,
             Baisse,
+            Repos,
+        }
+
+        private bool _showcasing;
+        private float _showPhase;
+
+        private void OnEnable() => _showcasing = false;
+
+        /// <summary>Vitrine (IA coupée : LateUpdate ne tourne pas) : griffes et bras vers leurs zones, après l'Animator.</summary>
+        public void ShowcaseLate()
+        {
+            UpdateClawGlow(Time.deltaTime);
+            if (_anim != null)
+                ApplyArmIK(Time.deltaTime);
         }
 
         /// <summary>
@@ -256,6 +281,27 @@ namespace ItHunts.Enemies
         {
             if (settings == null || _rb == null)
                 return;
+            _showcasing = true;
+            if (_anim != null)
+            {
+                string clip = pose switch
+                {
+                    ShowcasePose.MarcheVoutee => "Traqueur_Marche",
+                    ShowcasePose.Prise => "Traqueur_Prise",
+                    ShowcasePose.MainPlantee => "Traqueur_MainPlantee",
+                    ShowcasePose.MainsLevees => "Traqueur_MainsLevees",
+                    ShowcasePose.Revers => "Traqueur_Revers",
+                    ShowcasePose.Baisse => "Traqueur_PassageBas",
+                    _ => "Traqueur_Repos",
+                };
+                Play(clip, 0.1f);
+                if (phase < _showPhase && (pose == ShowcasePose.Prise || pose == ShowcasePose.MainPlantee || pose == ShowcasePose.Revers || pose == ShowcasePose.MainsLevees))
+                    _anim.Play(clip, 0, 0f);                                       // un geste : rejoué à chaque boucle
+                _showPhase = phase;
+                _wantIkR = pose == ShowcasePose.MainPlantee || pose == ShowcasePose.MainsLevees || (pose == ShowcasePose.Prise && phase > 0.2f);
+                _wantIkL = pose == ShowcasePose.MainsLevees || pose == ShowcasePose.Revers;
+            }
+
             _crouch = pose == ShowcasePose.Baisse ? 0.64f : 1f;
             ApplyCrouch();
             _grab = GrabPhase.Aucune;
@@ -335,7 +381,176 @@ namespace ItHunts.Enemies
         /// <summary>Intensité courante de la lueur des griffes (retours du lot, point 3).</summary>
         public float ClawGlow => _claw;
 
-        private void LateUpdate() => UpdateClawGlow(Time.deltaTime);
+        private void LateUpdate()
+        {
+            UpdateClawGlow(Time.deltaTime);
+            if (_anim == null)
+                return;
+            Animate();
+            ApplyArmIK(Time.deltaTime);
+        }
+
+        // ---------- Modèle gréé (SK_Traqueur, PR #6) ----------
+
+        private Animator _anim;
+        private string _clip;
+        private readonly Transform[] _boneR = new Transform[3], _boneL = new Transform[3];   // Bras, AvantBras, Main
+        private Vector3[] _restR, _restL;                                                     // positions locales (étirement)
+        private float _ikR, _ikL;
+        private bool _wantIkR, _wantIkL;
+        private Renderer _bodyRenderer;
+
+        /// <summary>Clip joué (tests, vitrine) ; null sans modèle gréé.</summary>
+        public string Clip => _clip;
+        public bool Animated => _anim != null;
+
+        /// <summary>Le modèle gréé : Animator, os des bras, épaule lue sur Bras.R ; les bras et mains en boîtes ne sont plus dessinés.</summary>
+        private void SetupModel()
+        {
+            _anim = body != null ? body.GetComponentInChildren<Animator>(true) : null;
+            if (_anim == null)
+                return;
+            string[] names = { "Bras", "AvantBras", "Main" };
+            Transform[] all = _anim.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < 3; i++)
+            {
+                _boneR[i] = System.Array.Find(all, t => t.name == names[i] + ".R");
+                _boneL[i] = System.Array.Find(all, t => t.name == names[i] + ".L");
+            }
+
+            if (_boneR[0] == null || _boneR[1] == null || _boneR[2] == null)
+            {
+                _anim = null;
+                return;
+            }
+
+            _restR = new[] { _boneR[0].localPosition, _boneR[1].localPosition, _boneR[2].localPosition };
+            if (_boneL[2] != null)
+                _restL = new[] { _boneL[0].localPosition, _boneL[1].localPosition, _boneL[2].localPosition };
+            _anim.Update(0f);
+            Vector3 local = transform.InverseTransformPoint(_boneR[0].position);
+            _shoulderOffset = new Vector3(Mathf.Abs(local.x), local.y, local.z);
+            ItHunts.Level.ReachCheck.ShoulderHeight = _shoulderOffset.y;
+            ItHunts.Level.ReachCheck.ShoulderSide = _shoulderOffset.x;
+            ItHunts.Level.ReachCheck.ShoulderForward = _shoulderOffset.z;
+            // Bras et mains en boîtes : zones qui tuent, invisibles (le modèle gréé les dessine).
+            foreach (Transform t in new[] { arm, hand, leftArm, leftHand })
+                if (t != null && t.GetComponent<Renderer>() != null)
+                    t.GetComponent<Renderer>().enabled = false;
+            foreach (Renderer r in _anim.GetComponentsInChildren<Renderer>(true))
+                if (r.sharedMaterials.Length > 1)
+                    _bodyRenderer = r;
+        }
+
+        private void Play(string clip, float fade = 0.15f, float speed = 1f)
+        {
+            if (_anim == null || !_anim.isActiveAndEnabled)
+                return;
+            _anim.speed = speed;
+            if (_clip == clip)
+                return;
+            _clip = clip;
+            _anim.CrossFadeInFixedTime(clip, fade, 0);
+        }
+
+        /// <summary>Clip selon l'état : prise (0.5 s), main plantée, mains levées, revers, passage baissé, marche, repos.</summary>
+        private void Animate()
+        {
+            if (_showcasing)
+                return;
+            float v = _rb != null ? new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.z).magnitude : 0f;
+            v = Mathf.Max(v, WantedSpeed);
+            _wantIkR = _grab != GrabPhase.Aucune || Planted || OverheadUsesRight;
+            _wantIkL = _over != OverheadPhase.Aucune || _back != BackhandPhase.Aucune;
+            if (_back != BackhandPhase.Aucune)
+                Play("Traqueur_Revers", 0.06f);
+            else if (_over != OverheadPhase.Aucune)
+                Play("Traqueur_MainsLevees", 0.06f);
+            else if (Planted || _grab == GrabPhase.Descente)
+                Play("Traqueur_MainPlantee", 0.06f);
+            else if (_grab == GrabPhase.Annonce)
+                Play("Traqueur_Prise", 0.05f, 0.5f / Mathf.Max(0.05f, settings.grabTelegraph));
+            else if (Crouching)
+                Play("Traqueur_PassageBas", 0.25f, Mathf.Clamp(v / Mathf.Max(1f, settings.chaseSpeed), 0.4f, 1.6f));
+            else if (v > 0.5f)
+                Play("Traqueur_Marche", 0.25f, Mathf.Clamp(v / Mathf.Max(1f, settings.chaseSpeed), 0.4f, 2f));
+            else
+                Play("Traqueur_Repos", 0.3f);
+        }
+
+        /// <summary>
+        /// Bras vers la cible (après l'Animator) : épaule (Bras), coude (AvantBras), poignet (Main) orientés pour que la main tombe
+        /// sur la zone qui tue posée par le code (hand, leftHand) ; au-delà de la longueur du bras, le bras s'étire (la portée de
+        /// 15 m ne change pas). Fondu de 0.15 s à l'entrée et à la sortie.
+        /// </summary>
+        private void ApplyArmIK(float dt)
+        {
+            float rate = dt / 0.15f;
+            _ikR = Mathf.MoveTowards(_ikR, _wantIkR ? 1f : 0f, rate);
+            _ikL = Mathf.MoveTowards(_ikL, _wantIkL ? 1f : 0f, rate);
+            Restore(_boneR, _restR);
+            Restore(_boneL, _restL);
+            if (_ikR > 0.001f && hand != null)
+                SolveArm(_boneR, _restR, hand.position, _ikR, 1f);
+            if (_ikL > 0.001f && leftHand != null && _boneL[2] != null)
+                SolveArm(_boneL, _restL, leftHand.position, _ikL, -1f);
+        }
+
+        private static void Restore(Transform[] b, Vector3[] rest)
+        {
+            if (rest == null)
+                return;
+            for (int i = 1; i < 3; i++)
+                if (b[i] != null)
+                    b[i].localPosition = rest[i];
+        }
+
+        private void SolveArm(Transform[] b, Vector3[] rest, Vector3 handCenter, float weight, float side)
+        {
+            Transform a = b[0], m = b[1], e = b[2];
+            Vector3 ap = a.position;
+            float l1 = Vector3.Distance(ap, m.position), l2 = Vector3.Distance(m.position, e.position);
+            Vector3 aim = handCenter - ap;
+            float half = settings.handSize.z * 0.5f;                       // le poignet reste à une demi-main du centre
+            Vector3 target = handCenter - aim.normalized * half;
+            float d = Vector3.Distance(ap, target);
+            Quaternion ra = a.rotation, rm = m.rotation, re = e.rotation;
+            if (d > l1 + l2 - 0.01f)
+            {
+                // Étirement : les deux segments s'allongent ensemble, le bras droit vers la cible.
+                float k = d / Mathf.Max(0.01f, l1 + l2);
+                m.localPosition = rest[1] * Mathf.Lerp(1f, k, weight);
+                e.localPosition = rest[2] * Mathf.Lerp(1f, k, weight);
+                a.rotation = Quaternion.FromToRotation(e.position - ap, target - ap) * a.rotation;
+                m.rotation = Quaternion.FromToRotation(e.position - m.position, target - m.position) * m.rotation;
+            }
+            else
+            {
+                Vector3 dir = (target - ap) / Mathf.Max(0.01f, d);
+                Vector3 hint = ap + Vector3.down * 3f + transform.right * (side * 3f) - transform.forward * 1f;   // coude vers le bas et l'extérieur
+                Vector3 n = Vector3.Cross(dir, hint - ap);
+                if (n.sqrMagnitude < 1e-4f)
+                    n = transform.right;
+                n.Normalize();
+                float cosA = Mathf.Clamp((l1 * l1 + d * d - l2 * l2) / (2f * l1 * d), -1f, 1f);
+                float ang = Mathf.Acos(cosA) * Mathf.Rad2Deg;
+                Vector3 e1 = Quaternion.AngleAxis(ang, n) * dir, e2 = Quaternion.AngleAxis(-ang, n) * dir;
+                Vector3 elbow = ap + ((Vector3.Dot(e1, hint - ap) > Vector3.Dot(e2, hint - ap)) ? e1 : e2) * l1;
+                a.rotation = Quaternion.FromToRotation(m.position - ap, elbow - ap) * a.rotation;
+                m.rotation = Quaternion.FromToRotation(e.position - m.position, target - m.position) * m.rotation;
+            }
+
+            // Poignet : la main prolonge le bras, vers le centre de la zone.
+            Transform tip = e.childCount > 0 ? e.GetChild(0) : null;
+            if (tip != null)
+                e.rotation = Quaternion.FromToRotation(tip.position - e.position, handCenter - e.position) * e.rotation;
+            if (weight < 0.999f)
+            {
+                a.rotation = Quaternion.Slerp(ra, a.rotation, weight);
+                m.rotation = Quaternion.Slerp(rm, m.rotation, weight);
+                e.rotation = Quaternion.Slerp(re, e.rotation, weight);
+            }
+        }
 
         /// <summary>
         /// Griffes ivoire (masque de M_Traqueur_Mains) : faibles au repos, plus intenses pendant la prise (annonce, descente, main au
@@ -357,6 +572,22 @@ namespace ItHunts.Enemies
             _claw = dt <= 0f ? target : Mathf.Lerp(_claw, target, 1f - Mathf.Exp(-settings.clawGlowRate * dt));
             foreach (Renderer r in _limbRenderers)
                 _dmg.GlowOverrides[r] = settings.clawGlow * _claw;
+            // Modèle gréé : un rendu, deux matériaux (M_Traqueur_Mains : griffes ; M_Traqueur : pupilles) ; mèches sans lueur.
+            if (_anim != null)
+            {
+                foreach (Renderer r in _anim.GetComponentsInChildren<Renderer>(true))
+                {
+                    Material[] mats = r.sharedMaterials;
+                    for (int i = 0; i < mats.Length; i++)
+                    {
+                        string n = mats[i] != null ? mats[i].name : "";
+                        Color c = n.Contains("Mains") ? settings.clawGlow * _claw
+                            : n.Contains("Cheveux") ? Color.black
+                            : settings.pupilGlow * settings.pupilGlowIntensity;
+                        _dmg.SetMaterialGlow(r, i, c);
+                    }
+                }
+            }
         }
 
         /// <summary>Pression du combat de boss : recharges de la prise, des mains levées et de la pointe × ce facteur (1 hors combat).</summary>
@@ -800,7 +1031,7 @@ namespace ItHunts.Enemies
         private void ApplyCrouch()
         {
             if (body != null)
-                body.localScale = new Vector3(1f, _crouch, 1f);
+                body.localScale = new Vector3(1f, _anim != null ? 1f : _crouch, 1f);   // gréé : le clip Traqueur_PassageBas se baisse
             if (_capsule != null && settings != null)
             {
                 float h = settings.height * _crouch;
@@ -836,13 +1067,14 @@ namespace ItHunts.Enemies
                 float radius = ring <= 8 ? 6f : 11f;
                 Vector3 probe = ring == 0 ? feet : feet + Quaternion.Euler(0f, ring * 45f + (ring > 8 ? 22.5f : 0f), 0f) * Vector3.forward * radius;
                 if (k >= 17)
-                    probe += Vector3.down * (settings.shoulderHeight - 1f);
+                    probe += Vector3.down * (ShoulderOffset.y - 1f);
                 if (!_move.Snap(probe, ring == 0 ? Radius + 6f : 5f, out Vector3 s))
                     continue;
                 float flat = Flat(s - feet);
                 if (flat >= bestD)
                     continue;
-                Vector3 shoulder = s + Vector3.up * settings.shoulderHeight + FlatDir(feet - s) * (settings.shoulderSide);
+                Vector3 fd = FlatDir(feet - s);
+                Vector3 shoulder = s + Vector3.up * ShoulderOffset.y + fd * ShoulderOffset.z + Vector3.Cross(Vector3.up, fd) * ShoulderOffset.x;
                 float reach = settings.handReach + (flat > Radius + 1f ? settings.edgeLean : 0f);
                 if ((chest - shoulder).magnitude > reach)
                     continue;
@@ -1143,7 +1375,8 @@ namespace ItHunts.Enemies
         // ---------- Mains au-dessus de la tête (D-037) ----------
 
         private bool OverheadUsesRight => _over != OverheadPhase.Aucune && _grab == GrabPhase.Aucune;
-        private Vector3 LeftShoulder => _rb.position + Vector3.up * ShoulderHeight - transform.right * (settings.shoulderSide);
+        private Vector3 LeftShoulder => _boneL[0] != null ? _boneL[0].position
+            : _rb.position + transform.rotation * Vector3.Scale(ShoulderOffset, new Vector3(-1f, _crouch, 1f));
         private Vector3 LeftRestHand() => LeftShoulder + Vector3.down * (ShoulderHeight * 0.45f) + transform.forward * 1.5f;
         private float HeadTop => _rb.position.y + Height;
 
