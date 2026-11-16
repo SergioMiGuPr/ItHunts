@@ -120,7 +120,7 @@ cadenas de la cage et de la grille qui dépassent de 2 à 3 cm à l'avant.
 |---|---|---|---|---|
 | Orbe (main droite, sur `Orb_Socket`) | `SM_Orbe` (racine vide) | pivot au centre de l'orbe sur `Orb_Socket` ; **échelle à régler dans FpsView** : la greybox fait Ø 0.08 m, le modèle 0.18 m (anneaux) et 0.295 × 0.228 × 0.182 m avec les tablettes | `SM_Orbe_Anneau_1` (axe **X**), `_2` (**Y**), `_3` (**Z**), modélisés à leur pose de repos ; `SM_Orbe_Tablette_01` à `_06` (positions de la couronne) ; repère `FX_Orbe` au centre | `M_Orbe_Energie` (`_EmissionColor`, couleur du personnage) ; glyphe de chaque tablette : **index de matériau 1** de `SM_Orbe_Tablette_0X` (`M_Orbe_Tablette_0X`) ; jauge et animations : `MATERIAUX.md`, planche `Orbe_Poses_*.jpg` |
 | Lanterne de feu (artefact du renard, main gauche) | `SM_LanterneFeu` | pivot au centre de l'anneau de portage (la lanterne pend dessous) | — | `M_LanterneFeu_Verre` : translucide (file 3000) et `_EmissionColor` ; **`M_LanterneFeu_Flamme`** (enfant `SM_LanterneFeu_Flamme`, flamme en goutte au-dessus de la mèche, depuis le 2026-11-16) : `_EmissionColor` = couleur du personnage (par défaut, orange du renard) ; **passe transparente des mains à ajouter** (la passe « ItHunts Mains : mains » ne dessine que l'opaque) ; repères `FX_Flamme` (mèche) et `FX_Jet` (départ du jet, +Z = avant, dégagé sur 6 m) |
-| Bras des 4 personnages (remplacent les mains greybox) | `SK_BrasFPS_<Perso>_D` / `_G` (armature `BrasFPS`, 17 os, mêmes noms partout) | placer le FBX pour que **`Socket_Poignet` coïncide avec la main greybox** (position et rotation de repos de FpsView, § 5 bis d'ART-HANDOFF) : le pivot est au coude, `Socket_Poignet` est en (0, 0, 0.27) dans le FBX, axes de l'ancrage (+Z doigts, +Y dos de la main) ; aucun recalage d'axe | os des doigts : remplacent l'angle unique `rightFingers` / `leftFingers` (rotation X) par les clips `BrasFPS|Pose_*` (mêmes clips pour les 4 personnages ; un jeu de clips par côté, le gauche est le miroir) ; `Pose_Attraper` a 3 clés (repos, ouverte, refermée), les 9 poses fixes 2 clés identiques (images 1 et 2) pour que chaque clip garde ses 180 courbes à l'import ; les déplacements de la main entière restent dans FirstPersonView | `M_BrasFPS_<Perso>_*` (aplats) ; contour par coque inversée (RENDU.md § 5 bis) ; repères fixes enfants de `BrasFPS` : `Socket_Orbe` (0, 0.06, 0.045) depuis le poignet (droit), `Socket_Artefact` (0, 0.055, 0.05) et `Socket_Artefact_Anneau` (0, −0.05, 0.105) pour l'anneau de la lanterne dans `Pose_PriseAnneau` (gauche, à ajuster en jeu) ; planches `BrasFPS_*.jpg` |
+| Bras des 4 personnages (remplacent les mains greybox) | `SK_BrasFPS_<Perso>_D` / `_G` (armature `BrasFPS`, 17 os, mêmes noms partout) | placer le FBX pour que **`Socket_Poignet` coïncide avec la main greybox** (position et rotation de repos de FpsView, § 5 bis d'ART-HANDOFF) : le pivot est au coude, `Socket_Poignet` est en (0, 0, 0.27) dans le FBX, axes de l'ancrage (+Z doigts, +Y dos de la main) ; aucun recalage d'axe | os des doigts : remplacent l'angle unique `rightFingers` / `leftFingers` (rotation X) par les clips `BrasFPS|Pose_*` (mêmes clips pour les 4 personnages ; un jeu de clips par côté, le gauche est le miroir) ; `Pose_Attraper` a 3 clés (repos, ouverte, refermée), les 9 poses fixes 2 clés identiques (images 1 et 2) pour que chaque clip garde ses 180 courbes à l'import ; 4 boucles de flottement et nouvelle convention des poses au § 4 quater ; les déplacements de la main entière restent dans FirstPersonView | `M_BrasFPS_<Perso>_*` (aplats) ; contour par coque inversée (RENDU.md § 5 bis) ; repères fixes enfants de `BrasFPS` : `Socket_Orbe` (0, 0.06, 0.045) depuis le poignet (droit), `Socket_Artefact` (0, 0.055, 0.05) et `Socket_Artefact_Anneau` (0, −0.05, 0.105) pour l'anneau de la lanterne dans `Pose_PriseAnneau` (gauche, à ajuster en jeu) ; planches `BrasFPS_*.jpg` |
 | Barillet (caméléon, main gauche) | `SM_Barillet` | intégré sur `main` (branche `barillet-modele`) | | |
 
 ## 4 bis. Caisse attrapable : `SM_Caisse` (modèle généré par IA avec Tripo, nettoyé le 2026-11-15)
@@ -164,6 +164,43 @@ Points à régler sur `main` (code) : l'épaule du code est à `width` × 0.4 = 
 du modèle à **1.8 m** et **11.1 m** (prévoir un réglage d'épaule séparé de `width`, ou accepter 1 m d'écart caché
 par l'épaisseur du bras) ; `eyeHeight` 12.5 m (yeux du modèle à 12.9 m : cohérent). Captures de l'assemblage dans la
 pose du code (main droite levée, main gauche au repos) : `rendus/Lot/Traqueur_pieces_{face,34}.jpg`.
+
+## 4 quater. Animations (lot du 2026-11-16 : retours de playtest)
+
+Noms identiques dans tous les FBX d'un même objet (clips Unity « `<Armature>|<Nom>` »). Boucles réglées à l'import
+(*Loop Time*), première et dernière images identiques.
+
+### Bras FPS (`SK_BrasFPS_<Perso>_D` / `_G`, armature `BrasFPS`, 17 os)
+
+**Convention des poses de flottement** (rien n'est tenu, l'orbe et l'artefact flottent au-dessus de la paume) : dans
+`Pose_Repos`, `Pose_OrbePaume`, `Pose_Pistolet`, `Pose_PriseAnneau` et leurs boucles, l'avant-bras est tourné de 180° :
+**la paume regarde +Y du repère de la main** (`Socket_Poignet`), là où FpsView pose déjà l'orbe (`orbInHand` (0, 0.06,
+0.045)), le barillet (`barrelInHand`) et la lanterne (`lanternInHand`). `Socket_Artefact_Anneau` est passé en (0, 0.075,
+0.05) depuis le poignet (anneau de la lanterne au-dessus de la paume). Les poses d'action (`Pose_Traction`,
+`Pose_Repulsion`, `Pose_Attraper`, `Pose_TenirObjet`, `Pose_Lancer`, `Pose_Poing`) gardent l'ancienne convention (paume
+vers −Y) : le fondu entre une pose de flottement et une pose d'action fait tourner l'avant-bras d'un demi-tour.
+
+**Placement conseillé** (mains levées devant la caméra, paumes l'une vers l'autre et un peu vers le haut, une bonne partie
+de l'avant-bras visible ; vérifié à `viewmodelFov` 60, planches `rendus/Lot2/BrasFPS_*.jpg`), dans `FpsView_Default` :
+
+| Réglage | Main droite | Main gauche |
+|---|---|---|
+| `…HandRest` (position du poignet, repère caméra) | (0.12, −0.115, 0.40) | (−0.12, −0.115, 0.40) |
+| `…HandRestEuler` | (−24, −8, 54.4) | (−24, 8, −54.4) |
+
+(paume à 50° de la verticale vers l'intérieur, doigts levés de 24° et tournés de 8° vers le centre.)
+
+| Clip | Durée | Boucle | Contenu |
+|---|---|---|---|
+| `Pose_Repos` | 2 images (0.04 s) | non | flottement, doigts recourbés sans toucher (orbe à droite, artefact à gauche) |
+| `Pose_OrbePaume` | 2 images | non | main plus ouverte, doigts écartés (orbe au-dessus de la paume) |
+| `Pose_Pistolet` | 2 images | non | index et majeur tendus, annulaire et auriculaire à demi repliés (barillet flottant) |
+| `Pose_PriseAnneau` | 2 images | non | doigts en crochet au-dessus de l'anneau flottant (lanterne) |
+| `Boucle_Repos`, `Boucle_OrbePaume`, `Boucle_Pistolet`, `Boucle_PriseAnneau` | **3.5 s** | **oui** | la pose du même nom + respiration (bascule de 1.4° de l'avant-bras au coude, soit ≈ 7 mm à la main, et torsion de 0.8°) + doigts qui ondulent (±5°, deux fois par boucle, décalés d'un doigt à l'autre) ; à jouer en état de repos à la place de la pose fixe |
+| `Pose_Attraper` | 0.29 s (3 clés) | non | inchangé |
+| autres `Pose_*` | 2 images | non | inchangées |
+
+Événements : aucun (les déplacements de la main entière restent dans FirstPersonView).
 
 ## 5. Props encore à produire (catalogue d'`ART-HANDOFF`)
 

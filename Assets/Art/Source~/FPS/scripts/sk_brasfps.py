@@ -19,7 +19,8 @@ Socket_Artefact_Anneau (main gauche, centre de l'anneau de la lanterne tenu dans
 
 Poses (actions, mêmes noms pour les 4 personnages et les deux côtés) : Pose_Repos, Pose_OrbePaume, Pose_Pistolet,
 Pose_PriseAnneau, Pose_Traction, Pose_Repulsion, Pose_Attraper (3 clés : ouverte puis refermée), Pose_TenirObjet,
-Pose_Lancer, Pose_Poing. Elles portent la forme de la main (poignet, doigts, rotation de l'avant-bras pour la paume
+Pose_Lancer, Pose_Poing, et 4 boucles Boucle_Repos, Boucle_OrbePaume, Boucle_Pistolet, Boucle_PriseAnneau (respiration
+de 3.5 s, doigts qui ondulent ; poses de flottement : paume vers +Y, rien n'est tenu). Elles portent la forme de la main (poignet, doigts, rotation de l'avant-bras pour la paume
 vers le haut) ; les déplacements de la main entière (bras tendu, recul, poussée) restent dans le code (FirstPersonView).
 
 Un FBX par bras (Assets/Art/Models/FPS/SK_BrasFPS_<Perso>_<D|G>.fbx) : deux squelettes aux mêmes noms dans un même FBX
@@ -444,14 +445,25 @@ def thumb(curl=0.0, lift=0.0, abd=0.0, c1=None):
             "Pouce_2": [("tcurl", curl)], "Pouce_3": [("tcurl", curl * 0.8)]}
 
 
+# Poses de flottement (retours de playtest du 2026-11-16) : rien n'est tenu, l'orbe et l'artefact flottent au-dessus de la
+# paume. L'avant-bras est tourné de 180° : la paume regarde +Y du repère de la main (Socket_Poignet), là où le code pose
+# l'orbe (orbInHand), le barillet (barrelInHand) et la lanterne (lanternInHand). Doigts recourbés « comme pour porter
+# quelque chose sans le toucher ». Le placement de la main dans la vue (mains levées, paumes l'une vers l'autre) reste
+# dans FpsView (rightHandRest, leftHandRest) : valeurs conseillées dans INTEGRATION-PROPS.md.
+PALM_UP = {"Avant_Bras": [("twist", 180)]}
+FLOAT = {
+    "Pose_Repos": merge(PALM_UP, fingers_pose(18, 26, 16, 6), thumb(curl=10, abd=28, c1=8), {"Poignet": [("curl", -12)]}),
+    "Pose_OrbePaume": merge(PALM_UP, fingers_pose(10, 16, 10, 10), thumb(curl=6, abd=32, c1=4), {"Poignet": [("curl", -18)]}),
+    "Pose_Pistolet": merge(PALM_UP, fingers_pose(6, 8, 4, 2, only=("Index", "Majeur")),
+                           fingers_pose(40, 52, 34, -1, only=("Annulaire", "Auriculaire")),
+                           thumb(curl=4, lift=20, abd=26), {"Poignet": [("curl", -12)]}),
+    "Pose_PriseAnneau": merge(PALM_UP, fingers_pose(32, 44, 28, 4), thumb(curl=18, abd=16, c1=12), {"Poignet": [("curl", -14)]}),
+}
 POSES = {
-    "Pose_Repos": [merge(fingers_pose(12, 14, 8, 2), thumb(curl=10, abd=4))],
-    "Pose_OrbePaume": [merge({"Avant_Bras": [("twist", 180)]}, fingers_pose(10, 16, 10, 6), thumb(curl=6, abd=14),
-                             {"Poignet": [("curl", -8)]})],
-    "Pose_Pistolet": [merge(fingers_pose(0, 0, 0, 1.5, only=("Index", "Majeur")),
-                            fingers_pose(85, 95, 60, only=("Annulaire", "Auriculaire")),
-                            thumb(curl=0, lift=35, abd=8))],
-    "Pose_PriseAnneau": [merge(fingers_pose(68, 88, 52, -1), thumb(curl=38, abd=-14, c1=18))],
+    "Pose_Repos": [FLOAT["Pose_Repos"]],
+    "Pose_OrbePaume": [FLOAT["Pose_OrbePaume"]],
+    "Pose_Pistolet": [FLOAT["Pose_Pistolet"]],
+    "Pose_PriseAnneau": [FLOAT["Pose_PriseAnneau"]],
     "Pose_Traction": [merge(fingers_pose(-4, 0, 0, 10), thumb(curl=0, abd=16), {"Poignet": [("curl", -12)]})],
     "Pose_Repulsion": [merge(fingers_pose(-14, -6, 0, 18), thumb(curl=-4, abd=26), {"Poignet": [("curl", -28)]})],
     "Pose_Attraper": [merge(fingers_pose(12, 14, 8, 2), thumb(curl=10, abd=4)),
@@ -462,6 +474,30 @@ POSES = {
     "Pose_Poing": [merge(fingers_pose(88, 100, 75, -1), thumb(curl=45, abd=-18, c1=24))],
 }
 FRAMES = {"Pose_Attraper": (1, 4, 8)}
+
+# Boucles (même nom que la pose, préfixe Boucle_) : respiration de l'avant-bras (bascule de BREATH_DEG autour du coude et
+# torsion légère, période LOOP_S) et doigts qui ondulent pendant le flottement (deux cycles par boucle, phase décalée par
+# doigt). Première et dernière clés identiques : boucle propre.
+FPS_ANIM = 24
+LOOP_S = 3.5
+BREATH_DEG = 1.4
+FINGER_DEG = 5.0
+LOOP_STEP = 3                       # une clé toutes les 3 images (0.125 s)
+FINGER_PHASE = {"Index": 0.0, "Majeur": 0.6, "Annulaire": 1.2, "Auriculaire": 1.8, "Pouce": 2.6}
+
+
+def loop_spec(base, t):
+    """Pose de flottement à l'instant t (s) : base + respiration + doigts."""
+    w = 2 * math.pi * t / LOOP_S
+    extra = {"Avant_Bras": [("curl", -BREATH_DEG * math.sin(w)), ("twist", 0.8 * math.sin(w + 0.7))],
+             "Poignet": [("curl", 1.2 * math.sin(w + 1.4))]}
+    for name, *_ in FINGERS:
+        a = FINGER_DEG * math.sin(2 * w + FINGER_PHASE[name])
+        extra["%s_1" % name] = [("curl", a)]
+        extra["%s_2" % name] = [("curl", a * 0.8)]
+        extra["%s_3" % name] = [("curl", a * 0.5)]
+    extra["Pouce_2"] = [("tcurl", 0.6 * FINGER_DEG * math.sin(2 * w + FINGER_PHASE["Pouce"]))]
+    return merge(base, extra)
 
 
 def mirror_axis(v):
@@ -501,6 +537,17 @@ def make_actions(arm_ob, mirror):
                 pb.keyframe_insert("rotation_quaternion", frame=f)
                 pb.keyframe_insert("location", frame=f)
         acts.append(act)
+    n = int(round(LOOP_S * FPS_ANIM))
+    for name, base in FLOAT.items():
+        act = bpy.data.actions.new(name.replace("Pose_", "Boucle_"))
+        act.use_fake_user = False
+        arm_ob.animation_data.action = act
+        for f in range(0, n + 1, LOOP_STEP):
+            apply_pose(arm_ob, loop_spec(base, f / FPS_ANIM), mirror)
+            for pb in arm_ob.pose.bones:
+                pb.keyframe_insert("rotation_quaternion", frame=1 + f)
+                pb.keyframe_insert("location", frame=1 + f)
+        acts.append(act)
     arm_ob.animation_data.action = acts[0]
     return acts
 
@@ -510,7 +557,7 @@ SOCKETS = {  # repère de la main (Unity) ; côtés
     "Socket_Poignet": ((0.0, 0.0, 0.0), ("D", "G")),
     "Socket_Orbe": ((0.0, 0.06, 0.045), ("D",)),
     "Socket_Artefact": ((0.0, 0.055, 0.05), ("G",)),
-    "Socket_Artefact_Anneau": ((0.0, -0.05, 0.105), ("G",)),
+    "Socket_Artefact_Anneau": ((0.0, 0.075, 0.05), ("G",)),     # anneau de la lanterne : flotte au-dessus de la paume
 }
 
 
@@ -621,13 +668,14 @@ def save_blend(scene, acts, path):
 
 def clear_actions():
     for a in list(bpy.data.actions):
-        if a.name.startswith("Pose_"):
+        if a.name.startswith(("Pose_", "Boucle_")):
             bpy.data.actions.remove(a)
 
 
 # ----------------------------------------------------------------------------- un bras complet
 def build_side(perso, side):
     sc = C.new_scene("SK_BrasFPS_%s_%s" % (perso, side))
+    sc.render.fps = FPS_ANIM
     clear_actions()
     A = Arm(perso)
     mesh_ob, bones = A.build()
