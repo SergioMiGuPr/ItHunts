@@ -17,7 +17,16 @@ namespace ItHunts.Level
 
         public Kind kind;
 
-        private void OnEnable() => Apply();
+        /// <summary>Torches et lampes actives (fondu de l'ambiance enragée sans recherche dans la scène).</summary>
+        public static readonly System.Collections.Generic.List<AmbianceLight> All = new System.Collections.Generic.List<AmbianceLight>();
+
+        private void OnEnable()
+        {
+            All.Add(this);
+            Apply();
+        }
+
+        private void OnDisable() => All.Remove(this);
 
         /// <summary>Calque de rendu de la vue FPS (mains, artefacts) : les torches, lampes et la lune l'éclairent, pas la lanterne.</summary>
         public const int FpsRenderingLayer = 1;

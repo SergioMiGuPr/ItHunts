@@ -1,0 +1,14 @@
+couloir 100 m × 14 m ; ambiance Ambiance_Sombre
+ZoneTraqueur à 10 m : arrêt pic 0,59 / fond 0,18 (×3,3), 18 px nets ; course 18 m/s (FOV 80°) pic 0,59 / fond 0,17 (×3,4), 10 px nets
+ZoneTraqueur à 30 m : arrêt pic 0,18 / fond 0,17 (×1,0), 0 px nets ; course 18 m/s (FOV 80°) pic 0,55 / fond 0,17 (×3,2), 112 px nets
+ZoneTraqueur à 50 m : arrêt pic 0,79 / fond 0,17 (×4,6), 368 px nets ; course 18 m/s (FOV 80°) pic 0,79 / fond 0,18 (×4,5), 624 px nets
+BondGoule à 10 m : arrêt pic 0,48 / fond 0,25 (×1,9), 544 px nets ; course 18 m/s (FOV 80°) pic 0,48 / fond 0,24 (×2,0), 550 px nets
+BondGoule à 30 m : arrêt pic 0,53 / fond 0,19 (×2,8), 340 px nets ; course 18 m/s (FOV 80°) pic 0,57 / fond 0,19 (×2,9), 479 px nets
+BondGoule à 50 m : arrêt pic 0,79 / fond 0,19 (×4,3), 800 px nets ; course 18 m/s (FOV 80°) pic 0,79 / fond 0,19 (×4,2), 941 px nets
+Attrapable à 10 m : arrêt pic 0,51 / fond 0,25 (×2,0), 332 px nets ; course 18 m/s (FOV 80°) pic 0,48 / fond 0,24 (×2,0), 229 px nets
+Attrapable à 30 m : arrêt pic 0,53 / fond 0,19 (×2,8), 324 px nets ; course 18 m/s (FOV 80°) pic 0,54 / fond 0,19 (×2,8), 454 px nets
+Attrapable à 50 m : arrêt pic 0,79 / fond 0,19 (×4,3), 800 px nets ; course 18 m/s (FOV 80°) pic 0,79 / fond 0,19 (×4,2), 941 px nets
+Ame à 10 m : arrêt pic 0,32 / fond 0,26 (×1,2), 0 px nets ; course 18 m/s (FOV 80°) pic 0,32 / fond 0,24 (×1,3), 0 px nets
+Ame à 30 m : arrêt pic 0,71 / fond 0,20 (×3,6), 641 px nets ; course 18 m/s (FOV 80°) pic 0,71 / fond 0,20 (×3,6), 744 px nets
+Ame à 50 m : arrêt pic 0,79 / fond 0,19 (×4,2), 1054 px nets ; course 18 m/s (FOV 80°) pic 0,79 / fond 0,19 (×4,2), 1105 px nets
+#fin

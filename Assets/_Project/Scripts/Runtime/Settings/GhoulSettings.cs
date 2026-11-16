@@ -91,7 +91,7 @@ namespace ItHunts.Settings
 
         [Header("Retour visuel")]
         [ColorUsage(false, true)] public Color telegraphColor = new Color(3f, 0.4f, 0.2f);
-        [ColorUsage(false, true)] public Color eyeColor = new Color(2.5f, 1.4f, 0.3f);
+        [ColorUsage(false, true)] public Color eyeColor = new Color(0.45f, 0.25f, 0.05f);   // au repos : sous le seuil du bloom (correctifs-rendu point 5), rouge vif pendant l'annonce seulement
 
         [Header("Signal : lueur pendant l'annonce du bond (bloc 4)")]
         [Tooltip("Yeux et gueule pendant l'annonce du bond (HDR, au-delà du seuil du bloom).")]

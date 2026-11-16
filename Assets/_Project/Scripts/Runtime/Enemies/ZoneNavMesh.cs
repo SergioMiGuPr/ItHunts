@@ -82,8 +82,8 @@ namespace ItHunts.Enemies
             foreach (NavMeshBuildSource s in all)
             {
                 Component c = s.component;
-                if (c == null || IsMoving(c))
-                    continue;
+                if (c == null || IsMoving(c) || c.GetComponentInParent<StalkerPassesThrough>() != null)
+                    continue;                                           // objets qui bougent ; anneau des arcs (joueurs seulement)
                 NavMeshBuildSource src = s;
                 if (c.GetComponentInParent<NotWalkable>() != null)
                     src.area = 1;                                       // plafonds, toits, murs : obstacle, jamais un sol

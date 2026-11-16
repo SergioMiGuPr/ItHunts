@@ -947,7 +947,8 @@ namespace ItHunts.Enemies
 
         private bool Solid(Collider c) =>
             c != null && !c.transform.IsChildOf(transform) && c.GetComponentInParent<PlayerHealth>() == null
-            && c.GetComponentInParent<ItHunts.Orbs.Grabbable>() == null && c.GetComponentInParent<Damageable>() == null;
+            && c.GetComponentInParent<ItHunts.Orbs.Grabbable>() == null && c.GetComponentInParent<Damageable>() == null
+            && c.GetComponentInParent<StalkerPassesThrough>() == null;
 
         /// <summary>La main s'abat : vrai si elle a attrapé quelqu'un.</summary>
         private bool ResolveGrab(float now)
@@ -1298,6 +1299,13 @@ namespace ItHunts.Enemies
             _column.transform.rotation = Quaternion.identity;
             _columnBlock.SetColor("_BaseColor", settings.grabColumnColor * (settings.grabColumnIntensity * fade));
             _column.SetPropertyBlock(_columnBlock);
+        }
+
+        private void OnDisable()
+        {
+            // Zone de prise et sa colonne : jamais allumées sans traqueur actif (fin de zone, remise à zéro).
+            if (grabMarker != null && grabMarker.gameObject.activeSelf)
+                grabMarker.gameObject.SetActive(false);
         }
 
         private void UpdateMarker()

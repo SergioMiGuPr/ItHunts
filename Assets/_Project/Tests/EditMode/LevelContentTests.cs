@@ -110,5 +110,37 @@ namespace ItHunts.Tests
             Assert.That(Count(Base, rt + "Level/CrumblePlatform.cs"), Is.GreaterThanOrEqualTo(30));
             Assert.That(text.Contains("voie au sol"), Is.False, "pentes sur toute la largeur : plus de vide à côté");
         }
+
+        [Test]
+        public void Arc_CollisionDeLAnneau_TraqueurPasseAuTravers_ColonnesDeLaDA()
+        {
+            var root = new GameObject("arc (test)").transform;
+            try
+            {
+                const float sx = 1f, rise = 4f;
+                Transform col = KitBuild.ArchCollision(root, sx, rise);
+                var boxes = col.GetComponentsInChildren<BoxCollider>();
+                Assert.That(boxes.Length, Is.EqualTo(2 * (KitBuild.ArchMidline.Length - 1)), "une boîte par segment, des deux côtés");
+                Assert.That(col.GetComponent<StalkerPassesThrough>(), Is.Not.Null, "le traqueur passe au travers (pas de NavMesh, pas de baisse)");
+                Assert.That(col.GetComponent<NotWalkable>(), Is.Not.Null);
+                foreach (BoxCollider b in boxes)
+                {
+                    Vector3 c = b.transform.localPosition;
+                    Assert.That(Mathf.Abs(c.x), Is.LessThanOrEqualTo(7f * sx));
+                    Assert.That(c.y, Is.InRange(rise, rise + 11f));
+                }
+                // Passage libre : au centre, rien sous l'intrados (9.6 m au-dessus du pied de l'arc).
+                float lowestAtCenter = boxes.Where(b => Mathf.Abs(b.transform.localPosition.x) < 1f).Min(b => b.bounds.min.y);
+                Assert.That(lowestAtCenter, Is.GreaterThan(rise + 8.5f));
+            }
+            finally
+            {
+                Object.DestroyImmediate(root.gameObject);
+            }
+
+            var kit = AssetDatabase.LoadAssetAtPath<KitSet>("Assets/_Project/Settings/Kit_Niveau1.asset");
+            Assert.That(kit.pilier, Is.Not.Null, "piédroits : colonne de la DA (SM_Colonne)");
+            Assert.That(kit.pilier.GetComponentsInChildren<MeshFilter>(true).Any(m => m.sharedMesh != null && m.sharedMesh.name.Contains("Colonne")), Is.True);
+        }
     }
 }

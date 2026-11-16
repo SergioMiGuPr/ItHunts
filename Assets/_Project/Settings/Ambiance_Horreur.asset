@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.AmbianceSettings
   ambient: {r: 0.012, g: 0.013, b: 0.02, a: 1}
   fogColor: {r: 0.004, g: 0.005, b: 0.009, a: 1}
-  fogStart: 6
-  fogEnd: 55
+  fogStart: 5
+  fogEnd: 35
   moonIntensity: 0.12
   torchIntensity: 1.4
   torchRange: 9

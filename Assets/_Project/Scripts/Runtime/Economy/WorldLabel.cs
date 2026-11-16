@@ -25,6 +25,11 @@ namespace ItHunts.Economy
         private Vector3 _offset;
         private bool _follow;
         private Transform _ignore;
+        private Color _color = Color.white;
+        private float _alpha = -1f;
+
+        /// <summary>Mesure : dernière opacité appliquée (fondu avec la distance, correctifs-rendu point 5).</summary>
+        public float LastAlpha => _alpha;
 
         /// <summary>Texte selon le joueur qui regarde (null : le texte de base).</summary>
         public Func<PlayerHealth, string> TextFor;
@@ -73,6 +78,7 @@ namespace ItHunts.Economy
             tm.fontSize = 64;
             tm.characterSize = height / 6.4f;                            // hauteur d'une ligne ≈ height (m)
             tm.color = color;
+            label._color = color;
             Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (font != null)
             {
@@ -162,6 +168,8 @@ namespace ItHunts.Economy
         {
             set
             {
+                _color = value;
+                _alpha = -1f;                                            // réappliquée avec l'opacité de la distance
                 if (_text != null)
                     _text.color = value;
             }
@@ -197,8 +205,26 @@ namespace ItHunts.Economy
             transform.rotation = cam.transform.rotation;                  // dans le plan de l'écran : jamais penché
             PlayerHealth viewer = Interactables.PlayerOfCamera(cam);
             bool visible = AllowedFor(viewer) && (!_follow || _anchor.gameObject.activeInHierarchy);
+            // Fondu avec la distance (correctifs-rendu point 5) : lisible jusqu'à 20 m, invisible à 35 m, jamais à travers le
+            // brouillard (réglages de l'ambiance de la scène).
+            float alpha = 1f;
+            var amb = ItHunts.Level.SceneAmbiance.Active;
+            if (amb != null)
+            {
+                float d = Vector3.Distance(cam.transform.position, transform.position);
+                float fogEnd = RenderSettings.fog ? RenderSettings.fogEndDistance : float.PositiveInfinity;
+                alpha = ItHunts.Settings.AmbianceSettings.LabelAlpha(d, amb.labelFullDistance, amb.labelHiddenDistance, fogEnd, amb.labelFogShare);
+            }
+
+            if (alpha <= 0.01f)
+                visible = false;
             if (visible)
                 visible = InSight(cam);
+            if (visible && Mathf.Abs(alpha - _alpha) > 0.01f)
+            {
+                _alpha = alpha;
+                _text.color = new Color(_color.r, _color.g, _color.b, _color.a * alpha);
+            }
             if (_renderer != null)
                 _renderer.enabled = visible;
             string t = viewer != null && TextFor != null ? TextFor(viewer) : _base;

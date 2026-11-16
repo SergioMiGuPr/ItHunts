@@ -510,7 +510,7 @@ namespace ItHunts.EditorTools
                 Block($"Tour {q}", sx * (h - 6f), sx * h, sz * (h - 6f), sz * h, 12f);
                 Block($"Gradin bas le long de z {q}", sx * (h - 8f), sx * (h - 4f), sz * lane, sz * (h - 6f), 4f);
                 Block($"Gradin haut le long de z {q}", sx * (h - 4f), sx * h, sz * lane, sz * (h - 6f), 8f);
-                Block($"Gradin bas le long de x {q}", sx * lane, sx * (h - 6f), sz * (h - 8f), sz * (h - 4f), 4f);
+                Block($"Gradin bas le long de x {q}", sx * lane, sx * (h - 6f), sz * (h - 8f), sz * (h - 4f), 3.98f);   // croise l'autre gradin bas : 2 cm plus bas (dessus confondus)
                 Block($"Gradin haut le long de x {q}", sx * lane, sx * (h - 6f), sz * (h - 4f), sz * h, 8f);
                 P("Banc", sx * 10f, sz * (h - 6f), 0f, 4f);
                 P("Tonneau", sx * (h - 2f), sz * 10f, 0f, 8f);

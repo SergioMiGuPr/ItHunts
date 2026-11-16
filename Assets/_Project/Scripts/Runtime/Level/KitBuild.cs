@@ -157,15 +157,77 @@ namespace ItHunts.Level
         {
             if (kit == null || kit.arc == null)
                 return;
-            float ah = ArchHeight(kit), rise = Mathf.Max(0f, height - ah);
+            float ah = ArchHeight(kit), rise = Mathf.Max(0f, height - ah), sx = width / 14f;
             var root = new GameObject("Arc (porte la voûte)").transform;
             root.SetParent(parent, false);
             root.localPosition = floor;
             root.localRotation = Quaternion.Euler(0f, yaw, 0f);
-            Piece(kit.arc, root, new Vector3(0f, rise, 0f), 0f, new Vector3(width / 14f, 1f, 1f));
+            Piece(kit.arc, root, new Vector3(0f, rise, 0f), 0f, new Vector3(sx, 1f, 1f));
+            ArchCollision(root, sx, rise);
             if (rise > 0.05f)
                 foreach (float s in new[] { -1f, 1f })
-                    Box(root, "Piédroit", new Vector3(s * (width * 0.5f - 0.5f), rise * 0.5f, 0f), new Vector3(1f, rise, 1.6f), Kind.Mur, kit, collider: false);
+                    Pier(root, kit, s, width, rise);
+        }
+
+        /// <summary>
+        /// Ligne médiane de l'anneau de SM_Arc_Couloir (moitié gauche, repère du modèle de 14 × 11 m), relevée sur son maillage :
+        /// pied de x = −7 à −5.9 m, intrados à 9.6 m au sommet, clé à 11 m. Épaisseur de l'anneau 1.2 m, profondeur 1.6 m.
+        /// </summary>
+        public static readonly Vector2[] ArchMidline =
+        {
+            new Vector2(-6.45f, 0f), new Vector2(-6.3f, 2.5f), new Vector2(-5.85f, 4.2f), new Vector2(-5.2f, 5.6f), new Vector2(-4.4f, 6.75f),
+            new Vector2(-3.4f, 7.75f), new Vector2(-2.3f, 8.65f), new Vector2(-1.2f, 9.45f), new Vector2(0f, 10.3f),
+        };
+
+        public const float ArchRingThickness = 1.2f, ArchDepth = 1.6f;
+
+        /// <summary>
+        /// Collision de l'anneau (correctifs-rendu point 2) : une boîte par segment de la ligne médiane, des deux côtés, élargie avec
+        /// l'arc. Pour les joueurs et les objets ; le traqueur passe au travers (StalkerPassesThrough), comme avant.
+        /// </summary>
+        public static Transform ArchCollision(Transform root, float sx, float rise)
+        {
+            var col = new GameObject("Collision de l'arc").transform;
+            col.SetParent(root, false);
+            col.gameObject.AddComponent<Enemies.StalkerPassesThrough>();
+            col.gameObject.AddComponent<Enemies.NotWalkable>();
+            foreach (float side in new[] { -1f, 1f })
+                for (int i = 0; i + 1 < ArchMidline.Length; i++)
+                {
+                    Vector2 a = new Vector2(side * ArchMidline[i].x * sx, ArchMidline[i].y + rise);
+                    Vector2 b = new Vector2(side * ArchMidline[i + 1].x * sx, ArchMidline[i + 1].y + rise);
+                    Vector2 d = b - a;
+                    var seg = new GameObject($"Anneau {(side < 0 ? "gauche" : "droite")} {i + 1}");
+                    seg.transform.SetParent(col, false);
+                    seg.transform.localPosition = new Vector3((a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f, 0f);
+                    seg.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg);
+                    var box = seg.AddComponent<BoxCollider>();
+                    box.size = new Vector3(d.magnitude + 0.15f, ArchRingThickness, ArchDepth);       // segments qui se chevauchent : pas de fente
+                }
+
+            return col;
+        }
+
+        /// <summary>
+        /// Piédroit sous un pied de l'arc : la colonne de la DA (SM_Colonne, 1.4 × 8 × 1.4 m) réduite à la hauteur du piédroit, de la
+        /// largeur du pied de l'arc (1.05 m) et de sa profondeur (1.6 m), contre le mur ; collision comprise. Greybox sans le modèle.
+        /// </summary>
+        private static void Pier(Transform root, KitSet kit, float side, float width, float rise)
+        {
+            const float footWidth = 1.05f;
+            Vector3 at = new Vector3(side * (width * 0.5f - footWidth * 0.5f), 0f, 0f);
+            if (kit.pilier == null)
+            {
+                Box(root, "Piédroit", at + Vector3.up * (rise * 0.5f), new Vector3(1f, rise, ArchDepth), Kind.Mur, kit, collider: false);
+                return;
+            }
+
+            GameObject pier = Piece(kit.pilier, root, at, 0f, new Vector3(footWidth / 1.4f, rise / 8f, ArchDepth / 1.4f));
+            pier.name = "Piédroit (colonne)";
+            var box = pier.AddComponent<BoxCollider>();
+            box.center = new Vector3(0f, 4f, 0f);                           // repère du modèle : 1.4 × 8 × 1.4 m, pied à 0
+            box.size = new Vector3(1.4f, 8f, 1.4f);
+            pier.AddComponent<Enemies.NotWalkable>();
         }
 
         /// <summary>Une pièce du kit à une position et une orientation locales.</summary>

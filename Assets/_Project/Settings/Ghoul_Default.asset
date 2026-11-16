@@ -61,4 +61,4 @@ MonoBehaviour:
   leapPush: 4
   leapLead: 0.2
   telegraphColor: {r: 3, g: 0.4, b: 0.2, a: 1}
-  eyeColor: {r: 2.5, g: 1.4, b: 0.3, a: 1}
+  eyeColor: {r: 0.45, g: 0.25, b: 0.05, a: 1}

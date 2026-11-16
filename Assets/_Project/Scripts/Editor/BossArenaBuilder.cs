@@ -161,7 +161,8 @@ namespace ItHunts.EditorTools
                 hc + new Vector3(0f, 7f, -8.6f), tt, glow, zoneMat, herseLevers);
 
             // Pont : tablier de 12 m sur la fosse (le traqueur y passe), s'effondre.
-            GameObject deck = Box("Pont : tablier", root, c + new Vector3((px0 + px1) / 2f, -0.5f, 0f), new Vector3(px1 - px0 + 2f, 1f, 12f), _bridge, collider: true);
+            // 2 cm au-dessus des sols de l'arène qu'il recouvre de 1 m de chaque côté (faces confondues : scintillement).
+            GameObject deck = Box("Pont : tablier", root, c + new Vector3((px0 + px1) / 2f, -0.48f, 0f), new Vector3(px1 - px0 + 2f, 1f, 12f), _bridge, collider: true);
             GameObjectUtility.SetStaticEditorFlags(deck, 0);
             Piece("Pont : poteau de la clé", c + new Vector3(px0 - 2f, 1.5f, -7.5f), new Vector3(1f, 3f, 1f), _wall);
             BuildTrap("Pont", root, TrapKind.Pont, c + new Vector3((px0 + px1) / 2f, 7f, 0f), new Vector3(px1 - px0, 14f, 12f), deck.transform, 0f,

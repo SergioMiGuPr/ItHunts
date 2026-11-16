@@ -4,6 +4,32 @@
 
 ## Étape en cours
 
+**Correctifs du rendu (`correctifs-rendu`, depuis `main` après la fusion de `rendu-integration`) — 2026-11-16, non poussée, à
+tester par l'utilisateur dans `integration-lot`.** Un commit par point.
+- **Phase enragée (`a2a3175`) :** ambiance « horreur » en fondu de 2 s au passage en Enragé (`AmbianceSettings.enraged`,
+  `enragedTransition`), retour à la remise à zéro ; 4 signaux lisibles à 50 m en horreur.
+- **1. Scintillement (`775d5fa`) :** couloirs et repaire coupés à la face extérieure du mur de la salle (les embrasures
+  doublaient murs, sols et plafonds), pont d'égout +2 cm, cadres et toits des annexes, passages en hauteur, galeries, seuils,
+  étagère, lit, gradins de la salle haute remplie (revalidée). Détecteur de faces confondues (triangles coplanaires de même
+  orientation qui se recouvrent, visibles) : 5 seeds, 1 034 → 43 à 53 cas par carte (≈ 2 000 → 16 m², même matériau uni).
+  Props de la DA étiquetés « DA » (`PropLibrary.BuildAll` les écrasait).
+- **2. Arcs (`a223b70`) :** collision de l'anneau (boîtes sur sa ligne médiane relevée sur le maillage) pour les joueurs et les
+  objets, le traqueur passe au travers (`StalkerPassesThrough`) ; piédroits = `SM_Colonne` réduite (1.05 × hauteur × 1.6 m)
+  avec collision. 5 seeds : 1 459 arcs conformes.
+- **3. Galeries (`6163965`) :** eau à 16 m sous le couloir (`MapLayoutSettings.galleryWaterDepth`), retour au palier
+  seulement au contact de l'eau (avant : dès 1.5 m) ; 20 seeds conformes (0 traction, 0 cachette).
+- **4. Lueur après la mort (`65accfd`) :** goule (yeux, gueule, corps, disque), volant et colonne du traqueur éteints à la mort,
+  à la remise à zéro et au recyclage.
+- **5. Distance de lecture (`ba7009c`) :** textes en monde lisibles jusqu'à 20 m, invisibles à 35 m, jamais au-delà de
+  0.8 × la fin du brouillard ; yeux des goules et des volants sous le seuil du bloom hors annonce.
+- **6. Ambiance « sombre » (`14882c5`) :** par défaut (0.03, brouillard 6 → 45 m) ; horreur passée à 5 → 35 m pour rester
+  la plus sombre ; colonne lisible à 50 m, annonce du bond à 30 m.
+- **7. Références des modules (`29d135b`) :** `docs/design/level/references-modules.md` à remplir ; placement inchangé.
+- **8. Lanterne (`5c733c2`) :** 15 m, 25°, brûlure 4 s à 12 PV/s (ticks 0.25 s, relancée sans cumul), « Braises » +2 s ;
+  1 goule ou 3 en 5 s (2 jets) à 5 et 15 m ; barillet 1 s seul, 5.5 s pour 3.
+- **Pièges notés :** `BuildRandomLevelScene` refait `Sortie_Arene` en greybox (relancer *Décor : poser les modèles livrés*)
+  et invalide les modules ; `PropLibrary.BuildAll` ne garde que les props étiquetés « DA ».
+
 **Intégration du rendu et du lot de modélisation (`rendu-integration`, depuis `main` après fusion de la PR #3) — 2026-11-16, à
 valider en Play Mode, non poussée.** Un commit par bloc.
 - **Bloc 0 (`87f0bc4` sur `main`, poussé) :** PR #3 fusionnée (commit de fusion, branche `art` gardée) : 193 fichiers dans
