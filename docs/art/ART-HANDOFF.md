@@ -16,6 +16,15 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 >   en plus du test de profondeur. Lignes de 0.28 m (sortie 0.5 m), toujours face à l'écran, **toujours à l'échelle du monde**
 >   (même posés sur une porte étirée). Sur une porte (sortie, salle verrouillée), **un texte devant chaque face**, à 0.12 m : un
 >   modèle de porte doit donc avoir une **collision pleine** (sinon le texte de l'autre face se voit à travers).
+> - **Retours du lot (branche `retours-lot`, 2026-11-16)** :
+>   - **Arc de couloir (`SM_Arc_Couloir`)** : le plafond des couloirs est **plat** (15 m), l'arc est un **anneau en ogive** de
+>     14 × 11 m posé sur des piédroits de 4 m : seule la clé touchait le plafond, il restait 3 à 6 m de vide de chaque côté entre
+>     l'extrados et le plafond. En attendant, le jeu comble ces écoinçons par un mur de pierre (`M_Pierre_Monde`, 1.4 m d'épaisseur,
+>     enfoncé de 0.3 m dans l'anneau). **À demander :** une variante **`SM_Arc_Couloir_Ecoincons`** : même anneau (intrados et
+>     profil inchangés, 1.6 m de profondeur), avec des **écoinçons pleins** : contour extérieur **rectangulaire de 14 m de large
+>     sur 11 m de haut** (le haut plat affleure le plafond, les côtés affleurent les murs), écoinçons en retrait de 0.1 m sur
+>     chaque face pour que l'anneau reste en saillie, pivot inchangé (au sol, au centre), matériau des murs (`M_Pierre_Monde`, UV
+>     monde) ; le jeu l'élargit comme l'arc actuel (échelle x = largeur / 14).
 > - **Intégration du lot de la PR #4 (branche `integration-lot`, 2026-11-16)** : kit `SM_Kit_*` (UV monde) dans toute la carte, props
 >   calés sur `INTEGRATION-PROPS.md` (torche +0.545 m, lumière sur `FX_Flamme`), `SM_Caisse` sur toutes les caisses attrapables,
 >   échafaudage praticable (plateaux dessus à 3 et 6 m, épaissis de 0.07 à 0.3 m vers le bas pour le NavMesh), goule `SM_Goule`,

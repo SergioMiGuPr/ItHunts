@@ -164,6 +164,7 @@ namespace ItHunts.Level
             root.localRotation = Quaternion.Euler(0f, yaw, 0f);
             Piece(kit.arc, root, new Vector3(0f, rise, 0f), 0f, new Vector3(sx, 1f, 1f));
             ArchCollision(root, sx, rise);
+            Spandrels(root, kit, width, height, sx, rise);
             if (rise > 0.05f)
                 foreach (float s in new[] { -1f, 1f })
                     Pier(root, kit, s, width, rise);
@@ -206,6 +207,168 @@ namespace ItHunts.Level
                 }
 
             return col;
+        }
+
+        /// <summary>
+        /// Extrados de l'anneau (moitié gauche, repère du modèle) : ligne médiane décalée d'une demi-épaisseur vers l'extérieur ;
+        /// clé à 10.9 m.
+        /// </summary>
+        public static Vector2[] ArchExtrados()
+        {
+            int n = ArchMidline.Length;
+            var e = new Vector2[n];
+            for (int i = 0; i < n; i++)
+            {
+                Vector2 t = (ArchMidline[Mathf.Min(n - 1, i + 1)] - ArchMidline[Mathf.Max(0, i - 1)]).normalized;
+                e[i] = ArchMidline[i] + new Vector2(-t.y, t.x) * (ArchRingThickness * 0.5f);   // vers le haut et l'extérieur
+            }
+
+            e[n - 1] = new Vector2(0f, ArchMidline[n - 1].y + ArchRingThickness * 0.5f);
+            return e;
+        }
+
+        /// <summary>Profondeur des écoinçons (un peu moins que l'anneau : l'arc reste en saillie) et enfoncement dans l'anneau.</summary>
+        public const float SpandrelDepth = 1.4f, SpandrelTuck = 0.3f, SpandrelIntoCeiling = 0.8f;
+
+        private static readonly Dictionary<(int, int, int), Mesh> SpandrelMeshes = new Dictionary<(int, int, int), Mesh>();
+
+        /// <summary>
+        /// Écoinçons de l'arc (retours du lot, point 2) : le modèle n'est que l'anneau en ogive ; sous un plafond plat, il restait
+        /// un vide de 3 à 6 m entre son extrados et le plafond (seule la clé le touchait). Mur de pierre plein (matériau des murs du
+        /// kit, UV monde) de l'extrados au plafond et d'un mur à l'autre, 1.4 m d'épaisseur, enfoncé dans l'anneau et dans le
+        /// plafond : l'arc épouse le plafond sur toute sa largeur. Fusionné avec le décor (Kit_) ; collision à part (boîtes),
+        /// traversée par le traqueur comme l'anneau. À remplacer par un arc à écoinçons pleins de la DA (ART-HANDOFF).
+        /// </summary>
+        public static Transform Spandrels(Transform root, KitSet kit, float width, float height, float sx, float rise)
+        {
+            List<Vector2> left = SpandrelOutline(width, sx, rise, height);
+            if (left.Count < 2)
+                return null;
+            float top = height + SpandrelIntoCeiling;
+            Material mat = null;
+            if (kit != null && kit.mur4x4 != null)
+            {
+                Renderer r = kit.mur4x4.GetComponentInChildren<Renderer>();
+                mat = r != null ? r.sharedMaterial : null;
+            }
+
+            var key = (Mathf.RoundToInt(width * 100f), Mathf.RoundToInt(height * 100f), Mathf.RoundToInt(rise * 100f));
+            if (!SpandrelMeshes.TryGetValue(key, out Mesh mesh) || mesh == null)
+                SpandrelMeshes[key] = mesh = SpandrelMesh(left, top);
+            if (mat != null)
+            {
+                var vis = new GameObject("Kit_Ecoincons");
+                vis.transform.SetParent(root, false);
+                vis.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var mr = vis.AddComponent<MeshRenderer>();
+                mr.sharedMaterial = mat;
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+
+            var col = new GameObject("Collision des écoinçons").transform;
+            col.SetParent(root, false);
+            col.gameObject.AddComponent<StalkerPassesThrough>();
+            col.gameObject.AddComponent<NotWalkable>();
+            foreach (float side in new[] { -1f, 1f })
+                for (int i = 0; i + 1 < left.Count; i++)
+                {
+                    Vector2 a = left[i], b = left[i + 1];
+                    float bottom = Mathf.Min(a.y, b.y);
+                    if (top - bottom < 0.05f || b.x - a.x < 0.01f)
+                        continue;
+                    var box = new GameObject($"Écoinçon {(side < 0 ? "gauche" : "droite")} {i + 1}").AddComponent<BoxCollider>();
+                    box.transform.SetParent(col, false);
+                    box.transform.localPosition = new Vector3(side * (a.x + b.x) * 0.5f, (bottom + top) * 0.5f, 0f);
+                    box.size = new Vector3(b.x - a.x, top - bottom, SpandrelDepth);
+                }
+
+            return col;
+        }
+
+        /// <summary>
+        /// Bas de l'écoinçon gauche (repère de la racine de l'arc), du mur (x = −largeur/2 − 0.1) à la clé (x = 0) : extrados
+        /// élargi (sx), monté de rise et enfoncé de SpandrelTuck dans l'anneau.
+        /// </summary>
+        public static List<Vector2> SpandrelOutline(float width, float sx, float rise, float height)
+        {
+            Vector2[] e = ArchExtrados();
+            float wall = -(width * 0.5f + 0.1f);
+            var pts = new List<Vector2>();
+            for (int i = 0; i < e.Length; i++)
+            {
+                var p = new Vector2(e[i].x * sx, Mathf.Min(height, e[i].y + rise - SpandrelTuck));
+                if (p.x <= wall)
+                    continue;
+                if (pts.Count == 0)
+                {
+                    float y = p.y;
+                    if (i > 0)
+                    {
+                        var q = new Vector2(e[i - 1].x * sx, e[i - 1].y + rise - SpandrelTuck);
+                        y = Mathf.Lerp(q.y, p.y, Mathf.InverseLerp(q.x, p.x, wall));
+                    }
+                    else
+                        y = Mathf.Min(y, rise);
+                    pts.Add(new Vector2(wall, y));
+                }
+
+                pts.Add(p);
+            }
+
+            return pts;
+        }
+
+        private static Mesh SpandrelMesh(List<Vector2> left, float top)
+        {
+            var v = new List<Vector3>();
+            var nrm = new List<Vector3>();
+            var uv = new List<Vector2>();
+            var tri = new List<int>();
+            float hz = SpandrelDepth * 0.5f;
+            void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 n)
+            {
+                int k = v.Count;
+                v.AddRange(new[] { a, b, c, d });
+                foreach (Vector3 p in new[] { a, b, c, d })
+                {
+                    nrm.Add(n);
+                    uv.Add(new Vector2(p.x + p.z, p.y));
+                }
+
+                // Face avant : sens horaire vu du côté de la normale (règle de Unity).
+                bool flip = Vector3.Dot(Vector3.Cross(b - a, c - a), n) < 0f;
+                if (flip)
+                    tri.AddRange(new[] { k, k + 1, k + 2, k, k + 2, k + 3 });
+                else
+                    tri.AddRange(new[] { k, k + 2, k + 1, k, k + 3, k + 2 });
+            }
+
+            foreach (float side in new[] { -1f, 1f })
+                for (int i = 0; i + 1 < left.Count; i++)
+                {
+                    Vector2 p0 = left[i], p1 = left[i + 1];
+                    foreach (float z in new[] { -hz, hz })
+                    {
+                        var n = new Vector3(0f, 0f, Mathf.Sign(z));
+                        Quad(new Vector3(side * p0.x, p0.y, z), new Vector3(side * p0.x, top, z), new Vector3(side * p1.x, top, z),
+                            new Vector3(side * p1.x, p1.y, z), n);
+                    }
+
+                    // Dessous (dans l'anneau, invisible d'ordinaire ; ferme le volume vu d'en dessous en biais).
+                    Vector3 down = Vector3.Cross(new Vector3(side * (p1.x - p0.x), p1.y - p0.y, 0f), Vector3.forward).normalized;
+                    if (down.y > 0f)
+                        down = -down;
+                    Quad(new Vector3(side * p0.x, p0.y, -hz), new Vector3(side * p0.x, p0.y, hz), new Vector3(side * p1.x, p1.y, hz),
+                        new Vector3(side * p1.x, p1.y, -hz), down);
+                }
+
+            var mesh = new Mesh { name = "Écoinçons de l'arc" };
+            mesh.SetVertices(v);
+            mesh.SetNormals(nrm);
+            mesh.SetUVs(0, uv);
+            mesh.SetTriangles(tri, 0);
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         /// <summary>
