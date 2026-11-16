@@ -180,6 +180,27 @@ bandes d'écailles (caméléon, hibou)) : 2 874 à 3 834 triangles par bras (bud
 d'os, mêmes 14 clips**. (Ces aplats, dont `_Couture`, `_Poil`, `_Ecaille`, sont remplacés plus bas par la texture peinte et le matériau unique.) Planche
 `rendus/Lot2/BrasFPS_Detail_avant_apres.jpg`.
 
+**Maillage d'un seul tenant et poids lissés (2026-11-16)** : chaque bras est une seule surface fermée (manche, ourlet
+replié, brassard, gant, paume, doigts et pouce soudés : plus aucune coupure aux articulations) ; seuls les décors restent
+des coques collées (sangles, boucles, poils, plumes, liserés, griffes), qui prennent les poids du point du bras le plus proche.
+Poids : rampes douces à chaque articulation, plus larges côté dos (jointure arrondie) que côté paume (pli net), lissées sur
+la paume et la base du pouce ; 4 influences au plus par sommet. **Repos légèrement fléchi** (16° à la jointure, 20° et 12°
+aux phalanges suivantes, doigts en léger éventail) : un pli de 90° ne demande que 70° environ de rotation, ce qui limite
+l'écrasement du skinning linéaire d'Unity. Les poses gardent les mêmes angles absolus (le script retire le pli de repos) :
+**rebaker `FpsArmPoseSet`** (les rotations locales de repos des os des doigts changent). `Pose_Poing` : pouce replié sur
+les doigts. Mesures (doigt plié 90/90/70°) : rayon à l'articulation 0.91 à 0.97 du repos (0.72 à 0.80 sans le repos
+fléchi), volume du doigt −5 à −8 % (pli intérieur compris) ; poignet ±60° : −0.8 % sur le bras. Triangles : renard 4 256,
+caméléon 4 132, koala 3 702, hibou 3 356. Planche `rendus/Lot2/BrasFPS_Un_seul_tenant_flexions.jpg`.
+
+**Os à ajouter pour des mains plus expressives (proposition, non faite)** : le squelette actuel (17 os) suffit pour plier
+et écarter les doigts (`spread` sur les phalanges 1). Il ne sait pas creuser la paume ni rapprocher le pouce de
+l'auriculaire. Proposition : `Metacarpe_Annulaire` et `Metacarpe_Auriculaire` (enfants de `Poignet`, parents des
+phalanges 1 correspondantes : la paume se creuse, la main se referme en coupe) et `Paume_Pouce` (éminence sous le pouce,
+suit `Pouce_1` à moitié). Côté code : `FpsArmsSetup` lit les os par la hiérarchie, les nouveaux os sont cuits sans
+changement ; `FpsArms` ferme les doigts par préfixe de nom (`Index`, `Majeur`…), donc les métacarpes ne bougeraient que
+par les clips ; les tableaux de rotations de `FpsArmPoseSet` changent de longueur : rebaker. Avec les vidéos de Sergio,
+ces 3 os rendraient le creux de la paume et l'opposition du pouce.
+
 **Convention des poses de flottement** (rien n'est tenu, l'orbe et l'artefact flottent au-dessus de la paume) : dans
 `Pose_Repos`, `Pose_OrbePaume`, `Pose_Pistolet`, `Pose_PriseAnneau` et leurs boucles, l'avant-bras est tourné de 180° :
 **la paume regarde +Y du repère de la main** (`Socket_Poignet`), là où FpsView pose déjà l'orbe (`orbInHand` (0, 0.06,
@@ -187,7 +208,7 @@ d'os, mêmes 14 clips**. (Ces aplats, dont `_Couture`, `_Poil`, `_Ecaille`, sont
 0.05) depuis le poignet (anneau de la lanterne au-dessus de la paume). **Depuis le 2026-11-16, les poses d'action
 suivent la même convention** (`Pose_Traction`, `Pose_Repulsion`, `Pose_Attraper` — sa première clé est `Pose_Repos` —,
 `Pose_TenirObjet`, `Pose_Lancer` : paume vers +Y, forme de la main gardée) : plus de demi-tour de l'avant-bras d'une pose
-à l'autre (planche `rendus/Lot2/BrasFPS_Poses_action_avant_apres.jpg`). Seule `Pose_Poing` garde l'ancienne convention.
+à l'autre (planche `rendus/Lot2/BrasFPS_Poses_action_avant_apres.jpg`). Seule `Pose_Poing` garde l'ancienne convention (poing fermé, pouce replié sur les doigts).
 
 **Placement conseillé, d'après `docs/design/references-visuelles/reference_bras_fps.png`** (2026-11-16 : avant-bras qui
 entrent par les coins bas, paumes ouvertes vers le haut et l'une vers l'autre, doigts écartés et détendus ; vérifié à
