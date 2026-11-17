@@ -358,7 +358,7 @@ Planches : `docs/art/rendus/Lot2/Goule_<Animation>.jpg` (5 images réparties sur
 
 ### Traqueur (`SK_Traqueur`, armature `Traqueur`, 32 os) — v3, 2026-11-17 (branche `art-traqueur`, méthode D partie A)
 
-Diagnostic : `rendus/Traqueur/Traqueur_Diagnostic.jpg` ; résultat : `rendus/Traqueur/Traqueur_v3_Retopo_Gréement.jpg`.
+Diagnostic : `rendus/Traqueur/Traqueur_Diagnostic.jpg` ; résultat : `rendus/Traqueur/Traqueur_v3_Retopo_Greement.jpg`.
 Scripts : `Source~/Ennemis/scripts/traqueur_v3/` (étapes 1 à 5). **Ce qui suit remplace la section v2 plus bas.**
 
 - **Maillage hybride** : corps **retopologisé en quads** (QuadriFlow, 97 % de sommets de valence 4, **boucles continues aux
