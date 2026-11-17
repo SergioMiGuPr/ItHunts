@@ -23,5 +23,16 @@ MonoBehaviour:
   lampRange: 18.2
   contourFadeStart: 40
   contourFadeEnd: 100
+  labelFullDistance: 20
+  labelHiddenDistance: 35
+  labelFogShare: 0.8
+  postExposure: 0
+  contrast: 14
+  saturation: -8
+  colorFilter: {r: 1, g: 1, b: 1, a: 1}
+  splitShadows: {r: 0.42, g: 0.46, b: 0.58, a: 1}
+  splitHighlights: {r: 0.6, g: 0.52, b: 0.42, a: 1}
+  splitBalance: -10
+  look: {fileID: 11400000, guid: 1f8b13ede5c418c4794dd5fd352d7d8f, type: 2}
   enraged: {fileID: 11400000, guid: 4c6285ce5cc774d4e9a7245cf108d409, type: 2}
   enragedTransition: 2

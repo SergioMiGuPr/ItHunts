@@ -137,6 +137,15 @@ namespace ItHunts.Level
                 framing.Change = d => fpv.Framing = fpv.Framing == HandFraming.Reference ? HandFraming.Ecarte : HandFraming.Reference;
                 framing.Submit = () => framing.Change(1);
             }
+            foreach (GraphicsOptions.Effect e in System.Enum.GetValues(typeof(GraphicsOptions.Effect)))
+            {
+                GraphicsOptions.Effect effect = e;
+                GreyboxMenu.Item item = o.Menu.Add(GraphicsOptions.Label(effect), null);
+                item.Value = () => GraphicsOptions.Get(effect) ? "oui" : "non";
+                item.Change = d => GraphicsOptions.Set(effect, !GraphicsOptions.Get(effect));
+                item.Submit = () => item.Change(1);
+            }
+
             int index = IndexOf(pi);
             if (index > 0 && PlayerInput.all.Count > 1 && SplitScreen.Current != null)
                 o.Menu.Add("Quitter l'écran partagé", () => LeaveSplit(o));

@@ -29,6 +29,9 @@ namespace ItHunts.Level
         {
             Active = ambiance;
             Apply();
+            // Lumière d'ambiance horreur (halos, vacillement, lanterne, ombres, étalonnage, effets d'écran) : si l'ambiance en a.
+            if (ambiance != null && ambiance.look != null && GetComponent<HorrorLook>() == null)
+                gameObject.AddComponent<HorrorLook>();
         }
 
         private void OnDestroy()
@@ -47,6 +50,8 @@ namespace ItHunts.Level
             Active = settings;
             Apply();
             ApplyLights();
+            if (settings != null && settings.look != null && GetComponent<HorrorLook>() == null)
+                gameObject.AddComponent<HorrorLook>();
         }
 
         private void ApplyLights()

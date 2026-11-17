@@ -20,6 +20,19 @@ MonoBehaviour:
   torchIntensity: 1.05
   torchRange: 12.6
   lampIntensity: 0.91
-  lampRange: 14.0
+  lampRange: 14
   contourFadeStart: 30
   contourFadeEnd: 70
+  labelFullDistance: 20
+  labelHiddenDistance: 35
+  labelFogShare: 0.8
+  postExposure: -0.3
+  contrast: 30
+  saturation: -22
+  colorFilter: {r: 0.97, g: 0.93, b: 0.93, a: 1}
+  splitShadows: {r: 0.4, g: 0.42, b: 0.58, a: 1}
+  splitHighlights: {r: 0.62, g: 0.48, b: 0.4, a: 1}
+  splitBalance: -30
+  look: {fileID: 11400000, guid: 1f8b13ede5c418c4794dd5fd352d7d8f, type: 2}
+  enraged: {fileID: 0}
+  enragedTransition: 2

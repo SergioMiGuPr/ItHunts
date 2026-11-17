@@ -18,7 +18,7 @@ MonoBehaviour:
   fogEnd: 38
   moonIntensity: 0.18
   torchIntensity: 1.2
-  torchRange: 14.0
+  torchRange: 14
   lampIntensity: 1.04
   lampRange: 16.1
   contourFadeStart: 30
@@ -26,5 +26,13 @@ MonoBehaviour:
   labelFullDistance: 20
   labelHiddenDistance: 35
   labelFogShare: 0.8
+  postExposure: -0.15
+  contrast: 22
+  saturation: -14
+  colorFilter: {r: 1, g: 1, b: 1, a: 1}
+  splitShadows: {r: 0.4, g: 0.44, b: 0.6, a: 1}
+  splitHighlights: {r: 0.62, g: 0.52, b: 0.4, a: 1}
+  splitBalance: -20
+  look: {fileID: 11400000, guid: 1f8b13ede5c418c4794dd5fd352d7d8f, type: 2}
   enraged: {fileID: 11400000, guid: 4c6285ce5cc774d4e9a7245cf108d409, type: 2}
   enragedTransition: 2

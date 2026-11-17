@@ -1,0 +1,30 @@
+Lumière d'ambiance horreur (2026-11-17). Planches : colonne de gauche avant, de droite après ; lignes : salle (lampes),
+couloir gothique dans l'axe, lanterne et traqueur à 16 m, coffre (lisibilité). Seed 104729, renard (lanterne).
+
+Mesure dans l'éditeur, A/B en alternance (3 rondes de 10 s, pic de vague, ambiance sombre) :
+salle E4, pic True, ambiance Ambiance_Sombre
+tout                         : image 19,66 / 95 % 28,56 ms ; fil principal 17,08 ; GPU 6,86 / 95 % 8,08 ; HorrorLook 1,343 ms
+rien                         : image 16,84 / 95 % 24,34 ms ; fil principal 14,51 ; GPU 5,79 / 95 % 7,16 ; HorrorLook 0,101 ms
+sans grading                 : image 19,47 / 95 % 32,28 ms ; fil principal 16,82 ; GPU 6,66 / 95 % 8,20 ; HorrorLook 1,350 ms
+sans halos                   : image 18,68 / 95 % 27,64 ms ; fil principal 16,13 ; GPU 6,74 / 95 % 8,10 ; HorrorLook 0,664 ms
+sans flicker                 : image 18,96 / 95 % 28,72 ms ; fil principal 16,46 ; GPU 6,68 / 95 % 8,41 ; HorrorLook 0,929 ms
+sans lanternCone             : image 21,07 / 95 % 33,96 ms ; fil principal 18,34 ; GPU 7,16 / 95 % 8,64 ; HorrorLook 1,341 ms
+sans shadowBudget            : image 19,89 / 95 % 28,53 ms ; fil principal 17,28 ; GPU 6,95 / 95 % 8,32 ; HorrorLook 1,318 ms
+sans bloom                   : image 20,19 / 95 % 26,94 ms ; fil principal 17,54 ; GPU 7,08 / 95 % 8,41 ; HorrorLook 1,303 ms
+sans vignette                : image 21,23 / 95 % 29,73 ms ; fil principal 18,43 ; GPU 7,23 / 95 % 8,61 ; HorrorLook 1,338 ms
+sans filmGrain               : image 20,89 / 95 % 28,78 ms ; fil principal 18,34 ; GPU 7,31 / 95 % 8,69 ; HorrorLook 1,320 ms
+sans chromaticAberration     : image 20,91 / 95 % 28,18 ms ; fil principal 18,31 ; GPU 7,44 / 95 % 8,76 ; HorrorLook 1,299 ms
+#fin
+
+Après optimisation (lumières proches recalculées 4 fois par seconde, halos reconstruits une fois par seconde) :
+salle D3, pic True, ambiance Ambiance_Sombre
+tout                         : image 21,06 / 95 % 40,93 ms ; fil principal 18,38 ; GPU 7,40 / 95 % 11,36 ; HorrorLook 0,162 ms
+rien                         : image 19,42 / 95 % 42,70 ms ; fil principal 16,77 ; GPU 6,90 / 95 % 10,56 ; HorrorLook 0,011 ms
+sans halos                   : image 23,72 / 95 % 47,46 ms ; fil principal 20,95 ; GPU 7,54 / 95 % 11,55 ; HorrorLook 0,121 ms
+sans flicker                 : image 22,03 / 95 % 34,28 ms ; fil principal 19,40 ; GPU 7,60 / 95 % 9,47 ; HorrorLook 0,146 ms
+sans lanternCone             : image 25,55 / 95 % 45,70 ms ; fil principal 22,36 ; GPU 7,93 / 95 % 10,89 ; HorrorLook 0,159 ms
+sans shadowBudget            : image 25,88 / 95 % 40,57 ms ; fil principal 22,84 ; GPU 7,73 / 95 % 10,28 ; HorrorLook 0,165 ms
+#fin
+
+Le marqueur ItHunts.HorrorLook (CPU) est fiable ; les écarts d'image et de GPU entre configurations sont dans le bruit de
+l'éditeur (dérive au fil des rondes). Mesure de référence : builds A/B en alternance (à faire, sur accord).
