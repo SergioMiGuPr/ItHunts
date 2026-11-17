@@ -77,5 +77,17 @@ namespace ItHunts.Tests
             Assert.That(StalkerStrike.Grab(above, handCenter, half, rot, 1f), Is.False, "au-dessus de la main (double saut) : vivant");
             Assert.That(beside.Health.Current, Is.EqualTo(100f));
         }
+
+        [Test]
+        public void BrasEtire_SeulLAxeDeLOsSAllonge()
+        {
+            // D-070 : le bras s'allonge par l'échelle de son os, le long de son axe seulement (épaisseur inchangée) ; la main reçoit
+            // l'inverse et garde sa taille.
+            Vector3 rest = new Vector3(1f, 1f, 1f);
+            Assert.That(Stalker.StretchScale(rest, 1, 3.2f), Is.EqualTo(new Vector3(1f, 3.2f, 1f)));
+            Assert.That(Stalker.StretchScale(new Vector3(2f, 0.5f, 1f), 0, 2f), Is.EqualTo(new Vector3(4f, 0.5f, 1f)));
+            Vector3 arm = Stalker.StretchScale(rest, 2, 3.8f), handLocal = Stalker.StretchScale(rest, 2, 1f / 3.8f);
+            Assert.That(arm.z * handLocal.z, Is.EqualTo(1f).Within(1e-5f), "main : taille gardée");
+        }
     }
 }

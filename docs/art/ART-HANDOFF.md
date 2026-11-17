@@ -688,3 +688,17 @@ de la DA, rien n'a été modifié) :
   maillages retournés et `HandsOutline` leur donne un contour inversé (faces avant cachées, épaisseur négative). À l'export :
   normales vers l'extérieur (Blender : *Recalculate Outside*, ou retirer la mise à l'échelle négative du miroir avant l'export) ;
   le contournement se désactive tout seul quand le volume redevient positif.
+
+## Bras du traqueur : allongement par l'échelle des os (D-070, 2026-11-17)
+
+- **Ce que fait le code** : au-delà de la longueur du bras (environ 3.95 m de l'épaule au poignet), le bras se tend vers la cible,
+  puis **l'os `Bras.L/.R` reçoit une échelle le long de son axe** (l'axe vers `AvantBras`, **Y** sur le modèle actuel) ; l'avant-bras,
+  aligné, hérite de l'allongement ; **`Main` reçoit l'échelle inverse** et garde sa taille. Mesuré : **×2.3 à 5 m, ×2.4 à 10 m,
+  ×3.2 à 15 m** (jusqu'à ×3.8 dans le pire cas). Portée (15 m) et zone qui tue inchangées. Captures avant/après :
+  `docs/design/features/boss-traqueur/captures/bras_echelle/`.
+- **Pour le nouveau maillage et le gréement** : garder la chaîne `Bras` → `AvantBras` → `Main` (mêmes noms, `.L`/`.R`), l'axe de
+  chaque os **le long du membre** (l'os suivant posé sur un seul axe local), **pas d'échelle ni de rotation figée** sur ces os à
+  l'export, et le coude droit possible (le code tend le bras avant d'allonger). **La texture s'étire avec le bras** (×3 à 4 en
+  longueur) : préférer sur le bras et l'avant-bras un motif qui supporte l'étirement (veines, peau tendue) et **arrêter
+  `M_Traqueur_Mains` au poignet** : aujourd'hui sa zone claire couvre le bas de l'avant-bras et devient une longue bande pâle
+  quand le bras s'allonge.

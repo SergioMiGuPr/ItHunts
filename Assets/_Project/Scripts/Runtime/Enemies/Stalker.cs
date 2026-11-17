@@ -395,7 +395,9 @@ namespace ItHunts.Enemies
         private Animator _anim;
         private string _clip;
         private readonly Transform[] _boneR = new Transform[3], _boneL = new Transform[3];   // Bras, AvantBras, Main
-        private Vector3[] _restR, _restL;                                                     // positions locales (étirement)
+        private Vector3[] _restR, _restL;                                                     // positions locales (rendues à chaque image)
+        private Vector3[] _scaleR, _scaleL;                                                   // échelles locales au repos
+        private int _axisR = 1, _axisL = 1;                                                   // axe de l'os du bras (local), allongé par l'échelle
         private float _ikR, _ikL;
         private bool _wantIkR, _wantIkL;
         private Renderer _bodyRenderer;
@@ -425,8 +427,14 @@ namespace ItHunts.Enemies
             }
 
             _restR = new[] { _boneR[0].localPosition, _boneR[1].localPosition, _boneR[2].localPosition };
+            _scaleR = new[] { _boneR[0].localScale, _boneR[1].localScale, _boneR[2].localScale };
+            _axisR = BoneAxis(_boneR[1].localPosition);
             if (_boneL[2] != null)
+            {
                 _restL = new[] { _boneL[0].localPosition, _boneL[1].localPosition, _boneL[2].localPosition };
+                _scaleL = new[] { _boneL[0].localScale, _boneL[1].localScale, _boneL[2].localScale };
+                _axisL = BoneAxis(_boneL[1].localPosition);
+            }
             _anim.Update(0f);
             Vector3 local = transform.InverseTransformPoint(_boneR[0].position);
             _shoulderOffset = new Vector3(Mathf.Abs(local.x), local.y, local.z);
@@ -519,7 +527,7 @@ namespace ItHunts.Enemies
 
         /// <summary>
         /// Bras vers la cible (après l'Animator) : épaule (Bras), coude (AvantBras), poignet (Main) orientés pour que la main tombe
-        /// sur la zone qui tue posée par le code (hand, leftHand) ; au-delà de la longueur du bras, le bras s'étire (la portée de
+        /// sur la zone qui tue posée par le code (hand, leftHand) ; au-delà de la longueur du bras, le bras s'allonge par l'échelle de ses os (D-070 ; la portée de
         /// 15 m ne change pas). Fondu de 0.15 s à l'entrée et à la sortie.
         /// </summary>
         private void ApplyArmIK(float dt)
@@ -527,24 +535,47 @@ namespace ItHunts.Enemies
             float rate = dt / 0.15f;
             _ikR = Mathf.MoveTowards(_ikR, _wantIkR ? 1f : 0f, rate);
             _ikL = Mathf.MoveTowards(_ikL, _wantIkL ? 1f : 0f, rate);
-            Restore(_boneR, _restR);
-            Restore(_boneL, _restL);
+            Restore(_boneR, _restR, _scaleR);
+            Restore(_boneL, _restL, _scaleL);
             if (_ikR > 0.001f && hand != null)
-                SolveArm(_boneR, _restR, hand.position, _ikR, 1f);
+                SolveArm(_boneR, _scaleR, _axisR, hand.position, _ikR, 1f);
             if (_ikL > 0.001f && leftHand != null && _boneL[2] != null)
-                SolveArm(_boneL, _restL, leftHand.position, _ikL, -1f);
+                SolveArm(_boneL, _scaleL, _axisL, leftHand.position, _ikL, -1f);
         }
 
-        private static void Restore(Transform[] b, Vector3[] rest)
+        /// <summary>Axe local (0 X, 1 Y, 2 Z) le long duquel l'os suivant est posé : l'axe de l'os.</summary>
+        private static int BoneAxis(Vector3 child)
+        {
+            Vector3 a = new Vector3(Mathf.Abs(child.x), Mathf.Abs(child.y), Mathf.Abs(child.z));
+            return a.x >= a.y && a.x >= a.z ? 0 : a.y >= a.z ? 1 : 2;
+        }
+
+        private static void Restore(Transform[] b, Vector3[] rest, Vector3[] scale)
         {
             if (rest == null)
                 return;
-            for (int i = 1; i < 3; i++)
+            for (int i = 0; i < 3; i++)
                 if (b[i] != null)
-                    b[i].localPosition = rest[i];
+                {
+                    if (i > 0)
+                        b[i].localPosition = rest[i];
+                    if (scale != null)
+                        b[i].localScale = scale[i];
+                }
         }
 
-        private void SolveArm(Transform[] b, Vector3[] rest, Vector3 handCenter, float weight, float side)
+        /// <summary>
+        /// Allongement visible du bras (D-070) : l'os du bras est étiré le long de son axe (l'avant-bras, aligné, hérite de
+        /// l'étirement), la main reçoit l'échelle inverse sur le même axe pour garder sa taille. Le bras grossit en longueur
+        /// seulement, son épaisseur ne change pas.
+        /// </summary>
+        public static Vector3 StretchScale(Vector3 rest, int axis, float k)
+        {
+            rest[axis] *= k;
+            return rest;
+        }
+
+        private void SolveArm(Transform[] b, Vector3[] scale, int axis, Vector3 handCenter, float weight, float side)
         {
             Transform a = b[0], m = b[1], e = b[2];
             Vector3 ap = a.position;
@@ -556,12 +587,16 @@ namespace ItHunts.Enemies
             Quaternion ra = a.rotation, rm = m.rotation, re = e.rotation;
             if (d > l1 + l2 - 0.01f)
             {
-                // Étirement : les deux segments s'allongent ensemble, le bras droit vers la cible.
-                float k = d / Mathf.Max(0.01f, l1 + l2);
-                m.localPosition = rest[1] * Mathf.Lerp(1f, k, weight);
-                e.localPosition = rest[2] * Mathf.Lerp(1f, k, weight);
-                a.rotation = Quaternion.FromToRotation(e.position - ap, target - ap) * a.rotation;
+                // Étirement : le bras se tend vers la cible (coude droit), puis l'os du bras s'allonge par son échelle le long de son
+                // axe ; l'avant-bras, aligné, hérite de l'allongement ; la main garde sa taille (échelle inverse).
+                a.rotation = Quaternion.FromToRotation(m.position - ap, target - ap) * a.rotation;
                 m.rotation = Quaternion.FromToRotation(e.position - m.position, target - m.position) * m.rotation;
+                float k = Mathf.Lerp(1f, d / Mathf.Max(0.01f, l1 + l2), weight);
+                if (scale != null)
+                {
+                    a.localScale = StretchScale(scale[0], axis, k);
+                    e.localScale = StretchScale(scale[2], BoneAxis(e.InverseTransformDirection(m.position - e.position)), 1f / k);
+                }
             }
             else
             {
