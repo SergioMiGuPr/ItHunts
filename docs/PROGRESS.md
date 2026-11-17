@@ -30,7 +30,17 @@ Un commit par point :
     le forfait.
   - Arcades des couloirs : elles sont aveugles (1.2 m de profondeur) ; si on veut les ouvrir sur des pièces annexes, il faudra
     une décision de level design.
-  - Draw calls des couloirs gothiques (+27 à 35 %) : à surveiller avec le reste de la performance.
+  - ~~Draw calls des couloirs gothiques (+27 à 35 %)~~ : fusionnés par couloir le 2026-11-17 (éditeur, 6 poses : 4 855 → 3 182,
+    moins que le plafond plat à 4 258).
+  - Physique un peu plus chère avec la voûte : 0.71 → 0.89 ms en solo, 33 468 colliders statiques contre 14 572.
+- **Performance, mesure comparable (2026-11-17)** (`docs/design/features/run-et-niveaux/mesure_perf_ab_2026-11-17.txt`) :
+  - A/B en alternance dans la même session, 3 rondes : A = 02df035 (référence 9.9 ms), B = HEAD ; médiane / 95e centile :
+    - solo : A 11.6 / 16.9 ms, B 11.9 / 15.9 ms ;
+    - écran partagé : A 19.5 / 28.4 ms, B 19.2 / 26.8 ms.
+  - Pas de régression : l'écart avec 9.9 ms vient de l'état de la machine (le même exe a varié de 14.4 à 25.4 ms d'une session à
+    l'autre).
+  - Règle de mesure : toujours comparer deux builds en alternance dans la même session.
+  - Builds de mesure non suivis : `Builds/Perf_A` et `Builds/Perf_B`.
 
 **Animations (`animations`, depuis `main` après fusion de `retours-lot` et de la PR #6) — 2026-11-16, non poussée, à tester.**
 - **Goule animée** (`SK_Goule`, `Assets/_Project/Animation/Goule.controller`) : un clip par état (repos, course selon la vitesse,

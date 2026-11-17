@@ -1,0 +1,41 @@
+Mesure comparable des performances, 2026-11-17 (point 1 des retours du 2026-11-17).
+
+Conditions, identiques à la référence du 2026-11-16 (commit 02df035 : solo 9.9 / 12.8 ms, écran partagé 16.8 / 21.7 ms) :
+- build de développement Windows (BuildOptions.Development, sans Deep Profile, FrameTimingStats activés) ;
+- scène Level_01_Aleatoire, seed 104729, 1920 × 1080 fenêtré, VSync coupé (vSyncCount 0, targetFrameRate −1) ;
+- joueur dans la salle la plus proche du centre (D4), timer avancé à 13:45, pic de vague actif, mesure de 5 s après 5 s d'attente ;
+- valeurs : médiane et 95e centile (les 5 % les plus lents) du temps d'image.
+
+Pourquoi l'« avant » d'hier soir était plus haut (15.0 ms en solo, 26.9 / 47.2 ms en écran partagé) :
+- même code, mêmes conditions de jeu : c'est l'état de la machine qui a changé ;
+- le même exe a donné 14.4 ms hier soir et 25.4 ms ce matin en solo, avec le GPU qui passe de 3.9 à 7.5 ms ;
+- tout ralentit en même temps, y compris des scripts inchangés (vagues, goules, physique), ce qui ne colle pas avec une régression du code ;
+- causes possibles, non tranchées : charge d'autres programmes (Parsec, Chrome, VS Code, Discord, Battle.net ouverts), état
+  thermique, autre éditeur Unity ou import en cours ;
+- à condition égale de machine, il faut donc comparer deux builds en alternance dans la même session.
+
+Mesure A/B en alternance (A = 02df035, référence ; B = HEAD 7725759, couloirs gothiques fusionnés). Ordre A, B, A, B, A, B ;
+éditeur principal ouvert et au repos pour A comme pour B. Résultats bruts :
+solo A (3 rondes) : médiane 11.6 ms [11.6, 12.1, 11.6], 95 % 16.9 ms [16.9, 17.1, 15.3], GPU 4.0 ms, draw calls 3843, FixedUpdate scripts 2.66, physique 0.71, fin du rendu 5.53, ennemis 91
+solo B (3 rondes) : médiane 11.9 ms [12.1, 11.9, 10.5], 95 % 15.9 ms [16.3, 15.9, 13.7], GPU 4.0 ms, draw calls 3337, FixedUpdate scripts 2.23, physique 0.89, fin du rendu 5.50, ennemis 78
+split A (3 rondes) : médiane 19.5 ms [24.7, 19.5, 18.9], 95 % 28.4 ms [36.6, 26.1, 28.4], GPU 6.6 ms, draw calls 5156, FixedUpdate scripts 4.06, physique 0.88, fin du rendu 11.63, ennemis 92
+split B (3 rondes) : médiane 19.2 ms [19.2, 19.5, 17.3], 95 % 26.8 ms [27.6, 26.8, 22.1], GPU 6.2 ms, draw calls 4349, FixedUpdate scripts 3.62, physique 1.15, fin du rendu 11.00, ennemis 79
+ronde 1, A, solo : image : médiane 11,6 ms, 95 % 16,9 ms, max 46,5 ms ; images > 16.6 ms : 99/1665
+ronde 1, A, split : image : médiane 24,7 ms, 95 % 36,6 ms, max 57,6 ms ; images > 16.6 ms : 778/778
+ronde 1, B, solo : image : médiane 12,1 ms, 95 % 16,3 ms, max 71,9 ms ; images > 16.6 ms : 65/1636
+ronde 1, B, split : image : médiane 19,2 ms, 95 % 27,6 ms, max 53,6 ms ; images > 16.6 ms : 892/978
+ronde 2, A, solo : image : médiane 12,1 ms, 95 % 17,1 ms, max 42,8 ms ; images > 16.6 ms : 105/1606
+ronde 2, A, split : image : médiane 19,5 ms, 95 % 26,1 ms, max 44,8 ms ; images > 16.6 ms : 924/987
+ronde 2, B, solo : image : médiane 11,9 ms, 95 % 15,9 ms, max 51,3 ms ; images > 16.6 ms : 61/1661
+ronde 2, B, split : image : médiane 19,5 ms, 95 % 26,8 ms, max 49,2 ms ; images > 16.6 ms : 934/977
+ronde 3, A, solo : image : médiane 11,6 ms, 95 % 15,3 ms, max 37,7 ms ; images > 16.6 ms : 50/1709
+ronde 3, A, split : image : médiane 18,9 ms, 95 % 28,4 ms, max 62,9 ms ; images > 16.6 ms : 868/983
+ronde 3, B, solo : image : médiane 10,5 ms, 95 % 13,7 ms, max 27,5 ms ; images > 16.6 ms : 17/1893
+ronde 3, B, split : image : médiane 17,3 ms, 95 % 22,1 ms, max 44,2 ms ; images > 16.6 ms : 819/1119
+
+Conclusion :
+- pas de régression entre 02df035 et HEAD : B est égal à A au bruit près en médiane, et meilleur sur les 5 % les plus lents ;
+- draw calls : −13 % en solo et −16 % en écran partagé (couloirs gothiques fusionnés) ;
+- l'écart avec 9.9 ms vient de la machine : la même référence A donne 11.6 ms aujourd'hui, contre 9.9 ms le 2026-11-16 à 4 h.
+À surveiller : physique 0.71 → 0.89 ms (solo) et 0.88 → 1.15 ms (écran partagé). Il y a plus de colliders statiques : anneaux de
+la voûte et des arcs, bandes des arcades (33 468 colliders contre 14 572 avec le plafond plat, seed 104729).
