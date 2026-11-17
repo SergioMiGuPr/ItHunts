@@ -145,9 +145,10 @@ Le jeu décide du moment des coups ; l'animation doit montrer l'annonce **pendan
 
 ## 0 quater. Couleurs : orbe par action (D-024) et codes du jeu
 
-> **À venir (D-066) :** avec l'orbe v2, l'orbe prend la **couleur du personnage** (rouge, orange, vert, bleu) en permanence et
-> les actions passent par les anneaux et les runes ; le tableau ci-dessous vaut jusque-là. Attention aux couleurs réservées
-> (rouge = annonce d'attaque et refus) : la teinte exacte des personnages est à choisir avec la DA.
+> **Fait (D-066, 2026-11-17) :** l'orbe v2 (`SM_Orbe`) est branchée en vue FPS : énergie et glyphes à la **couleur du
+> personnage** (`CharacterDefinition.color`) en permanence ; anneaux qui tournent (plus vite en traction), tablettes = jauge des
+> charges (`OrbModelView`, réglages `OrbModel_Default`). Le tableau ci-dessous reste vrai pour le **trait, l'ancre, les marques et
+> les signaux** (plus pour l'orbe elle-même). Attention aux couleurs réservées (rouge = annonce d'attaque et refus).
 
 | Couleur | Sens |
 |---|---|
@@ -629,3 +630,32 @@ Nombre utilisé : niveau 1 (modules, couloirs, annexes) après génération du 2
 - **Arène du combat de boss (après le playtest de l'étape 8) :** galeries pleines à 6 m (5 m de profondeur) le long des murs nord et
   sud, tours de 11 m (6 × 6 m), galerie de 6 m dans la poche est ; herse à x = −18 (poche de 22 m) ; 6 leviers (plaque de
   1.2 × 0.8 × 1.2 m sur un socle de 1.2 m, orange puis vert) ; 5 plateformes de 2.4 m qui tombent au-dessus de la fosse.
+
+## Rendu : demandes à la session art et inventaire des props (2026-11-17)
+
+Contexte : la lumière d'ambiance horreur est en place côté `main` (`HorrorLook`, réglages `HorrorLook_Default`) : étalonnage
+par ambiance, halos des torches, torches qui vacillent, cône de la lanterne qui projette des ombres (3 lumières ombrées au plus,
+les plus proches des joueurs), bloom, vignettage, grain. Captures : `docs/design/features/rendu/captures/ambiance_horreur/`.
+Pour que ces flaques de lumière révèlent la matière, il manque des choses **dans le shader toon** (`Assets/Art/Shaders`, périmètre
+de la DA, rien n'a été modifié) :
+
+| Demande | Pourquoi | Piste |
+|---|---|---|
+| **Cartes normales** (`_BumpMap`, `_BumpScale`, mot-clé `_NORMALMAP`) dans `ItHunts_ToonForwardPass` et la passe DepthNormals | une torche à 4 m sur un mur et le cône de la lanterne arrivent **rasants** : avec une normale peinte, les joints et le relief des pierres sortent du noir ; aujourd'hui le mur est plat sous la lumière | normale en espace tangent (`TransformTangentToWorld`), utilisée pour `ndl` des lumières additionnelles et du contour ; textures `T_*_Normal` pour `M_Pierre`, `M_Dalles`, `M_Voute_Briques`, kit gothique |
+| **Sol mouillé brillant** | des reflets des torches au sol donnent la profondeur d'une cave humide et guident l'œil le long des couloirs | reflet spéculaire **en aplat** (une bande, dans le style) piloté par un masque de flaques (`_WetMask`, ou le canal alpha de `T_Dalles_BaseColor`) et `_WetSmoothness` ; sur `M_Dalles`, `M_Egout` |
+| **Ombres des lumières additionnelles** | le cône de la lanterne et les torches proches projettent des ombres | **déjà reçues** (`_ADDITIONAL_LIGHT_SHADOWS`, `light.shadowAttenuation`) : à garder ; vérifier que les modèles du décor ont bien leur passe ShadowCaster et que l'ombre en bande ne crénèle pas de près (biais) |
+| **Tourbillon de l'énergie de l'orbe** | l'énergie de `SM_Orbe` est une sphère unie : sa rotation ne se voit pas | shader de vortex (UV sphériques réservées par `MATERIAUX.md`) : bandes qui défilent, couleur par `_EmissionColor` (le jeu l'écrit par bloc de propriétés) |
+| **Corps du traqueur dans le noir** | `T_Traqueur_BaseColor` est très sombre : de loin, dans le brouillard des ambiances sombres, on ne voit que ses yeux | côté jeu : lumière d'appoint qui n'éclaire que lui (calque de rendu « Traqueur ») ; côté DA, au choix : texture un peu plus claire, ou un rim léger sur `M_Traqueur` |
+
+**Inventaire des props du catalogue (prefabs `Assets/_Project/Prefabs/Props`) :**
+
+- **Importés (modèle de la DA)** : `Prop_Caisse_Attrapable` (`SM_Caisse`), `Prop_Cage`, `Prop_Chaine`, `Prop_Colonne`,
+  `Prop_ColonneBrisee`, `Prop_Echafaudage`, `Prop_Grille`, `Prop_Tapisserie`, `Prop_Torche` et `Prop_TorcheEteinte` (`SM_Torche`),
+  `Prop_Tuyau` ; le kit de la carte (murs, sols, escalier, pont, poutre, pilier, porte de pièce, grande porte, arcs, kit gothique)
+  et l'arène du boss (herse, leviers, treuil, plateformes) sont aussi au modèle.
+- **Manquants (encore greybox)**, par nombre utilisé dans le niveau 1 : `Prop_Tonneau` (212), `Prop_Tonneau_Attrapable` (131),
+  `Prop_Etagere` (117), `Prop_Caisse` (100, fixe), `Prop_CoffreDeco` (85), `Prop_Table` (82), `Prop_Banc` (79),
+  `Prop_PileDeCaisses` (78), `Prop_Paille` (77), `Prop_Gravats` (72), `Prop_Statue` (69), `Prop_Chaise_Attrapable` (63),
+  `Prop_Sarcophage` (52), `Prop_Ratelier` (40), `Prop_Armoire` (30), `Prop_Lit` (23), `Prop_Chaudron` (14), `Prop_MurEffondre` (11),
+  `Prop_Autel` (4), `Prop_Poutre` (0) ; **`Prop_Lanterne` (258, une lumière : son halo est déjà dessiné par le jeu)**.
+- **Hors catalogue, encore greybox** : `Coffre` (coffre à âmes), `Marchand_Artefact`, `Volant` (ennemi).
