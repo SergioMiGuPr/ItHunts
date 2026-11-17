@@ -12,4 +12,9 @@ fichiers intermédiaires vont dans le dossier de travail `OUT` en tête de chaqu
 5. `uvdump.py` puis `inpaint.py` (Python) : comblement de la texture du corps ; `stage5.py` : mèches, matériaux, export FBX
    et `SK_Traqueur.blend`. `planche.py` : planche. `TraqUnity.cs`, `TraqShot.cs` : import, contrôle et captures dans Unity.
 
+6. `tete_fix.py` (correctif du 2026-11-17, à lancer **une seule fois** sur le `SK_Traqueur.blend` de la PR #13, avec
+   `stage1.json` et `stage3.blend` dans `OUT`) : tête refaite depuis la source sans borne de rayon, calotte, pupilles agrandies
+   dans `T_Traqueur_Emission` ; `EXPORT=1` écrit le FBX, le .blend et la texture. `TeteShot.cs` : contrôle dans Unity (trous,
+   lueur des pupilles à 10, 30 et 60 m dans le brouillard des niveaux).
+
 Le solveur de chaleur de Blender échoue sur ce squelette (tous les maillages, toutes les échelles) : poids par diffusion.
