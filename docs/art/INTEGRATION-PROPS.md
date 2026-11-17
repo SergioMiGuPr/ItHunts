@@ -154,7 +154,7 @@ cadenas de la cage et de la grille qui dépassent de 2 à 3 cm à l'avant.
 
 | Objet | Modèle | Placement | Objets mobiles | Matériaux pilotés par le code |
 |---|---|---|---|---|
-| Orbe (main droite, sur `Orb_Socket`) | `SM_Orbe` (racine vide) | pivot au centre de l'orbe sur `Orb_Socket` ; **échelle à régler dans FpsView** : la greybox fait Ø 0.08 m, le modèle 0.18 m (anneaux) et 0.295 × 0.228 × 0.182 m avec les tablettes | `SM_Orbe_Anneau_1` (axe **X**), `_2` (**Y**), `_3` (**Z**), modélisés à leur pose de repos ; `SM_Orbe_Tablette_01` à `_06` (positions de la couronne) ; repère `FX_Orbe` au centre | `M_Orbe_Energie` (`_EmissionColor`, couleur du personnage) ; glyphe de chaque tablette : **index de matériau 1** de `SM_Orbe_Tablette_0X` (`M_Orbe_Tablette_0X`) ; jauge et animations : `MATERIAUX.md`, planche `Orbe_Poses_*.jpg` |
+| Orbe (main droite, sur `Orb_Socket`) | `SM_Orbe` (racine vide) | pivot au centre de l'orbe sur `Orb_Socket` ; **échelle à régler dans FpsView** : la greybox fait Ø 0.08 m, le modèle 0.18 m (anneaux) et 0.295 × 0.228 × 0.182 m avec les tablettes | `SM_Orbe_Anneau_1` (axe **X**), `_2` (**Y**), `_3` (**Z**), modélisés à leur pose de repos ; `SM_Orbe_Tablette_01` à `_06` = **gabarits** (D-069 : le jeu en crée une par charge) ; tablette seule **`SM_Orbe_Tablette`** (FBX séparé) ; repère `FX_Orbe` au centre | `M_Orbe_Energie` (shader **`ItHunts/OrbeVortex`** : `_EmissionColor`, couleur du personnage ; `_SpinBoost` en traction) ; rune de chaque tablette : **index de matériau 1** (`M_Orbe_Tablette`, rune gravée sur les deux faces, masque d'émission) ; voir « Orbe v2 : tablettes et tourbillon » ci-dessous |
 | Lanterne de feu (artefact du renard, main gauche) | `SM_LanterneFeu` | pivot au centre de l'anneau de portage (la lanterne pend dessous) | — | `M_LanterneFeu_Verre` : translucide (file 3000) et `_EmissionColor` ; **`M_LanterneFeu_Flamme`** (enfant `SM_LanterneFeu_Flamme`, flamme en goutte au-dessus de la mèche, depuis le 2026-11-16) : `_EmissionColor` = couleur du personnage (par défaut, orange du renard) ; **passe transparente des mains à ajouter** (la passe « ItHunts Mains : mains » ne dessine que l'opaque) ; repères `FX_Flamme` (mèche) et `FX_Jet` (départ du jet, +Z = avant, dégagé sur 6 m) |
 | Bras des 4 personnages (remplacent les mains greybox) | `SK_BrasFPS_<Perso>_D` / `_G` (armature `BrasFPS`, 17 os, mêmes noms partout) | placer le FBX pour que **`Socket_Poignet` coïncide avec la main greybox** (position et rotation de repos de FpsView, § 5 bis d'ART-HANDOFF) : le pivot est au coude, `Socket_Poignet` est en (0, 0, 0.27) dans le FBX, axes de l'ancrage (+Z doigts, +Y dos de la main) ; aucun recalage d'axe | os des doigts : remplacent l'angle unique `rightFingers` / `leftFingers` (rotation X) par les clips `BrasFPS|Pose_*` (mêmes clips pour les 4 personnages ; un jeu de clips par côté, le gauche est le miroir) ; `Pose_Attraper` a 3 clés (repos, ouverte, refermée), les 9 poses fixes 2 clés identiques (images 1 et 2) pour que chaque clip garde ses 180 courbes à l'import ; 4 boucles de flottement et nouvelle convention des poses au § 4 quater ; les déplacements de la main entière restent dans FirstPersonView | `M_BrasFPS_<Perso>` (texture peinte, un matériau par personnage) ; contour par coque inversée (RENDU.md § 5 bis) ; repères fixes enfants de `BrasFPS` : `Socket_Orbe` (0, 0.06, 0.045) depuis le poignet (droit), `Socket_Artefact` (0, 0.055, 0.05) et `Socket_Artefact_Anneau` (0, −0.05, 0.105) pour l'anneau de la lanterne dans `Pose_PriseAnneau` (gauche, à ajuster en jeu) ; planches `BrasFPS_*.jpg` |
 | Barillet (caméléon, main gauche) | `SM_Barillet` | intégré sur `main` (branche `barillet-modele`) | | |
@@ -205,6 +205,36 @@ pose du code (main droite levée, main gauche au repos) : `rendus/Lot/Traqueur_p
 
 Noms identiques dans tous les FBX d'un même objet (clips Unity « `<Armature>|<Nom>` »). Boucles réglées à l'import
 (*Loop Time*), première et dernière images identiques.
+
+### Orbe v2 : tablettes et tourbillon (2026-11-17, branche `art-orbe`)
+
+Retours de playtest : runes gravées sur une seule face (invisibles selon l'angle) ; nouvelle règle D-069 (une tablette par
+charge de traction ou de répulsion, 2 + 1 au départ) ; tourbillon de l'énergie demandé par `main` dans `ART-HANDOFF`.
+
+- **Tablette** : `Assets/Art/Models/FPS/SM_Orbe_Tablette.fbx`, **une tablette seule**, pivot au centre, rotation nulle,
+  échelle 1. Repère Unity : **X = rayon** (0.035 m, vers l'extérieur de la couronne), **Y = grand côté** (0.05 m, tangent),
+  **Z = épaisseur** (0.008 m). **Rune sur les deux faces** (-Z vers le joueur et +Z), chacune lisible sans miroir de son
+  côté ; bords chanfreinés ; 28 triangles. Pour la couronne : position `(cos a, sin a, 0) × 0.13 m` dans le repère de
+  l'orbe, rotation `Quaternion.Euler(0, 0, a)` (X de la tablette vers l'extérieur).
+- **Matériaux** (même contrat qu'avant) : index 0 = `M_Orbe_Pierre` (bords), **index 1 = `M_Orbe_Tablette`** (les deux
+  faces : atlas `T_Orbe_Tablette_BaseColor`, rune gravée, et masque `T_Orbe_Tablette_Emission`). **Allumer** = écrire
+  `_EmissionColor` (couleur du personnage × intensité) sur l'index 1, comme `OrbModelView.SetEmission(renderer, 1, …)` le
+  fait déjà ; le masque limite la lumière à la rune et à une **lueur douce autour** (halo peint). Éteinte : noir.
+- **Glyphe** : atlas de 6 glyphes (3 colonnes × 2 lignes, case 0 en haut à gauche). La tablette seule montre le glyphe 0 ;
+  pour le glyphe *k* (0 à 5) : bloc de propriétés sur l'index 1, `_BaseMap_ST = (1, 1, (k % 3) / 3, -(k / 3) / 2)`
+  (décalage d'UV ; l'émission suit les mêmes UV). Les gabarits `SM_Orbe_Tablette_01` à `_06` de `SM_Orbe` portent déjà
+  les glyphes 0 à 5.
+- **`SM_Orbe`** : les 6 gabarits ont le nouveau dessin (mêmes noms, mêmes positions) : `OrbModelInstaller` et
+  `OrbModelView` continuent de marcher. **À relancer sur `main` : `OrbModelInstaller`** (le prefab Player garde une copie
+  dépaquetée de l'ancien modèle et des anciens matériaux `M_Orbe_Tablette_01` à `_06`, laissés en place mais plus utilisés
+  par le FBX). Sphère d'énergie plus ronde (728 triangles au lieu de 224) ; total 2 888 triangles.
+- **Tourbillon** : `M_Orbe_Energie` passe sur **`ItHunts/OrbeVortex`** : bras de spirale en aplats qui tournent autour de
+  l'axe de visée (vu du joueur, c'est toujours un vortex), cœur clair, bord vif. Propriétés : `_EmissionColor` (HDR,
+  inchangé : le jeu l'écrit déjà), **`_SpinSpeed`** (tours/s, 0.6), **`_SpinBoost`** (multiplicateur : **le monter en
+  traction**, par exemple 3.5, par bloc de propriétés), `_SpinPhase` (tours : pour accélérer sans à-coup, le jeu peut
+  intégrer lui-même `phase += vitesse × boost × dt` et laisser `_SpinSpeed` à 0), `_Arms`, `_Twist`, `_ArmWidth`,
+  `_Base`, `_Core`, `_Rim`, `_Pulse`. Faire tourner la transformation de l'énergie (`energySpin`) devient inutile.
+- Planche : `docs/art/rendus/FPS/Orbe_v2_Tablettes_Vortex.jpg`.
 
 ### Bras FPS (`SK_BrasFPS_<Perso>_D` / `_G`, armature `BrasFPS`, 17 os)
 
