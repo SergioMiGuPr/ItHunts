@@ -15,6 +15,19 @@ Bloc de style commun, **à coller à la fin de chaque prompt** (noté `[STYLE]`)
 
 > Style: hand-painted dark fantasy illustration, thick dark ink outlines around every silhouette, cel-shaded shadows in two or three flat tones, visible brush strokes and hatching in the dark areas, deep blue-violet moonlit night palette with crimson glowing castle windows and warm orange firelight accents. Match exactly the painting style, line weight, palette, lighting and level of detail of the attached reference images. No text, no letters, no logo, no watermark, no signature, no user interface, no frame, no border.
 
+## État au 2026-11-17 et leçon
+
+Reçues (dans `docs/art/ui/generees/`) : B1 (`ui_campement_vide_v01` + `ui_campement_passe1_v01`), B3, B4, B5, B6, B15, B16 ;
+découpées (`UI-HANDOFF.md` § 2). **B7/B8 abandonnées** : château découpé par script dans `ui_menu_principal_fond_v01`, masque
+des fenêtres tiré de leur rouge. **Les images reçues font 1280 × 714** : si Higgsfield propose le téléchargement en 2K
+(2752 × 1536), c'est celui-là qu'il faut pour le menu en plein écran.
+
+**Leçon (utilisateur)** : avec une image de référence, le modèle **modifie la scène** au lieu d'en extraire un élément ; un
+objet seul marche **sans référence**, sur noir ou gris uni ; une retouche marche en **passes d'une seule suppression**. D'où
+la méthode pour la suite : je découpe les calques moi-même ; tu ne génères que des **passes d'édition** (une suppression par
+passe, en partant chaque fois du résultat précédent) qui repeignent ce qui était caché. Le calque retiré se retrouve par
+différence entre deux passes (calage vérifié sur B1 : 0 px), en sachant que toute l'image est un peu repeinte à chaque fois.
+
 ## Inventaire : ce qui sort des maquettes, ce qui manque
 
 | Calque / pièce | D'où il vient | Image à générer |
@@ -53,11 +66,14 @@ Images jointes : **Image 1** = `ui_campement_v01.png`, **Image 2** = `ui_menu_pr
 
 > Repaint Image 1 as an empty night campsite, same framing, same camera and same composition. Remove completely: the four characters, the two name plates and the "Modifier" plate, the two round plus buttons, the gear and people icons in the top right, the back arrow in the top left and the red "Prêt" button in the bottom right; paint the ground, rocks and background that were behind them. Also remove the four seats (the log on the left, the flat stone block, the long log bench, the big rock on the right) and the three lanterns standing on the ground near them; leave bare, flat, trodden earth where they were. Remove the castle, its cliff, its waterfalls and the moon in the upper right: replace them with night sky and low misty hills with distant dead trees, using the same sky colors and cloud shapes as Image 2. Keep the campfire ring of stones in the center, with charred logs and glowing embers only, no flames, but keep the warm orange firelight on the ground, the stones and the nearby objects. Keep the canvas canopy on its poles, the small lantern hanging from it, the tall banner, the barrels, the crates, the ruined stone arches and all the trees exactly where they are. Keep the top-left, bottom-left and bottom-right corners dark and calm (they will hold interface elements). [STYLE]
 
-### B2 — Raccord menu → campement · `ui_raccord_v01.png` · 16:9 · **entrée préparée**
-Images jointes : **Image 1** = `entree_raccord.png` (que je prépare : moitié droite de `ui_menu_principal_fond_v01`, bande grise
-au centre, moitié gauche de B1).
+### B2 — Raccord menu → campement · `ui_raccord_v01.png` · 16:9 · **entrée prête**
+Image jointe : **Image 1** = `docs/art/ui/entrees/entree_raccord.png` (2752 × 1536 : moitié droite de
+`ui_menu_principal_fond_v01` | bande grise unie `#808080` de 560 px au centre | moitié gauche de B1, agrandie).
+Une seule modification demandée (remplir la bande), conformément à la leçon.
 
-> Image 1 shows two night forest scenes side by side with a flat grey band between them. Repaint only the grey band so that the two scenes join into one continuous panorama: continue the cobblestone path from the left scene into the bare earth of the campsite on the right, continue the dead trees, roots, rocks, ruins and fog naturally, keep the horizon line, the sky gradient and the lighting continuous (cold moonlight on the left, warm firelight starting to appear toward the right). Do not change anything outside the grey band. Same size as Image 1. [STYLE]
+> Edit Image 1: fill only the flat grey vertical band in the middle. Paint in it the missing part of the scene so that the left and right halves join into one continuous night landscape: continue the dead trees, the misty hills, the rocks and roots, the ground (the wet cobblestone path on the left becomes the bare trodden earth of the campsite on the right), keep the horizon line, the sky and the fog continuous, cold moonlight on the left turning into warm firelight toward the right. Do not change anything outside the grey band: same pixels, same framing, same size as Image 1. [STYLE]
+
+Si le modèle retouche aussi les côtés : pas grave, je ne garde que la bande (fondu de 40 px de chaque côté).
 
 ### B3 — Ciel seul · `ui_ciel_v01.png` · 16:9
 Image jointe : **Image 1** = `ui_menu_principal_fond_v01.png`.
@@ -79,30 +95,42 @@ Image jointe : **Image 1** = `ui_menu_principal_fond_v01.png`.
 
 > Two separate horizontal bands of low ground fog, one in the upper half and one in the lower half, with a clear black gap between them, each spanning the full width and seamlessly tileable horizontally (the left and right edges must match), same fog as Image 1: soft cold blue-grey mist with light painted wisps, denser at the bottom of each band and fading upward. Pure flat black background (#000000) everywhere else. [STYLE]
 
-### B7 — Château isolé, fenêtres allumées · `ui_chateau_allume_v01.png` · 16:9
-Image jointe : **Image 1** = `ui_menu_principal_fond_v01.png`.
+### B7, B8 — Château isolé · **abandonnées** (2026-11-17)
+Le modèle ne sait pas isoler un élément d'une scène sur fond vert (il ajoute une lueur verte et garde le décor). Château
+découpé par script dans `ui_menu_principal_fond_v01` (`Fond_Chateau`), masque des fenêtres d'après leur rouge
+(`Fond_Chateau_Fenetres`). Les branches qui passent devant partent avec la passe E1.
 
-> Isolate the castle of Image 1 with everything that belongs to it: the spires, the main building with its crimson glowing windows, the arched bridges, the rock cliff underneath and the waterfalls, at the same size, same design and same position in the frame. Remove the moon, the sky, the clouds, the trees, the ruins, the fog and the ground, and replace them with a pure flat green background (#00FF00). The bottom of the cliff ends with a clean, slightly irregular rocky edge (no fog). Crisp outlines against the green, no glow spilling onto the green. [STYLE]
+### B9 à B14 — remplacées par des passes d'édition (E1 à E9)
+Je découpe moi-même les calques (fond lointain, arbres proches, sol et premier plan) dans le panorama ; ces passes ne servent
+qu'à **repeindre ce qui est caché** derrière ce que j'enlève. **Une seule suppression par passe**, chaque passe part du
+**résultat de la précédente** (Image 1), même format 16:9, 2K. Le fond final (dernière passe de chaque moitié) devient le
+calque lointain ; chaque objet retiré se retrouve par différence entre deux passes successives.
 
-### B8 — Même château, fenêtres éteintes · `ui_chateau_eteint_v01.png` · 16:9
-Image jointe : **Image 1** = `ui_chateau_allume_v01.png` (B7).
+Phrase commune à la fin de chaque prompt (`[GARDER]`) :
+> Change nothing else: same framing, same size, same position, shape and colors of every other element, same lighting. [STYLE]
 
-> Same image as Image 1, pixel for pixel, but every window is dark: replace each glowing crimson window with a dark unlit window (deep blue-black glass with faint cold moonlight reflections) and remove the crimson glow around them. Change nothing else: same castle, same outlines, same green background. [STYLE]
+**Moitié gauche (menu)** : Image 1 de E1 = `ui_menu_principal_fond_v01.png`.
 
-### B9 et B10 — Arbres lointains et ruines (moitiés gauche et droite) · `ui_arbres_lointains_g_v01.png`, `_d_v01.png` · 16:9 · **entrées préparées**
-Image jointe : **Image 1** = `panorama_gauche.png` (puis `panorama_droite.png`), que je prépare après B2.
+| Passe | Fichier | Prompt |
+|---|---|---|
+| E1 | `ui_menu_e1_v01.png` | Edit Image 1: remove only the big twisted dead tree on the right side of the image (its trunk, roots and all its branches, including the branches crossing in front of the castle and the moon). Paint what was behind it: the night sky and clouds, the castle and its bridge, the cliff, the waterfalls and the fog. [GARDER] |
+| E2 | `ui_menu_e2_v01.png` | Edit Image 1: remove only the bare dead tree on the left side behind the stone arch, with all its branches. Paint the sky, the clouds, the misty hills and the ruins that were behind it. [GARDER] |
+| E3 | `ui_menu_e3_v01.png` | Edit Image 1: remove only the ruined stone arch and the broken stone pillars on the left. Paint the misty hills, the fog and the ground that were behind them. [GARDER] |
+| E4 | `ui_menu_e4_v01.png` | Edit Image 1: remove only the gravestones in the foreground. Paint the path, the rocks, the roots and the fog that were behind them. [GARDER] |
 
-> From Image 1, keep only the middle-distance layer: the distant dead trees, the ruined stone arches and pillars and the low hills behind the path and behind the campsite, at the same size and position. Remove the sky, the moon, the clouds, the castle and its cliff, the fog, the big trees in the foreground, the path, the ground, the rocks, the roots and the camp objects, and replace all of them with a pure flat green background (#00FF00). Where a removed foreground object was hiding the middle layer, paint the missing trees and ruins so the layer is complete. Crisp outlines against the green, no fog, no glow spilling onto the green. [STYLE]
+**Moitié droite (campement)** : Image 1 de E5 = `ui_campement_vide_v01.png` (B1).
 
-### B11 et B12 — Arbres proches (moitiés) · `ui_arbres_proches_g_v01.png`, `_d_v01.png` · 16:9 · **entrées préparées**
-Image jointe : **Image 1** = `panorama_gauche.png` (puis `panorama_droite.png`).
+| Passe | Fichier | Prompt |
+|---|---|---|
+| E5 | `ui_camp_e5_v01.png` | Edit Image 1: remove only the canvas canopy, its hanging lantern, its ropes and its wooden poles. Paint the tree trunk, the forest, the ruins and the ground that were behind them. [GARDER] |
+| E6 | `ui_camp_e6_v01.png` | Edit Image 1: remove only the tattered banner and its pole. Paint the trees, the ruins and the fog that were behind it. [GARDER] |
+| E7 | `ui_camp_e7_v01.png` | Edit Image 1: remove only the barrels and the wooden crates. Paint the tree roots and the ground that were behind them. [GARDER] |
+| E8 | `ui_camp_e8_v01.png` | Edit Image 1: remove only the huge twisted tree on the left (trunk, roots and every branch). Paint the forest, the ruined arches, the sky and the ground that were behind it. [GARDER] |
+| E9 | `ui_camp_e9_v01.png` | Edit Image 1: remove only the dead trees along the right edge. Paint the misty forest, the sky and the ground that were behind them. [GARDER] |
 
-> From Image 1, keep only the large trees closest to the viewer (the big twisted trunks with their branches that frame the scene, for example the huge tree on the right edge and the tree above the tent), complete with their roots where they meet the ground, at the same size and position. Replace everything else with a pure flat green background (#00FF00). Where another object was hiding part of a kept tree, paint the missing part. Crisp outlines against the green, no fog, no glow on the green. [STYLE]
-
-### B13 et B14 — Sol et premier plan (moitiés) · `ui_sol_g_v01.png`, `_d_v01.png` · 16:9 · **entrées préparées**
-Image jointe : **Image 1** = `panorama_gauche.png` (puis `panorama_droite.png`).
-
-> From Image 1, keep only the ground and everything standing on it in the near distance: the cobblestone path and its puddles, the bare earth of the campsite, the fire ring with its embers, the rocks, the roots, the gravestones, the canvas canopy with its hanging lantern, the banner, the barrels and the crates, at the same size and position. Remove the sky, the moon, the clouds, the castle, the distant trees and ruins, the fog and the big framing trees, and replace them with a pure flat green background (#00FF00) above the ground line. Where a removed tree was hiding the ground or a camp object, paint the missing part. Crisp outlines against the green, no fog, no glow on the green. [STYLE]
+Après B2 : s'il contient un grand arbre au premier plan, une passe de plus du même modèle (« remove only the big tree in the
+middle… »). Les objets du camp retirés (auvent, bannière, tonneaux, caisses) redeviennent des sprites découpés par différence ;
+si l'un sort abîmé, on le demande seul sur gris uni `#C8C8C8`, sans image jointe (comme B16).
 
 ### B15 — Feu de camp · `ui_feu_v01.png` · 16:9
 Image jointe : **Image 1** = `ui_campement_v01.png`.
@@ -164,5 +192,5 @@ Images jointes : **Image 1** = `ui_menu_principal_v01.png`.
 
 | Lot | Images | Notes |
 |---|---|---|
-| B | 16 (B1 à B16) + B17 si besoin | B2 et B9 à B14 sur entrées que je prépare |
+| B | B2 + passes E1 à E9 (+ B17 si besoin) | B1, B3–B6, B15, B16 reçues ; B7/B8 abandonnées ; B9–B14 remplacées par E1–E9 |
 | C | 12 (C1 à C12) + C-L si besoin | commencer par le test du renard (C1 pas nécessaire pour le test : j'utilise le renard de `ui_campement_v01`) |
