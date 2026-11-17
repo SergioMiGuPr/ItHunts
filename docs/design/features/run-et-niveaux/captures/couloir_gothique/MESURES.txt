@@ -42,3 +42,26 @@ Inchangés après fusion :
 5 seeds : 0 cachette, NavMesh goule 11 530/11 530, traqueur 299/299, 0 fuite.
 Capture après fusion : fusion_axe.png (identique à gothique_axe.png).
 Temps d'image : à mesurer en build, A/B en alternance (voir PROGRESS).
+
+Collisions de la voûte (2026-11-17). Les anneaux de boîtes de la voûte (20 par couloir), des arcs-doubleaux (20 par arc) et les bandes
+des coins des portes sont remplacés, par couloir, par un seul MeshCollider statique non convexe (solides fermés, profils exacts :
+intrados et extrados en 12 segments par moitié). Un MeshCollider convexe par travée ne convient pas : l'enveloppe convexe d'un anneau
+bouche le couloir. Il garde StalkerPassesThrough (traqueur et NavMesh l'ignorent, comme avant) et NotWalkable.
+Seed 104729 : colliders du niveau 33 537 → 16 839 (14 600 boîtes d'arcs, 1 160 de voûte et 3 480 de coins → 58 maillages,
+189 408 triangles). Murs de travée et colonnes inchangés (boîtes ; les murs comptent dans le NavMesh).
+Physique, A/B en alternance dans l'éditeur (même session, même carte, anciennes boîtes et maillage construits ensemble et activés
+tour à tour ; salle D4, pic de vague, 3 rondes de 20 s ; le maillage passe toujours en second, avec plus de goules) :
+- ronde 1 : Physics.Simulate médiane 0.456 (boîtes) → 0.388 ms (maillage) ;
+- ronde 2 : 0.534 → 0.467 ms ;
+- ronde 3 : 0.683 → 0.549 ms ;
+- total : médiane 0.534 → 0.468 ms (−12 %), 95e centile 0.998 → 0.881 ms ; FixedUpdate.PhysicsFixedUpdate médiane 1.050 → 1.019 ms.
+Traction (398 280 rayons depuis le couloir, à 1.7 et 6 m, vers les murs, les colonnes et la voûte, boîtes contre maillage) :
+- aucun rayon ne passe de « touche » à « ne touche pas » ;
+- point touché : médiane 0.5 cm d'écart, 95 % 1.9 cm, 99 % 2.7 cm ; colonnes 0 cm, murs 0.7 cm au plus ;
+- 16 rayons à plus de 20 cm : ils frôlent exactement l'arête d'un arc-doubleau (la boîte compte le contact rasant, le maillage
+  non) ; sondé de face, l'intrados de l'arc est au même endroit (6.37 / 6.38 m de l'axe).
+Inchangés : NavMesh (55 038 sommets, 25 488 triangles, 248 965 m²), liens d'escalade 812, points debout de ReachCheck (10 966 avec
+les boîtes comme avec le maillage, même carte).
+5 seeds : 0 cachette, NavMesh goule 11 530/11 530, traqueur bout à bout 299/299 (sous les arcs), 0 fuite sur 363 960 rayons.
+Caisses lancées à 30 et 60 m/s vers la voûte et les arcs (6 couloirs, 60 caisses) : aucune ne traverse ; 2 tirs presque
+horizontaux sortent par une ouverture du mur à 5 m (sous la naissance), hors de la voûte.

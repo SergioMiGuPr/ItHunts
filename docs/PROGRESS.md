@@ -4,6 +4,11 @@
 
 ## Étape en cours
 
+**PR #9 (`art-fix`) — 2026-11-17 :** pouce du traqueur repondéré, os correcteurs `Jambe_Pli.L/.R` du creux des genoux de la goule
+(pilotés dans les clips). Vérifiée (périmètre, manifeste, compilation, 397 tests + 1 non concluant attendu), fusionnée dans `main`
+(984efff) et poussée, puis `main` fusionnée dans `animations`. En jeu : 9 clips de la goule et 8 du traqueur branchés et lus sans
+erreur, impact de `Goule_Coup` toujours à 0.24 s ; `Jambe_Pli` ne bouge que dans `Goule_Mort` et `Goule_Etourdie` (0.9 cm).
+
 **PR #8 et voûte gothique (`animations`) — 2026-11-16, non poussée, à tester.** PR #8 vérifiée :
 - périmètre `Assets/Art/`, `docs/art/` et manifeste ; `.meta` des 6 FBX présents (les sources sont dans `Source~`) ;
 - compilation sans erreur, 398 tests ;
@@ -34,7 +39,13 @@ Un commit par point :
     animations d'après vidéo.
   - ~~Draw calls des couloirs gothiques (+27 à 35 %)~~ : fusionnés par couloir le 2026-11-17 (éditeur, 6 poses : 4 855 → 3 182,
     moins que le plafond plat à 4 258).
-  - Physique un peu plus chère avec la voûte : 0.71 → 0.89 ms en solo, 33 468 colliders statiques contre 14 572.
+  - ~~Physique un peu plus chère avec la voûte (33 468 colliders contre 14 572)~~ : voûte, arcs et coins des portes en un
+    MeshCollider statique par couloir le 2026-11-17 (16 839 colliders ; Physics.Simulate 0.534 → 0.468 ms en A/B dans l'éditeur ;
+    NavMesh, cachettes, fuites et traction inchangés ; détail dans `captures/couloir_gothique/MESURES.txt`). Restent en boîtes :
+    murs de travée (6 077, dans le NavMesh) et colonnes.
+  - Goule, coup au contact : à l'instant des dégâts (0.24 s), le clip `Goule_Coup` en est à 0.21–0.22 s (fondu de 0.06 s) ; un
+    bond peut couper le geste (priorité de l'état), les dégâts tombent quand même. Constaté au contrôle de la PR #9, inchangé par
+    elle ; à revoir seulement si ça se voit.
 - **Performance, mesure comparable (2026-11-17)** (`docs/design/features/run-et-niveaux/mesure_perf_ab_2026-11-17.txt`) :
   - A/B en alternance dans la même session, 3 rondes : A = 02df035 (référence 9.9 ms), B = HEAD ; médiane / 95e centile :
     - solo : A 11.6 / 16.9 ms, B 11.9 / 15.9 ms ;

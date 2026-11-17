@@ -730,8 +730,9 @@ namespace ItHunts.Level
 
         /// <summary>
         /// Voûte en lancette, arcs-doubleaux sur colonnes engagées, murs de travée (arcade aveugle, niche), torches sur les trumeaux
-        /// à 4 m, fermetures des bouts (coins de la porte de 14 × 15 m hors de la voûte, pignon au-dessus de la porte). Collision : anneaux
-        /// de boîtes (voûte, arcs : le traqueur passe au travers, comme les anciens arcs), boîtes des murs et des colonnes.
+        /// à 4 m, fermetures des bouts (coins de la porte de 14 × 15 m hors de la voûte, pignon au-dessus de la porte). Collision : un MeshCollider
+        /// statique par couloir pour la voûte, les arcs et les coins des portes (le traqueur passe au travers, le NavMesh l'ignore),
+        /// boîtes des murs et des colonnes.
         /// </summary>
         private void BuildGothic(Transform parent, float len, float w, float h, float ya, Vector3 dir, Vector3 lateral,
             System.Func<float, float, Vector3> point, List<GothicBay> bays, System.Func<int, float, bool> open)
@@ -741,10 +742,18 @@ namespace ItHunts.Level
             float yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg, inner = len - 2f * T;
             Vector3 P(float d, float side = 0f) => point(d / len, side);
 
-            // Voûte : un tronçon par travée (étiré à la longueur de la travée, UV monde), une collision sur tout le couloir.
+            // Collision de la voûte, des arcs-doubleaux et des coins des portes : un seul maillage par couloir (MeshCollider statique,
+            // non convexe), à la place des anneaux de boîtes (14 600 boîtes d'arcs sur la seed 104729).
+            Vector3 mid = P(len * 0.5f);
+            Quaternion rot = Quaternion.Euler(0f, yaw, 0f);
+            Matrix4x4 toCollision = Matrix4x4.TRS(mid, rot, Vector3.one).inverse;
+            var solid = new SolidMesh();
+
+            // Voûte : un tronçon par travée (étiré à la longueur de la travée, UV monde).
             foreach (GothicBay b in bays)
                 KitBuild.Piece(kit.voute8, root, P((b.D0 + b.D1) * 0.5f), yaw, new Vector3(1f, 1f, (b.D1 - b.D0) / GothicBayLength)).name = GothicVault;
-            RingCollision(root, "Collision de la voûte", P(len * 0.5f), yaw, VaultInner, VaultOuter, inner);
+            // Voûte : 0.15 m sous la naissance, dans le haut des murs (pas de joint au ras de la naissance).
+            RingSolid(solid, toCollision * Matrix4x4.TRS(mid, rot, Vector3.one), VaultInner, VaultOuter, -inner * 0.5f, inner * 0.5f, 0.15f);
 
             // Arcs-doubleaux : à chaque limite de travée et contre chaque bout (ils encadrent la porte de la salle).
             var arcs = new List<float> { T + 0.4f, len - T - 0.4f };
@@ -752,7 +761,7 @@ namespace ItHunts.Level
             foreach (float d in arcs)
             {
                 KitBuild.Piece(kit.arcDoubleau, root, P(d), yaw).name = GothicArc;
-                RingCollision(root, "Collision de l'arc-doubleau", P(d), yaw, ArcInner, VaultInner + 0.05f, 0.8f);
+                RingSolid(solid, toCollision * Matrix4x4.TRS(P(d), rot, Vector3.one), ArcInner, VaultInner + 0.05f, -0.4f, 0.4f, 0f);
             }
 
             for (int i = 0; i < bays.Count; i++)
@@ -794,39 +803,123 @@ namespace ItHunts.Level
             {
                 float d = atStart ? T : len - T;
                 Vector3 axis = atStart ? dir : -dir;
-                GothicEnd(root, P(d), Mathf.Atan2(axis.x, axis.z) * Mathf.Rad2Deg, h);
+                float endYaw = Mathf.Atan2(axis.x, axis.z) * Mathf.Rad2Deg;
+                GothicEnd(root, P(d), endYaw, h, solid, toCollision * Matrix4x4.TRS(P(d), Quaternion.Euler(0f, endYaw, 0f), Vector3.one));
                 // Pignon : au-dessus de la porte, la voûte monte plus haut que le mur de la salle (plafond de 16 à 22 m).
                 Vector3 across = alongXOf(dir) ? new Vector3(0.3f, 21.6f - h, 11f) : new Vector3(11f, 21.6f - h, 0.3f);
                 KitBuild.Box(root, "Pignon de la voûte", P(d) + axis * 0.15f + Vector3.up * ((h + 21.6f) * 0.5f), across, KitBuild.Kind.Mur, kit, walkable: false);
             }
 
+            // Pour les joueurs et les objets ; le traqueur passe au travers et le NavMesh l'ignore (StalkerPassesThrough), comme les
+            // anneaux de boîtes qu'elle remplace.
+            var collision = new GameObject("Collision de la voûte");
+            collision.transform.SetParent(root, false);
+            collision.transform.localPosition = mid;
+            collision.transform.localRotation = rot;
+            collision.AddComponent<StalkerPassesThrough>();
+            collision.AddComponent<NotWalkable>();
+            collision.AddComponent<MeshCollider>().sharedMesh = solid.ToMesh("Collision de la voûte");
+
             static bool alongXOf(Vector3 v) => Mathf.Abs(v.x) > 0.5f;
         }
 
-        /// <summary>Anneau de collision de la voûte ou d'un arc (deux moitiés en lancette), de profondeur depth le long du couloir.</summary>
-        private static void RingCollision(Transform parent, string name, Vector3 at, float yaw, float rIn, float rOut, float depth)
+        /// <summary>
+        /// Solides fermés (faces tournées vers l'extérieur : un rayon ne touche que la face avant d'un MeshCollider) pour un
+        /// MeshCollider statique : sections faites de deux profils A[k], B[k] (plan xy) extrudées en z.
+        /// </summary>
+        private sealed class SolidMesh
         {
-            var go = new GameObject(name);
-            go.transform.SetParent(parent, false);
-            go.transform.localPosition = at;
-            go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
-            go.AddComponent<StalkerPassesThrough>();
-            go.AddComponent<NotWalkable>();
-            float r = (rIn + rOut) * 0.5f, top = Mathf.Acos(GothicCenter / r);
-            const int segments = 10;
-            foreach (float side in new[] { -1f, 1f })
-                for (int k = 0; k < segments; k++)
+            private readonly List<Vector3> _v = new List<Vector3>();
+            private readonly List<int> _i = new List<int>();
+
+            private void Tri(Vector3 a, Vector3 b, Vector3 c, Vector3 outward)
+            {
+                Vector3 n = Vector3.Cross(b - a, c - a);
+                if (n.sqrMagnitude < 1e-10f)
+                    return;                                                 // triangle dégénéré
+                if (Vector3.Dot(n, outward) < 0f)
+                    (b, c) = (c, b);
+                int k = _v.Count;
+                _v.Add(a);
+                _v.Add(b);
+                _v.Add(c);
+                _i.Add(k);
+                _i.Add(k + 1);
+                _i.Add(k + 2);
+            }
+
+            private void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 outward)
+            {
+                Tri(a, b, c, outward);
+                Tri(a, c, d, outward);
+            }
+
+            /// <summary>Bande entre les profils A et B (même nombre de points), de z0 à z1, placée par m.</summary>
+            public void Strip(IList<Vector2> a, IList<Vector2> b, float z0, float z1, Matrix4x4 m)
+            {
+                Vector3 W(Vector2 p, float z) => m.MultiplyPoint3x4(new Vector3(p.x, p.y, z));
+                Vector3 front = m.MultiplyVector(Vector3.forward);
+                int n = a.Count;
+
+                void Side(Vector2 p, Vector2 q, Vector2 inside)
                 {
-                    float a = top * k / segments, b = top * (k + 1) / segments;
-                    var pa = new Vector2(side * (r * Mathf.Cos(a) - GothicCenter), GothicSpring + r * Mathf.Sin(a));
-                    var pb = new Vector2(side * (r * Mathf.Cos(b) - GothicCenter), GothicSpring + r * Mathf.Sin(b));
-                    Vector2 d = pb - pa;
-                    var seg = new GameObject($"Anneau {(side < 0 ? "gauche" : "droite")} {k + 1}");
-                    seg.transform.SetParent(go.transform, false);
-                    seg.transform.localPosition = new Vector3((pa.x + pb.x) * 0.5f, (pa.y + pb.y) * 0.5f, 0f);
-                    seg.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg);
-                    seg.AddComponent<BoxCollider>().size = new Vector3(d.magnitude + 0.15f, rOut - rIn, depth);
+                    Vector2 e = q - p, normal = new Vector2(e.y, -e.x);
+                    if (e.sqrMagnitude < 1e-8f)
+                        return;
+                    if (Vector2.Dot(normal, (p + q) * 0.5f - inside) < 0f)
+                        normal = -normal;
+                    Quad(W(p, z0), W(q, z0), W(q, z1), W(p, z1), m.MultiplyVector(new Vector3(normal.x, normal.y, 0f)));
                 }
+
+                for (int k = 0; k + 1 < n; k++)
+                {
+                    Quad(W(a[k], z1), W(a[k + 1], z1), W(b[k + 1], z1), W(b[k], z1), front);
+                    Quad(W(a[k], z0), W(a[k + 1], z0), W(b[k + 1], z0), W(b[k], z0), -front);
+                    Vector2 c = (a[k] + a[k + 1] + b[k] + b[k + 1]) * 0.25f;
+                    Side(a[k], a[k + 1], c);
+                    Side(b[k], b[k + 1], c);
+                }
+
+                Side(a[0], b[0], (a[0] + a[1] + b[0] + b[1]) * 0.25f);
+                Side(a[n - 1], b[n - 1], (a[n - 1] + a[n - 2] + b[n - 1] + b[n - 2]) * 0.25f);
+            }
+
+            public Mesh ToMesh(string name)
+            {
+                var mesh = new Mesh { name = name, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+                mesh.SetVertices(_v);
+                mesh.SetTriangles(_i, 0);
+                mesh.RecalculateBounds();
+                return mesh;
+            }
+        }
+
+        /// <summary>
+        /// Anneau en lancette (voûte ou arc) de z0 à z1 : deux moitiés, intrados rIn et extrados rOut exacts (arcs de cercle centrés
+        /// sur la ligne de naissance, à GothicCenter de l'axe, de l'autre côté), de below sous la naissance jusqu'à l'axe.
+        /// </summary>
+        private static void RingSolid(SolidMesh solid, Matrix4x4 m, float rIn, float rOut, float z0, float z1, float below)
+        {
+            const int segments = 12;
+            foreach (float side in new[] { -1f, 1f })
+            {
+                var a = new List<Vector2>(segments + 1);
+                var b = new List<Vector2>(segments + 1);
+                for (int k = 0; k <= segments; k++)
+                {
+                    float t = (float)k / segments;
+                    a.Add(Arc(rIn, t));
+                    b.Add(Arc(rOut, t));
+                }
+
+                solid.Strip(a, b, z0, z1, m);
+
+                Vector2 Arc(float r, float t)
+                {
+                    float angle = Mathf.Lerp(-Mathf.Asin(below / r), Mathf.Acos(GothicCenter / r), t);
+                    return new Vector2(side * Mathf.Max(0f, r * Mathf.Cos(angle) - GothicCenter), GothicSpring + r * Mathf.Sin(angle));
+                }
+            }
         }
 
         /// <summary>
@@ -885,9 +978,10 @@ namespace ItHunts.Level
 
         /// <summary>
         /// Coins de la porte d'un bout de couloir (14 × h m) entre la porte et l'intrados de la voûte : remplissage en pierre tourné vers
-        /// la salle (maillage en bande, matériau de l'arc-doubleau) et sa collision en bandes de 0.5 m (pas de passage derrière la voûte).
+        /// la salle (maillage en bande, matériau de l'arc-doubleau) ; sa collision (pas de passage derrière la voûte) est ajoutée au
+        /// maillage de collision de la voûte du couloir.
         /// </summary>
-        private void GothicEnd(Transform root, Vector3 at, float yaw, float h)
+        private void GothicEnd(Transform root, Vector3 at, float yaw, float h, SolidMesh solid, Matrix4x4 toCollision)
         {
             var go = new GameObject("Coins de la porte (sous la voûte)");
             go.transform.SetParent(root, false);
@@ -920,16 +1014,18 @@ namespace ItHunts.Level
                         tri.AddRange(new[] { a, b, c, b, e, c });
                 }
 
-                // Collision en bandes de 0.5 m (bord intérieur au plus près de l'axe sur la bande).
-                for (float y = GothicSpring; y < top - 1e-3f; y += 0.5f)
+                // Collision (maillage de la voûte du couloir) : de l'intrados au bord de la porte, sur 0.6 m d'épaisseur.
+                var inside = new List<Vector2>();
+                var outside = new List<Vector2>();
+                for (float y = GothicSpring; ; y = Mathf.Min(top, y + 0.25f))
                 {
-                    float y1 = Mathf.Min(top, y + 0.5f), x = GothicHalfWidth(VaultInner, y1 - GothicSpring);
-                    var band = new GameObject("Bande");
-                    band.transform.SetParent(go.transform, false);
-                    var bc = band.AddComponent<BoxCollider>();
-                    bc.center = new Vector3(side * (x + edge) * 0.5f, (y + y1) * 0.5f, depth * 0.5f);
-                    bc.size = new Vector3(edge - x, y1 - y, depth);
+                    inside.Add(new Vector2(side * Mathf.Clamp(GothicHalfWidth(VaultInner, y - GothicSpring), 0f, edge), y));
+                    outside.Add(new Vector2(side * edge, y));
+                    if (y >= top - 1e-4f)
+                        break;
                 }
+
+                solid.Strip(inside, outside, 0f, depth, toCollision);
             }
 
             var mesh = new Mesh { name = "Coins de la porte" };
