@@ -30,3 +30,9 @@ Lecture : solo plus rapide (médiane −1.9 ms, 95e centile −4.3 ms) ; écran 
 « Fin du rendu » (PostLateUpdate.FinishFrameRendering) : 5.95 → 4.60 ms en solo, 10.94 → 9.54 ms en écran partagé
 (lumières du décor éteintes au-delà du brouillard).
 Note : les builds B plantent à la fermeture, après la mesure (fin de l'arrêt, PlayerConnection::Cleanup, build de développement).
+
+== 2026-11-18 : écran partagé, 6 rondes en alternance (ordre inversé à chaque ronde), A = 350108f (avant les lumières), B = 4d5d642 (lumières + lot du 2026-11-17), seed 104729, 1920 × 1080
+split A (6 rondes) : médiane 23.5 ms [30.5, 24.3, 21.0, 22.6, 18.8, 38.2], 95 % 45.0 ms [59.9, 39.9, 34.8, 50.0, 26.7, 65.4], GPU 7.2 ms, draw calls 4385, FixedUpdate scripts 4.94, physique 1.44, fin du rendu 12.64, ennemis 79
+split B (6 rondes) : médiane 18.8 ms [27.1, 22.2, 20.0, 17.5, 17.3, 17.1], 95 % 30.6 ms [54.1, 38.0, 31.8, 29.3, 26.4, 24.2], GPU 6.6 ms, draw calls 4392, FixedUpdate scripts 3.81, physique 0.99, fin du rendu 9.91, ennemis 79
+B devant A dans les 6 rondes pour le 95e centile (54.1/59.9, 38.0/39.9, 31.8/34.8, 29.3/50.0, 26.4/26.7, 24.2/65.4).
+Fermetures : A 6 propres ; B 6 plantages D3D12Core.dll (avant le correctif du stencil).
