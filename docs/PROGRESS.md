@@ -4,6 +4,25 @@
 
 ## Étape en cours
 
+**Retours de playtest du 2026-11-17, troisième lot + PR #13 et #14 (`animations`, pas fusionnée dans `main`) :** un commit par point.
+- **PR #14 (bras FPS à l'endroit) et #13 (traqueur v3) :** vérifiées (périmètre, compilation, 397 tests), fusionnées dans `main`
+  (03af276) et poussées, `main` fusionnée dans `animations`. Intégration #14 (c4e9d2a) : contournement des maillages retournés retiré,
+  test du volume signé des 8 bras. Intégration #13 (519f19f) : traqueurs des 4 scènes et vitrine reconstruits, 3 matériaux du corps,
+  lecture des clips = vitesse ÷ 3.71 / 2.29 (pied posé 5.3 → 0.48 m/s), D-070 vérifié (×1.8 à ×3.0, main à l'échelle 1), sommet 13.9 m
+  en marche, 8.5 m baissé ; **yeux de repli** (2 sphères sur l'os `Tete`, `eyeGlints`) car les pupilles du modèle v3 ne s'affichent
+  pas (trous du visage) : retour DA dans ART-HANDOFF ; `StalkerVisibilityTests` vert.
+- **Lumières qui sautent (d973e78) :** banc d'essai (même trajet scripté, 8 essais, GIF + caméra fixe) : cause = le cône de la lanterne
+  collé à la caméra (halo en retard puis recalé d'un coup après une rotation) ; il suit maintenant le corps (lissage réglable). Seuls
+  sauts restants vus de l'extérieur : lampes qui grésillent (effet voulu, `buzzingLampShare`). `rendu/captures/lumieres_qui_sautent/`.
+- **Orbe (299c1b1, ajout à D-069) :** immobile au repos, couronne face à la caméra, ne tourne que pendant une action, plus vive.
+- **Mains (ce11b28) :** pose « tenir » au repos (doigts à demi refermés vers `Pose_Poing`, réglable par main).
+- **HUD (5a59d49) :** âmes centrées, timer 56 sans objectif, échelle par la largeur sous 1100 px, carte ouverte uGUI par joueur
+  (action `Map` : Tab, croix haut), brouillard par joueur et partagé en coop, icônes de la DA, `Coffre_Rare` (coffres des parcours).
+- **Crash à la fermeture des builds « après » :** Windows : 6/6 dans D3D12Core.dll (0xc0000005), 0 pour les builds « avant » ;
+  `HorrorLook` ne touche plus la passe de l'Enragé ni les globales quand l'application se ferme. **À vérifier par un build** (demandé).
+- **Points ouverts :** mesure d'écran partagé en 6 rondes alternées (builds à autoriser) ; PR #15 (art-ui-b, fonds de menu, carte
+  ouverte) puis les menus (titre, campement, choix du personnage, Échap) : demandés après ce lot ; tête du traqueur v3 (DA).
+
 **Retours de playtest du 2026-11-17, second lot (`animations`, poussée pour la session art, pas fusionnée dans `main`) :** un
 commit par point.
 - **Tablettes de l'orbe (350108f, D-069) :** une tablette par charge de traction et de répulsion (2 + 1 au départ), une tablette qui
