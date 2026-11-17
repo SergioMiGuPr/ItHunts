@@ -238,6 +238,12 @@ charge de traction ou de répulsion, 2 + 1 au départ) ; tourbillon de l'énergi
 
 ### Bras FPS (`SK_BrasFPS_<Perso>_D` / `_G`, armature `BrasFPS`, 20 os depuis la v2)
 
+**Correction (2026-11-17, branche `art-bras-normales`)** : les 8 FBX v2 sortaient **retournés** (volume signé négatif) : le
+passage du repère de la main au repère du fichier est un miroir (déterminant −1) ; les faces sont maintenant remises vers
+l'extérieur à l'export. Vérifié dans Unity sans contournement : volumes **positifs** (1 339 à 1 686 cm³), normales dans le
+sens des faces (99.5 à 100 %), mêmes 20 os et 16 clips, même géométrie. Le contournement de `main` (`FpsArmsSetup`,
+`HandsOutline`) se désactive tout seul.
+
 **Version 2, les 4 personnages (2026-11-17, branche `art-mains`)** : renard validé par l'utilisateur, puis koala (gant
 complet, griffes qui percent le gant, fourrure grise ; 8 230 triangles), caméléon (mitaine, doigts et avant-bras écailleux,
 pas de griffes, manche rayée ; 9 524), hibou (pas de gant, main écailleuse en serres, plumes ; 8 005). **Même armature, mêmes
