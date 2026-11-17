@@ -36,6 +36,12 @@ SMOOTH_IT = 12         # passes de lissage des poids (raccords chaleur / distanc
 SHOULDER_IT = 12       # passes de Taubin sur les épaules
 SHOULDER_R = 0.45      # rayon du lissage des épaules, en longueur du bras (épaule-coude)
 HELPERS = [n + s for n in ("Bras", "AvantBras", "Main", "Jambe", "Pied") for s in (".L", ".R")]   # épaules, coudes, poignets, genoux, chevilles
+# Pouce (retours du 2026-11-16, PR #8 : pli du pouce de Traqueur_Prise passé de 0.88 à 1.51) : la chaleur sur la copie en
+# voxels laissait 25 % de main et 25 % de Pouce_2 dans le milieu de Pouce_1 (mélange de trois os, triangles écrasés quand
+# le pouce se ferme). Poids recalculés le long de l'axe du pouce : rampe main -> pouce large (demi-largeur POUCE_H1 ×
+# Pouce_1, centrée sur sa tête), rampe Pouce_1 -> Pouce_2 (POUCE_H2 × Pouce_2) ; fondus dans les poids d'origine selon la
+# part du pouce (POUCE_FONDU) ; sommets tenus par les doigts gardés (POUCE_DOIGTS).
+POUCE_H1, POUCE_H2, POUCE_FONDU, POUCE_DOIGTS = 1.4, 0.45, 0.6, 0.35
 P = dict(T.PARAMS)
 P.update(
     hauteur_debout=20.0, texture=4096, masque=2048,
@@ -338,6 +344,45 @@ def smooth_shoulders(ob, arm_ob, it=SHOULDER_IT):
         v.co = p
     me.update()
     return int((f > 0).sum())
+
+
+def fix_thumbs(ob, arm_ob):
+    """Poids du pouce le long de son axe (voir POUCE_H1) ; renvoie le nombre de sommets modifiés."""
+    me = ob.data
+    names = [g.name for g in ob.vertex_groups]
+    idx = {n: i for i, n in enumerate(names)}
+    W = np.zeros((len(me.vertices), len(names)), np.float32)
+    for v in me.vertices:
+        for g in v.groups:
+            W[v.index, g.group] = g.weight
+    co = np.array([v.co[:] for v in me.vertices])
+    B = arm_ob.data.bones
+    def sst(x):
+        x = np.clip(x, 0, 1)
+        return x * x * (3 - 2 * x)
+    W0 = W.copy()
+    for s_ in ("L", "R"):
+        i1, i2, im = idx["Pouce_1." + s_], idx["Pouce_2." + s_], idx["Main." + s_]
+        b1, b2 = B["Pouce_1." + s_], B["Pouce_2." + s_]
+        u1 = np.array((b1.tail_local - b1.head_local).normalized()[:])
+        u2 = np.array((b2.tail_local - b2.head_local).normalized()[:])
+        s1 = ((co - np.array(b1.head_local[:])) @ u1) / b1.length
+        s2 = ((co - np.array(b2.head_local[:])) @ u2) / b2.length
+        p = W[:, i1] + W[:, i2]
+        t_ = sst((s1 + POUCE_H1) / (2 * POUCE_H1))          # part du pouce
+        f2 = sst((s2 + POUCE_H2) / (2 * POUCE_H2))          # part de Pouce_2 dans le pouce
+        Wn = W.copy()
+        rest = np.ones(W.shape[1], bool); rest[[i1, i2]] = False
+        rs = W[:, rest].sum(1)
+        Wn[:, rest] = W[:, rest] * np.where(rs > 1e-6, (1 - t_) / np.maximum(rs, 1e-9), 0.0)[:, None]
+        Wn[rs <= 1e-6, im] = (1 - t_)[rs <= 1e-6]
+        Wn[:, i1] = t_ * (1 - f2); Wn[:, i2] = t_ * f2
+        fw = W[:, idx["Doigts_1." + s_]] + W[:, idx["Doigts_2." + s_]]
+        a = (sst(p / POUCE_FONDU) * (1 - sst(fw / POUCE_DOIGTS)))[:, None]
+        W = (1 - a) * W + a * Wn
+    W = PL.prune(W)
+    PL.write_groups(ob, arm_ob, names, W)
+    return int((np.abs(W - W0).max(1) > 1e-3).sum())
 
 
 # ----------------------------------------------------------------------------- squelette (coordonnées brutes)
@@ -782,6 +827,7 @@ def run():
         ob.modifiers.remove(m)
     _, _, rep = PL.skin_lisse(ob, arm_ob, VOXEL, names=names, allowed=allowed, smooth_it=SMOOTH_IT, helpers=made)
     log.append("voûté : " + rep + " ; %d os d'aide" % len(made))
+    log.append("pouces : %d sommets repondérés le long du pouce" % fix_thumbs(ob, arm_ob))
     hair = hair_strands(arm_ob)
     meas = measure(arm_ob, None, [ob, hair])
     meas["yeux"] = me.vertices[eye_idx].co.z
