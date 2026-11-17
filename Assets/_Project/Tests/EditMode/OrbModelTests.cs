@@ -13,6 +13,33 @@ namespace ItHunts.Tests
     public class OrbModelTests
     {
         [Test]
+        public void Orbe_ImmobileAuRepos_TourneSeulementPendantUneAction()
+        {
+            // D-069 (lisibilité) : traction, répulsion, prise, lancer ; tenir un objet n'est pas une action.
+            Assert.That(ItHunts.Orbs.OrbModelView.IsAction(true, false, ItHunts.Player.ViewPreview.Aucun), Is.True);
+            Assert.That(ItHunts.Orbs.OrbModelView.IsAction(false, true, ItHunts.Player.ViewPreview.Aucun), Is.True);
+            Assert.That(ItHunts.Orbs.OrbModelView.IsAction(false, false, ItHunts.Player.ViewPreview.ObjetTenu), Is.False);
+            Assert.That(ItHunts.Orbs.OrbModelView.IsAction(false, false, ItHunts.Player.ViewPreview.Aucun), Is.False);
+            const float dt = 1f / 60f;
+            // Au repos : l'angle ne bouge pas.
+            Assert.That(ItHunts.Orbs.OrbModelView.SpinOrSettle(0f, 200f, 0f, 3f, dt), Is.EqualTo(0f));
+            // Pendant l'action : il tourne.
+            float a = 0f;
+            for (int i = 0; i < 30; i++)
+                a = ItHunts.Orbs.OrbModelView.SpinOrSettle(a, 200f, 1f, 3f, dt);
+            Assert.That(a, Is.EqualTo(100f).Within(0.5f));
+            // Après : retour en douceur vers 0, sans saut (moins de 10° par image).
+            float prev = a;
+            for (int i = 0; i < 180; i++)
+            {
+                a = ItHunts.Orbs.OrbModelView.SpinOrSettle(a, 200f, 0f, 3f, dt);
+                Assert.That(Mathf.Abs(Mathf.DeltaAngle(prev, a)), Is.LessThan(10f));
+                prev = a;
+            }
+            Assert.That(Mathf.Abs(Mathf.DeltaAngle(a, 0f)), Is.LessThan(1f), "revenu au repos en 3 s");
+        }
+
+        [Test]
         public void PrefabPlayer_OrbeV2_Branchee()
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");

@@ -12,6 +12,7 @@ namespace ItHunts.Orbs
     /// et pulse ; tablettes = jauge (2 traction, 1 répulsion, 3 décor « mouvement », MATERIAUX.md). Le flottement et la rotation
     /// d'ensemble au-dessus de la paume restent dans FpsArms (FpsViewSettings). Visuel seulement : rien de simulé ici.
     /// </summary>
+    [DefaultExecutionOrder(120)]                                    // après FpsArms (110), qui pose l'orbe au-dessus de la paume
     public sealed class OrbModelView : MonoBehaviour
     {
         [SerializeField] private OrbModelSettings settings;
@@ -35,7 +36,32 @@ namespace ItHunts.Orbs
         private PlayerMotor _motor;
         private ItHunts.Artifacts.ArtifactHolder _holder;
         private MaterialPropertyBlock _block;
-        private float _ringBoost = 1f;
+        private float _activity;
+        private Vector3 _ringAngles;
+        private float _crownAngle;
+        private Quaternion _ring1Rest, _ring2Rest, _ring3Rest, _crownRest = Quaternion.identity, _crownInModel = Quaternion.identity;
+        private FirstPersonView _view;
+        private int _lastGestureFrame = -1;
+        private float _gestureUntil;
+
+        /// <summary>Activité de l'orbe (0 au repos, 1 pendant une action ; tests).</summary>
+        public float Activity => _activity;
+
+        /// <summary>
+        /// Une action est en cours (D-069, lisibilité) : traction, répulsion, prise ou lancer (geste récent), ou un aperçu de vitrine
+        /// (traction, répulsion tenue). Tenir un objet n'en est pas une : l'orbe reste au repos.
+        /// </summary>
+        public static bool IsAction(bool traction, bool gestureRecent, ViewPreview preview)
+            => traction || gestureRecent || preview == ViewPreview.Traction || preview == ViewPreview.RepulsionTenue;
+
+        /// <summary>Angle qui tourne pendant l'action et revient au repos (0°, par le plus court) en douceur après (pur, testable).</summary>
+        public static float SpinOrSettle(float angle, float speed, float activity, float settleRate, float dt)
+        {
+            angle += speed * activity * dt;
+            if (activity < 0.5f)
+                angle = Mathf.LerpAngle(angle, 0f, (1f - Mathf.Exp(-settleRate * dt)) * (1f - 2f * activity));
+            return Mathf.Repeat(angle, 360f);
+        }
         private float _orbDiameter = 0.08f;
 
         public OrbModelSettings Settings => settings;
@@ -80,8 +106,17 @@ namespace ItHunts.Orbs
             _holder = GetComponentInParent<ItHunts.Artifacts.ArtifactHolder>();
             _block = new MaterialPropertyBlock();
             var view = GetComponentInParent<FirstPersonView>();
+            _view = view;
             if (view != null && view.Settings != null)
                 _orbDiameter = Mathf.Max(0.001f, view.Settings.orbDiameter);
+            _ring1Rest = ring1 != null ? ring1.localRotation : Quaternion.identity;
+            _ring2Rest = ring2 != null ? ring2.localRotation : Quaternion.identity;
+            _ring3Rest = ring3 != null ? ring3.localRotation : Quaternion.identity;
+            if (crown != null && model != null)
+            {
+                _crownRest = crown.localRotation;
+                _crownInModel = Quaternion.Inverse(model.rotation) * crown.rotation;
+            }
             bool on = model != null && settings != null;
             if (model != null)
                 model.gameObject.SetActive(on);
@@ -102,23 +137,43 @@ namespace ItHunts.Orbs
             model.localScale = Vector3.one * (settings.modelScale / _orbDiameter);
 
             bool traction = _motor != null && _motor.State.Mode == MovementMode.Traction;
-            float target = traction ? settings.tractionRingBoost : 1f;
-            _ringBoost = Mathf.Lerp(_ringBoost, target, 1f - Mathf.Exp(-settings.ringResponse * dt));
-            Spin(ring1, Vector3.right, settings.ringSpeeds.x * _ringBoost * dt);
-            Spin(ring2, Vector3.up, settings.ringSpeeds.y * _ringBoost * dt);
-            Spin(ring3, Vector3.forward, settings.ringSpeeds.z * _ringBoost * dt);
-            Spin(energy, settings.energySpinAxis.sqrMagnitude > 1e-6f ? settings.energySpinAxis.normalized : Vector3.up, settings.energySpin * dt);
-            if (traction && crown != null)
-                Spin(crown, Vector3.forward, settings.tractionCrownSpin * dt);
+            // Activité : un geste (répulsion, prise, lancer) compte pendant gestureActionSeconds.
+            if (_view != null && _view.LastGestureFrame != _lastGestureFrame)
+            {
+                _lastGestureFrame = _view.LastGestureFrame;
+                if (_view.Gesture != HandGesture.Aucun)
+                    _gestureUntil = Time.time + settings.gestureActionSeconds;
+            }
+
+            bool action = IsAction(traction, Time.time < _gestureUntil, _view != null ? _view.Preview : ViewPreview.Aucun);
+            _activity = Mathf.MoveTowards(_activity, action ? 1f : 0f, (action ? settings.actionRise : settings.restReturn) * dt);
+            float boost = settings.tractionRingBoost;
+            _ringAngles.x = SpinOrSettle(_ringAngles.x, settings.ringSpeeds.x * boost, _activity, settings.restReturn, dt);
+            _ringAngles.y = SpinOrSettle(_ringAngles.y, settings.ringSpeeds.y * boost, _activity, settings.restReturn, dt);
+            _ringAngles.z = SpinOrSettle(_ringAngles.z, settings.ringSpeeds.z * boost, _activity, settings.restReturn, dt);
+            if (ring1 != null) ring1.localRotation = _ring1Rest * Quaternion.AngleAxis(_ringAngles.x, Vector3.right);
+            if (ring2 != null) ring2.localRotation = _ring2Rest * Quaternion.AngleAxis(_ringAngles.y, Vector3.up);
+            if (ring3 != null) ring3.localRotation = _ring3Rest * Quaternion.AngleAxis(_ringAngles.z, Vector3.forward);
+            Spin(energy, settings.energySpinAxis.sqrMagnitude > 1e-6f ? settings.energySpinAxis.normalized : Vector3.up, settings.energySpin * _activity * dt);
+            _crownAngle = SpinOrSettle(_crownAngle, settings.actionCrownSpin, _activity, settings.restReturn, dt);
+            if (crown != null)
+                crown.localRotation = _crownRest * Quaternion.AngleAxis(_crownAngle, Vector3.forward);
+            // Au repos, la couronne fait face à la caméra (les tablettes se lisent) ; FpsArms a posé l'orbe, on n'en change que l'orientation.
+            if (settings.restFacesCamera && _view != null && _view.ViewRoot != null)
+            {
+                Transform v = _view.ViewRoot;
+                Quaternion crownWorld = Quaternion.LookRotation(v.forward, v.up) * Quaternion.Euler(settings.restTilt);
+                model.rotation = crownWorld * Quaternion.Inverse(_crownInModel);
+            }
 
             CharacterDefinition c = _holder != null ? _holder.Character : null;
             Color color = c != null ? c.color : settings.fallbackColor;
             CurrentColor = color;
             float pulse = 1f + settings.energyPulse * Mathf.Sin(Time.time * settings.energyPulseHz * 2f * Mathf.PI);
-            float boost = traction ? settings.tractionEnergyBoost : 1f;
-            SetEmission(energyRenderer, 0, color * (settings.energyIntensity * pulse * boost));
+            float energyBoost = Mathf.Lerp(1f, settings.tractionEnergyBoost, _activity);
+            SetEmission(energyRenderer, 0, color * (settings.energyIntensity * pulse * energyBoost));
             // Tourbillon (ItHunts/OrbeVortex, PR #12) : il accélère pendant la traction.
-            _spinBoost = Mathf.Lerp(_spinBoost, traction ? settings.vortexTractionBoost : 1f, 1f - Mathf.Exp(-settings.ringResponse * dt));
+            _spinBoost = Mathf.Lerp(settings.vortexRestBoost, settings.vortexTractionBoost, _activity);
             if (energyRenderer != null)
             {
                 energyRenderer.GetPropertyBlock(_block, 0);

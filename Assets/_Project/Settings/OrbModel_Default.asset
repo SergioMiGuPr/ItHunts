@@ -12,16 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e006a9b270430944bbb3d9e888dd70c8, type: 3}
   m_Name: OrbModel_Default
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.OrbModelSettings
-  modelScale: 0.45
+  modelScale: 0.5
   fallbackColor: {r: 0.56, g: 0.11, b: 0.07, a: 1}
-  energyIntensity: 1
+  energyIntensity: 1.7
   energyPulse: 0.1
   energyPulseHz: 0.5
   tractionEnergyBoost: 1.5
   energySpin: 0
   energySpinAxis: {x: 0.3, y: 1, z: 0.15}
+  vortexTractionBoost: 3.5
+  vortexRestBoost: 0.4
+  restFacesCamera: 1
+  restTilt: {x: -12, y: 0, z: 0}
+  actionRise: 14
+  restReturn: 3
+  actionCrownSpin: 220
+  gestureActionSeconds: 0.45
   ringSpeeds: {x: 20, y: 30, z: 45}
   tractionRingBoost: 8
-  ringResponse: 8
-  glyphIntensity: 1.6
-  tractionCrownSpin: 90
+  glyphIntensity: 3
+  tabletAppearSeconds: 0.35
+  tabletSlideSpeed: 240
+  crownRadius: 0.15
