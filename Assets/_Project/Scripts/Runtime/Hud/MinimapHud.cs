@@ -29,6 +29,52 @@ namespace ItHunts.Hud
 
         public bool FullMap { get; private set; }
 
+        /// <summary>La mini-carte de la scène (lue par le HUD habillé de chaque joueur).</summary>
+        public static MinimapHud Current { get; private set; }
+        /// <summary>
+        /// Vrai quand le HUD habillé (PR #10) dessine la mini-carte ronde de chaque joueur : ici, il ne reste que la carte entière
+        /// (Tab).
+        /// </summary>
+        public static bool RoundMinimap { get; set; }
+        /// <summary>Salles découvertes peintes (nord en haut) et l'emprise de la carte qu'elles couvrent.</summary>
+        public Texture MapTexture => _mapTex;
+        public Bounds AllBounds => _all;
+        public int MarkCount => _marks.Count;
+
+        /// <summary>Point clé i s'il est connu (sinon faux) : position et objet (coffre, marchand, salle verrouillée, sortie, départ).</summary>
+        public bool Mark(int i, out Vector3 at, out Object owner)
+        {
+            at = default;
+            owner = null;
+            if (i < 0 || i >= _marks.Count || i >= _markKnown.Count || !_markKnown[i] || _marks[i].owner == null)
+                return false;
+            at = _marks[i].at;
+            owner = _marks[i].owner;
+            return true;
+        }
+
+        private void OnEnable() => Current = this;
+
+        private void OnDisable()
+        {
+            if (Current == this)
+                Current = null;
+        }
+
+        /// <summary>Carte à jour (salles découvertes, points clés) : à chaque image, même quand rien n'est dessiné ici.</summary>
+        private void LateUpdate()
+        {
+            if (Time.time >= _refreshAt || _volumes.Count == 0)
+            {
+                Refresh();
+                _paintedKnown = -1;
+            }
+
+            MapDiscovery fog = MapDiscovery.Current;
+            if (_mapTex == null || (fog != null ? fog.KnownCount : 0) != _paintedKnown)
+                Paint(fog);
+        }
+
         // Performance (étape 8, après playtest : 7 ms d'IMGUI au pic) : les salles découvertes sont peintes dans une texture,
         // refaite seulement quand une salle est découverte ; chaque image n'affiche que cette texture et quelques repères.
         private Texture2D _mapTex;
@@ -114,17 +160,11 @@ namespace ItHunts.Hud
 
         private void OnGUI()
         {
-            if (Event.current.type != EventType.Repaint || PlayerLook.MenuOpen)
+            if (Event.current.type != EventType.Repaint || PlayerLook.MenuOpen || _mapTex == null)
                 return;
-            if (Time.time >= _refreshAt || _volumes.Count == 0)
-            {
-                Refresh();
-                _paintedKnown = -1;
-            }
-
+            if (RoundMinimap && !FullMap)
+                return;                                                 // mini-carte ronde : dessinée par le HUD de chaque joueur
             MapDiscovery fog = MapDiscovery.Current;
-            if (_mapTex == null || (fog != null ? fog.KnownCount : 0) != _paintedKnown)
-                Paint(fog);
             foreach (PlayerHealth p in PlayerHealth.All)
             {
                 if (p == null)

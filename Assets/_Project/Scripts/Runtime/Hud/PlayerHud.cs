@@ -20,7 +20,7 @@ namespace ItHunts.Hud
     /// - Coins réservés (vides) : âmes (haut gauche), timer (haut droite), traqueur enragé (sous le timer).
     /// </summary>
     [DefaultExecutionOrder(200)]
-    public sealed class PlayerHud : MonoBehaviour
+    public sealed partial class PlayerHud : MonoBehaviour
     {
         [SerializeField] private HudSettings settings;
         [Tooltip("Couleurs du magnétisme, anneaux, refus.")]
@@ -126,7 +126,7 @@ namespace ItHunts.Hud
 
         private void Build()
         {
-            _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _font = settings.skin != null && settings.skin.textFont != null ? settings.skin.textFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             _white = Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f));
 
             var go = new GameObject("HUD (joueur)");
@@ -235,6 +235,8 @@ namespace ItHunts.Hud
                 sh.effectDistance = new Vector2(2f, -2f);
                 t.text = string.Empty;
             }
+
+            BuildSkin();                                                // habillage de la DA (PR #10), s'il est réglé
 
             // Monde : barres de PV, chiffres de dégâts, durabilité.
             var world = Rect("Monde", _root, Vector2.one * 0.5f, Vector2.zero, Vector2.zero);
@@ -439,6 +441,8 @@ namespace ItHunts.Hud
             UpdateSouls(now);
             UpdateAmmo(tick, now, dt, fixedDt);
             UpdatePlayerHealth(now);
+            UpdateHealthBar(now, dt);
+            UpdateMinimap();
             UpdateWorld();
         }
 
@@ -531,10 +535,10 @@ namespace ItHunts.Hud
                 return;
             var run = ItHunts.Artifacts.RunState.Current;
             int souls = run != null ? run.Souls(_health.PlayerId) : 0;
-            _soulsText.text = $"Âmes  {souls}";
+            _soulsText.text = _skin != null ? souls.ToString() : $"Âmes  {souls}";
             float refused = Mathf.Clamp01(1f - (now - _refusedAt) / 0.8f);
             float gain = Mathf.Clamp01(1f - (now - _soulsGainAt) / 0.3f);
-            Color normal = Color.Lerp(new Color(0.55f, 0.95f, 1f), Color.white, gain);
+            Color normal = Color.Lerp(_skin != null ? _skin.soulsTextColor : new Color(0.55f, 0.95f, 1f), Color.white, gain);
             _soulsText.color = refused > 0f ? Color.Lerp(normal, new Color(1f, 0.2f, 0.15f), refused) : normal;
             _soulsText.rectTransform.localScale = Vector3.one * (1f + 0.25f * refused + 0.08f * gain);
             if (_interactor == null)
@@ -604,7 +608,7 @@ namespace ItHunts.Hud
 
         private void UpdatePlayerHealth(float now)
         {
-            if (_health == null || _healthBack == null)
+            if (_health == null || _healthBack == null || _skin != null)
                 return;
             HealthState h = _health.Health;
             bool show = h.Dead || h.Current < h.Max;

@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efda86e1ac07b314487ef2c367ff786a, type: 3}
+  m_Name: HudSkin_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.HudSkinSettings
+  textFont: {fileID: 12800000, guid: 9c0d1388ac19db84387d4c02dd031f52, type: 3}
+  titleFont: {fileID: 12800000, guid: beb1fe48b368ab24e8f157905953e401, type: 3}
+  numberOutline: {r: 0.04, g: 0.02, b: 0.04, a: 0.9}
+  numberOutlineWidth: 1.5
+  healthFrame: {fileID: 21300000, guid: 531b3ea8fc2bdad46a35f2b020b51470, type: 3}
+  healthBack: {fileID: 21300000, guid: 2f2d833f0f04e04489ec02d84139735e, type: 3}
+  healthFill: {fileID: 21300000, guid: 8f806ec2a5416aa44b28188b93e1ca8a, type: 3}
+  healthTrail: {fileID: 21300000, guid: 9ca5cf67dd55f474a8ab17a2eea6b42f, type: 3}
+  healthCorner: {x: 32, y: 32}
+  healthScale: 0.9
+  healthLength: 440
+  healthChannel: {x: 100, y: 26, z: 54, w: 23}
+  healthNativeHeight: 131
+  trailCatchUp: 0.4
+  trailDelay: 0.25
+  healthFontSize: 17
+  healthTextColor: {r: 0.92, g: 0.88, b: 0.86, a: 1}
+  soulsFrame: {fileID: 21300000, guid: 1363ac126e66e004fbb1f7fd33be3c24, type: 3}
+  soulsBack: {fileID: 21300000, guid: d7601ed05cf354b40b08fb858ae33a27, type: 3}
+  soulsFlame: {fileID: 21300000, guid: 4cf33678fb7ce0e4b853d1b293b0b55e, type: 3}
+  soulsCorner: {x: 32, y: 32}
+  soulsScale: 0.75
+  soulsLength: 250
+  soulsNativeHeight: 102
+  soulsEmblem: {x: 58, y: 51, z: 51, w: 86}
+  soulsFontSize: 30
+  soulsTextColor: {r: 0.84, g: 0.88, b: 0.92, a: 1}
+  minimapFrame: {fileID: 21300000, guid: d1feeed83e5c03347addef1275862c97, type: 3}
+  minimapMask: {fileID: 21300000, guid: f9585f11fccdae34fa4c4c516065c461, type: 3}
+  minimapBack: {fileID: 21300000, guid: 01ef722c78bd2d14986e8abb0b252024, type: 3}
+  minimapCorner: {x: 32, y: 32}
+  minimapScale: 0.85
+  minimapNativeSize: {x: 281, y: 295}
+  minimapCircle: {x: 140, y: 143, z: 96}
+  minimapMetres: 200
+  iconArrow: {fileID: 21300000, guid: d85c5598edd9691489692cafefe4da0c, type: 3}
+  iconChest: {fileID: 21300000, guid: 8f3339ecb5f065d4cbf42d0d4f691b11, type: 3}
+  iconChestOpen: {fileID: 21300000, guid: c18e77524c4411e498a6367fe3b33e76, type: 3}
+  iconMerchant: {fileID: 21300000, guid: 1ce4896def4a7ea469c085dbbda0faa9, type: 3}
+  iconSouls: {fileID: 21300000, guid: 9f718519ec79631409707e73a61b880f, type: 3}
+  iconExitLocked: {fileID: 21300000, guid: 5f07840eb5aed614c933be9397c8bcfc, type: 3}
+  iconExitOpen: {fileID: 21300000, guid: 3531fae514c214749af6256f79728c6c, type: 3}
+  iconAllyDead: {fileID: 21300000, guid: 8be14d1c5d4b15f429ecfb58c679898a, type: 3}
+  allyFox: {fileID: 21300000, guid: a089820a856e985408af7a7e9290ff98, type: 3}
+  allyKoala: {fileID: 21300000, guid: d3103caa3b6d63741bba75fab612e1da, type: 3}
+  allyChameleon: {fileID: 21300000, guid: 1a2788cbc33e074418421511fd369a7c, type: 3}
+  allyOwl: {fileID: 21300000, guid: 3d20e81dc6acbe343ab2025b0b0139db, type: 3}
+  iconSize: 22
+  allySize: 16
+  arrowSize: 24

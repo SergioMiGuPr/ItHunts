@@ -659,3 +659,19 @@ de la DA, rien n'a été modifié) :
   `Prop_Sarcophage` (52), `Prop_Ratelier` (40), `Prop_Armoire` (30), `Prop_Lit` (23), `Prop_Chaudron` (14), `Prop_MurEffondre` (11),
   `Prop_Autel` (4), `Prop_Poutre` (0) ; **`Prop_Lanterne` (258, une lumière : son halo est déjà dessiné par le jeu)**.
 - **Hors catalogue, encore greybox** : `Coffre` (coffre à âmes), `Marchand_Artefact`, `Volant` (ennemi).
+
+## Interface : intégration du lot A (PR #10, 2026-11-17)
+
+- **HUD habillé branché** (`PlayerHud` + `PlayerHud.Skin.cs`, réglages `HudSkin_Default` relié par `Hud_Default`) : barre de vie
+  (fond, traînée des dégâts récents, remplissage rouge sang, cadre, « PV/max » en EB Garamond SemiBold), cartouche des âmes (flamme,
+  nombre), mini-carte ronde (fond, masque, cadre, icônes : coffre, coffre ouvert, bougie = marchand, flamme = salle verrouillée,
+  porte finale verrouillée / ouverte, pastilles des alliés par personnage, tête de mort, flèche du joueur), messages et titres en
+  Grenze Gotisch. Mesures d'UI-HANDOFF (coins, k, canal, rond). `MiniCarte_Coffre_Rare` n'est pas utilisée : il n'y a pas encore de
+  coffre rare en jeu.
+- **Différence avec UI-HANDOFF § 0 :** le canevas du HUD est **Screen Space - Overlay** (plus Screen Space - Camera) pour que
+  l'étalonnage de l'Enragé ne le teinte pas ; sa racine épouse le rectangle de la caméra du joueur et l'échelle suit la hauteur
+  de sa vue (référence 1080) : les tailles en pixels 1080p de la DA restent valables, écran partagé compris.
+- **Atlas converti en V2 sur `main`** (demande de l'utilisateur) : *Sprite Packer* sur *Sprite Atlas V2 - Enabled*,
+  `Assets/Art/UI/Atlas_HUD.spriteatlas` remplacé par `Atlas_HUD.spriteatlasv2` (mêmes dossiers `HUD` et `MiniCarte`, mêmes réglages :
+  marge 4 px, ni rotation ni découpe serrée, 4096, compression haute qualité). **La branche `art-ui` doit faire un pull de `main`
+  avant de toucher à l'atlas.**

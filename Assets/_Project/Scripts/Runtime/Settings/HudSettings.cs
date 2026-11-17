@@ -10,6 +10,9 @@ namespace ItHunts.Settings
     [CreateAssetMenu(fileName = "Hud_Default", menuName = "ItHunts/Réglages/HUD")]
     public sealed class HudSettings : ScriptableObject
     {
+        [Header("Habillage de la DA (PR #10) : barre de vie, âmes, mini-carte ronde, polices ; vide : HUD greybox")]
+        public HudSkinSettings skin;
+
         [Header("Échelle")]
         [Tooltip("Résolution de référence (le HUD suit la hauteur de la zone de chaque joueur).")]
         public Vector2 referenceResolution = new Vector2(1920f, 1080f);
