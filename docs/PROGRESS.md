@@ -4,6 +4,28 @@
 
 ## Étape en cours
 
+**Retours de playtest du 2026-11-17 (`animations`, non poussée, à tester) :** un commit par point.
+- **Orbe (b16d61b) :** le « disque gris » était la sphère greybox de 8 cm (matériau unlit) ; `SM_Orbe` branchée (`OrbModelView`,
+  `OrbModel_Default` : taille d'une pomme, couleur du personnage, anneaux, énergie qui pulse, tablettes = jauge des charges).
+- **Barillet (4ec0015) :** échelle 0.5 (largeur de la paume), chambres × 1.4 au lieu de × 3 ; taille, décalage et flottement dans
+  `Barrel_Default` (« Vue FPS »).
+- **Traqueur invisible (f95490f) :** dans `Test_Vitrine`, 32 os pour 42 dans le maillage (pas dessiné) : vitrine reconstruite ; dans les
+  niveaux, corps noir dans le noir et le brouillard (fin à 35-38 m en sombre et horreur) : lumière d'appoint sur le calque de rendu
+  « Traqueur », pupilles 1.5 ; anciennes mains en boîtes plus en double. Tests : os de tous les rendus gréés (EditMode), traqueur
+  visible à 10, 30, 60 m (**premier test PlayMode**, `Assets/_Project/Tests/PlayMode`, lancé en asynchrone).
+- **Vitrine, zone « Traqueur » (ba826c4) :** couloir gothique de 150 m construit par le code de la carte, galerie haute, 2 poutres,
+  ronde du traqueur (`PatrolPoints`) et poursuite (F1).
+- **Lumière d'ambiance horreur (9d2b30f) :** `HorrorLook` (`HorrorLook_Default`, chaque élément activable) : étalonnage par ambiance,
+  rouge sang presque monochrome en Enragé (12 s), halos (un système de particules), vacillement, cône de la lanterne ombré, 3 lumières
+  ombrées au plus, bloom / vignettage / grain / aberration (menu pause). Coût CPU 0.16 ms dans l'éditeur.
+- **ART-HANDOFF (1fc1b6d) :** demandes au shader toon (normales, sol mouillé, vortex de l'orbe) et inventaire des props (21 greybox).
+- **Tests :** EditMode 403 réussis + 1 non concluant attendu ; PlayMode 1/1 (visibilité du traqueur).
+- **Points ouverts :**
+  - **Mesure en build A/B (solo et écran partagé) de la lumière d'ambiance : 2 builds, à lancer sur accord.**
+  - Traqueur au-delà de la fin du brouillard (35-38 m en sombre) : seuls ses yeux se voient ; options à trancher (silhouette pâle
+    qui traverse le brouillard, brouillard plus loin, ou garder « on l'entend avant de le voir »).
+  - En Enragé, tout vire au rouge : le rouge du danger ne se distingue plus que par sa luminosité (15 % de couleur gardée).
+
 **PR #9 (`art-fix`) — 2026-11-17 :** pouce du traqueur repondéré, os correcteurs `Jambe_Pli.L/.R` du creux des genoux de la goule
 (pilotés dans les clips). Vérifiée (périmètre, manifeste, compilation, 397 tests + 1 non concluant attendu), fusionnée dans `main`
 (984efff) et poussée, puis `main` fusionnée dans `animations`. En jeu : 9 clips de la goule et 8 du traqueur branchés et lus sans
