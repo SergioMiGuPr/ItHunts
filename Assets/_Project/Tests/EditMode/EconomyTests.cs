@@ -15,6 +15,33 @@ namespace ItHunts.Tests
     /// <summary>Âmes et économie (étape 7, D-043) : tirage avec la seed, prix et refus, ×2 en Enragé, coop, morts sans joueur.</summary>
     public class EconomyTests
     {
+        [Test]
+        public void CoffreRare_MeilleurButin_UnChoixEnPlus_ValeursRenforcees()
+        {
+            // D-071 : coffres des parcours, meilleur butin, réglable dans Economy_Default.
+            var eco = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
+            Assert.That(eco.rareExtraChoices, Is.GreaterThanOrEqualTo(1));
+            Assert.That(eco.rareAmountMultiplier, Is.GreaterThan(1f));
+            UpgradeDefinition Up(UpgradeKind k, float a, string sym)
+            {
+                var u = ScriptableObject.CreateInstance<UpgradeDefinition>();
+                u.kind = k; u.amount = a; u.iconSymbol = sym; u.displayName = "Test";
+                return u;
+            }
+
+            var hp = Up(UpgradeKind.PvMax, 25f, "PV+");
+            var rare = Chest.RareVersion(hp, eco);
+            Assert.That(rare.amount, Is.EqualTo(25f * eco.rareAmountMultiplier).Within(1e-4f));
+            Assert.That(hp.amount, Is.EqualTo(25f), "l'asset d'origine ne change pas");
+            Assert.That(rare.displayName, Does.Contain("★"));
+            var charge = Up(UpgradeKind.ChargeDeMouvement, 1f, "+1");
+            Assert.That(Chest.RareVersion(charge, eco).amount, Is.EqualTo(2f), "entier : au moins +1");
+            var cad = Up(UpgradeKind.CadenceBarillet, 0.5f, ">>>");
+            Assert.That(Chest.RareVersion(cad, eco).amount, Is.LessThanOrEqualTo(Mathf.Max(0.5f, eco.rareCutCap) + 1e-4f), "réduction plafonnée");
+            foreach (Object o in new Object[] { hp, rare, charge, cad })
+                Object.DestroyImmediate(o);
+        }
+
         private readonly List<Object> _made = new List<Object>();
 
         [TearDown]

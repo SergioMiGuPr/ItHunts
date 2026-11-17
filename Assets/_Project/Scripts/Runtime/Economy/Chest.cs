@@ -117,7 +117,16 @@ namespace ItHunts.Economy
             var opening = new Opening { At = Time.time };
             _openings[p.PlayerId] = opening;
             int count = settings != null ? settings.choiceCount : 3;
-            UpgradeDefinition[] drawn = run.DrawUpgrades(count);
+            UpgradeDefinition[] drawn;
+            if (rare && settings != null)
+            {
+                // Coffre rare (D-071) : table dédiée, un choix en plus, améliorations renforcées.
+                drawn = run.DrawUpgrades(count + settings.rareExtraChoices, settings.rarePool);
+                for (int i = 0; i < drawn.Length; i++)
+                    drawn[i] = RareVersion(drawn[i], settings);
+            }
+            else
+                drawn = run.DrawUpgrades(count);
             for (int i = 0; i < drawn.Length; i++)
             {
                 // Espacées de 2.4 m et en quinconce : les noms (deux lignes) ne se chevauchent pas, lisibles à 10 m.
@@ -129,6 +138,37 @@ namespace ItHunts.Economy
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Version rare d'une amélioration (D-071, pur, testable) : valeur × rareAmountMultiplier ; nombres entiers (charges, balles)
+        /// arrondis au-dessus ; réductions en part (cadence, rechargement) plafonnées ; marquée ★. Copie faite à la volée : l'asset
+        /// d'origine ne change pas.
+        /// </summary>
+        public static UpgradeDefinition RareVersion(UpgradeDefinition d, EconomySettings s)
+        {
+            if (d == null || s == null)
+                return d;
+            UpgradeDefinition r = Instantiate(d);
+            r.name = d.name + " (rare)";
+            float a = d.amount * s.rareAmountMultiplier;
+            switch (d.kind)
+            {
+                case UpgradeKind.ChargeDeMouvement:
+                case UpgradeKind.BallesBarillet:
+                    a = Mathf.Max(Mathf.Round(d.amount) + 1f, Mathf.Ceil(a));
+                    break;
+                case UpgradeKind.CadenceBarillet:
+                case UpgradeKind.RechargementBarillet:
+                    a = Mathf.Min(a, Mathf.Max(d.amount, s.rareCutCap));
+                    break;
+            }
+
+            r.amount = a;
+            r.displayName = "★ " + d.displayName;
+            r.iconSymbol = d.iconSymbol + " ★";
+            r.description = string.IsNullOrEmpty(d.description) ? "rare : effet renforcé" : d.description + " (rare : effet renforcé)";
+            return r;
         }
 
         private static void DestroyChoices(Opening o, OfferOrb keep)
