@@ -8,12 +8,12 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_Orbe_Energie
-  m_Shader: {fileID: 4800000, guid: 9915fc7701c6a2c45ab83fc63e03c305, type: 3}
+  m_Shader: {fileID: 4800000, guid: 66c19fbc3e7439547b2137dcde8df9d7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords:
+  m_ValidKeywords: []
+  m_InvalidKeywords:
   - _EMISSION
-  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -36,9 +36,16 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _AmbientInfluence: 1
+    - _ArmSoftness: 0.04
+    - _ArmWidth: 0.5
+    - _Arms: 4
     - _BandCount: 3
     - _BandSoftness: 0.02
     - _BandThreshold: 0.15
+    - _Base: 0.35
+    - _Core: 1.2
+    - _CoreSize: 0.55
+    - _CoreWhite: 0.45
     - _Cull: 2
     - _Cutoff: 0.5
     - _DstBlend: 0
@@ -49,17 +56,24 @@ Material:
     - _PointSteps: 3
     - _PointThreshold: 0.35
     - _PointWrap: 0.2
+    - _Pulse: 0.15
+    - _Radius: 0.045
     - _ReceiveShadows: 1
-    - _Rim: 0
+    - _Rim: 0.9
     - _RimIntensity: 0.5
     - _RimLitOnly: 0
+    - _RimPower: 2.5
     - _RimSoftness: 0.02
     - _RimWidth: 0.25
+    - _SpinBoost: 1
+    - _SpinPhase: 0
+    - _SpinSpeed: 0.6
     - _SrcBlend: 1
+    - _Twist: 1.6
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 0.5568628, g: 0.105882354, b: 0.07058824, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 2.2, g: 0.28, b: 0.16, a: 1}
     - _RimColor: {r: 0.35, g: 0.45, b: 0.7, a: 1}
     - _ShadowColor: {r: 0.028, g: 0.034, b: 0.07499998, a: 1}
   m_BuildTextureStacks: []

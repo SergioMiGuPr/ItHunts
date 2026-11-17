@@ -22,33 +22,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Orbe_Tablette_01
-    second: {fileID: 2100000, guid: b266c1bf50be7eb4ca453c097dc6dd38, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Orbe_Tablette_02
-    second: {fileID: 2100000, guid: d4905f267a6ab474881a2af02dd322a7, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Orbe_Tablette_03
-    second: {fileID: 2100000, guid: 25633b34593a8b9439982a283ff36e3c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Orbe_Tablette_04
-    second: {fileID: 2100000, guid: 4f1fc28aacb745f43b6ade28972696ca, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Orbe_Tablette_05
-    second: {fileID: 2100000, guid: 04d21a8a99d38d6479cdb05fd651341f, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: M_Orbe_Tablette_06
-    second: {fileID: 2100000, guid: 1e55f01e0f47943428516b9da41b2fa2, type: 2}
+      name: M_Orbe_Tablette
+    second: {fileID: 2100000, guid: 049da77911a68e641a13c42ae4cfc4f4, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
