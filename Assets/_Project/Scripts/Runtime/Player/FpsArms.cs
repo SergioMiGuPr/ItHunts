@@ -41,6 +41,9 @@ namespace ItHunts.Player
 
         /// <summary>Pose courante de chaque côté (debug, tests).</summary>
         public string RightPose { get; private set; } = "Pose_Repos";
+        /// <summary>Fermeture des doigts de la pose « tenir » appliquée (0 : aucune ; tests, captures).</summary>
+        public float RightHold { get; private set; }
+        public float LeftHold { get; private set; }
         /// <summary>Pose cuite imposée aux deux mains (vitrine, captures des gestes) ; vide : les gestes du jeu.</summary>
         public string PreviewPose { get; set; }
         public string LeftPose { get; private set; } = "Pose_Repos";
@@ -202,14 +205,21 @@ namespace ItHunts.Player
 
             // L'orbe et l'artefact flottent au-dessus des paumes (retours du lot, point 6) : paumes ouvertes vers le haut, doigts
             // recourbés (Pose_OrbePaume de la DA) ; plus de prise du pistolet ni de l'anneau.
-            if (right == "Pose_Repos")
+            bool rightRest = right == "Pose_Repos";
+            if (rightRest)
                 right = RestPose(poses.right, "OrbePaume");
             string left = RestPose(poses.left, _holder.BarrelSettings != null ? "Pistolet" : _holder.LanternSettings != null ? "PriseAnneau" : "Repos");
+            // Pose « tenir » : au repos, les doigts se referment à demi autour de l'orbe (droite) et de l'artefact (gauche).
+            FpsViewSettings hs = view != null ? view.Settings : null;
+            float holdR = hs != null && rightRest ? hs.restHoldRight : 0f;
+            float holdL = hs == null ? 0f : _holder.BarrelSettings != null ? hs.restHoldLeftBarrel
+                : _holder.LanternSettings != null ? hs.restHoldLeftLantern : hs.restHoldLeftEmpty;
             // Aperçu (vitrine, captures) : une pose cuite imposée aux deux mains.
             if (!string.IsNullOrEmpty(PreviewPose) && poses.right.Find(PreviewPose) != null)
             {
                 right = PreviewPose;
                 left = poses.left.Find(PreviewPose) != null ? PreviewPose : left;
+                holdR = holdL = 0f;
             }
             float dt = Time.deltaTime;
             RightPose = right;
@@ -219,14 +229,16 @@ namespace ItHunts.Player
             FpsArmPoseSet.Pose pr = poses.right.Find(right) ?? poses.right.FindAnimation(right)?.FrameAt(Time.time),
                 pl = poses.left.Find(left) ?? poses.left.FindAnimation(left)?.FrameAt(Time.time);
             if (pr != null && pr.fromClip)
-                Apply(poses.right, _rightBones, right, 1f - Mathf.Exp(-(gesture ? poses.gestureBlendRate : poses.blendRate) * dt));
+                Apply(poses.right, _rightBones, right, 1f - Mathf.Exp(-(gesture ? poses.gestureBlendRate : poses.blendRate) * dt), holdR, hs);
             else
                 Curl(_rightBones, _rightBind, view != null ? view.RightCurl : 25f);
             if (pl != null && pl.fromClip)
-                Apply(poses.left, _leftBones, left, 1f - Mathf.Exp(-poses.blendRate * dt));
+                Apply(poses.left, _leftBones, left, 1f - Mathf.Exp(-poses.blendRate * dt), holdL, hs);
             else
                 Curl(_leftBones, _leftBind, view != null ? view.LeftCurl : 25f);
             RightFromClip = pr != null && pr.fromClip;
+            RightHold = holdR;
+            LeftHold = holdL;
             FloatOrb();
         }
 
@@ -327,16 +339,40 @@ namespace ItHunts.Player
             }
         }
 
-        private static void Apply(FpsArmPoseSet.Side side, Transform[] bones, string pose, float k)
+        private static void Apply(FpsArmPoseSet.Side side, Transform[] bones, string pose, float k, float hold = 0f, FpsViewSettings hs = null)
         {
             // Animation de la DA (clip à plusieurs images, cuit par FpsArmsSetup) : jouée en boucle.
             FpsArmPoseSet.Animation anim = side.FindAnimation(pose);
             FpsArmPoseSet.Pose p = anim != null ? anim.FrameAt(Time.time) : side.Find(pose) ?? side.Find("Pose_Repos");
             if (p == null || bones == null)
                 return;
+            FpsArmPoseSet.Pose fist = hold > 0f && hs != null ? side.Find(hs.holdTowardPose) : null;
             for (int i = 0; i < bones.Length && i < p.rotations.Length; i++)
                 if (bones[i] != null)
-                    bones[i].localRotation = Quaternion.Slerp(bones[i].localRotation, p.rotations[i], k);
+                {
+                    Quaternion target = p.rotations[i];
+                    if (fist != null && i < fist.rotations.Length && i < side.bones.Length)
+                    {
+                        float w = HoldWeight(side.bones[i], hold, hs.restHoldThumb);
+                        if (w > 0f)
+                            target = Quaternion.Slerp(target, fist.rotations[i], w);
+                    }
+
+                    bones[i].localRotation = Quaternion.Slerp(bones[i].localRotation, target, k);
+                }
+        }
+
+        /// <summary>
+        /// Pose « tenir » : part du chemin vers le poing pour un os (pur, testable). Seuls les doigts se referment (phalanges, pouce
+        /// atténué) ; l'avant-bras, le poignet et les métacarpes gardent la boucle de la DA.
+        /// </summary>
+        public static float HoldWeight(string bone, float hold, float thumbScale)
+        {
+            if (string.IsNullOrEmpty(bone) || hold <= 0f || bone.StartsWith("Metacarpe") || bone.StartsWith("Paume"))
+                return 0f;
+            if (bone.StartsWith("Pouce"))
+                return hold * thumbScale;
+            return bone.StartsWith("Index") || bone.StartsWith("Majeur") || bone.StartsWith("Annulaire") || bone.StartsWith("Auriculaire") ? hold : 0f;
         }
     }
 }

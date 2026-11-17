@@ -55,6 +55,20 @@ namespace ItHunts.Settings
         [Min(0.1f)] public float floatPeriod = 2.6f;
         [Tooltip("Rotation lente de l'orbe (°/s) ; légère oscillation de l'artefact (°), qui reste pointé vers l'avant.")]
         public float floatSpin = 25f;
+
+        [Header("Pose « tenir » au repos (retours du 2026-11-17) : doigts à demi refermés autour de l'orbe ou du barillet")]
+        [Tooltip("Pose de la DA vers laquelle les doigts se referment (poing).")]
+        public string holdTowardPose = "Pose_Poing";
+        [Tooltip("Main droite (orbe) au repos : part du chemin vers le poing (0 : boucle de la DA telle quelle, 1 : poing fermé).")]
+        [Range(0f, 1f)] public float restHoldRight = 0.45f;
+        [Tooltip("Main gauche au repos avec le barillet.")]
+        [Range(0f, 1f)] public float restHoldLeftBarrel = 0.5f;
+        [Tooltip("Main gauche au repos avec la lanterne (la boucle de la DA tient déjà l'anneau).")]
+        [Range(0f, 1f)] public float restHoldLeftLantern = 0f;
+        [Tooltip("Main gauche au repos sans artefact.")]
+        [Range(0f, 1f)] public float restHoldLeftEmpty = 0.3f;
+        [Tooltip("Le pouce se referme moins (multiplicateur) : il reste sur le côté de l'objet.")]
+        [Range(0f, 1f)] public float restHoldThumb = 0.5f;
         [Min(0f)] public float floatWobble = 4f;
         [Tooltip("Décalage de phase entre l'orbe et l'artefact (fraction de période) : ils ne montent pas ensemble.")]
         [Range(0f, 1f)] public float floatPhaseOffset = 0.35f;

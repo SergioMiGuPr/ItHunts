@@ -43,6 +43,21 @@ namespace ItHunts.Tests
             Assert.That(n, Is.GreaterThanOrEqualTo(8), "un maillage par bras et par personnage");
         }
 
+        [Test]
+        public void PoseTenir_SeulsLesDoigtsSeReferment_PouceAttenue()
+        {
+            Assert.That(FpsArms.HoldWeight("Index_2", 0.45f, 0.5f), Is.EqualTo(0.45f));
+            Assert.That(FpsArms.HoldWeight("Auriculaire_1", 0.45f, 0.5f), Is.EqualTo(0.45f));
+            Assert.That(FpsArms.HoldWeight("Pouce_2", 0.45f, 0.5f), Is.EqualTo(0.225f).Within(1e-5f));
+            foreach (string b in new[] { "Avant_Bras", "Poignet", "Metacarpe_Annulaire", "Paume_Pouce" })
+                Assert.That(FpsArms.HoldWeight(b, 0.45f, 0.5f), Is.EqualTo(0f), b);
+            Assert.That(FpsArms.HoldWeight("Index_1", 0f, 0.5f), Is.EqualTo(0f));
+            var cfg = AssetDatabase.LoadAssetAtPath<FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");
+            var poses = AssetDatabase.LoadAssetAtPath<FpsArmPoseSet>("Assets/_Project/Settings/FpsArmPoses.asset");
+            Assert.That(poses.right.Find(cfg.holdTowardPose), Is.Not.Null, "pose du poing de la DA");
+            Assert.That(cfg.restHoldRight, Is.InRange(0.2f, 0.8f), "à demi refermée");
+        }
+
         // ---------- Mouvement des mains ----------
 
         [Test]

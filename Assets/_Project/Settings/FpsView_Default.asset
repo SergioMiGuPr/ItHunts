@@ -20,18 +20,23 @@ MonoBehaviour:
   leftHandRestEuler: {x: -45.1, y: 21, z: -39.7}
   wideRightHandRest: {x: 0.29, y: -0.15, z: 0.42}
   wideRightHandRestEuler: {x: -45.1, y: -21, z: 39.7}
-  barrelInHand: {x: 0, y: 0.14, z: 0.05}
-  barrelInHandEuler: {x: 0, y: 0, z: 0}
-  barrelScale: 1
   lanternInHand: {x: 0, y: 0.16, z: 0.05}
   lanternInHandEuler: {x: 0, y: 0, z: 0}
   lanternScale: 0.6
+  repelPose: Pose_MainOuverte
+  tractionPose: Pose_Griffe
   orbDiameter: 0.08
   orbInHand: {x: 0, y: 0.14, z: 0.045}
   floatHeight: 0
   floatAmplitude: 0.007
   floatPeriod: 2.6
   floatSpin: 25
+  holdTowardPose: Pose_Poing
+  restHoldRight: 0.45
+  restHoldLeftBarrel: 0.5
+  restHoldLeftLantern: 0
+  restHoldLeftEmpty: 0.3
+  restHoldThumb: 0.5
   floatWobble: 4
   floatPhaseOffset: 0.35
   fillLight: 1
