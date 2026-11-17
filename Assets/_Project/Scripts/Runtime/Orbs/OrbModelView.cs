@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ItHunts.Movement;
 using ItHunts.Player;
 using ItHunts.Settings;
@@ -37,8 +38,35 @@ namespace ItHunts.Orbs
         public bool ShowsModel => model != null && model.gameObject.activeInHierarchy;
         /// <summary>Couleur appliquée à l'énergie (sans l'intensité ; tests).</summary>
         public Color CurrentColor { get; private set; }
-        /// <summary>Tablettes allumées (tests).</summary>
+        /// <summary>Tablettes allumées et tablettes affichées (tests).</summary>
         public int LitTablets { get; private set; }
+        public int TabletCount => _attractTabs.Count + _repelTabs.Count;
+
+        /// <summary>Angle de chaque tablette du modèle dans la couronne (°, depuis +X ; MATERIAUX.md) : les clones tournent autour de Z.</summary>
+        private static readonly float[] TemplateAngles = { 0f, 40f, 140f, 180f, 220f, 320f };
+
+        private sealed class Tablet
+        {
+            public Transform Transform;
+            public Renderer Renderer;
+            public float BaseAngle, Angle, Target, Born;
+        }
+
+        private readonly List<Tablet> _attractTabs = new List<Tablet>();
+        private readonly List<Tablet> _repelTabs = new List<Tablet>();
+
+        /// <summary>
+        /// Angles des tablettes (D-069) : une par charge de traction puis une par charge de répulsion, réparties régulièrement ; la
+        /// dernière (répulsion) en bas (270°), les autres dans le sens trigonométrique à partir d'elle.
+        /// </summary>
+        public static float[] TabletAngles(int attract, int repel)
+        {
+            int n = Mathf.Max(0, attract) + Mathf.Max(0, repel);
+            var a = new float[n];
+            for (int i = 0; i < n; i++)
+                a[i] = Mathf.Repeat(270f + (i + 1) * 360f / n, 360f);
+            return a;
+        }
 
         private void Awake()
         {
@@ -53,6 +81,10 @@ namespace ItHunts.Orbs
                 model.gameObject.SetActive(on);
             if (greybox != null)
                 greybox.enabled = !on;                                  // garde le renderer : MagnetismOrbView y lit sa taille
+            // Les 6 tablettes du modèle servent de gabarits (D-069) : la jauge en crée une par charge.
+            foreach (Renderer t in tablets)
+                if (t != null)
+                    t.gameObject.SetActive(false);
         }
 
         private void LateUpdate()
@@ -80,24 +112,82 @@ namespace ItHunts.Orbs
             float boost = traction ? settings.tractionEnergyBoost : 1f;
             SetEmission(energyRenderer, 0, color * (settings.energyIntensity * pulse * boost));
 
-            // Jauge : 02 et 03 = charges de traction, 04 = répulsion prête, 01, 05, 06 = « mouvement » (pas de charge en jeu : allumées).
+            // Jauge (D-069) : une tablette par charge de traction et de répulsion ; utilisée = rune éteinte, rechargée = rallumée ; une
+            // amélioration qui augmente le maximum fait apparaître une tablette. Les charges de mouvement restent sous le réticule.
             MagnetismState m = _motor != null ? _motor.Magnetism : default;
-            float charges = _motor != null ? m.AttractCharges : 2f;
+            int attractMax = _motor != null && _motor.MagnetismSettings != null ? _motor.MagnetismSettings.attractCharges : 2;
+            float charges = _motor != null ? (m.AttractCharges < 0f ? attractMax : m.AttractCharges) : attractMax;
             bool repelReady = _motor == null || m.RepelStatus == OrbStatus.Prete;
+            SyncTablets(attractMax, 1, dt);
             LitTablets = 0;
-            for (int i = 0; i < tablets.Length; i++)
+            for (int i = 0; i < _attractTabs.Count; i++)
+                LightTablet(_attractTabs[i], charges >= i + 1f, color);
+            foreach (Tablet t in _repelTabs)
+                LightTablet(t, repelReady, color);
+        }
+
+        private void LightTablet(Tablet t, bool lit, Color color)
+        {
+            if (lit)
+                LitTablets++;
+            SetEmission(t.Renderer, 1, lit ? color * settings.glyphIntensity : Color.black);
+        }
+
+        private void SyncTablets(int attract, int repel, float dt)
+        {
+            if (crown == null)
+                return;
+            float now = Time.time;
+            Resize(_attractTabs, attract, new[] { 1, 2 }, now);           // gabarits 02 et 03 (glyphes de la traction)
+            Resize(_repelTabs, repel, new[] { 3 }, now);                  // gabarit 04 (glyphe de la répulsion)
+            float[] angles = TabletAngles(_attractTabs.Count, _repelTabs.Count);
+            int k = 0;
+            foreach (Tablet t in _attractTabs)
+                t.Target = angles[k++];
+            foreach (Tablet t in _repelTabs)
+                t.Target = angles[k++];
+            foreach (Tablet t in _attractTabs)
+                Place(t, now, dt);
+            foreach (Tablet t in _repelTabs)
+                Place(t, now, dt);
+        }
+
+        private void Resize(List<Tablet> list, int count, int[] templates, float now)
+        {
+            while (list.Count > count)
             {
-                bool lit = i switch
-                {
-                    1 => charges >= 1f,
-                    2 => charges >= 2f,
-                    3 => repelReady,
-                    _ => true,
-                };
-                if (lit)
-                    LitTablets++;
-                SetEmission(tablets[i], 1, lit ? color * settings.glyphIntensity : Color.black);
+                Tablet last = list[list.Count - 1];
+                list.RemoveAt(list.Count - 1);
+                if (last.Transform != null)
+                    Destroy(last.Transform.gameObject);
             }
+
+            while (list.Count < count)
+            {
+                int ti = templates[list.Count % templates.Length];
+                Renderer template = ti < tablets.Length ? tablets[ti] : null;
+                if (template == null)
+                    return;
+                GameObject go = Instantiate(template.gameObject, crown, false);
+                go.name = $"Tablette {list.Count + 1} ({(templates.Length == 1 ? "répulsion" : "traction")})";
+                go.SetActive(true);
+                float baseAngle = TemplateAngles[ti];
+                // Une tablette ajoutée en cours de partie apparaît en grandissant ; celles du départ sont là d'emblée.
+                bool first = Time.timeSinceLevelLoad < 0.5f;
+                list.Add(new Tablet { Transform = go.transform, Renderer = go.GetComponent<Renderer>(), BaseAngle = baseAngle,
+                    Angle = list.Count > 0 ? list[list.Count - 1].Angle : baseAngle, Born = first ? float.NegativeInfinity : now });
+            }
+        }
+
+        private void Place(Tablet t, float now, float dt)
+        {
+            t.Angle = Mathf.MoveTowardsAngle(t.Angle, t.Target, settings.tabletSlideSpeed * dt);
+            t.Transform.localRotation = Quaternion.Euler(0f, 0f, t.Angle - t.BaseAngle);
+            float u = settings.tabletAppearSeconds > 0f ? Mathf.Clamp01((now - t.Born) / settings.tabletAppearSeconds) : 1f;
+            // Apparition : de 0 à 1 avec un léger dépassement (sortie franche, MATERIAUX.md).
+            float c = 1.7f, e = u - 1f;
+            float scale = u >= 1f ? 1f : 1f + (c + 1f) * e * e * e + c * e * e;
+            t.Transform.localScale = Vector3.one * Mathf.Max(0f, scale);
         }
 
         private static void Spin(Transform t, Vector3 axis, float degrees)

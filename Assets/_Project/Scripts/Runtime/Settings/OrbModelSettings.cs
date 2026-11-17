@@ -36,9 +36,13 @@ namespace ItHunts.Settings
         [Tooltip("Lissage des changements de vitesse (1/s).")]
         [Min(0.1f)] public float ringResponse = 8f;
 
-        [Header("Tablettes : une tablette allumée par charge prête")]
-        [Tooltip("Intensité d'un glyphe allumé (HDR) ; éteint : noir.")]
-        [Min(0f)] public float glyphIntensity = 1.3f;
+        [Header("Tablettes (D-069) : une par charge de traction et de répulsion ; allumée = charge prête")]
+        [Tooltip("Intensité d'un glyphe allumé (HDR : légère lueur avec le bloom, pas de vraie lumière) ; éteint : rune sombre.")]
+        [Min(0f)] public float glyphIntensity = 1.6f;
+        [Tooltip("Apparition d'une tablette ajoutée par une amélioration (s).")]
+        [Min(0f)] public float tabletAppearSeconds = 0.35f;
+        [Tooltip("Glissement des tablettes vers leur nouvelle place quand leur nombre change (°/s).")]
+        [Min(1f)] public float tabletSlideSpeed = 240f;
         [Tooltip("Rotation de la couronne de tablettes pendant la traction (°/s) ; immobile au repos.")]
         public float tractionCrownSpin = 90f;
     }

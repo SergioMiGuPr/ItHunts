@@ -23,5 +23,5 @@ MonoBehaviour:
   ringSpeeds: {x: 20, y: 30, z: 45}
   tractionRingBoost: 8
   ringResponse: 8
-  glyphIntensity: 1.3
+  glyphIntensity: 1.6
   tractionCrownSpin: 90

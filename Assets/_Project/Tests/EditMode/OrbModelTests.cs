@@ -36,5 +36,19 @@ namespace ItHunts.Tests
 
             Assert.IsTrue(model.GetComponentsInChildren<MeshFilter>(true).All(f => f.sharedMesh != null), "maillages du modèle");
         }
+
+        [Test]
+        public void Tablettes_UneParChargeDeTractionEtDeRepulsion_RepartiesRegulierement()
+        {
+            float[] a = OrbModelView.TabletAngles(2, 1);
+            Assert.AreEqual(3, a.Length);
+            Assert.AreEqual(270f, a[2], 1e-3f, "la répulsion en bas");
+            Assert.AreEqual(30f, a[0], 1e-3f);
+            Assert.AreEqual(150f, a[1], 1e-3f);
+            float[] b = OrbModelView.TabletAngles(3, 1);                // amélioration : une charge de traction en plus
+            Assert.AreEqual(4, b.Length);
+            for (int i = 0; i < b.Length; i++)
+                Assert.AreEqual(90f, Mathf.DeltaAngle(b[i], b[(i + 1) % b.Length]), 1e-3f, "écart régulier");
+        }
     }
 }
