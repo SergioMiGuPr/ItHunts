@@ -90,7 +90,7 @@ namespace ItHunts.Settings
         [Tooltip("Pupilles (émission par le masque de M_Traqueur), toujours allumées : rouge sombre et discret (retours du lot, point 3).")]
         [ColorUsage(false, true)] public Color pupilGlow = new Color(0.55f, 0.05f, 0.03f);
         [Tooltip("Intensité des pupilles (× la couleur).")]
-        [Range(0f, 2f)] public float pupilGlowIntensity = 0.6f;
+        [Range(0f, 4f)] public float pupilGlowIntensity = 1.5f;
         [Tooltip("Griffes (masque d'émission de M_Traqueur_Mains) : ivoire. Pas de rouge sur les mains : la colonne au sol est le signal.")]
         [ColorUsage(false, true)] public Color clawGlow = new Color(1f, 0.93f, 0.78f);
         [Tooltip("Intensité des griffes au repos, puis pendant la prise (annonce, descente, main au sol).")]
@@ -172,6 +172,18 @@ namespace ItHunts.Settings
                  "largeur / 2, hauteur = hauteur) ; il ne grimpe pas.")]
         [Min(0.5f)] public float width = 7f;
         [Min(0.5f)] public float height = 14f;
+
+        [Header("Lisibilité dans le noir (playtest du 2026-11-17 : corps noir, on l'entendait sans le voir)")]
+        [Tooltip("Lumière d'appoint qui n'éclaire que le traqueur (calque de rendu « Traqueur ») : il se détache du noir sans éclairer le décor.")]
+        public bool selfLight = true;
+        [Tooltip("Couleur froide et pâle (pas le rouge du danger, réservé aux signaux).")]
+        public Color selfLightColor = new Color(0.55f, 0.6f, 0.78f);
+        [Min(0f)] public float selfLightIntensity = 2.8f;
+        [Min(1f)] public float selfLightRange = 22f;
+        [Tooltip("Position de la lumière dans son repère (m) : devant lui, à mi-hauteur, pour modeler le torse et la tête.")]
+        public Vector3 selfLightOffset = new Vector3(0f, 9f, 9f);
+        [Tooltip("Calque de rendu réservé au traqueur (0 = Default, 1 = FPS).")]
+        [Range(2, 7)] public int selfRenderingLayer = 2;
 
         [Header("Sons (provisoires)")]
         [Range(0f, 1f)] public float stepVolume = 0.9f;

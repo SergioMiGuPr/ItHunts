@@ -433,13 +433,52 @@ namespace ItHunts.Enemies
             ItHunts.Level.ReachCheck.ShoulderHeight = _shoulderOffset.y;
             ItHunts.Level.ReachCheck.ShoulderSide = _shoulderOffset.x;
             ItHunts.Level.ReachCheck.ShoulderForward = _shoulderOffset.z;
-            // Bras et mains en boîtes : zones qui tuent, invisibles (le modèle gréé les dessine).
+            // Bras et mains en boîtes : zones qui tuent, invisibles (le modèle gréé les dessine). forceRenderingOff et pas enabled :
+            // Damageable rallume ses rendus (enabled) quand il se remet en vie, ce qui affichait les anciennes mains en double.
             foreach (Transform t in new[] { arm, hand, leftArm, leftHand })
-                if (t != null && t.GetComponent<Renderer>() != null)
-                    t.GetComponent<Renderer>().enabled = false;
+                if (t != null && t.TryGetComponent(out Renderer piece))
+                    piece.forceRenderingOff = true;
             foreach (Renderer r in _anim.GetComponentsInChildren<Renderer>(true))
                 if (r.sharedMaterials.Length > 1)
                     _bodyRenderer = r;
+            SetupSelfLight();
+        }
+
+        private Light _selfLight;
+        /// <summary>Lumière d'appoint du traqueur (tests, réglages en Play Mode).</summary>
+        public Light SelfLight => _selfLight;
+
+        /// <summary>
+        /// Lisibilité dans le noir : une lumière qui n'éclaire que lui (calque de rendu réservé, ses rendus y sont ajoutés). Son
+        /// corps gréé (texture sombre, 14 m de haut, loin des torches) sortait noir ; on ne le voyait plus que par ses contours.
+        /// </summary>
+        private void SetupSelfLight()
+        {
+            if (settings == null || !settings.selfLight || _anim == null)
+                return;
+            uint bit = 1u << settings.selfRenderingLayer;
+            foreach (Renderer r in _anim.GetComponentsInChildren<Renderer>(true))
+                r.renderingLayerMask |= bit;
+            var go = new GameObject("Lumière d'appoint (traqueur seul)");
+            go.transform.SetParent(body != null ? body : transform, false);
+            _selfLight = go.AddComponent<Light>();
+            _selfLight.type = LightType.Point;
+            _selfLight.shadows = LightShadows.None;
+            _selfLight.renderingLayerMask = (int)bit;
+            var data = go.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalLightData>();
+            data.renderingLayers = bit;
+            ApplySelfLight();
+        }
+
+        private void ApplySelfLight()
+        {
+            if (_selfLight == null)
+                return;
+            _selfLight.enabled = settings.selfLight;
+            _selfLight.color = settings.selfLightColor;
+            _selfLight.intensity = settings.selfLightIntensity;
+            _selfLight.range = settings.selfLightRange;
+            _selfLight.transform.localPosition = settings.selfLightOffset;
         }
 
         private void Play(string clip, float fade = 0.15f, float speed = 1f)
@@ -560,6 +599,7 @@ namespace ItHunts.Enemies
         {
             if (settings == null || _dmg == null)
                 return;
+            ApplySelfLight();                                           // réglable en Play Mode
             if (_limbRenderers == null)
             {
                 _limbRenderers = new List<Renderer>();
