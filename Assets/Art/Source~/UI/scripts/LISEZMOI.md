@@ -10,3 +10,8 @@ Lancés depuis un dossier de travail contenant `uilib.py` (sorties dans `out/`),
 4. Copier `out/HUD/*` et `out/MiniCarte/*` dans `Assets/Art/UI/`, puis dans Unity :
    `ImportUI.Run` (import, bordures, atlas) et `SceneHUD.Run` (scène `Test_UI_HUD`, captures).
 5. `python planche_A.py` : planche `docs/art/rendus/UI/LotA_HUD_avant_apres.jpg`.
+
+## Lot B (fonds de menu)
+
+- `lotb_decoupes.py` : découpes des images générées (ciel, lune et halo, nuages, brume, feu, sièges, campement, château et masque des fenêtres) et entrée de B2 (`docs/art/ui/entrees/entree_raccord.png`). `python lotb_decoupes.py [étape …]`.
+- `planche_B.py` : planche de contrôle `docs/art/rendus/UI/LotB_decoupes.jpg`.

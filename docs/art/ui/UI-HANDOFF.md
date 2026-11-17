@@ -122,10 +122,69 @@ Non découpées (décision) : cage, orbe fêlée, losange.
 - Le coffre normal reste violet (les objets interactifs ont une lueur violette en jeu).
 - L'icône flamme passe en gris-bleu des âmes ; bougie = marchand, flamme = tas d'âmes / salle d'âmes.
 
-## 2. Lot B : fonds de menu vivants (à venir)
+## 2. Lot B : fonds de menu vivants (en cours)
 
 Panorama unique (titre à gauche, campement à droite, même ciel et même château), calques et prefab
-`Assets/Art/UI/Menus/Fond_Panorama.prefab`. Images à générer : `docs/art/ui/IMAGES-A-GENERER.md`.
+`Assets/Art/UI/Menus/Fond_Panorama.prefab` (à venir). Images à générer : `docs/art/ui/IMAGES-A-GENERER.md`.
+
+### 2.1 Découpes faites (2026-11-17, refaites sur les originaux 2K, `Assets/Art/UI/Menus/`)
+
+Script : `Assets/Art/Source~/UI/scripts/lotb_decoupes.py` (réglages en tête de chaque fonction) ; planche de contrôle :
+`docs/art/rendus/UI/LotB_decoupes.jpg`. Importées dans Unity : Sprite, **PPU 200**, Full Rect, sans mipmaps, Clamp, compression
+HQ, taille max 4096. Les réglages en pixels du script suivent la définition des images (facteur largeur / 1280).
+
+| Sprite | Pixels | Mélange | Usage |
+|---|---|---|---|
+| `Fond/Fond_Ciel` | 2752 × 1536 | opaque | ciel (B3) assombri : gamma 1.25, gain 0.72 (bleu un peu gardé) ; étiré sur toute la largeur, parallaxe 10 % |
+| `Fond/Fond_Lune` | 2174 × 2174 | alpha | disque (rayon 375 px au centre de la toile) ; le sol de l'image d'origine est ignoré ; parallaxe 12 % |
+| `Fond/Fond_Lune_Halo` | 2174 × 2174 | **additif** | halo reconstruit symétrique d'après son profil au-dessus du sol ; **sous** le disque, même centre ; à faire pulser (intensité) |
+| `Fond/Fond_Nuages_1` à `_5` | 2618–2752 × 218–323 | alpha | 5 bandes de nuages peints (contour encré : alpha plein, pas d'additif) ; parallaxe 15 et 25 % |
+| `Fond/Fond_Brume_1`, `_2` | 2752 × 510 / 590 | **additif** | bas de bande fondu sur 45 %, bords gauche et droit raccordés (répétables) ; parallaxe 40 et 80 % |
+| `Fond/Fond_Chateau` | 1035 × 945 | alpha | château, ponts, falaise, cascades, découpés dans `ui_menu_principal_fond_v01` (B7/B8 abandonnées) ; coin haut gauche à **(1142, 74)** dans ce fond de 2752 × 1536 ; bas fondu dans la brume (y 790 → 1000) ; parallaxe 25 % |
+| `Fond/Fond_Chateau_Fenetres` | 1035 × 945 | masque (gris) | fenêtres rouges tirées de leur couleur, même rect que le château : lueur animée (masque × couleur HDR, additif) |
+| `Campement/Campement_Fond` | 2752 × 1536 | opaque | B1 (campement vide) tel quel, en attendant le panorama découpé en calques |
+| `Campement/Campement_Feu` | 1205 × 1459 | alpha | flammes (B15) avec leur contour encré |
+| `Campement/Campement_Feu_Additif` | 1205 × 1459 | **additif** | mêmes flammes avec la lueur et les étincelles ; superposer les deux, ou l'additif seul pour une flamme plus légère |
+| `Campement/Campement_Siege_Tronc`, `_Pierre`, `_Banc`, `_Rocher` | 712 / 443 / 780 / 620 × 469 | alpha | B16 ; **même hauteur de toile** (y 522–991 de l'image d'origine) : alignés par le bas de leur rect, les assises tombent à la même hauteur ; gris de fond retiré des bords |
+
+**Mode additif** : PNG RGB sur noir pur ; matériau UI additif (`Blend One One`, ou *Particles/Additive* sur un `RawImage`). Le
+noir n'ajoute rien, on peut donc empiler et animer l'opacité par la couleur (`Image.color`), pas par l'alpha.
+
+### 2.2 Limites connues
+
+- **Définition** : réglée (2026-11-17) : les 8 images sont les originaux **2752 × 1536** ; en plein écran 1080p, les fonds
+  sont réduits (×0.7) et restent nets jusqu'en 1440p.
+- **Château** : segmentation semi-manuelle (polygone, germes le long des flèches, chemin le plus court guidé par les contours).
+  Restent : deux petites taches de ciel aux pointes de la tour gauche, le ciel vu sous les arches du pont (gardé), et des
+  branches des arbres proches aux bords bas (gauche et droite). Passe d'édition E1 (`IMAGES-A-GENERER.md`) pour les retirer.
+- **B1 et sa passe 1** : calées au pixel (décalage mesuré 0 sur l'image entière), mais **toute l'image est repeinte** à chaque
+  passe (écart moyen 12/255, 17 % des pixels à plus de 20/255) : un masque tiré d'une différence entre deux passes demande un
+  seuil, un nettoyage et un bord adouci ; seuls les gros objets en sortent proprement.
+
+### 2.3 Reste à faire
+
+B2 (raccord, entrée prête) ; passes d'édition E1–E9 (remplacent B9–B14) puis découpe des calques arbres proches, sol et
+premier plan, fond lointain ; prefab `Fond_Panorama` avec parallaxe ; matériau additif.
+
+## 2 bis. Carte ouverte (Tab) (fait, 2026-11-17)
+
+Même famille que les cadres du HUD : les bords reprennent le double rail de la barre de vie, les coins son étoile
+d'emblème. Sprites dans `Assets/Art/UI/Carte/` (PPU 200, Full Rect, sans mipmaps), script `Source~/UI/scripts/carte.py`,
+planche `docs/art/rendus/UI/Carte_montage.jpg` (montage 1920 × 1080 avec un contenu de carte d'exemple).
+
+| Sprite | Pixels | Bordures | Usage |
+|---|---|---|---|
+| `Carte_Cadre` | 1024 × 1024 | 260 (les 4) | `Image` **Sliced**, étirée en **plein écran** (ancrage étiré) ; bande sombre (86 %) du bord de l'écran au rail intérieur, centre transparent ; bordure de **130 px en 1080p** |
+| `Carte_Fond` | 1024 × 1024 | — | parchemin sombre **raccordable** : `Image` **Tiled** (ou `RawImage` à UV répétées, wrap Repeat), sous la carte dessinée par le jeu |
+| `Carte_Vignette` | 512 × 512 | — | noir à alpha, bords assombris : `Image` étirée sur la zone de carte, au-dessus du fond et de la carte |
+| `Carte_Brume` | 512 × 512 | — | **zone non découverte** : brume sombre gris-bleu raccordable (alpha 0.82 à 1), au-dessus de la carte, wrap Repeat |
+| `Carte_Brume_Pinceau` | 256 × 256 | — | pinceau blanc à bord doux et irrégulier : à peindre dans une `RenderTexture` (masque) là où le joueur est passé ; la brume se multiplie par (1 − masque) |
+| `Carte_Legende_Cadre` | 384 × 384 | 64 (les 4) | panneau de légende `Image` **Sliced** ; dedans, les icônes de la mini-carte (40 px) et leur nom (texte Unity, EB Garamond SemiBold 26) |
+| `Carte_Rose` | 256 × 256 | — | rose des vents (étoile de l'emblème), 128 px en 1080p, coin haut gauche ; tourner avec le nord de la carte |
+
+Ordre : `Carte_Fond` → contenu de la carte (salles et couloirs tracés à l'encre claire `#CDBEA5`, icônes) → `Carte_Brume`
+(masquée) → `Carte_Vignette` → `Carte_Cadre` → `Carte_Legende_Cadre` + icônes + textes → `Carte_Rose` ; titre « Carte » en
+Grenze Gotisch dans la bande du haut. Écran partagé : un canvas par joueur, le cadre s'étire avec la largeur disponible.
 
 ## 3. Lot C : personnages 2D animés (à venir)
 
