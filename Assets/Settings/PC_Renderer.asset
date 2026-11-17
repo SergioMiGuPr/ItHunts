@@ -35,10 +35,10 @@ MonoBehaviour:
     depthCompareFunction: 4
     enableWrite: 1
     stencilSettings:
-      overrideStencilState: 1
-      stencilReference: 1
+      overrideStencilState: 0
+      stencilReference: 0
       stencilCompareFunction: 8
-      passOperation: 2
+      passOperation: 0
       failOperation: 0
       zFailOperation: 0
     cameraSettings:
@@ -118,10 +118,10 @@ MonoBehaviour:
     depthCompareFunction: 4
     enableWrite: 1
     stencilSettings:
-      overrideStencilState: 1
-      stencilReference: 1
+      overrideStencilState: 0
+      stencilReference: 0
       stencilCompareFunction: 8
-      passOperation: 2
+      passOperation: 0
       failOperation: 0
       zFailOperation: 0
     cameraSettings:
@@ -223,10 +223,10 @@ MonoBehaviour:
     depthCompareFunction: 4
     enableWrite: 0
     stencilSettings:
-      overrideStencilState: 1
-      stencilReference: 1
+      overrideStencilState: 0
+      stencilReference: 0
       stencilCompareFunction: 8
-      passOperation: 2
+      passOperation: 0
       failOperation: 0
       zFailOperation: 0
     cameraSettings:

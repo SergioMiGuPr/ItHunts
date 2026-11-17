@@ -104,6 +104,60 @@ namespace ItHunts.Debugging
                 variant += $" ; {off} lumières ponctuelles coupées";
             }
 
+            // Recherche du plantage à la fermeture (D3D12) : un élément du rendu coupé par essai.
+            int lo = System.Array.IndexOf(args, "-ithunts-look-off");
+            if (lo >= 0 && lo + 1 < args.Length && ItHunts.Level.SceneAmbiance.Active != null && ItHunts.Level.SceneAmbiance.Active.look != null)
+            {
+                ItHunts.Settings.HorrorLookSettings look = ItHunts.Level.SceneAmbiance.Active.look;
+                foreach (string what in args[lo + 1].Split(','))
+                {
+                    switch (what)
+                    {
+                        case "cone": look.lanternCone = false; break;
+                        case "ombres": look.shadowBudget = false; break;
+                        case "ombres_decor": look.shadowedLights = 1; break;
+                        case "extinction": look.lightCulling = false; break;
+                        case "halos": look.halos = false; break;
+                        case "vacillement": look.flicker = false; break;
+                        case "atlas":
+                            if (UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline is UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset urp)
+                                urp.additionalLightsShadowmapResolution = 2048;
+                            break;
+                        case "stencil_on":
+                            SetHandsStencil(true);
+                            _stencilOffAtQuit = true;
+                            break;
+                        case "passe_enrage":
+                        case "stencil":
+                            if (UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline is UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset asset)
+                            {
+                                var list = typeof(UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset).GetField("m_RendererDataList",
+                                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(asset) as UnityEngine.Rendering.Universal.ScriptableRendererData[];
+                                if (list != null)
+                                    foreach (var data in list)
+                                    {
+                                        if (data == null)
+                                            continue;
+                                        if (what == "passe_enrage")
+                                            data.rendererFeatures.RemoveAll(f => f is UnityEngine.Rendering.Universal.FullScreenPassRendererFeature);
+                                        else
+                                            foreach (var f in data.rendererFeatures)
+                                                if (f is UnityEngine.Rendering.Universal.RenderObjects ro)
+                                                    ro.settings.stencilSettings.overrideStencilState = false;
+                                        data.SetDirty();
+                                    }
+                            }
+                            break;
+                        case "look":
+                            foreach (ItHunts.Level.HorrorLook h in FindObjectsByType<ItHunts.Level.HorrorLook>(FindObjectsSortMode.None))
+                                h.enabled = false;
+                            break;
+                    }
+                }
+
+                variant += $" ; coupé : {args[lo + 1]}";
+            }
+
             int fi = System.Array.IndexOf(args, "-ithunts-perf-far");
             if (fi >= 0 && fi + 1 < args.Length && float.TryParse(args[fi + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float far))
             {
@@ -125,6 +179,12 @@ namespace ItHunts.Debugging
             float elapsedAt = zone != null ? zone.Elapsed : 0f;
             Write($"Niveau {gameObject.scene.name}, {Screen.width}×{Screen.height}, {(_split ? "écran partagé à 2" : "1 joueur")} ; salle {mid.RoomName} ; timer à {Mathf.FloorToInt(elapsedAt / 60f)}:{Mathf.FloorToInt(elapsedAt % 60f):00}, pic {(director != null && director.InPeak ? "ACTIF" : "non")}{variant}");
             yield return new WaitForSeconds(5f);
+            if (args.Contains("-ithunts-perf-enrage") && zone != null)
+            {
+                zone.DebugAdvance(zone.TimeLeft + 1f);                   // on mesure et on quitte pendant l'Enragé
+                yield return new WaitForSeconds(3f);
+                Write($"Enragé {zone.Enraged}, stencil des mains {ItHunts.Level.HorrorLook.HandsStencilOn}");
+            }
 
             var main = ProfilerRecorder.StartNew(ProfilerCategory.Internal, "Main Thread", 15);
             var markers = new[] { "ItHunts.Ghoul", "ItHunts.Stalker", "ItHunts.Waves", "ItHunts.Flyer", "ItHunts.Souls", "ItHunts.PlayerHud",
@@ -146,7 +206,11 @@ namespace ItHunts.Debugging
             var bt = new List<double>();
             var timings = new FrameTiming[1];
             float t0 = Time.realtimeSinceStartup;
-            while (Time.realtimeSinceStartup - t0 < 20f)
+            float duration = 20f;
+            int si = System.Array.IndexOf(args, "-ithunts-perf-seconds");
+            if (si >= 0 && si + 1 < args.Length && float.TryParse(args[si + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float sec))
+                duration = Mathf.Max(1f, sec);
+            while (Time.realtimeSinceStartup - t0 < duration)
             {
                 yield return null;
                 frame.Add(Time.unscaledDeltaTime * 1000.0);
@@ -176,7 +240,18 @@ namespace ItHunts.Debugging
             Write($"ennemis actifs {enemies} ; au pic {(waves != null && waves.InPeak)} ; lumières {FindObjectsByType<Light>(FindObjectsSortMode.None).Length} ; joueurs {PlayerHealth.All.Count}");
             Write("#fin");
             PlayerHealth.DebugInvulnerable = false;
+            if (_stencilOffAtQuit)
+            {
+                SetHandsStencil(false);
+                yield return null;
+                yield return null;
+            }
             Application.Quit();
         }
+
+        private bool _stencilOffAtQuit;
+
+        /// <summary>Essai (plantage D3D12 à la fermeture) : stencil des passes des mains allumé ou éteint à la volée.</summary>
+        private static void SetHandsStencil(bool on) => ItHunts.Level.HorrorLook.SetHandsStencil(on);
     }
 }

@@ -177,7 +177,10 @@ namespace ItHunts.Level
             Shader.SetGlobalFloat(EnrageGainId, Mathf.Pow(2f, s.enragedExposure));
             ScriptableRendererFeature pass = EnragePass();
             if (pass != null && pass.isActive != EnrageWeight > 0f)
+            {
                 pass.SetActive(EnrageWeight > 0f);                          // hors Enragé : la passe ne coûte rien
+                SetHandsStencil(EnrageWeight > 0f);                         // le stencil des mains seulement pendant l'Enragé
+            }
             _split.active = grade;
             _split.shadows.Override(a.splitShadows);
             _split.highlights.Override(a.splitHighlights);
@@ -222,19 +225,18 @@ namespace ItHunts.Level
 
         public const string EnragePassName = "ItHunts Enragé (monde)";
 
-        /// <summary>
-        /// L'application se ferme : on ne touche plus au renderer URP ni aux globales des shaders. Les builds « après » plantaient à
-        /// la fermeture (D3D12Core.dll, 0xc0000005, 6 fermetures sur 6, aucune pour les builds « avant ») : la passe de l'Enragé était
-        /// désactivée (SetActive) pendant la destruction du pipeline et du périphérique graphique.
-        /// </summary>
+        /// <summary>L'application se ferme : on ne touche plus au renderer URP, aux globales ni au profil.</summary>
         public static bool Quitting { get; private set; }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void WatchQuit()
         {
             Quitting = false;
+            _quitDeferred = false;
             Application.quitting -= OnQuitting;
             Application.quitting += OnQuitting;
+            Application.wantsToQuit -= BeforeQuit;
+            Application.wantsToQuit += BeforeQuit;
         }
 
         private static void OnQuitting() => Quitting = true;
@@ -246,6 +248,70 @@ namespace ItHunts.Level
             Shader.SetGlobalFloat(EnrageWeightId, 0f);
             if (_enragePass != null && _enragePass.isActive)
                 _enragePass.SetActive(false);
+            SetHandsStencil(false);
+        }
+
+        // ---------- Stencil des mains (Enragé) et plantage D3D12 à la fermeture ----------
+
+        /// <summary>
+        /// Plantage à la fermeture des builds (D3D12Core.dll, 0xc0000005, à chaque fermeture) : il vient du stencil écrit par les
+        /// passes « ItHunts Mains » du renderer (bissection par builds : renderer de l'ancienne version = fermeture propre, même
+        /// renderer sans le stencil = propre ; le stencil allumé en jeu puis éteint avant de quitter = propre). Le stencil ne sert
+        /// qu'à l'Enragé (le monde rougit, les mains gardent leur couleur) : éteint dans le renderer, il est allumé seulement pendant
+        /// l'Enragé, et éteint avant la fermeture (wantsToQuit : deux images plus tard, on quitte vraiment).
+        /// </summary>
+        public static bool HandsStencilOn { get; private set; }
+
+        public const string HandsPassPrefix = "ItHunts Mains";
+
+        public static void SetHandsStencil(bool on)
+        {
+            if (!(GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset asset))
+                return;
+            var list = typeof(UniversalRenderPipelineAsset).GetField("m_RendererDataList",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(asset) as ScriptableRendererData[];
+            if (list == null)
+                return;
+            bool changed = false;
+            foreach (ScriptableRendererData data in list)
+            {
+                if (data == null)
+                    continue;
+                foreach (ScriptableRendererFeature f in data.rendererFeatures)
+                    if (f is RenderObjects ro && ro.name.StartsWith(HandsPassPrefix) && ro.settings.stencilSettings.overrideStencilState != on)
+                    {
+                        ro.settings.stencilSettings.overrideStencilState = on;
+                        ro.settings.stencilSettings.stencilReference = on ? 1 : 0;
+                        ro.settings.stencilSettings.stencilCompareFunction = CompareFunction.Always;
+                        ro.settings.stencilSettings.passOperation = on ? StencilOp.Replace : StencilOp.Keep;
+                        ro.Create();
+                        changed = true;
+                    }
+                if (changed)
+                    data.SetDirty();
+            }
+
+            HandsStencilOn = on;
+        }
+
+        private static bool _quitDeferred;
+
+        /// <summary>Avant de quitter : stencil éteint, puis on quitte deux images plus tard (le rendu ne l'utilise plus).</summary>
+        private static bool BeforeQuit()
+        {
+            if (!HandsStencilOn || _quitDeferred || Current == null || !Current.isActiveAndEnabled)
+                return true;
+            _quitDeferred = true;
+            SetHandsStencil(false);
+            Current.StartCoroutine(QuitLater());
+            return false;
+        }
+
+        private static System.Collections.IEnumerator QuitLater()
+        {
+            yield return null;
+            yield return null;
+            Application.Quit();
         }
 
         // ---------- Lanterne : cône vers l'avant ----------
