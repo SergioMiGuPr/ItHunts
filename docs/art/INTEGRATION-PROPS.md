@@ -392,7 +392,44 @@ rig de contrôle pour retoucher les animations à la main ; les os exportés res
 
 Planches : `docs/art/rendus/Lot2/Goule_<Animation>.jpg` (5 images réparties sur chaque clip, à 1.8 m).
 
-### Traqueur (`SK_Traqueur`, armature `Traqueur`, 32 os + 10 os d'aide)
+### Traqueur (`SK_Traqueur`, armature `Traqueur`, 32 os) — v3, 2026-11-17 (branche `art-traqueur`, méthode D partie A)
+
+Diagnostic : `rendus/Traqueur/Traqueur_Diagnostic.jpg` ; résultat : `rendus/Traqueur/Traqueur_v3_Retopo_Greement.jpg`.
+Scripts : `Source~/Ennemis/scripts/traqueur_v3/` (étapes 1 à 5). **Ce qui suit remplace la section v2 plus bas.**
+
+- **Maillage hybride** : corps **retopologisé en quads** (QuadriFlow, 97 % de sommets de valence 4, **boucles continues aux
+  épaules, coudes, hanches et genoux**) ; **mains, tête et pieds d'origine** (Tripo retouché), coutures dans des zones rigides
+  (milieu de l'avant-bras, cou, tibia), normales reprises de la surface d'origine autour des coutures. **38 364 triangles** +
+  mèches 1 344 (budget 40 à 60 k). Volume positif (faces vers l'extérieur), mèches comprises.
+- **Matériaux du corps (3)** : `M_Traqueur` (corps, **nouvelle texture `T_Traqueur_Corps_BaseColor`**, UV de la
+  retopologie, plus d'émission), **`M_Traqueur_Tete` (nouveau)** : tête, pieds et la bande d'avant-bras d'origine avant le
+  poignet (texture d'origine `T_Traqueur_BaseColor`, **émission des pupilles** `T_Traqueur_Emission`), `M_Traqueur_Mains` :
+  **arrêté au poignet** (demande D-070 : plus de bande pâle qui s'étire), griffes émissives inchangées. Ordre dans Unity :
+  `M_Traqueur`, `M_Traqueur_Tete`, `M_Traqueur_Mains`. **À vérifier côté `main`** : le rouge des pupilles s'écrit
+  désormais sur `M_Traqueur_Tete` (un bloc de propriétés sans index les touche tous : sans effet sur `M_Traqueur`, qui n'a plus
+  d'émission).
+- **Liaison debout, bras écartés** (pose du modèle) : **la pose de repos n'est plus voûtée** ; la voûte est dans chaque clip
+  (tous les os sont clés à chaque image). **32 os, plus d'os d'aide** (`*_Aide` retirés) : **refaire les prefabs et la vitrine
+  qui référencent l'ancien squelette** (un rendu gréé dont les os ne correspondent plus n'est pas dessiné). Os **recalés au
+  centre du volume** (coudes, poignets, doigts, pouce, tête, mâchoire, pied, orteils), roll 0, axe Y le long du membre,
+  aucune échelle ni rotation figée à l'export.
+- **Poids** : os le plus proche puis diffusion le long des arêtes (40 passes), **masqués par région** : un sommet du bras
+  n'est tiré que par la chaîne de son bras ; **0 sommet tiré par un os à plus de 2.5 m** (avant : 1 079) ; 4 os au plus.
+- **Allongement par l'échelle (D-070)** : à chaque articulation, mélange **du côté du parent seulement** ; `Bras` ne pèse rien
+  derrière l'épaule ; la main ne porte aucun poids de l'avant-bras. Testé comme le code (bras tendu, `Bras` ×k en Y,
+  l'avant-bras hérite, `Main` à l'échelle inverse) : à **×3.8**, main ×1.18 au plus, **8 triangles retournés**, surface
+  continue ; seule la bande au-dessus de l'épaule s'étire fortement (inévitable : l'échelle part de l'épaule).
+- **Clips bornés** : mains levées : épaule **104°** (≤ 110°), clavicule et torse prennent le reste, **torsion 0°** (avant
+  150° et 88°) ; revers : **70°, torsion 0°** (avant 85° et 61°) ; bras **visés** (rotation la plus courte) ; prise : doigts
+  qui se ferment vers la paume (bout des doigts → poignet 4.08 → 3.14 m) ; **marche et passage bas : pieds verrouillés par IK**
+  (2 os), au sol 61 % du temps, **vitesse au sol constante : 3.71 m/s pour `Traqueur_Marche`, 2.29 m/s pour
+  `Traqueur_PassageBas`** à la vitesse de lecture 1 (lecture = vitesse de poursuite / ces valeurs : plus de glisse).
+- **Mesures** (repos, image 1) : épaule **11.6 m** de haut, **2.6 m** du centre, **3.56 m devant le pivot** ; sommet **13.6 m**
+  (repos), **8.5 m** (passage bas), 20 m mains levées ; genou 3.8 m ; bout des doigts 4.4 m. Mêmes noms de clips et durées.
+- **Partie C** (clips d'après les vidéos Seedance) : liste des vidéos dans `docs/art/TRAQUEUR-REFERENCES.md`.
+
+#### Ancienne version (v2, 2026-11-16) — remplacée
+
 
 **Gréement refait (2026-11-16)** : poids « chaleur » sur une copie étanche en voxels, **masqués par régions** (un bras ne
 tire jamais le torse, ni la mâchoire le crâne), poids doux par distance là où la chaleur échoue, lissés (12 passes) ; une

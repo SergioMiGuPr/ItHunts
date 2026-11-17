@@ -19,6 +19,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Traqueur_Mains
     second: {fileID: 2100000, guid: f47f7b7df7cdedf49a12f4b1da99962f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Traqueur_Tete
+    second: {fileID: 2100000, guid: 1afce33b06576d4428ce97a38999a7b7, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
