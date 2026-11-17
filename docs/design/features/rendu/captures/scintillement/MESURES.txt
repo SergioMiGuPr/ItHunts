@@ -18,3 +18,15 @@ avant (anciens réglages)     : image 29,66 / 95 % 58,30 ms ; fil principal 25,7
 apres (correction 2)         : image 28,04 / 95 % 56,57 ms ; fil principal 24,55 ; GPU 7,73 / 95 % 10,95 ; HorrorLook 0,284 ms
 #fin
 Le marqueur CPU ItHunts.HorrorLook est fiable (+0.07 ms) ; les écarts d'image et de GPU sont dans le bruit de l'éditeur.
+
+== Builds de développement A/B (2026-11-17), seed 104729, 1920 × 1080, 3 rondes en alternance ==
+A = 350108f (avant la correction du scintillement), B = 042e56b (scintillement + Enragé). Médiane des rondes.
+solo  A : image médiane 12.7 ms [12.9, 11.7, 12.7], 5 % les plus lentes (95e centile) 20.8 ms [20.8, 24.0, 18.6], GPU 4.3 ms, draw calls 3375
+solo  B : image médiane 10.8 ms [10.6, 10.9, 10.8], 95e centile 16.5 ms [16.1, 17.5, 16.5], GPU 4.0 ms, draw calls 3358
+split A : image médiane 18.8 ms [18.1, 19.5, 18.8], 95e centile 28.9 ms [25.9, 30.5, 28.9], GPU 6.6 ms, draw calls 4379
+split B : image médiane 17.3 ms [17.3, 16.7, 17.3], 95e centile 32.5 ms [26.8, 35.4, 32.5], GPU 5.8 ms, draw calls 4385
+Lecture : solo plus rapide (médiane −1.9 ms, 95e centile −4.3 ms) ; écran partagé : médiane −1.5 ms, GPU −0.8 ms,
+95e centile plus dispersé (26.8 à 35.4 ms en B contre 25.9 à 30.5 en A), pas de tendance nette sur 3 rondes.
+« Fin du rendu » (PostLateUpdate.FinishFrameRendering) : 5.95 → 4.60 ms en solo, 10.94 → 9.54 ms en écran partagé
+(lumières du décor éteintes au-delà du brouillard).
+Note : les builds B plantent à la fermeture, après la mesure (fin de l'arrêt, PlayerConnection::Cleanup, build de développement).

@@ -4,7 +4,29 @@
 
 ## Étape en cours
 
-**Retours de playtest du 2026-11-17 (`animations`, non poussée, à tester) :** un commit par point.
+**Retours de playtest du 2026-11-17, second lot (`animations`, poussée pour la session art, pas fusionnée dans `main`) :** un
+commit par point.
+- **Tablettes de l'orbe (350108f, D-069) :** une tablette par charge de traction et de répulsion (2 + 1 au départ), une tablette qui
+  apparaît quand une amélioration augmente le maximum, rune éteinte quand la charge est utilisée, lueur à la couleur du personnage.
+- **Lumières qui scintillent en mouvement (cde6ece) :** jusqu'à 678 lumières dans le champ pour 256 gardées par Forward+ ; lumières du
+  décor éteintes au-delà du brouillard (hystérésis), fondu et hystérésis des ombres, atlas 4096, vacillement plus doux. Builds A/B
+  (3 rondes) : solo médiane 12.7 → 10.8 ms, 95e centile 20.8 → 16.5 ms ; écran partagé médiane 18.8 → 17.3 ms, 95e centile
+  28.9 → 32.5 ms (dispersé : 26.8 à 35.4). Détail : `docs/design/features/rendu/captures/scintillement/MESURES.txt`.
+- **Enragé (042e56b) :** le monde seul vire au rouge, 35 % de sa couleur gardée ; vue FPS (stencil) et HUD (Overlay) non étalonnés.
+- **PR #10 art-ui, #11 art-mains, #12 art-orbe :** vérifiées, fusionnées dans `main` (ef79230, acb5d8c, 206f3dc) et poussées, puis
+  intégrées : HUD habillé (d60d273, atlas V2), bras v2 et `Socket_Flottement` (6096721), tablette seule et tourbillon (c30937a).
+  Test des bras mis à 20 os (92e9a65).
+- **Bras du traqueur (f628473, D-070) :** allongement par l'échelle de l'os du bras au lieu d'os glissés (×2.3 à 5 m, ×3.2 à 15 m),
+  portée et prise inchangées ; captures `docs/design/features/boss-traqueur/captures/bras_echelle/`.
+- **Tests :** EditMode 405 réussis + 1 non concluant attendu ; PlayMode 1/1. `PlayFromMainMenu` réactivé après les tests.
+- **Points ouverts :**
+  - PR `art-surfaces` pas encore arrivée (à intégrer : ce que le shader demande, captures avant/après).
+  - DA : FBX des bras v2 retournés (contournement en place) ; traqueur : arrêter `M_Traqueur_Mains` au poignet (bande pâle quand le
+    bras s'allonge) ; notes dans `docs/art/ART-HANDOFF.md`.
+  - Icône `Coffre_Rare` de la minicarte pas encore utilisée.
+  - Les builds de développement B plantent à la fermeture (après la mesure, `PlayerConnection::Cleanup`) : à surveiller.
+
+**Retours de playtest du 2026-11-17, premier lot :** un commit par point.
 - **Orbe (b16d61b) :** le « disque gris » était la sphère greybox de 8 cm (matériau unlit) ; `SM_Orbe` branchée (`OrbModelView`,
   `OrbModel_Default` : taille d'une pomme, couleur du personnage, anneaux, énergie qui pulse, tablettes = jauge des charges).
 - **Barillet (4ec0015) :** échelle 0.5 (largeur de la paume), chambres × 1.4 au lieu de × 3 ; taille, décalage et flottement dans
@@ -21,7 +43,6 @@
 - **ART-HANDOFF (1fc1b6d) :** demandes au shader toon (normales, sol mouillé, vortex de l'orbe) et inventaire des props (21 greybox).
 - **Tests :** EditMode 403 réussis + 1 non concluant attendu ; PlayMode 1/1 (visibilité du traqueur).
 - **Points ouverts :**
-  - **Mesure en build A/B (solo et écran partagé) de la lumière d'ambiance : 2 builds, à lancer sur accord.**
   - Traqueur au-delà de la fin du brouillard (35-38 m en sombre) : seuls ses yeux se voient ; options à trancher (silhouette pâle
     qui traverse le brouillard, brouillard plus loin, ou garder « on l'entend avant de le voir »).
   - En Enragé, tout vire au rouge : le rouge du danger ne se distingue plus que par sa luminosité (15 % de couleur gardée).
