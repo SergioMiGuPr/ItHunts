@@ -30,6 +30,8 @@ Un commit par point :
     le forfait.
   - Arcades des couloirs : elles sont aveugles (1.2 m de profondeur) ; si on veut les ouvrir sur des pièces annexes, il faudra
     une décision de level design.
+  - Genou gauche de Goule_Escalade (pic 1,94 à l'image 13), laissé tel quel ; à revoir seulement s'il se voit, ou avec les
+    animations d'après vidéo.
   - ~~Draw calls des couloirs gothiques (+27 à 35 %)~~ : fusionnés par couloir le 2026-11-17 (éditeur, 6 poses : 4 855 → 3 182,
     moins que le plafond plat à 4 258).
   - Physique un peu plus chère avec la voûte : 0.71 → 0.89 ms en solo, 33 468 colliders statiques contre 14 572.
