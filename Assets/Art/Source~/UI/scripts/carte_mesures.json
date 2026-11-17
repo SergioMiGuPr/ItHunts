@@ -1,0 +1,53 @@
+{
+ "étoile (centre dans l'emblème)": [
+  115,
+  131
+ ],
+ "Carte_Cadre": {
+  "taille": [
+   1024,
+   1024
+  ],
+  "bordures": [
+   260,
+   260,
+   260,
+   260
+  ],
+  "note": "Image Sliced, plein écran ; centre transparent"
+ },
+ "Carte_Fond": {
+  "taille": [
+   1024,
+   1024
+  ],
+  "note": "Image Tiled (raccordable), sous la carte dessinée ; ou fond d'une RawImage avec UV répétées"
+ },
+ "Carte_Brume": {
+  "taille": [
+   512,
+   512
+  ],
+  "note": "raccordable ; masquée là où le joueur est passé (masque peint avec Carte_Brume_Pinceau dans une RenderTexture)"
+ },
+ "Carte_Legende_Cadre": {
+  "taille": [
+   384,
+   384
+  ],
+  "bordures": [
+   64,
+   64,
+   64,
+   64
+  ],
+  "note": "Image Sliced ; icônes de la mini-carte + texte Unity dedans"
+ },
+ "Carte_Rose": {
+  "taille": [
+   256,
+   243
+  ],
+  "note": "rose des vents (étoile de l'emblème) ; tourner selon le nord de la carte"
+ }
+}
