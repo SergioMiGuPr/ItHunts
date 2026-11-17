@@ -42,6 +42,7 @@ namespace ItHunts.Level
         private ParticleSystem.Particle[] _particles = new ParticleSystem.Particle[0];
         private readonly List<PlayerLanternLight> _lanterns = new List<PlayerLanternLight>();
         private readonly Dictionary<PlayerLanternLight, Light> _cones = new Dictionary<PlayerLanternLight, Light>();
+        private readonly Dictionary<Light, Camera> _coneCameras = new Dictionary<Light, Camera>();
         private readonly List<Vector3> _eyes = new List<Vector3>();
         private readonly HashSet<AmbianceLight> _moved = new HashSet<AmbianceLight>();
         private readonly Dictionary<AmbianceLight, float> _buzzUntil = new Dictionary<AmbianceLight, float>();
@@ -49,7 +50,7 @@ namespace ItHunts.Level
         private readonly List<(Light light, float d, bool cone)> _shadowCandidates = new List<(Light, float, bool)>();
         private float _nextShadow;
 
-        /// <summary>Lumières qui projettent des ombres (tests, mesures).</summary>
+        /// <summary>Lumières qui projettent des ombres, fondu compris (tests, mesures).</summary>
         public int ShadowedCount { get; private set; }
         public int HaloCount { get; private set; }
         public IReadOnlyDictionary<PlayerLanternLight, Light> Cones => _cones;
@@ -109,6 +110,7 @@ namespace ItHunts.Level
                 }
 
             UpdateVolume(s, dt);
+            CullLights(s);
             UpdateCones(s);
             UpdateFlicker(s);
             UpdateHalos(s);
@@ -188,20 +190,30 @@ namespace ItHunts.Level
                     if (cam == null || s == null || !s.lanternCone)
                         continue;
                     var go = new GameObject("Lanterne : cône (ombres)");
-                    go.transform.SetParent(cam.transform, false);
+                    go.transform.SetParent(transform, false);                  // pas sous la caméra : il la suit avec un lissage
                     cone = go.AddComponent<Light>();
                     cone.type = LightType.Spot;
                     cone.shadows = LightShadows.None;
-                    go.AddComponent<UniversalAdditionalLightData>();
+                    var coneData = go.AddComponent<UniversalAdditionalLightData>();
+                    // Résolution « haute » de l'atlas pour le cône (lecture seule dans l'API : champ sérialisé ; sinon : moyenne).
+                    typeof(UniversalAdditionalLightData).GetField("m_AdditionalLightsShadowResolutionTier",
+                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                        ?.SetValue(coneData, UniversalAdditionalLightData.AdditionalLightsShadowResolutionTierHigh);
                     _cones[lantern] = cone;
+                    _coneCameras[cone] = cam;
                 }
 
                 bool on = s != null && s.lanternCone && lantern.Light.enabled;
                 cone.enabled = on;
                 if (!on)
                     continue;
-                cone.transform.localPosition = s.lanternConeOffset;
-                cone.transform.localRotation = Quaternion.identity;
+                if (_coneCameras.TryGetValue(cone, out Camera follow) && follow != null)
+                {
+                    Vector3 at = follow.transform.TransformPoint(s.lanternConeOffset);
+                    float k = 1f - Mathf.Exp(-s.lanternConeFollow * Time.deltaTime);
+                    cone.transform.position = at;                       // la position suit exactement (pas d'ombre décalée)
+                    cone.transform.rotation = Quaternion.Slerp(cone.transform.rotation, follow.transform.rotation, k);
+                }
                 cone.spotAngle = s.lanternConeAngle;
                 cone.innerSpotAngle = s.lanternConeAngle * 0.55f;
                 cone.range = s.lanternConeRange;
@@ -296,7 +308,7 @@ namespace ItHunts.Level
                     l.Light.intensity = baseI * Mathf.Max(0f, 1f + s.torchFlickerAmount * 2f * n);
                     Vector3 j = new Vector3(Mathf.PerlinNoise(t * 0.6f, seed + 3f) - 0.5f, Mathf.PerlinNoise(t * 0.6f, seed + 5f) - 0.5f,
                         Mathf.PerlinNoise(t * 0.6f, seed + 7f) - 0.5f) * (2f * s.torchJitter);
-                    l.transform.localPosition = l.BaseLocalPosition + j;
+                    l.transform.localPosition = s.torchJitter > 0f ? l.BaseLocalPosition + j : l.BaseLocalPosition;
                 }
                 else
                 {
@@ -386,8 +398,8 @@ namespace ItHunts.Level
                 k = 0;
                 foreach (AmbianceLight l in AmbianceLight.All)
                 {
-                    if (l == null || l.Light == null || !l.Light.isActiveAndEnabled)
-                        continue;
+                    if (l == null || l.Light == null || !l.isActiveAndEnabled)
+                        continue;                                       // éteinte par le brouillard : son halo reste (le brouillard l'efface)
                     _haloIndex[l] = k;
                     Add(ref k, HaloPosition(l, s), l.kind == AmbianceLight.Kind.Torche ? s.torchHaloSize : s.lampHaloSize, l.Light.color,
                         s.haloIntensity * Flick(l));
@@ -449,50 +461,162 @@ namespace ItHunts.Level
 
         // ---------- Budget d'ombres ----------
 
+        private readonly Dictionary<Light, float> _shadowNow = new Dictionary<Light, float>();
+        private readonly HashSet<Light> _shadowWanted = new HashSet<Light>();
+        private readonly List<Light> _shadowDone = new List<Light>();
+
         private void UpdateShadows(HorrorLookSettings s)
         {
-            if (Time.time < _nextShadow)
-                return;
+            if (Time.time >= _nextShadow)
+                PickShadows(s);
+            // Fondu de l'intensité des ombres vers leur cible (0 ou 1) : une lumière qui entre ou sort du budget ne bascule pas.
+            float step = Time.deltaTime / (s != null ? s.shadowFade : 0.5f);
+            foreach (Light l in _shadowWanted)
+                if (l != null && !_shadowNow.ContainsKey(l))
+                    _shadowNow[l] = 0f;
+            _shadowDone.Clear();
+            int shadowed = 0;
+            foreach (KeyValuePair<Light, float> kv in _shadowNow)
+            {
+                Light l = kv.Key;
+                if (l == null)
+                {
+                    _shadowDone.Add(l);
+                    continue;
+                }
+
+                float v = Mathf.MoveTowards(kv.Value, _shadowWanted.Contains(l) ? 1f : 0f, step);
+                _pending.Add((l, v));
+            }
+
+            foreach ((Light l, float v) in _pending)
+            {
+                _shadowNow[l] = v;
+                ApplyShadow(l, v, s);
+                if (v > 0f)
+                    shadowed++;
+                else if (!_shadowWanted.Contains(l))
+                    _shadowDone.Add(l);
+            }
+
+            _pending.Clear();
+            foreach (Light l in _shadowDone)
+                _shadowNow.Remove(l);
+            ShadowedCount = shadowed;
+        }
+
+        private readonly List<(Light, float)> _pending = new List<(Light, float)>();
+
+        private void PickShadows(HorrorLookSettings s)
+        {
             _nextShadow = Time.time + (s != null ? s.shadowRefresh : 0.5f);
             _shadowCandidates.Clear();
             bool on = s != null && s.shadowBudget && s.shadowedLights > 0;
+            float keep = s != null ? s.shadowHysteresis : 0f;
             foreach (KeyValuePair<PlayerLanternLight, Light> kv in _cones)
-                if (kv.Value != null)
-                    _shadowCandidates.Add((kv.Value, -1f, true));          // les cônes d'abord
+                if (kv.Value != null && kv.Value.enabled)
+                    _shadowCandidates.Add((kv.Value, -1000f, true));      // les cônes d'abord
             if (on)
                 foreach (AmbianceLight l in AmbianceLight.All)
                     if (l != null && l.Light != null && l.Light.isActiveAndEnabled)
                     {
                         float d = Near(l.transform.position);
                         if (d < s.shadowMaxDistance)
-                            _shadowCandidates.Add((l.Light, d, false));
+                            _shadowCandidates.Add((l.Light, _shadowWanted.Contains(l.Light) ? d - keep : d, false));   // hystérésis
                     }
 
             _shadowCandidates.Sort((x, y) => x.d.CompareTo(y.d));
-            int budget = on ? s.shadowedLights : 0, used = 0;
-            var lit = new HashSet<Light>();
-            foreach ((Light light, float _, bool cone) in _shadowCandidates)
+            _shadowWanted.Clear();
+            int budget = on ? s.shadowedLights : 0;
+            foreach ((Light light, float _, bool _) in _shadowCandidates)
             {
-                if (used >= budget || (cone && !light.enabled))
-                    continue;
-                lit.Add(light);
-                used++;
+                if (_shadowWanted.Count >= budget)
+                    break;
+                _shadowWanted.Add(light);
             }
-
-            ShadowedCount = used;
-            foreach (KeyValuePair<PlayerLanternLight, Light> kv in _cones)
-                if (kv.Value != null)
-                    SetShadows(kv.Value, lit.Contains(kv.Value));
-            foreach (AmbianceLight l in AmbianceLight.All)
-                if (l != null && l.Light != null)
-                    SetShadows(l.Light, lit.Contains(l.Light));
         }
 
-        private static void SetShadows(Light l, bool on)
+        private static void ApplyShadow(Light l, float strength, HorrorLookSettings s)
         {
-            LightShadows want = on ? LightShadows.Soft : LightShadows.None;
+            LightShadows want = strength > 0.001f ? LightShadows.Soft : LightShadows.None;
             if (l.shadows != want)
                 l.shadows = want;
+            l.shadowStrength = Mathf.SmoothStep(0f, 1f, strength);
+            if (s != null)
+            {
+                l.shadowBias = s.shadowDepthBias;
+                l.shadowNormalBias = s.shadowNormalBias;
+                var data = l.GetComponent<UniversalAdditionalLightData>();
+                if (data != null && data.usePipelineSettings)
+                    data.usePipelineSettings = false;                   // biais de la lumière, pas ceux de l'asset URP
+            }
+        }
+
+        // ---------- Lumières au-delà du brouillard ----------
+
+        private readonly List<Light> _decorLights = new List<Light>();
+        private readonly HashSet<Light> _culled = new HashSet<Light>();
+        private float _nextDecorScan, _nextCull;
+
+        /// <summary>Lumières du décor éteintes parce qu'elles sont au-delà du brouillard (tests, mesures).</summary>
+        public int CulledCount => _culled.Count;
+
+        private void CullLights(HorrorLookSettings s)
+        {
+            bool on = s != null && s.lightCulling && RenderSettings.fog && _eyes.Count > 0;
+            if (!on)
+            {
+                foreach (Light l in _culled)
+                    if (l != null)
+                        l.enabled = true;
+                _culled.Clear();
+                return;
+            }
+
+            if (Time.unscaledTime >= _nextDecorScan)
+            {
+                // Lumières du décor : torches et lampes (AmbianceLight), lanternes posées (Prop_*). Jamais celles des joueurs ni des ennemis.
+                _nextDecorScan = Time.unscaledTime + 2f;
+                _decorLights.Clear();
+                foreach (Light l in FindObjectsByType<Light>(FindObjectsSortMode.None))
+                    if (l.type != LightType.Directional && (l.GetComponent<AmbianceLight>() != null || InProp(l.transform)))
+                        _decorLights.Add(l);
+            }
+
+            if (Time.time < _nextCull)
+                return;
+            _nextCull = Time.time + 0.1f;
+            float fogEnd = RenderSettings.fogEndDistance;
+            foreach (Light l in _decorLights)
+            {
+                if (l == null)
+                    continue;
+                float d = Near(l.transform.position) - l.range;
+                bool culled = _culled.Contains(l);
+                bool off = culled ? d > fogEnd + s.lightCullMargin - s.lightCullHysteresis : d > fogEnd + s.lightCullMargin;
+                if (off == culled)
+                    continue;
+                if (off)
+                {
+                    if (!l.enabled)
+                        continue;                                       // éteinte par autre chose : on n'y touche pas
+                    l.enabled = false;
+                    _culled.Add(l);
+                }
+                else
+                {
+                    l.enabled = true;
+                    _culled.Remove(l);
+                }
+            }
+        }
+
+        private static bool InProp(Transform t)
+        {
+            for (int i = 0; i < 3 && t != null; i++, t = t.parent)
+                if (t.name.StartsWith("Prop_"))
+                    return true;
+            return false;
         }
     }
 }

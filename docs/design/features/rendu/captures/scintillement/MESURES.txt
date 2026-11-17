@@ -1,0 +1,20 @@
+Scintillement des lumières en mouvement (2026-11-17), couloir B1 – C1, seed 104729, ambiance sombre, lanterne du renard.
+Cause principale : jusqu'à 678 lumières dans le champ (salles et couloirs), Forward+ n'en garde que 256 visibles par caméra ; il en
+écartait au hasard de la position. Seules 8 à 13 sont avant la fin du brouillard. Correction : lumières du décor au-delà du brouillard
+éteintes (marge 6 m, hystérésis 4 m), 825 sur 881 à cette pose.
+
+(1) lumières perdues (toutes allumées contre utiles seulement), 60 poses tous les 0.5 m : écart médian 1,15 % des pixels, max 6,91 % ; poses à plus de 0.5 % : 60/60 ; lumières éteintes par le brouillard 827
+(2) vacillement avant : écart-type moyen de la luminance 1,62 millièmes ; pixels qui varient de plus de 0.02 : 0,1 %
+(2) vacillement apres : écart-type moyen de la luminance 0,35 millièmes ; pixels qui varient de plus de 0.02 : 0,1 %
+#fin
+
+Ombres : fondu de l'intensité (0.6 s) et hystérésis de 4 m au lieu d'une bascule ; atlas des ombres additionnelles 2048 → 4096
+(paliers 512 / 1024 / 2048), cône de la lanterne en résolution haute, biais 0.15 / 0.7, cône qui suit le regard avec un lissage
+(18/s) au lieu d'être collé à la caméra. Vacillement : amplitude 0.18 → 0.07, vitesse 7 → 2.2, plus de déplacement de la flamme.
+
+Coût (éditeur, A/B en alternance, 3 rondes de 10 s au pic de vague) :
+salle C4, pic True, ambiance Ambiance_Sombre
+avant (anciens réglages)     : image 29,66 / 95 % 58,30 ms ; fil principal 25,70 ; GPU 7,70 / 95 % 10,08 ; HorrorLook 0,213 ms
+apres (correction 2)         : image 28,04 / 95 % 56,57 ms ; fil principal 24,55 ; GPU 7,73 / 95 % 10,95 ; HorrorLook 0,284 ms
+#fin
+Le marqueur CPU ItHunts.HorrorLook est fiable (+0.07 ms) ; les écarts d'image et de GPU sont dans le bruit de l'éditeur.
