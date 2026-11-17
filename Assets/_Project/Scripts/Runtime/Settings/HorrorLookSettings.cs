@@ -18,13 +18,13 @@ namespace ItHunts.Settings
         public bool enragedMonochrome = true;
         [Tooltip("Durée de la bascule complète (s) après le passage en Enragé.")]
         [Min(0.1f)] public float enragedMonoSeconds = 12f;
-        [Tooltip("Teinte du monochrome (mélangeur de canaux : chaque canal reçoit la luminance × cette couleur ; HDR : le rouge garde la luminosité).")]
+        [Tooltip("Teinte du monochrome (passe « ItHunts Enragé (monde) » : luminance × cette couleur ; HDR : le rouge garde la luminosité).")]
         [ColorUsage(false, true)] public Color enragedTint = new Color(1.3f, 0.3f, 0.26f);
-        [Tooltip("Part de la couleur d'origine gardée au bout de la bascule : les lueurs des objets interactifs restent distinctes.")]
-        [Range(0f, 1f)] public float enragedKeepColor = 0.15f;
+        [Tooltip("Part de la couleur d'origine gardée dans le monde au bout de la bascule (la vue FPS et le HUD ne sont jamais teintés).")]
+        [Range(0f, 1f)] public float enragedKeepColor = 0.35f;
         [Tooltip("Contraste ajouté au bout de la bascule.")]
         [Range(0f, 60f)] public float enragedContrast = 8f;
-        [Tooltip("Exposition ajoutée au bout de la bascule (EV) : le monochrome rouge porte environ la moitié de la luminance perçue.")]
+        [Tooltip("Gain du monochrome (EV) : le rouge porte environ la moitié de la luminance perçue ; le monde garde sa luminosité.")]
         [Range(-1f, 2f)] public float enragedExposure = 0.8f;
 
         [Header("Halos autour des torches, lampes et lanternes (un système de particules : un seul draw call)")]

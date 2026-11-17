@@ -35,10 +35,10 @@ MonoBehaviour:
     depthCompareFunction: 4
     enableWrite: 1
     stencilSettings:
-      overrideStencilState: 0
-      stencilReference: 0
+      overrideStencilState: 1
+      stencilReference: 1
       stencilCompareFunction: 8
-      passOperation: 0
+      passOperation: 2
       failOperation: 0
       zFailOperation: 0
     cameraSettings:
@@ -46,6 +46,26 @@ MonoBehaviour:
       restoreCamera: 1
       offset: {x: 0, y: 0, z: 0, w: 0}
       cameraFieldOfView: 60
+--- !u!114 &-2798641863770712369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
+  m_Name: "ItHunts Enrag\xE9 (monde)"
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.FullScreenPassRendererFeature
+  m_Active: 0
+  injectionPoint: 550
+  fetchColorBuffer: 1
+  requirements: 0
+  passMaterial: {fileID: 2100000, guid: b8d73acdf5d2fb44fb2a1952432f5516, type: 2}
+  passIndex: 0
+  bindDepthStencilAttachment: 1
+  m_Version: 1
 --- !u!114 &-1704156872037240554
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98,10 +118,10 @@ MonoBehaviour:
     depthCompareFunction: 4
     enableWrite: 1
     stencilSettings:
-      overrideStencilState: 0
-      stencilReference: 0
+      overrideStencilState: 1
+      stencilReference: 1
       stencilCompareFunction: 8
-      passOperation: 0
+      passOperation: 2
       failOperation: 0
       zFailOperation: 0
     cameraSettings:
@@ -140,7 +160,8 @@ MonoBehaviour:
   - {fileID: -6404341454405613767}
   - {fileID: 3326248211742054906}
   - {fileID: -338586822767505845}
-  m_RendererFeatureMap: 16f1ad985a9e59e8ad6b866f10d7b46cd4a178b70ac70f4e3947d8fd60351fa7fad9a9172035292e4b8e501f14194dfb
+  - {fileID: -2798641863770712369}
+  m_RendererFeatureMap: 16f1ad985a9e59e8ad6b866f10d7b46cd4a178b70ac70f4e3947d8fd60351fa7fad9a9172035292e4b8e501f14194dfbcfd668800d3a29d9
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -202,10 +223,10 @@ MonoBehaviour:
     depthCompareFunction: 4
     enableWrite: 0
     stencilSettings:
-      overrideStencilState: 0
-      stencilReference: 0
+      overrideStencilState: 1
+      stencilReference: 1
       stencilCompareFunction: 8
-      passOperation: 0
+      passOperation: 2
       failOperation: 0
       zFailOperation: 0
     cameraSettings:

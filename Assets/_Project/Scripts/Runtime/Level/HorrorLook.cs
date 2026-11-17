@@ -31,7 +31,14 @@ namespace ItHunts.Level
         private ChromaticAberration _aberration;
         private ColorAdjustments _color;
         private SplitToning _split;
-        private ChannelMixer _mixer;
+        private static readonly int EnrageWeightId = Shader.PropertyToID("_ItHunts_EnrageWeight");
+        private static readonly int EnrageTintId = Shader.PropertyToID("_ItHunts_EnrageTint");
+        private static readonly int EnrageGainId = Shader.PropertyToID("_ItHunts_EnrageGain");
+        private ScriptableRendererFeature _enragePass;
+        private bool _enragePassSearched;
+
+        /// <summary>Poids de la bascule rouge appliqué au monde (0..1 ; la vue FPS en est exclue par le stencil).</summary>
+        public float EnrageWeight { get; private set; }
         private ZoneState _zone;
         private float _nextSearch;
 
@@ -74,7 +81,6 @@ namespace ItHunts.Level
             _aberration = _profile.Add<ChromaticAberration>(true);
             _color = _profile.Add<ColorAdjustments>(true);
             _split = _profile.Add<SplitToning>(true);
-            _mixer = _profile.Add<ChannelMixer>(true);
             _volume.sharedProfile = _profile;
         }
 
@@ -132,25 +138,19 @@ namespace ItHunts.Level
             bool grade = s.grading;
             float m = Monochrome;
             _color.active = true;
-            _color.postExposure.Override((grade ? a.postExposure : 0f) + s.enragedExposure * m);
+            _color.postExposure.Override(grade ? a.postExposure : 0f);
             _color.contrast.Override((grade ? a.contrast : 0f) + s.enragedContrast * m);
             _color.saturation.Override(grade ? a.saturation : 0f);
             _color.colorFilter.Override(grade ? a.colorFilter : Color.white);
-            // Enragé : monochrome rouge sang par le mélangeur de canaux (sortie = luminance × teinte), en gardant une part de couleur.
-            _mixer.active = m > 0f;
-            float w = m * (1f - s.enragedKeepColor);
-            Vector3 lum = new Vector3(0.2126f, 0.7152f, 0.0722f);
-            Vector3 Row(Vector3 identity, float tint) => Vector3.Lerp(identity, lum * tint, w) * 100f;
-            Vector3 r = Row(new Vector3(1f, 0f, 0f), s.enragedTint.r), g = Row(new Vector3(0f, 1f, 0f), s.enragedTint.g), b = Row(new Vector3(0f, 0f, 1f), s.enragedTint.b);
-            _mixer.redOutRedIn.Override(r.x);
-            _mixer.redOutGreenIn.Override(r.y);
-            _mixer.redOutBlueIn.Override(r.z);
-            _mixer.greenOutRedIn.Override(g.x);
-            _mixer.greenOutGreenIn.Override(g.y);
-            _mixer.greenOutBlueIn.Override(g.z);
-            _mixer.blueOutRedIn.Override(b.x);
-            _mixer.blueOutGreenIn.Override(b.y);
-            _mixer.blueOutBlueIn.Override(b.z);
+            // Enragé : monochrome rouge sang sur le monde seulement (passe plein écran « ItHunts Enragé (monde) », stencil de la vue FPS) :
+            // les mains, l'orbe, les tablettes et l'artefact gardent la couleur du personnage ; le HUD est superposé (pas étalonné).
+            EnrageWeight = m * (1f - s.enragedKeepColor);
+            Shader.SetGlobalFloat(EnrageWeightId, EnrageWeight);
+            Shader.SetGlobalVector(EnrageTintId, s.enragedTint);
+            Shader.SetGlobalFloat(EnrageGainId, Mathf.Pow(2f, s.enragedExposure));
+            ScriptableRendererFeature pass = EnragePass();
+            if (pass != null && pass.isActive != EnrageWeight > 0f)
+                pass.SetActive(EnrageWeight > 0f);                          // hors Enragé : la passe ne coûte rien
             _split.active = grade;
             _split.shadows.Override(a.splitShadows);
             _split.highlights.Override(a.splitHighlights);
@@ -173,6 +173,33 @@ namespace ItHunts.Level
             bool ca = s.chromaticAberration && GraphicsOptions.Get(GraphicsOptions.Effect.Aberration);
             _aberration.active = true;
             _aberration.intensity.Override(ca ? s.chromaticIntensity : 0f);
+        }
+
+        /// <summary>La passe plein écran de l'Enragé dans le renderer URP actif (cherchée une fois, par son nom).</summary>
+        private ScriptableRendererFeature EnragePass()
+        {
+            if (_enragePassSearched)
+                return _enragePass;
+            _enragePassSearched = true;
+            var asset = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+            var list = typeof(UniversalRenderPipelineAsset).GetField("m_RendererDataList",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(asset) as ScriptableRendererData[];
+            if (list != null)
+                foreach (ScriptableRendererData data in list)
+                    if (data != null)
+                        foreach (ScriptableRendererFeature f in data.rendererFeatures)
+                            if (f != null && f.name == EnragePassName)
+                                _enragePass = f;
+            return _enragePass;
+        }
+
+        public const string EnragePassName = "ItHunts Enragé (monde)";
+
+        private void OnDisable()
+        {
+            Shader.SetGlobalFloat(EnrageWeightId, 0f);
+            if (_enragePass != null)
+                _enragePass.SetActive(false);
         }
 
         // ---------- Lanterne : cône vers l'avant ----------

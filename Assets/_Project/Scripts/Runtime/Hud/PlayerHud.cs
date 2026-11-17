@@ -129,20 +129,24 @@ namespace ItHunts.Hud
             _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             _white = Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f));
 
-            Camera uiCamera = _view != null && _view.OverlayCamera != null && _view.OverlayCamera.enabled ? _view.OverlayCamera : _worldCamera;
             var go = new GameObject("HUD (joueur)");
             go.transform.SetParent(transform, false);
             if (_view != null && _view.Layer >= 0)
                 go.layer = _view.Layer;
+            // Superposé (Screen Space - Overlay) : dessiné après le rendu, donc jamais étalonné par le post-process (Enragé rouge sang).
+            // Écran partagé : la racine épouse le rectangle de la caméra du joueur, l'échelle suit la hauteur de sa vue (LateUpdate).
             _canvas = go.AddComponent<Canvas>();
-            _canvas.renderMode = RenderMode.ScreenSpaceCamera;
-            _canvas.worldCamera = uiCamera;
-            _canvas.planeDistance = uiCamera != null ? uiCamera.nearClipPlane + 0.04f : 0.1f;
-            var scaler = go.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = settings.referenceResolution / Mathf.Max(0.1f, settings.scale);
-            scaler.matchWidthOrHeight = 1f;
-            _root = (RectTransform)go.transform;
+            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _canvas.sortingOrder = 10 + (_motor != null ? Mathf.Max(0, PlayerHealth.IdOf(transform)) : 0);
+            _scaler = go.AddComponent<CanvasScaler>();
+            _scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            var view = new GameObject("Vue du joueur", typeof(RectTransform));
+            view.layer = go.layer;
+            view.transform.SetParent(go.transform, false);
+            _root = (RectTransform)view.transform;
+            _root.offsetMin = Vector2.zero;
+            _root.offsetMax = Vector2.zero;
+            FitView();
 
             RectTransform center = Rect("Viseur", _root, Vector2.one * 0.5f, Vector2.zero, Vector2.zero);
             _center = center;
@@ -367,10 +371,25 @@ namespace ItHunts.Hud
 
         // ---------- Mise à jour ----------
 
+        private CanvasScaler _scaler;
+
+        /// <summary>Racine du HUD sur le rectangle de la caméra du joueur ; échelle = hauteur de sa vue / hauteur de référence.</summary>
+        private void FitView()
+        {
+            Camera cam = _worldCamera;
+            Rect r = cam != null ? cam.rect : new Rect(0f, 0f, 1f, 1f);
+            _root.anchorMin = r.min;
+            _root.anchorMax = r.max;
+            float viewHeight = cam != null ? cam.pixelRect.height : Screen.height;
+            float reference = settings.referenceResolution.y / Mathf.Max(0.1f, settings.scale);
+            _scaler.scaleFactor = Mathf.Max(0.01f, viewHeight / Mathf.Max(1f, reference));
+        }
+
         private void LateUpdate()
         {
             if (_canvas == null)
                 return;
+            FitView();
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
             float now = Time.time, dt = Time.deltaTime, fixedDt = Time.fixedDeltaTime;
             int tick = _motor.State.Tick;
