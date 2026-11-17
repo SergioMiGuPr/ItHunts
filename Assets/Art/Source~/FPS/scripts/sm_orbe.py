@@ -12,10 +12,10 @@ Objets (pivot de tous au centre de l'orbe, transformations nulles) :
   Repos : anneau 1 horizontal (normale +Y, 0° autour de X) ; anneau 2 : normale +Z tournée de 60°
   autour de Y ; anneau 3 : normale +X tournée de 120° autour de Z. Ainsi les trois montrent leur
   bande de pierre au joueur (un anneau face au joueur ne montrerait que sa tranche de fer de 8 mm) ;
-- SM_Orbe_Tablette_01 à _06 : tablettes flottantes 0.035 × 0.05 × 0.008 m en couronne à 0.13 m du
-  centre, dans le plan face au joueur, grand côté tangent à la couronne ; corps en pierre
-  (M_Orbe_Pierre), glyphe abstrait en léger relief sur la face tournée vers le joueur, seul porteur de
-  M_Orbe_Tablette_0X (allumer ce matériau allume le glyphe) ;
+- SM_Orbe_Tablette_01 à _06 : gabarits de tablettes (le jeu en crée une par charge, D-069) 0.035 × 0.05 × 0.008 m
+  en couronne à 0.13 m du centre, grand côté tangent ; bords en pierre (M_Orbe_Pierre, index 0), rune GRAVÉE sur les
+  deux faces (M_Orbe_Tablette, index 1 : atlas T_Orbe_Tablette_BaseColor + masque d'émission, case = glyphe 1 à 6) ;
+  allumer l'émission du matériau d'index 1 allume la rune et sa lueur. Tablette seule : sm_orbe_tablette.py ;
 - SM_Orbe_Energie : sphère de Ø 0.09 m, M_Orbe_Energie, UV sphériques (support du shader de vortex) ;
 - FX_Orbe : repère vide au centre.
 
@@ -45,19 +45,11 @@ PARAMS = dict(
     rivet=dict(cote=0.0022, haut=0.0012),
     tablette=dict(l=0.035, h=0.05, e=0.008, rayon=0.13, angles=(0, 40, 140, 180, 220, 320),
                   trait=0.0022, relief=0.0006),
-    energie=dict(d=0.09, segs=16, anneaux=8),
+    energie=dict(d=0.09, segs=28, anneaux=14),   # silhouette ronde (le vortex est dessiné par le shader)
     couleurs=dict(glyphe="#D9D3C7", energie="#8E1B12"),   # pierre et fer : tuiles peintes ; énergie : rouge renard par défaut (couleur du personnage, réglée en jeu)
 )
 
-# glyphes abstraits (aucune lettre), traits en coordonnées normalisées [-1, 1] de la face
-GLYPHES = [
-    [[(0, 0.5), (0.6, 0), (0, -0.5), (-0.6, 0), (0, 0.5)], [(0, 0.65), (0, 0.92)], [(0, -0.65), (0, -0.92)]],
-    [[(0, -0.9), (0, 0.9)], [(0, 0.5), (0.45, 0.75)], [(0, 0.0), (-0.45, 0.25)], [(0, -0.5), (0.45, -0.25)]],
-    [[(-0.5, 0.3), (-0.5, 0.8), (0.5, 0.8)], [(0, 0.8), (0, -0.8)], [(0, -0.2), (0.5, -0.7)]],
-    [[(0, 0.7), (0.6, -0.35), (-0.6, -0.35), (0, 0.7)], [(0, -0.35), (0, -0.92)]],
-    [[(-0.6, -0.1), (0, 0.5), (0.6, -0.1)], [(-0.6, -0.75), (0, -0.15), (0.6, -0.75)], [(0, 0.68), (0, 0.92)]],
-    [[(-0.5, 0.8), (0.5, 0.8), (0.5, -0.8), (-0.3, -0.8), (-0.3, 0.3), (0.2, 0.3), (0.2, -0.4)]],
-]
+from orbe_glyphes import GLYPHES   # glyphes abstraits (aucune lettre), traits en coordonnées normalisées [-1, 1]
 
 
 def U(x, y, z):
@@ -143,6 +135,44 @@ def stroke_box(B, a, b, e1, e2, n, face_c, width, h0, h1, mat):
         B.face(q, mat, sum(q, Vector()) / 4 - cen)
 
 
+def atlas_rect(k):
+    """Case k de l'atlas T_Orbe_Tablette (3 colonnes x 2 lignes, ligne 0 en haut) : (u0, v0, u1, v1)."""
+    c, r = k % 3, k // 3
+    return c / 3.0, 1.0 - (r + 1) / 2.0, (c + 1) / 3.0, 1.0 - r / 2.0
+
+
+def tablet_geometry(B, c, radial, along, n, T, glyph):
+    """Tablette : bords en pierre (index 0), faces avant ET arrière en rune (index 1, case `glyph` de l'atlas).
+    Face avant tournée vers n (le joueur), face arrière vers -n, chacune lisible sans miroir de son côté."""
+    hl, hh, he = T["l"] / 2, T["h"] / 2, T["e"] / 2
+    ch = T.get("chanfrein", 0.0012)
+    def P_(sn, sa, sr, inset=0.0):
+        return c + n * sn * he + along * sa * (hh - inset) + radial * sr * (hl - inset)
+    B.new_shell()
+    # bords : anneau de 4 côtés (pierre), chanfrein vers chaque face
+    ring_mid = [(1, 1), (-1, 1), (-1, -1), (1, -1)]            # (sa, sr) dans l'ordre autour du bord
+    for j in range(4):
+        a1, r1 = ring_mid[j]; a2, r2 = ring_mid[(j + 1) % 4]
+        # bande du bord : de la face arrière (chanfrein) à la face avant (chanfrein)
+        q = [P_(-1, a1, r1, 0.0) + n * ch, P_(-1, a2, r2, 0.0) + n * ch, P_(1, a2, r2, 0.0) - n * ch, P_(1, a1, r1, 0.0) - n * ch]
+        out = (along * (a1 + a2) + radial * (r1 + r2)).normalized()
+        B.face(q, "pierre", out)
+        for sn in (-1, 1):
+            e = [P_(sn, a1, r1, 0.0) - n * sn * ch, P_(sn, a2, r2, 0.0) - n * sn * ch, P_(sn, a2, r2, ch), P_(sn, a1, r1, ch)]
+            B.face(e, "pierre", (out + n * sn).normalized())
+    u0, v0, u1, v1 = atlas_rect(glyph)
+    for sn in (1, -1):
+        pts, uvs = [], []
+        for sa, sr in ((-1, -1), (-1, 1), (1, 1), (1, -1)):
+            pts.append(P_(sn, sa, sr, ch))
+            # u le long du rayon (vu de face : vers la droite) ; face arrière : u inversé (lecture sans miroir)
+            ur = (sr * (hl - ch) / hl + 1) / 2
+            uu = ur if sn > 0 else 1 - ur
+            vv = (sa * (hh - ch) / hh + 1) / 2
+            uvs.append((u0 + (u1 - u0) * uu, v0 + (v1 - v0) * vv))
+        B.face(pts, "rune", n * sn, uvs=uvs)
+
+
 def build_tablet(P, i, mats):
     T = P["tablette"]
     ang = math.radians(T["angles"][i])
@@ -151,40 +181,20 @@ def build_tablet(P, i, mats):
     radial = (U(math.cos(ang), math.sin(ang), 0)).normalized()
     along = (U(-math.sin(ang), math.cos(ang), 0)).normalized()     # grand côté : tangent
     n = U(0, 0, -1).normalized()                                     # face vers le joueur
-    key = "glyphe%d" % (i + 1)
     B = C.Builder()
     B.set_uv_params("pierre", F.TILE_M, F.TILE_M)
-    B.set_uv_params(key, F.TILE_M, F.TILE_M)
-    hl, hh, he = T["l"] / 2, T["h"] / 2, T["e"] / 2
-    corners = []
-    for sn in (-1, 1):
-        for sa in (-1, 1):
-            for sr in (-1, 1):
-                corners.append(c + n * sn * he + along * sa * hh + radial * sr * hl)
-    # boîte orientée : 6 faces
-    def P_(sn, sa, sr):
-        return c + n * sn * he + along * sa * hh + radial * sr * hl
-    B.new_shell()
-    for axis_vec, idx in ((n, 0), (along, 1), (radial, 2)):
-        for sgn in (-1, 1):
-            pts = []
-            for u_, v_ in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
-                s = [0, 0, 0]
-                s[idx] = sgn
-                others = [j for j in range(3) if j != idx]
-                s[others[0]], s[others[1]] = u_, v_
-                pts.append(P_(*s))
-            B.face(pts, "pierre", axis_vec * sgn)
-    # glyphe sur la face joueur : e1 = largeur (radial), e2 = hauteur (le long du grand côté)
-    face_c = c + n * he
-    sx, sy = hl * 0.70, hh * 0.78
-    e1, e2 = radial * sx, along * sy
-    for poly in GLYPHES[i]:
-        for a, b in zip(poly[:-1], poly[1:]):
-            stroke_box(B, a, b, e1, e2, n, face_c, T["trait"], -0.0002, T["relief"], key)
-    mats_all = dict(mats)
-    mats_all[key] = mats["tab"][i]
-    return B.finish("SM_Orbe_Tablette_%02d" % (i + 1), mats_all)
+    tablet_geometry(B, c, radial, along, n, T, i)
+    return B.finish("SM_Orbe_Tablette_%02d" % (i + 1), {"pierre": mats["pierre"], "rune": mats["rune"]})
+
+
+def build_tablet_seule(P, mats, glyph=0):
+    """SM_Orbe_Tablette : une tablette seule, pivot en son centre. Repère Unity : X = rayon (largeur 0.035, vers
+    l'extérieur de la couronne), Y = grand côté (0.05, tangent), Z = épaisseur ; rune sur -Z (vers le joueur) et +Z."""
+    T = P["tablette"]
+    B = C.Builder()
+    B.set_uv_params("pierre", F.TILE_M, F.TILE_M)
+    tablet_geometry(B, U(0, 0, 0), U(1, 0, 0).normalized(), U(0, 1, 0).normalized(), U(0, 0, -1).normalized(), T, glyph)
+    return B.finish("SM_Orbe_Tablette", {"pierre": mats["pierre"], "rune": mats["rune"]})
 
 
 def build_energy(P, mats):
@@ -206,7 +216,7 @@ def build(P):
     mats = {"pierre": F.tex_material("M_Orbe_Pierre", "T_Orbe_Pierre_BaseColor"),
             "fer": F.tex_material("M_Orbe_Fer", "T_Orbe_Fer_BaseColor"),
             "energie": F.flat_material("M_Orbe_Energie", col["energie"])}
-    mats["tab"] = [F.flat_material("M_Orbe_Tablette_%02d" % (i + 1), col["glyphe"]) for i in range(6)]
+    mats["rune"] = C.make_material("M_Orbe_Tablette", os.path.join(F.TEX_DIR, "T_Orbe_Tablette_BaseColor.png"))
     root = bpy.data.objects.new("SM_Orbe", None)
     root.empty_display_type = "SPHERE"; root.empty_display_size = 0.02
     bpy.context.scene.collection.objects.link(root)

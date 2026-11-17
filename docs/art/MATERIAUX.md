@@ -117,8 +117,8 @@ Tous sur `ItHunts/Toon`, ni métal ni brillance, tiling (1, 1) / offset (0, 0) :
 | `M_LanterneFeu_Verre` | `SM_LanterneFeu_Verre` | aucune | **#7A0A12, alpha 0.55** (couleur du renard) | **mot-clé actif, couleur noire** (le code l'allume) |
 | `M_Orbe_Pierre` | dalles des 3 anneaux, corps des 6 tablettes | `T_Orbe_Pierre_BaseColor` | blanc | non |
 | `M_Orbe_Fer` | gorges et rivets des anneaux | `T_Orbe_Fer_BaseColor` | blanc | non |
-| `M_Orbe_Energie` | `SM_Orbe_Energie` | aucune (UV sphériques réservées au shader de vortex) | #8E1B12 (rouge renard ; **couleur du personnage**, réglée par le code) | **mot-clé actif, couleur noire** |
-| `M_Orbe_Tablette_01` à `_06` | **le glyphe seulement** de chaque tablette (2e matériau du renderer, index 1) | aucune | #D9D3C7 (glyphe pâle) | **mot-clé actif, couleur noire** : une tablette s'allume quand sa charge est prête |
+| `M_Orbe_Energie` | `SM_Orbe_Energie` | aucune ; shader **`ItHunts/OrbeVortex`** (2026-11-17 : spirale qui tourne, `_SpinSpeed`, `_SpinBoost` en traction) | — | `_EmissionColor` HDR (rouge renard par défaut ; **couleur du personnage**, réglée par le code) |
+| `M_Orbe_Tablette` (2026-11-17, remplace `M_Orbe_Tablette_01` à `_06`) | **les deux faces** de chaque tablette (index 1) : rune gravée | `T_Orbe_Tablette_BaseColor` (atlas de 6 glyphes, 768 px) ; `_EmissionMap` = `T_Orbe_Tablette_Emission` (rune + halo) | blanc | **mot-clé actif, couleur noire** : une tablette s'allume quand sa charge est prête (lueur à la couleur du personnage) |
 
 **Textures peintes** (`Assets/Art/Textures/FPS/`) : `T_LanterneFeu_Fer`, `T_LanterneFeu_Cuivre`, `T_Orbe_Pierre`,
 `T_Orbe_Fer` (`_BaseColor`), **256 × 256 px pour 0.05 m, soit 5 120 px/m**, la densité de `T_Barillet_Laiton`
@@ -175,6 +175,11 @@ durées : des points de départ pour le playtest.
 `Orbe_Poses_08_ChargeRechargee.jpg`) ; scripts `sm_orbe_poses.py` (Blender) puis `orbe_poses_legendes.py` (légendes).
 
 ### Jauge des tablettes : les 6 charges du jeu
+
+> **Remplacé par D-069 (2026-11-17)** : une tablette par charge de traction ou de répulsion (2 + 1 au départ, d'autres si
+> une amélioration en ajoute), créées et réparties par le jeu à partir de `SM_Orbe_Tablette` (ou des gabarits de
+> `SM_Orbe`) ; rune sur les deux faces. Voir `INTEGRATION-PROPS.md`, « Orbe v2 : tablettes et tourbillon ». Le tableau
+> ci-dessous est l'ancienne répartition.
 
 **6 tablettes = 6 charges : 2 de traction, 1 de répulsion, 3 de mouvement** (la traction est passée à 2 charges, ce
 n'est plus 3 + 3). **Une tablette s'allume quand sa charge est prête** (émission de son glyphe, couleur du
