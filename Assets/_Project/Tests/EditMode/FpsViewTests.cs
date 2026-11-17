@@ -471,7 +471,7 @@ namespace ItHunts.Tests
             var arms = prefab.GetComponentInChildren<FpsArms>(true);
             Assert.That(arms, Is.Not.Null, "bras de la DA posés par FpsArms");
             var poses = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FpsArmPoseSet>("Assets/_Project/Settings/FpsArmPoses.asset");
-            Assert.That(poses.right.bones.Length, Is.EqualTo(17));
+            Assert.That(poses.right.bones.Length, Is.EqualTo(20), "bras v2 (PR #11) : 20 os");
             Assert.That(poses.right.Find("Pose_Attraper_1"), Is.Not.Null);
             Assert.That(poses.right.Find("Pose_Attraper_1").fromClip, Is.True, "Pose_Attraper a des courbes");
             foreach (string id in new[] { "renard", "cameleon" })
