@@ -18,10 +18,15 @@
 - **Mains (ce11b28) :** pose « tenir » au repos (doigts à demi refermés vers `Pose_Poing`, réglable par main).
 - **HUD (5a59d49) :** âmes centrées, timer 56 sans objectif, échelle par la largeur sous 1100 px, carte ouverte uGUI par joueur
   (action `Map` : Tab, croix haut), brouillard par joueur et partagé en coop, icônes de la DA, `Coffre_Rare` (coffres des parcours).
-- **Crash à la fermeture des builds « après » :** Windows : 6/6 dans D3D12Core.dll (0xc0000005), 0 pour les builds « avant » ;
-  `HorrorLook` ne touche plus la passe de l'Enragé ni les globales quand l'application se ferme. **À vérifier par un build** (demandé).
-- **Points ouverts :** mesure d'écran partagé en 6 rondes alternées (builds à autoriser) ; PR #15 (art-ui-b, fonds de menu, carte
-  ouverte) puis les menus (titre, campement, choix du personnage, Échap) : demandés après ce lot ; tête du traqueur v3 (DA).
+- **Crash à la fermeture des builds (d1d1128) :** D3D12Core.dll, 0xc0000005 à chaque fermeture des builds récents. Bissection par builds :
+  le stencil écrit par les passes « ItHunts Mains » du renderer. Stencil éteint dans `PC_Renderer`, allumé seulement pendant l'Enragé,
+  éteint avant de quitter (`wantsToQuit`). Vérifié : 3/3 fermetures propres hors Enragé, 3/3 pendant l'Enragé.
+- **Écran partagé, 6 rondes alternées (e2ec285) :** médiane 23.5 → 18.8 ms, 95e centile 45.0 → 30.6 ms, B devant dans les 6 rondes.
+- **Coffre rare (6e90cf3, D-071) :** coffres des parcours, meilleur butin réglable dans `Economy_Default` (table dédiée, +1 choix, ×1.5).
+- **PR #16 (tête du traqueur) :** fusionnée dans `main` (271beee), intégrée : `eyeGlints` décoché, scènes reconstruites (ordre des
+  matériaux du nouveau FBX), test des matériaux ; `StalkerVisibilityTests` vert sans le contournement.
+- **Tests :** EditMode 415 + 1 non concluant attendu ; PlayMode 1/1.
+- **Points ouverts :** PR #15 (art-ui-b) puis les menus : attendre le retour de playtest de l'utilisateur.
 
 **Retours de playtest du 2026-11-17, second lot (`animations`, poussée pour la session art, pas fusionnée dans `main`) :** un
 commit par point.
