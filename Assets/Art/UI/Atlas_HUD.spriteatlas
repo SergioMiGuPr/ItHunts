@@ -1,0 +1,164 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Atlas_HUD
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 0
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings:
+    - serializedVersion: 4
+      m_BuildTarget: DefaultTexturePlatform
+      m_MaxTextureSize: 4096
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 2
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 0
+      m_IgnorePlatformSupport: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 1
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: caa4549b562362a49bf6fb2b9ebf598d, type: 3}
+    - {fileID: 102900000, guid: ef9e212b2797f3943a025519cf87d212, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - d7601ed05cf354b40b08fb858ae33a27: 21300000
+    - f9585f11fccdae34fa4c4c516065c461: 21300000
+    - 3f098651346a70743a26c50d3691fed9: 21300000
+    - e4476871d95775a4283b49eef965cf7e: 21300000
+    - 3d3f64d1b3259414cbdfd299771ed39e: 21300000
+    - 1363ac126e66e004fbb1f7fd33be3c24: 21300000
+    - c18e77524c4411e498a6367fe3b33e76: 21300000
+    - 8f806ec2a5416aa44b28188b93e1ca8a: 21300000
+    - a73153432bf36064a8a373e994944101: 21300000
+    - ff0182b32128c02468d2e9873e832f6b: 21300000
+    - 79a7b7d39cc06dc4abf4f7d1d3e7ca77: 21300000
+    - 3531fae514c214749af6256f79728c6c: 21300000
+    - 9ca5cf67dd55f474a8ab17a2eea6b42f: 21300000
+    - 1dddbf77a8bfab64fb45e3e44c7d8482: 21300000
+    - 57424ce7a926f1d4db1776d3219a9d35: 21300000
+    - 4cf33678fb7ce0e4b853d1b293b0b55e: 21300000
+    - d85c5598edd9691489692cafefe4da0c: 21300000
+    - 531b3ea8fc2bdad46a35f2b020b51470: 21300000
+    - 5d68d2d83b0206749b8da6ca83dec930: 21300000
+    - d1feeed83e5c03347addef1275862c97: 21300000
+    - cf1297e854abbdf4cbfea6043fd83472: 21300000
+    - a3165ff845c9e4a4b9fcc6fd78ef3e7d: 21300000
+    - 9f718519ec79631409707e73a61b880f: 21300000
+    - a089820a856e985408af7a7e9290ff98: 21300000
+    - cc48618a275fe914f9874d934353c578: 21300000
+    - d3103caa3b6d63741bba75fab612e1da: 21300000
+    - 1a2788cbc33e074418421511fd369a7c: 21300000
+    - 8be14d1c5d4b15f429ecfb58c679898a: 21300000
+    - 01ef722c78bd2d14986e8abb0b252024: 21300000
+    - 017c51acd6ee4414d998370042aada28: 21300000
+    - 8f3339ecb5f065d4cbf42d0d4f691b11: 21300000
+    - 3d20e81dc6acbe343ab2025b0b0139db: 21300000
+    - 1ce4896def4a7ea469c085dbbda0faa9: 21300000
+    - 5f07840eb5aed614c933be9397c8bcfc: 21300000
+    - 2f2d833f0f04e04489ec02d84139735e: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: d7601ed05cf354b40b08fb858ae33a27, type: 3}
+  - {fileID: 21300000, guid: f9585f11fccdae34fa4c4c516065c461, type: 3}
+  - {fileID: 21300000, guid: 3f098651346a70743a26c50d3691fed9, type: 3}
+  - {fileID: 21300000, guid: e4476871d95775a4283b49eef965cf7e, type: 3}
+  - {fileID: 21300000, guid: 3d3f64d1b3259414cbdfd299771ed39e, type: 3}
+  - {fileID: 21300000, guid: 1363ac126e66e004fbb1f7fd33be3c24, type: 3}
+  - {fileID: 21300000, guid: c18e77524c4411e498a6367fe3b33e76, type: 3}
+  - {fileID: 21300000, guid: 8f806ec2a5416aa44b28188b93e1ca8a, type: 3}
+  - {fileID: 21300000, guid: a73153432bf36064a8a373e994944101, type: 3}
+  - {fileID: 21300000, guid: ff0182b32128c02468d2e9873e832f6b, type: 3}
+  - {fileID: 21300000, guid: 79a7b7d39cc06dc4abf4f7d1d3e7ca77, type: 3}
+  - {fileID: 21300000, guid: 3531fae514c214749af6256f79728c6c, type: 3}
+  - {fileID: 21300000, guid: 9ca5cf67dd55f474a8ab17a2eea6b42f, type: 3}
+  - {fileID: 21300000, guid: 1dddbf77a8bfab64fb45e3e44c7d8482, type: 3}
+  - {fileID: 21300000, guid: 57424ce7a926f1d4db1776d3219a9d35, type: 3}
+  - {fileID: 21300000, guid: 4cf33678fb7ce0e4b853d1b293b0b55e, type: 3}
+  - {fileID: 21300000, guid: d85c5598edd9691489692cafefe4da0c, type: 3}
+  - {fileID: 21300000, guid: 531b3ea8fc2bdad46a35f2b020b51470, type: 3}
+  - {fileID: 21300000, guid: 5d68d2d83b0206749b8da6ca83dec930, type: 3}
+  - {fileID: 21300000, guid: d1feeed83e5c03347addef1275862c97, type: 3}
+  - {fileID: 21300000, guid: cf1297e854abbdf4cbfea6043fd83472, type: 3}
+  - {fileID: 21300000, guid: a3165ff845c9e4a4b9fcc6fd78ef3e7d, type: 3}
+  - {fileID: 21300000, guid: 9f718519ec79631409707e73a61b880f, type: 3}
+  - {fileID: 21300000, guid: a089820a856e985408af7a7e9290ff98, type: 3}
+  - {fileID: 21300000, guid: cc48618a275fe914f9874d934353c578, type: 3}
+  - {fileID: 21300000, guid: d3103caa3b6d63741bba75fab612e1da, type: 3}
+  - {fileID: 21300000, guid: 1a2788cbc33e074418421511fd369a7c, type: 3}
+  - {fileID: 21300000, guid: 8be14d1c5d4b15f429ecfb58c679898a, type: 3}
+  - {fileID: 21300000, guid: 01ef722c78bd2d14986e8abb0b252024, type: 3}
+  - {fileID: 21300000, guid: 017c51acd6ee4414d998370042aada28, type: 3}
+  - {fileID: 21300000, guid: 8f3339ecb5f065d4cbf42d0d4f691b11, type: 3}
+  - {fileID: 21300000, guid: 3d20e81dc6acbe343ab2025b0b0139db, type: 3}
+  - {fileID: 21300000, guid: 1ce4896def4a7ea469c085dbbda0faa9, type: 3}
+  - {fileID: 21300000, guid: 5f07840eb5aed614c933be9397c8bcfc, type: 3}
+  - {fileID: 21300000, guid: 2f2d833f0f04e04489ec02d84139735e, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Ames_Fond
+  - MiniCarte_Masque
+  - MiniCarte_Coffre_Rare
+  - BarreVie_Fond_Bout
+  - BarreVie_Cadre_Bout
+  - Ames_Cadre
+  - MiniCarte_Coffre_Ouvert
+  - BarreVie_Remplissage
+  - BarreVie_Cadre_Milieu
+  - BarreVie_Fond_Embleme
+  - Ames_Cadre_Embleme
+  - MiniCarte_Porte_Ouverte
+  - BarreVie_Remplissage_Retard
+  - Ames_Cadre_Bout
+  - Ames_Fond_Bout
+  - Ames_Flamme
+  - MiniCarte_Fleche
+  - BarreVie_Cadre
+  - Ames_Fond_Embleme
+  - MiniCarte_Cadre
+  - BarreVie_Fond_Milieu
+  - Ames_Cadre_Milieu
+  - MiniCarte_Flamme
+  - MiniCarte_Joueur_Rouge
+  - Ames_Fond_Milieu
+  - MiniCarte_Joueur_Vert
+  - MiniCarte_Joueur_Orange
+  - MiniCarte_Allie_Mort
+  - MiniCarte_Fond
+  - BarreVie_Cadre_Embleme
+  - MiniCarte_Coffre_Normal
+  - MiniCarte_Joueur_Bleu
+  - MiniCarte_Bougie
+  - MiniCarte_Porte_Verrouillee
+  - BarreVie_Fond
+  m_RenderDataMap: {}
+  m_Tag: Atlas_HUD
+  m_IsVariant: 0
