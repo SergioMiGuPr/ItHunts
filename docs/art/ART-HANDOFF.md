@@ -675,3 +675,16 @@ de la DA, rien n'a été modifié) :
   `Assets/Art/UI/Atlas_HUD.spriteatlas` remplacé par `Atlas_HUD.spriteatlasv2` (mêmes dossiers `HUD` et `MiniCarte`, mêmes réglages :
   marge 4 px, ni rotation ni découpe serrée, 4096, compression haute qualité). **La branche `art-ui` doit faire un pull de `main`
   avant de toucher à l'atlas.**
+
+## Bras FPS v2 : intégration (PR #11, 2026-11-17)
+
+- Poses recuites (`FpsArmsSetup`, 20 os, 14 poses + 4 boucles) ; **orbe et artefact accrochés à `Socket_Flottement`** (ils suivent
+  la main animée, plus le flottement de la vue) ; `Pose_MainOuverte` = **répulsion** (geste et maintenue), `Pose_Griffe` =
+  **traction** (noms réglables dans `FpsView_Default`). Planche des 4 personnages et 14 poses :
+  `docs/design/features/vue-fps/captures/bras_v2/`.
+- **À corriger côté DA : les 8 FBX `SK_BrasFPS_*` v2 sont retournés** (faces et normales vers l'intérieur : volume signé négatif,
+  −1 340 à −1 690 cm³ ; la goule, pour comparaison, est positive). Le toon (`_Cull` Back) le cache, mais le contour en coque
+  inversée (`ItHunts/ContourMains`) recouvrait tout le bras en noir. **Contournement sur `main`** : `FpsArmsSetup` relève les
+  maillages retournés et `HandsOutline` leur donne un contour inversé (faces avant cachées, épaisseur négative). À l'export :
+  normales vers l'extérieur (Blender : *Recalculate Outside*, ou retirer la mise à l'échelle négative du miroir avant l'export) ;
+  le contournement se désactive tout seul quand le volume redevient positif.

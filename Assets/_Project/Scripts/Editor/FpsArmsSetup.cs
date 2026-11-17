@@ -63,6 +63,20 @@ namespace ItHunts.EditorTools
                 so.FindProperty("leftHand").objectReferenceValue = vso.FindProperty("leftHand").objectReferenceValue;
                 so.FindProperty("outline").objectReferenceValue = root.GetComponentInChildren<HandsOutline>(true);
                 so.ApplyModifiedPropertiesWithoutUndo();
+                // Maillages des bras retournés (faces vers l'intérieur, bras v2 de la PR #11) : le contour de HandsOutline les traite à part.
+                HandsOutline outlineComp = root.GetComponentInChildren<HandsOutline>(true);
+                if (outlineComp != null)
+                {
+                    outlineComp.InsideOutMeshes.Clear();
+                    foreach (string who in new[] { "Renard", "Cameleon", "Koala", "Hibou" })
+                        foreach (string side in new[] { "D", "G" })
+                            foreach (Mesh m in AssetDatabase.LoadAllAssetsAtPath(Fps + $"SK_BrasFPS_{who}_{side}.fbx").OfType<Mesh>())
+                                if (HandsOutline.IsInsideOut(m))
+                                    outlineComp.InsideOutMeshes.Add(m);
+                    EditorUtility.SetDirty(outlineComp);
+                    r += $" ; maillages retournés : {outlineComp.InsideOutMeshes.Count}";
+                }
+
                 BarrelWithoutCanon(root);
                 PrefabUtility.SaveAsPrefabAsset(root, playerPath);
             }

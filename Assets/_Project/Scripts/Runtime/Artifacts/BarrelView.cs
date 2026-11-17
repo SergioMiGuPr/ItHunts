@@ -160,8 +160,13 @@ namespace ItHunts.Artifacts
             Transform hand = root.parent;
             float t = Time.time;
             float h = ViewmodelMotion.FloatHeight(t, height, amplitude, period, phase);
-            root.localPosition = inHand + Vector3.up * h;
             Quaternion facing = view != null && view.ViewRoot != null ? view.ViewRoot.rotation : hand != null ? hand.rotation : root.rotation;
+            // Bras v2 (PR #11) : l'artefact flotte au-dessus de Socket_Flottement, qui suit la main animée ; sinon, le réglage dans la main.
+            Transform anchor = FpsArms.FloatSocket(hand);
+            if (anchor != null)
+                root.position = anchor.position + facing * Vector3.up * h;
+            else
+                root.localPosition = inHand + Vector3.up * h;
             root.rotation = facing * Quaternion.Euler(euler + ViewmodelMotion.FloatWobble(t, period, wobble, phase));
             root.localScale = Vector3.one * scale;
         }

@@ -41,6 +41,8 @@ namespace ItHunts.Player
 
         /// <summary>Pose courante de chaque côté (debug, tests).</summary>
         public string RightPose { get; private set; } = "Pose_Repos";
+        /// <summary>Pose cuite imposée aux deux mains (vitrine, captures des gestes) ; vide : les gestes du jeu.</summary>
+        public string PreviewPose { get; set; }
         public string LeftPose { get; private set; } = "Pose_Repos";
         public bool HasArms => _right != null;
         public GameObject RightArm => _right;
@@ -182,7 +184,7 @@ namespace ItHunts.Player
             bool gesture = true;
             switch (g)
             {
-                case HandGesture.Repulsion: right = "Pose_Repulsion"; break;
+                case HandGesture.Repulsion: right = Prefer(view != null && view.Settings != null ? view.Settings.repelPose : null, "Pose_Repulsion"); break;
                 case HandGesture.Lancer: right = "Pose_Lancer"; break;
                 case HandGesture.Prise: right = gu < 0.5f ? "Pose_Attraper_1" : "Pose_Attraper_2"; break;
                 default:
@@ -191,7 +193,10 @@ namespace ItHunts.Player
                     bool repel = view != null ? view.ShowsRepelHold : m.RepelHolding;
                     bool traction = view != null ? view.ShowsTraction : _motor.State.Mode == MovementMode.Traction;
                     bool holding = view != null ? view.ShowsHolding : t.Holding;
-                    right = repel ? "Pose_Repulsion" : traction ? "Pose_Traction" : holding ? "Pose_TenirObjet" : "Pose_Repos";
+                    FpsViewSettings vs = view != null ? view.Settings : null;
+                    right = repel ? Prefer(vs != null ? vs.repelPose : null, "Pose_Repulsion")
+                        : traction ? Prefer(vs != null ? vs.tractionPose : null, "Pose_Traction")
+                        : holding ? "Pose_TenirObjet" : "Pose_Repos";
                     break;
             }
 
@@ -200,6 +205,12 @@ namespace ItHunts.Player
             if (right == "Pose_Repos")
                 right = RestPose(poses.right, "OrbePaume");
             string left = RestPose(poses.left, _holder.BarrelSettings != null ? "Pistolet" : _holder.LanternSettings != null ? "PriseAnneau" : "Repos");
+            // Aperçu (vitrine, captures) : une pose cuite imposée aux deux mains.
+            if (!string.IsNullOrEmpty(PreviewPose) && poses.right.Find(PreviewPose) != null)
+            {
+                right = PreviewPose;
+                left = poses.left.Find(PreviewPose) != null ? PreviewPose : left;
+            }
             float dt = Time.deltaTime;
             RightPose = right;
             LeftPose = left;
@@ -224,6 +235,10 @@ namespace ItHunts.Player
         /// gauche selon l'artefact : respiration, doigts qui ondulent), sinon la pose fixe du même nom, sinon Pose_Repos. Un clip
         /// « Anim_Repos » livré plus tard passe devant.
         /// </summary>
+        /// <summary>Pose voulue si les bras l'ont (bras v2 : Pose_MainOuverte, Pose_Griffe), sinon la pose d'avant.</summary>
+        private string Prefer(string wanted, string fallback) =>
+            !string.IsNullOrEmpty(wanted) && poses != null && poses.right != null && poses.right.Find(wanted) != null ? wanted : fallback;
+
         private static string RestPose(FpsArmPoseSet.Side side, string name)
         {
             if (side.FindAnimation("Anim_Repos") != null)
@@ -245,8 +260,38 @@ namespace ItHunts.Player
             // Au-dessus de la paume, à orbInHand dans le repère du poignet (Socket_Poignet = main droite de la vue), comme le barillet
             // et la lanterne ; la hauteur se règle dans FpsViewSettings (cadrage de la référence : 0.14 m).
             Transform wrist = rightHand != null ? rightHand : _orbSocket;
-            orb.position = wrist.TransformPoint(cfg.orbInHand + Vector3.up * ViewmodelMotion.FloatHeight(Time.time, cfg));
+            // Bras v2 (PR #11) : Socket_Flottement, enfant de l'os Poignet, suit la main animée ; l'orbe flotte au-dessus.
+            Transform anchor = FloatSocket(rightHand);
+            Vector3 up = view != null && view.ViewRoot != null ? view.ViewRoot.up : wrist.up;
+            orb.position = anchor != null
+                ? anchor.position + up * ViewmodelMotion.FloatHeight(Time.time, cfg)
+                : wrist.TransformPoint(cfg.orbInHand + Vector3.up * ViewmodelMotion.FloatHeight(Time.time, cfg));
             orb.rotation = wrist.rotation * Quaternion.Euler(0f, Time.time * cfg.floatSpin, 0f);
+        }
+
+        private static readonly System.Collections.Generic.Dictionary<Transform, Transform> FloatSockets =
+            new System.Collections.Generic.Dictionary<Transform, Transform>();
+
+        /// <summary>
+        /// Point de flottement des bras v2 (Socket_Flottement, enfant de l'os Poignet, 6.5 cm au-dessus de la paume) sous cette main de
+        /// la vue ; null pour les bras v1 et les mains greybox. Trouvé une fois par instance de bras (cache).
+        /// </summary>
+        public static Transform FloatSocket(Transform hand)
+        {
+            if (hand == null)
+                return null;
+            if (FloatSockets.TryGetValue(hand, out Transform cached) && cached != null && cached.IsChildOf(hand) && cached.gameObject.activeInHierarchy)
+                return cached;
+            Transform found = null;
+            foreach (Transform t in hand.GetComponentsInChildren<Transform>(false))
+                if (t.name == "Socket_Flottement")
+                {
+                    found = t;
+                    break;
+                }
+
+            FloatSockets[hand] = found;
+            return found;
         }
 
         private static bool Distinct(FpsArmPoseSet.Side side)

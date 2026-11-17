@@ -2632,6 +2632,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Player.HandsOutline
   viewRoot: {fileID: 3973218913037281014}
   outline: {fileID: 2100000, guid: a534af690d6ab7041a963571ec8270b9, type: 2}
+  insideOut:
+  - {fileID: 3750788213285071189, guid: b9c5962ba92b24d43a178404a4d59ac6, type: 3}
+  - {fileID: -3175222261481398833, guid: 2e7af90a6aec561409351bfd663b3a2a, type: 3}
+  - {fileID: 1686757966141018597, guid: bb0204a81d4a40f4b8469ebb3e18b7a6, type: 3}
+  - {fileID: -9007984259345604451, guid: a741e4d184b8f7e4e81a8a56ca7ff52d, type: 3}
+  - {fileID: -4990710314927680352, guid: dbcb252d6770b1b4893e58c6e2fe937b, type: 3}
+  - {fileID: -8233230652233387199, guid: cb08b4ff61ebb0a489143abad130c745, type: 3}
+  - {fileID: -4390966026104034439, guid: bae9ca71804417f43967c53790628988, type: 3}
+  - {fileID: -5771048731378629145, guid: 22571ad2e5ca84042987b8fc376e3443, type: 3}
 --- !u!114 &6065823669421373103
 MonoBehaviour:
   m_ObjectHideFlags: 0

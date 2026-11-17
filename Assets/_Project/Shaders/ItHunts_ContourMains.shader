@@ -8,7 +8,8 @@ Shader "ItHunts/ContourMains"
     Properties
     {
         _OutlineColor ("Encre", Color) = (0.01, 0.008, 0.012, 1)
-        _Thickness ("Épaisseur (px à 1080p)", Range(0, 6)) = 1.5
+        _Thickness ("Épaisseur (px à 1080p ; négative pour un maillage retourné)", Range(-6, 6)) = 1.5
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Faces cachées (Front ; Back pour un maillage retourné)", Float) = 1
     }
 
     SubShader
@@ -19,7 +20,7 @@ Shader "ItHunts/ContourMains"
         {
             Name "ItHuntsOutline"
             Tags { "LightMode" = "ItHuntsOutline" }
-            Cull Front
+            Cull [_Cull]
 
             HLSLPROGRAM
             #pragma vertex Vert

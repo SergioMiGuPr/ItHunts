@@ -35,6 +35,12 @@ namespace ItHunts.Settings
         [Tooltip("Échelle de la lanterne (1 = greybox de 0.11 m de haut).")]
         [Min(0.1f)] public float lanternScale = 1f;
 
+        [Header("Poses des bras v2 (PR #11) pour la main droite ; absentes des bras : la pose d'avant")]
+        [Tooltip("Répulsion (geste et maintenue) : paume ouverte qui repousse.")]
+        public string repelPose = "Pose_MainOuverte";
+        [Tooltip("Traction : la main agrippe le point.")]
+        public string tractionPose = "Pose_Griffe";
+
         [Header("Orbe (dans la paume droite)")]
         [Tooltip("Diamètre de l'orbe (m).")]
         [Min(0.01f)] public float orbDiameter = 0.08f;
