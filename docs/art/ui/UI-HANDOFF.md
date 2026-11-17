@@ -166,6 +166,26 @@ B2 (raccord, entrée prête) ; passes d'édition E1–E9 (remplacent B9–B14) p
 premier plan, fond lointain ; prefab `Fond_Panorama` avec parallaxe ; import Unity (Sprite, PPU 200, Full Rect, Clamp,
 sans mipmaps), matériau additif.
 
+## 2 bis. Carte ouverte (Tab) (fait, 2026-11-17)
+
+Même famille que les cadres du HUD : les bords reprennent le double rail de la barre de vie, les coins son étoile
+d'emblème. Sprites dans `Assets/Art/UI/Carte/` (PPU 200, Full Rect, sans mipmaps), script `Source~/UI/scripts/carte.py`,
+planche `docs/art/rendus/UI/Carte_montage.jpg` (montage 1920 × 1080 avec un contenu de carte d'exemple).
+
+| Sprite | Pixels | Bordures | Usage |
+|---|---|---|---|
+| `Carte_Cadre` | 1024 × 1024 | 260 (les 4) | `Image` **Sliced**, étirée en **plein écran** (ancrage étiré) ; bande sombre (86 %) du bord de l'écran au rail intérieur, centre transparent ; bordure de **130 px en 1080p** |
+| `Carte_Fond` | 1024 × 1024 | — | parchemin sombre **raccordable** : `Image` **Tiled** (ou `RawImage` à UV répétées, wrap Repeat), sous la carte dessinée par le jeu |
+| `Carte_Vignette` | 512 × 512 | — | noir à alpha, bords assombris : `Image` étirée sur la zone de carte, au-dessus du fond et de la carte |
+| `Carte_Brume` | 512 × 512 | — | **zone non découverte** : brume sombre gris-bleu raccordable (alpha 0.82 à 1), au-dessus de la carte, wrap Repeat |
+| `Carte_Brume_Pinceau` | 256 × 256 | — | pinceau blanc à bord doux et irrégulier : à peindre dans une `RenderTexture` (masque) là où le joueur est passé ; la brume se multiplie par (1 − masque) |
+| `Carte_Legende_Cadre` | 384 × 384 | 64 (les 4) | panneau de légende `Image` **Sliced** ; dedans, les icônes de la mini-carte (40 px) et leur nom (texte Unity, EB Garamond SemiBold 26) |
+| `Carte_Rose` | 256 × 256 | — | rose des vents (étoile de l'emblème), 128 px en 1080p, coin haut gauche ; tourner avec le nord de la carte |
+
+Ordre : `Carte_Fond` → contenu de la carte (salles et couloirs tracés à l'encre claire `#CDBEA5`, icônes) → `Carte_Brume`
+(masquée) → `Carte_Vignette` → `Carte_Cadre` → `Carte_Legende_Cadre` + icônes + textes → `Carte_Rose` ; titre « Carte » en
+Grenze Gotisch dans la bande du haut. Écran partagé : un canvas par joueur, le cadre s'étire avec la largeur disponible.
+
 ## 3. Lot C : personnages 2D animés (à venir)
 
 Personnages en 2D peinte, animés par shader (masque peint) et 2 ou 3 pièces au besoin, sans os 2D. Test sur le renard
