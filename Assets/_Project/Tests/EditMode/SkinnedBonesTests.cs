@@ -23,7 +23,33 @@ namespace ItHunts.Tests
         private static IEnumerable<string> Problems(GameObject root, string where) =>
             root.GetComponentsInChildren<SkinnedMeshRenderer>(true)
                 .Where(r => r.sharedMesh != null && (r.bones.Length != r.sharedMesh.bindposes.Length || r.bones.Any(b => b == null)))
-                .Select(r => $"{where} : {r.transform.parent?.name}/{r.name} a {r.bones.Length} os pour {r.sharedMesh.bindposes.Length} poses de liaison");
+                .Select(r => $"{where} : {r.transform.parent?.name}/{r.name} a {r.bones.Length} os pour {r.sharedMesh.bindposes.Length} poses de liaison")
+                .Concat(MaterialProblems(root, where));
+
+        /// <summary>
+        /// PR #16 : le FBX du traqueur a changé l'ordre de ses sous-maillages (tête en dernier) ; les instances des scènes gardaient
+        /// l'ancien ordre des matériaux : la tête recevait le matériau des mains (pupilles éteintes). Chaque rendu d'un modèle de la DA
+        /// a les matériaux du FBX, dans le même ordre.
+        /// </summary>
+        private static IEnumerable<string> MaterialProblems(GameObject root, string where)
+        {
+            foreach (SkinnedMeshRenderer r in root.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (r.sharedMesh == null)
+                    continue;
+                string fbx = AssetDatabase.GetAssetPath(r.sharedMesh);
+                if (!fbx.StartsWith("Assets/Art/") || !fbx.EndsWith(".fbx"))
+                    continue;
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>(fbx);
+                SkinnedMeshRenderer src = model != null ? model.GetComponentsInChildren<SkinnedMeshRenderer>(true).FirstOrDefault(x => x.sharedMesh == r.sharedMesh) : null;
+                if (src == null)
+                    continue;
+                string want = string.Join(",", src.sharedMaterials.Select(m => m != null ? m.name : "vide"));
+                string have = string.Join(",", r.sharedMaterials.Select(m => m != null ? m.name : "vide"));
+                if (want != have)
+                    yield return $"{where} : {r.transform.parent?.name}/{r.name} a les matériaux {have} au lieu de {want} (ordre du FBX)";
+            }
+        }
 
         [Test]
         public void Prefabs_OsDesRendusGrees_CorrespondentAuMaillage()

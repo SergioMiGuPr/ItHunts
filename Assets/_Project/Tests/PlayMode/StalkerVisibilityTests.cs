@@ -60,12 +60,14 @@ namespace ItHunts.Tests
                 foreach (float d in new[] { 10f, 30f, 60f })
                 {
                     Vector3 center = body.bounds.center;
-                    Vector3 eye = stalker.transform.position + stalker.transform.forward * d + Vector3.up * 1.7f;
+                    // Devant le corps visible (une pose de la vitrine peut décaler le modèle de sa racine) : à d m de son centre, à hauteur d'œil.
+                    Vector3 feet = new Vector3(center.x, stalker.transform.position.y, center.z);
+                    Vector3 eye = feet + stalker.transform.forward * d + Vector3.up * 1.7f;
                     go.transform.SetPositionAndRotation(eye, Quaternion.LookRotation(center - eye));
                     yield return null;
                     cam.Render();
                     Assert.IsTrue(body.enabled && body.gameObject.activeInHierarchy && !body.forceRenderingOff, $"{d} m : rendu actif");
-                    Assert.IsTrue(GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(cam), body.bounds), $"{d} m : dans le champ");
+                    Assert.IsTrue(GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(cam), body.bounds), $"{d} m : dans le champ ({stalker.name}, boîte {body.bounds.center} {body.bounds.size}, caméra {go.transform.position})");
                     Assert.IsTrue(body.isVisible, $"{d} m : rendu dessiné (isVisible)");
 
                     RenderTexture.active = rt;

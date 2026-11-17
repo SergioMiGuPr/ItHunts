@@ -78,7 +78,7 @@ MonoBehaviour:
   shoulderSide: 1.8
   pupilGlow: {r: 0.55, g: 0.05, b: 0.03, a: 1}
   pupilGlowIntensity: 1.5
-  eyeGlints: 1
+  eyeGlints: 0
   eyeGlintRight: {x: 0.24, y: 0.44, z: 1.75}
   eyeGlintLeft: {x: -0.45, y: 0.21, z: 1.7}
   eyeGlintSize: 0.35

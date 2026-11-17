@@ -113,9 +113,10 @@ namespace ItHunts.Tests
             SkinnedMeshRenderer body = model.GetComponentsInChildren<SkinnedMeshRenderer>(true).OrderByDescending(r => r.sharedMaterials.Length).First();
             Assert.That(body.bones.Length, Is.EqualTo(32), "32 os");
             Assert.That(model.GetComponentsInChildren<Transform>(true).Any(t => t.name.EndsWith("_Aide")), Is.False, "plus d'os d'aide");
-            Assert.That(body.sharedMaterials.Select(m => m.name).ToArray(), Is.EqualTo(new[] { "M_Traqueur", "M_Traqueur_Tete", "M_Traqueur_Mains" }));
-            Assert.That(Stalker.HasEmissionMask(body.sharedMaterials[0]), Is.False, "le corps ne s'allume pas");
-            Assert.That(Stalker.HasEmissionMask(body.sharedMaterials[1]), Is.True, "les pupilles passent par la tête");
+            // L'ordre des matériaux suit le FBX (PR #16 : la tête en dernier) ; la lueur est choisie par le nom du matériau.
+            Assert.That(body.sharedMaterials.Select(m => m.name).ToArray(), Is.EquivalentTo(new[] { "M_Traqueur", "M_Traqueur_Tete", "M_Traqueur_Mains" }));
+            Assert.That(Stalker.HasEmissionMask(body.sharedMaterials.First(m => m.name == "M_Traqueur")), Is.False, "le corps ne s'allume pas");
+            Assert.That(Stalker.HasEmissionMask(body.sharedMaterials.First(m => m.name == "M_Traqueur_Tete")), Is.True, "les pupilles passent par la tête");
         }
     }
 }

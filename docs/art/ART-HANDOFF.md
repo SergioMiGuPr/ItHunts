@@ -711,10 +711,9 @@ de la DA, rien n'a été modifié) :
   ou ÷ 2.29 (`Traqueur_PassageBas`), réglables dans `Stalker_Default` (`walkClipSpeed`, `crouchClipSpeed`) ; pied posé mesuré à
   0.48 m/s en poursuite (5.3 m/s avant). Allongement D-070 : ×1.8 à ×3.0 de 5 à 15 m, main à l'échelle 1. Sommet : 13.9 m en marche,
   8.5 m baissé (poutres à 10 m). Mesures et captures : `docs/design/features/boss-traqueur/captures/v3/`.
-- **À corriger côté DA : la tête v3 a des trous** (faces manquantes ou retournées sur le visage, autour des yeux et de la bouche) et
-  **les pupilles rouges ne s'affichent plus** : seuls 6 sommets de la tête tombent sur le masque des pupilles de `T_Traqueur_Emission`,
-  et les faces qui les portent ne sont pas dessinées. Le test `StalkerVisibilityTests` (les yeux doivent le trahir à 60 m dans le
-  brouillard) échouait. **Repli côté code** : deux petites sphères émissives sur l'os `Tete` (`Stalker_Default` : `eyeGlints`, positions
-  `eyeGlintRight` / `eyeGlintLeft` dans le repère de l'os, 0.35 m). À la livraison d'une tête corrigée (normales vers l'extérieur,
-  pupilles visibles de face et d'en bas, d'au moins ~0.3 m), décocher `eyeGlints`. Captures : `tete_v3_pupilles_absentes.png`,
-  `tete_v3_yeux_repli.png`.
+- **Tête v3 corrigée (PR #16, 2026-11-18)** : tête reprise sans borne, pupilles en disques de 0.4 m (hauteurs différentes, voulu).
+  Repli `eyeGlints` **décoché** dans `Stalker_Default` (le code reste, réactivable). `StalkerVisibilityTests` passe sans lui :
+  luminance 0.56 à 10 m, 0.34 à 30 m, 0.14 à 60 m dans le brouillard (seuil 0.06). **Attention à l'ordre des matériaux** : le FBX
+  de la PR #16 range la tête en dernier (`M_Traqueur`, `M_Traqueur_Mains`, `M_Traqueur_Tete`) ; les instances des scènes gardaient
+  l'ancien ordre (la tête prenait le matériau des mains) : traqueurs des scènes reconstruits, et `SkinnedBonesTests` vérifie
+  désormais que chaque rendu a les matériaux de son FBX dans le même ordre. Capture : `tete_v3_pr16.png`.
