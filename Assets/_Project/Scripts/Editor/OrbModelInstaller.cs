@@ -79,6 +79,7 @@ namespace ItHunts.EditorTools
                 so.FindProperty("energy").objectReferenceValue = energy;
                 so.FindProperty("energyRenderer").objectReferenceValue = energy != null ? energy.GetComponent<Renderer>() : null;
                 so.FindProperty("crown").objectReferenceValue = crown;
+                so.FindProperty("tabletPrefab").objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/Models/FPS/SM_Orbe_Tablette.fbx");
                 SerializedProperty list = so.FindProperty("tablets");
                 list.arraySize = 6;
                 for (int i = 0; i < 6; i++)

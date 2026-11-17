@@ -25,8 +25,13 @@ namespace ItHunts.Orbs
         [SerializeField] private Renderer[] tablets = new Renderer[6];
         [Tooltip("Racine de la couronne (pivot au centre) : les tablettes y sont rangées pour tourner ensemble.")]
         [SerializeField] private Transform crown;
+        [Tooltip("Tablette seule de la DA (SM_Orbe_Tablette, PR #12) : pivot au centre, X vers l'extérieur ; vide : copies des gabarits.")]
+        [SerializeField] private GameObject tabletPrefab;
 
         private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
+        private static readonly int BaseMapStId = Shader.PropertyToID("_BaseMap_ST");
+        private static readonly int SpinBoostId = Shader.PropertyToID("_SpinBoost");
+        private float _spinBoost = 1f;
         private PlayerMotor _motor;
         private ItHunts.Artifacts.ArtifactHolder _holder;
         private MaterialPropertyBlock _block;
@@ -50,6 +55,7 @@ namespace ItHunts.Orbs
             public Transform Transform;
             public Renderer Renderer;
             public float BaseAngle, Angle, Target, Born;
+            public bool Single;                                         // tablette seule : posée sur le cercle par son angle
         }
 
         private readonly List<Tablet> _attractTabs = new List<Tablet>();
@@ -111,6 +117,14 @@ namespace ItHunts.Orbs
             float pulse = 1f + settings.energyPulse * Mathf.Sin(Time.time * settings.energyPulseHz * 2f * Mathf.PI);
             float boost = traction ? settings.tractionEnergyBoost : 1f;
             SetEmission(energyRenderer, 0, color * (settings.energyIntensity * pulse * boost));
+            // Tourbillon (ItHunts/OrbeVortex, PR #12) : il accélère pendant la traction.
+            _spinBoost = Mathf.Lerp(_spinBoost, traction ? settings.vortexTractionBoost : 1f, 1f - Mathf.Exp(-settings.ringResponse * dt));
+            if (energyRenderer != null)
+            {
+                energyRenderer.GetPropertyBlock(_block, 0);
+                _block.SetFloat(SpinBoostId, _spinBoost);
+                energyRenderer.SetPropertyBlock(_block, 0);
+            }
 
             // Jauge (D-069) : une tablette par charge de traction et de répulsion ; utilisée = rune éteinte, rechargée = rallumée ; une
             // amélioration qui augmente le maximum fait apparaître une tablette. Les charges de mouvement restent sous le réticule.
@@ -166,15 +180,31 @@ namespace ItHunts.Orbs
             {
                 int ti = templates[list.Count % templates.Length];
                 Renderer template = ti < tablets.Length ? tablets[ti] : null;
-                if (template == null)
+                bool single = tabletPrefab != null;
+                if (template == null && !single)
                     return;
-                GameObject go = Instantiate(template.gameObject, crown, false);
+                GameObject go = Instantiate(single ? tabletPrefab : template.gameObject, crown, false);
+                go.layer = crown.gameObject.layer;
+                foreach (Transform c in go.GetComponentsInChildren<Transform>(true))
+                    c.gameObject.layer = crown.gameObject.layer;
                 go.name = $"Tablette {list.Count + 1} ({(templates.Length == 1 ? "répulsion" : "traction")})";
                 go.SetActive(true);
                 float baseAngle = TemplateAngles[ti];
                 // Une tablette ajoutée en cours de partie apparaît en grandissant ; celles du départ sont là d'emblée.
                 bool first = Time.timeSinceLevelLoad < 0.5f;
-                list.Add(new Tablet { Transform = go.transform, Renderer = go.GetComponent<Renderer>(), BaseAngle = baseAngle,
+                Renderer rend = go.GetComponentInChildren<Renderer>();
+                if (single && rend != null)
+                {
+                    // Glyphe du gabarit (0 à 5) : décalage d'UV de l'atlas sur le matériau d'index 1 (rune), l'émission suit.
+                    rend.GetPropertyBlock(_block, 1);
+                    _block.SetVector(BaseMapStId, new Vector4(1f, 1f, (ti % 3) / 3f, -(ti / 3) / 2f));
+                    rend.SetPropertyBlock(_block, 1);
+                    if (template != null && rend.sharedMaterials.Length < template.sharedMaterials.Length)
+                        rend.sharedMaterials = template.sharedMaterials.Length > 2
+                            ? new[] { rend.sharedMaterials[0], rend.sharedMaterials[1], template.sharedMaterials[2] } : rend.sharedMaterials;   // contour
+                }
+
+                list.Add(new Tablet { Transform = go.transform, Renderer = rend, BaseAngle = single ? 0f : baseAngle, Single = single,
                     Angle = list.Count > 0 ? list[list.Count - 1].Angle : baseAngle, Born = first ? float.NegativeInfinity : now });
             }
         }
@@ -183,6 +213,8 @@ namespace ItHunts.Orbs
         {
             t.Angle = Mathf.MoveTowardsAngle(t.Angle, t.Target, settings.tabletSlideSpeed * dt);
             t.Transform.localRotation = Quaternion.Euler(0f, 0f, t.Angle - t.BaseAngle);
+            if (t.Single)
+                t.Transform.localPosition = new Vector3(Mathf.Cos(t.Angle * Mathf.Deg2Rad), Mathf.Sin(t.Angle * Mathf.Deg2Rad), 0f) * settings.crownRadius;
             float u = settings.tabletAppearSeconds > 0f ? Mathf.Clamp01((now - t.Born) / settings.tabletAppearSeconds) : 1f;
             // Apparition : de 0 à 1 avec un léger dépassement (sortie franche, MATERIAUX.md).
             float c = 1.7f, e = u - 1f;

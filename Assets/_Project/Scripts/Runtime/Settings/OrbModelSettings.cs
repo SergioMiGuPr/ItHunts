@@ -25,8 +25,11 @@ namespace ItHunts.Settings
         [Tooltip("Énergie plus vive pendant la traction (multiplicateur).")]
         [Min(1f)] public float tractionEnergyBoost = 1.5f;
         [Tooltip("Tourbillon : rotation de l'énergie sur elle-même (°/s) et son axe (repère de l'orbe).")]
-        public float energySpin = 140f;
+        public float energySpin = 0f;                                   // 0 : le tourbillon est dans le shader (ItHunts/OrbeVortex)
         public Vector3 energySpinAxis = new Vector3(0.3f, 1f, 0.15f);
+
+        [Tooltip("Tourbillon pendant la traction : multiplicateur de _SpinBoost (ItHunts/OrbeVortex).")]
+        [Min(1f)] public float vortexTractionBoost = 3.5f;
 
         [Header("Anneaux (anneau 1 : axe X, 2 : Y, 3 : Z)")]
         [Tooltip("Rotation au repos (°/s), désynchronisée.")]
@@ -43,6 +46,8 @@ namespace ItHunts.Settings
         [Min(0f)] public float tabletAppearSeconds = 0.35f;
         [Tooltip("Glissement des tablettes vers leur nouvelle place quand leur nombre change (°/s).")]
         [Min(1f)] public float tabletSlideSpeed = 240f;
+        [Tooltip("Rayon de la couronne des tablettes seules (m, à l'échelle du modèle : 0.13 d'après la DA).")]
+        [Min(0.01f)] public float crownRadius = 0.13f;
         [Tooltip("Rotation de la couronne de tablettes pendant la traction (°/s) ; immobile au repos.")]
         public float tractionCrownSpin = 90f;
     }
