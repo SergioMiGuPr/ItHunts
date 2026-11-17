@@ -40,7 +40,7 @@ public static class SceneHUD
     static Text Txt(string name, Transform parent, string s, int size, Color c, TextAnchor a)
     {
         var r = Rt(name, parent); var t = r.gameObject.AddComponent<Text>();
-        t.font = _font; t.text = s; t.fontSize = size; t.color = c; t.alignment = a; t.fontStyle = FontStyle.Bold; t.raycastTarget = false;
+        t.font = _font; t.text = s; t.fontSize = size; t.color = c; t.alignment = a; t.fontStyle = FontStyle.Normal; t.raycastTarget = false;
         t.horizontalOverflow = HorizontalWrapMode.Overflow; t.verticalOverflow = VerticalWrapMode.Overflow;
         var o = r.gameObject.AddComponent<Outline>(); o.effectColor = new Color(0.04f, 0.02f, 0.04f, 0.9f); o.effectDistance = new Vector2(1.5f, -1.5f);
         return t;
@@ -49,7 +49,7 @@ public static class SceneHUD
     public static string Run()
     {
         if (!Application.dataPath.Replace("\\", "/").EndsWith("ItHunts-art/Assets")) return "MAUVAIS PROJET";
-        _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        _font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Art/UI/Polices/EBGaramond/EBGaramond-SemiBold.ttf");
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         var camGo = new GameObject("Camera_UI"); var cam = camGo.AddComponent<Camera>();
         cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.05f, 0.05f, 0.08f); cam.orthographic = true;

@@ -37,18 +37,22 @@ quand même, avec un appel de rendu par texture.
 | Fond des cartouches | `#0E0B12`, opacité 86 % | |
 | Vie (remplissage) | `#C41E26` haut, `#8A0A14` milieu, `#3E040A` bas (médiane `#7D0912`) | rouge sang |
 | Vie perdue (traînée) | `#ECD6CE` → `#967E7C` | se teinte dans `Image.color` si besoin |
-| Violet | réservé aux objets attrapables et au marchand | voir § 1.4 (coffre normal et flamme de la mini-carte) |
+| Violet | réservé aux objets interactifs (lueur violette en jeu) et au marchand | le coffre normal de la mini-carte reste violet (décision) |
 
-### Polices proposées (licence OFL, usage commercial libre, à valider)
+### Polices (validées, licence OFL)
 
-| Usage | Proposition | Repli | Pourquoi |
-|---|---|---|---|
-| Texte (menus, nombres, descriptions) | **EB Garamond** (SemiBold pour les nombres du HUD) | **Cormorant Garamond** (plus élégant, mais déliés fins : à réserver aux grands corps) | empattements proches de « Jouer / Quitter » des maquettes, lisible petit |
-| Titres gothiques (écrans, ACTE I/II/III) | **Grenze Gotisch** | **UnifrakturMaguntia** | gothique lisible, plusieurs graisses |
+| Usage | Police | Fichiers (`Assets/Art/UI/Polices/`) |
+|---|---|---|
+| Texte (menus, nombres, descriptions) | **EB Garamond** | `EBGaramond/EBGaramond-Regular.ttf`, `-Italic`, `-SemiBold` (nombres du HUD, boutons), `-Bold` |
+| Titres gothiques (écrans, ACTE I / II / III) | **Grenze Gotisch** | `GrenzeGotisch/GrenzeGotisch-Regular.ttf`, `-SemiBold`, `-Bold` |
 
-Toutes deux sur Google Fonts (SIL Open Font License 1.1 : intégration et vente autorisées, la police seule ne se vend pas).
-Les nombres du HUD gagnent à avoir un contour sombre (`Outline` 1,5 px `#0A050A` à 90 %). Rien n'est encore importé :
-dès validation, j'ajoute les fichiers `.ttf` et leurs fontes TextMesh Pro dans `Assets/Art/UI/Polices/`.
+Fichiers statiques des dépôts d'origine (`octaviopardo/EBGaramond12`, `Omnibus-Type/Grenze-Gotisch`), licence **SIL Open
+Font License 1.1** jointe dans chaque dossier (`OFL.txt`), sans nom de police réservé : intégration dans le jeu et vente du
+jeu autorisées, la police seule ne se revend pas, la licence doit accompagner les fichiers. Importées comme `Font` Unity
+(texte uGUI). Pour TextMesh Pro : *Window > TextMeshPro > Font Asset Creator* à partir de ces `.ttf` (SDF, 4096, jeu de
+caractères latin étendu pour les accents), à faire sur `main` avec l'import des TMP Essentials.
+
+Les nombres du HUD gagnent à avoir un contour sombre (`Outline` 1,5 px `#0A050A` à 90 %).
 
 ## 1. Lot A : HUD (fait)
 
@@ -108,17 +112,15 @@ et 48 px** sur fond sombre (vérifié dans la scène, 1920 × 1080 et 960 × 108
 | `MiniCarte_Coffre_Normal` / `_Rare` / `_Ouvert` | coffres | 24 |
 | `MiniCarte_Porte_Verrouillee` / `_Ouverte` | porte finale | 24 |
 | `MiniCarte_Allie_Mort` | allié mort (tête de mort) | 24 |
-| `MiniCarte_Bougie` | bougie | 20 à 24 |
-| `MiniCarte_Flamme` | flamme | 24 |
+| `MiniCarte_Bougie` | **marchand** | 20 à 24 |
+| `MiniCarte_Flamme` | **tas d'âmes / salle d'âmes** (gris-bleu des âmes, plus violet) | 24 |
 
 Non découpées (décision) : cage, orbe fêlée, losange.
 
-### 1.4 Points ouverts du lot A
+### 1.4 Décisions du lot A (2026-11-17)
 
-- **Violet** : le coffre normal et la flamme de la mini-carte sont violets sur la maquette, alors que le violet est réservé
-  aux attrapables et au marchand. Je peux les repasser (coffre normal en fer gris-bleu ; flamme en gris-bleu des âmes si
-  elle désigne une source d'âmes) : à décider.
-- Sens de `MiniCarte_Bougie` et `MiniCarte_Flamme` dans le jeu : à préciser par `main`.
+- Le coffre normal reste violet (les objets interactifs ont une lueur violette en jeu).
+- L'icône flamme passe en gris-bleu des âmes ; bougie = marchand, flamme = tas d'âmes / salle d'âmes.
 
 ## 2. Lot B : fonds de menu vivants (à venir)
 
@@ -144,3 +146,5 @@ Aucun personnage verrouillé, pas de skins, pas de passif.
 - Personnages des menus en 2D peinte avec de légers mouvements.
 - Choix du personnage : doublons permis ; c'est le bouton Prêt/Jouer qui se désactive (logique côté `main`).
 - « Settings » devient « Paramètres » (texte Unity).
+- Polices : EB Garamond (texte) et Grenze Gotisch (titres).
+- Lots B et C : liste d'images validée, personnages en 3:4 ; images déposées dans `docs/art/ui/generees/` ; test du renard animé seulement quand les images du lot C sont arrivées.
