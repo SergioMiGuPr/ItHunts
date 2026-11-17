@@ -132,6 +132,11 @@ def ciel():
 CIEL_GAMMA, CIEL_GAIN = 1.25, 0.72
 
 
+def kscale(a):
+    """Facteur d'échelle des réglages en pixels : 1 pour les images de 1280 px de large (premier envoi), ~2.15 en 2K."""
+    return a.shape[1] / 1280.0
+
+
 def lune():
     """B4 : disque (alpha) + halo (additif, reconstruit symétrique à partir du profil au-dessus du sol)."""
     a = load(os.path.join(GEN, "ui_lune_v01.png"))
@@ -186,24 +191,24 @@ def lune():
 
 def nuages():
     """B5 : 5 bandes de nuages peints opaques (contour encré) : alpha plein, mélange normal."""
-    a = load(os.path.join(GEN, "ui_nuages_v01.png"))
+    a = load(os.path.join(GEN, "ui_nuages_v01.png")); K = kscale(a)
     mx = a.max(-1)
-    m = fill_holes(maxf(mx > 0.07, 2))
-    comps = components(m, 2000)
+    m = fill_holes(maxf(mx > 0.07, max(1, round(2 * K))))
+    comps = components(m, int(2000 * K * K))
     # regroupe par bande horizontale (centre en y)
     comps.sort(key=lambda c: np.nonzero(c)[0].mean())
     bands = []
     for c in comps:
         cyc = np.nonzero(c)[0].mean()
-        if bands and abs(cyc - bands[-1][0]) < 40:
+        if bands and abs(cyc - bands[-1][0]) < 40 * K:
             bands[-1] = (bands[-1][0], bands[-1][1] | c)
         else:
             bands.append((cyc, c))
     out = []
     for i, (_, c) in enumerate(bands, 1):
-        al = blur(c.astype(float), 0.8)
+        al = blur(c.astype(float), 0.8 * K)
         al = np.clip(al * 1.3 - 0.15, 0, 1)
-        y0, y1, x0, x1 = bbox(c, 4)
+        y0, y1, x0, x1 = bbox(c, int(4 * K))
         out.append(save_rgba(unblend(a, al, (0, 0, 0))[y0:y1, x0:x1], al[y0:y1, x0:x1],
                              os.path.join(OUT, "Fond", "Fond_Nuages_%d.png" % i)))
     INFO["nuages"] = "%d bandes" % len(bands)
@@ -212,7 +217,7 @@ def nuages():
 
 def brume():
     """B6 : 2 bandes de brume, additif ; noir nettoyé, bas de chaque bande adouci, bords gauche/droit raccordés."""
-    a = load(os.path.join(GEN, "ui_brume_v01.png"))
+    a = load(os.path.join(GEN, "ui_brume_v01.png")); K = kscale(a)
     a = np.clip((a - 0.025) / 0.975, 0, 1)
     h, w, _ = a.shape
     row = a.max(-1).mean(1)
@@ -223,14 +228,14 @@ def brume():
             y1 = y
             while y1 < h and on[y1]:
                 y1 += 1
-            if y1 - y > 30:
+            if y1 - y > 30 * K:
                 runs.append((y, y1))
             y = y1
         else:
             y += 1
     out = []
     for i, (y0, y1) in enumerate(runs, 1):
-        y0 = max(y0 - 12, 0); y1 = min(y1 + 12, h)
+        y0 = max(y0 - int(12 * K), 0); y1 = min(y1 + int(12 * K), h)
         b = a[y0:y1].copy()
         bh = y1 - y0
         t = np.arange(bh)[:, None]
@@ -249,38 +254,38 @@ def brume():
 
 def feu():
     """B15 : flammes. Deux versions : alpha (contour encré gardé, mélange normal) et additif (lueur comprise)."""
-    a = load(os.path.join(GEN, "ui_feu_v01.png"))
+    a = load(os.path.join(GEN, "ui_feu_v01.png")); K = kscale(a)
     mx = a.max(-1)
-    core = fill_holes(maxf(mx > 0.30, 3))
-    core = components(core, 500)
+    core = fill_holes(maxf(mx > 0.30, max(1, round(3 * K))))
+    core = components(core, int(500 * K * K))
     body = np.zeros_like(mx, bool)
     for c in core:
         body |= c
-    al = blur(body.astype(float), 1.0)
+    al = blur(body.astype(float), 1.0 * K)
     glow = np.clip((a - 0.02) / 0.98, 0, 1)
-    y0, y1, x0, x1 = bbox(mx > 0.06, 6)
+    y0, y1, x0, x1 = bbox(mx > 0.06, int(6 * K))
     return [save_rgba(unblend(a, al, (0, 0, 0))[y0:y1, x0:x1], al[y0:y1, x0:x1], os.path.join(OUT, "Campement", "Campement_Feu.png")),
             save_rgb(glow[y0:y1, x0:x1], os.path.join(OUT, "Campement", "Campement_Feu_Additif.png"))]
 
 
 def sieges():
     """B16 : fond gris #C8C8C8 ; 4 sprites de même hauteur de toile (assises alignées), gris retiré des bords."""
-    a = load(os.path.join(GEN, "ui_sieges_v01.png"))
+    a = load(os.path.join(GEN, "ui_sieges_v01.png")); K = kscale(a)
     g = np.array([200, 200, 200]) / 255.0
     bg = a.reshape(-1, 3)[np.r_[0:200, -200:0]].mean(0)       # gris mesuré (coins)
     dist = np.linalg.norm(a - bg, axis=-1)
-    m = fill_holes(minf(maxf(dist > 0.07, 2), 2))
-    comps = components(m, 3000)[:4]
+    m = fill_holes(minf(maxf(dist > 0.07, max(1, round(2 * K))), max(1, round(2 * K))))
+    comps = components(m, int(3000 * K * K))[:4]
     comps.sort(key=lambda c: np.nonzero(c)[1].mean())
     ys = np.nonzero(np.any(np.stack(comps), 0))[0]
-    gy0, gy1 = ys.min() - 4, ys.max() + 5
+    gy0, gy1 = ys.min() - int(4 * K), ys.max() + int(5 * K)
     names = ["Tronc", "Pierre", "Banc", "Rocher"]
     out, info = [], []
     for n, c in zip(names, comps):
         # bord : on rentre d'un pixel (le liseré anticrénelé est mélangé au gris), puis bord doux d'un pixel
-        core = minf(c, 1)
-        al = np.clip(blur(core.astype(float), 0.8) * 1.15, 0, 1) * maxf(core, 1)
-        _, _, x0, x1 = bbox(c, 4)
+        core = minf(c, max(1, round(K)))
+        al = np.clip(blur(core.astype(float), 0.8 * K) * 1.15, 0, 1) * maxf(core, max(1, round(K)))
+        _, _, x0, x1 = bbox(c, int(4 * K))
         out.append(save_rgba(unblend(a, al, bg)[gy0:gy1, x0:x1], al[gy0:gy1, x0:x1], os.path.join(OUT, "Campement", "Campement_Siege_%s.png" % n)))
         cy = np.nonzero(c)[0]
         info.append("%s : x %d-%d, haut %d, bas %d" % (n, x0, x1, cy.min(), cy.max()))

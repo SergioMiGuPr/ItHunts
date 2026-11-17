@@ -19,8 +19,8 @@ Bloc de style commun, **à coller à la fin de chaque prompt** (noté `[STYLE]`)
 
 Reçues (dans `docs/art/ui/generees/`) : B1 (`ui_campement_vide_v01` + `ui_campement_passe1_v01`), B3, B4, B5, B6, B15, B16 ;
 découpées (`UI-HANDOFF.md` § 2). **B7/B8 abandonnées** : château découpé par script dans `ui_menu_principal_fond_v01`, masque
-des fenêtres tiré de leur rouge. **Les images reçues font 1280 × 714** : si Higgsfield propose le téléchargement en 2K
-(2752 × 1536), c'est celui-là qu'il faut pour le menu en plein écran.
+des fenêtres tiré de leur rouge. Les originaux **2K (2752 × 1536)** ont remplacé les premières versions (1280 × 714) le
+2026-11-17 ; découpes refaites.
 
 **Leçon (utilisateur)** : avec une image de référence, le modèle **modifie la scène** au lieu d'en extraire un élément ; un
 objet seul marche **sans référence**, sur noir ou gris uni ; une retouche marche en **passes d'une seule suppression**. D'où

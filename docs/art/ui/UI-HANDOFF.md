@@ -127,32 +127,33 @@ Non découpées (décision) : cage, orbe fêlée, losange.
 Panorama unique (titre à gauche, campement à droite, même ciel et même château), calques et prefab
 `Assets/Art/UI/Menus/Fond_Panorama.prefab` (à venir). Images à générer : `docs/art/ui/IMAGES-A-GENERER.md`.
 
-### 2.1 Découpes faites (2026-11-17, `Assets/Art/UI/Menus/`)
+### 2.1 Découpes faites (2026-11-17, refaites sur les originaux 2K, `Assets/Art/UI/Menus/`)
 
 Script : `Assets/Art/Source~/UI/scripts/lotb_decoupes.py` (réglages en tête de chaque fonction) ; planche de contrôle :
-`docs/art/rendus/UI/LotB_decoupes.jpg`. Pas encore importées dans Unity (réglages d'import et `.meta` à faire).
+`docs/art/rendus/UI/LotB_decoupes.jpg`. Importées dans Unity : Sprite, **PPU 200**, Full Rect, sans mipmaps, Clamp, compression
+HQ, taille max 4096. Les réglages en pixels du script suivent la définition des images (facteur largeur / 1280).
 
 | Sprite | Pixels | Mélange | Usage |
 |---|---|---|---|
-| `Fond/Fond_Ciel` | 1280 × 714 | opaque | ciel (B3) assombri : gamma 1.25, gain 0.72 (bleu un peu gardé) ; étiré sur toute la largeur, parallaxe 10 % |
-| `Fond/Fond_Lune` | 1010 × 1010 | alpha | disque (rayon 174 px au centre de la toile) ; le sol de l'image d'origine est ignoré ; parallaxe 12 % |
-| `Fond/Fond_Lune_Halo` | 1010 × 1010 | **additif** | halo reconstruit symétrique d'après son profil au-dessus du sol ; **sous** le disque, même centre ; à faire pulser (intensité) |
-| `Fond/Fond_Nuages_1` à `_5` | ~1280 × 100–150 | alpha | 5 bandes de nuages peints (contour encré : alpha plein, pas d'additif) ; parallaxe 15 et 25 % |
-| `Fond/Fond_Brume_1`, `_2` | 1280 × 238 / 275 | **additif** | bas de bande fondu sur 45 %, bords gauche et droit raccordés (répétables) ; parallaxe 40 et 80 % |
+| `Fond/Fond_Ciel` | 2752 × 1536 | opaque | ciel (B3) assombri : gamma 1.25, gain 0.72 (bleu un peu gardé) ; étiré sur toute la largeur, parallaxe 10 % |
+| `Fond/Fond_Lune` | 2174 × 2174 | alpha | disque (rayon 375 px au centre de la toile) ; le sol de l'image d'origine est ignoré ; parallaxe 12 % |
+| `Fond/Fond_Lune_Halo` | 2174 × 2174 | **additif** | halo reconstruit symétrique d'après son profil au-dessus du sol ; **sous** le disque, même centre ; à faire pulser (intensité) |
+| `Fond/Fond_Nuages_1` à `_5` | 2618–2752 × 218–323 | alpha | 5 bandes de nuages peints (contour encré : alpha plein, pas d'additif) ; parallaxe 15 et 25 % |
+| `Fond/Fond_Brume_1`, `_2` | 2752 × 510 / 590 | **additif** | bas de bande fondu sur 45 %, bords gauche et droit raccordés (répétables) ; parallaxe 40 et 80 % |
 | `Fond/Fond_Chateau` | 1035 × 945 | alpha | château, ponts, falaise, cascades, découpés dans `ui_menu_principal_fond_v01` (B7/B8 abandonnées) ; coin haut gauche à **(1142, 74)** dans ce fond de 2752 × 1536 ; bas fondu dans la brume (y 790 → 1000) ; parallaxe 25 % |
 | `Fond/Fond_Chateau_Fenetres` | 1035 × 945 | masque (gris) | fenêtres rouges tirées de leur couleur, même rect que le château : lueur animée (masque × couleur HDR, additif) |
-| `Campement/Campement_Fond` | 1280 × 714 | opaque | B1 (campement vide) tel quel, en attendant le panorama découpé en calques |
-| `Campement/Campement_Feu` | 550 × 674 | alpha | flammes (B15) avec leur contour encré |
-| `Campement/Campement_Feu_Additif` | 550 × 674 | **additif** | mêmes flammes avec la lueur et les étincelles ; superposer les deux, ou l'additif seul pour une flamme plus légère |
-| `Campement/Campement_Siege_Tronc`, `_Pierre`, `_Banc`, `_Rocher` | 332 / 209 / 365 / 291 × 219 | alpha | B16 ; **même hauteur de toile** (y 242–461 de l'image d'origine) : alignés par le bas de leur rect, les assises tombent à la même hauteur ; gris de fond retiré des bords |
+| `Campement/Campement_Fond` | 2752 × 1536 | opaque | B1 (campement vide) tel quel, en attendant le panorama découpé en calques |
+| `Campement/Campement_Feu` | 1205 × 1459 | alpha | flammes (B15) avec leur contour encré |
+| `Campement/Campement_Feu_Additif` | 1205 × 1459 | **additif** | mêmes flammes avec la lueur et les étincelles ; superposer les deux, ou l'additif seul pour une flamme plus légère |
+| `Campement/Campement_Siege_Tronc`, `_Pierre`, `_Banc`, `_Rocher` | 712 / 443 / 780 / 620 × 469 | alpha | B16 ; **même hauteur de toile** (y 522–991 de l'image d'origine) : alignés par le bas de leur rect, les assises tombent à la même hauteur ; gris de fond retiré des bords |
 
 **Mode additif** : PNG RGB sur noir pur ; matériau UI additif (`Blend One One`, ou *Particles/Additive* sur un `RawImage`). Le
 noir n'ajoute rien, on peut donc empiler et animer l'opacité par la couleur (`Image.color`), pas par l'alpha.
 
 ### 2.2 Limites connues
 
-- **Définition** : les images reçues font **1280 × 714** (au lieu du 2K demandé, 2752 × 1536) ; étirées en plein écran 1080p,
-  elles sont floues (×1.5). À télécharger en 2K si Higgsfield le permet, puis relancer le script (mêmes réglages).
+- **Définition** : réglée (2026-11-17) : les 8 images sont les originaux **2752 × 1536** ; en plein écran 1080p, les fonds
+  sont réduits (×0.7) et restent nets jusqu'en 1440p.
 - **Château** : segmentation semi-manuelle (polygone, germes le long des flèches, chemin le plus court guidé par les contours).
   Restent : deux petites taches de ciel aux pointes de la tour gauche, le ciel vu sous les arches du pont (gardé), et des
   branches des arbres proches aux bords bas (gauche et droite). Passe d'édition E1 (`IMAGES-A-GENERER.md`) pour les retirer.
@@ -163,8 +164,7 @@ noir n'ajoute rien, on peut donc empiler et animer l'opacité par la couleur (`I
 ### 2.3 Reste à faire
 
 B2 (raccord, entrée prête) ; passes d'édition E1–E9 (remplacent B9–B14) puis découpe des calques arbres proches, sol et
-premier plan, fond lointain ; prefab `Fond_Panorama` avec parallaxe ; import Unity (Sprite, PPU 200, Full Rect, Clamp,
-sans mipmaps), matériau additif.
+premier plan, fond lointain ; prefab `Fond_Panorama` avec parallaxe ; matériau additif.
 
 ## 2 bis. Carte ouverte (Tab) (fait, 2026-11-17)
 
