@@ -682,12 +682,11 @@ de la DA, rien n'a été modifié) :
   la main animée, plus le flottement de la vue) ; `Pose_MainOuverte` = **répulsion** (geste et maintenue), `Pose_Griffe` =
   **traction** (noms réglables dans `FpsView_Default`). Planche des 4 personnages et 14 poses :
   `docs/design/features/vue-fps/captures/bras_v2/`.
-- **À corriger côté DA : les 8 FBX `SK_BrasFPS_*` v2 sont retournés** (faces et normales vers l'intérieur : volume signé négatif,
-  −1 340 à −1 690 cm³ ; la goule, pour comparaison, est positive). Le toon (`_Cull` Back) le cache, mais le contour en coque
-  inversée (`ItHunts/ContourMains`) recouvrait tout le bras en noir. **Contournement sur `main`** : `FpsArmsSetup` relève les
-  maillages retournés et `HandsOutline` leur donne un contour inversé (faces avant cachées, épaisseur négative). À l'export :
-  normales vers l'extérieur (Blender : *Recalculate Outside*, ou retirer la mise à l'échelle négative du miroir avant l'export) ;
-  le contournement se désactive tout seul quand le volume redevient positif.
+- **Orientation des bras (corrigée par la PR #14, 2026-11-17)** : les 8 FBX `SK_BrasFPS_*` sont à l'endroit (volume signé positif,
+  1 339 à 1 686 cm³). Le contournement côté `main` (contour inversé pour les maillages retournés) est retiré : le contour des mains
+  (`ItHunts/ContourMains`, coque qui cache les faces avant) suppose des **normales vers l'extérieur**. Le test
+  `FpsViewTests.BrasFps_FacesVersLExterieur` vérifie chaque livraison (un bras retourné serait noir). Captures après la PR #14 :
+  `docs/design/features/vue-fps/captures/bras_pr14/`.
 
 ## Bras du traqueur : allongement par l'échelle des os (D-070, 2026-11-17)
 

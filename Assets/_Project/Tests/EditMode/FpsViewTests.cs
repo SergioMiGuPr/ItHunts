@@ -25,6 +25,24 @@ namespace ItHunts.Tests
         [TearDown]
         public void TearDown() => Object.DestroyImmediate(_cfg);
 
+        // ---------- Bras de la DA ----------
+
+        [Test]
+        public void BrasFps_FacesVersLExterieur()
+        {
+            // PR #14 : les bras v2 sont réexportés à l'endroit ; le contour des mains (coque, faces avant cachées) suppose un volume
+            // signé positif. Un maillage retourné ferait des bras noirs.
+            int n = 0;
+            foreach (string who in new[] { "Renard", "Cameleon", "Koala", "Hibou" })
+                foreach (string side in new[] { "D", "G" })
+                    foreach (Mesh m in AssetDatabase.LoadAllAssetsAtPath($"Assets/Art/Models/FPS/SK_BrasFPS_{who}_{side}.fbx").OfType<Mesh>())
+                    {
+                        Assert.That(HandsOutline.SignedVolume(m), Is.GreaterThan(0.0), $"{m.name} retourné (faces vers l'intérieur)");
+                        n++;
+                    }
+            Assert.That(n, Is.GreaterThanOrEqualTo(8), "un maillage par bras et par personnage");
+        }
+
         // ---------- Mouvement des mains ----------
 
         [Test]
