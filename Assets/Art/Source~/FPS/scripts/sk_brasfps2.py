@@ -48,7 +48,30 @@ STYLE2 = {
                    gant_clair="#5C4136", poil="#B5512C", poil_clair="#D67A45", manche="#5E1F24", lisere="#3A1A1C",
                    rune="#9C3A34", sangle="#2B1E1A", boucle="#9C7A3A", couture="#7A655C",
                    doigts_fins=1.0, gant_doigts=0.42, gant_pouce=0.55, griffe_long=0.0075, avant_bras="poil",
-                   manche_z=(-0.275, -0.168)),
+                   touffes="poil", manche_z=(-0.275, -0.168)),
+    # Koala (vert) : gant complet gris-vert (doigts couverts), griffes sombres qui percent le bout du gant, avant-bras de
+    # fourrure grise, manche olive à liseré vert, runes vertes
+    "Koala": dict(SB.STYLE["Koala"], peau="#7D7A74", peau_ombre="#4A4743", griffe="#1B1B19", gant="#3D433A",
+                  gant_clair="#5A6355", poil="#8E8B86", poil_clair="#C8C4BE", manche="#4A4B38", lisere="#2E3524",
+                  rune="#4E9A48", sangle="#3E2C24", boucle="#B08A3A", couture="#6B7060",
+                  doigts_fins=1.06, gant_doigts=9.0, gant_pouce=9.0, griffe_long=0.0060, avant_bras="poil",
+                  touffes="poil", manche_z=(-0.275, -0.172)),
+    # Caméléon (orange) : mitaine sombre, doigts verts écailleux sans griffes, avant-bras d'écailles, manche rouge sombre
+    # rayée, ourlet orange, runes orange
+    "Cameleon": dict(SB.STYLE["Cameleon"], peau="#8DAA5A", peau_ombre="#4E6B2E", griffe="#4E6B2E", gant="#45414A",
+                     gant_clair="#66606E", poil="#8DAA5A", poil_clair="#B8CC7A", manche="#5A2424", lisere="#D2581E",
+                     rune="#F2B35A", sangle="#3E2A22", boucle="#B08A3A", couture="#77717C", rayure1="#7E9A56",
+                     rayure2="#3C5A2C", ecaille="#6F8E45", ecailles=True, ecaille_freq=220.0,
+                     doigts_fins=0.88, gant_doigts=0.40, gant_pouce=0.52, griffe_long=0.0, avant_bras="peau",
+                     touffes=None, rayures=True, manche_z=(-0.275, -0.165)),
+    # Hibou (bleu) : pas de gant, doigts écailleux pâles en serres (longues griffes noires), avant-bras de plumes,
+    # brassard de cuir à liseré bleu nuit, runes bleues
+    "Hibou": dict(SB.STYLE["Hibou"], peau="#CFC4AE", peau_ombre="#8C7F6A", griffe="#141111", gant="#4A362C",
+                  gant_clair="#6A5040", poil="#B19B85", poil_clair="#D6CBB6", poil_sombre="#615048", manche="#4A362C",
+                  lisere="#22283A", rune="#4A8FBF", sangle="#33251F", boucle="#B08A3A", couture="#6A5A50",
+                  ecaille="#B3A68E", ecailles=True, ecaille_freq=300.0, sans_gant=True,
+                  doigts_fins=0.86, gant_doigts=0.0, gant_pouce=0.0, griffe_long=0.0150, avant_bras="poil",
+                  touffes="plumes", plumage=True, manche_z=(-0.275, -0.205)),
 }
 
 
@@ -83,6 +106,8 @@ def glove_planes(JH, st):
     out = {}
     for name in MA.FINGER_NAMES:
         pts = JH[name]; g = st["gant_pouce"] if name == "Pouce" else st["gant_doigts"]
+        if g >= 0.99 or g <= 0.0:                       # doigt couvert jusqu'au bout (koala) ou pas de gant : pas d'ouverture
+            continue
         lens = [np.linalg.norm(pts[k + 1] - pts[k]) for k in range(3)]; target = g * sum(lens)
         acc = 0.0
         for k in range(3):
@@ -118,7 +143,11 @@ def cut_glove(bm, JH, st):
     # gant : au-delà de la manchette, sauf la peau d'un doigt (à moins de 13 mm de son axe, hors paume) passé son plan
     C_ = np.array([f.calc_center_median()[:] for f in bm.faces])
     g = C_[:, 2] > CUFF_Z
+    if st.get("sans_gant"):
+        return np.zeros(len(C_), bool)
     for name in MA.FINGER_NAMES:
+        if name not in planes:
+            continue
         co, no = planes[name]
         dist, S, K, R, A = MA.finger_coords(C_, JH, name)
         g &= ~((dist < 0.013) & (S > 0.02) & ((C_ - co) @ no > 0))
@@ -166,6 +195,9 @@ def build_mesh(perso):
         f.material_index = MI[st["avant_bras"]] if z < CUFF_Z else MI["peau"]
     # ---- gant : coque des faces « gant », poussée de GLOVE_OFF, rebord rentré aux bords
     gfaces = [f for f in bm.faces if gface[f.index]]
+    if not gfaces:                                    # pas de gant (hibou) : la peau reste telle quelle
+        bm.normal_update()
+        return bm, JH, st, proxy
     gset = set(gfaces)
     inside = np.zeros(len(bm.verts), bool)
     for f in gfaces:
@@ -263,7 +295,28 @@ def decor(bm, JH, st):
     for k in range(32):
         f = bm.faces.new((inner2[(k + 1) % 32], inner2[k], last2[k], last2[(k + 1) % 32])); f.material_index = MI["lisere"]
     # -- touffes de fourrure : sous l'ourlet de la manche (vers la main) et au bord de la manchette (vers le coude)
-    if st["avant_bras"] == "poil":
+    if st.get("touffes") == "plumes":
+        # deux rangs de plumes à bout arrondi, couchées sur le bras, pointes vers la main (sous la manche et au poignet) ;
+        # le reste de l'avant-bras est peint (plumes en écailles)
+        for ri, (zr, L0, cnt) in enumerate(((z1 + 0.003, 0.024, 12), (-0.060, 0.018, 11))):
+            c, (rx, ry) = section(P, zr)
+            for k in range(cnt):
+                a = 2 * math.pi * (k + 0.5 * ri + rng.uniform(-0.1, 0.1)) / cnt
+                out = Vector((math.cos(a), math.sin(a), 0)); tang = Vector((-math.sin(a), math.cos(a), 0))
+                base = Vector((c[0] + (rx + 0.0006) * math.cos(a), c[1] + (ry + 0.0006) * math.sin(a), zr))
+                L = L0 * rng.uniform(0.85, 1.1); w = 0.0075 * rng.uniform(0.9, 1.1)
+                # contour : base, flancs, bout arrondi (éventail de 7 points), décollé de 1.2 mm au plus
+                pts = []
+                for j in range(7):
+                    t = math.pi * j / 6.0
+                    pts.append(base + Vector((0, 0, L * (0.55 + 0.45 * math.sin(t)))) + tang * (w * math.cos(t)) + out * (0.0006 + 0.0006 * math.sin(t)))
+                b0 = bm.verts.new(base - out * 0.0004)
+                top = [bm.verts.new(q) for q in pts]
+                bot = [bm.verts.new(q - out * 0.0005) for q in pts]
+                for j in range(6):
+                    f = bm.faces.new((b0, top[j], top[j + 1])); f.material_index = MI["poil"]
+                    f = bm.faces.new((b0, bot[j + 1], bot[j])); f.material_index = MI["poil"]
+    if st.get("touffes") == "poil":
         for zr, sgn, cnt, L in ((z1 + 0.002, +1, 18, 0.016), (CUFF_Z - 0.001, -1, 16, 0.012)):
             c, (rx, ry) = section(P, zr)
             for k in range(cnt):
@@ -290,7 +343,7 @@ def decor(bm, JH, st):
     # -- griffes : du lit de l'ongle au-delà du bout, recourbées vers la paume
     claws = {}
     up = np.array([0, 1.0, 0])
-    for name in MA.FINGER_NAMES:
+    for name in (MA.FINGER_NAMES if st["griffe_long"] > 0 else ()):
         pts = JH[name]; T, Dp = pts[3], pts[2]
         d = (T - Dp) / np.linalg.norm(T - Dp)
         u = up - d * (d @ up); u /= np.linalg.norm(u)
@@ -675,6 +728,15 @@ def paint_texture(ob, JH, st, path):
         if key == "peau":
             # ombre chaude dans les creux, reflet sur les bosses ; ongle plus sombre cerné d'encre
             col = col * (1 - 0.3 * cpos) + hexa("peau_ombre")[None] * 0.3 * cpos + 0.08 * cneg
+            if st.get("ecailles"):
+                # écailles : cellules, bord d'encre fin, teinte qui varie d'une cellule à l'autre, plus fines vers le bout
+                fq = st.get("ecaille_freq", 260.0)
+                d = W.cracks(h, fq, 33)
+                cellv = W.vnoise(h, fq, 34)
+                col = col * (0.86 + 0.24 * cellv[:, None])
+                col = col * 0.75 + hexa("ecaille")[None] * 0.25 * (0.6 + 0.8 * cellv[:, None])
+                edge = 1 - W.smoothstep(0.035, 0.085, d)
+                col = col * (1 - 0.55 * edge[:, None])
             for nm in MA.FINGER_NAMES:
                 pts = JH[nm]; T, Dp = pts[3], pts[2]
                 d = (T - Dp) / np.linalg.norm(T - Dp)
@@ -700,6 +762,23 @@ def paint_texture(ob, JH, st, path):
         elif key == "griffe":
             t = W.smoothstep(0.0, 1.0, W.vnoise(h, 300.0, 91))
             col = col * (0.85 + 0.35 * t[:, None])
+        elif key == "poil" and st.get("plumage"):
+            # plumes en écailles : rangs le long du bras, bord arrondi cerné d'encre, barbes claires, pointe sombre
+            z = h[:, 2]; a = (np.arctan2(h[:, 1], h[:, 0]) / (2 * math.pi)) % 1.0
+            row = np.floor(z / 0.011); v = (z / 0.011) - row
+            uu = (a * 11 + 0.5 * (row % 2)) % 1.0
+            edge_v = 1.0 - 0.55 * (1 - (2 * uu - 1) ** 2)                      # bord en arc de chaque plume
+            inside = v < edge_v
+            t = np.clip(v / np.maximum(edge_v, 1e-3), 0, 1)
+            col = base[None] * (0.7 + 0.35 * (1 - t))[:, None]
+            col = col * (1 - 0.6 * t[:, None] ** 3) + hexa("poil_sombre")[None] * 0.6 * t[:, None] ** 3
+            rachis = np.abs(uu - 0.5) < 0.04
+            col[rachis & inside] = col[rachis & inside] * 0.7 + hexa("poil_clair") * 0.3
+            barbs = (np.mod((uu - 0.5) * 18 + v * 6, 1.0) < 0.25) & inside
+            col[barbs] = col[barbs] * 0.82
+            line = np.abs(v - edge_v) < 0.07
+            col[line] = ink
+            col = col * (1 - 0.35 * cpos)
         elif key == "poil":
             # mèches peintes le long du bras : trois échelles étirées, traits sombres entre les mèches, pointes claires
             v1 = W.vnoise(h, 260.0, 21, stretch=(1.0, 1.0, 0.08))
@@ -713,6 +792,13 @@ def paint_texture(ob, JH, st, path):
             col = col * (1 - 0.35 * cpos)
         elif key in ("manche", "lisere"):
             col = col * (1 - 0.3 * cpos)
+            if key == "manche" and st.get("rayures"):
+                # rayures obliques (deux verts) peintes sur la manche, bord irrégulier
+                ang = (np.arctan2(h[:, 1], h[:, 0]) / (2 * math.pi)) % 1.0
+                ph = (h[:, 2] / 0.022 + ang * 1.0 + 0.15 * W.vnoise(h, 300.0, 44)) % 1.0
+                s1 = ph < 0.18; s2 = (ph > 0.5) & (ph < 0.58)
+                col[s1] = col[s1] * 0.3 + hexa("rayure1") * 0.7
+                col[s2] = col[s2] * 0.4 + hexa("rayure2") * 0.6
             if key == "lisere":
                 ang = (np.arctan2(h[:, 1], h[:, 0]) / (2 * math.pi)) % 1.0
                 z1 = st["manche_z"][1]

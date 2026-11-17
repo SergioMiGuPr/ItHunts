@@ -206,9 +206,15 @@ pose du code (main droite levée, main gauche au repos) : `rendus/Lot/Traqueur_p
 Noms identiques dans tous les FBX d'un même objet (clips Unity « `<Armature>|<Nom>` »). Boucles réglées à l'import
 (*Loop Time*), première et dernière images identiques.
 
-### Bras FPS (`SK_BrasFPS_<Perso>_D` / `_G`, armature `BrasFPS`, 17 os ; renard v2 : 20 os)
+### Bras FPS (`SK_BrasFPS_<Perso>_D` / `_G`, armature `BrasFPS`, 20 os depuis la v2)
 
-**Version 2, renard seul pour l'instant (2026-11-17, branche `art-mains`)** — retour de playtest : « les doigts sont des
+**Version 2, les 4 personnages (2026-11-17, branche `art-mains`)** : renard validé par l'utilisateur, puis koala (gant
+complet, griffes qui percent le gant, fourrure grise ; 8 230 triangles), caméléon (mitaine, doigts et avant-bras écailleux,
+pas de griffes, manche rayée ; 9 524), hibou (pas de gant, main écailleuse en serres, plumes ; 8 005). **Même armature, mêmes
+noms d'os, mêmes repères, mêmes 16 clips** pour les 4 : ce qui suit vaut pour tous. Planches
+`rendus/FPS/BrasFPS_v2_<Perso>.jpg`.
+
+Historique, renard seul (2026-11-17) — retour de playtest : « les doigts sont des
 tubes à anneaux ». Main refaite sur une **base anatomique CC0** (maillage de base MakeHuman), modelée par script (phalanges
 qui s'affinent, jointures, coussinets, éminences du pouce, tendons, os du poignet), habillée : gant sans doigts en coque à
 rebord épais, griffes, fourrure, manche à runes, sangle. **10 018 triangles par bras**, 4 os au plus par sommet, texture
