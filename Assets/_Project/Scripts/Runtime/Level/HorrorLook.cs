@@ -115,8 +115,8 @@ namespace ItHunts.Level
         {
             if (Current == this)
                 Current = null;
-            if (_profile != null)
-                Destroy(_profile);
+            if (_profile != null && !Quitting)
+                Destroy(_profile);                                      // à la fermeture, Unity libère tout lui-même
         }
 
         private void LateUpdate()
@@ -222,10 +222,29 @@ namespace ItHunts.Level
 
         public const string EnragePassName = "ItHunts Enragé (monde)";
 
+        /// <summary>
+        /// L'application se ferme : on ne touche plus au renderer URP ni aux globales des shaders. Les builds « après » plantaient à
+        /// la fermeture (D3D12Core.dll, 0xc0000005, 6 fermetures sur 6, aucune pour les builds « avant ») : la passe de l'Enragé était
+        /// désactivée (SetActive) pendant la destruction du pipeline et du périphérique graphique.
+        /// </summary>
+        public static bool Quitting { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void WatchQuit()
+        {
+            Quitting = false;
+            Application.quitting -= OnQuitting;
+            Application.quitting += OnQuitting;
+        }
+
+        private static void OnQuitting() => Quitting = true;
+
         private void OnDisable()
         {
+            if (Quitting)
+                return;                                                 // fermeture : le pipeline se détruit, ne rien lui demander
             Shader.SetGlobalFloat(EnrageWeightId, 0f);
-            if (_enragePass != null)
+            if (_enragePass != null && _enragePass.isActive)
                 _enragePass.SetActive(false);
         }
 
