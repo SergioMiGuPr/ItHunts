@@ -206,7 +206,26 @@ pose du code (main droite levée, main gauche au repos) : `rendus/Lot/Traqueur_p
 Noms identiques dans tous les FBX d'un même objet (clips Unity « `<Armature>|<Nom>` »). Boucles réglées à l'import
 (*Loop Time*), première et dernière images identiques.
 
-### Bras FPS (`SK_BrasFPS_<Perso>_D` / `_G`, armature `BrasFPS`, 17 os)
+### Bras FPS (`SK_BrasFPS_<Perso>_D` / `_G`, armature `BrasFPS`, 17 os ; renard v2 : 20 os)
+
+**Version 2, renard seul pour l'instant (2026-11-17, branche `art-mains`)** — retour de playtest : « les doigts sont des
+tubes à anneaux ». Main refaite sur une **base anatomique CC0** (maillage de base MakeHuman), modelée par script (phalanges
+qui s'affinent, jointures, coussinets, éminences du pouce, tendons, os du poignet), habillée : gant sans doigts en coque à
+rebord épais, griffes, fourrure, manche à runes, sangle. **10 018 triangles par bras**, 4 os au plus par sommet, texture
+`T_BrasFPS_Renard_BaseColor` (même fichier, même matériau `M_BrasFPS_Renard`). Planche `rendus/FPS/BrasFPS_v2_Renard.jpg`.
+Ce qui change pour `main` :
+- **20 os** : les 17 d'origine (mêmes noms) + `Metacarpe_Annulaire` (parent d'`Annulaire_1`), `Metacarpe_Auriculaire`
+  (parent d'`Auriculaire_1`) et `Paume_Pouce` (parent de `Pouce_1`), tous enfants de `Poignet`. La hiérarchie change :
+  **relancer `FpsArmsSetup`** (les tableaux de `FpsArmPoseSet` passent de 17 à 20 rotations). `FpsArms.Curl` ferme les
+  doigts par préfixe de nom : les métacarpes ne bougent que par les clips (voulu).
+- **Clips** : les 14 de la v1 (mêmes noms, même convention paume vers +Y du repère de la main ; `Pose_Poing` sans demi-tour)
+  + **`Pose_MainOuverte`** et **`Pose_Griffe`** ; boucles `Boucle_*` inchangées.
+- **Repères** : `Socket_Poignet`, `Socket_Orbe`, `Socket_Artefact`, `Socket_Artefact_Anneau` aux mêmes places (enfants fixes
+  de `BrasFPS`) ; nouveau **`Socket_Flottement`** (D et G), **enfant de l'os `Poignet`**, à 6.5 cm de la paume : point de
+  flottement de l'orbe ou de l'artefact qui suit la main (au-dessus de la paume dans les poses de flottement).
+- Mêmes mesures de main (poignet → bout du majeur 0.165 m) et même pivot : le placement de FpsView ne change pas.
+Koala, caméléon et hibou restent en v1 en attendant l'accord sur le renard.
+
 
 **Détail (2026-11-16)** : mains et avant-bras repris d'après `fiches/planche_bras_fps_v01.png` (doigts arrondis à
 phalanges renflées et bout rond, gant sans doigts arrêté sur un bourrelet, coutures en pointillés sur le dos de la main et la
