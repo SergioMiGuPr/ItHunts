@@ -426,6 +426,27 @@ Scripts : `Source~/Ennemis/scripts/traqueur_v3/` (étapes 1 à 5). **Ce qui suit
   `Traqueur_PassageBas`** à la vitesse de lecture 1 (lecture = vitesse de poursuite / ces valeurs : plus de glisse).
 - **Mesures** (repos, image 1) : épaule **11.6 m** de haut, **2.6 m** du centre, **3.56 m devant le pivot** ; sommet **13.6 m**
   (repos), **8.5 m** (passage bas), 20 m mains levées ; genou 3.8 m ; bout des doigts 4.4 m. Mêmes noms de clips et durées.
+- **Tête refaite (2026-11-17, branche `art-traqueur-tete`)** : la tête livrée avait des trous (visage, yeux, bouche) et ses
+  pupilles ne s'affichaient plus. **Cause** : la pièce « tête » d'origine était bornée à 2.6 m autour de la coupe du cou ;
+  museau, yeux et mâchoire (2.6 à 2.9 m, mâchoire pendante sous le cou) manquaient et des fragments de la retopologie restaient
+  à leur place. **Correctif** (`traqueur_v3/tete_fix.py`) :
+  - tête reprise de la source par le même plan de coupe, **sans borne**, mâchoire comprise (1 844 faces), avec sa jupe au cou ;
+  - **calotte crânienne** fermée sous les mèches (le crâne d'origine était la masse de cheveux retirée) : plaquée juste derrière le
+    visage, elle n'apparaît qu'aux trous ;
+  - poids repris du maillage précédent ; normales d'avant sur le reste du corps.
+  **Pupilles** :
+  - masque `T_Traqueur_Emission` agrandi en **disques de 0.4 m** autour de chaque œil, peints sur toutes les faces qui passent
+    dans la sphère : visibles de face, d'en bas et de profil ;
+  - 54 faces sur le masque (6 avant), aucune ailleurs ;
+  - émission inchangée dans `M_Traqueur_Tete` : (4, 0.25, 0.15), *à travers le brouillard* 0.8.
+
+  **Contrôle dans Unity** (pose de repos, brouillard linéaire 6–45 m des niveaux, depuis 1.7 m) : luminance max près de la
+  tête **0.50 à 60 m** en 320 × 180 (seuil de `StalkerVisibilityTests` : 0.06), 0.61 à 30 m, 0.65 à 10 m. Planche
+  `rendus/Traqueur/Traqueur_v3_Tete_corrigee.jpg`.
+
+  **Bilan** : **38 878 triangles** (+514) + mèches 1 344 ; mêmes 32 os, mêmes clips, mêmes matériaux. **Côté `main`** :
+  décocher `eyeGlints` (sphères de repli) dans `Stalker_Default` et relancer le test ; le rouge reste réglable par
+  `_EmissionColor` de `M_Traqueur_Tete`.
 - **Partie C** (clips d'après les vidéos Seedance) : liste des vidéos dans `docs/art/TRAQUEUR-REFERENCES.md`.
 
 #### Ancienne version (v2, 2026-11-16) — remplacée
