@@ -38,6 +38,10 @@ namespace ItHunts.Economy
         private Renderer[] _lidRenderers = new Renderer[0];
 
         public int Price => price >= 0 ? price : settings != null ? settings.chestPrice : 30;
+
+        [Tooltip("Coffre rare (icône MiniCarte_Coffre_Rare sur la carte) : les coffres des parcours, qu'on n'atteint qu'en bougeant bien.")]
+        [SerializeField] private bool rare;
+        public bool Rare { get => rare; set => rare = value; }
         public int PriceFor(PlayerHealth p) => Prices.For(settings, p, PriceKind.Coffre, Price);
         public Vector3 Point => transform.position + Vector3.up * 0.6f;
         public float Range => settings != null ? settings.interactRange : 4f;

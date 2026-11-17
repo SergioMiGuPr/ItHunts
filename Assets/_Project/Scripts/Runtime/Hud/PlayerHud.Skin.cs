@@ -47,6 +47,7 @@ namespace ItHunts.Hud
             BuildHealthBar();
             BuildSoulsBadge();
             BuildMinimap();
+            BuildFullMap();
             // Le timer et le traqueur enragé passent sous la mini-carte (même coin).
             float down = _skin.minimapNativeSize.y * _skin.minimapScale + 12f;
             if (TimerCorner != null)
@@ -164,7 +165,8 @@ namespace ItHunts.Hud
                 _soulsText.rectTransform.localScale = Vector3.one;
                 Stretch(_soulsText.rectTransform);
                 _soulsText.rectTransform.offsetMin = new Vector2(e.w, 0f);
-                _soulsText.rectTransform.offsetMax = new Vector2(-8f, 0f);
+                _soulsText.rectTransform.offsetMax = new Vector2(-_skin.soulsTextRightInset * k, 0f);
+                _soulsText.alignment = TextAnchor.MiddleCenter;                 // centré dans le cartouche (après l'emblème)
                 _soulsText.fontSize = _skin.soulsFontSize;
                 _soulsText.fontStyle = FontStyle.Normal;
                 Outline(_soulsText);
@@ -214,7 +216,8 @@ namespace ItHunts.Hud
             if (MinimapRoot == null || _health == null)
                 return;
             MinimapHud mm = MinimapHud.Current;
-            bool on = mm != null && mm.MapTexture != null && !mm.FullMap;
+            Texture tex = mm != null ? mm.TextureFor(_health.PlayerId) : null;
+            bool on = tex != null && !FullMapOpen;
             if (MinimapRoot.gameObject.activeSelf != on)
                 MinimapRoot.gameObject.SetActive(on);
             if (!on)
@@ -222,7 +225,7 @@ namespace ItHunts.Hud
             Vector3 c = _health.transform.position;
             float metres = _skin.minimapMetres;
             Bounds all = mm.AllBounds;
-            _map.texture = mm.MapTexture;
+            _map.texture = tex;
             _map.uvRect = new Rect((c.x - metres / 2f - all.min.x) / Mathf.Max(1f, all.size.x), (c.z - metres / 2f - all.min.z) / Mathf.Max(1f, all.size.z),
                 metres / Mathf.Max(1f, all.size.x), metres / Mathf.Max(1f, all.size.z));
             float radius = _mapCircle.rect.width * 0.5f, scale = 2f * radius / metres;
@@ -231,16 +234,9 @@ namespace ItHunts.Hud
             int used = 0;
             for (int i = 0; i < mm.MarkCount; i++)
             {
-                if (!mm.Mark(i, out Vector3 at, out Object owner))
+                if (!mm.MarkFor(i, _health.PlayerId, out Vector3 at, out Object owner))
                     continue;
-                Sprite s = owner switch
-                {
-                    Chest ch => ch.OpenedFor(_health.PlayerId) ? _skin.iconChestOpen : _skin.iconChest,
-                    ArtifactMerchant => _skin.iconMerchant,
-                    LockedDoor => _skin.iconSouls,
-                    ExitDoor ed => ed.Open || ed.Unlocked ? _skin.iconExitOpen : _skin.iconExitLocked,
-                    _ => null,
-                };
+                Sprite s = MarkIcon(_skin, owner, _health.PlayerId);
                 Vector2 pos = P(at);
                 if (s == null || pos.magnitude > radius + _skin.iconSize)
                     continue;
@@ -257,14 +253,7 @@ namespace ItHunts.Hud
             {
                 if (p == null || p == _health)
                     continue;
-                CharacterDefinition cd = p.TryGetComponent(out ItHunts.Artifacts.ArtifactHolder holder) ? holder.Character : null;
-                Sprite s = p.Dead ? _skin.iconAllyDead : cd == null ? _skin.allyOwl : cd.id switch
-                {
-                    "renard" => _skin.allyFox,
-                    "koala" => _skin.allyKoala,
-                    "cameleon" => _skin.allyChameleon,
-                    _ => _skin.allyOwl,
-                };
+                Sprite s = AllyIcon(p);
                 Image img = Pooled(_allyIcons, used++, p.Dead ? _skin.iconSize : _skin.allySize, "Allié");
                 img.sprite = s;
                 img.rectTransform.anchoredPosition = P(p.transform.position);

@@ -1425,6 +1425,8 @@ namespace ItHunts.Level
                     Vector3 top = at + Vector3.up * (q.Size.y * 0.5f);
                     GameObject c = Instantiate(chest, top, Quaternion.LookRotation(-az * Mathf.Sign(q.Center.z == 0f ? 1f : q.Center.z), Vector3.up), root);
                     c.name = $"Coffre de parcours : {nm}";
+                    if (c.TryGetComponent(out Economy.Chest rareChest))
+                        rareChest.Rare = true;                          // icône du coffre rare sur la carte
                     c.AddComponent<Orbs.NonMagneticSurface>();          // pas de traction vers lui : on n'y arrive que par le parcours
                 }
             }

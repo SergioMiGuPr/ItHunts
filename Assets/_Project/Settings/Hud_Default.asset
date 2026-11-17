@@ -15,6 +15,8 @@ MonoBehaviour:
   skin: {fileID: 11400000, guid: 1fe93b9ec3d836e48bcbef5afa47b841, type: 2}
   referenceResolution: {x: 1920, y: 1080}
   scale: 1
+  minLayoutWidth: 1100
+  timerFontSize: 56
   safeMargin: 0.05
   crosshairColor: {r: 1, g: 1, b: 1, a: 0.85}
   crosshairSize: 4

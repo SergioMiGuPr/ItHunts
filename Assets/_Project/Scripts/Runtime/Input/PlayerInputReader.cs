@@ -33,6 +33,7 @@ namespace ItHunts.Input
         private ItHunts.Economy.PlayerInteractor _interactor;
         private InputAction _toggleDebug;
         private InputAction _pause;
+        private InputAction _map;
 
         public Vector2 Move { get; private set; }
 
@@ -57,6 +58,8 @@ namespace ItHunts.Input
         /// <summary>E / Y maintenu (réanimation d'un allié, étape 9).</summary>
         public bool InteractHeld => _interact != null && _interact.IsPressed();
         public bool PausePressed { get; private set; }
+        /// <summary>Carte ouverte maintenue (Tab / croix haut), par joueur.</summary>
+        public bool MapHeld => _map != null && _map.IsPressed();
 
         public string ControlScheme => _playerInput != null ? _playerInput.currentControlScheme : null;
         public bool UsingGamepad => ControlScheme == GamepadScheme;
@@ -84,6 +87,7 @@ namespace ItHunts.Input
                 _interactor = gameObject.AddComponent<ItHunts.Economy.PlayerInteractor>();   // coffres, marchand, porte (D-043)
             _toggleDebug = actions.FindAction("Player/ToggleDebug", throwIfNotFound: true);
             _pause = actions.FindAction("Player/Pause", throwIfNotFound: true);
+            _map = actions.FindAction("Player/Map", throwIfNotFound: false);
         }
 
         private void Update()

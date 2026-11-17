@@ -58,6 +58,50 @@ namespace ItHunts.Tests
             Assert.That(cfg.restHoldRight, Is.InRange(0.2f, 0.8f), "à demi refermée");
         }
 
+        [Test]
+        public void Hud_Echelle_VueEtroite_LesCoinsTiennent()
+        {
+            var hud = AssetDatabase.LoadAssetAtPath<HudSettings>("Assets/_Project/Settings/Hud_Default.asset");
+            Assert.That(PlayerHud.ScaleFor(1920f, 1080f, hud), Is.EqualTo(1f).Within(1e-4f), "1080p : échelle 1");
+            Assert.That(PlayerHud.ScaleFor(3840f, 2160f, hud), Is.EqualTo(2f).Within(1e-4f));
+            Assert.That(PlayerHud.ScaleFor(2560f, 1080f, hud), Is.EqualTo(1f).Within(1e-4f), "ultra-large : la hauteur");
+            // Écran partagé côte à côte (960 × 1080) et 4:3 : la largeur réduit le HUD pour que les coins tiennent.
+            Assert.That(PlayerHud.ScaleFor(960f, 1080f, hud), Is.LessThan(1f));
+            Assert.That(PlayerHud.ScaleFor(960f, 1080f, hud) * hud.minLayoutWidth, Is.LessThanOrEqualTo(960f + 0.01f));
+            Assert.That(PlayerHud.ScaleFor(512f, 768f, hud) * hud.minLayoutWidth, Is.LessThanOrEqualTo(512f + 0.01f));
+        }
+
+        [Test]
+        public void CarteOuverte_IconesDeLaDA_CoffreRare_ToucheParJoueur()
+        {
+            var skin = AssetDatabase.LoadAssetAtPath<HudSkinSettings>("Assets/_Project/Settings/HudSkin_Default.asset");
+            Assert.That(skin.iconChestRare, Is.Not.Null, "MiniCarte_Coffre_Rare branchée");
+            Assert.That(skin.iconChestRare.name, Does.Contain("Rare"));
+            var go = new GameObject("Coffre");
+            try
+            {
+                var chest = go.AddComponent<ItHunts.Economy.Chest>();
+                Assert.That(PlayerHud.MarkIcon(skin, chest, 1), Is.EqualTo(skin.iconChest));
+                chest.Rare = true;
+                Assert.That(PlayerHud.MarkIcon(skin, chest, 1), Is.EqualTo(skin.iconChestRare));
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+
+            Assert.That(skin.mapIconSize, Is.GreaterThanOrEqualTo(24f), "icônes lisibles sur la carte ouverte");
+            // La carte sans déformation dans sa zone.
+            Vector2 fit = PlayerHud.FitMap(new Vector2(800f, 600f), new Vector2(400f, 100f));
+            Assert.That(fit.x, Is.EqualTo(800f).Within(0.01f));
+            Assert.That(fit.y, Is.EqualTo(200f).Within(0.01f));
+            // Touche de la carte par joueur (Tab, croix haut).
+            var actions = AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/_Project/Input/PlayerControls.inputactions");
+            var map = actions.FindAction("Player/Map");
+            Assert.That(map, Is.Not.Null);
+            Assert.That(map.bindings.Select(b => b.path), Is.SupersetOf(new[] { "<Keyboard>/tab", "<Gamepad>/dpad/up" }));
+        }
+
         // ---------- Mouvement des mains ----------
 
         [Test]

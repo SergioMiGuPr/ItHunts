@@ -210,9 +210,9 @@ namespace ItHunts.Hud
             // Coins réservés (vides), dans la marge de sécurité.
             float m = settings.safeMargin;
             SoulsCorner = Rect("Coin : âmes", _root, new Vector2(m, 1f - m), Vector2.zero, new Vector2(240f, 60f), new Vector2(0f, 1f));
-            TimerCorner = Rect("Coin : timer", _root, new Vector2(1f - m, 1f - m), Vector2.zero, new Vector2(240f, 60f), new Vector2(1f, 1f));
+            TimerCorner = Rect("Coin : timer", _root, new Vector2(1f - m, 1f - m), Vector2.zero, new Vector2(260f, settings.timerFontSize + 16f), new Vector2(1f, 1f));
             StalkerCorner = Rect("Coin : traqueur enragé", _root, new Vector2(1f - m, 1f - m), new Vector2(0f, -70f), new Vector2(240f, 40f), new Vector2(1f, 1f));
-            _timerText = NewText("Timer de la zone", TimerCorner, Vector2.zero, new Vector2(240f, 60f), 34, TextAnchor.MiddleRight);
+            _timerText = NewText("Timer de la zone", TimerCorner, Vector2.zero, new Vector2(260f, settings.timerFontSize + 16f), settings.timerFontSize, TextAnchor.MiddleRight);
             _stalkerText = NewText("Traqueur enragé", StalkerCorner, Vector2.zero, new Vector2(240f, 40f), 22, TextAnchor.MiddleRight);
             _stalkerText.fontStyle = FontStyle.Bold;
             _zoneMessage = NewText("Message de zone", _root, new Vector2(0f, 120f), new Vector2(900f, 60f), 36, TextAnchor.MiddleCenter);
@@ -382,9 +382,21 @@ namespace ItHunts.Hud
             Rect r = cam != null ? cam.rect : new Rect(0f, 0f, 1f, 1f);
             _root.anchorMin = r.min;
             _root.anchorMax = r.max;
-            float viewHeight = cam != null ? cam.pixelRect.height : Screen.height;
-            float reference = settings.referenceResolution.y / Mathf.Max(0.1f, settings.scale);
-            _scaler.scaleFactor = Mathf.Max(0.01f, viewHeight / Mathf.Max(1f, reference));
+            Rect px = cam != null ? cam.pixelRect : new Rect(0f, 0f, Screen.width, Screen.height);
+            _scaler.scaleFactor = ScaleFor(px.width, px.height, settings);
+        }
+
+        /// <summary>
+        /// Échelle du HUD (pur, testable) : la hauteur de la vue rapportée à 1080, et la largeur quand la vue est plus étroite que
+        /// minLayoutWidth (écran partagé côte à côte, 4:3) : les coins (âmes, mini-carte, timer) ne se chevauchent pas et restent dans
+        /// la vue.
+        /// </summary>
+        public static float ScaleFor(float viewWidth, float viewHeight, HudSettings s)
+        {
+            float k = Mathf.Max(0.1f, s.scale);
+            float byHeight = viewHeight / Mathf.Max(1f, s.referenceResolution.y / k);
+            float byWidth = s.minLayoutWidth > 0f ? viewWidth / Mathf.Max(1f, s.minLayoutWidth / k) : float.MaxValue;
+            return Mathf.Max(0.01f, Mathf.Min(byHeight, byWidth));
         }
 
         private void LateUpdate()
@@ -442,6 +454,7 @@ namespace ItHunts.Hud
             UpdateAmmo(tick, now, dt, fixedDt);
             UpdatePlayerHealth(now);
             UpdateHealthBar(now, dt);
+            UpdateFullMap();
             UpdateMinimap();
             UpdateWorld();
         }
@@ -466,16 +479,8 @@ namespace ItHunts.Hud
             }
 
             int left = Mathf.CeilToInt(_zone.TimeLeft);
-            // D-048 : avant la sortie de la salle de départ, le timer attend ; ensuite, prochains événements (traqueur, sortie).
-            if (!_zone.Started)
-                _timerText.text = $"{left / 60}:{left % 60:00}\n<size={Mathf.RoundToInt(_timerText.fontSize * 0.45f)}>sors de la salle de départ</size>";
-            else
-            {
-                string next = _zone.InGrace ? $"traqueur dans {Clock(_zone.GraceLeft)}"
-                    : !_zone.ExitUnlocked ? $"sortie dans {Clock(_zone.ExitUnlockLeft)}"
-                    : !_zone.Enraged ? "sortie ouverte" : string.Empty;
-                _timerText.text = next.Length > 0 ? $"{left / 60}:{left % 60:00}\n<size={Mathf.RoundToInt(_timerText.fontSize * 0.45f)}>{next}</size>" : $"{left / 60}:{left % 60:00}";
-            }
+            // Le temps seul, en grand (retours du 2026-11-17 : plus de texte d'objectif dessous). Il attend la sortie de la salle de départ (D-048).
+            _timerText.text = $"{left / 60}:{left % 60:00}";
             _timerText.color = _zone.Enraged ? new Color(1f, 0.25f, 0.2f) : left <= 30 ? new Color(1f, 0.7f, 0.3f) : Color.white;
             _stalkerText.text = _zone.Enraged ? "TRAQUEUR ENRAGÉ" : string.Empty;
             // D-038 : plus il accélère, plus l'indication pulse fort ; éclat d'une seconde à chaque palier.

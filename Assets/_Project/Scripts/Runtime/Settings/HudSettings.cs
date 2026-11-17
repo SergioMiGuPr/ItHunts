@@ -17,6 +17,12 @@ namespace ItHunts.Settings
         [Tooltip("Résolution de référence (le HUD suit la hauteur de la zone de chaque joueur).")]
         public Vector2 referenceResolution = new Vector2(1920f, 1080f);
         [Min(0.1f)] public float scale = 1f;
+        [Tooltip("Largeur minimale de mise en page (px à l'échelle 1) : une vue plus étroite (écran partagé côte à côte, 4:3) réduit le HUD " +
+                 "pour que les coins tiennent. 0 : seule la hauteur compte.")]
+        [Min(0f)] public float minLayoutWidth = 1100f;
+
+        [Header("Timer de la zone")]
+        [Min(8)] public int timerFontSize = 56;
         [Tooltip("Marge de sécurité sur les bords (part de la hauteur) : coins réservés.")]
         [Range(0f, 0.2f)] public float safeMargin = 0.05f;
 

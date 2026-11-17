@@ -50,6 +50,8 @@ namespace ItHunts.Settings
         public Vector4 soulsEmblem = new Vector4(58f, 51f, 51f, 86f);
         [Min(6)] public int soulsFontSize = 30;
         public Color soulsTextColor = new Color(0.84f, 0.88f, 0.92f);
+        [Tooltip("Marge à droite du nombre d'âmes (px natifs) : le nombre est centré entre l'emblème et le bout du cartouche.")]
+        [Min(0f)] public float soulsTextRightInset = 28f;
 
         [Header("Mini-carte ronde (coin haut droit)")]
         public Sprite minimapFrame;
@@ -67,6 +69,8 @@ namespace ItHunts.Settings
         public Sprite iconArrow;
         public Sprite iconChest;
         public Sprite iconChestOpen;
+        [Tooltip("Coffre rare (coffres des parcours) : MiniCarte_Coffre_Rare.")]
+        public Sprite iconChestRare;
         public Sprite iconMerchant;
         public Sprite iconSouls;
         public Sprite iconExitLocked;
@@ -77,5 +81,7 @@ namespace ItHunts.Settings
         [Min(4f)] public float iconSize = 22f;
         [Min(4f)] public float allySize = 16f;
         [Min(4f)] public float arrowSize = 24f;
+        [Tooltip("Icônes de la carte ouverte (Tab), px 1080p.")]
+        [Min(4f)] public float mapIconSize = 30f;
     }
 }

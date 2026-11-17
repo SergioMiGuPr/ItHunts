@@ -39,6 +39,7 @@ MonoBehaviour:
   soulsEmblem: {x: 58, y: 51, z: 51, w: 86}
   soulsFontSize: 30
   soulsTextColor: {r: 0.84, g: 0.88, b: 0.92, a: 1}
+  soulsTextRightInset: 28
   minimapFrame: {fileID: 21300000, guid: d1feeed83e5c03347addef1275862c97, type: 3}
   minimapMask: {fileID: 21300000, guid: f9585f11fccdae34fa4c4c516065c461, type: 3}
   minimapBack: {fileID: 21300000, guid: 01ef722c78bd2d14986e8abb0b252024, type: 3}
@@ -50,6 +51,7 @@ MonoBehaviour:
   iconArrow: {fileID: 21300000, guid: d85c5598edd9691489692cafefe4da0c, type: 3}
   iconChest: {fileID: 21300000, guid: 8f3339ecb5f065d4cbf42d0d4f691b11, type: 3}
   iconChestOpen: {fileID: 21300000, guid: c18e77524c4411e498a6367fe3b33e76, type: 3}
+  iconChestRare: {fileID: 21300000, guid: 3f098651346a70743a26c50d3691fed9, type: 3}
   iconMerchant: {fileID: 21300000, guid: 1ce4896def4a7ea469c085dbbda0faa9, type: 3}
   iconSouls: {fileID: 21300000, guid: 9f718519ec79631409707e73a61b880f, type: 3}
   iconExitLocked: {fileID: 21300000, guid: 5f07840eb5aed614c933be9397c8bcfc, type: 3}
@@ -62,3 +64,4 @@ MonoBehaviour:
   iconSize: 22
   allySize: 16
   arrowSize: 24
+  mapIconSize: 30
