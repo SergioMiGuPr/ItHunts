@@ -844,6 +844,8 @@ def build_side(perso, side, paint=True):
     B = bones_hand(JH)
     AXES = pose_axes(B, JH)
     me.transform(HAND_TO_FILE); proxy.transform(HAND_TO_FILE)
+    if HAND_TO_FILE.determinant() < 0:                 # passage au repère du fichier = miroir : faces remises vers l'extérieur
+        me.flip_normals(); proxy.flip_normals(); me.update(); proxy.update()
     bones = {n: (to_arm(h), to_arm(t), par) for n, (h, t, par) in B.items()}
     mirror = side == "G"
     if mirror:
@@ -884,7 +886,13 @@ def run(persos=("Renard",), export=True):
         for side in ("D", "G"):
             sc, arm_ob, ob, socks, acts, tris, maxinf, JH = build_side(perso, side, paint=(side == "D"))
             name = "SK_BrasFPS_%s_%s" % (perso, side)
-            line = "%s : %d triangles, %d os, %d actions, %d os max par sommet, %d sommets sans poids" % (name, tris, len(arm_ob.data.bones), len(acts), maxinf[0], maxinf[1])
+            me_ = ob.data; vol = 0.0
+            for t in me_.polygons:
+                vs = [me_.vertices[i].co for i in t.vertices]
+                for k in range(1, len(vs) - 1):
+                    vol += vs[0].dot(vs[k].cross(vs[k + 1])) / 6.0
+            line = "%s : %d triangles, %d os, %d actions, %d os max par sommet, %d sommets sans poids, volume signé %.0f cm3" % (
+                name, tris, len(arm_ob.data.bones), len(acts), maxinf[0], maxinf[1], vol * 1e6)
             if export:
                 fbx = os.path.join(SB.MODELS_DIR, name + ".fbx")
                 SB.export_skinned([arm_ob, ob] + socks, fbx)
