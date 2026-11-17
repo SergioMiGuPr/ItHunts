@@ -94,7 +94,7 @@ namespace ItHunts.Player
             _rightBind = _rightBones.Select(b => b != null ? b.localRotation : Quaternion.identity).ToArray();
             _leftBind = _leftBones.Select(b => b != null ? b.localRotation : Quaternion.identity).ToArray();
             _clipsUsable = Distinct(poses.right) || Distinct(poses.left);
-            // L'orbe greybox sur Socket_Orbe (en attendant l'orbe v2).
+            // L'orbe (« Orbe (vue) », modèle SM_Orbe : OrbModelView) sur Socket_Orbe.
             Transform socket = FindDeep(_right.transform, "Socket_Orbe");
             _orbSocket = socket;
             if (orb != null && socket != null)
