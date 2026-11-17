@@ -50,6 +50,33 @@ namespace ItHunts.Level
         private readonly List<PlayerLanternLight> _lanterns = new List<PlayerLanternLight>();
         private readonly Dictionary<PlayerLanternLight, Light> _cones = new Dictionary<PlayerLanternLight, Light>();
         private readonly Dictionary<Light, Camera> _coneCameras = new Dictionary<Light, Camera>();
+        private readonly Dictionary<Light, ConeState> _coneStates = new Dictionary<Light, ConeState>();
+
+        /// <summary>État lissé du cône d'une lanterne : hauteur, lacet et tangage (degrés).</summary>
+        public struct ConeState
+        {
+            public bool Ready;
+            public float Height, Yaw, Pitch;
+        }
+
+        /// <summary>
+        /// Cône qui suit le corps (pur, testable) : l'horizontale suit l'œil exactement, la hauteur et la direction le rejoignent
+        /// par un lissage exponentiel (pas d'à-coup au saut, au dash, à une rotation rapide). Le tangage est atténué.
+        /// </summary>
+        public static ConeState FollowBody(ConeState c, float eyeHeight, float yaw, float pitch, float dt, HorrorLookSettings s)
+        {
+            float targetPitch = pitch * s.lanternConePitchScale;
+            if (!c.Ready)
+                return new ConeState { Ready = true, Height = eyeHeight, Yaw = yaw, Pitch = targetPitch };
+            float kh = 1f - Mathf.Exp(-s.lanternConeHeightFollow * dt), kr = 1f - Mathf.Exp(-s.lanternConeFollow * dt);
+            c.Height = Mathf.Lerp(c.Height, eyeHeight, kh);
+            c.Yaw += Mathf.DeltaAngle(c.Yaw, yaw) * kr;
+            c.Pitch = Mathf.Lerp(c.Pitch, targetPitch, kr);
+            return c;
+        }
+
+        /// <summary>État du cône d'une lumière (tests, mesures).</summary>
+        public bool TryGetConeState(Light cone, out ConeState state) => _coneStates.TryGetValue(cone, out state);
         private readonly List<Vector3> _eyes = new List<Vector3>();
         private readonly HashSet<AmbianceLight> _moved = new HashSet<AmbianceLight>();
         private readonly Dictionary<AmbianceLight, float> _buzzUntil = new Dictionary<AmbianceLight, float>();
@@ -236,10 +263,18 @@ namespace ItHunts.Level
                     continue;
                 if (_coneCameras.TryGetValue(cone, out Camera follow) && follow != null)
                 {
-                    Vector3 at = follow.transform.TransformPoint(s.lanternConeOffset);
-                    float k = 1f - Mathf.Exp(-s.lanternConeFollow * Time.deltaTime);
-                    cone.transform.position = at;                       // la position suit exactement (pas d'ombre décalée)
-                    cone.transform.rotation = Quaternion.Slerp(cone.transform.rotation, follow.transform.rotation, k);
+                    // Le corps, pas la caméra (lumières qui sautaient, 2026-11-17) : la caméra donne la position de l'œil et le regard,
+                    // le cône les rejoint en douceur ; décalage de la lanterne dans le repère du lacet seul (le tangage ne la fait pas
+                    // tourner autour de l'œil).
+                    Vector3 eye = follow.transform.position;
+                    Vector3 e = follow.transform.eulerAngles;
+                    float pitch = Mathf.DeltaAngle(0f, e.x);
+                    _coneStates.TryGetValue(cone, out ConeState st);
+                    st = FollowBody(st, eye.y, e.y, pitch, Time.deltaTime, s);
+                    _coneStates[cone] = st;
+                    Quaternion body = Quaternion.Euler(0f, st.Yaw, 0f);
+                    cone.transform.position = new Vector3(eye.x, st.Height, eye.z) + body * s.lanternConeOffset;
+                    cone.transform.rotation = Quaternion.Euler(st.Pitch, st.Yaw, 0f);
                 }
                 cone.spotAngle = s.lanternConeAngle;
                 cone.innerSpotAngle = s.lanternConeAngle * 0.55f;

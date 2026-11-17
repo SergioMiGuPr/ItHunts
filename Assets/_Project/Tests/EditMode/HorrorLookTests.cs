@@ -12,6 +12,32 @@ namespace ItHunts.Tests
     public class HorrorLookTests
     {
         [Test]
+        public void ConeDeLaLanterne_SuitLeCorps_SansACoup()
+        {
+            // Lumières qui sautaient (2026-11-17) : le cône suivait la caméra et se recalait d'un coup après une rotation rapide.
+            var s = ScriptableObject.CreateInstance<HorrorLookSettings>();
+            const float dt = 1f / 60f;
+            var c = ItHunts.Level.HorrorLook.FollowBody(default, 1.6f, 0f, 0f, dt, s);
+            Assert.That(c.Yaw, Is.EqualTo(0f));
+            // Rotation de 120° en une image : le cône ne saute pas, il glisse et la rejoint en moins d'une seconde.
+            var c1 = ItHunts.Level.HorrorLook.FollowBody(c, 1.6f, 120f, 0f, dt, s);
+            Assert.That(c1.Yaw, Is.LessThan(15f), "pas de saut en une image");
+            for (int i = 0; i < 60; i++)
+                c1 = ItHunts.Level.HorrorLook.FollowBody(c1, 1.6f, 120f, 0f, dt, s);
+            Assert.That(Mathf.Abs(Mathf.DeltaAngle(c1.Yaw, 120f)), Is.LessThan(1f), "rejoint en 1 s");
+            // Passage par 360° : le chemin le plus court.
+            var w = ItHunts.Level.HorrorLook.FollowBody(c1, 1.6f, -170f, 0f, dt, s);
+            Assert.That(Mathf.Abs(Mathf.DeltaAngle(w.Yaw, 120f)), Is.LessThan(10f));
+            // Saut : la hauteur ne suit pas d'un coup ; le tangage est atténué.
+            var j = ItHunts.Level.HorrorLook.FollowBody(c, 3.1f, 0f, 40f, dt, s);
+            Assert.That(j.Height, Is.LessThan(1.8f));
+            for (int i = 0; i < 120; i++)
+                j = ItHunts.Level.HorrorLook.FollowBody(j, 1.6f, 0f, 40f, dt, s);
+            Assert.That(j.Pitch, Is.EqualTo(40f * s.lanternConePitchScale).Within(0.5f));
+            Object.DestroyImmediate(s);
+        }
+
+        [Test]
         public void Ambiances_OntLeursReglagesHorreur()
         {
             foreach (string n in new[] { "Intermediaire", "Sombre", "Horreur" })

@@ -68,8 +68,14 @@ namespace ItHunts.Settings
         [Min(0f)] public float lanternConeIntensity = 3.5f;
         [Tooltip("Le cône part un peu en avant et au-dessus de la caméra (repère caméra, m).")]
         public Vector3 lanternConeOffset = new Vector3(0.25f, 0.15f, 0.1f);
-        [Tooltip("Le cône suit le regard avec ce lissage (1/s) : il ne tremble pas avec le balancement de la marche (ombres qui rampent).")]
-        [Min(1f)] public float lanternConeFollow = 18f;
+        [Tooltip("Le cône suit le corps du joueur, pas la caméra (lumières qui sautaient, 2026-11-17) : sa direction rejoint le regard " +
+                 "avec ce lissage (1/s), sans à-coup quand on tourne vite (avant : 18, le halo restait en arrière puis se recalait d'un coup).")]
+        [Min(0.5f)] public float lanternConeFollow = 6f;
+        [Tooltip("Part du regard vertical que le cône suit (0 : toujours à l'horizontale, 1 : comme la caméra).")]
+        [Range(0f, 1f)] public float lanternConePitchScale = 0.6f;
+        [Tooltip("Lissage de la hauteur du cône (1/s) : un saut, un atterrissage ou une glissade ne secouent pas les ombres. " +
+                 "L'horizontale suit exactement (au dash, la lumière avance avec le joueur).")]
+        [Min(0.5f)] public float lanternConeHeightFollow = 5f;
 
         [Header("Ombres en temps réel : seulement les N lumières les plus proches des joueurs")]
         public bool shadowBudget = true;

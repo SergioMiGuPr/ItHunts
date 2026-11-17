@@ -41,7 +41,9 @@ MonoBehaviour:
   lanternConeRange: 20
   lanternConeIntensity: 3.5
   lanternConeOffset: {x: 0.25, y: 0.15, z: 0.1}
-  lanternConeFollow: 18
+  lanternConeFollow: 6
+  lanternConePitchScale: 0.6
+  lanternConeHeightFollow: 5
   shadowBudget: 1
   shadowedLights: 3
   shadowMaxDistance: 30
