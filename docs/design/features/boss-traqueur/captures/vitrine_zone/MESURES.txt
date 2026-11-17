@@ -1,0 +1,4 @@
+NavMesh construit True ; ronde True ; points (-205, 0, 130) (-75, 0, 130)
+ronde 45 s : allers 3, position (-107, 0, 130), baissé au plus 0,64, immobile au plus 0,0 s, vitesse 9,0
+poursuite 40 s, joueur dans la galerie : prises tentées 8, coups qui auraient tué 949, cible Player, à l'abri False, traqueur (-140, 0, 133)
+#fin

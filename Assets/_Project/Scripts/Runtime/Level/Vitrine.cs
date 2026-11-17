@@ -88,6 +88,11 @@ namespace ItHunts.Level
         [SerializeField] private List<PathPoint> freePath = new List<PathPoint>();
         [Tooltip("Traqueur de l'enclos : il poursuit vraiment le joueur quand la poursuite est activée.")]
         [SerializeField] private Stalker chaser;
+        [Tooltip("Zone « Traqueur » : traqueur du couloir gothique, en ronde (allers-retours) ou en poursuite.")]
+        [SerializeField] private Stalker corridorStalker;
+        [SerializeField] private Vector3[] corridorPatrol = new Vector3[0];
+        [Tooltip("Où le bouton « Aller au couloir » pose le joueur.")]
+        [SerializeField] private Vector3 corridorSpawn;
         [SerializeField] private List<CharacterDefinition> characters = new List<CharacterDefinition>();
         [SerializeField] private List<AmbianceSettings> ambiances = new List<AmbianceSettings>();
         [SerializeField, Min(0.5f)] private float loop = 2.4f;
@@ -97,6 +102,9 @@ namespace ItHunts.Level
         /// <summary>Figé : ennemis sans IA qui rejouent leurs états ; faux : leur IA reprend (toujours sans dégâts).</summary>
         public bool Frozen { get; private set; } = true;
         public bool Chasing { get; private set; }
+        /// <summary>Le traqueur du couloir te poursuit (sinon : sa ronde).</summary>
+        public bool CorridorChasing { get; private set; }
+        public Stalker CorridorStalker => corridorStalker;
         public bool PanelOpen { get; private set; }
         public IReadOnlyList<GhoulEntry> Ghouls => ghouls;
         public IReadOnlyList<FlyerEntry> Flyers => flyers;
@@ -130,8 +138,10 @@ namespace ItHunts.Level
                 Remember(e.stalker);
             Remember(freeGhoul);
             Remember(chaser);
+            Remember(corridorStalker);
             SetFrozen(true);
             SetChasing(false);
+            SetCorridorChasing(false);
             if (ambiances.Count > 1)
                 UseAmbiance(1);
             _ready = true;
@@ -188,6 +198,29 @@ namespace ItHunts.Level
                     rb.rotation = _homeRot[chaser];
                 }
             }
+        }
+
+        /// <summary>Traqueur du couloir : poursuite du joueur, ou ronde (allers-retours) depuis sa place de départ.</summary>
+        public void SetCorridorChasing(bool chasing)
+        {
+            if (corridorStalker == null)
+                return;
+            CorridorChasing = chasing;
+            corridorStalker.PatrolPoints = chasing || corridorPatrol == null || corridorPatrol.Length < 2 ? null : corridorPatrol;
+            Drive(corridorStalker, true);                                   // repart de sa place
+            var zone = FindFirstObjectByType<ZoneState>();
+            if (chasing && zone != null && zone.GraceLeft > 0f)
+                zone.DebugAdvance(zone.GraceLeft + 0.1f);
+            _status = chasing ? "Traqueur du couloir : il te poursuit" : "Traqueur du couloir : ronde (allers-retours)";
+        }
+
+        /// <summary>Pose le joueur au bout du couloir gothique (zone « Traqueur »).</summary>
+        public void GoToCorridor()
+        {
+            PlayerHealth p = PlayerHealth.All.Count > 0 ? PlayerHealth.All[0] : null;
+            var motor = p != null ? p.GetComponent<PlayerMotor>() : null;
+            if (motor != null)
+                motor.Teleport(corridorSpawn);
         }
 
         /// <summary>IA de l'ennemi : active (corps rendu à sa physique) ou figée (corps cinématique, piloté par la vitrine).</summary>
@@ -553,6 +586,19 @@ namespace ItHunts.Level
                 SetFrozen(!Frozen);
             if (GUILayout.Button(Chasing ? "Traqueur de l'enclos : il poursuit (cliquer : arrêter)" : "Traqueur de l'enclos : immobile (cliquer : poursuite)"))
                 SetChasing(!Chasing);
+            if (corridorStalker != null)
+            {
+                GUILayout.Label("Zone « Traqueur » (couloir gothique, galerie, poutres)");
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Aller au couloir"))
+                    GoToCorridor();
+                if (GUILayout.Button(CorridorChasing ? "Il te poursuit (cliquer : ronde)" : "Ronde (cliquer : poursuite)"))
+                    SetCorridorChasing(!CorridorChasing);
+                GUILayout.EndHorizontal();
+                Stalker c = corridorStalker;
+                int blocked = PlayerHealth.DebugBlockedKills;
+                GUILayout.Label($"Prises tentées : {c.GrabAttempts} ; coups qui t'auraient tué (tu es invulnérable) : {blocked} ; baissé : {(c.Crouching ? $"oui ({c.Crouch:0.00})" : "non")} ; allers-retours : {c.PatrolLegs}");
+            }
             GUILayout.Label(_status);
             GUILayout.EndArea();
         }

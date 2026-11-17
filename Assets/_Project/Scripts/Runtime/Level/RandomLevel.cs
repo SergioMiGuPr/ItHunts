@@ -575,7 +575,7 @@ namespace ItHunts.Level
             if (gothic)
             {
                 yTop = ya + GothicSpring;
-                bays = PlanGothicBays(li, len, ya, t => Along(Point(t), alongX ? Vector3.right : Vector3.forward), plus, minus);
+                bays = PlanGothicBays(new System.Random(Plan.Seed * 7919 + li * 131 + 17), len, ya, t => Along(Point(t), alongX ? Vector3.right : Vector3.forward), plus, minus);
             }
 
             Wall(parent, "Mur 1", alongX, sideCoord + sgn * (w * 0.5f + T * 0.5f), from, to, yLow > 0.1f ? 0f : yLow, yTop, plus);
@@ -692,12 +692,11 @@ namespace ItHunts.Level
         /// premiers sont retirés du mur du couloir (coupe ajoutée). Colonne au début de la travée sauf devant une petite ouverture.
         /// Tirage propre au couloir (seed de la carte) : n'entame pas celui du reste de la carte.
         /// </summary>
-        private List<GothicBay> PlanGothicBays(int li, float len, float ya, System.Func<float, float> along, List<Cut> plus, List<Cut> minus)
+        private List<GothicBay> PlanGothicBays(System.Random rng, float len, float ya, System.Func<float, float> along, List<Cut> plus, List<Cut> minus)
         {
             float inner = len - 2f * T;
             int n = Mathf.Max(1, Mathf.RoundToInt(inner / GothicBayLength));
             float bay = inner / n;
-            var rng = new System.Random(Plan.Seed * 7919 + li * 131 + 17);
             var bays = new List<GothicBay>(n);
             var original = new[] { plus.ToList(), minus.ToList() };
             bool Hits(List<Cut> cuts, float d0, float d1, float margin, bool shortOnly)
@@ -821,6 +820,41 @@ namespace ItHunts.Level
             collision.AddComponent<MeshCollider>().sharedMesh = solid.ToMesh("Collision de la voûte");
 
             static bool alongXOf(Vector3 v) => Mathf.Abs(v.x) > 0.5f;
+        }
+
+        /// <summary>
+        /// Couloir gothique isolé (vitrine, zone « Traqueur ») : mêmes pièces, mêmes collisions et mêmes torches que dans la carte
+        /// (PlanGothicBays, BuildGothic), de start vers +x sur len m, 14 m de large, bouts ouverts (la porte d'une salle dans la carte).
+        /// Côté +z : ouverture de galerie de galleryFrom à galleryTo (m le long du couloir), du dessus de galleryFloor à la naissance ;
+        /// poutres en travers aux distances beams, dessous à bridgeBottom (le traqueur se baisse). parent : repère du monde.
+        /// </summary>
+        public Transform BuildShowcaseGothicCorridor(Transform parent, Vector3 start, float len, int seed, float galleryFrom, float galleryTo,
+            float galleryFloor, float[] beams)
+        {
+            var root = new GameObject("Couloir gothique (vitrine)").transform;
+            root.SetParent(parent, false);
+            Vector3 dir = Vector3.right, lateral = new Vector3(-dir.z, 0f, dir.x);
+            float w = GothicWidth, h = settings != null ? settings.corridorHeight : 16f, ya = start.y;
+            Vector3 Point(float t, float side = 0f) => start + dir * (t * len) + lateral * side;
+            Vector3 mid = Point(0.5f);
+            KitBuild.Box(root, "Sol", mid + Vector3.down * 0.5f, new Vector3(len - 2f * T, 1f, w), KitBuild.Kind.Sol, kit);
+            var plus = new List<Cut>();
+            var minus = new List<Cut>();
+            if (galleryTo > galleryFrom)
+                plus.Add(new Cut(start.x + galleryFrom, start.x + galleryTo, ya + galleryFloor, ya + GothicSpring));
+            List<GothicBay> bays = PlanGothicBays(new System.Random(seed), len, ya, t => Point(t).x, plus, minus);
+            float from = start.x + T, to = start.x + len - T;
+            Wall(root, "Mur 1", true, mid.z + (w * 0.5f + T * 0.5f), from, to, ya, ya + GothicSpring, plus);
+            Wall(root, "Mur 2", true, mid.z - (w * 0.5f + T * 0.5f), from, to, ya, ya + GothicSpring, minus);
+            bool Open(int side, float d) => side == 1 && d > galleryFrom && d < galleryTo;
+            BuildGothic(root, len, w, h, ya, dir, lateral, (t, s) => Point(t, s), bays, Open);
+            float bottom = settings != null ? settings.bridgeBottom : 10f;
+            foreach (float d in beams ?? System.Array.Empty<float>())
+                KitBuild.Box(root, $"Poutre (dessous à {bottom:0} m)", Point(d / len) + Vector3.up * (bottom + 0.5f), new Vector3(1f, 1f, w), KitBuild.Kind.Poutre, kit);
+            int lamps = Mathf.Max(1, Mathf.RoundToInt(len / 25f));
+            for (int i = 0; i < lamps; i++)
+                Lamp(root, Point((i + 0.5f) / lamps) + Vector3.up * (h - 2f), i % 2 == 0 ? new Color(1f, 0.75f, 0.5f) : new Color(0.8f, 0.85f, 1f), 5f, 40f);
+            return root;
         }
 
         /// <summary>

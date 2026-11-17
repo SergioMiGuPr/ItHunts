@@ -729,6 +729,12 @@ namespace ItHunts.Enemies
                 return;                                                  // sonné par un piège (D-049)
             }
 
+            if (Patrolling)
+            {
+                Patrol(pos, now, dt);
+                return;
+            }
+
             if (grace)
             {
                 Mode = StalkerMode.Repaire;
@@ -831,6 +837,47 @@ namespace ItHunts.Enemies
                 }
             }
 
+            UpdateMarker();
+        }
+
+        // ---------- Ronde (vitrine, zone « Traqueur ») ----------
+
+        /// <summary>
+        /// Ronde : sans cible, il marche d'un point à l'autre en boucle (vitrine : allers-retours dans le couloir gothique), avec sa
+        /// vraie locomotion (NavMesh du traqueur, vitesse de chasse, il se baisse sous les arcs et les poutres). Null : comportement normal.
+        /// </summary>
+        public Vector3[] PatrolPoints { get; set; }
+        public bool Patrolling => PatrolPoints != null && PatrolPoints.Length >= 2;
+        /// <summary>Points de ronde atteints (tests : il ne reste pas accroché).</summary>
+        public int PatrolLegs { get; private set; }
+        private int _patrolIndex;
+
+        private void Patrol(Vector3 pos, float now, float dt)
+        {
+            Mode = StalkerMode.Chasse;
+            Target = null;
+            SeesTarget = false;
+            Vector3 wp = PatrolPoints[_patrolIndex % PatrolPoints.Length];
+            if (Flat(wp - pos) < 3f)
+            {
+                _patrolIndex = (_patrolIndex + 1) % PatrolPoints.Length;
+                PatrolLegs++;
+                wp = PatrolPoints[_patrolIndex];
+                _nextDecision = 0f;
+            }
+
+            if (now >= _nextDecision)
+            {
+                _nextDecision = now + settings.repathInterval;
+                _dest = wp;
+                _hasDest = true;
+                _move.SetDestination(pos, wp, now, 0f, true);
+            }
+
+            WantedSpeed = EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 0f, settings);
+            if (Crouching)
+                WantedSpeed *= settings.crouchSpeedFactor;
+            MoveTo(_move.Step(pos, WantedSpeed, settings.acceleration, settings.turnRate, dt));
             UpdateMarker();
         }
 
