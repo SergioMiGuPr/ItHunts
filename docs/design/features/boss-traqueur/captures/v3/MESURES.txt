@@ -1,0 +1,23 @@
+Traqueur v3 (PR #13), intégration du 2026-11-17
+
+Prise (D-070), v3 :
+5 m : épaule→cible 9,83 m, bras 3,78 + avant-bras 3,80 m, poignet→centre main 2,25 m, échelles (1.00, 1.82, 1.00) (1.00, 1.82, 1.00) (1.00, 1.00, 1.00)
+10 m : épaule→cible 11,49 m, bras 4,61 + avant-bras 4,63 m, poignet→centre main 2,25 m, échelles (1.00, 2.22, 1.00) (1.00, 2.22, 1.00) (1.00, 0.99, 1.01)
+15 m : épaule→cible 14,75 m, bras 6,24 + avant-bras 6,26 m, poignet→centre main 2,25 m, échelles (1.00, 3.00, 1.00) (1.00, 3.00, 1.00) (1.00, 0.99, 1.03)
+
+Prise, v2 (avant) :
+5 m : épaule→cible 11,38 m, bras 4,50 + avant-bras 4,64 m, poignet→centre main 2,25 m, échelles (1.00, 2.31, 1.00) (1.00, 2.31, 1.00) (1.00, 0.98, 1.05)
+10 m : épaule→cible 11,62 m, bras 4,61 + avant-bras 4,76 m, poignet→centre main 2,25 m, échelles (1.00, 2.37, 1.00) (1.00, 2.37, 1.00) (1.00, 0.99, 1.02)
+15 m : épaule→cible 14,85 m, bras 6,20 + avant-bras 6,40 m, poignet→centre main 2,25 m, échelles (1.00, 3.19, 1.00) (1.00, 3.19, 1.00) (1.00, 0.99, 1.04)
+
+Pied posé pendant la marche (vitesse au sol du pied à moins de 15 cm du sol ; 0 = pas de glissement) :
+Traqueur_Marche à 9 m/s, lecture ×1,00 : pied posé (≤ 15 cm du sol, 272 éch.) vitesse moyenne 5,04 m/s, médiane 5,26
+Traqueur_Marche à 9 m/s, lecture ×2,43 : pied posé (≤ 15 cm du sol, 288 éch.) vitesse moyenne 1,34 m/s, médiane 0,48
+Traqueur_PassageBas à 4,58 m/s, lecture ×0,51 : pied posé (≤ 15 cm du sol, 300 éch.) vitesse moyenne 3,32 m/s, médiane 3,40
+Traqueur_PassageBas à 4,58 m/s, lecture ×2,00 : pied posé (≤ 15 cm du sol, 296 éch.) vitesse moyenne 0,81 m/s, médiane 0,20
+(lecture ×1.00 et ×0.51 : ancienne formule vitesse ÷ vitesse de poursuite ; ×2.43 et ×2.00 : nouvelle, vitesse ÷ 3.71 ou 2.29)
+
+Hauteur du maillage (sommets cuits, 12 instants par clip) :
+Repos 13.86 m ; Marche 13.86 m (couloir 16 m) ; PassageBas 8.51 m (poutres à 10 m, seuil 9 m) ; Prise 13.78 m ; MainsLevees 19.94 m
+
+Visibilité (StalkerVisibilityTests) : 10 m 7907/38160 px éclairés ; 30 m 1198/7104 ; 60 m luminance max 0.609 (yeux de repli). Sans le repli : échec à 60 m (pupilles du modèle non affichées).

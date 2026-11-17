@@ -25,7 +25,7 @@ namespace ItHunts.Level
         public const float BodyRadius = 3.5f;
         /// <summary>Épaule du traqueur (StalkerSettings.shoulderHeight, shoulderSide) : hauteur debout (m) et écart au centre (m).</summary>
         /// <summary>Épaule droite du traqueur (repère du traqueur tourné vers la cible) : lue sur l'os Bras.R de SK_Traqueur (Stalker).</summary>
-        public static float ShoulderHeight = 11.7f, ShoulderSide = 2.6f, ShoulderForward = 4f;
+        public static float ShoulderHeight = 11.6f, ShoulderSide = 2.6f, ShoulderForward = 3.56f;   // v3 (PR #13)
 
         /// <summary>Points où un joueur tient debout dans la zone (grille de step m, tous les étages).</summary>
         public static List<Vector3> StandPoints(PhysicsScene physics, Bounds area, float step)

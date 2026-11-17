@@ -3,6 +3,8 @@ using ItHunts.Enemies;
 using ItHunts.Player;
 using ItHunts.Settings;
 using NUnit.Framework;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace ItHunts.Tests
@@ -88,6 +90,32 @@ namespace ItHunts.Tests
             Assert.That(Stalker.StretchScale(new Vector3(2f, 0.5f, 1f), 0, 2f), Is.EqualTo(new Vector3(4f, 0.5f, 1f)));
             Vector3 arm = Stalker.StretchScale(rest, 2, 3.8f), handLocal = Stalker.StretchScale(rest, 2, 1f / 3.8f);
             Assert.That(arm.z * handLocal.z, Is.EqualTo(1f).Within(1e-5f), "main : taille gardée");
+        }
+
+        [Test]
+        public void Clips_VitesseDeLecture_PiedsSansGlisser()
+        {
+            // PR #13 : Traqueur_Marche avance de 3.71 m/s à la vitesse 1, Traqueur_PassageBas de 2.29 m/s.
+            var cfg = ScriptableObject.CreateInstance<StalkerSettings>();
+            _objects.Add(cfg);
+            Assert.That(Stalker.ClipPlayback(cfg.chaseSpeed, cfg.walkClipSpeed, cfg) * 3.71f, Is.EqualTo(cfg.chaseSpeed).Within(0.01f));
+            Assert.That(Stalker.ClipPlayback(4.58f, cfg.crouchClipSpeed, cfg), Is.EqualTo(2f).Within(0.01f));
+            Assert.That(Stalker.ClipPlayback(cfg.enragedBurstSpeed, cfg.walkClipSpeed, cfg) * cfg.walkClipSpeed,
+                Is.EqualTo(cfg.enragedBurstSpeed).Within(0.01f), "même la ruée enragée ne glisse pas");
+            Assert.That(Stalker.ClipPlayback(0.1f, cfg.walkClipSpeed, cfg), Is.EqualTo(cfg.clipPlaybackRange.x), "borne basse");
+        }
+
+        [Test]
+        public void ModeleV3_32Os_SansOsDAide_TroisMateriauxDuCorps()
+        {
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/Models/Ennemis/SK_Traqueur.fbx");
+            Assert.That(model, Is.Not.Null);
+            SkinnedMeshRenderer body = model.GetComponentsInChildren<SkinnedMeshRenderer>(true).OrderByDescending(r => r.sharedMaterials.Length).First();
+            Assert.That(body.bones.Length, Is.EqualTo(32), "32 os");
+            Assert.That(model.GetComponentsInChildren<Transform>(true).Any(t => t.name.EndsWith("_Aide")), Is.False, "plus d'os d'aide");
+            Assert.That(body.sharedMaterials.Select(m => m.name).ToArray(), Is.EqualTo(new[] { "M_Traqueur", "M_Traqueur_Tete", "M_Traqueur_Mains" }));
+            Assert.That(Stalker.HasEmissionMask(body.sharedMaterials[0]), Is.False, "le corps ne s'allume pas");
+            Assert.That(Stalker.HasEmissionMask(body.sharedMaterials[1]), Is.True, "les pupilles passent par la tête");
         }
     }
 }

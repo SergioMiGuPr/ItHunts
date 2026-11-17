@@ -450,6 +450,47 @@ namespace ItHunts.Enemies
                 if (r.sharedMaterials.Length > 1)
                     _bodyRenderer = r;
             SetupSelfLight();
+            SetupEyeGlints();
+        }
+
+        private readonly List<Renderer> _eyeGlints = new List<Renderer>();
+        /// <summary>Points des yeux (repli tant que les pupilles du modèle v3 ne s'affichent pas) ; tests.</summary>
+        public IReadOnlyList<Renderer> EyeGlints => _eyeGlints;
+
+        /// <summary>
+        /// Les pupilles peintes du modèle v3 ne s'affichent pas (faces de la tête manquantes, à corriger par la DA) : le signal de
+        /// loin (les yeux qui traversent le brouillard) est rendu par deux petites sphères émissives sur l'os Tete.
+        /// </summary>
+        private void SetupEyeGlints()
+        {
+            if (settings == null || !settings.eyeGlints || _bodyRenderer == null)
+                return;
+            Transform head = System.Array.Find(_anim.GetComponentsInChildren<Transform>(true), t => t.name == "Tete");
+            Material src = System.Array.Find(_bodyRenderer.sharedMaterials, m => HasEmissionMask(m) && m.name.Contains("Tete"));
+            if (head == null || src == null)
+                return;
+            var mat = new Material(src) { name = "Yeux du traqueur (repli)" };
+            mat.SetTexture("_EmissionMap", null);
+            mat.SetTexture("_BaseMap", null);
+            mat.SetColor("_BaseColor", Color.black);
+            mat.SetColor("_EmissionColor", settings.pupilGlow * settings.pupilGlowIntensity * settings.eyeGlintIntensity);
+            mat.EnableKeyword("_EMISSION");
+            mat.SetFloat("_EmissionThroughFog", 1f);
+            foreach (Vector3 local in new[] { settings.eyeGlintRight, settings.eyeGlintLeft })
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.name = "Œil (repli)";
+                Destroy(go.GetComponent<Collider>());
+                go.layer = _bodyRenderer.gameObject.layer;
+                go.transform.SetParent(head, false);
+                go.transform.localPosition = local;
+                go.transform.localScale = Vector3.one * settings.eyeGlintSize / Mathf.Max(1e-4f, head.lossyScale.x);
+                var r = go.GetComponent<Renderer>();
+                r.sharedMaterial = mat;
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                r.renderingLayerMask = _bodyRenderer.renderingLayerMask;
+                _eyeGlints.Add(r);
+            }
         }
 
         private Light _selfLight;
@@ -500,6 +541,10 @@ namespace ItHunts.Enemies
             _anim.CrossFadeInFixedTime(clip, fade, 0);
         }
 
+        /// <summary>Vitesse de lecture d'un clip de déplacement : vitesse au sol ÷ vitesse du clip à 1 (pieds sans glisser), bornée.</summary>
+        public static float ClipPlayback(float groundSpeed, float clipSpeed, ItHunts.Settings.StalkerSettings s)
+            => Mathf.Clamp(groundSpeed / Mathf.Max(0.1f, clipSpeed), s.clipPlaybackRange.x, s.clipPlaybackRange.y);
+
         /// <summary>Clip selon l'état : prise (0.5 s), main plantée, mains levées, revers, passage baissé, marche, repos.</summary>
         private void Animate()
         {
@@ -518,9 +563,9 @@ namespace ItHunts.Enemies
             else if (_grab == GrabPhase.Annonce)
                 Play("Traqueur_Prise", 0.05f, 0.5f / Mathf.Max(0.05f, settings.grabTelegraph));
             else if (Crouching)
-                Play("Traqueur_PassageBas", 0.25f, Mathf.Clamp(v / Mathf.Max(1f, settings.chaseSpeed), 0.4f, 1.6f));
+                Play("Traqueur_PassageBas", 0.25f, ClipPlayback(v, settings.crouchClipSpeed, settings));
             else if (v > 0.5f)
-                Play("Traqueur_Marche", 0.25f, Mathf.Clamp(v / Mathf.Max(1f, settings.chaseSpeed), 0.4f, 2f));
+                Play("Traqueur_Marche", 0.25f, ClipPlayback(v, settings.walkClipSpeed, settings));
             else
                 Play("Traqueur_Repos", 0.3f);
         }
@@ -647,7 +692,8 @@ namespace ItHunts.Enemies
             _claw = dt <= 0f ? target : Mathf.Lerp(_claw, target, 1f - Mathf.Exp(-settings.clawGlowRate * dt));
             foreach (Renderer r in _limbRenderers)
                 _dmg.GlowOverrides[r] = settings.clawGlow * _claw;
-            // Modèle gréé : un rendu, deux matériaux (M_Traqueur_Mains : griffes ; M_Traqueur : pupilles) ; mèches sans lueur.
+            // Modèle gréé (v3, PR #13) : trois matériaux du corps, M_Traqueur (sans émission), M_Traqueur_Tete (pupilles),
+            // M_Traqueur_Mains (griffes) ; mèches sans lueur. Un matériau sans masque d'émission reste éteint (sinon tout le corps rougirait).
             if (_anim != null)
             {
                 foreach (Renderer r in _anim.GetComponentsInChildren<Renderer>(true))
@@ -657,13 +703,17 @@ namespace ItHunts.Enemies
                     {
                         string n = mats[i] != null ? mats[i].name : "";
                         Color c = n.Contains("Mains") ? settings.clawGlow * _claw
-                            : n.Contains("Cheveux") ? Color.black
+                            : n.Contains("Cheveux") || !HasEmissionMask(mats[i]) ? Color.black
                             : settings.pupilGlow * settings.pupilGlowIntensity;
                         _dmg.SetMaterialGlow(r, i, c);
                     }
                 }
             }
         }
+
+        /// <summary>Un matériau du corps qui a un masque d'émission (pupilles de M_Traqueur_Tete) ; M_Traqueur v3 n'en a plus.</summary>
+        public static bool HasEmissionMask(Material m)
+            => m != null && m.HasProperty("_EmissionMap") && m.GetTexture("_EmissionMap") != null;
 
         /// <summary>Pression du combat de boss : recharges de la prise, des mains levées et de la pointe × ce facteur (1 hors combat).</summary>
         public float CooldownScale { get; set; } = 1f;

@@ -77,6 +77,19 @@ MonoBehaviour:
   shoulderHeight: 11.1
   shoulderSide: 1.8
   pupilGlow: {r: 0.55, g: 0.05, b: 0.03, a: 1}
+  pupilGlowIntensity: 1.5
+  eyeGlints: 1
+  eyeGlintRight: {x: 0.24, y: 0.44, z: 1.75}
+  eyeGlintLeft: {x: -0.45, y: 0.21, z: 1.7}
+  eyeGlintSize: 0.35
+  eyeGlintIntensity: 3
+  clawGlow: {r: 1, g: 0.93, b: 0.78, a: 1}
+  clawGlowRest: 0.15
+  clawGlowGrab: 0.7
+  clawGlowRate: 8
+  walkClipSpeed: 3.71
+  crouchClipSpeed: 2.29
+  clipPlaybackRange: {x: 0.3, y: 5.5}
   handReach: 15
   grabTelegraph: 0.5
   grabSlam: 0.12
@@ -111,6 +124,12 @@ MonoBehaviour:
   attackRange: 0.3
   width: 7
   height: 14
+  selfLight: 1
+  selfLightColor: {r: 0.55, g: 0.6, b: 0.78, a: 1}
+  selfLightIntensity: 2.8
+  selfLightRange: 22
+  selfLightOffset: {x: 0, y: 9, z: 9}
+  selfRenderingLayer: 2
   stepVolume: 0.9
   breathVolume: 0.5
   soundRange: 60

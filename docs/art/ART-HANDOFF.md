@@ -701,3 +701,20 @@ de la DA, rien n'a été modifié) :
   longueur) : préférer sur le bras et l'avant-bras un motif qui supporte l'étirement (veines, peau tendue) et **arrêter
   `M_Traqueur_Mains` au poignet** : aujourd'hui sa zone claire couvre le bas de l'avant-bras et devient une longue bande pâle
   quand le bras s'allonge.
+
+
+### Traqueur v3 (PR #13) : intégration et retours (2026-11-17)
+
+- **Intégré sur `main` (branche `animations`)** : prefabs et scènes reconstruits (4 scènes de jeu, `Test_Vitrine`), 3 matériaux du
+  corps lus dans l'ordre `M_Traqueur`, `M_Traqueur_Tete`, `M_Traqueur_Mains` ; la lueur des pupilles ne va qu'aux matériaux qui ont un
+  masque d'émission (`M_Traqueur` v3 n'en a plus : le corps reste éteint). Lecture des clips : vitesse au sol ÷ 3.71 (`Traqueur_Marche`)
+  ou ÷ 2.29 (`Traqueur_PassageBas`), réglables dans `Stalker_Default` (`walkClipSpeed`, `crouchClipSpeed`) ; pied posé mesuré à
+  0.48 m/s en poursuite (5.3 m/s avant). Allongement D-070 : ×1.8 à ×3.0 de 5 à 15 m, main à l'échelle 1. Sommet : 13.9 m en marche,
+  8.5 m baissé (poutres à 10 m). Mesures et captures : `docs/design/features/boss-traqueur/captures/v3/`.
+- **À corriger côté DA : la tête v3 a des trous** (faces manquantes ou retournées sur le visage, autour des yeux et de la bouche) et
+  **les pupilles rouges ne s'affichent plus** : seuls 6 sommets de la tête tombent sur le masque des pupilles de `T_Traqueur_Emission`,
+  et les faces qui les portent ne sont pas dessinées. Le test `StalkerVisibilityTests` (les yeux doivent le trahir à 60 m dans le
+  brouillard) échouait. **Repli côté code** : deux petites sphères émissives sur l'os `Tete` (`Stalker_Default` : `eyeGlints`, positions
+  `eyeGlintRight` / `eyeGlintLeft` dans le repère de l'os, 0.35 m). À la livraison d'une tête corrigée (normales vers l'extérieur,
+  pupilles visibles de face et d'en bas, d'au moins ~0.3 m), décocher `eyeGlints`. Captures : `tete_v3_pupilles_absentes.png`,
+  `tete_v3_yeux_repli.png`.

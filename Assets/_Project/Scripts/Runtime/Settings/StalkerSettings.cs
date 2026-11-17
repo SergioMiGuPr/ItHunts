@@ -91,6 +91,15 @@ namespace ItHunts.Settings
         [ColorUsage(false, true)] public Color pupilGlow = new Color(0.55f, 0.05f, 0.03f);
         [Tooltip("Intensité des pupilles (× la couleur).")]
         [Range(0f, 4f)] public float pupilGlowIntensity = 1.5f;
+        [Tooltip("Repli (v3, PR #13) : les pupilles peintes du modèle ne s'affichent pas (faces de la tête manquantes, diagnostic DA) ; " +
+                 "deux petits points lumineux sur l'os Tete les remplacent. À décocher quand la tête sera corrigée.")]
+        public bool eyeGlints = true;
+        [Tooltip("Points des yeux dans le repère de l'os Tete (m), relevés sur les sommets des pupilles du modèle v3.")]
+        public Vector3 eyeGlintRight = new Vector3(0.24f, 0.44f, 1.75f), eyeGlintLeft = new Vector3(-0.45f, 0.21f, 1.7f);
+        [Tooltip("Diamètre d'un point (m).")]
+        [Min(0.01f)] public float eyeGlintSize = 0.35f;
+        [Tooltip("Intensité des points (× la couleur des pupilles) ; ils traversent le brouillard comme l'émission des matériaux.")]
+        [Range(0f, 10f)] public float eyeGlintIntensity = 3f;
         [Tooltip("Griffes (masque d'émission de M_Traqueur_Mains) : ivoire. Pas de rouge sur les mains : la colonne au sol est le signal.")]
         [ColorUsage(false, true)] public Color clawGlow = new Color(1f, 0.93f, 0.78f);
         [Tooltip("Intensité des griffes au repos, puis pendant la prise (annonce, descente, main au sol).")]
@@ -98,6 +107,15 @@ namespace ItHunts.Settings
         [Range(0f, 3f)] public float clawGlowGrab = 0.7f;
         [Tooltip("Vitesse de passage d'une intensité à l'autre (1/s).")]
         [Min(0.1f)] public float clawGlowRate = 8f;
+
+        [Header("Clips (SK_Traqueur v3, PR #13)")]
+        [Tooltip("Vitesse au sol du clip Traqueur_Marche lu à la vitesse 1 (m/s, mesurée par la DA) : vitesse de lecture = vitesse ÷ cette valeur, " +
+                 "pour que les pieds ne glissent pas.")]
+        [Min(0.1f)] public float walkClipSpeed = 3.71f;
+        [Tooltip("Vitesse au sol du clip Traqueur_PassageBas à la vitesse 1 (m/s).")]
+        [Min(0.1f)] public float crouchClipSpeed = 2.29f;
+        [Tooltip("Vitesse de lecture des clips de déplacement : bornes (évite un clip figé ou frénétique).")]
+        public Vector2 clipPlaybackRange = new Vector2(0.3f, 5.5f);                 // ruée enragée 18 m/s ÷ 3.71 = 4.9
         [Min(0f)] public float handReach = 15f;
         [Tooltip("Annonce : le bras se lève et une lueur rouge marque la zone visée pendant ce temps (s).")]
         [Min(0f)] public float grabTelegraph = 0.5f;
