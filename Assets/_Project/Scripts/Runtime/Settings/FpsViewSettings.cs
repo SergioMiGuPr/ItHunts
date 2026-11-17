@@ -27,14 +27,6 @@ namespace ItHunts.Settings
         public Vector3 wideRightHandRest = new Vector3(0.29f, -0.15f, 0.42f);         // recalé pour les bras peints (PR #7) : 12 à 14 % de l'écran
         public Vector3 wideRightHandRestEuler = new Vector3(-45.1f, -21f, 39.7f);
 
-        [Header("Barillet (main gauche, modèle SM_Barillet)")]
-        [Tooltip("Centre du barillet dans le repère de la main gauche (m) ; son axe de tir (+Z) suit les doigts.")]
-        public Vector3 barrelInHand = new Vector3(0f, 0.14f, 0.05f);
-        [Tooltip("Rotation du barillet dans la main gauche (degrés).")]
-        public Vector3 barrelInHandEuler = Vector3.zero;
-        [Tooltip("Échelle du barillet (1 = taille modélisée, 0.10 m de diamètre).")]
-        [Min(0.1f)] public float barrelScale = 1f;
-
         [Header("Lanterne de feu (main gauche, greybox)")]
         [Tooltip("Centre de la lanterne dans le repère de la main gauche (m), posée dans la paume comme le barillet ; le jet sort du haut.")]
         public Vector3 lanternInHand = new Vector3(0f, 0.16f, 0.05f);

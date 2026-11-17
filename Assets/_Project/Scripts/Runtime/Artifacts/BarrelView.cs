@@ -150,14 +150,19 @@ namespace ItHunts.Artifacts
         /// de flottement le long de la normale de la paume ; orienté comme la vue (il vise toujours devant), avec une légère
         /// oscillation. Partagé par la lanterne de feu.
         /// </summary>
-        public static void PlaceFloating(Transform root, Vector3 inHand, Vector3 euler, float scale, FpsViewSettings fps, FirstPersonView view)
+        public static void PlaceFloating(Transform root, Vector3 inHand, Vector3 euler, float scale, FpsViewSettings fps, FirstPersonView view) =>
+            PlaceFloating(root, inHand, euler, scale, fps.floatHeight, fps.floatAmplitude, fps.floatPeriod, fps.floatWobble, fps.floatPhaseOffset, view);
+
+        /// <summary>Même chose avec le flottement propre à l'artefact (BarrelSettings : taille, décalage, flottement).</summary>
+        public static void PlaceFloating(Transform root, Vector3 inHand, Vector3 euler, float scale, float height, float amplitude, float period,
+            float wobble, float phase, FirstPersonView view)
         {
             Transform hand = root.parent;
             float t = Time.time;
-            float h = ViewmodelMotion.FloatHeight(t, fps, fps.floatPhaseOffset);
+            float h = ViewmodelMotion.FloatHeight(t, height, amplitude, period, phase);
             root.localPosition = inHand + Vector3.up * h;
             Quaternion facing = view != null && view.ViewRoot != null ? view.ViewRoot.rotation : hand != null ? hand.rotation : root.rotation;
-            root.rotation = facing * Quaternion.Euler(euler + ViewmodelMotion.FloatWobble(t, fps, fps.floatPhaseOffset));
+            root.rotation = facing * Quaternion.Euler(euler + ViewmodelMotion.FloatWobble(t, period, wobble, phase));
             root.localScale = Vector3.one * scale;
         }
 
@@ -174,7 +179,8 @@ namespace ItHunts.Artifacts
             int tick = _motor != null ? _motor.State.Tick : 0;
             FpsViewSettings fps = _view != null ? _view.Settings : null;
             if (barrelRoot != null && fps != null)                          // réglable en Play Mode
-                PlaceFloating(barrelRoot, fps.barrelInHand, fps.barrelInHandEuler, fps.barrelScale, fps, _view);
+                PlaceFloating(barrelRoot, cfg.viewInHand, cfg.viewInHandEuler, cfg.viewScale, fps.floatHeight, cfg.floatAmplitude,
+                    cfg.floatPeriod, cfg.floatWobble, fps.floatPhaseOffset, _view);
 
             // Nouveau tir : traînée, impact, son, un cran de rotation.
             if (b.LastShotTick != MovementState.NeverTick && b.LastShotTick != _seenShotTick)

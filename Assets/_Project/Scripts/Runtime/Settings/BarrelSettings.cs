@@ -50,11 +50,23 @@ namespace ItHunts.Settings
         [Min(0f)] public float recoilPitch = 8f;
         [Min(0.02f)] public float recoilDuration = 0.12f;
 
+        [Header("Vue FPS : taille, décalage et flottement au-dessus de la paume gauche")]
+        [Tooltip("Échelle du barillet (1 = taille modélisée, 0.10 m de diamètre ; 0.5 ≈ la largeur de la paume).")]
+        [Min(0.05f)] public float viewScale = 0.5f;
+        [Tooltip("Centre du barillet dans le repère de la main gauche (m), au-dessus de la paume ; son axe de tir (+Z) vise devant.")]
+        public Vector3 viewInHand = new Vector3(0f, 0.11f, 0.05f);
+        [Tooltip("Rotation du barillet (degrés), en plus de l'orientation de la vue.")]
+        public Vector3 viewInHandEuler = Vector3.zero;
+        [Tooltip("Flottement : amplitude (m), période (s) et oscillation (°) ; il ne monte pas en même temps que l'orbe (floatPhaseOffset de la vue).")]
+        [Min(0f)] public float floatAmplitude = 0.006f;
+        [Min(0.1f)] public float floatPeriod = 2.6f;
+        [Min(0f)] public float floatWobble = 4f;
+
         [Header("Modèle SM_Barillet (vue FPS)")]
         [Tooltip("Couleur d'émission d'une chambre chargée (blanc chaud provisoire, pas le violet de la télékinésie) ; multipliée par l'intensité.")]
         public Color chamberEmission = new Color(1f, 0.86f, 0.66f);
-        [Tooltip("Intensité de l'émission d'une chambre chargée : au-delà du seuil de bloom (1) pour qu'elle brille.")]
-        [Min(0f)] public float chamberEmissionIntensity = 3f;
+        [Tooltip("Intensité de l'émission d'une chambre chargée : un peu au-delà du seuil de bloom (1) pour qu'elle brille sans éblouir.")]
+        [Min(0f)] public float chamberEmissionIntensity = 1.4f;
         [Tooltip("Part de l'émission gardée quand le barillet est inactif (l'orbe tient un objet).")]
         [Range(0f, 1f)] public float chamberInactiveFactor = 0.2f;
         [Tooltip("Couleur de base des chambres (chargées ou vides) : presque noir, #1A120C.")]

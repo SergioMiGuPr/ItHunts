@@ -306,9 +306,10 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
   paume). Prévoir un point d'attache nommé `Orb_Socket` à cet endroit ; l'orbe reste un objet séparé (le jeu change sa
   couleur, HDR, bloom).
 - **Barillet (premier artefact, main gauche, D-032) : modèle `SM_Barillet` branché (2026-11-15, branche `barillet-modele`).**
-  Tenu dans la paume gauche, axe de tir (+Z) dans le sens des doigts. Repère `Barillet (vue)` en **(0, 0.065, 0.05)** dans
-  le repère de la main gauche, rotation (0, 0, 0), échelle 1 (= 0.10 m de diamètre) : réglables dans `FpsView_Default`
-  (« Barillet »). Le modèle entier tourne de **−60° autour de son Z local à chaque tir** (sens horaire vu du joueur), en
+  Flotte au-dessus de la paume gauche, axe de tir (+Z) vers l'avant de la vue. Repère `Barillet (vue)` en **(0, 0.11, 0.05)**
+  dans le repère de la main gauche, rotation (0, 0, 0), **échelle 0.5 (= 0.05 m de diamètre, la largeur de la paume ;
+  2026-11-17, il couvrait un tiers de l'écran à l'échelle 1)** : taille, décalage et flottement réglables dans
+  `Barrel_Default` (« Vue FPS »). Le modèle entier tourne de **−60° autour de son Z local à chaque tir** (sens horaire vu du joueur), en
   0.08 s (courbe réglable, `Barrel_Default`), et finit toujours sur un multiple de 60°. Mesures (m) :
 
   | Pièce | Taille | Position (repère du barillet) |
@@ -318,7 +319,7 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
   | Canon (**greybox, à modéliser**) | cylindre Ø 0.022 × 0.10 | centre (0, 0.0307, 0.1055), dans l'axe de la chambre du haut |
   | Bouche du canon (départ de la traînée) | — | (0, 0.0307, 0.1565) |
 
-  **Les munitions se lisent sur les chambres** : chargée = **émission** (blanc chaud provisoire (1, 0.86, 0.66) × 3,
+  **Les munitions se lisent sur les chambres** : chargée = **émission** (blanc chaud provisoire (1, 0.86, 0.66) × 1.4 depuis le 2026-11-17, × 3 éblouissait,
   au-delà du seuil de bloom, réglable dans `Barrel_Default`, pas le violet de la télékinésie) ; vide = **couleur de base
   seule #1A120C** ; barillet inactif (objet tenu) : émission × 0.2. La chambre du haut est la prochaine à tirer ; au
   rechargement, les chambres se rallument une à une. Matériaux (provisoires, la liste sera validée avec la DA) : le corps
