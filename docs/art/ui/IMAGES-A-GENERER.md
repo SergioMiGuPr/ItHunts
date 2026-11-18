@@ -1,4 +1,47 @@
-# Images à générer : lots B (fonds de menu) et C (personnages)
+# Images à générer : menus (état au 2026-11-18)
+
+## Méthode retenue (2026-11-18) : les maquettes découpées
+
+Les menus **sont les maquettes de l'utilisateur** (`docs/art/ui/maquettes/`), pixel pour pixel. Les images générées ne
+servent qu'à **retirer** ce qui change (texte peint, personnages, interface, flammes…) : chaque pièce sort par **différence
+entre deux images alignées**, et l'image retouchée ne remplit que la zone qui change, par masque. Détail des découpes,
+réglages et limites : `UI-HANDOFF.md` § 2.
+
+**Abandonnés** : le **lot T** (scènes peintes d'un seul tenant découpées en calques, PR #17 fermée sans fusion), la
+**reconstruction en calques générés** du lot B (ciel, lune, nuages, brume, château, panorama, passes E1–E9, B2) et les
+lots C (personnages en 3:4) et D tels qu'ils étaient prévus. Les anciens prompts restent dans l'historique git ; les anciens
+essais de `docs/art/ui/generees/anciennes/` sont ignorés.
+
+### Images utilisées (déposées dans `docs/art/ui/generees/`)
+
+| Image | Sert à |
+|---|---|
+| `ui_menu_sans_texte_v01` | titre : zone du menu seulement (recalée, raccord fondu), curseur et soulignement par différence |
+| `ui_campement_passe1_v01` | campement : interface (maquette − passe1), flammes (passe1 − braises) |
+| `ui_campement_braises_v01` | campement : braises sous les flammes, lanternes éteintes (braises − vide) |
+| `ui_campement_vide_sans_lanternes_v01` | campement : fond des zones qui changent |
+| `ui_assis_buche_renard_v01`, `_koala_v01`, `_cameleon_v01`, `_hibou_v01` | campement : personnages assis (fond gris et caisse retirés) |
+| `ui_choix_fond_v01` | choix : fond des zones qui changent |
+| `ui_choix_passe3_v01` | choix : vignettes (renard illuminé, autres discrets), lanterne (passe3 − fond) |
+| `ui_choix_cameleon_v01` | choix : vignette discrète du renard, référence du barillet |
+| `ui_choix_artefact_barillet_v01` | choix : barillet (barillet − caméléon) |
+| `ui_choix_renard_v01`, `_koala_v01`, `_cameleon_v01`, `_hibou_v01` | choix : grands personnages (zone de gauche seulement) |
+| `ui_choix_passe1_v01`, `ui_choix_passe2_v01` | recalées, non nécessaires au final (le fond et passe3 suffisent) |
+
+### Retouches à demander si l'utilisateur les veut (rien n'est redessiné sans son accord)
+
+- **Cartouche de nom du renard** : il porte la lueur rouge de sa lanterne ; le cartouche du hibou vidé sert aux 4 places. Une
+  passe « cartouche du renard sans lueur rouge » permettrait de garder les deux.
+- **Places 3 et 4 du campement** (banc, rocher) : les personnages y sont posés par extrapolation (échelle × 0,85) ; une image
+  de la maquette avec quelqu'un sur le banc et sur le rocher donnerait leur taille exacte.
+- **Vignettes illuminées** du koala, du caméléon et du hibou : faites avec la lueur du cadre du renard recolorée ; une passe
+  par personnage (vignette sélectionnée) donnerait leur propre lueur peinte.
+
+---
+
+## Archive : lots B et C (abandonnés le 2026-11-18)
+
+_Texte d'origine conservé pour mémoire._
 
 Outil : **Higgsfield, Nano Banana Pro**, **2K**. Format **16:9** pour le décor ; **3:4** conseillé pour un personnage seul
 (un personnage en pied en 16:9 n'occupe qu'un tiers de l'image ; si tu tiens au 16:9, garde le même prompt).

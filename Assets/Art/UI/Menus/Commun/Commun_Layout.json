@@ -1,0 +1,62 @@
+{
+ "Menus_Cadre": {
+  "taille": [
+   208,
+   208
+  ],
+  "bordures_glbh": [
+   100,
+   100,
+   100,
+   100
+  ],
+  "source": "ui_choix_perso_v01",
+  "coins": {
+   "hg": [
+    392,
+    22
+   ],
+   "hd": [
+    1190,
+    22
+   ],
+   "bg": [
+    392,
+    805
+   ],
+   "bd": [
+    1190,
+    805
+   ]
+  },
+  "rails": {
+   "haut": [
+    492,
+    22
+   ],
+   "bas": [
+    492,
+    805
+   ],
+   "gauche": [
+    392,
+    122
+   ],
+   "droite": [
+    1190,
+    122
+   ]
+  },
+  "centre": [
+   560,
+   720
+  ]
+ },
+ "Menus_Cartouche": {
+  "hauteur": 72,
+  "bout": 34,
+  "fleuron": 36,
+  "tranche": 8,
+  "source": "Campement_Cartouche_Nom"
+ }
+}

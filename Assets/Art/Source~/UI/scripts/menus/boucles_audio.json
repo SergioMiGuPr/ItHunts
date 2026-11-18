@@ -1,0 +1,34 @@
+{
+ "Musique_Menu_Boucle.wav": {
+  "source": "musique_menu_v01.mp3",
+  "duree_s": 117.52,
+  "fondu_s": 2.5,
+  "silence_retire_s": [
+   0.012,
+   0.001
+  ],
+  "saut_raccord": 0.08355,
+  "pente_moyenne": 0.00969,
+  "rms_db": -14.2,
+  "rms_fin_vs_debut_db": [
+   -15.1,
+   -15.2
+  ]
+ },
+ "Sfx_Feu_Boucle.wav": {
+  "source": "sfx_feu_boucle_v01.wav",
+  "duree_s": 18.278,
+  "fondu_s": 1.5,
+  "silence_retire_s": [
+   0.102,
+   0.12
+  ],
+  "saut_raccord": 0.00293,
+  "pente_moyenne": 0.00133,
+  "rms_db": -46.3,
+  "rms_fin_vs_debut_db": [
+   -49.5,
+   -51.1
+  ]
+ }
+}
