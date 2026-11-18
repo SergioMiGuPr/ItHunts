@@ -1,0 +1,19 @@
+{
+    "name": "ItHunts.Menus",
+    "rootNamespace": "ItHunts.Menus",
+    "references": [
+        "ItHunts.Runtime",
+        "ItHunts.Art.Menus",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

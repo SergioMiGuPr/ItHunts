@@ -13,21 +13,43 @@ namespace ItHunts.Level
     /// Menu Échap, un par joueur (Échap au clavier, Start à la manette), habillé par la DA (panneau en 9 tranches, titre en Grenze
     /// Gotisch, boutons en EB Garamond, focus visible) dans la vue du joueur (écran partagé compris), piloté par son seul appareil
     /// (et la souris pour le clavier). Le jeu ne s'arrête pas (coop, D-048) : le joueur qui l'a ouvert ne bouge plus, l'autre continue.
-    /// Entrées : Reprendre ; Paramètres (cadrage des mains, options d'image) ; Quitter l'écran partagé (2e joueur) ; Abandonner la
-    /// run (retour au campement) ; Quitter le jeu. Posé par SplitScreen, sinon au chargement de toute scène de jeu (Ensure).
+    /// Entrées : Reprendre ; Paramètres (GameSettings : volumes, sensibilité, plein écran, réduire les animations ; en
+    /// développement, cadrage des mains et options d'image) ; Quitter l'écran partagé (2e joueur) ; Retour au campement (abandonne
+    /// la run) ; Quitter le jeu. Posé par SplitScreen, sinon au chargement de toute scène de jeu (Ensure). Affichage : les prefabs
+    /// Menu_Pause et Menu_Parametres de la DA (PauseMenuArt, assembly ItHunts.Menus) ; sans eux, un repli greybox.
     /// </summary>
     public sealed class PauseMenu : MonoBehaviour
     {
-        private sealed class Open
+        /// <summary>Menu ouvert d'un joueur (lu par la vue de la DA).</summary>
+        public sealed class Open
         {
             public PlayerInput Player;
             public GreyboxMenu Menu;
             public GreyboxMenu Settings;
             public bool InSettings;
+            /// <summary>Options d'image et cadrage des mains (développement, affichage greybox).</summary>
+            public GreyboxMenu Development;
+            public bool InDevelopment;
             public int Frame;
-            public RectTransform Root;
-            public UiList List, SettingsList;
-            public Text Title;
+            internal RectTransform Root;
+            internal UiList List, SettingsList;
+            internal Text Title;
+        }
+
+        /// <summary>La vue de la DA s'abonne ici : elle se pose sur chaque menu pause.</summary>
+        public static event System.Action<PauseMenu> Created;
+
+        /// <summary>Habillé par la DA : plus de panneau greybox.</summary>
+        public bool Skinned { get; set; }
+
+        /// <summary>Menus ouverts (un par joueur).</summary>
+        public IReadOnlyList<Open> Opened => _open;
+
+        /// <summary>Habillage des menus du joueur (celui de son HUD).</summary>
+        public static ItHunts.Settings.MenuSkinSettings SkinOf(PlayerInput pi)
+        {
+            var hud = pi != null ? pi.GetComponent<ItHunts.Hud.PlayerHud>() : null;
+            return hud != null ? hud.MenuSkin : null;
         }
 
         private Canvas _canvas;
@@ -38,6 +60,8 @@ namespace ItHunts.Level
         public static PauseMenu Current { get; private set; }
 
         private void OnEnable() => Current = this;
+
+        private void Start() => Created?.Invoke(this);
 
         /// <summary>
         /// Menu pause dans toutes les scènes de jeu, y compris celles sans écran partagé (Test_Movement…) : posé au chargement de
@@ -106,16 +130,20 @@ namespace ItHunts.Level
 
                 if (Time.frameCount > o.Frame && BackPressed(o.Menu.Owner))
                 {
-                    if (o.InSettings)
+                    if (o.InDevelopment)
+                        o.InDevelopment = false;
+                    else if (o.InSettings)
                         o.InSettings = false;                             // retour : des paramètres au menu
                     else
                         Close(o, true);
                 }
+                else if (o.InDevelopment)
+                    o.Development.Update();
                 else if (o.InSettings)
                     o.Settings.Update();
                 else
                     o.Menu.Update();
-                if (o.Root != null && _open.Contains(o))
+                if (o.Root != null && _open.Contains(o) && !Skinned)
                 {
                     if (o.Player != null && o.Player.camera != null)
                         UiKit.FitTo(o.Root, o.Player.camera);           // l'autre joueur rejoint ou part : la vue change
@@ -154,23 +182,7 @@ namespace ItHunts.Level
             var o = new Open { Player = pi, Menu = new GreyboxMenu { Owner = OwnerOf(pi) }, Settings = new GreyboxMenu { Owner = OwnerOf(pi) }, Frame = Time.frameCount };
             o.Menu.Add("Reprendre", () => Close(o, true));
             o.Menu.Add("Paramètres", () => { o.InSettings = true; o.Settings.FocusFirst(); });
-            var fpv = pi.GetComponent<FirstPersonView>();
-            if (fpv != null)
-            {
-                GreyboxMenu.Item framing = o.Settings.Add("Cadrage des mains", null);
-                framing.Value = () => FirstPersonView.FramingLabel(fpv.Framing);
-                framing.Change = d => fpv.Framing = fpv.Framing == HandFraming.Reference ? HandFraming.Ecarte : HandFraming.Reference;
-                framing.Submit = () => framing.Change(1);
-            }
-            foreach (GraphicsOptions.Effect e in System.Enum.GetValues(typeof(GraphicsOptions.Effect)))
-            {
-                GraphicsOptions.Effect effect = e;
-                GreyboxMenu.Item item = o.Settings.Add(GraphicsOptions.Label(effect), null);
-                item.Value = () => GraphicsOptions.Get(effect) ? "oui" : "non";
-                item.Change = d => GraphicsOptions.Set(effect, !GraphicsOptions.Get(effect));
-                item.Submit = () => item.Change(1);
-            }
-
+            GameSettings.Fill(o.Settings);
             o.Settings.Add("Retour", () => { o.InSettings = false; o.Menu.SetFocus(1); });
             int index = IndexOf(pi);
             if (index > 0 && PlayerInput.all.Count > 1 && SplitScreen.Current != null)
@@ -179,7 +191,24 @@ namespace ItHunts.Level
             string active = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             if (active.StartsWith("Test_") && active != MainMenu.VitrineScene)
                 o.Menu.Add("Vitrine (assets et ennemis)", () => { RunSession.End(); RunSession.Load(MainMenu.VitrineScene); });
-            o.Menu.Add("Abandonner la run", AbandonRun);
+            if (MainMenu.PlaytestVisible)
+            {
+                // Outils de développement (éditeur et builds de développement) : hors de l'écran Paramètres de la DA.
+                o.Development = new GreyboxMenu { Owner = o.Menu.Owner };
+                var fpv = pi.GetComponent<FirstPersonView>();
+                if (fpv != null)
+                {
+                    GreyboxMenu.Item framing = o.Development.Add("Cadrage des mains", null);
+                    framing.Value = () => FirstPersonView.FramingLabel(fpv.Framing);
+                    framing.Change = d => fpv.Framing = fpv.Framing == HandFraming.Reference ? HandFraming.Ecarte : HandFraming.Reference;
+                    framing.Submit = () => framing.Change(1);
+                }
+                GameSettings.FillDevelopment(o.Development);
+                o.Development.Add("Retour", () => o.InDevelopment = false);
+                o.Development.FocusFirst();
+                o.Menu.Add("Options d'image (dév.)", () => { o.InDevelopment = true; o.Development.FocusFirst(); });
+            }
+            o.Menu.Add("Retour au campement", AbandonRun);       // abandonne la run
             o.Menu.Add("Quitter le jeu", Application.Quit);
             o.Menu.FocusFirst();
             o.Settings.FocusFirst();
@@ -196,6 +225,8 @@ namespace ItHunts.Level
         /// <summary>Habillage de la DA (le skin des menus du HUD du joueur) ; sans lui, le menu greybox (IMGUI).</summary>
         private void BuildUi(Open o)
         {
+            if (Skinned)
+                return;
             var hud = o.Player.GetComponent<ItHunts.Hud.PlayerHud>();
             ItHunts.Settings.MenuSkinSettings skin = hud != null ? hud.MenuSkin : null;
             if (skin == null)
@@ -303,13 +334,16 @@ namespace ItHunts.Level
         {
             foreach (Open o in _open)
             {
-                if (o.Player == null || o.Root != null)
-                    continue;                                           // habillé par la DA (uGUI)
+                if (o.Player == null || ((o.Root != null || Skinned) && !o.InDevelopment))
+                    continue;                                           // habillé par la DA (uGUI) ; les options de dév. en greybox
                 Camera cam = o.Player.camera;
                 Rect r = cam != null ? cam.rect : new Rect(0f, 0f, 1f, 1f);
                 var region = new Rect(r.x * Screen.width, (1f - r.y - r.height) * Screen.height, r.width * Screen.width, r.height * Screen.height);
                 string who = PlayerInput.all.Count > 1 ? $"Joueur {IndexOf(o.Player) + 1}. " : "";
-                (o.InSettings ? o.Settings : o.Menu).Draw(o.InSettings ? "Paramètres" : "Pause", who + "Le jeu continue.", 460f, region);
+                if (o.InDevelopment)
+                    o.Development.Draw("Options d'image (dév.)", who, 460f, region);
+                else
+                    (o.InSettings ? o.Settings : o.Menu).Draw(o.InSettings ? "Paramètres" : "Pause", who + "Le jeu continue.", 460f, region);
             }
         }
     }

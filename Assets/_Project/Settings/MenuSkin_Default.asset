@@ -12,99 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dad1513921922d46a75ccb3b4b8f856, type: 3}
   m_Name: MenuSkin_Default
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.MenuSkinSettings
+  titleScreen: {fileID: 8259101211829253740, guid: 1c3ef0510289d484a8d68e62ab90dc07, type: 3}
+  campScreen: {fileID: 2004154082164157192, guid: e5c4edc7300fb47449d6fc77527b3759, type: 3}
+  choiceScreen: {fileID: 6276208912917991764, guid: 5cd2da1f797d67149b7f6ca53df0575d, type: 3}
+  pauseScreen: {fileID: 105743282666029876, guid: 147f130a5c792fb42b52c7bb1ab434da, type: 3}
+  settingsScreen: {fileID: 9025060666553366663, guid: 06830e2b212e6c24595728f5c76b8179, type: 3}
+  playerNameFormat: Joueur {0}
+  showChat: 0
   textFont: {fileID: 12800000, guid: 514fed4c22662ec449fc8e84addc8bab, type: 3}
   textBold: {fileID: 12800000, guid: 9c0d1388ac19db84387d4c02dd031f52, type: 3}
   titleFont: {fileID: 12800000, guid: beb1fe48b368ab24e8f157905953e401, type: 3}
-  titleBold: {fileID: 12800000, guid: 626250515b4969b478c049f69d66f64e, type: 3}
-  titleStyle: 0
-  titleSize: 145
-  leftColumn: 0.34
+  textItalic: {fileID: 12800000, guid: 829b5eb3831bb4944957da7ae4082a5c, type: 3}
   panel: {fileID: 21300000, guid: f31ba3294eba4964baae8d26b7c3f425, type: 3}
   focusMark: {fileID: 21300000, guid: 39db84b571535514d964fdc472895e8b, type: 3}
   additive: {fileID: 2100000, guid: 3bf54dc1f744f494296e7544850236ff, type: 2}
-  fade: {fileID: 2100000, guid: 848ba1f7c3ee0b94ab933b7eee6ed595, type: 2}
-  sky: {fileID: 21300000, guid: 1b554f4e441ef754c812784feb86f718, type: 3}
-  moon: {fileID: 21300000, guid: b52cc264834393745b14dde693509cea, type: 3}
-  moonHalo: {fileID: 21300000, guid: 744690916df25a44ea0bd22314def919, type: 3}
-  moonHaloOn: 0
-  clouds:
-  - {fileID: 21300000, guid: 804d0cff5fb075141b3093b155af757e, type: 3}
-  - {fileID: 21300000, guid: 1cf93903eebb3d74c9b0885c74469ede, type: 3}
-  - {fileID: 21300000, guid: 0d4ba91f344f45943a314067669e37cf, type: 3}
-  - {fileID: 21300000, guid: ea3833a2c54ccfc4295d0c0e9e2716b7, type: 3}
-  - {fileID: 21300000, guid: 47ea27e58fab49d43933388b8422db84, type: 3}
-  fog:
-  - {fileID: 21300000, guid: f2dce6adeaa34ee47adb1a5da75b0d46, type: 3}
-  - {fileID: 21300000, guid: bbd8e6491ae3c99468fa08ed5b0ba935, type: 3}
-  castle: {fileID: 21300000, guid: 901cac5c3071ffb4986a91604ff58fda, type: 3}
-  castleWindows: {fileID: 21300000, guid: 7a65374c086184d49bac55a65aa87e26, type: 3}
-  castleAt: {x: 1142, y: 74}
-  castleErode: 3
-  moonAt: {x: 0.47, y: 0.8}
-  moonScale: 0.3
-  cloudLayers:
-  - band: 0
-    yTop: 50
-    x: -260
-    opacity: 0.5
-    speed: 5
-    drift: 50
-    scale: 1.1
-    parallax: 0.12
-  - band: 2
-    yTop: 300
-    x: -120
-    opacity: 0.72
-    speed: -8
-    drift: 80
-    scale: 1.15
-    parallax: 0.18
-  - band: 4
-    yTop: 520
-    x: -200
-    opacity: 0.9
-    speed: 12
-    drift: 110
-    scale: 1.2
-    parallax: 0.26
-  cloudFadeBottom: 0.35
-  fogFadeTop: 330
-  campBackground: {fileID: 21300000, guid: 52e179e79e9f6f24b8a94a5369e5ec39, type: 3}
-  hearthAt: {x: 0.6, y: 0.205}
-  flameHeight: 300
-  flameWidth: 190
-  flameTongues: 5
-  fireGlow: 1500
-  fireColor: {r: 1.25, g: 0.55, b: 0.18, a: 1}
-  embers: 34
-  emberSpeed: 140
-  emberLife: {x: 1.4, y: 3.2}
-  seatAnchors:
-  - {x: 0.4, y: 0.12}
-  - {x: 0.81, y: 0.12}
-  - {x: 0.45, y: 0.31}
-  - {x: 0.75, y: 0.31}
-  seatScales:
-  - 1
-  - 1
-  - 0.7
-  - 0.7
-  figureHeight: 300
-  showOnlineSeats: 0
-  parallaxPixels: 70
-  skyParallax: 0.1
-  moonParallax: 0.12
-  castleParallax: 0.25
-  farFogParallax: 0.4
-  nearFogParallax: 0.8
-  fogSpeed: 22
-  windowColor: {r: 1.6, g: 0.25, b: 0.12, a: 1}
-  windowFlickerSpeed: 2.5
-  windowFlickerDepth: 0.55
-  fireFlickerSpeed: 6
-  fireFlickerDepth: 0.25
   fogRiseSeconds: 0.8
   fogClearSeconds: 0.8
   transitionFog: {r: 0.36, g: 0.42, b: 0.55, a: 1}
-  music: {fileID: 0}
-  musicVolume: 0.35
+  transitionFogMaterial: {fileID: 2100000, guid: 93bb597bf138b034fa640773a26b96e0, type: 2}
+  music: {fileID: 8300000, guid: 9969bfdfbc41e9d4999636c4dcdac961, type: 3}
+  musicVolume: 0.55
+  fire: {fileID: 8300000, guid: 725464ae0f154cf4d92a0868b5260258, type: 3}
+  fireVolume: 1
+  fireGainDb: 28
+  fireOnTitle: 0
+  fireFadeSeconds: 1.2

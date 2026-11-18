@@ -174,7 +174,7 @@ namespace ItHunts.Tests
             {
                 var menu = go.AddComponent<MainMenu>();
                 typeof(MainMenu).GetField("run", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(menu, _def);
-                typeof(MainMenu).GetMethod("Build", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(menu, null);
+                menu.Build();
                 var items = (ItHunts.Hud.GreyboxMenu)typeof(MainMenu).GetField("_menu", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(menu);
                 ItHunts.Hud.GreyboxMenu.Item boss = items.Items.Find(it => it.Label == "Playtest : combat de boss");
                 Assert.That(boss, Is.Not.Null, "entrée du menu principal");
