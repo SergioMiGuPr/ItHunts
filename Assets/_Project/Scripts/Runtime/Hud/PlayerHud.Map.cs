@@ -9,15 +9,16 @@ using UnityEngine.UI;
 namespace ItHunts.Hud
 {
     /// <summary>
-    /// Carte ouverte (Tab / croix haut, maintenu), dans la vue de chaque joueur (écran partagé compris) : toute l'emprise du niveau,
-    /// seules les salles et les couloirs découverts sont peints (brouillard de guerre, MapDiscovery : par joueur, partagé en coop),
-    /// icônes de la DA (coffres, coffre rare, marchand, salle d'âmes, sortie, alliés, allié mort) à la bonne taille, flèche du joueur,
-    /// légende. Habillage provisoire (cadre sombre, filets) en attendant le lot B de la DA (cadre, parchemin, brume).
+    /// Carte ouverte (Tab / croix haut, maintenu), dans la vue de chaque joueur (écran partagé compris), habillée par le lot B de la
+    /// DA (UI-HANDOFF § 2 bis) : cadre plein écran en 9 tranches, parchemin sombre répété, salles et couloirs découverts tracés à
+    /// l'encre claire, icônes de la mini-carte, brume sur la zone non découverte (dévoilée par les salles découvertes et par le
+    /// pinceau peint au passage des joueurs ; découverte par joueur, partagée en coop), vignette, titre « Carte » en gothique, rose
+    /// des vents, légende dans son panneau. Ordre : fond → carte → brume → vignette → cadre → légende → rose.
     /// </summary>
     public sealed partial class PlayerHud
     {
-        private RectTransform _fullMap, _fullMapArea, _fullMapIcons;
-        private RawImage _fullMapImage;
+        private RectTransform _fullMap, _fullMapArea, _fullMapIcons, _legend;
+        private RawImage _fullMapImage, _fullFog;
         private Image _fullArrow;
         private readonly List<Image> _fullMarks = new List<Image>(), _fullAllies = new List<Image>();
         private ItHunts.Input.PlayerInputReader _reader;
@@ -28,90 +29,128 @@ namespace ItHunts.Hud
         /// <summary>Forcer la carte ouverte (captures, tests) ; sinon la touche du joueur.</summary>
         public bool ForceFullMap { get; set; }
 
-        private static readonly Color MapPanel = new Color(0.045f, 0.05f, 0.075f, 0.94f), MapLine = new Color(0.62f, 0.6f, 0.68f, 0.9f),
-            MapFog = new Color(0.02f, 0.022f, 0.035f, 1f);
+        /// <summary>Bordure du cadre (px 1080p) : du bord de l'écran au rail intérieur.</summary>
+        public const float MapFrameBorder = 130f;
+
+        private static readonly Color MapBand = new Color(0.035f, 0.035f, 0.05f, 0.95f), LegendText = new Color(0.86f, 0.83f, 0.78f);
 
         private void BuildFullMap()
         {
             if (_skin == null)
                 return;
+            MinimapHud.BrushSource = _skin.mapFogBrush != null ? _skin.mapFogBrush.texture : null;
             _fullMap = Rect("Carte ouverte", _root, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             Stretch(_fullMap);
-            NewImage("Voile", _fullMap, Vector2.zero, Vector2.zero, new Color(0f, 0f, 0f, 0.55f)).rectTransform.anchorMin = Vector2.zero;
-            Stretch(_fullMap.GetChild(0) as RectTransform);
-            RectTransform panel = Rect("Cadre (provisoire)", _fullMap, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900f, 900f));
-            Frame(panel, MapPanel, 3f, 14f);
-            Text title = NewText("Titre", panel, new Vector2(0f, -28f), new Vector2(600f, 44f), 34, TextAnchor.MiddleCenter);
-            title.rectTransform.anchorMin = title.rectTransform.anchorMax = new Vector2(0.5f, 1f);
-            title.font = _skin.titleFont != null ? _skin.titleFont : _font;
-            title.text = "Carte";
-            title.color = new Color(0.86f, 0.84f, 0.9f);
-            _fullMapArea = Rect("Zone de la carte", panel, new Vector2(0.5f, 0.5f), new Vector2(0f, 6f), new Vector2(760f, 700f));
-            NewImage("Brouillard", _fullMapArea, Vector2.zero, Vector2.zero, MapFog);
-            Stretch(_fullMapArea.GetChild(0) as RectTransform);
-            RectTransform img = Rect("Salles découvertes", _fullMapArea, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+
+            // Voile opaque : rien du HUD ni du monde ne transparaît sous le cadre (bande sombre de la DA à 86 %).
+            Layer2("Voile", _fullMap, null, Image.Type.Simple, Color.black).color = Color.black;
+            // Fond : parchemin répété sous le rail intérieur (une bande sombre si le sprite manque).
+            Image back = Layer2("Fond (parchemin)", _fullMap, _skin.mapParchment, Image.Type.Tiled, MapBand);
+            Inset(back.rectTransform, MapFrameBorder * 0.75f);
+
+            _fullMapArea = Rect("Zone de la carte", _fullMap, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            Stretch(_fullMapArea);
+            Inset(_fullMapArea, MapFrameBorder + 20f);
+            RectTransform img = Rect("Salles découvertes (encre)", _fullMapArea, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             _fullMapImage = img.gameObject.AddComponent<RawImage>();
             _fullMapImage.raycastTarget = false;
+            if (_skin.mapInkMaterial != null)
+                _fullMapImage.material = _skin.mapInkMaterial;
             _fullMapIcons = Rect("Icônes", img, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             Stretch(_fullMapIcons);
             _fullArrow = MapIcon(_fullMapIcons, "Joueur (flèche)", _skin.iconArrow, MapIconSize * 1.15f);
-            Legend(panel);
+
+            // Brume de la zone non découverte : sur toute la zone, masquée par les salles et le pinceau (matériau à soi par joueur).
+            RectTransform fog = Rect("Brume (zone non découverte)", _fullMap, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            Stretch(fog);
+            Inset(fog, MapFrameBorder * 0.75f);
+            _fullFog = fog.gameObject.AddComponent<RawImage>();
+            _fullFog.raycastTarget = false;
+            _fullFog.texture = _skin.mapFog != null ? _skin.mapFog.texture : null;
+            if (_skin.mapFogMaterial != null)
+                _fullFog.material = new Material(_skin.mapFogMaterial) { name = _skin.mapFogMaterial.name + " (joueur)" };
+            _fullFog.enabled = _skin.mapFog != null && _skin.mapFogMaterial != null;
+
+            if (_skin.mapVignette != null)
+                Inset(Layer2("Vignette", _fullMap, _skin.mapVignette, Image.Type.Simple, Color.white).rectTransform, MapFrameBorder * 0.75f);
+            if (_skin.mapFrame != null)
+            {
+                Image frame = Layer2("Cadre", _fullMap, _skin.mapFrame, Image.Type.Sliced, Color.white);
+                // Bordure de 260 px à 200 px par unité : 130 px en 1080p (le canvas compte 100 px par unité).
+                frame.pixelsPerUnitMultiplier = 1f;
+            }
+
+            Text title = NewText("Titre", _fullMap, new Vector2(0f, -MapFrameBorder * 0.5f), new Vector2(700f, 70f), 46, TextAnchor.MiddleCenter);
+            title.rectTransform.anchorMin = title.rectTransform.anchorMax = new Vector2(0.5f, 1f);
+            title.font = _skin.titleFont != null ? _skin.titleFont : _font;
+            title.text = "Carte";
+            title.color = new Color(0.9f, 0.87f, 0.92f);
+
+            BuildLegend();
+            if (_skin.mapCompass != null)
+            {
+                Image rose = MapIcon(_fullMap, "Rose des vents", _skin.mapCompass, 128f);
+                rose.rectTransform.anchorMin = rose.rectTransform.anchorMax = new Vector2(0f, 1f);
+                rose.rectTransform.anchoredPosition = new Vector2(MapFrameBorder + 100f, -MapFrameBorder - 90f);
+            }
+
             _fullMap.gameObject.SetActive(false);
         }
 
         private float MapIconSize => _skin != null ? _skin.mapIconSize : 30f;
 
-        /// <summary>Panneau sombre et deux filets (provisoire, propre ; le lot B de la DA le remplacera).</summary>
-        private void Frame(RectTransform panel, Color fill, float line, float inset)
+        private Image Layer2(string name, RectTransform parent, Sprite sprite, Image.Type type, Color color)
         {
-            Image back = NewImage("Fond", panel, Vector2.zero, Vector2.zero, fill);
-            Stretch(back.rectTransform);
-            foreach (float d in new[] { 0f, inset })
-            {
-                foreach ((Vector2 a, Vector2 b, bool horizontal) in new[]
-                         {
-                             (new Vector2(0f, 1f), new Vector2(1f, 1f), true), (new Vector2(0f, 0f), new Vector2(1f, 0f), true),
-                             (new Vector2(0f, 0f), new Vector2(0f, 1f), false), (new Vector2(1f, 0f), new Vector2(1f, 1f), false),
-                         })
-                {
-                    Image l = NewImage("Filet", panel, Vector2.zero, Vector2.zero, d > 0f ? new Color(MapLine.r, MapLine.g, MapLine.b, 0.45f) : MapLine);
-                    RectTransform r = l.rectTransform;
-                    r.anchorMin = a;
-                    r.anchorMax = b;
-                    r.pivot = new Vector2(a.x, a.y);
-                    float w = d > 0f ? 1.5f : line;
-                    Vector2 inward = new Vector2(a.x == b.x ? (a.x < 0.5f ? d : -d) : 0f, a.y == b.y ? (a.y < 0.5f ? d : -d) : 0f);
-                    r.anchoredPosition = inward;
-                    r.sizeDelta = horizontal ? new Vector2(-2f * d, w) : new Vector2(w, -2f * d);
-                }
-            }
+            RectTransform r = Rect(name, parent, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            Stretch(r);
+            var img = r.gameObject.AddComponent<Image>();
+            img.sprite = sprite;
+            img.type = sprite != null ? type : Image.Type.Simple;
+            img.color = sprite != null ? color : MapBand;
+            img.raycastTarget = false;
+            return img;
         }
 
-        private void Legend(RectTransform panel)
+        private static void Inset(RectTransform r, float d)
+        {
+            r.offsetMin = new Vector2(d, d);
+            r.offsetMax = new Vector2(-d, -d);
+        }
+
+        /// <summary>Légende (panneau en 9 tranches, bas droite) : icônes de la mini-carte en 40 px et leur nom (EB Garamond SemiBold 26).</summary>
+        private void BuildLegend()
         {
             var items = new List<(Sprite, string)>
             {
-                (_skin.iconChest, "coffre"), (_skin.iconChestRare, "coffre rare"), (_skin.iconMerchant, "marchand"),
-                (_skin.iconSouls, "salle d'âmes"), (_skin.iconExitLocked, "sortie"), (_skin.allyFox, "allié"), (_skin.iconAllyDead, "allié mort"),
+                (_skin.iconArrow, "Vous"), (_skin.iconChest, "Coffre"), (_skin.iconChestRare, "Coffre rare"), (_skin.iconMerchant, "Marchand"),
+                (_skin.iconSouls, "Âmes"), (_skin.iconExitLocked, "Sortie"), (_skin.allyFox, "Allié"), (_skin.iconAllyDead, "Allié mort"),
             };
             items.RemoveAll(i => i.Item1 == null);
-            // Deux rangées de quatre (lisible aussi dans une demi-vue d'écran partagé).
-            const int perRow = 4;
-            float step = 190f;
+            const float row = 50f, pad = 46f;
+            var size = new Vector2(330f, pad * 2f + row * items.Count);
+            _legend = Rect("Légende", _fullMap, new Vector2(1f, 0f), new Vector2(-MapFrameBorder - 40f, MapFrameBorder + 40f), size, new Vector2(1f, 0f));
+            if (_skin.mapLegendFrame != null)
+            {
+                Image panel = Layer2("Cadre de la légende", _legend, _skin.mapLegendFrame, Image.Type.Sliced, Color.white);
+                panel.pixelsPerUnitMultiplier = 1f;
+            }
+            else
+                NewImage("Fond", _legend, Vector2.zero, size, MapBand);
+
             for (int i = 0; i < items.Count; i++)
             {
                 (Sprite s, string label) = items[i];
-                int row = i / perRow, col = i % perRow;
-                int inRow = Mathf.Min(perRow, items.Count - row * perRow);
-                float x = (col - (inRow - 1) * 0.5f) * step;
-                RectTransform cell = Rect("Légende : " + label, panel, new Vector2(0.5f, 0f), new Vector2(x, 62f - row * 30f), new Vector2(step, 28f));
-                Image icon = MapIcon(cell, "Icône", s, 24f);
+                RectTransform cell = Rect("Légende : " + label, _legend, new Vector2(0f, 1f), new Vector2(pad, -pad - row * (i + 0.5f)), new Vector2(size.x - 2f * pad, row), new Vector2(0f, 0.5f));
+                Image icon = MapIcon(cell, "Icône", s, 40f);
                 icon.rectTransform.anchorMin = icon.rectTransform.anchorMax = new Vector2(0f, 0.5f);
-                icon.rectTransform.anchoredPosition = new Vector2(18f, 0f);
-                Text t = NewText("Texte", cell, new Vector2(18f, 0f), new Vector2(step - 40f, 28f), 18, TextAnchor.MiddleLeft);
-                t.rectTransform.anchorMin = t.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                icon.rectTransform.anchoredPosition = new Vector2(20f, 0f);
+                Text t = NewText("Texte", cell, new Vector2(56f, 0f), new Vector2(size.x - 2f * pad - 56f, row), 26, TextAnchor.MiddleLeft);
+                t.rectTransform.anchorMin = t.rectTransform.anchorMax = new Vector2(0f, 0.5f);
+                t.rectTransform.pivot = new Vector2(0f, 0.5f);
+                if (_skin.mapLegendFont != null)
+                    t.font = _skin.mapLegendFont;
                 t.text = label;
-                t.color = new Color(0.8f, 0.8f, 0.86f);
+                t.color = LegendText;
             }
         }
 
@@ -134,6 +173,14 @@ namespace ItHunts.Hud
             float k = Mathf.Min(area.x / wx, area.y / wz);
             return new Vector2(wx * k, wz * k);
         }
+
+        /// <summary>
+        /// UV de la brume tendue sur une zone plus grande que la carte (pur, testable) : la carte (taille map, centrée) couvre [0, 1] ;
+        /// la brume (taille area) déborde de chaque côté.
+        /// </summary>
+        public static Rect FogUv(Vector2 area, Vector2 map) =>
+            new Rect(-(area.x - map.x) * 0.5f / Mathf.Max(1f, map.x), -(area.y - map.y) * 0.5f / Mathf.Max(1f, map.y),
+                area.x / Mathf.Max(1f, map.x), area.y / Mathf.Max(1f, map.y));
 
         /// <summary>Icône d'un point clé (pur vis-à-vis de l'affichage, testable) ; null : rien à montrer.</summary>
         public static Sprite MarkIcon(HudSkinSettings skin, Object owner, int playerId) => skin == null ? null : owner switch
@@ -167,6 +214,8 @@ namespace ItHunts.Hud
             return _reader != null && _reader.MapHeld && !PlayerLook.MenuOpen;
         }
 
+        private static readonly int RoomsId = Shader.PropertyToID("_Rooms"), BrushId = Shader.PropertyToID("_Brush"), TilingId = Shader.PropertyToID("_Tiling");
+
         private void UpdateFullMap()
         {
             if (_fullMap == null || _health == null)
@@ -175,22 +224,34 @@ namespace ItHunts.Hud
             Texture tex = mm != null ? mm.TextureFor(_health.PlayerId) : null;
             bool on = tex != null && WantsFullMap();
             if (_fullMap.gameObject.activeSelf != on)
+            {
                 _fullMap.gameObject.SetActive(on);
+                if (on)
+                    _fullMap.SetAsLastSibling();                        // au-dessus du HUD (âmes, timer, barre de vie)
+            }
             if (!on)
                 return;
 
-            // La zone de la carte suit la vue du joueur (écran partagé : plus étroite).
+            // Vue étroite (écran partagé côte à côte) : légende réduite.
             Rect view = _root.rect;
-            float side = Mathf.Min(view.width, view.height) * 0.86f;
-            var panel = (RectTransform)_fullMap.Find("Cadre (provisoire)");
-            panel.sizeDelta = new Vector2(Mathf.Min(view.width * 0.94f, side * 1.05f), side);
-            _fullMapArea.sizeDelta = new Vector2(panel.sizeDelta.x - 70f, side - 190f);
-            _fullMapArea.anchoredPosition = new Vector2(0f, 26f);
+            _legend.localScale = Vector3.one * Mathf.Clamp(view.width / 1500f, 0.6f, 1f);
             Bounds all = mm.AllBounds;
-            Vector2 size = FitMap(_fullMapArea.sizeDelta, new Vector2(all.size.x, all.size.z));
+            Vector2 area = _fullMapArea.rect.size;
+            Vector2 size = FitMap(area, new Vector2(all.size.x, all.size.z));
             _fullMapImage.rectTransform.sizeDelta = size;
             _fullMapImage.texture = tex;
             _fullMapImage.uvRect = new Rect(0f, 0f, 1f, 1f);
+            if (_fullFog.enabled && _fullFog.material != null)
+            {
+                Vector2 fogArea = ((RectTransform)_fullFog.transform).rect.size;
+                _fullFog.uvRect = FogUv(fogArea, size);
+                Material m = _fullFog.material;
+                m.SetTexture(RoomsId, tex);
+                m.SetTexture(BrushId, mm.BrushFor(_health.PlayerId));
+                float tile = _skin.mapFogTiling;
+                m.SetVector(TilingId, new Vector4(tile, tile * size.y / Mathf.Max(1f, size.x), 0f, 0f));
+            }
+
             Vector2 P(Vector3 w) => new Vector2(((w.x - all.min.x) / Mathf.Max(1f, all.size.x) - 0.5f) * size.x,
                 ((w.z - all.min.z) / Mathf.Max(1f, all.size.z) - 0.5f) * size.y);
 

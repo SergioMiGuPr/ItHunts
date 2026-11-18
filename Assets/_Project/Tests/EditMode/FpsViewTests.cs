@@ -102,6 +102,31 @@ namespace ItHunts.Tests
             Assert.That(map.bindings.Select(b => b.path), Is.SupersetOf(new[] { "<Keyboard>/tab", "<Gamepad>/dpad/up" }));
         }
 
+        [Test]
+        public void CarteOuverte_HabillageDeLaDA_BrumeEtPinceau()
+        {
+            var skin = AssetDatabase.LoadAssetAtPath<HudSkinSettings>("Assets/_Project/Settings/HudSkin_Default.asset");
+            foreach (Object o in new Object[] { skin.mapFrame, skin.mapParchment, skin.mapVignette, skin.mapFog, skin.mapFogBrush, skin.mapLegendFrame,
+                         skin.mapCompass, skin.mapLegendFont, skin.mapInkMaterial, skin.mapFogMaterial })
+                Assert.That(o, Is.Not.Null, "pièce de la carte ouverte (UI-HANDOFF § 2 bis)");
+            Assert.That(skin.mapFrame.border.x / skin.mapFrame.pixelsPerUnit * 100f, Is.EqualTo(PlayerHud.MapFrameBorder).Within(0.5f), "bordure 130 px en 1080p");
+            // La brume tendue sur une zone deux fois plus large que la carte : la carte reste en [0, 1].
+            Rect uv = PlayerHud.FogUv(new Vector2(800f, 400f), new Vector2(400f, 400f));
+            Assert.That(uv.xMin, Is.EqualTo(-0.5f).Within(1e-4f));
+            Assert.That(uv.xMax, Is.EqualTo(1.5f).Within(1e-4f));
+            Assert.That(uv.yMin, Is.EqualTo(0f).Within(1e-4f));
+            // Le pinceau dévoile autour du point, pas ailleurs, et ne réassombrit jamais.
+            var px = new Color32[64 * 64];
+            var stamp = new float[4 * 4];
+            for (int i = 0; i < stamp.Length; i++) stamp[i] = 1f;
+            MinimapHud.StampAt(px, 64, stamp, 4, new Vector2(0.5f, 0.5f), 0.05f);
+            Assert.That(px[32 * 64 + 32].r, Is.EqualTo(255));
+            Assert.That(px[2 * 64 + 2].r, Is.EqualTo(0));
+            stamp[0] = 0f;
+            MinimapHud.StampAt(px, 64, stamp, 4, new Vector2(0.5f, 0.5f), 0.05f);
+            Assert.That(px[32 * 64 + 32].r, Is.EqualTo(255), "jamais réassombri");
+        }
+
         // ---------- Mouvement des mains ----------
 
         [Test]

@@ -65,6 +65,124 @@ namespace ItHunts.Hud
             return e.tex;
         }
 
+        // ---------- Pinceau de dévoilement (carte ouverte, UI-HANDOFF § 2 bis) ----------
+
+        /// <summary>Pinceau de la DA (Carte_Brume_Pinceau), posé par le HUD habillé ; null : disque doux.</summary>
+        public static Texture BrushSource { get; set; }
+        /// <summary>Rayon du pinceau (m) et intervalle entre deux coups (s).</summary>
+        public static float BrushMeters = 16f, BrushInterval = 0.15f;
+        private const int MaskSize = 256, StampSize = 32;
+        private readonly Dictionary<int, Texture2D> _masks = new Dictionary<int, Texture2D>();
+        private readonly Dictionary<int, Color32[]> _maskPx = new Dictionary<int, Color32[]>();
+        private float[] _stamp;
+        private float _nextStamp;
+
+        /// <summary>
+        /// Masque de dévoilement de ce joueur (r : 0 dans la brume, 1 dévoilé), sur l'emprise du niveau : coop partagée, le masque commun
+        /// (tous les joueurs y peignent) ; sinon le sien.
+        /// </summary>
+        public Texture BrushFor(int playerId)
+        {
+            MapDiscovery fog = MapDiscovery.Current;
+            int key = fog == null || fog.SharedInCoop ? int.MinValue : playerId;
+            return _masks.TryGetValue(key, out Texture2D t) ? t : Mask(key);
+        }
+
+        private Texture2D Mask(int key)
+        {
+            if (_masks.TryGetValue(key, out Texture2D t))
+                return t;
+            t = new Texture2D(MaskSize, MaskSize, TextureFormat.R8, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, name = "Dévoilement " + key };
+            var px = new Color32[MaskSize * MaskSize];
+            t.SetPixels32(px);
+            t.Apply(false);
+            _masks[key] = t;
+            _maskPx[key] = px;
+            return t;
+        }
+
+        /// <summary>Le pinceau en petit (StampSize²), lu une fois sur la texture de la DA (rendu dans une RenderTexture).</summary>
+        private float[] Stamp()
+        {
+            if (_stamp != null)
+                return _stamp;
+            _stamp = new float[StampSize * StampSize];
+            if (BrushSource != null)
+            {
+                RenderTexture rt = RenderTexture.GetTemporary(StampSize, StampSize, 0);
+                Graphics.Blit(BrushSource, rt);
+                RenderTexture keep = RenderTexture.active;
+                RenderTexture.active = rt;
+                var read = new Texture2D(StampSize, StampSize, TextureFormat.RGBA32, false);
+                read.ReadPixels(new Rect(0, 0, StampSize, StampSize), 0, 0);
+                read.Apply(false);
+                RenderTexture.active = keep;
+                RenderTexture.ReleaseTemporary(rt);
+                Color32[] c = read.GetPixels32();
+                for (int i = 0; i < c.Length; i++)
+                    _stamp[i] = Mathf.Max(c[i].r, c[i].a) / 255f * (c[i].a / 255f);
+                Destroy(read);
+            }
+            else
+                for (int y = 0; y < StampSize; y++)
+                for (int x = 0; x < StampSize; x++)
+                {
+                    float d = new Vector2(x - StampSize / 2f + 0.5f, y - StampSize / 2f + 0.5f).magnitude / (StampSize / 2f);
+                    _stamp[y * StampSize + x] = Mathf.Clamp01(1f - d * d);
+                }
+
+            return _stamp;
+        }
+
+        /// <summary>Un coup de pinceau au point (UV de la carte) dans ce masque (pur sur les pixels, testable).</summary>
+        public static void StampAt(Color32[] px, int size, float[] stamp, int stampSize, Vector2 uv, float radiusUv)
+        {
+            int r = Mathf.Max(1, Mathf.RoundToInt(radiusUv * size));
+            int cx = Mathf.RoundToInt(uv.x * size), cy = Mathf.RoundToInt(uv.y * size);
+            for (int y = -r; y <= r; y++)
+            for (int x = -r; x <= r; x++)
+            {
+                int px0 = cx + x, py0 = cy + y;
+                if (px0 < 0 || py0 < 0 || px0 >= size || py0 >= size)
+                    continue;
+                int sx = Mathf.Clamp(Mathf.FloorToInt((x + r) / (2f * r + 1f) * stampSize), 0, stampSize - 1);
+                int sy = Mathf.Clamp(Mathf.FloorToInt((y + r) / (2f * r + 1f) * stampSize), 0, stampSize - 1);
+                byte v = (byte)Mathf.RoundToInt(stamp[sy * stampSize + sx] * 255f);
+                int i = py0 * size + px0;
+                if (v > px[i].r)
+                    px[i].r = v;
+            }
+        }
+
+        private void PaintBrush()
+        {
+            if (Time.time < _nextStamp || _all.size.x < 1f || _all.size.z < 1f)
+                return;
+            _nextStamp = Time.time + BrushInterval;
+            float[] stamp = Stamp();
+            float radius = BrushMeters / Mathf.Max(_all.size.x, _all.size.z);
+            var dirty = new HashSet<int>();
+            foreach (PlayerHealth p in PlayerHealth.All)
+            {
+                if (p == null || p.Dead)
+                    continue;
+                Vector3 w = p.transform.position;
+                var uv = new Vector2((w.x - _all.min.x) / _all.size.x, (w.z - _all.min.z) / _all.size.z);
+                foreach (int key in new[] { int.MinValue, p.PlayerId })
+                {
+                    Mask(key);
+                    StampAt(_maskPx[key], MaskSize, stamp, StampSize, uv, radius);
+                    dirty.Add(key);
+                }
+            }
+
+            foreach (int key in dirty)
+            {
+                _masks[key].SetPixels32(_maskPx[key]);
+                _masks[key].Apply(false);
+            }
+        }
+
         /// <summary>Point clé i sur la carte de ce joueur.</summary>
         public bool MarkFor(int i, int playerId, out Vector3 at, out Object owner)
         {
@@ -116,6 +234,7 @@ namespace ItHunts.Hud
             MapDiscovery fog = MapDiscovery.Current;
             if (_mapTex == null || (fog != null ? fog.KnownCount : 0) != _paintedKnown)
                 Paint(fog);
+            PaintBrush();
         }
 
         // Performance (étape 8, après playtest : 7 ms d'IMGUI au pic) : les salles découvertes sont peintes dans une texture,
@@ -205,6 +324,9 @@ namespace ItHunts.Hud
             foreach (var e in _perPlayer.Values)
                 if (e.tex != null)
                     Destroy(e.tex);
+            foreach (Texture2D m in _masks.Values)
+                if (m != null)
+                    Destroy(m);
         }
 
         /// <summary>Carte entière IMGUI (sans habillage seulement) : un joueur maintient sa touche de carte.</summary>

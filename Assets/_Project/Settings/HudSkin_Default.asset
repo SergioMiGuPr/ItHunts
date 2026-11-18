@@ -65,3 +65,14 @@ MonoBehaviour:
   allySize: 16
   arrowSize: 24
   mapIconSize: 30
+  mapFrame: {fileID: 21300000, guid: 5bc608c5e5fd83b4b865b783357f1a1d, type: 3}
+  mapParchment: {fileID: 21300000, guid: 2778339c8a5b33e4a935a37a5269484e, type: 3}
+  mapVignette: {fileID: 21300000, guid: 0c60ab2c5f852bf4fb2f825f6ac91d49, type: 3}
+  mapFog: {fileID: 21300000, guid: 753ef27d887239c4a807df31e9e182f1, type: 3}
+  mapFogBrush: {fileID: 21300000, guid: a573f3a0ba38f574194b2ac08ee25de7, type: 3}
+  mapLegendFrame: {fileID: 21300000, guid: f31ba3294eba4964baae8d26b7c3f425, type: 3}
+  mapCompass: {fileID: 21300000, guid: 39db84b571535514d964fdc472895e8b, type: 3}
+  mapLegendFont: {fileID: 12800000, guid: 9c0d1388ac19db84387d4c02dd031f52, type: 3}
+  mapInkMaterial: {fileID: 2100000, guid: 59bf3921928769944a563cf48c029306, type: 2}
+  mapFogMaterial: {fileID: 2100000, guid: 7385a7de4c534b8438a3292ed1de1401, type: 2}
+  mapFogTiling: 3

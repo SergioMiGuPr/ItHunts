@@ -83,5 +83,23 @@ namespace ItHunts.Settings
         [Min(4f)] public float arrowSize = 24f;
         [Tooltip("Icônes de la carte ouverte (Tab), px 1080p.")]
         [Min(4f)] public float mapIconSize = 30f;
+
+        [Header("Carte ouverte (Tab), lot B de la DA (UI-HANDOFF § 2 bis)")]
+        [Tooltip("Cadre plein écran (9 tranches, bordure 130 px en 1080p).")]
+        public Sprite mapFrame;
+        [Tooltip("Parchemin sombre raccordable (répété).")]
+        public Sprite mapParchment;
+        public Sprite mapVignette;
+        [Tooltip("Brume de la zone non découverte (raccordable) et pinceau de dévoilement.")]
+        public Sprite mapFog;
+        public Sprite mapFogBrush;
+        public Sprite mapLegendFrame;
+        public Sprite mapCompass;
+        [Tooltip("Police des noms de la légende (EB Garamond SemiBold).")]
+        public Font mapLegendFont;
+        [Tooltip("Matériaux : salles en traits d'encre (ItHunts/UICarteEncre), brume masquée (ItHunts/UICarteBrume).")]
+        public Material mapInkMaterial;
+        public Material mapFogMaterial;
+        [Min(1f)] public float mapFogTiling = 3f;
     }
 }
