@@ -4,7 +4,17 @@
 
 ## Étape en cours
 
-**PR #15 (lot B de la DA), carte ouverte et menus (2026-11-18, `animations`, pas fusionnée dans `main`) :** un commit par point.
+**Retours des menus du 2026-11-18 (`animations`) :** 4145cf6 (écran titre), 10c747f (campement et transition). Captures avant/après en
+1920 × 1080 et 0,66x : `docs/design/features/menus/captures/retours_2026-11-18/`. Titre : deux styles en attendant le logo
+(`MenuSkin_Default.titleStyle` : Grenze Gotisch SemiBold avec contour par défaut, ou EB Garamond Bold espacé), à choisir. Liseré clair :
+absent de l'image rendue (mesuré), sans doute la vue Game de l'éditeur en zoom fractionnaire ; à confirmer dans un build.
+- **Attendu de la DA pour remplacer les morceaux provisoires :** scène composée de l'écran titre (ciel, lune, nuages raccordables ou
+  déjà posés, château détouré proprement, brume) et du campement (fond sans foyer à effet si l'effet doit rester code, ou foyer animé
+  livré) ; logo IT HUNTS ; personnages 2D du campement (lot C, assis, de face et de dos pour les places du fond) et ancrages des places ;
+  écran de choix du personnage (lot D) ; boutons (normal, survol, pressé, désactivé) et cadre du menu pause ; vraie musique.
+- **Tests :** EditMode 419 + 1 non concluant attendu.
+
+ (2026-11-18, `animations`, pas fusionnée dans `main`) :** un commit par point.
 - **PR #15 (art-ui-b) :** vérifiée (périmètre, `.meta`, manifeste, compilation, 397 tests), fusionnée dans `main` (f223c21), poussée,
   `main` fusionnée dans `animations`.
 - **Carte ouverte (9a1e62b) :** cadre, parchemin, salles à l'encre, brume dévoilée par les salles et le pinceau (par joueur, partagé
