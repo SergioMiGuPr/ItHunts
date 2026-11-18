@@ -261,8 +261,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.MainMenu
   run: {fileID: 11400000, guid: 354d97fa9116be9438018617dcf4f34d, type: 2}
+  skin: {fileID: 11400000, guid: 6b4809b3530e21144a41dd222b9f0f94, type: 2}
   movementScene: Test_Movement
   arenaScene: Test_Arena
+  fixedLevelScene: Level_01
 --- !u!4 &1230235637
 Transform:
   m_ObjectHideFlags: 0

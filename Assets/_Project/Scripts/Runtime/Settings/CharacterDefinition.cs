@@ -27,6 +27,8 @@ namespace ItHunts.Settings
         public string artifactLabel = "artefact à concevoir";
         [Tooltip("Jouable : choisissable dans le menu. Décoché : affiché grisé (« bientôt »).")]
         public bool playable = true;
+        [Tooltip("Description courte du personnage et de son artefact (écran de choix du personnage).")]
+        [TextArea(2, 4)] public string description = "";
 
         public bool Selectable => playable && artifact != null;
         public string ArtifactName => artifact != null ? artifact.displayName : artifactLabel;

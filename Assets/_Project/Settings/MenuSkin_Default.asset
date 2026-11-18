@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dad1513921922d46a75ccb3b4b8f856, type: 3}
+  m_Name: MenuSkin_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.MenuSkinSettings
+  textFont: {fileID: 12800000, guid: 514fed4c22662ec449fc8e84addc8bab, type: 3}
+  textBold: {fileID: 12800000, guid: 9c0d1388ac19db84387d4c02dd031f52, type: 3}
+  titleFont: {fileID: 12800000, guid: beb1fe48b368ab24e8f157905953e401, type: 3}
+  panel: {fileID: 21300000, guid: f31ba3294eba4964baae8d26b7c3f425, type: 3}
+  focusMark: {fileID: 21300000, guid: 39db84b571535514d964fdc472895e8b, type: 3}
+  additive: {fileID: 2100000, guid: 3bf54dc1f744f494296e7544850236ff, type: 2}
+  sky: {fileID: 21300000, guid: 1b554f4e441ef754c812784feb86f718, type: 3}
+  moon: {fileID: 21300000, guid: b52cc264834393745b14dde693509cea, type: 3}
+  moonHalo: {fileID: 21300000, guid: 744690916df25a44ea0bd22314def919, type: 3}
+  clouds:
+  - {fileID: 21300000, guid: 804d0cff5fb075141b3093b155af757e, type: 3}
+  - {fileID: 21300000, guid: 1cf93903eebb3d74c9b0885c74469ede, type: 3}
+  - {fileID: 21300000, guid: 0d4ba91f344f45943a314067669e37cf, type: 3}
+  - {fileID: 21300000, guid: ea3833a2c54ccfc4295d0c0e9e2716b7, type: 3}
+  - {fileID: 21300000, guid: 47ea27e58fab49d43933388b8422db84, type: 3}
+  fog:
+  - {fileID: 21300000, guid: f2dce6adeaa34ee47adb1a5da75b0d46, type: 3}
+  - {fileID: 21300000, guid: bbd8e6491ae3c99468fa08ed5b0ba935, type: 3}
+  castle: {fileID: 21300000, guid: 901cac5c3071ffb4986a91604ff58fda, type: 3}
+  castleWindows: {fileID: 21300000, guid: 7a65374c086184d49bac55a65aa87e26, type: 3}
+  castleAt: {x: 1142, y: 74}
+  moonAt: {x: 0.3, y: 0.78}
+  moonScale: 0.42
+  campBackground: {fileID: 21300000, guid: 52e179e79e9f6f24b8a94a5369e5ec39, type: 3}
+  fire: {fileID: 21300000, guid: 46c05ae81b8860e4b9fcac1c097b804c, type: 3}
+  fireAdditive: {fileID: 21300000, guid: afd152a922b09f74aabfda56f6888946, type: 3}
+  seats:
+  - {fileID: 21300000, guid: 219a80e86bd615d4797cf8c36d75265a, type: 3}
+  - {fileID: 21300000, guid: b98b9b0c8033acb4f87be459ca695089, type: 3}
+  - {fileID: 21300000, guid: 6814069ef2880e2479466f649cfcdd85, type: 3}
+  - {fileID: 21300000, guid: 1ad315591ebb90f4283e701e964e3a69, type: 3}
+  seatAnchors:
+  - {x: 0.34, y: 0.12}
+  - {x: 0.66, y: 0.12}
+  - {x: 0.13, y: 0.2}
+  - {x: 0.87, y: 0.2}
+  seatScale: 0.42
+  fireAt: {x: 0.5, y: 0.14}
+  fireScale: 0.26
+  parallaxPixels: 70
+  skyParallax: 0.1
+  moonParallax: 0.12
+  farCloudParallax: 0.15
+  nearCloudParallax: 0.25
+  castleParallax: 0.25
+  farFogParallax: 0.4
+  nearFogParallax: 0.8
+  cloudSpeed: 9
+  fogSpeed: 22
+  windowColor: {r: 1.6, g: 0.25, b: 0.12, a: 1}
+  windowFlickerSpeed: 2.5
+  windowFlickerDepth: 0.55
+  fireFlickerSpeed: 6
+  fireFlickerDepth: 0.25
+  moonPulseHz: 0.15
+  moonPulseDepth: 0.2
+  glideSeconds: 1.5
+  glideCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  music: {fileID: 0}
+  musicVolume: 0.35
