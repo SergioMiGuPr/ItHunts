@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.FireLanternSettings
   id: lanterne-de-feu
   displayName: Lanterne de feu
+  description: "Jet de flammes en c\xF4ne qui br\xFBle les ennemis touch\xE9s."
   upgrades: {fileID: 11400000, guid: e7242932d72fd4a4b84f89f607f1a2c6, type: 2}
   range: 15
   originOffset: {x: -0.22, y: -0.45, z: 0.35}

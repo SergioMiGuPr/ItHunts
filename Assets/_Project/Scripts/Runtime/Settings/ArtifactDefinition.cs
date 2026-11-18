@@ -13,6 +13,8 @@ namespace ItHunts.Settings
         public string id = "artefact";
         [Tooltip("Nom affiché.")]
         public string displayName = "Artefact";
+        [Tooltip("Description courte, affichée sous le nom sur l'écran de choix du personnage (UI-HANDOFF § 2.5).")]
+        [TextArea(2, 3)] public string description = "";
         [Tooltip("Améliorations de cet artefact, vendues par le marchand de l'artefact (salle de départ) au joueur qui le porte.")]
         public UpgradePool upgrades;
     }
