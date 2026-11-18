@@ -15,10 +15,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 # cibles des places du campement : haut de capuche, centre des épaules, pied de la lanterne, facteur d'échelle
 # (places 1 et 2 mesurées sur la maquette ; 3 et 4 extrapolées : plus loin, assise plus haute)
-CIBLES = {1: {"capuche": 352, "cx": 569, "lanterne": (510, 676), "f": 1.0},
-          2: {"capuche": 346, "cx": 807, "lanterne": (918, 596), "f": 1.0},
-          3: {"capuche": 315, "cx": 1150, "lanterne": (1267, 607), "f": 0.85},
-          4: {"capuche": 310, "cx": 1462, "lanterne": (1540, 635), "f": 0.85}}
+# "sol" : ligne où posent les pieds (bas des bottes), au-dessus du cartouche du nom. Place 1 : bottes du renard de la maquette
+# (y 657) ; place 2 : sol devant la pierre (y 640) ; places 3 et 4 : devant le banc et le rocher (extrapolé). L'échelle de
+# chaque personnage est choisie pour que le haut de capuche tombe sur celui de la maquette et les pieds sur le sol ; elle ne
+# dépasse jamais l'échelle des épaules (on ne fait que réduire).
+CIBLES = {1: {"capuche": 352, "cx": 569, "lanterne": (510, 676), "sol": 657, "f": 1.0},
+          2: {"capuche": 346, "cx": 807, "lanterne": (918, 596), "sol": 640, "f": 1.0},
+          3: {"capuche": 315, "cx": 1150, "lanterne": (1267, 607), "sol": 640, "f": 0.85},
+          4: {"capuche": 310, "cx": 1462, "lanterne": (1540, 635), "sol": 650, "f": 0.85}}
 # cartouche de nom par place (rect de la pièce Campement_Cartouche_Nom, étirée en 9 tranches pour la place 1)
 CARTOUCHES = {1: (438.6, 666, 239, 71), 2: (718, 663, 212, 72), 3: (1079, 663, 212, 72), 4: (1361, 663, 212, 72)}
 
@@ -39,12 +43,22 @@ def main():
             for name, a in lay["assis"].items():
                 L.append("valeur Campement_couleur_%s %.3f %.3f %.3f" % (name, *a["couleur"]))
                 pl1 = a["places"]["1"]
+                from PIL import Image
+                import numpy as np
+                al = np.asarray(Image.open(os.path.join(MEN, "Campement", "Campement_Assis_%s.png" % name)))[..., 3]
+                tw, th = a["corps"]["taille_sprite"]
+                pied_sprite = float(np.nonzero((al > 128).sum(1) > 3)[0].max() + 1)
+                rx, ry, rw, rh = a["corps"]["rect_image"]
+                pied_img = ry + pied_sprite * rh / th           # bas des pieds, en pixels de l'image d'origine
                 for place, c in CIBLES.items():
-                    s = pl1["echelle"] * c["f"]
+                    s_epaules = pl1["echelle"] * c["f"]
+                    s_sol = (c["sol"] - c["capuche"]) / (pied_img - a["capuche_image"])
+                    s = min(s_epaules, s_sol)
                     rx, ry, rw, rh = a["corps"]["rect_image"]
                     x = c["cx"] - (pl1["centre_epaules_x"] - rx) * s
                     y = c["capuche"] - (a["capuche_image"] - ry) * s
                     lx, ly, lw, lh = a["lanterne"]["rect_image"]
+                    print("  %s place %d : échelle %.3f (épaules %.3f), pieds à y %.0f" % (name, place, s, s_epaules, c["capuche"] - (a["capuche_image"] - ry) * s + (pied_img - ry) * s))
                     L.append("place %s %d %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f" % (
                         name, place, x, y, rw * s, rh * s, c["lanterne"][0] - lw * s / 2, c["lanterne"][1] - lh * s, lw * s, lh * s))
             for place, r in CARTOUCHES.items():
