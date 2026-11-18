@@ -11,7 +11,7 @@ namespace ItHunts.Level
     /// Menus d'avant-partie (lot B de la DA, UI-HANDOFF § 2 ; retours du 2026-11-18) :
     /// - écran titre : tiers gauche réservé au titre (en attendant le logo) et au menu (Jouer, Paramètres, Quitter) ; ciel, lune à
     ///   droite du titre, trois couches de nuages qui dérivent (fondu en bas), château (détourage érodé) dont les fenêtres
-    ///   clignotent, brume qui défile (fondu en haut) ; parallaxe à la souris ou au stick droit ; Playtest en petit en bas à droite
+    ///   clignotent, brume qui défile (fondu en haut) ; parallaxe à la souris ou au stick droit ; Vitrine (test, F2) et Playtest (F3) en petit en bas à droite
     ///   (éditeur et builds de développement) ; musique d'ambiance provisoire ;
     /// - transition : la brume monte jusqu'à couvrir l'écran, puis se dissipe sur l'autre écran (durées réglables) ;
     /// - campement (CampLobby) : effet de feu sur le foyer peint (langues, braises, lueur qui vacille sur le décor) ; 4 places
@@ -264,6 +264,24 @@ namespace ItHunts.Level
                 Say($"Scène « {scene} » absente du build");
         }
 
+        /// <summary>Vitrine (test) : lancée directement (F2 ou lien « Vitrine (test) »), éditeur et builds de développement seulement.</summary>
+        public void OpenVitrine()
+        {
+            if (PlaytestVisible)
+                Direct(VitrineScene);
+        }
+
+        /// <summary>F2 : vitrine ; F3 : menu Playtest (éditeur et builds de développement).</summary>
+        private void DevKeys()
+        {
+            if (!PlaytestVisible || Keyboard.current == null)
+                return;
+            if (Keyboard.current.f2Key.wasPressedThisFrame)
+                OpenVitrine();
+            else if (Keyboard.current.f3Key.wasPressedThisFrame)
+                OpenPlaytest();
+        }
+
         private void OpenPlaytest()
         {
             if (!PlaytestVisible)
@@ -300,8 +318,7 @@ namespace ItHunts.Level
             {
                 case Page.Titre:
                     _title.Update();
-                    if (PlaytestVisible && Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame)
-                        OpenPlaytest();
+                    DevKeys();
                     break;
                 case Page.Transition:
                     UpdateTransition();
@@ -369,8 +386,7 @@ namespace ItHunts.Level
                 _camp.Update();
                 if (BackPressed(p2))
                     GoTo(Page.Titre);
-                if (PlaytestVisible && Keyboard.current != null && Keyboard.current.f2Key.wasPressedThisFrame)
-                    OpenPlaytest();
+                DevKeys();
             }
 
             // Écran partagé : Start sur une autre manette que celle du joueur 1 fait rejoindre (ou retirer) un joueur.
@@ -405,7 +421,7 @@ namespace ItHunts.Level
             public Canvas Canvas;
             public RectTransform TitlePage, CampPage, TitleScene, CampScene, Fog;
             public UiList Title, Camp, Settings, Playtest;
-            public RectTransform SettingsPanel, PlaytestPanel, Act, ActPrev, ActNext, PlaytestLink;
+            public RectTransform SettingsPanel, PlaytestPanel, Act, ActPrev, ActNext, PlaytestLink, VitrineLink;
             public Text Status, ActText;
             public readonly List<(RectTransform rect, float parallax, float drift, float speed)> Layers = new List<(RectTransform, float, float, float)>();
             public Image Windows, FireGlow, FogSolid;
@@ -634,12 +650,19 @@ namespace ItHunts.Level
             RectTransform list = UiKit.Rect("Boutons", col, new Vector2(0f, 1f), new Vector2(0f, -skin.titleSize * 1.5f - 40f), new Vector2(480f, 260f), new Vector2(0f, 1f));
             _ui.Title = new UiList(_title, list, skin, 70f, 40, TextAnchor.MiddleLeft);
 
-            // Playtest : petit texte en bas à droite, éditeur et builds de développement seulement (F2 au clavier).
-            _ui.PlaytestLink = UiKit.Rect("Playtest (développement)", _ui.TitlePage, new Vector2(1f, 0f), new Vector2(-40f, 30f), new Vector2(260f, 40f), new Vector2(1f, 0f));
-            Text link = UiKit.Txt("Texte", _ui.PlaytestLink, skin.textFont, 22, UiKit.Dim, TextAnchor.MiddleRight);
-            UiKit.Stretch(link.rectTransform);
-            link.text = "Playtest (F2)";
-            _ui.PlaytestLink.gameObject.SetActive(PlaytestVisible);
+            // Développement : petits textes en bas à droite, éditeur et builds de développement seulement (pas un bouton du jeu).
+            _ui.PlaytestLink = DevLink("Playtest (développement)", "Playtest (F3)", 30f);
+            _ui.VitrineLink = DevLink("Vitrine (développement)", "Vitrine (test) (F2)", 70f);
+        }
+
+        private RectTransform DevLink(string name, string label, float y)
+        {
+            RectTransform r = UiKit.Rect(name, _ui.TitlePage, new Vector2(1f, 0f), new Vector2(-40f, y), new Vector2(300f, 40f), new Vector2(1f, 0f));
+            Text t = UiKit.Txt("Texte", r, skin.textFont, 22, UiKit.Dim, TextAnchor.MiddleRight);
+            UiKit.Stretch(t.rectTransform);
+            t.text = label;
+            r.gameObject.SetActive(PlaytestVisible);
+            return r;
         }
 
         private void BuildCamp()
@@ -811,6 +834,8 @@ namespace ItHunts.Level
                 _ui.Title.Sync();
             if (_ui.PlaytestLink.gameObject.activeInHierarchy && UiKit.Hover(_ui.PlaytestLink) && UiKit.Clicked && _page == Page.Titre)
                 OpenPlaytest();
+            if (_ui.VitrineLink.gameObject.activeInHierarchy && UiKit.Hover(_ui.VitrineLink) && UiKit.Clicked && _page == Page.Titre)
+                OpenVitrine();
             if (_page == Page.Campement && !SelectOpen(0))
             {
                 _ui.Camp.Sync();
@@ -1004,8 +1029,10 @@ namespace ItHunts.Level
                 return;
             GreyboxMenu m = _page switch { Page.Campement => _camp, Page.Parametres => _settings, Page.Playtest => _menu, _ => _title };
             m.Draw(_page == Page.Campement ? ActLabel(_act) : "IT HUNTS", _status, 560f);
-            if (PlaytestVisible && _page == Page.Titre && GUI.Button(new Rect(Screen.width - 180f, Screen.height - 50f, 160f, 34f), "Playtest (F2)"))
+            if (PlaytestVisible && _page == Page.Titre && GUI.Button(new Rect(Screen.width - 180f, Screen.height - 50f, 160f, 34f), "Playtest (F3)"))
                 OpenPlaytest();
+            if (PlaytestVisible && _page == Page.Titre && GUI.Button(new Rect(Screen.width - 180f, Screen.height - 90f, 160f, 34f), "Vitrine (test) (F2)"))
+                OpenVitrine();
         }
     }
 }
