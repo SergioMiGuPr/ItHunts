@@ -47,12 +47,18 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Solo_PretPuisJouer_DernierPersonnageEnregistre()
+        public void Solo_JouerDirect_Coop_RaisonDuRefus_DernierPersonnageEnregistre()
         {
             var lobby = new CampLobby(Playable, 3);
             Assert.That(lobby[0].Character, Is.EqualTo(0), "proposé non jouable : le premier jouable");
-            Assert.That(lobby.CanLaunch, Is.False, "pas encore prêt");
+            Assert.That(lobby.CanLaunch, Is.True, "solo : pas de Prêt, Jouer lance directement");
+            lobby.Join("manette 2");
+            Assert.That(lobby.Blocker(i => i == 0 ? "Renard" : "Caméléon"), Is.EqualTo("J1 n'est pas prêt"), "coop : chacun se met prêt");
+            lobby.SetCharacter(1, 0);
+            Assert.That(lobby.Blocker(i => i == 0 ? "Renard" : "Caméléon"), Is.EqualTo("Renard pris deux fois"), "le doublon d'abord");
+            lobby.SetCharacter(1, 1);
             lobby.ToggleReady(0);
+            lobby.ToggleReady(1);
             Assert.That(lobby.CanLaunch, Is.True);
             string keep = CampLobby.LoadLast();
             try

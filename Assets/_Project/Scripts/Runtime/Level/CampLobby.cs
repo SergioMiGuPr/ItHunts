@@ -137,16 +137,28 @@ namespace ItHunts.Level
             return true;
         }
 
-        /// <summary>Jouer : tout le monde est prêt, sans doublon.</summary>
-        public bool CanLaunch
+        /// <summary>Jouer : en solo, tout de suite (pas de Prêt) ; en coop, tout le monde prêt, sans doublon.</summary>
+        public bool CanLaunch => Blocker(null) == null;
+
+        /// <summary>
+        /// Pourquoi Jouer est refusé (null : on peut jouer) : un personnage pris deux fois (« Caméléon pris deux fois »), puis un joueur
+        /// pas prêt en coop (« J2 n'est pas prêt »).
+        /// </summary>
+        public string Blocker(System.Func<int, string> characterName)
         {
-            get
-            {
+            if (Count == 0)
+                return "Personne au campement";
+            for (int i = 0; i < Seats; i++)
+                if (_seats[i] != null && Duplicate(i))
+                    return $"{characterName?.Invoke(_seats[i].Character) ?? "Un personnage"} pris deux fois";
+            for (int i = 0; i < Seats; i++)
+                if (_seats[i] != null && !Valid(_seats[i].Character))
+                    return $"J{i + 1} n'a pas de personnage jouable";
+            if (Count > 1)
                 for (int i = 0; i < Seats; i++)
-                    if (_seats[i] != null && (!_seats[i].Ready || Duplicate(i)))
-                        return false;
-                return Count > 0;
-            }
+                    if (_seats[i] != null && !_seats[i].Ready)
+                        return $"J{i + 1} n'est pas prêt";
+            return null;
         }
 
         private int FirstSelectable()
