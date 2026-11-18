@@ -238,7 +238,7 @@ namespace ItHunts.Menus
         /// <summary>Met la vue à l'état du menu (public pour les tests).</summary>
         public void Sync()
         {
-            MenuFige.Regle(GameSettings.ReduceMotion);                 // « Réduire les animations » : effets de la DA au repos
+            MenuArtKit.ApplyFreeze();                 // « Réduire les animations » : effets de la DA au repos
             MainMenu.Page page = _menu.Current;
             bool camp = _menu.ShowsCamp;
             _title.SetActive(!camp);

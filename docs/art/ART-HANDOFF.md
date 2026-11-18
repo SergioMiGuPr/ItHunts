@@ -717,3 +717,22 @@ de la DA, rien n'a été modifié) :
   de la PR #16 range la tête en dernier (`M_Traqueur`, `M_Traqueur_Mains`, `M_Traqueur_Tete`) ; les instances des scènes gardaient
   l'ancien ordre (la tête prenait le matériau des mains) : traqueurs des scènes reconstruits, et `SkinnedBonesTests` vérifie
   désormais que chaque rendu a les matériaux de son FBX dans le même ordre. Capture : `tete_v3_pr16.png`.
+
+## Menus : intégration de la PR #18 (art-menus, 2026-11-18)
+
+Les cinq prefabs (`Menu_Titre`, `Menu_Campement`, `Menu_Choix`, `Menu_Pause`, `Menu_Parametres`) sont branchés tels quels sur la
+logique du jeu, par l'assembly `ItHunts.Menus` (`Assets/_Project/Scripts/Menus/`). Les composants d'aperçu (`TitreApercu`,
+`CampementApercu`, `ChoixPersoApercu`, `OptionDefilante`, `TeinteGroupe`, `SelectionAuSurvol`) sont **coupés** dans le jeu (ils
+lisaient eux-mêmes le clavier, la manette ou l'EventSystem) ; leurs méthodes sont appelées (`Applique`, `Occupe`, `Libere`, `Pret`,
+`Choisit`) et les teintes du § 2.1 de l'UI-HANDOFF sont posées par le code. Garder ces noms d'objets et ces méthodes, ou prévenir.
+Réglages : `MenuSkin_Default` (prefabs, musique 0.55, feu à +28 dB puis limiteur, feu absent au titre). « Réduire les
+animations » pilote `MenuFige`. Champ `ArtifactDefinition.description` ajouté. Captures : `docs/design/features/menus/captures/maquettes/`.
+
+Retours à la DA :
+- **`Menus_Cadre.png`** : la colonne de droite garde des pixels bleutés semi-transparents (ciel de la maquette ; par exemple
+  (36, 57, 89) à alpha 182 sur la dernière colonne) : une bande bleue verticale se voit à droite du cadre de la pause et des
+  paramètres.
+- **Place 2 (pierre) vide** (J1 seul) : ni `+` ni lanterne éteinte livrés (seulement pour les places 3 et 4) ; la pierre reste nue.
+- Pause : la maquette a 4 boutons ; le jeu en a jusqu'à 6 (Quitter l'écran partagé, outils de développement) : le 4e cartouche est
+  reproduit au même pas et le cadre allongé (9 tranches). Si un autre pas est voulu, le donner.
+- Manifeste : les 5 prefabs et les 4 shaders `ItHunts/UI/*` n'ont pas de ligne.

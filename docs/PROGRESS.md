@@ -13,11 +13,20 @@
 - **Accès à la vitrine (b7ca04b) :** lien « Vitrine (test) (F2) » sur l'écran titre (éditeur et builds de développement), F2 lance la
   vitrine, Playtest passe sur F3. `docs/design/features/menus/captures/vitrine_acces/`.
 - **PR #17 (`art-ui-c`, lot T) :** méthode abandonnée, ne pas fusionner (la session art la ferme).
-- **PR `art-menus` :** pas encore ouverte ; autorisation donnée de l'intégrer dès son arrivée (procédure habituelle, rendu identique aux
-  maquettes, logique du campement conservée, audio `musique_menu` et crépitement, captures à côté des maquettes dans
-  `docs/design/features/menus/captures/maquettes/`, bord clair vérifié en build).
+- **PR #18 (`art-menus`) :** vérifiée (périmètre, aucun GUID réutilisé, compilation, 397 tests), fusionnée dans `main` (fdf2b7f) puis
+  sa correction des pieds des personnages assis (6cb410f), poussée, `main` fusionnée dans `animations`. `Campement_Fond.png.meta`
+  (PPU 200 → 100, sans compression) : seul `MenuSkin_Default` s'en servait (taille posée par le code), sans effet ailleurs.
+- **Description courte des artefacts (3522879)** : `ArtifactDefinition.description`, lue par l'écran de choix.
+- **Feu du campement (3a36d50)** : `AudioGain` (+28 dB, limiteur, écrêtage doux), environ 5 dB sous la musique (0.55).
+- **Menus de la DA intégrés (99dd767)** : assembly `ItHunts.Menus` (MainMenuArt, PauseMenuArt) ; logique gardée (brume, J1, Start,
+  Prêt, doublons, ACTE, solo direct) ; choix plein écran (un à la fois) ; `GameSettings` (6 lignes de la DA, menu et pause) ;
+  options d'image et cadrage des mains en « Options d'image (dév.) » dans la pause ; chat masqué ; musique continue, feu au
+  campement. Captures et contrôle : `docs/design/features/menus/captures/maquettes/` (`CONTROLE.txt`) ; bord clair absent du build.
+- **Retours à la DA** (ART-HANDOFF, « Menus : intégration de la PR #18 ») : bande bleue à droite de `Menus_Cadre.png` ; place 2
+  vide sans `+` ni lanterne éteinte ; manifeste sans les prefabs et shaders UI.
+- **En attente :** le prompt mouvement (course 8.5 m/s, élan gardé au sol) n'est pas dans cette session : à redemander.
 - **Timer :** à revoir plus tard, rien changé.
-- **Tests :** EditMode 420 + 1 non concluant attendu.
+- **Tests :** EditMode 427 + 1 non concluant attendu.
 
 **Retours des menus du 2026-11-18 (`animations`) :** 4145cf6 (écran titre), 10c747f (campement et transition). Captures avant/après en
 1920 × 1080 et 0,66x : `docs/design/features/menus/captures/retours_2026-11-18/`. Titre : deux styles en attendant le logo

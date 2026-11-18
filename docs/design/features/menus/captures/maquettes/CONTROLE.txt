@@ -1,0 +1,22 @@
+Menus de la DA intégrés (PR #18, 2026-11-18) : contrôle
+
+Captures Unity en 1920 × 1080 (caméra du menu, canvas Screen Space - Camera comme la scène d'aperçu de la DA), effets gelés
+(MenuFige, rendu = maquette), souris ignorée. Maquette à gauche (remise à 1920 × 1080 en couvrant), Unity à droite.
+
+Écart moyen de luminance (0-255) maquette / Unity, image entière, textes variables compris :
+- titre : 3.1 (liens de développement en bas à droite, éditeur et builds de développement seulement)
+- campement (J1 renard, J2 hibou prêt, comme la maquette) : 5.4 (noms « Joueur 1 / 2 », sélecteur ACTE ajouté par la DA,
+  personnages assis redécoupés par la DA, pieds corrigés dans la PR)
+- choix (renard) : 6.2 (pas de skins ni de passif, décision de la DA ; textes lus dans les données)
+Pause et paramètres : pas de maquette (cadre recomposé par la DA en 9 tranches).
+
+Bord clair (point 7 des retours) : build de développement Windows (Builds/Menus_Check, non suivi), plein écran, capture de
+l'écran entier (2560 × 1440, le jeu remis à l'échelle de l'écran). Luminance moyenne des 6 dernières colonnes à droite :
+8.1 à 5.6 (référence 20 px avant : 9.5) ; des 6 dernières lignes en bas : 6.9 à 6.4 (référence : 16.4). Aucun liseré clair :
+les bords sont plus sombres que l'image. build_coin_bas_droite_x3.png : le coin bas droit agrandi 3 fois.
+
+Reste à corriger côté DA :
+- Menus_Cadre.png : la colonne de droite contient des pixels bleutés semi-transparents (ciel de la maquette, par exemple
+  (36, 57, 89) à alpha 182 sur la dernière colonne) : une bande bleue verticale à droite du cadre de la pause et des paramètres.
+- Place 2 (pierre) vide : ni bouton + ni lanterne éteinte livrés (seulement pour les places 3 et 4).
+- Manifeste : les 5 prefabs et les 4 shaders UI n'ont pas de ligne (faits main, sans question de droits).

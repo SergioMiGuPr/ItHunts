@@ -186,7 +186,7 @@ namespace ItHunts.Menus
             v.Pause.transform.parent.gameObject.SetActive(!settings && !o.InDevelopment);
             if (v.Settings != null)
                 v.Settings.transform.parent.gameObject.SetActive(settings && !o.InDevelopment);
-            MenuFige.Regle(GameSettings.ReduceMotion);
+            MenuArtKit.ApplyFreeze();
             bool mouse = o.Menu.Owner is Keyboard;
             if (o.InDevelopment)
                 return;

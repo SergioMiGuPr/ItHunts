@@ -75,6 +75,12 @@ namespace ItHunts.Menus
         /// <summary>Souris ignorée (captures comparées aux maquettes : le pointeur posé sur la vue Game ne déplace pas le focus).</summary>
         public static bool IgnoreMouse { get; set; }
 
+        /// <summary>Effets gelés pour les captures (rendu = maquette), en plus de l'option « Réduire les animations ».</summary>
+        public static bool FreezeForCapture { get; set; }
+
+        /// <summary>Gel des effets de la DA (shaders ItHunts/UI/*) : option du joueur ou capture.</summary>
+        public static void ApplyFreeze() => MenuFige.Regle(ItHunts.Level.GameSettings.ReduceMotion || FreezeForCapture);
+
         public static bool Over(RectTransform r, Camera cam)
         {
             if (IgnoreMouse || Mouse.current == null || r == null || !r.gameObject.activeInHierarchy)
