@@ -124,6 +124,11 @@ Non découpées (décision) : cage, orbe fêlée, losange.
 
 ## 2. Lot B : fonds de menu vivants (en cours)
 
+> **2026-11-18 : à remplacer.** Au playtest, ces pièces détourées ne vont pas ensemble (halo du château, nuages en bandes
+> coupées, feu plat, sièges collés). Le **lot T** (`IMAGES-A-GENERER.md`) repart d'une scène peinte d'un seul tenant par écran,
+> découpée en calques (`Menus/Titre/`) ; le campement aura son foyer et ses 4 places peints, avec des ancrages dans le prefab.
+> Les sprites ci-dessous restent en place jusque-là.
+
 Panorama unique (titre à gauche, campement à droite, même ciel et même château), calques et prefab
 `Assets/Art/UI/Menus/Fond_Panorama.prefab` (à venir). Images à générer : `docs/art/ui/IMAGES-A-GENERER.md`.
 

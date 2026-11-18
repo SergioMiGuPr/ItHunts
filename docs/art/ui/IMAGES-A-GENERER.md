@@ -1,4 +1,4 @@
-# Images à générer : lots B (fonds de menu) et C (personnages)
+# Images à générer : lot T (scènes d'un seul tenant, priorité haute), lots B (fonds de menu) et C (personnages)
 
 Outil : **Higgsfield, Nano Banana Pro**, **2K**. Format **16:9** pour le décor ; **3:4** conseillé pour un personnage seul
 (un personnage en pied en 16:9 n'occupe qu'un tiers de l'image ; si tu tiens au 16:9, garde le même prompt).
@@ -14,6 +14,149 @@ Outil : **Higgsfield, Nano Banana Pro**, **2K**. Format **16:9** pour le décor 
 Bloc de style commun, **à coller à la fin de chaque prompt** (noté `[STYLE]`) :
 
 > Style: hand-painted dark fantasy illustration, thick dark ink outlines around every silhouette, cel-shaded shadows in two or three flat tones, visible brush strokes and hatching in the dark areas, deep blue-violet moonlit night palette with crimson glowing castle windows and warm orange firelight accents. Match exactly the painting style, line weight, palette, lighting and level of detail of the attached reference images. No text, no letters, no logo, no watermark, no signature, no user interface, no frame, no border.
+
+## PRIORITÉ HAUTE (2026-11-18) : lot T, scènes peintes d'un seul tenant
+
+**Pourquoi** : le playtest des menus intégrés montre que les morceaux du lot B ne vont pas ensemble : halo autour du château,
+nuages en bandes régulières coupées par un trait noir, feu vectoriel plat sur un décor peint, bancs et rochers collés sans
+ombre ni perspective. **Nouvelle règle** : chaque écran part d'**une seule illustration complète**. Les calques sont tirés de
+**cette même image**, par des passes d'édition ; aucune pièce n'est générée à part. Ce lot **remplace** B1–B17 et E1–E9 pour
+l'écran titre et le campement ; les sprites de `Assets/Art/UI/Menus/` seront remplacés par ses découpes.
+
+**Réglages communs** :
+- **Higgsfield, Nano Banana Pro**, résolution **4k**, format **16:9** : l'image sort vers 5504 × 3072 ; je la ramène à
+  **3840 × 2160** à la découpe.
+- **Dépôt** : `docs/art/ui/generees/`.
+- **Passes d'édition** (marquées « édition de Tx ») :
+  - charger l'image indiquée comme **seule** image jointe ;
+  - une seule modification par passe (ta leçon) ;
+  - garder le format et la résolution.
+- **Fonds sans alpha** (le modèle n'en produit pas) :
+  - **vert pur `#00FF00`** pour ce qui doit être détouré ;
+  - **noir pur** pour les lueurs, le feu et le brouillard.
+  Je fais l'alpha moi-même : clé de chroma avec retrait du vert sur les bords, ou alpha tiré de la lumière. Je vérifie
+  ensuite chaque calque sur damier et sur le fond voisin, sans halo.
+
+Bloc `[STYLE-T]`, **à coller à la fin de chaque prompt de création** (pas des passes d'édition) :
+
+> Style: one single cohesive hand-painted dark fantasy illustration, thick dark ink outlines, cel-shaded shadows in two or three flat tones, visible brush strokes and hatching in the dark areas, deep blue-violet moonlit night palette, crimson glowing castle windows, warm orange firelight accents, strong atmospheric depth with value contrast between near and far planes, painterly volumetric fog. Everything painted in the same brush style and lighting, nothing looks pasted. No text, no letters, no logo, no watermark, no signature, no user interface, no frame, no border.
+
+Fin commune des **passes d'édition** (notée `[GARDER]`) :
+
+> Keep the exact same composition, framing, painting style, colors, lighting and every other element unchanged, pixel-aligned with the input image. Same aspect ratio and resolution.
+
+### T1 — Écran titre, scène complète · `ui_titre_scene_v01.png` · 16:9 · 4k
+
+> A wide cinematic night landscape illustration for a game title screen. On the right two thirds: a tall gothic castle with many sharp spires and crimson glowing windows, standing on a massive dark rock cliff, several thin waterfalls falling from the cliff into the valley, stone bridges with arches linking the towers. Behind the castle a large bright full moon, placed in the upper middle of the image, to the right of the empty left third, with a soft painted glow in the sky around it. A night sky in deep blue-violet with a few stars, two layers of painted clouds: distant thin clouds high behind the castle, and nearer, darker, larger clouds drifting in front of the lower part of the cliff. The bottom of the image is a sea of thick moonlit fog filling the valley, covering the foot of the cliff. The left third of the image is calm and almost empty: only dark sky, faint far clouds and fog, darker in value, with no castle, no trees and no detail, so that a title and a menu can be placed there. No characters, no foreground trees, no ground in the foreground. [STYLE-T]
+
+**Passes de découpe**, chacune partant du résultat de la précédente (je recale chaque passe sur T1 au pixel avant de la
+découper) :
+
+**T1a — sans le brouillard** · `ui_titre_passe_a_v01.png` · édition de **T1**
+> Same image: remove the sea of fog at the bottom, and paint what it was hiding: the full foot of the rock cliff, the end of the waterfalls and a dark valley floor. [GARDER]
+
+**T1b — sans les nuages de devant** · `ui_titre_passe_b_v01.png` · édition de **T1a**
+> Same image: remove the near dark clouds that drift in front of the lower part of the cliff, and paint the cliff, waterfalls and sky that were behind them. [GARDER]
+
+**T1c — sans le château** · `ui_titre_passe_c_v01.png` · édition de **T1b**
+> Same image: remove the castle, the rock cliff, the bridges and the waterfalls entirely, and paint the night sky, the distant clouds and the moon that were behind them. [GARDER]
+
+**T1d — ciel et lune seuls** · `ui_titre_passe_d_v01.png` · édition de **T1c**
+> Same image: remove the distant clouds, and paint the night sky and the moon glow that were behind them. [GARDER]
+
+**Calques sur fond uni** (une substitution par passe, toujours à partir de l'image indiquée) :
+
+| Calque | Fichier | Édition de | Prompt |
+|---|---|---|---|
+| Château (rocher, ponts, cascades) | `ui_titre_calque_chateau_v01.png` | **T1b** | Same image: replace the night sky, the moon and the clouds behind the castle with pure flat uniform green (#00FF00); keep the castle, the rock cliff, the bridges and the waterfalls exactly as they are, with clean hard edges and no glow on the green. [GARDER] |
+| Nuages du fond | `ui_titre_calque_nuages_fond_v01.png` | **T1c** | Same image: replace the night sky and the moon with pure flat uniform green (#00FF00); keep the distant clouds exactly as they are, with their soft painted edges, no glow on the green. [GARDER] |
+| Nuages de devant | `ui_titre_calque_nuages_devant_v01.png` | **T1a** | Same image: replace everything behind the near dark clouds (sky, moon, castle, cliff, waterfalls, distant clouds) with pure flat uniform green (#00FF00); keep the near clouds exactly as they are, no glow on the green. [GARDER] |
+| Brouillard | `ui_titre_calque_brouillard_v01.png` | **T1** | Same image: replace everything that is not the sea of fog (sky, moon, clouds, castle, cliff, waterfalls) with pure flat black (#000000); keep the fog exactly as it is, with its soft edges and its moonlit highlights. [GARDER] |
+| Fenêtres (masque) | — | — | par script : rouge des fenêtres dans le calque du château, comme pour `Fond_Chateau_Fenetres` |
+
+**Plan de découpe et d'intégration** (fait par moi ; tout est dans `Assets/Art/UI/Menus/Titre/`, à 3840 × 2160, PPU 200) :
+
+| Calque, de l'arrière vers l'avant | Source | Alpha | Animation |
+|---|---|---|---|
+| `Titre_Ciel` (ciel et lune) | T1d | opaque | halo de la lune qui pulse (additif tiré de T1d) |
+| `Titre_Nuages_Fond` | T1c → calque des nuages du fond | clé de chroma, bords doux | défile, **raccordé gauche-droite** |
+| `Titre_Chateau` | T1b → calque du château | clé de chroma, **sans halo** (bord resserré de 1 px, vert retiré des bords) | fenêtres qui palpitent (masque) |
+| `Titre_Nuages_Devant` | T1a → calque des nuages de devant | clé de chroma, bords doux | défile plus vite, **raccordé** |
+| `Titre_Brouillard` | calque du brouillard | additif, ou alpha tiré de la lumière | dérive lente, **raccordé** |
+
+**Nuages raccordables** : je les rends tuilables à l'horizontale par script, avec un fondu croisé d'un tiers de leur largeur
+sur une copie décalée d'une demi-largeur. Aucun bord coupé : les bandes gardent leur haut et leur bas peints, et le trait noir
+vu au playtest disparaît. **Contrôle** : la pile de calques est recomposée et comparée à T1 (écart moyen et carte des écarts
+sur la planche).
+
+### T2 — Logo IT HUNTS, lisible · `ui_logo_a_v01.png`, `ui_logo_b_v01.png`, `ui_logo_c_v01.png` · 16:9 · 4k
+
+Le « IT » en gothique de la maquette ne se lit pas. Il faut des **capitales lisibles** et des griffures **à côté** des lettres
+(pas en travers). Pas d'image jointe. Fond **vert pur** : je fais l'alpha et je livre en PNG transparent, plus une lueur à
+part en additif. Les propositions sortent d'une génération chacune ; tu peux relancer celle qui te plaît pour avoir des
+variantes.
+
+**A, pierre gravée** :
+> The game title logo text "IT HUNTS" on one line, large clearly readable classic Roman capital letters with sharp wedge serifs, every letter easy to read, carved from cracked weathered grey-violet stone with a thick dark ink outline and cel-shaded bevels, three thin crimson claw scratches cutting across the stone surface between letters without hiding any letter shape, a faint dark red glow inside the scratches. Centered, filling 80% of the image width. Hand-painted dark fantasy game logo. Nothing else in the image. Pure flat uniform green background (#00FF00), no shadow, no glow on the background.
+
+**B, fer forgé** :
+> The game title logo text "IT HUNTS" on two lines, "IT" above "HUNTS", both words the same width, bold readable display capitals inspired by blackletter but with simple open letter shapes (the I and the T must be instantly recognizable), forged dark iron with mauve-grey highlights and a thick dark ink outline, small thorn-like spikes only on the outer serifs, a single crimson claw slash passing behind the letters. Centered, filling 70% of the image width. Hand-painted dark fantasy game logo, cel-shaded. Nothing else in the image. Pure flat uniform green background (#00FF00), no shadow, no glow on the background.
+
+**C, os et sang** :
+> The game title logo text "IT HUNTS" on one line, tall narrow readable serif capitals with slightly ragged hand-cut edges, bone-white letters with dark ink outline and cel-shaded grooves, dried crimson stains dripping from the bottom of a few letters, two small claw marks above the word, the letter shapes stay perfectly legible. Centered, filling 80% of the image width. Hand-painted dark fantasy game logo. Nothing else in the image. Pure flat uniform green background (#00FF00), no shadow, no glow on the background.
+
+Si aucune ne convient : je peux composer le logo par script avec la police **Grenze Gotisch** (déjà sous licence OFL dans le
+projet) et une texture de pierre peinte, sans génération.
+
+### T3 — Campement, scène complète avec foyer et 4 places · `ui_campement_scene_v01.png` · 16:9 · 4k
+
+Pas d'image jointe : on veut une scène neuve, cohérente d'un seul tenant. Le **foyer** est peint **avec des braises, sans
+grandes flammes** (les flammes animées de T4 se posent dessus), mais la scène est déjà éclairée comme si le feu brûlait.
+
+> A wide night campsite scene in a dark haunted forest clearing, seen from a slightly high three-quarter view, painted as one single illustration. In the middle of the image, slightly below center: a round stone fire pit with glowing orange embers and a few charred logs, but no tall flames, a small curl of smoke. Around the fire pit, four empty places to sit, painted as part of the ground with correct perspective, contact shadows and warm firelight on their sides facing the fire: two places in the foreground, one at the lower left (a fallen tree log lying on the ground) and one at the lower right (a flat low boulder), and two places in the background behind the fire, one at the upper left of the fire (a short wooden bench) and one at the upper right of the fire (a cut tree stump). All four seats have the same sitting height relative to the ground and are clearly separated from each other. Behind them: a small canvas tent with a hanging iron lantern, a torn banner on a pole, barrels and crates, old ruins, twisted dead trees framing the clearing, and through a gap in the trees, far away on the upper right, a gothic castle with crimson windows under a full moon. Warm orange firelight on the near ground and seats, cold blue moonlight on the background, light fog between the trees. No characters, no animals, no people. Leave the top left corner and the bottom left corner darker and calm (room for interface), and the bottom right corner clear of important details. [STYLE-T]
+
+**Passes** (même principe que T1) :
+- **T3a — fumée retirée** · `ui_campement_passe_a_v01.png` · édition de **T3** (seulement si la fumée gêne les flammes animées) :
+  > Same image: remove the curl of smoke above the fire pit, keep the embers and the logs. [GARDER]
+- **T3b — calque de premier plan** · `ui_campement_calque_avant_v01.png` · édition de **T3** (ou T3a). Il sert à repasser
+  devant les personnages assis aux deux places de devant :
+  > Same image: replace everything with pure flat uniform green (#00FF00) except the two foreground seats (the log at the lower left and the boulder at the lower right) and the ground details directly in front of them; keep those exactly as they are. [GARDER]
+
+**Ancrages** (prefab `Assets/Art/UI/Menus/Campement/Campement_Scene.prefab`) :
+- **enfants vides** : `Ancre_Foyer` (centre de la base des flammes), `Ancre_Place_1` à `_4` (milieu de chaque assise, là où
+  se posent les hanches du personnage) ;
+- **ordre des places** : 1 avant gauche, 2 avant droite, 3 fond gauche, 4 fond droite ; pour chaque place, une **échelle**
+  (les places du fond sont plus petites) et un **ordre d'affichage** ;
+- **unités** : coordonnées en pixels de l'image 3840 × 2160 et en unités du canvas 1920 × 1080 ;
+- je les mesure sur l'image reçue et je les écris dans le prefab et dans `UI-HANDOFF.md`.
+
+### T4 — Feu de camp animé · `ui_feu_planche_v01.png` · 16:9 · 4k · entrée préparée
+
+Pour que le style colle au foyer : je te prépare **`entree_foyer.png`**, le foyer découpé de T3. Il sert de **seule image
+jointe**, comme référence de style et de taille.
+
+> A sprite sheet of a looping campfire flame animation, 12 frames arranged in a regular grid of 4 columns and 3 rows, every cell the same size and clearly separated, in each cell the same campfire flames seen from the same angle, rising from the same base point at the bottom center of the cell, each frame slightly different so that the 12 frames play as a smooth seamless loop (frame 12 leads back into frame 1). Hand-painted flames in the same painting style as the embers of the attached fire pit: thick dark ink outline on the flame shapes, two or three flat cel-shaded tones of deep red, orange and pale yellow, a few small sparks. Flames only: no logs, no stones, no ground, no smoke. The flames are about as wide as the fire pit in the attached image. Pure flat black background (#000000) in every cell, no glow spreading on the background. [STYLE-T]
+
+**De mon côté** :
+- découpe des 12 cases et recalage de la base de chaque flamme ;
+- **alpha prémultiplié tiré de la lumière**, plus une couche additive pour la lueur ;
+- contrôle de la boucle (écart entre l'image 12 et l'image 1) ;
+- `Campement_Feu_Anim` : 12 images, 10 à 12 images/s, posée sur `Ancre_Foyer`.
+
+**Si la planche est incohérente d'une case à l'autre**, plan de repli : une **vidéo** en boucle de 2 à 3 s du feu sur fond
+noir, à partir de l'image d'entrée. J'en tire les images et je referme la boucle par fondu.
+
+### T5 — Nappe de brouillard pour la transition titre → campement · `ui_transition_brouillard_v01.png` · 16:9 · 4k
+
+> A full-frame texture of thick rolling night fog, painted, soft billowing volumes with a few denser darker swirls and lighter moonlit wisps, cold blue-violet and grey tones, even density over the whole image (no empty area, no vignette, no horizon, no light source), the left and right edges continuing the same fog so the texture can repeat horizontally. Hand-painted with visible brush strokes and soft cel-shaded tones, no ink outlines. Nothing else in the image. [STYLE-T]
+
+**De mon côté** :
+- texture rendue **raccordable** dans les deux sens par script ;
+- une version opaque et une version en alpha tiré de la lumière ;
+- la nappe traverse l'écran pendant que la caméra glisse : elle cache le titre, puis se retire sur le campement.
+
+**Ordre conseillé** : T1, puis T1a → T1b → T1c → T1d, puis les quatre calques ; T2 (en parallèle) ; T3 → T3b ; je prépare
+`entree_foyer.png` → T4 ; T5 quand tu veux.
 
 ## État au 2026-11-17 et leçon
 
@@ -192,5 +335,6 @@ Images jointes : **Image 1** = `ui_menu_principal_v01.png`.
 
 | Lot | Images | Notes |
 |---|---|---|
-| B | B2 + passes E1 à E9 (+ B17 si besoin) | B1, B3–B6, B15, B16 reçues ; B7/B8 abandonnées ; B9–B14 remplacées par E1–E9 |
+| **T (priorité haute)** | T1 + 4 passes + 4 calques ; T2 (3 logos) ; T3 + 1 ou 2 passes ; T4 (planche du feu) ; T5 | remplace B et E pour l'écran titre et le campement |
+| B | **remplacé par T** (titre, campement) ; était : B2 + passes E1 à E9 (+ B17 si besoin) | B1, B3–B6, B15, B16 reçues ; B7/B8 abandonnées ; B9–B14 remplacées par E1–E9 |
 | C | 12 (C1 à C12) + C-L si besoin | commencer par le test du renard (C1 pas nécessaire pour le test : j'utilise le renard de `ui_campement_v01`) |
