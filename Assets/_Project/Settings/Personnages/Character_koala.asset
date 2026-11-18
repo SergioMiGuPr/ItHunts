@@ -21,3 +21,4 @@ MonoBehaviour:
   artifact: {fileID: 0}
   artifactLabel: "artefact \xE0 concevoir"
   playable: 0
+  description: "Artefact \xE0 concevoir."

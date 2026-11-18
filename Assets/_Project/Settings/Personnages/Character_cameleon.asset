@@ -21,3 +21,4 @@ MonoBehaviour:
   artifact: {fileID: 11400000, guid: 89cfb0254aa64984a862b239ac896e4a, type: 2}
   artifactLabel: "artefact \xE0 concevoir"
   playable: 1
+  description: "Barillet : six balles tir\xE9es des yeux, rechargement rapide."

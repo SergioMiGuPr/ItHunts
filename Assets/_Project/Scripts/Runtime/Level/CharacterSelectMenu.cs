@@ -22,7 +22,11 @@ namespace ItHunts.Level
             public PlayerInput Player;
             public GreyboxMenu Menu;
             public int Frame;
+            public CharacterSelectPanel Panel;
+            public RectTransform Root;
         }
+
+        private Canvas _canvas;
 
         private readonly List<Open> _open = new List<Open>();
 
@@ -91,6 +95,18 @@ namespace ItHunts.Level
             o.Menu.FocusFirst();
             o.Menu.SetFocus(current);                                 // sur le personnage proposé s'il est libre
             _open.Add(o);
+            // Habillage (écran de choix provisoire en attendant le lot D) dans la vue du joueur ; les personnages pris ne se choisissent pas.
+            var hud = pi.GetComponent<ItHunts.Hud.PlayerHud>();
+            if (hud != null && hud.MenuSkin != null)
+            {
+                if (_canvas == null)
+                    _canvas = UiKit.NewCanvas("Choix du personnage (DA)", 85, transform);
+                o.Root = UiKit.Rect("Choix : joueur " + (IndexOf(pi) + 1), _canvas.transform, Vector2.zero, Vector2.zero, Vector2.zero);
+                UiKit.FitTo(o.Root, pi.camera);
+                UiKit.Stretch(UiKit.Img("Voile", o.Root, null, UiKit.Shade).rectTransform);
+                o.Panel = new CharacterSelectPanel(o.Root, hud.MenuSkin, r);
+                o.Panel.Open($"Joueur {IndexOf(pi) + 1}", o.Menu.Focus, i => taken.Contains(i) ? "pris" : "", false, OwnerOf(pi));
+            }
             pi.DeactivateInput();                                     // il ne bouge pas pendant le choix
         }
 
@@ -126,6 +142,8 @@ namespace ItHunts.Level
         private void Close(Open o)
         {
             _open.Remove(o);
+            if (o.Root != null)
+                Destroy(o.Root.gameObject);
             if (o.Player != null)
                 o.Player.ActivateInput();
         }
@@ -140,7 +158,17 @@ namespace ItHunts.Level
                     continue;
                 }
 
-                if (Time.frameCount > o.Frame && o.Menu.Owner is Gamepad g && g.buttonEast.wasPressedThisFrame)
+                if (o.Panel != null)
+                {
+                    if (o.Player.camera != null)
+                        UiKit.FitTo(o.Root, o.Player.camera);
+                    int pick = o.Panel.Update();
+                    if (pick == CharacterSelectPanel.Cancel)
+                        Close(o);                                     // B : garde le personnage proposé
+                    else if (pick >= 0)
+                        Choose(o, pick);
+                }
+                else if (Time.frameCount > o.Frame && o.Menu.Owner is Gamepad g && g.buttonEast.wasPressedThisFrame)
                     Close(o);                                         // B : garde le personnage proposé
                 else
                     o.Menu.Update();
@@ -165,7 +193,7 @@ namespace ItHunts.Level
         {
             foreach (Open o in _open)
             {
-                if (o.Player == null)
+                if (o.Player == null || o.Panel != null)
                     continue;
                 Camera cam = o.Player.camera;
                 Rect rc = cam != null ? cam.rect : new Rect(0f, 0f, 1f, 1f);
