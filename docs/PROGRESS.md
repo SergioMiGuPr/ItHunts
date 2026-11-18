@@ -4,7 +4,24 @@
 
 ## Étape en cours
 
-**Retours de playtest du 2026-11-17, troisième lot + PR #13 et #14 (`animations`, pas fusionnée dans `main`) :** un commit par point.
+**PR #15 (lot B de la DA), carte ouverte et menus (2026-11-18, `animations`, pas fusionnée dans `main`) :** un commit par point.
+- **PR #15 (art-ui-b) :** vérifiée (périmètre, `.meta`, manifeste, compilation, 397 tests), fusionnée dans `main` (f223c21), poussée,
+  `main` fusionnée dans `animations`.
+- **Carte ouverte (9a1e62b) :** cadre, parchemin, salles à l'encre, brume dévoilée par les salles et le pinceau (par joueur, partagé
+  en coop), vignette, titre, rose, légende ; écran partagé. `docs/design/features/vue-fps/captures/hud_carte/`.
+- **Menus (b154457 titre, 6f92e58 campement, 77e6c98 choix, 02827cb pause) :** uGUI avec les pièces de la DA, polices EB Garamond et
+  Grenze Gotisch, navigation souris, clavier et manette (focus visible), lisibles en 1920 × 1080, 0,66x et écran partagé. Logique du
+  campement testée (`CampLobbyTests`). Captures : `docs/design/features/menus/captures/`. Réglages : `MenuSkin_Default`.
+- **Pièces à demander à la session art (habillage provisoire en attendant) :** logo IT HUNTS (titre en Grenze Gotisch pour l'instant) ;
+  boutons (normal, survol, pressé, désactivé ; texte et barre pour l'instant) ; cadre du menu pause et des panneaux (le panneau de
+  la légende de la carte sert) ; lot D (écran de choix : cadre, vignettes, grande pose animée, panneau d'artefact, Valider / Prêt) ;
+  lot C (personnages 2D animés du campement ; silhouettes pour l'instant) ; prefab `Fond_Panorama` avec les calques restants (arbres
+  proches, sol, premier plan) et la jonction B2 entre le titre et le campement (deux toiles séparées pour l'instant) ; ancrages des 4
+  places autour du feu (réglés à l'œil dans `MenuSkin_Default`) ; nuages raccordables (bandes coupées d'un côté : elles dérivent au
+  lieu de défiler) ; vraie musique d'ambiance (nappe synthétisée).
+- **Tests :** EditMode 419 + 1 non concluant attendu.
+
+ + PR #13 et #14 (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **PR #14 (bras FPS à l'endroit) et #13 (traqueur v3) :** vérifiées (périmètre, compilation, 397 tests), fusionnées dans `main`
   (03af276) et poussées, `main` fusionnée dans `animations`. Intégration #14 (c4e9d2a) : contournement des maillages retournés retiré,
   test du volume signé des 8 bras. Intégration #13 (519f19f) : traqueurs des 4 scènes et vitrine reconstruits, 3 matériaux du corps,
