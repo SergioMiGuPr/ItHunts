@@ -1,0 +1,170 @@
+{
+ "Titre": {
+  "maquette": "ui_menu_principal_v01",
+  "capture": "Titre_fige.png",
+  "global": {
+   "moy": 0.97,
+   "med": 0.0,
+   "p95": 2.31,
+   "pixels_egaux_pct": 88.9,
+   "pixels_ecart_sup_16_pct": 0.63
+  },
+  "hors_texte_et_personnages": {
+   "moy": 0.23,
+   "med": 0.0,
+   "p95": 1.73,
+   "pixels_egaux_pct": 90.8,
+   "pixels_ecart_sup_16_pct": 0.0
+  },
+  "zones_exclues": [
+   {
+    "rect": [
+     128,
+     446,
+     300,
+     512
+    ],
+    "raison": "texte"
+   },
+   {
+    "rect": [
+     118,
+     560,
+     382,
+     622
+    ],
+    "raison": "texte"
+   },
+   {
+    "rect": [
+     118,
+     650,
+     302,
+     714
+    ],
+    "raison": "texte"
+   }
+  ]
+ },
+ "Campement": {
+  "maquette": "ui_campement_v01",
+  "capture": "Campement_fige.png",
+  "global": {
+   "moy": 6.03,
+   "med": 0.0,
+   "p95": 40.47,
+   "pixels_egaux_pct": 77.3,
+   "pixels_ecart_sup_16_pct": 10.23
+  },
+  "hors_texte_et_personnages": {
+   "moy": 1.66,
+   "med": 0.0,
+   "p95": 7.68,
+   "pixels_egaux_pct": 86.8,
+   "pixels_ecart_sup_16_pct": 2.99
+  },
+  "zones_exclues": [
+   {
+    "rect": [
+     420,
+     296,
+     724,
+     694
+    ],
+    "raison": "personnage"
+   },
+   {
+    "rect": [
+     668,
+     312,
+     962,
+     642
+    ],
+    "raison": "personnage"
+   },
+   {
+    "rect": [
+     446,
+     684,
+     672,
+     724
+    ],
+    "raison": "texte"
+   },
+   {
+    "rect": [
+     726,
+     682,
+     924,
+     722
+    ],
+    "raison": "texte"
+   },
+   {
+    "rect": [
+     70,
+     10,
+     300,
+     82
+    ],
+    "raison": "ajout"
+   },
+   {
+    "rect": [
+     24,
+     852,
+     444,
+     916
+    ],
+    "raison": "ajout"
+   }
+  ]
+ },
+ "Choix": {
+  "maquette": "ui_choix_perso_v01",
+  "capture": "Choix_Renard.png",
+  "global": {
+   "moy": 5.99,
+   "med": 0.0,
+   "p95": 38.91,
+   "pixels_egaux_pct": 74.2,
+   "pixels_ecart_sup_16_pct": 9.79
+  },
+  "hors_texte_et_personnages": {
+   "moy": 2.63,
+   "med": 0.0,
+   "p95": 16.23,
+   "pixels_egaux_pct": 86.6,
+   "pixels_ecart_sup_16_pct": 5.06
+  },
+  "zones_exclues": [
+   {
+    "rect": [
+     436,
+     236,
+     838,
+     680
+    ],
+    "raison": "personnage"
+   },
+   {
+    "rect": [
+     900,
+     452,
+     1250,
+     640
+    ],
+    "raison": "texte"
+   },
+   {
+    "rect": [
+     470,
+     660,
+     1230,
+     800
+    ],
+    "raison": "retiré"
+   }
+  ]
+ }
+}
