@@ -20,11 +20,24 @@ namespace ItHunts.Player
         [SerializeField] private Transform viewRoot;
 
         private ArtifactHolder _holder;
+        private PlayerMotor _motor;
         private bool _layered;
 
         public Light Light => lanternLight;
 
-        private void Awake() => _holder = GetComponent<ArtifactHolder>();
+        private void Awake()
+        {
+            _holder = GetComponent<ArtifactHolder>();
+            _motor = GetComponent<PlayerMotor>();
+        }
+
+        /// <summary>
+        /// Position de la lanterne (pure, testable) : sur le corps affiché, pas sur le corps simulé. Le corps avance par pas fixes
+        /// (60/s) et la caméra suit sa position interpolée ; une lanterne enfant du corps avançait donc par à-coups (0 puis 12.5 cm
+        /// à 7.5 m/s, une image sur deux, à 130 images/s) : sa tache de lumière sautait sur le sol (vitrine, 2026-11-18).
+        /// </summary>
+        public static Vector3 FollowBody(Vector3 interpolatedFeet, float bodyYaw, Vector3 offset) =>
+            interpolatedFeet + Quaternion.Euler(0f, bodyYaw, 0f) * offset;
 
         private void Start() => LayerViewmodel();
 
@@ -50,7 +63,10 @@ namespace ItHunts.Player
             lanternLight.shadows = LightShadows.None;
             lanternLight.intensity = settings.intensity;
             lanternLight.range = settings.range;
-            lanternLight.transform.localPosition = settings.position;
+            if (_motor != null && lanternLight.transform.parent == transform)
+                lanternLight.transform.position = FollowBody(_motor.InterpolatedPosition, transform.eulerAngles.y, settings.position);
+            else
+                lanternLight.transform.localPosition = settings.position;
             CharacterDefinition c = _holder != null ? _holder.Character : null;
             lanternLight.color = c != null ? c.lanternColor : settings.fallbackColor;
             uint all = ~(1u << settings.fpsRenderingLayer);

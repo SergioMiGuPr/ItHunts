@@ -38,6 +38,27 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void LanterneDuJoueur_SuitLeCorpsAffiche()
+        {
+            // Lumières qui sautaient dans la vitrine (2026-11-18) : la lanterne, enfant du corps simulé à 60/s, avançait par à-coups
+            // pendant que la caméra suivait la position interpolée. Elle se place désormais sur la position interpolée du corps.
+            var offset = new Vector3(0f, 1.1f, 0.3f);
+            Vector3 a = ItHunts.Player.PlayerLanternLight.FollowBody(new Vector3(2f, 0f, 5f), 0f, offset);
+            Assert.That(Vector3.Distance(a, new Vector3(2f, 1.1f, 5.3f)), Is.LessThan(1e-4f));
+            Vector3 b = ItHunts.Player.PlayerLanternLight.FollowBody(new Vector3(2f, 0f, 5f), 90f, offset);
+            Assert.That(Vector3.Distance(b, new Vector3(2.3f, 1.1f, 5f)), Is.LessThan(1e-4f), "décalage dans le repère du lacet");
+            // Entre deux pas de simulation, la lanterne avance avec le corps affiché (pas de pas de 12.5 cm puis 0).
+            Vector3 prev = new Vector3(0f, 0f, 0f), cur = new Vector3(0f, 0f, 0.125f);
+            float last = ItHunts.Player.PlayerLanternLight.FollowBody(prev, 0f, offset).z;
+            for (int i = 1; i <= 4; i++)
+            {
+                float z = ItHunts.Player.PlayerLanternLight.FollowBody(Vector3.Lerp(prev, cur, i / 4f), 0f, offset).z;
+                Assert.That(z - last, Is.EqualTo(0.125f / 4f).Within(1e-4f));
+                last = z;
+            }
+        }
+
+        [Test]
         public void Ambiances_OntLeursReglagesHorreur()
         {
             foreach (string n in new[] { "Intermediaire", "Sombre", "Horreur" })
