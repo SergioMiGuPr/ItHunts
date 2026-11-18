@@ -52,7 +52,13 @@ def piece(dst, folder, name, rect, add=False, size=None):
 
 
 def assis_rects(lay, name, place):
-    """Rect (x, y, w, h) du corps et de la lanterne d'un personnage à une place."""
+    """Rect (x, y, w, h) du corps et de la lanterne d'un personnage à une place (lignes « place » de construction.txt,
+    les mêmes que dans Unity)."""
+    for l in open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "construction.txt"), encoding="utf-8"):
+        t = l.split()
+        if t and t[0] == "place" and t[1] == name and int(t[2]) == place:
+            v = [float(x) for x in t[3:]]
+            return tuple(v[:4]), tuple(v[4:])
     a = lay["assis"][name]
     pl = a["places"][str(place)] if str(place) in a["places"] else a["places"][place]
     cib = {1: {"capuche": 352, "cx": 569, "lanterne": (510, 676)}, 2: {"capuche": 346, "cx": 807, "lanterne": (918, 596)}}[place]
@@ -76,7 +82,7 @@ def campement(state):
         piece(img, "Campement", "Campement_Lanterne_Banc", P["Campement_Lanterne_Banc"])
     if not state.get(4):
         piece(img, "Campement", "Campement_Lanterne_Rocher", P["Campement_Lanterne_Rocher"])
-    for place in (1, 2):
+    for place in (1, 2, 3, 4):
         n = state.get(place)
         if n:
             b, l = assis_rects(lay, n, place)
@@ -96,5 +102,5 @@ def campement(state):
 
 if __name__ == "__main__":
     out = sys.argv[1]
-    st = {1: sys.argv[2] if len(sys.argv) > 2 else "Renard", 2: sys.argv[3] if len(sys.argv) > 3 else "Hibou"}
+    st = {i + 1: (v if v != "-" else None) for i, v in enumerate(sys.argv[2:6])} if len(sys.argv) > 2 else {1: "Renard", 2: "Hibou"}
     reg.save(out, campement(st), "RGB")

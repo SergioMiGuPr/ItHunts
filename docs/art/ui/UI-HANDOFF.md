@@ -188,7 +188,7 @@ Curseur à (−81,6 ; −75) et soulignement à (−47,6 ; +13) du bord gauche d
 | `Campement_Flammes` | **passe1 − braises** en lumière ajoutée (linéaire) ; ondulation 5 px au sommet, scintillement 14 % ; les bûches des deux images n'étant pas disposées pareil, le rendu vaut le plus clair des deux (flammes de passe1 sur les braises) |
 | `Campement_Effets_Masques` | R fenêtres du château, G lanterne de la tente, B lueur du feu au sol et sur les sièges (palpite ±14 %) ; étincelles procédurales au-dessus du foyer |
 | `Campement_Lanterne_Banc`, `_Rocher` | **braises − vide** : lanternes éteintes, affichées seulement quand les places 3 et 4 sont vides |
-| `Campement_Assis_<Perso>` + `_Lanterne` | les 4 `ui_assis_buche_<perso>` détourés du gris (caisse retirée dans son contour : faces claires même teintées, traits d'encre qui ne touchent pas le personnage), lanterne séparée et posée au pied de la place ; échelle : largeur de silhouette prise à la ligne d'épaules du renard de la maquette (98 px sous le haut de capuche) = 126 px ; **une échelle par personnage pour les deux places** (renard 0,275, koala 0,274, caméléon 0,267 ; hibou 0,256 fixé à largeur de capuche, son aile déployée faussant la mesure) ; valeurs ramenées à celles du renard de la maquette (médiane, 90e centile), teinte rapprochée de 35 %, liseré chaud à droite (feu) et froid en haut (lune) ; respiration 1,3 px, cape 0,9 px, lueur additive au sol à la couleur du personnage |
+| `Campement_Assis_<Perso>` + `_Lanterne` | les 4 `ui_assis_buche_<perso>` détourés du gris (caisse retirée dans son contour : faces claires même teintées, traits d'encre qui ne touchent pas le personnage), lanterne séparée et posée au pied de la place ; échelle choisie **par place** pour que le haut de capuche tombe sur celui de la maquette et le bas des pieds sur le sol devant le siège, au-dessus du cartouche (place 1 : y 657, bottes du renard de la maquette ; place 2 : y 640 ; places 3 et 4 : 640 et 650, extrapolés) ; jamais plus grande que l'échelle des épaules (0,22 à 0,23 aux places 1 et 2) ; valeurs ramenées à celles du renard de la maquette (médiane, 90e centile), teinte rapprochée de 35 %, liseré chaud à droite (feu) et froid en haut (lune) ; respiration 1,3 px, cape 0,9 px, lueur additive au sol à la couleur du personnage |
 | `Campement_Cartouche_Nom` | cartouche du hibou **vidé de son texte peint** (modèle séparable ligne + colonne de la plaque, grain repris sur la même ligne) ; sert aux 4 places (celui du renard porte la lueur rouge de sa lanterne) ; nom en EB Garamond Regular **23**, `#F7E1B3`, centré, ligne de base mesurée ; décalé à gauche quand la coche est affichée |
 | `Campement_Coche`, `_Modifier`, `_Plus_3`, `_Plus_4`, `_Pret`, `_Retour`, `_Parametres`, `_Amis` | **maquette − passe1**, aux positions exactes ; boutons à 4 états (2.1) |
 
@@ -247,9 +247,7 @@ monter son volume ou le gain du mixeur.
 
 - Les images générées sont **repeintes partout** (grain refait) : la différence demande un seuil, un nettoyage et des bords
   adoucis ; l'écart restant est mesuré dans les planches de contrôle.
-- Campement : les personnages assis ont des jambes plus longues que ceux de la maquette (assis sur une caisse haute) : à la
-  même largeur d'épaules et au même haut de capuche, les pieds descendent jusqu'au cartouche du nom ; places 3 et 4
-  extrapolées.
+- Campement : les personnages assis ont des jambes plus longues que ceux de la maquette (assis sur une caisse haute) ; pour garder les pieds au-dessus du cartouche, ils sont environ 17 % plus petits qu'à largeur d'épaules égale (2026-11-19) ; places 3 et 4 extrapolées.
 - Choix : les vignettes de `passe3` ne sont pas celles de la maquette (hibou déverrouillé, autre peinture), comme prévu.
 
 ## 2 bis. Carte ouverte (Tab) (fait, 2026-11-17)
