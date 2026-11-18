@@ -146,7 +146,42 @@ namespace ItHunts.Hud
             return _silhouette;
         }
 
-        private static Sprite _silhouette;
+        private static Sprite _silhouette, _glow, _flame, _gradient;
+
+        private static Sprite Make(string name, int w, int h, System.Func<float, float, Color> f, Vector2 pivot)
+        {
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { name = name, filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+            var px = new Color[w * h];
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                px[y * w + x] = f((x + 0.5f) / w, (y + 0.5f) / h);
+            tex.SetPixels(px);
+            tex.Apply(false);
+            return Sprite.Create(tex, new UnityEngine.Rect(0, 0, w, h), pivot, 100f);
+        }
+
+        /// <summary>Lueur ronde douce (blanc, alpha en cloche), pour les lumières additives et les braises.</summary>
+        public static Sprite Glow() => _glow != null ? _glow : _glow = Make("Lueur", 128, 128, (u, v) =>
+        {
+            float d = Mathf.Clamp01(new Vector2(u - 0.5f, v - 0.5f).magnitude * 2f);
+            float a = Mathf.Pow(1f - d, 2.2f);
+            return new Color(1f, 1f, 1f, a);
+        }, new Vector2(0.5f, 0.5f));
+
+        /// <summary>Langue de flamme (goutte effilée vers le haut, cœur clair), pivot à la base.</summary>
+        public static Sprite Flame() => _flame != null ? _flame : _flame = Make("Flamme", 64, 128, (u, v) =>
+        {
+            float half = 0.5f * Mathf.Sqrt(Mathf.Clamp01(1f - v)) * Mathf.Clamp01(v * 6f + 0.2f);
+            float dx = Mathf.Abs(u - 0.5f);
+            float a = Mathf.Clamp01((half - dx) / Mathf.Max(0.02f, half)) * Mathf.Clamp01(1.15f - v);
+            a = Mathf.SmoothStep(0f, 1f, a);
+            float core = Mathf.Clamp01(1f - dx / Mathf.Max(0.02f, half * 0.5f)) * Mathf.Clamp01(1f - v * 1.6f);
+            return new Color(1f, Mathf.Lerp(0.55f, 1f, core), Mathf.Lerp(0.15f, 0.7f, core), a);
+        }, new Vector2(0.5f, 0f));
+
+        /// <summary>Dégradé vertical (opaque en bas, transparent en haut), pour la brume qui monte.</summary>
+        public static Sprite Gradient() => _gradient != null ? _gradient : _gradient = Make("Dégradé", 8, 256, (u, v) =>
+            new Color(1f, 1f, 1f, Mathf.SmoothStep(1f, 0f, Mathf.Clamp01((v - 0.5f) / 0.5f))), new Vector2(0.5f, 0f));
     }
 
     /// <summary>
@@ -162,7 +197,7 @@ namespace ItHunts.Hud
         private readonly float _rowHeight;
         private readonly int _fontSize;
         private readonly TextAnchor _align;
-        private readonly List<(RectTransform rect, Text text, Image bar, Image mark)> _rows = new List<(RectTransform, Text, Image, Image)>();
+        private readonly List<(RectTransform rect, Text text, Outline glow, Image mark)> _rows = new List<(RectTransform, Text, Outline, Image)>();
 
         public RectTransform Root => _root;
         public GreyboxMenu Menu => _menu;
@@ -191,16 +226,17 @@ namespace ItHunts.Hud
             for (int i = 0; i < _menu.Items.Count; i++)
             {
                 GreyboxMenu.Item it = _menu.Items[i];
-                (RectTransform rect, Text text, Image bar, Image mark) = _rows[i];
+                (RectTransform rect, Text text, Outline glow, Image mark) = _rows[i];
                 rect.anchoredPosition = new Vector2(0f, -i * _rowHeight);
                 string label = it.Value != null ? $"{it.Label}   ◀  {it.Value()}  ▶" : it.Label;
                 if (!it.Enabled && !string.IsNullOrEmpty(it.DisabledNote))
                     label += "   " + it.DisabledNote;
                 bool focus = i == _menu.Focus && it.Enabled;
                 text.text = label;
-                text.color = !it.Enabled ? UiKit.Dim : focus ? UiKit.Gold : UiKit.TextColor;
+                bool dim = !it.Enabled || (it.Dim != null && it.Dim());
+                text.color = dim ? (focus ? Color.Lerp(UiKit.Dim, UiKit.Gold, 0.45f) : UiKit.Dim) : focus ? UiKit.Gold : UiKit.TextColor;
                 text.font = focus && _skin != null && _skin.textBold != null ? _skin.textBold : _skin != null && _skin.textFont != null ? _skin.textFont : text.font;
-                bar.enabled = focus;
+                glow.enabled = focus;                                      // focus : texte or, étoile, légère lueur ; pas de cadre
                 mark.enabled = focus && mark.sprite != null;
                 if (mouse && it.Enabled && UiKit.Hover(rect))
                 {
@@ -220,14 +256,12 @@ namespace ItHunts.Hud
             }
         }
 
-        private (RectTransform, Text, Image, Image) NewRow(int i)
+        private (RectTransform, Text, Outline, Image) NewRow(int i)
         {
             RectTransform r = UiKit.Rect($"Bouton {i + 1}", _root, new Vector2(0.5f, 1f), new Vector2(0f, -i * _rowHeight), new Vector2(0f, _rowHeight - 6f), new Vector2(0.5f, 1f));
             r.anchorMin = new Vector2(0f, 1f);
             r.anchorMax = new Vector2(1f, 1f);
             r.sizeDelta = new Vector2(0f, _rowHeight - 6f);
-            Image bar = UiKit.Img("Focus", r, null, new Color(0.93f, 0.78f, 0.47f, 0.12f));
-            UiKit.Stretch(bar.rectTransform);
             Image mark = UiKit.Img("Repère", r, _skin != null ? _skin.focusMark : null, UiKit.Gold);
             mark.preserveAspect = true;
             mark.rectTransform.anchorMin = mark.rectTransform.anchorMax = new Vector2(0f, 0.5f);
@@ -237,7 +271,11 @@ namespace ItHunts.Hud
             UiKit.Stretch(t.rectTransform);
             t.rectTransform.offsetMin = new Vector2(_rowHeight + 4f, 0f);
             t.rectTransform.offsetMax = new Vector2(-_rowHeight * 0.4f, 0f);
-            return (r, t, bar, mark);
+            Outline glow = t.gameObject.AddComponent<Outline>();
+            glow.effectColor = new Color(1f, 0.72f, 0.3f, 0.16f);
+            glow.effectDistance = new Vector2(2.5f, -2.5f);
+            glow.enabled = false;
+            return (r, t, glow, mark);
         }
     }
 }

@@ -20,6 +20,8 @@ namespace ItHunts.Hud
             public System.Action Submit;
             /// <summary>Texte ajouté quand l'élément est grisé (« (bientôt) » par défaut ; « (pris) » pour un personnage).</summary>
             public string DisabledNote = "(bientôt)";
+            /// <summary>Affiché grisé mais choisissable (Jouer : on dit pourquoi quand on essaie).</summary>
+            public System.Func<bool> Dim;
         }
 
         public readonly List<Item> Items = new List<Item>();
