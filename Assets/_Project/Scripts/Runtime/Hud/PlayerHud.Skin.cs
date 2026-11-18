@@ -31,6 +31,8 @@ namespace ItHunts.Hud
         public RectTransform MinimapRoot { get; private set; }
         public RectTransform HealthBarRoot { get; private set; }
         public bool Skinned => _skin != null;
+        /// <summary>Habillage des menus en jeu (pause, choix du personnage), lu par PauseMenu et CharacterSelectMenu.</summary>
+        public MenuSkinSettings MenuSkin => settings != null && settings.skin != null ? settings.skin.menuSkin : null;
 
         private void BuildSkin()
         {

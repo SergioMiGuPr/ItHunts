@@ -101,5 +101,8 @@ namespace ItHunts.Settings
         public Material mapInkMaterial;
         public Material mapFogMaterial;
         [Min(1f)] public float mapFogTiling = 3f;
+
+        [Header("Menus en jeu (pause, choix du personnage d'un joueur qui rejoint)")]
+        public MenuSkinSettings menuSkin;
     }
 }

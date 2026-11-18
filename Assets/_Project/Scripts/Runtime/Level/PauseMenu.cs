@@ -5,15 +5,16 @@ using ItHunts.Input;
 using ItHunts.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace ItHunts.Level
 {
     /// <summary>
-    /// Menu pause greybox, un par joueur (Échap au clavier, Start à la manette). Il s'affiche dans la moitié d'écran du joueur et
-    /// se pilote avec son seul appareil. Le jeu ne s'arrête pas (coop, D-048). Le joueur qui l'a ouvert ne bouge plus, l'autre
-    /// continue. Entrées : Reprendre ; Quitter l'écran partagé (2e joueur seulement) ; Retour au menu principal. Posé par
-    /// SplitScreen, sinon au chargement de toute scène de jeu (Ensure).
-    /// Refait à l'étape 10.
+    /// Menu Échap, un par joueur (Échap au clavier, Start à la manette), habillé par la DA (panneau en 9 tranches, titre en Grenze
+    /// Gotisch, boutons en EB Garamond, focus visible) dans la vue du joueur (écran partagé compris), piloté par son seul appareil
+    /// (et la souris pour le clavier). Le jeu ne s'arrête pas (coop, D-048) : le joueur qui l'a ouvert ne bouge plus, l'autre continue.
+    /// Entrées : Reprendre ; Paramètres (cadrage des mains, options d'image) ; Quitter l'écran partagé (2e joueur) ; Abandonner la
+    /// run (retour au campement) ; Quitter le jeu. Posé par SplitScreen, sinon au chargement de toute scène de jeu (Ensure).
     /// </summary>
     public sealed class PauseMenu : MonoBehaviour
     {
@@ -21,8 +22,15 @@ namespace ItHunts.Level
         {
             public PlayerInput Player;
             public GreyboxMenu Menu;
+            public GreyboxMenu Settings;
+            public bool InSettings;
             public int Frame;
+            public RectTransform Root;
+            public UiList List, SettingsList;
+            public Text Title;
         }
+
+        private Canvas _canvas;
 
         private readonly List<Open> _open = new List<Open>();
         private readonly Dictionary<PlayerInput, int> _closedAt = new Dictionary<PlayerInput, int>();
@@ -97,9 +105,25 @@ namespace ItHunts.Level
                 }
 
                 if (Time.frameCount > o.Frame && BackPressed(o.Menu.Owner))
-                    Close(o, true);
+                {
+                    if (o.InSettings)
+                        o.InSettings = false;                             // retour : des paramètres au menu
+                    else
+                        Close(o, true);
+                }
+                else if (o.InSettings)
+                    o.Settings.Update();
                 else
                     o.Menu.Update();
+                if (o.Root != null && _open.Contains(o))
+                {
+                    if (o.Player != null && o.Player.camera != null)
+                        UiKit.FitTo(o.Root, o.Player.camera);           // l'autre joueur rejoint ou part : la vue change
+                    o.Title.text = o.InSettings ? "Paramètres" : "Pause";
+                    o.List.Root.gameObject.SetActive(!o.InSettings);
+                    o.SettingsList.Root.gameObject.SetActive(o.InSettings);
+                    (o.InSettings ? o.SettingsList : o.List).Sync();
+                }
             }
 
             if (_open.Count == 0 && PlayerLook.MenuOpen && RunEndScreen.Current == null && _hadKeyboardMenu)
@@ -127,12 +151,13 @@ namespace ItHunts.Level
         {
             if (pi == null || IsOpenFor(pi))
                 return;
-            var o = new Open { Player = pi, Menu = new GreyboxMenu { Owner = OwnerOf(pi) }, Frame = Time.frameCount };
+            var o = new Open { Player = pi, Menu = new GreyboxMenu { Owner = OwnerOf(pi) }, Settings = new GreyboxMenu { Owner = OwnerOf(pi) }, Frame = Time.frameCount };
             o.Menu.Add("Reprendre", () => Close(o, true));
+            o.Menu.Add("Paramètres", () => { o.InSettings = true; o.Settings.FocusFirst(); });
             var fpv = pi.GetComponent<FirstPersonView>();
             if (fpv != null)
             {
-                GreyboxMenu.Item framing = o.Menu.Add("Cadrage des mains", null);
+                GreyboxMenu.Item framing = o.Settings.Add("Cadrage des mains", null);
                 framing.Value = () => FirstPersonView.FramingLabel(fpv.Framing);
                 framing.Change = d => fpv.Framing = fpv.Framing == HandFraming.Reference ? HandFraming.Ecarte : HandFraming.Reference;
                 framing.Submit = () => framing.Change(1);
@@ -140,12 +165,13 @@ namespace ItHunts.Level
             foreach (GraphicsOptions.Effect e in System.Enum.GetValues(typeof(GraphicsOptions.Effect)))
             {
                 GraphicsOptions.Effect effect = e;
-                GreyboxMenu.Item item = o.Menu.Add(GraphicsOptions.Label(effect), null);
+                GreyboxMenu.Item item = o.Settings.Add(GraphicsOptions.Label(effect), null);
                 item.Value = () => GraphicsOptions.Get(effect) ? "oui" : "non";
                 item.Change = d => GraphicsOptions.Set(effect, !GraphicsOptions.Get(effect));
                 item.Submit = () => item.Change(1);
             }
 
+            o.Settings.Add("Retour", () => { o.InSettings = false; o.Menu.SetFocus(1); });
             int index = IndexOf(pi);
             if (index > 0 && PlayerInput.all.Count > 1 && SplitScreen.Current != null)
                 o.Menu.Add("Quitter l'écran partagé", () => LeaveSplit(o));
@@ -153,9 +179,12 @@ namespace ItHunts.Level
             string active = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             if (active.StartsWith("Test_") && active != MainMenu.VitrineScene)
                 o.Menu.Add("Vitrine (assets et ennemis)", () => { RunSession.End(); RunSession.Load(MainMenu.VitrineScene); });
-            o.Menu.Add("Retour au menu principal", ToMenu);
+            o.Menu.Add("Abandonner la run", AbandonRun);
+            o.Menu.Add("Quitter le jeu", Application.Quit);
             o.Menu.FocusFirst();
+            o.Settings.FocusFirst();
             _open.Add(o);
+            BuildUi(o);
             pi.DeactivateInput();                                       // il ne bouge plus ; l'autre joueur continue
             if (o.Menu.Owner is Keyboard)
             {
@@ -164,9 +193,51 @@ namespace ItHunts.Level
             }
         }
 
+        /// <summary>Habillage de la DA (le skin des menus du HUD du joueur) ; sans lui, le menu greybox (IMGUI).</summary>
+        private void BuildUi(Open o)
+        {
+            var hud = o.Player.GetComponent<ItHunts.Hud.PlayerHud>();
+            ItHunts.Settings.MenuSkinSettings skin = hud != null ? hud.MenuSkin : null;
+            if (skin == null)
+                return;
+            if (_canvas == null)
+                _canvas = UiKit.NewCanvas("Menus pause (DA)", 80, transform);
+            o.Root = UiKit.Rect("Pause : joueur " + (IndexOf(o.Player) + 1), _canvas.transform, Vector2.zero, Vector2.zero, Vector2.zero);
+            UiKit.FitTo(o.Root, o.Player.camera);
+            Image shade = UiKit.Img("Voile", o.Root, null, UiKit.Shade);
+            UiKit.Stretch(shade.rectTransform);
+            int rows = Mathf.Max(o.Menu.Items.Count, o.Settings.Items.Count);
+            RectTransform panel = UiKit.Rect("Panneau", o.Root, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(660f, rows * 56f + 210f));
+            UiKit.Panel(panel, skin);
+            o.Title = UiKit.Txt("Titre", panel, skin.titleFont, 60, UiKit.TextColor);
+            o.Title.rectTransform.anchorMin = new Vector2(0f, 1f);
+            o.Title.rectTransform.anchorMax = new Vector2(1f, 1f);
+            o.Title.rectTransform.anchoredPosition = new Vector2(0f, -72f);
+            o.Title.rectTransform.sizeDelta = new Vector2(0f, 80f);
+            Text who = UiKit.Txt("Joueur", panel, skin.textFont, 24, UiKit.Dim);
+            who.rectTransform.anchorMin = new Vector2(0f, 1f);
+            who.rectTransform.anchorMax = new Vector2(1f, 1f);
+            who.rectTransform.anchoredPosition = new Vector2(0f, -120f);
+            who.rectTransform.sizeDelta = new Vector2(0f, 30f);
+            who.text = (PlayerInput.all.Count > 1 ? $"Joueur {IndexOf(o.Player) + 1} · " : "") + "le jeu continue";
+            RectTransform main = UiKit.Rect("Boutons", panel, new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(560f, rows * 56f), new Vector2(0.5f, 1f));
+            o.List = new UiList(o.Menu, main, skin, 56f, 30);
+            RectTransform set = UiKit.Rect("Paramètres", panel, new Vector2(0.5f, 1f), new Vector2(0f, -150f), new Vector2(600f, rows * 56f), new Vector2(0.5f, 1f));
+            o.SettingsList = new UiList(o.Settings, set, skin, 56f, 28);
+        }
+
+        /// <summary>Abandonner la run : retour au campement (pas à l'écran titre).</summary>
+        private static void AbandonRun()
+        {
+            MainMenu.StartAtCamp = true;
+            ToMenu();
+        }
+
         private void Close(Open o, bool reactivate)
         {
             _open.Remove(o);
+            if (o.Root != null)
+                Destroy(o.Root.gameObject);
             if (o.Player == null)
                 return;
             _closedAt[o.Player] = Time.frameCount;
@@ -185,6 +256,8 @@ namespace ItHunts.Level
         {
             PlayerInput pi = o.Player;
             _open.Remove(o);
+            if (o.Root != null)
+                Destroy(o.Root.gameObject);
             if (SplitScreen.Current != null)
                 SplitScreen.Current.Leave(pi);
         }
@@ -230,13 +303,13 @@ namespace ItHunts.Level
         {
             foreach (Open o in _open)
             {
-                if (o.Player == null)
-                    continue;
+                if (o.Player == null || o.Root != null)
+                    continue;                                           // habillé par la DA (uGUI)
                 Camera cam = o.Player.camera;
                 Rect r = cam != null ? cam.rect : new Rect(0f, 0f, 1f, 1f);
                 var region = new Rect(r.x * Screen.width, (1f - r.y - r.height) * Screen.height, r.width * Screen.width, r.height * Screen.height);
                 string who = PlayerInput.all.Count > 1 ? $"Joueur {IndexOf(o.Player) + 1}. " : "";
-                o.Menu.Draw("Pause", who + "Le jeu continue.", 460f, region);
+                (o.InSettings ? o.Settings : o.Menu).Draw(o.InSettings ? "Paramètres" : "Pause", who + "Le jeu continue.", 460f, region);
             }
         }
     }

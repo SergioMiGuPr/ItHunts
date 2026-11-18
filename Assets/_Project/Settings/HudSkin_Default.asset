@@ -76,3 +76,4 @@ MonoBehaviour:
   mapInkMaterial: {fileID: 2100000, guid: 59bf3921928769944a563cf48c029306, type: 2}
   mapFogMaterial: {fileID: 2100000, guid: 7385a7de4c534b8438a3292ed1de1401, type: 2}
   mapFogTiling: 3
+  menuSkin: {fileID: 11400000, guid: 6b4809b3530e21144a41dd222b9f0f94, type: 2}
