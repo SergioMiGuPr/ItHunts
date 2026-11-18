@@ -4,6 +4,21 @@
 
 ## Étape en cours
 
+**Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
+- **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;
+  menus : pas de logo écrit avec une police ni de boutons dessinés en remplacement, seulement les sprites de la session art.
+- **Lumières qui sautent, vitrine (ccd8dec) :** la lanterne ponctuelle (enfant du corps simulé à 60/s) avançait par à-coups
+  (0 puis 12.5 cm une image sur deux à 7.5 m/s) ; elle suit maintenant la position interpolée du corps, comme la caméra (écart
+  12.5 → 0.0 cm). Le cône suivait déjà le corps (d973e78). Prefab commun : toutes les scènes. Vu de l'extérieur : aucun saut.
+- **Accès à la vitrine (b7ca04b) :** lien « Vitrine (test) (F2) » sur l'écran titre (éditeur et builds de développement), F2 lance la
+  vitrine, Playtest passe sur F3. `docs/design/features/menus/captures/vitrine_acces/`.
+- **PR #17 (`art-ui-c`, lot T) :** méthode abandonnée, ne pas fusionner (la session art la ferme).
+- **PR `art-menus` :** pas encore ouverte ; autorisation donnée de l'intégrer dès son arrivée (procédure habituelle, rendu identique aux
+  maquettes, logique du campement conservée, audio `musique_menu` et crépitement, captures à côté des maquettes dans
+  `docs/design/features/menus/captures/maquettes/`, bord clair vérifié en build).
+- **Timer :** à revoir plus tard, rien changé.
+- **Tests :** EditMode 420 + 1 non concluant attendu.
+
 **Retours des menus du 2026-11-18 (`animations`) :** 4145cf6 (écran titre), 10c747f (campement et transition). Captures avant/après en
 1920 × 1080 et 0,66x : `docs/design/features/menus/captures/retours_2026-11-18/`. Titre : deux styles en attendant le logo
 (`MenuSkin_Default.titleStyle` : Grenze Gotisch SemiBold avec contour par défaut, ou EB Garamond Bold espacé), à choisir. Liseré clair :
