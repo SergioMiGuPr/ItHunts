@@ -15,6 +15,10 @@ d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
   commande composée) et `git restore .`.
 - **A4. Parade sur sa touche (D-079).** Alt gauche / R3 ; E = interagir seulement ; dash manette revenu sur LB. Plus de partage
   E dans `PlayerInputReader`. Test des touches mis à jour (seul Y reste partagé : recharger ou interagir).
+- **A3. Salles fermées et hissage.** Mesuré (sonde de plafond sur 7 × 7 points du sol de chaque salle) : Test_Arena, Level_01 et
+  le niveau aléatoire (seeds 11, 33, 55) : **toutes** les salles (pièces verrouillées, annexes, départ, sortie, arène du boss,
+  modules) ont un plafond au-dessus de 100 % de leur sol ; rien à corriger. Test `LevelClosureTests` (Salle_Verrouillee,
+  Piece_Annexe, Sortie_Arene) pour que ça reste vrai.
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`
