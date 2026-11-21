@@ -810,3 +810,23 @@ effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retir
 Les valeurs du § 0 (capsule Ø 7 × 14 m, épaule à 12 m, portée de main 15 m) décrivent l'ancien traqueur étiré par le code ;
 avec la v4 sans étirement, la portée réelle de la main est celle du tableau ci-dessus (à reporter dans `Stalker_Default` par `main`).
 
+## Clips du traqueur v4 (PR `art-traqueur-anim-*`, 2026-11-21)
+
+FBX : `Assets/Art/Animations/Traqueur_v4/<clip>.fbx`, une armature seule par fichier, en rig **générique**.
+- L'avatar est copié de `SK_Traqueur_v4`, et le nœud du root motion est `Traqueur/Racine` (il est réglé sur le modèle et sur chaque clip).
+- 30 i/s, une clé par image, sans compression.
+- Le clip prend le nom `Traqueur_<Action>`.
+- Avancée vers +Z du modèle.
+
+Les clés ne portent que sur les rotations, plus la position de `Racine` et de `Bassin` : aucune échelle d'os n'est modifiée.
+
+Contrôles, vidéos côte à côte et planches : `docs/art/rendus/Traqueur/v4/anim/` (`ANIMATIONS.md`).
+
+| Clip | Durée | Boucle | Root motion | Instants clés | Vitesse réelle du cycle |
+|---|---|---|---|---|---|
+| `Traqueur_Repos` | 3.2 s | oui | non | inspiration au plus haut à 1.8 s | 0 |
+| `Traqueur_Marche_A` | 5.5 s | oui | **oui** (7.0 m par cycle) | appuis : main D 0.55 s, pied G 2.42 s, main G 3.36 s, pied D 5.0 s | **1.27 m/s** |
+| `Traqueur_Marche_B` | 5.5 s | oui | **oui** (7.0 m par cycle) | appuis : main G 0.55 s, pied D 2.42 s, main D 3.36 s, pied G 5.0 s | **1.27 m/s** |
+
+Pour jouer la marche à une autre vitesse sans glissement, il faut multiplier la vitesse de lecture par (vitesse voulue / 1.27). Sinon, utiliser le root motion.
+
