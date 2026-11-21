@@ -29,7 +29,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2540703905042631949}
+  - {fileID: 7225895517182300254}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4560946461797568597
@@ -62,7 +62,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2540703905042631949}
+  m_Father: {fileID: 7225895517182300254}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &7829493323883086091
 BoxCollider:
@@ -117,7 +117,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2540703905042631949}
+  m_Father: {fileID: 7225895517182300254}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1398565853260107182
 BoxCollider:
@@ -164,85 +164,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
---- !u!1 &5223434653553450308
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5337638657010687131}
-  - component: {fileID: 4047941742582675757}
-  - component: {fileID: 3750597167902865758}
-  - component: {fileID: 7025416851255481012}
-  m_Layer: 0
-  m_Name: "Collision : garde-corps de c\xF4t\xE9"
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5337638657010687131
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5223434653553450308}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.95, y: 0.55, z: 1.25}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2540703905042631949}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &4047941742582675757
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5223434653553450308}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.12, y: 1.1, z: 2.5}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3750597167902865758
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5223434653553450308}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a3a45dfda978bf4a8e8e03967ac225d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.StalkerPassesThrough
---- !u!114 &7025416851255481012
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5223434653553450308}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
 --- !u!1 &6971442419335040344
 GameObject:
   m_ObjectHideFlags: 0
@@ -275,7 +196,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2540703905042631949}
+  m_Father: {fileID: 7225895517182300254}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &3064323014874269006
 BoxCollider:
@@ -322,7 +243,86 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
---- !u!1001 &2650612201525537510
+--- !u!1 &7193615653169058692
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8384202127543927888}
+  - component: {fileID: 2639071324936888967}
+  - component: {fileID: 1902919778597332589}
+  - component: {fileID: 429333041908927043}
+  m_Layer: 0
+  m_Name: "Collision : garde-corps de c\xF4t\xE9"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8384202127543927888
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7193615653169058692}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.95, y: 0.55, z: 1.25}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7225895517182300254}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &2639071324936888967
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7193615653169058692}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.12, y: 1.1, z: 2.5}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1902919778597332589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7193615653169058692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a3a45dfda978bf4a8e8e03967ac225d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.StalkerPassesThrough
+--- !u!114 &429333041908927043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7193615653169058692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
+--- !u!1001 &7191457838131083189
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -372,7 +372,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 702dcb56552846f46be8ec354afc0da1, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_Balcon_6m"
+      value: "Mod\xE8le : SM_Mod_Balcon_6m"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -388,11 +388,11 @@ PrefabInstance:
       addedObject: {fileID: 3329704687124241851}
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 702dcb56552846f46be8ec354afc0da1, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5337638657010687131}
+      addedObject: {fileID: 8384202127543927888}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 702dcb56552846f46be8ec354afc0da1, type: 3}
---- !u!4 &2540703905042631949 stripped
+--- !u!4 &7225895517182300254 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 702dcb56552846f46be8ec354afc0da1, type: 3}
-  m_PrefabInstance: {fileID: 2650612201525537510}
+  m_PrefabInstance: {fileID: 7191457838131083189}
   m_PrefabAsset: {fileID: 0}

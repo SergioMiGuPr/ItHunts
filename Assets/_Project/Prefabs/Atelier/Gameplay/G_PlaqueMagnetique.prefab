@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8672128728896112818}
   - component: {fileID: 4651372612564146518}
   - component: {fileID: 8469492798625693000}
-  - component: {fileID: 3676897271776620983}
+  - component: {fileID: 4717523248302901386}
   m_Layer: 0
   m_Name: G_PlaqueMagnetique
   m_TagString: Untagged
@@ -113,7 +113,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &3676897271776620983
+--- !u!114 &4717523248302901386
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -122,6 +122,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 7133484352080479669}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: d1ab4c6a553ccc742a35a6754a34aa52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.MagneticPlate

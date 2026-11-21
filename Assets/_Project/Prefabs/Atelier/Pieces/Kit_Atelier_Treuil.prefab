@@ -136,7 +136,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: b8a473981bda78245821eda96906cd20, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Treuil"
+      value: "Mod\xE8le : SM_Treuil"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -32,7 +32,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2588045835917315860}
+  m_Father: {fileID: 299050132856233833}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &3840747511154932567
 BoxCollider:
@@ -108,7 +108,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2588045835917315860}
+  - {fileID: 299050132856233833}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3907877640584914184
@@ -143,7 +143,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2588045835917315860}
+  m_Father: {fileID: 299050132856233833}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &4464655285595111360
 BoxCollider:
@@ -220,7 +220,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2588045835917315860}
+  m_Father: {fileID: 299050132856233833}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &8531743885903318858
 BoxCollider:
@@ -273,7 +273,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2588045835917315860}
+  m_Father: {fileID: 299050132856233833}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1766255807199004734
 BoxCollider:
@@ -328,7 +328,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2588045835917315860}
+  m_Father: {fileID: 299050132856233833}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1255770836373711062
 BoxCollider:
@@ -405,7 +405,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2588045835917315860}
+  m_Father: {fileID: 299050132856233833}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1497317866009432707
 BoxCollider:
@@ -428,7 +428,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.5, y: 0.3, z: 3.042868}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!1001 &2621143931646814463
+--- !u!1001 &264808577650178178
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -478,7 +478,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 7c280a718f66da243b2f515ea45ceb1c, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_Coursive_45"
+      value: "Mod\xE8le : SM_Mod_Coursive_45"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -503,8 +503,8 @@ PrefabInstance:
       addedObject: {fileID: 2331042696207304485}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7c280a718f66da243b2f515ea45ceb1c, type: 3}
---- !u!4 &2588045835917315860 stripped
+--- !u!4 &299050132856233833 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7c280a718f66da243b2f515ea45ceb1c, type: 3}
-  m_PrefabInstance: {fileID: 2621143931646814463}
+  m_PrefabInstance: {fileID: 264808577650178178}
   m_PrefabAsset: {fileID: 0}

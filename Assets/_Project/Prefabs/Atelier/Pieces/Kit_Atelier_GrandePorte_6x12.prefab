@@ -66,6 +66,72 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
+--- !u!1 &2809088863613626935
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7628378555463988321}
+  - component: {fileID: 7150295805687630308}
+  - component: {fileID: 4767687353528176187}
+  m_Layer: 0
+  m_Name: 'Collision : jambage'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7628378555463988321
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2809088863613626935}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7854924806459467448}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7150295805687630308
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2809088863613626935}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.1999998, y: 14, z: 1.9200001}
+  m_Center: {x: -4.6, y: 7, z: 0}
+--- !u!114 &4767687353528176187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2809088863613626935}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
 --- !u!1 &3931566082901721388
 GameObject:
   m_ObjectHideFlags: 0
@@ -95,78 +161,12 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1968917252145110516}
+  - {fileID: 8831422520364909718}
   - {fileID: 6100819895038574253}
-  - {fileID: 6443786593547621317}
+  - {fileID: 7628378555463988321}
   - {fileID: 6152136063650088302}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &7076052734064628238
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6443786593547621317}
-  - component: {fileID: 6890463275777549512}
-  - component: {fileID: 3216900071311170936}
-  m_Layer: 0
-  m_Name: 'Collision : jambage'
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6443786593547621317
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7076052734064628238}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7854924806459467448}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &6890463275777549512
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7076052734064628238}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 3.1999998, y: 14, z: 1.9200001}
-  m_Center: {x: -4.6, y: 7, z: 0}
---- !u!114 &3216900071311170936
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7076052734064628238}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
 --- !u!1 &8150655185073088588
 GameObject:
   m_ObjectHideFlags: 0
@@ -233,7 +233,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
---- !u!1001 &2078488959968754207
+--- !u!1001 &9008670954091520893
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -283,15 +283,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 389a1b534d5fc30468d1865160ba6917, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_GrandePorte_6x12"
+      value: "Mod\xE8le : SM_Mod_GrandePorte_6x12"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 389a1b534d5fc30468d1865160ba6917, type: 3}
---- !u!4 &1968917252145110516 stripped
+--- !u!4 &8831422520364909718 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 389a1b534d5fc30468d1865160ba6917, type: 3}
-  m_PrefabInstance: {fileID: 2078488959968754207}
+  m_PrefabInstance: {fileID: 9008670954091520893}
   m_PrefabAsset: {fileID: 0}

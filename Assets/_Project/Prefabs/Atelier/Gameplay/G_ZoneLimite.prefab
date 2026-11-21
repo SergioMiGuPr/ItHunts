@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1127040917648949866}
-  - component: {fileID: 2204028440438966468}
+  - component: {fileID: 8280997294141106265}
   m_Layer: 0
   m_Name: G_ZoneLimite
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2204028440438966468
+--- !u!114 &8280997294141106265
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,7 +41,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5832494280485335343}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f698e6f521bb0fb46a12421dd34b0f7d, type: 3}
+  m_Script: {fileID: 11500000, guid: 7db008135325be24c94d7dd5c6893673, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.ModuleBounds
   center: {x: 0, y: 9, z: 0}

@@ -4,6 +4,14 @@
 
 ## Étape en cours
 
+**Soir du 2026-11-21 : atelier des modules (D-091, guide `docs/design/level/ATELIER-MODULES.md`).** Scène `Atelier_Modules`,
+palette (ItHunts > Palette des modules), sauvegarde avec fiche et bibliothèque, vérification étendue avec repères, « Jouer ce module » et
+F3 « Modules de l'atelier », module « Exemple de l'atelier » validé et dans la génération, 4 modules de la nuit convertis (revalidés).
+**Manque :** pièces sans version d'art (mur avec fenêtre, murs d'autres hauteurs, cheminée, portes 4 m de large de 10 à 16 m, vraie chute
+d'eau) ; 36 enveloppes à collisions approchées (boîte des bornes, ou jambages et linteau pour les portes et arcs : à affiner pièce par
+pièce) ; marchand, salle verrouillée et arrivée du traqueur posables mais pas encore lus par le générateur. Le calcul « coffres
+atteignables » est borné (40 îlots, 14 points par îlot) : un premier essai non borné avait figé l'éditeur.
+
 **Après-midi du 2026-11-21 : retours de playtest, points 1 à 11 (fusionnés dans `main`).** Un commit par point sur `animations`,
 décisions D-084 à D-090, PR d'art #34 (art-menus-3) et **#35 (art-effets-2)** intégrées. Effets du lot 2 branchés : traction
 (`VFX_Traction`, FluxVfx, à la place de la fumée provisoire), répulsion (`VFX_Repulsion` au point visé), traînées des 3 coups d'épée

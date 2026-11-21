@@ -29,7 +29,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2241563244484580468}
+  - {fileID: 7869480000686051167}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &9119319577132352852
@@ -63,7 +63,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2241563244484580468}
+  m_Father: {fileID: 7869480000686051167}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &2573453359543437557
 BoxCollider:
@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
---- !u!1001 &1770223171789534111
+--- !u!1001 &7691228012864579764
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -148,7 +148,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 3f8c4e7472ebf464e9b989bd19320e03, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_Ratelier"
+      value: "Mod\xE8le : SM_Mod_Ratelier"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -158,8 +158,8 @@ PrefabInstance:
       addedObject: {fileID: 3968549041411876834}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3f8c4e7472ebf464e9b989bd19320e03, type: 3}
---- !u!4 &2241563244484580468 stripped
+--- !u!4 &7869480000686051167 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3f8c4e7472ebf464e9b989bd19320e03, type: 3}
-  m_PrefabInstance: {fileID: 1770223171789534111}
+  m_PrefabInstance: {fileID: 7691228012864579764}
   m_PrefabAsset: {fileID: 0}

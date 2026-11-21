@@ -32,9 +32,13 @@ namespace ItHunts.EditorTools
 
         public static string SafeName(string name)
         {
-            foreach (char c in Path.GetInvalidFileNameChars())
-                name = name.Replace(c, '_');
-            return "Module_" + name.Trim().Replace(' ', '_');
+            // Lettres (accents retirés), chiffres, tiret et soulignement seulement.
+            string flat = new string(name.Normalize(System.Text.NormalizationForm.FormD)
+                .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark).ToArray());
+            var sb = new System.Text.StringBuilder();
+            foreach (char c in flat.Trim())
+                sb.Append(char.IsLetterOrDigit(c) || c == '-' ? c : '_');
+            return "Module_" + sb.ToString();
         }
 
         public static string PrefabPathFor(string name) => $"{Dir}/{SafeName(name)}.prefab";
@@ -343,11 +347,42 @@ namespace ItHunts.EditorTools
             if (s != PlayModeStateChange.EnteredEditMode || !SessionState.GetBool("ItHunts.Atelier.Reopen", false))
                 return;
             SessionState.EraseBool("ItHunts.Atelier.Reopen");
+            RandomLevel.TestModule = null;                                 // le test du module ne déborde pas sur la partie suivante
+            RandomLevel.TestModulePrefab = null;
+            RandomLevel.TestStartInModule = false;
+            RandomLevel.SeedOverride = 0;
             string path = SessionState.GetString("ItHunts.Atelier.LastModule", "");
             EditorSceneManager.OpenScene(AtelierSceneBuilder.ScenePath);
             if (!string.IsNullOrEmpty(path) && File.Exists(path))
                 Load(path);
         };
+
+        /// <summary>
+        /// Met un module existant (fait par code, par exemple les 4 de la nuit du 2026-11-21) au format de l'atelier : zone limite,
+        /// drapeau « atelier », fiche ; puis le revalide (son contenu a changé). Résumé.
+        /// </summary>
+        public static string Convert(string path)
+        {
+            GameObject contents = PrefabUtility.LoadPrefabContents(path);
+            var m = contents.GetComponent<RoomModule>();
+            if (contents.GetComponentInChildren<ModuleBounds>(true) == null)
+            {
+                var zone = (GameObject)PrefabUtility.InstantiatePrefab(GameplayPrefab("G_ZoneLimite"), contents.transform);
+                float ceil = Ceiling(m);
+                zone.GetComponent<ModuleBounds>().size = new Vector3(m.Extent.x, ceil, m.Extent.y);
+                zone.GetComponent<ModuleBounds>().center = new Vector3(0f, ceil * 0.5f, 0f);
+            }
+
+            m.fromAtelier = true;
+            PrefabUtility.SaveAsPrefabAsset(contents, path);
+            PrefabUtility.UnloadPrefabContents(contents);
+            ModuleSheet sheet = WriteSheet(path);
+            sheet.active = InLibrary(path);
+            string r = ModuleValidator.Validate(path);
+            WriteSheet(path).lastReport = ModuleValidator.LastReport;
+            AssetDatabase.SaveAssets();
+            return r;
+        }
 
         public static void RememberLast(string path) => SessionState.SetString("ItHunts.Atelier.LastModule", path);
     }

@@ -148,7 +148,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 142e60aab4dc0994b9003b95f6ab574c, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_MurGrimpe_8x10"
+      value: "Mod\xE8le : SM_Mod_MurGrimpe_8x10"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

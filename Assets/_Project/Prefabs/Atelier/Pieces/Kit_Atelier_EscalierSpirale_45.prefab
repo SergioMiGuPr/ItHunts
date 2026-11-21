@@ -32,7 +32,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9055957657899310361}
+  m_Father: {fileID: 7005688129839188472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &4332961155752250336
 BoxCollider:
@@ -111,7 +111,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9055957657899310361}
+  m_Father: {fileID: 7005688129839188472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &5965886422207131709
 BoxCollider:
@@ -190,7 +190,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9055957657899310361}
+  m_Father: {fileID: 7005688129839188472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &4133100303030225238
 BoxCollider:
@@ -269,7 +269,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9055957657899310361}
+  m_Father: {fileID: 7005688129839188472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &8918014158745087569
 BoxCollider:
@@ -348,7 +348,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9055957657899310361}
+  m_Father: {fileID: 7005688129839188472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &8045035774652681997
 BoxCollider:
@@ -424,7 +424,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 9055957657899310361}
+  - {fileID: 7005688129839188472}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8317141697054209534
@@ -459,7 +459,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 9055957657899310361}
+  m_Father: {fileID: 7005688129839188472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &2461423296917410892
 BoxCollider:
@@ -506,7 +506,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
---- !u!1001 &8802145829871450866
+--- !u!1001 &7400413927248571923
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -556,7 +556,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 4b153644a9b1a694a9bcf6e5b0c25e05, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_EscalierSpirale_45"
+      value: "Mod\xE8le : SM_Mod_EscalierSpirale_45"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -581,8 +581,8 @@ PrefabInstance:
       addedObject: {fileID: 2209074263484276630}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4b153644a9b1a694a9bcf6e5b0c25e05, type: 3}
---- !u!4 &9055957657899310361 stripped
+--- !u!4 &7005688129839188472 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4b153644a9b1a694a9bcf6e5b0c25e05, type: 3}
-  m_PrefabInstance: {fileID: 8802145829871450866}
+  m_PrefabInstance: {fileID: 7400413927248571923}
   m_PrefabAsset: {fileID: 0}

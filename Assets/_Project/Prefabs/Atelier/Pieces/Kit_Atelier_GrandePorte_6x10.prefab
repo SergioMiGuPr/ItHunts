@@ -1,5 +1,71 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &216141492956245521
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9033274238752242473}
+  - component: {fileID: 3647320726415459076}
+  - component: {fileID: 5707562856673568273}
+  m_Layer: 0
+  m_Name: 'Collision : jambage'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9033274238752242473
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 216141492956245521}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.6, y: 6, z: 0.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7228099968126516740}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &3647320726415459076
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 216141492956245521}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.1999998, y: 12, z: 1.9}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5707562856673568273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 216141492956245521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
 --- !u!1 &671972224373619801
 GameObject:
   m_ObjectHideFlags: 0
@@ -31,7 +97,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2861999497062344308}
+  m_Father: {fileID: 7228099968126516740}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &69428001310820629
 BoxCollider:
@@ -95,7 +161,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2861999497062344308}
+  - {fileID: 7228099968126516740}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4240287198543462774
@@ -129,7 +195,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2861999497062344308}
+  m_Father: {fileID: 7228099968126516740}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &7819031302151106845
 BoxCollider:
@@ -164,73 +230,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
---- !u!1 &7144984863041828386
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2158318677420862567}
-  - component: {fileID: 8999992414622669682}
-  - component: {fileID: 4909337139260953897}
-  m_Layer: 0
-  m_Name: 'Collision : jambage'
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2158318677420862567
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7144984863041828386}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.6, y: 6, z: 0.2}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2861999497062344308}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &8999992414622669682
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7144984863041828386}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 3.1999998, y: 12, z: 1.9}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &4909337139260953897
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7144984863041828386}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
---- !u!1001 &2323123056211526047
+--- !u!1001 &7189407340289595887
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -280,7 +280,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: bb4c63e49ec254840a66c86794f2f9a3, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_GrandePorte_6x10"
+      value: "Mod\xE8le : SM_Mod_GrandePorte_6x10"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -290,14 +290,14 @@ PrefabInstance:
       addedObject: {fileID: 1236867106741373701}
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: bb4c63e49ec254840a66c86794f2f9a3, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2158318677420862567}
+      addedObject: {fileID: 9033274238752242473}
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: bb4c63e49ec254840a66c86794f2f9a3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3195106223545472539}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bb4c63e49ec254840a66c86794f2f9a3, type: 3}
---- !u!4 &2861999497062344308 stripped
+--- !u!4 &7228099968126516740 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bb4c63e49ec254840a66c86794f2f9a3, type: 3}
-  m_PrefabInstance: {fileID: 2323123056211526047}
+  m_PrefabInstance: {fileID: 7189407340289595887}
   m_PrefabAsset: {fileID: 0}

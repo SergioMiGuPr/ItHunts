@@ -82,11 +82,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2733121050918123648}
+  - {fileID: 176984934508759851}
   - {fileID: 8668080755891566201}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &2479027498132741995
+--- !u!1001 &431922944969600192
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -136,15 +136,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 1cb607d151a6f3046a08c683c876b55d, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_EscalierBois_4m"
+      value: "Mod\xE8le : SM_Mod_EscalierBois_4m"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1cb607d151a6f3046a08c683c876b55d, type: 3}
---- !u!4 &2733121050918123648 stripped
+--- !u!4 &176984934508759851 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 1cb607d151a6f3046a08c683c876b55d, type: 3}
-  m_PrefabInstance: {fileID: 2479027498132741995}
+  m_PrefabInstance: {fileID: 431922944969600192}
   m_PrefabAsset: {fileID: 0}

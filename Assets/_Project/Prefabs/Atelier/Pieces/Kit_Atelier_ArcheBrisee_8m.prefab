@@ -29,10 +29,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1335815072364570588}
+  - {fileID: 6014210642282814177}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &4120299345425967791
+--- !u!1 &3968860599399844376
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -40,10 +40,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1258011223408541788}
-  - component: {fileID: 1633989425591680529}
-  - component: {fileID: 1456985350954588366}
-  - component: {fileID: 8110456764411185922}
+  - component: {fileID: 2354788710549814296}
+  - component: {fileID: 3721205140124023165}
+  - component: {fileID: 4471986139493703510}
+  - component: {fileID: 6073114174519011855}
   m_Layer: 0
   m_Name: 'Collision : pilier'
   m_TagString: Untagged
@@ -51,28 +51,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1258011223408541788
+--- !u!4 &2354788710549814296
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4120299345425967791}
+  m_GameObject: {fileID: 3968860599399844376}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4, y: 4.5, z: 0}
+  m_LocalPosition: {x: -4, y: 4.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1335815072364570588}
+  m_Father: {fileID: 6014210642282814177}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &1633989425591680529
+--- !u!65 &3721205140124023165
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4120299345425967791}
+  m_GameObject: {fileID: 3968860599399844376}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -87,25 +87,25 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.2, y: 9, z: 1.2}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1456985350954588366
+--- !u!114 &4471986139493703510
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4120299345425967791}
+  m_GameObject: {fileID: 3968860599399844376}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5a3a45dfda978bf4a8e8e03967ac225d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.StalkerPassesThrough
---- !u!114 &8110456764411185922
+--- !u!114 &6073114174519011855
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4120299345425967791}
+  m_GameObject: {fileID: 3968860599399844376}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
@@ -139,11 +139,11 @@ Transform:
   m_GameObject: {fileID: 7041990268279197610}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4, y: 4.5, z: 0}
+  m_LocalPosition: {x: 4, y: 4.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1335815072364570588}
+  m_Father: {fileID: 6014210642282814177}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &2750068872584993057
 BoxCollider:
@@ -190,7 +190,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5df87c5a855099046aa2b4a3fb395937, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Enemies.NotWalkable
---- !u!1001 &1514192190817583159
+--- !u!1001 &6123907906683895050
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -240,21 +240,21 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: e92e15a8709c17f4c8cc18c7e82bfa47, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_ArcheBrisee_8m"
+      value: "Mod\xE8le : SM_Mod_ArcheBrisee_8m"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: e92e15a8709c17f4c8cc18c7e82bfa47, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1258011223408541788}
+      addedObject: {fileID: 932504831330252675}
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: e92e15a8709c17f4c8cc18c7e82bfa47, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 932504831330252675}
+      addedObject: {fileID: 2354788710549814296}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e92e15a8709c17f4c8cc18c7e82bfa47, type: 3}
---- !u!4 &1335815072364570588 stripped
+--- !u!4 &6014210642282814177 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e92e15a8709c17f4c8cc18c7e82bfa47, type: 3}
-  m_PrefabInstance: {fileID: 1514192190817583159}
+  m_PrefabInstance: {fileID: 6123907906683895050}
   m_PrefabAsset: {fileID: 0}

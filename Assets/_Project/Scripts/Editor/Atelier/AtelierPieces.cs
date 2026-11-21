@@ -71,23 +71,36 @@ namespace ItHunts.EditorTools
             ("Props", "Levier", "Niveau1/SM_Levier"),
         };
 
-        /// <summary>Pièces « jeu » existantes, utilisées telles quelles.</summary>
+        /// <summary>Kit gothique (Kit_*) : modèles sans collisions (le générateur les fusionne) ; enveloppes « jeu » avec collisions.</summary>
+        private static readonly (string cat, string name, string kit)[] KitWraps =
+        {
+            ("Murs", "Mur 4 × 4", "Kit_Mur4x4"),
+            ("Murs", "Mur 4 × 3", "Kit_Mur4x3"),
+            ("Murs", "Mur 2 × 4", "Kit_Mur2x4"),
+            ("Murs", "Mur à arcade 8 m", "Kit_Mur_Arcade_8m"),
+            ("Murs", "Mur à niche 8 m", "Kit_Mur_Niche_8m"),
+            ("Sols et plafonds", "Sol 4 m", "Kit_Sol4"),
+            ("Sols et plafonds", "Voûte en ogive 8 m", "Kit_Voute_Ogive_8m"),
+            ("Sols et plafonds", "Poutre", "Kit_Poutre"),
+            ("Piliers et arches", "Pilier", "Kit_Pilier"),
+            ("Piliers et arches", "Colonne engagée 8 m", "Kit_Colonne_Engagee_8m"),
+            ("Piliers et arches", "Arc", "Kit_Arc"),
+            ("Piliers et arches", "Arc doubleau 14 m", "Kit_ArcDoubleau_14m"),
+            ("Portes", "Grande porte (kit)", "Kit_GrandePorte"),
+            ("Portes", "Porte de pièce", "Kit_PortePiece"),
+            ("Escaliers et échelles", "Escalier (kit)", "Kit_Escalier"),
+            ("Passerelles et ponts", "Pont (kit)", "Kit_Pont"),
+            ("Passerelles et ponts", "Pont d'égout 4 m", "Kit_PontEgout4"),
+            ("Passerelles et ponts", "Pont d'égout 14 m", "Kit_PontEgout14"),
+        };
+
+        /// <summary>Pièces « jeu » existantes (props : collisions comprises), utilisées telles quelles.</summary>
         private static readonly (string cat, string name, string path)[] GamePieces =
         {
-            ("Murs", "Mur 4 × 4", "Kit/Kit_Mur4x4"), ("Murs", "Mur 4 × 3", "Kit/Kit_Mur4x3"), ("Murs", "Mur 2 × 4", "Kit/Kit_Mur2x4"),
-            ("Murs", "Mur à arcade 8 m", "Kit/Kit_Mur_Arcade_8m"), ("Murs", "Mur à niche 8 m", "Kit/Kit_Mur_Niche_8m"),
             ("Murs", "Mur effondré (brisé)", "Props/Prop_MurEffondre"),
-            ("Sols et plafonds", "Sol 4 m", "Kit/Kit_Sol4"), ("Sols et plafonds", "Voûte en ogive 8 m", "Kit/Kit_Voute_Ogive_8m"),
-            ("Sols et plafonds", "Poutre", "Kit/Kit_Poutre"),
-            ("Piliers et arches", "Pilier", "Kit/Kit_Pilier"), ("Piliers et arches", "Colonne engagée 8 m", "Kit/Kit_Colonne_Engagee_8m"),
             ("Piliers et arches", "Colonne", "Props/Prop_Colonne"), ("Piliers et arches", "Colonne brisée", "Props/Prop_ColonneBrisee"),
-            ("Piliers et arches", "Arc", "Kit/Kit_Arc"), ("Piliers et arches", "Arc doubleau 14 m", "Kit/Kit_ArcDoubleau_14m"),
-            ("Portes", "Grande porte (kit)", "Kit/Kit_GrandePorte"), ("Portes", "Porte de pièce", "Kit/Kit_PortePiece"),
             ("Portes", "Grille", "Props/Prop_Grille"),
             ("Cellules", "Cage", "Props/Prop_Cage"),
-            ("Escaliers et échelles", "Escalier (kit)", "Kit/Kit_Escalier"),
-            ("Passerelles et ponts", "Pont (kit)", "Kit/Kit_Pont"), ("Passerelles et ponts", "Pont d'égout 4 m", "Kit/Kit_PontEgout4"),
-            ("Passerelles et ponts", "Pont d'égout 14 m", "Kit/Kit_PontEgout14"),
             ("Plateformes et rebords", "Échafaudage", "Props/Prop_Echafaudage"),
             ("Chaînes, cages, treuil", "Chaîne", "Props/Prop_Chaine"), ("Chaînes, cages, treuil", "Cage suspendue", "Props/Prop_Cage"),
             ("Tuyaux et eau", "Tuyau", "Props/Prop_Tuyau"),
@@ -131,6 +144,8 @@ namespace ItHunts.EditorTools
             var list = new List<AtelierPiece>();
             foreach ((string cat, string name, string path) in GamePieces)
                 list.Add(new AtelierPiece { Category = cat, Name = name, PrefabPath = $"Assets/_Project/Prefabs/{path}.prefab" });
+            foreach ((string cat, string name, string kit) in KitWraps)
+                list.Add(new AtelierPiece { Category = cat, Name = name, PrefabPath = $"{AtelierPieceDir}/Kit_Jeu_{kit.Replace("Kit_", "")}.prefab", Approximate = true });
             foreach ((string cat, string name, string fbx) in ArtWraps)
                 list.Add(new AtelierPiece
                 {
@@ -165,19 +180,20 @@ namespace ItHunts.EditorTools
             Directory.CreateDirectory(AtelierGameplayDir);
             int wraps = 0, missing = 0;
             var approx = new List<string>();
-            foreach ((string cat, string name, string fbx) in ArtWraps)
+            var sources = ArtWraps.Select(a => (a.name, piece: Path.GetFileName(a.fbx).Replace("SM_Mod_", ""), path: ArtModelsDir + a.fbx + ".fbx", output: "Kit_Atelier_" + Path.GetFileName(a.fbx).Replace("SM_Mod_", "").Replace("SM_", "")))
+                .Concat(KitWraps.Select(k => (k.name, piece: k.kit, path: $"Assets/_Project/Prefabs/Kit/{k.kit}.prefab", output: "Kit_Jeu_" + k.kit.Replace("Kit_", ""))));
+            foreach ((string name, string piece, string srcPath, string output) in sources)
             {
-                string piece = Path.GetFileName(fbx).Replace("SM_Mod_", "");
-                var model = AssetDatabase.LoadAssetAtPath<GameObject>(ArtModelsDir + fbx + ".fbx");
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>(srcPath);
                 if (model == null)
                 {
                     missing++;
                     continue;
                 }
 
-                var root = new GameObject("Kit_Atelier_" + piece.Replace("SM_", ""));
+                var root = new GameObject(output);
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(model, root.transform);
-                go.name = "Modèle (DA) : " + Path.GetFileName(fbx);
+                go.name = "Modèle : " + Path.GetFileNameWithoutExtension(srcPath);
                 foreach (Collider c in go.GetComponentsInChildren<Collider>())
                     Object.DestroyImmediate(c);
                 Bounds b = RenderBounds(go);
@@ -191,7 +207,7 @@ namespace ItHunts.EditorTools
                     var holder = new GameObject("Collision (boîte des bornes)");
                     holder.transform.SetParent(root.transform, false);
                     System.Text.RegularExpressions.Match dim = System.Text.RegularExpressions.Regex.Match(piece, @"GrandePorte_(\d+)x(\d+)");
-                    if (dim.Success || piece.Contains("Arc_Couloir"))
+                    if (dim.Success || piece.Contains("Arc") && !piece.Contains("Arcade") || piece.Contains("GrandePorte") || piece.Contains("PortePiece"))
                     {
                         // Porte ou arc : deux jambages et un linteau, l'ouverture reste libre (largeur × hauteur du nom, ou bornes − 1 m).
                         Object.DestroyImmediate(holder);
@@ -212,7 +228,7 @@ namespace ItHunts.EditorTools
                         if (top > 0.1f)
                             AddBox(root, "linteau", new Vector3(lc.x, high + top * 0.5f, lc.z), alongX ? new Vector3(open, top, depth) : new Vector3(depth, top, open));
                     }
-                    else if (piece.Contains("Escalier"))
+                    else if (piece.Contains("Escalier") && b.size.y > 1f)
                     {
                         // Rampe : la diagonale de la boîte, du bas d'un côté au haut de l'autre (le long de la plus grande dimension).
                         bool alongZ = b.size.z >= b.size.x;

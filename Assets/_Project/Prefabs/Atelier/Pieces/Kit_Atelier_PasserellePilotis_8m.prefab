@@ -29,7 +29,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2673097097454503453}
+  - {fileID: 4158338739330280953}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7897154184726617433
@@ -62,7 +62,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2673097097454503453}
+  m_Father: {fileID: 4158338739330280953}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &3009799288027431093
 BoxCollider:
@@ -85,7 +85,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2, y: 0.3, z: 8}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!1001 &2491061071915917814
+--- !u!1001 &4485543929717688850
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -135,7 +135,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 21702fc635b2e7741a6260937c82fc34, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_PasserellePilotis_8m"
+      value: "Mod\xE8le : SM_Mod_PasserellePilotis_8m"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -145,8 +145,8 @@ PrefabInstance:
       addedObject: {fileID: 654560785614026980}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 21702fc635b2e7741a6260937c82fc34, type: 3}
---- !u!4 &2673097097454503453 stripped
+--- !u!4 &4158338739330280953 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 21702fc635b2e7741a6260937c82fc34, type: 3}
-  m_PrefabInstance: {fileID: 2491061071915917814}
+  m_PrefabInstance: {fileID: 4485543929717688850}
   m_PrefabAsset: {fileID: 0}

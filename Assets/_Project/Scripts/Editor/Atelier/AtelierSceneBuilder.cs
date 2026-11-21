@@ -62,7 +62,7 @@ namespace ItHunts.EditorTools
             // Repères d'échelle, à l'ouest de la zone de travail.
             var refs = new GameObject("Repères d'échelle").transform;
             refs.SetParent(stageGo.transform, false);
-            refs.position = new Vector3(-80f, 0f, 0f);
+            refs.position = new Vector3(-130f, 0f, 0f);           // hors d'un module de 2 cases (240 m)
             Material ghost = ModuleLibrary.AtelierMaterial("M_Atelier_Repere", new Color(0.3f, 0.75f, 1f), new Color(0.05f, 0.2f, 0.35f));
             Material warn = ModuleLibrary.AtelierMaterial("M_Atelier_Limite", new Color(1f, 0.55f, 0.15f), new Color(0.4f, 0.15f, 0f));
             Prim(refs, PrimitiveType.Capsule, "Joueur (1.8 m)", new Vector3(0f, 0.9f, 0f), new Vector3(0.8f, 0.9f, 0.8f), ghost);

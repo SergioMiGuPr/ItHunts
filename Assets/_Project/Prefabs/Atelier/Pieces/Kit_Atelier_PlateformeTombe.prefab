@@ -29,7 +29,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 562440661777737211}
+  - {fileID: 1809040637942677454}
   - {fileID: 6107766900958992135}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -86,7 +86,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.4, y: 0.4, z: 2.4}
   m_Center: {x: 0, y: 0.2, z: 0}
---- !u!1001 &19291688275149328
+--- !u!1001 &2202745778306078757
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -136,15 +136,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 77271073df6f5a24f888d144ac8bf777, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_PlateformeTombe"
+      value: "Mod\xE8le : SM_PlateformeTombe"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 77271073df6f5a24f888d144ac8bf777, type: 3}
---- !u!4 &562440661777737211 stripped
+--- !u!4 &1809040637942677454 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 77271073df6f5a24f888d144ac8bf777, type: 3}
-  m_PrefabInstance: {fileID: 19291688275149328}
+  m_PrefabInstance: {fileID: 2202745778306078757}
   m_PrefabAsset: {fileID: 0}

@@ -418,7 +418,7 @@ namespace ItHunts.EditorTools
                     if (mf != null && mf.sharedMesh != null)
                         tris += mf.sharedMesh.triangles.Length / 3;
                     GameObject inst = PrefabUtility.GetNearestPrefabInstanceRoot(r.gameObject);
-                    bool kit = inst != null && inst != root && (inst.name.StartsWith("Kit_") || inst.name.StartsWith("Prop_") || inst.name.StartsWith("SM_"));
+                    bool kit = inst != null && inst != root && (inst.name.StartsWith("Kit_") || inst.name.StartsWith("Prop_") || inst.name.StartsWith("SM_") || inst.name.StartsWith("G_"));
                     if (!kit && r.GetComponent<Collider>() != null)
                         outside.Add(r.name);
                 }

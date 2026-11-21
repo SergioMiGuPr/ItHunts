@@ -31,7 +31,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 399463659983951590}
+  m_Father: {fileID: 4350679942444506522}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &6741839162009047380
 BoxCollider:
@@ -97,7 +97,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 399463659983951590}
+  m_Father: {fileID: 4350679942444506522}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &3830744024171682603
 BoxCollider:
@@ -163,7 +163,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 399463659983951590}
+  m_Father: {fileID: 4350679942444506522}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &5446898346463318294
 BoxCollider:
@@ -229,7 +229,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 399463659983951590}
+  m_Father: {fileID: 4350679942444506522}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &3613006552041730985
 BoxCollider:
@@ -293,10 +293,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 399463659983951590}
+  - {fileID: 4350679942444506522}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &144563137808969997
+--- !u!1001 &4317264456220359281
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -346,7 +346,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 49b85513d82b7154090d6925c6b2a224, type: 3}
       propertyPath: m_Name
-      value: "Mod\xE8le (DA) : SM_Mod_RoueEau_8m"
+      value: "Mod\xE8le : SM_Mod_RoueEau_8m"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -365,8 +365,8 @@ PrefabInstance:
       addedObject: {fileID: 8792362340854932337}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 49b85513d82b7154090d6925c6b2a224, type: 3}
---- !u!4 &399463659983951590 stripped
+--- !u!4 &4350679942444506522 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 49b85513d82b7154090d6925c6b2a224, type: 3}
-  m_PrefabInstance: {fileID: 144563137808969997}
+  m_PrefabInstance: {fileID: 4317264456220359281}
   m_PrefabAsset: {fileID: 0}
