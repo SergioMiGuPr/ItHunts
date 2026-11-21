@@ -30,6 +30,20 @@ namespace ItHunts.Player
 
         public float Trauma => _trauma;
 
+        /// <summary>Mouvement de caméra posé par PlayerFeel cette image (hissage, atterrissage…) : décalage local (m) et angles (°).</summary>
+        public Vector3 FeelOffset { get; set; }
+        public Vector3 FeelEuler { get; set; }
+
+        /// <summary>Sensations de jeu (point 9) : réglages et échelle des secousses (intensité × « Réduire les secousses »).</summary>
+        public ItHunts.Settings.GameFeelSettings Feel { get; set; }
+
+        /// <summary>Secousse brève (0 à 1) : atterrissage fort, répulsion, coup reçu, parade, cri du traqueur.</summary>
+        public void AddTrauma(float amount)
+        {
+            if (amount > 0f)
+                _trauma = Mathf.Clamp01(_trauma + amount);
+        }
+
         public float Intensity
         {
             get => intensity;
@@ -60,23 +74,24 @@ namespace ItHunts.Player
 
         private void Update()
         {
-            _trauma = Mathf.MoveTowards(_trauma, 0f, decay * Time.deltaTime);
+            _trauma = Mathf.MoveTowards(_trauma, 0f, decay * Time.unscaledDeltaTime);   // un arrêt sur image ne fige pas la secousse
             if (virtualCamera == null)
                 return;
-            float k = _trauma * _trauma * intensity;
-            float t = Time.time * frequency;
+            float k = _trauma * _trauma * intensity * GameFeel.MotionScale(Feel);
+            float t = Time.unscaledTime * frequency;
             Transform v = virtualCamera.transform;
-            if (k <= 1e-4f)
+            Vector3 pos = FeelOffset;
+            Quaternion rot = Quaternion.Euler(FeelEuler);
+            if (k > 1e-4f)
             {
-                v.localPosition = Vector3.zero;
-                v.localRotation = Quaternion.identity;
-                return;
+                float nx = Mathf.PerlinNoise(_seed, t) * 2f - 1f, ny = Mathf.PerlinNoise(_seed + 7f, t) * 2f - 1f;
+                float nr = Mathf.PerlinNoise(_seed + 13f, t) * 2f - 1f;
+                pos += new Vector3(nx, ny, 0f) * (maxOffset * k);
+                rot *= Quaternion.Euler(ny * maxAngle * k, nx * maxAngle * k, nr * maxAngle * k);
             }
 
-            float nx = Mathf.PerlinNoise(_seed, t) * 2f - 1f, ny = Mathf.PerlinNoise(_seed + 7f, t) * 2f - 1f;
-            float nr = Mathf.PerlinNoise(_seed + 13f, t) * 2f - 1f;
-            v.localPosition = new Vector3(nx, ny, 0f) * (maxOffset * k);
-            v.localRotation = Quaternion.Euler(ny * maxAngle * k, nx * maxAngle * k, nr * maxAngle * k);
+            v.localPosition = pos;
+            v.localRotation = rot;
         }
     }
 }

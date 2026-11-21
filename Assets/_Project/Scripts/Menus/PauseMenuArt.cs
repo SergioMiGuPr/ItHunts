@@ -88,16 +88,9 @@ namespace ItHunts.Menus
             v.Settings = ScreenIn(skin.settingsScreen, v.Root, "Menu_Parametres");
             if (v.Settings != null)
             {
-                for (int i = 0; i < GameSettings.Labels.Length; i++)
-                {
-                    Transform row = v.Settings.transform.Find("Option_" + i);
-                    if (row == null)
-                        continue;
-                    var label = row.Find("Libelle")?.GetComponent<Text>();
-                    if (label != null)
-                        label.text = GameSettings.Labels[i];
-                    v.Rows.Add(((RectTransform)row, row.Find("Valeur")?.GetComponent<Text>(), MenuArtKit.Targets(row.GetComponent<Selectable>())));
-                }
+                // Lignes de la DA, puis les lignes ajoutées (sensations de jeu, Touches), comme au menu principal.
+                var labels = new List<string>(GameSettings.Labels) { GameSettings.KeysLabel };
+                v.Rows.AddRange(MenuArtKit.SettingsRows(v.Settings, labels));
 
                 v.SettingsBack = MenuArtKit.Find<Selectable>(v.Settings, "Retour");
             }
@@ -216,7 +209,10 @@ namespace ItHunts.Menus
                 if (over && MenuArtKit.Clicked)
                 {
                     m.SetFocus(i);
-                    it.Change?.Invoke(MenuArtKit.LocalX(rect, null) < 0.5f ? -1 : 1);
+                    if (it.Change != null)
+                        it.Change(MenuArtKit.LocalX(rect, null) < 0.5f ? -1 : 1);
+                    else
+                        it.Submit?.Invoke();                                   // « Touches » : ouvre le menu des touches
                 }
             }
 

@@ -96,7 +96,8 @@ namespace ItHunts.Tests
                 GameSettings.ReduceMotion = false;
                 GameSettings.Step(GameSettings.Line.ReduireAnimations, 1);
                 Assert.That(GameSettings.Value(GameSettings.Line.ReduireAnimations), Is.EqualTo("oui"));
-                Assert.That(GameSettings.Labels, Is.EqualTo(new[] { "Volume général", "Musique", "Effets", "Sensibilité", "Plein écran", "Réduire les animations" }));
+                Assert.That(GameSettings.Labels, Is.EqualTo(new[] { "Volume général", "Musique", "Effets", "Sensibilité", "Plein écran", "Réduire les animations",
+                    "Intensité des effets", "Réduire les secousses" }), "6 lignes de la DA, puis les sensations de jeu (2026-11-21)");
             }
             finally
             {
@@ -233,12 +234,22 @@ namespace ItHunts.Tests
                     Assert.That(row.Find("Libelle").GetComponent<Text>().text, Is.EqualTo(GameSettings.Labels[i]));
                     Assert.That(row.Find("Valeur").GetComponent<Text>().text, Is.EqualTo("‹  " + GameSettings.Value((GameSettings.Line)i) + "  ›"));
                 }
-                Assert.That(menu.SettingsMenu.Items.Count, Is.EqualTo(8), "6 lignes, Touches et Retour");
+                Assert.That(menu.SettingsMenu.Items.Count, Is.EqualTo(10), "6 lignes de la DA, 2 de sensations, Touches et Retour");
                 // A5 : 7e ligne « Touches » (copie d'une ligne de la DA), Retour descendu d'un cran, toujours dans le cadre.
                 Transform keys = view.SettingsScreen.transform.Find("Option_" + GameSettings.Labels.Length);
                 Assert.That(keys.Find("Libelle").GetComponent<Text>().text, Is.EqualTo(GameSettings.KeysLabel));
                 var back = (RectTransform)view.SettingsScreen.transform.Find("Retour");
                 Assert.That(back.anchoredPosition.y, Is.LessThan(((RectTransform)keys).anchoredPosition.y - 40f), "Retour sous Touches");
+                // Lignes ajoutées : l'écran se resserre, tout reste dans le cadre et dans l'écran (941 px de haut).
+                var frame = (RectTransform)view.SettingsScreen.transform.Find("Cadre");
+                Assert.That(back.anchoredPosition.y - back.rect.height, Is.GreaterThanOrEqualTo(frame.anchoredPosition.y - frame.rect.height), "Retour dans le cadre");
+                Assert.That(frame.anchoredPosition.y - frame.rect.height, Is.GreaterThanOrEqualTo(-941f), "cadre dans l'écran");
+                for (int i = 1; i <= GameSettings.Labels.Length; i++)
+                {
+                    var a = (RectTransform)view.SettingsScreen.transform.Find("Option_" + (i - 1));
+                    var b = (RectTransform)view.SettingsScreen.transform.Find("Option_" + i);
+                    Assert.That(a.anchoredPosition.y - b.anchoredPosition.y, Is.GreaterThanOrEqualTo(b.rect.height * b.localScale.y), $"lignes {i - 1} et {i} sans chevauchement");
+                }
             }
             finally
             {

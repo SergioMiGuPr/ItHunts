@@ -2250,6 +2250,7 @@ GameObject:
   - component: {fileID: 2871147801486767660}
   - component: {fileID: 8304892189617520199}
   - component: {fileID: 2850125333353091860}
+  - component: {fileID: 6047768264274450943}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2670,6 +2671,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Player.PlayerParry
   settings: {fileID: 11400000, guid: 5673632af7f3b7c489e0832da1d86357, type: 2}
+--- !u!114 &6047768264274450943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4554349776337732255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6877b761117c7e4d9d315fb8b2f8eab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Player.PlayerFeel
+  settings: {fileID: 11400000, guid: f0fae3f54490adf46870199c8e8856d9, type: 2}
 --- !u!1 &4845387433230401943
 GameObject:
   m_ObjectHideFlags: 0
