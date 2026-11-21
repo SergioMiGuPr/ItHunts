@@ -105,6 +105,7 @@ namespace ItHunts.Artifacts
                     _swingAt = Time.time;
                     _swingIndex = s.LastIndex;
                     _swingLunge = s.LastLunge;
+                    SpawnArtSlash();
                 }
 
                 float u = (Time.time - _swingAt) / Mathf.Max(0.05f, sw.swingAnimDuration);
@@ -120,10 +121,27 @@ namespace ItHunts.Artifacts
                     _root.SetPositionAndRotation(Vector3.Lerp(_root.position, pos, w), Quaternion.Slerp(_root.rotation, rot, w));
                 }
 
-                UpdateSwordTrail(sw, cam, swinging ? u : -1f);
+                UpdateSwordTrail(sw, cam, swinging && !_artSlash ? u : -1f);
             }
             else if (_trail != null)
                 _trail.enabled = false;
+        }
+
+        private bool _artSlash;
+
+        /// <summary>Traînée de la DA (PR #35) pour ce coup, posée à la caméra : taille horizontale, diagonale, estoc (et fente).</summary>
+        private void SpawnArtSlash()
+        {
+            GameVfxSettings vfx = GameVfx.Settings;
+            Transform cam = _view != null ? _view.ViewRoot : null;
+            GameObject prefab = vfx == null ? null : _swingLunge || _swingIndex == 2 ? vfx.swordThrust : _swingIndex == 1 ? vfx.swordSlashD : vfx.swordSlashH;
+            _artSlash = prefab != null && cam != null;
+            if (!_artSlash || ItHunts.Player.GameFeel.Intensity <= 0.01f)
+                return;
+            GameObject go = GameVfx.Spawn(prefab, cam.position, cam.rotation, 1f, cam, 1.5f);
+            if (go != null && _root != null)
+                foreach (Transform t in go.GetComponentsInChildren<Transform>(true))
+                    t.gameObject.layer = _root.gameObject.layer;         // dessinée avec la vue FPS
         }
 
         private LineRenderer _trail;

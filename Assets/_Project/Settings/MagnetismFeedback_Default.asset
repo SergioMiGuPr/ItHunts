@@ -16,15 +16,15 @@ MonoBehaviour:
   showTractionMarks: 0
   showRepelAimMarker: 0
   showRepelImpactFlash: 0
-  tractionVfx: {fileID: 0}
+  tractionVfx: {fileID: 1642478571160157985, guid: 892d05c728b77624e94d7292b53caf3d, type: 3}
   tractionStreamMaterial: {fileID: 2100000, guid: 52d6ebfb310e3da4ab58a36825648b86, type: 2}
   tractionStreamSpeed: 32
   tractionStreamRate: 70
   tractionStreamSize: {x: 0.12, y: 0.35}
   tractionStreamTone: {r: 0.35, g: 0.65, b: 1.4, a: 1}
-  repelVfx: {fileID: 0}
-  repelVfxScale: 0.5
-  repelVfxLife: 0.6
+  repelVfx: {fileID: 1593831731989389735, guid: 004c934a5a9607a4cad3498e953d2506, type: 3}
+  repelVfxScale: 1
+  repelVfxLife: 1.5
   attractColor: {r: 0.2, g: 0.55, b: 1, a: 1}
   repelColor: {r: 1, g: 0.5, b: 0.1, a: 1}
   readyColor: {r: 0.8, g: 0.85, b: 0.95, a: 1}

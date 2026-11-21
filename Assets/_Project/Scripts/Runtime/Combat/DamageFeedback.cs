@@ -393,8 +393,16 @@ namespace ItHunts.Combat
             if (feel != null && !e.Area && !e.Bullet)
             {
                 GameVfxSettings fx = GameVfx.Settings;
-                if (feel.impactSparks && e.Damage >= feel.sparksMinDamage && fx != null && fx.sparks != null && ItHunts.Player.GameFeel.Intensity > 0.01f)
-                    GameVfx.Spawn(fx.sparks, e.Point, Quaternion.LookRotation(Vector3.up), Mathf.Lerp(0.7f, 1.4f, Mathf.InverseLerp(5f, 60f, e.Damage)), null, 2f);
+                if (feel.impactSparks && e.Damage >= feel.sparksMinDamage && fx != null && ItHunts.Player.GameFeel.Intensity > 0.01f)
+                {
+                    // Éclats de la DA (PR #35) : vert pour l'épée, lourd pour un objet lourd ou un gros coup, léger sinon.
+                    GameObject impact = e.Melee ? fx.swordImpact
+                        : (e.SourceMass >= 20f || e.Damage >= 25f) ? fx.impactHeavy : fx.impactLight;
+                    if (impact == null)
+                        impact = fx.sparks;
+                    if (impact != null)
+                        GameVfx.Spawn(impact, e.Point, Quaternion.LookRotation(Vector3.up), 1f, null, 2.5f);
+                }
                 if (!e.Melee && e.Damage >= feel.throwHitStopMinDamage)
                     ItHunts.Player.HitStop.Request(feel.throwHitStop * (e.Killed ? 1.4f : 1f));
             }

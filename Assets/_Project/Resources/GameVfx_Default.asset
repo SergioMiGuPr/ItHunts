@@ -25,5 +25,13 @@ MonoBehaviour:
   drainLink: {fileID: 3139304292574925328, guid: 3d2cdeda04449e04188bcd54aaefa14e, type: 3}
   healLink: {fileID: 7262695549033814883, guid: 2d3dbd8eb66359c4a84926ae2f8c356f, type: 3}
   stalkerLandingDust: {fileID: 3385680016945947326, guid: 7a08aed827816854982f735f6b423f5a, type: 3}
+  swordSlashH: {fileID: 646433662221607204, guid: 6293f3a41406ad2408b477fa89719131, type: 3}
+  swordSlashD: {fileID: 4160953099773543416, guid: cc3dda069ee61a54fa662d2ef114b5ce, type: 3}
+  swordThrust: {fileID: 4985371655765122928, guid: 14c5c0057afc44440843ba25e627b153, type: 3}
+  swordImpact: {fileID: 6804366576706354301, guid: df73bbabb176ba94ba874a62fb0cb5a2, type: 3}
+  speedEdges: {fileID: 8666032164564227931, guid: 63016c3f3bf591649b110a4eaf864cbb, type: 3}
+  impactLight: {fileID: 2101835133945676235, guid: 5d2c5c9f2ff1f4749a4b57b26880841d, type: 3}
+  impactHeavy: {fileID: 359814193686703971, guid: 7c693bf02ddde9747a706c619d78674c, type: 3}
+  playerDust: {fileID: 4618616091355184599, guid: 79c7ec55fbc14d5498a4d8e2761675b6, type: 3}
   soulVfxCap: 32
   burningScale: 0.6
