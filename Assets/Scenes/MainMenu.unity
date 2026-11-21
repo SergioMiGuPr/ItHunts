@@ -265,6 +265,7 @@ MonoBehaviour:
   movementScene: Test_Movement
   arenaScene: Test_Arena
   fixedLevelScene: Level_01
+  moduleCatalog: {fileID: 11400000, guid: 0ee8129bbbd6628448aae73d42cdbad6, type: 2}
 --- !u!4 &1230235637
 Transform:
   m_ObjectHideFlags: 0
