@@ -258,6 +258,7 @@ namespace ItHunts.Debugging
                 MovementMode.Slide => "Glissade",
                 MovementMode.WallSlide => "Wall slide",
                 MovementMode.Traction => "Traction (magnétisme)",
+                MovementMode.Mantle => "Hissage",
                 _ => "Air",
             };
             int wallCoyoteTicks = MovementSettings.SecondsToTicks(cfg.wallCoyoteTime, dt);

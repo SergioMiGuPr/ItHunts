@@ -112,6 +112,72 @@ namespace ItHunts.Movement
             return true;
         }
 
+        private readonly Collider[] _overlap = new Collider[8];
+
+        public bool ProbeLedge(Vector3 dir, float minRise, float maxRise, float minDepth, out Vector3 standPoint)
+        {
+            standPoint = Vector3.zero;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 1e-4f)
+                return false;
+            dir.Normalize();
+            float r = _controller.radius;
+            float height = _settings.capsuleHeight;
+            Vector3 feet = Position;
+
+            // 1. Le mur devant, bas sur la capsule (sous le dessus du rebord le plus bas accepté).
+            Vector3 low = feet + Vector3.up * Mathf.Clamp(minRise * 0.5f, 0.05f, 0.3f);
+            if (!Physics.Raycast(low, dir, out RaycastHit wall, r + 0.4f, _mask, QueryTriggerInteraction.Ignore)
+                || Mathf.Abs(wall.normal.y) > MaxWallNormalY || IsSelf(wall.collider))
+                return false;
+            Vector3 n = new Vector3(wall.normal.x, 0f, wall.normal.z).normalized;
+
+            // 2. Le dessus, juste après le bord, et 3. sa profondeur.
+            float startY = feet.y + maxRise + 0.05f;
+            float span = maxRise - minRise + 0.05f;
+            Vector3 edge = new Vector3(wall.point.x, startY, wall.point.z) - n * (r + 0.1f);
+            if (!TopAt(edge, span, out RaycastHit top))
+                return false;
+            Vector3 deep = new Vector3(wall.point.x, startY, wall.point.z) - n * Mathf.Max(minDepth, r * 2f + 0.1f);
+            if (!TopAt(deep, span + 0.3f, out RaycastHit far) || Mathf.Abs(far.point.y - top.point.y) > 0.3f)
+                return false;
+            float rise = top.point.y - feet.y;
+            if (rise < minRise || rise > maxRise)
+                return false;
+
+            // 4. La place debout sur le dessus, et 5. pour monter le long du mur.
+            Vector3 stand = new Vector3(edge.x, top.point.y, edge.z);
+            if (Blocked(stand + Vector3.up * 0.05f, height, r * 0.95f))
+                return false;
+            Vector3 raised = new Vector3(feet.x, top.point.y, feet.z) + n * 0.02f;
+            if (Blocked(raised + Vector3.up * 0.05f, height, r * 0.95f))
+                return false;
+
+            standPoint = stand;
+            return true;
+        }
+
+        private bool TopAt(Vector3 from, float distance, out RaycastHit hit)
+        {
+            hit = default;
+            if (Physics.CheckSphere(from, 0.02f, _mask, QueryTriggerInteraction.Ignore))
+                return false;                                       // départ dans un mur plus haut que le rebord accepté
+            return Physics.Raycast(from, Vector3.down, out hit, distance, _mask, QueryTriggerInteraction.Ignore)
+                   && IsWalkable(hit.normal) && !IsSelf(hit.collider);
+        }
+
+        private bool Blocked(Vector3 feet, float height, float radius)
+        {
+            int count = Physics.OverlapCapsuleNonAlloc(feet + Vector3.up * radius, feet + Vector3.up * (height - radius), radius,
+                _overlap, _mask, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < count; i++)
+                if (!IsSelf(_overlap[i]) && _overlap[i].attachedRigidbody == null)
+                    return true;
+            return false;
+        }
+
+        private bool IsSelf(Collider c) => c == _controller || c.transform.IsChildOf(_controller.transform);
+
         public bool ProbeGround(out Vector3 normal)
         {
             float distance = CastLift + _controller.skinWidth + GroundTolerance;

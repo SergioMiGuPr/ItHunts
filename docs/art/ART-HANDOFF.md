@@ -218,9 +218,10 @@ jeu, un bon joueur va plus loin.
 | Course | **8.5 m/s** (D-072 ; élan gardé au sol jusqu’à 20 m/s en tenant « avancer ») | |
 | Vitesse max des gains (glissade, saut, dash, répulsion) | **20 m/s** | ; bunny hop mesuré jusqu'à **26 m/s** |
 | Saut | **1.3 m** | rebord atteint au sol : ≤ 1.3 m |
-| Double saut (2e saut en l'air) | **+1.6 m**, soit **≈ 2.9 m** au total | rebord atteignable sans aide : ≤ 2.9 m ; un mur de **3 m+** bloque vraiment |
-| Saut en course | **≈ 4.9 m** | trou franchissable par tous |
-| Saut + double saut en course | **≈ 9 m** | |
+| Double saut (2e saut en l'air) | **+1.6 m**, soit **≈ 2.9 m** au total | rebord atteint en sautant dessus : ≤ 2.9 m |
+| Hissage automatique (D-074) | dessus du rebord jusqu'à **0.6 m au-dessus de la tête** : **3.7 m** avec un saut, **≈ 5.3 m** avec le double saut ; 0.3 s | un mur ne bloque vraiment qu'à **5.5 m+** ; dessus d'au moins **0.6 m** de profondeur et **1.8 m** de vide au-dessus pour qu'on s'y hisse |
+| Saut en course | **≈ 5.5 m** (8.5 m/s) | trou franchissable par tous |
+| Saut + double saut en course | **≈ 10 m** | |
 | Dash (au sol ou en l'air) | **6.5 m** en 0.3 s | s'ajoute aux sauts |
 | Bunny hop à 20 m/s | **≈ 13 m** par saut | les arènes doivent être **longues** (lignes de 50 m+) |
 | Wall jump | **1.8 m** de haut, poussée de 7.5 m/s (**6.4 m/s** effectifs : −15 % sur les murs, gains arrêtés à **18 m/s**, D-044) | murs de wall slide : **≥ 6 m** de haut, longs |

@@ -34,12 +34,44 @@ namespace ItHunts.Tests
 
         private bool OverGround(Vector3 p) => p.x <= EdgeX;
 
+        /// <summary>
+        /// Rebord (hissage) : bloc plein de x = LedgeX à LedgeX + LedgeDepth, du sol jusqu'à LedgeTop ; le joueur arrive du côté
+        /// des x plus petits. LedgeBlocked : un obstacle juste au-dessus du dessus (pas la place de se tenir debout).
+        /// </summary>
+        public bool HasLedge;
+        public float LedgeX = 3f, LedgeTop = 2f, LedgeDepth = 3f;
+        public bool LedgeBlocked;
+
+        private bool OverLedge(Vector3 p) => HasLedge && p.x + Radius > LedgeX && p.x - Radius < LedgeX + LedgeDepth;
+
+        private float GroundY(Vector3 p) => OverLedge(p) && p.y >= LedgeTop - 0.05f ? LedgeTop : 0f;
+
+        public bool ProbeLedge(Vector3 dir, float minRise, float maxRise, float minDepth, out Vector3 standPoint)
+        {
+            standPoint = Vector3.zero;
+            if (!HasLedge || dir.x < 0.5f || LedgeX - (Position.x + Radius) > 0.3f || Position.x - Radius > LedgeX)
+                return false;
+            float rise = LedgeTop - Position.y;
+            if (rise < minRise || rise > maxRise || LedgeDepth < minDepth || LedgeBlocked)
+                return false;
+            standPoint = new Vector3(LedgeX + Radius + 0.1f, LedgeTop, Position.z);
+            return true;
+        }
+
         public bool ProbeWall(System.ReadOnlySpan<Vector3> directions, out Vector3 normal, out int wallId)
         {
             foreach (Vector3 dir in directions)
             {
                 if (dir.sqrMagnitude < 1e-4f)
                     continue;
+                if (HasLedge && dir.x > 0.01f && Position.y + 0.3f < LedgeTop && Position.x < LedgeX
+                    && LedgeX - (Position.x + Radius) <= Contact)
+                {
+                    normal = Vector3.left;
+                    wallId = 99;
+                    return true;
+                }
+
                 foreach (Wall w in Walls)
                 {
                     float gap = (Position.x - w.X) * w.NormalX - Radius;   // distance entre la capsule et le mur
@@ -72,21 +104,29 @@ namespace ItHunts.Tests
         public bool ProbeGround(out Vector3 normal)
         {
             normal = GroundNormal;
-            return OverGround(Position) && Position.y <= 1e-3f;
+            return OverGround(Position) && Position.y <= GroundY(Position) + 1e-3f;
         }
 
         public MoveResult Move(Vector3 delta, bool snapToGround)
         {
             Vector3 p = Position + delta;
-            bool below = false;
-            if (OverGround(p) && (p.y < 0f || (snapToGround && p.y < 0.5f)))
+            bool sides = false;
+            Vector3 sideNormal = Vector3.zero;
+            if (HasLedge && p.y < LedgeTop - 1e-3f && OverLedge(p) && Position.x < LedgeX)
             {
-                p.y = 0f;
+                p.x = LedgeX - Radius;                            // face du rebord
+                sides = true;
+                sideNormal = Vector3.left;
+            }
+
+            bool below = false;
+            float gy = GroundY(p);
+            if (OverGround(p) && (p.y < gy || (snapToGround && p.y < gy + 0.5f)))
+            {
+                p.y = gy;
                 below = true;
             }
 
-            bool sides = false;
-            Vector3 sideNormal = Vector3.zero;
             foreach (Wall w in Walls)
             {
                 if ((p.x - w.X) * w.NormalX < Radius)

@@ -141,6 +141,24 @@ namespace ItHunts.Settings
         [Tooltip("Toucher un mur recharge aussi les charges de mouvement (non par défaut : elles reviennent avec le temps).")]
         public bool wallRefillsCharges;
 
+        [Header("Hissage sur un rebord (D-074)")]
+        [Tooltip("En l'air contre un mur en avançant vers lui : si son dessus est à portée, on se hisse dessus automatiquement.")]
+        public bool mantleEnabled = true;
+        [Tooltip("Dessus du rebord au plus à cette hauteur (m) au-dessus de la tête (pieds + capsuleHeight).")]
+        [Min(0f)] public float mantleMaxAboveHead = 0.6f;
+        [Tooltip("Dessus du rebord au moins à cette hauteur (m) au-dessus des pieds (plus bas : on passe par-dessus en sautant).")]
+        [Min(0.05f)] public float mantleMinRise = 0.5f;
+        [Tooltip("Profondeur minimale du dessus (m) : plus étroit, pas de hissage.")]
+        [Min(0.1f)] public float mantleMinDepth = 0.6f;
+        [Tooltip("Durée du hissage (s).")]
+        [Min(0.05f)] public float mantleDuration = 0.3f;
+        [Tooltip("Part de la durée passée à monter le long du mur (le reste : avancer sur le dessus).")]
+        [Range(0.1f, 0.9f)] public float mantleRiseShare = 0.6f;
+        [Tooltip("Part de la vitesse horizontale d'avant (juste avant le contact avec le mur) gardée à la sortie.")]
+        [Range(0f, 1f)] public float mantleKeepSpeed = 0.7f;
+        [Tooltip("L'entrée doit viser le mur à moins de cet angle (°) de sa direction intérieure.")]
+        [Range(0f, 90f)] public float mantleInputAngle = 50f;
+
         [Header("Charges de mouvement et dash")]
         [Tooltip("Charges de mouvement, partagées par le saut en l'air, le dash et le magnétisme (1 chacun). " +
                  "Les améliorations pourront l'augmenter.")]

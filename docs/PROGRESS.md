@@ -11,6 +11,11 @@
 - **1b. Élan gardé au sol (D-073).** `MovementMotor.GroundMomentum` (pas fixe, depuis `MovementInput`) : gardé en tenant avancer dans
   un cône de 45°, plafond 20 m/s au sol, perte progressive (lâché, hors cône, recul, virage > 60°, mur) ; réglages dans
   `Movement_Default` (« Élan gardé au sol ») ; debug : ligne « Élan au sol » (vitesse et raison). 12 tests (`GroundMomentumTests`).
+- **2. Hissage automatique (D-074).** `MovementMode.Mantle`, `ICollisionProbe.ProbeLedge` (mur devant, dessus marchable, profondeur, place
+  debout et pour monter) ; réglages « Hissage » de `Movement_Default` ; 8 tests (`MantleTests`). Zone d'essai derrière le départ dans
+  `Test_Movement` (x −18 → 18, z −26) et la vitrine (z −18) : rebords de 1.5 à 4.2 m, étroit, bloqué (`MantleCourseBuilder`, ajoutée
+  aux scènes sans les reconstruire). Détection vérifiée sur la vraie géométrie (CharacterController) : 3.7 m oui depuis 1.3 m,
+  4.2 m non, étroit et bloqué non. **Conséquence niveaux :** un mur ne bloque qu'à 5.5 m+ (ART-HANDOFF).
 
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;

@@ -31,6 +31,12 @@ namespace ItHunts.Movement
             if (s.Charges < 0f)
                 s.Charges = cfg.movementCharges;   // premier tick : barre pleine
 
+            if (s.Mode == MovementMode.Mantle)
+            {
+                MantleTick(ref s, cfg, dt, probe);
+                return;
+            }
+
             Vector3 wish = MovementMath.WishVector(input.Move, input.Yaw);
             float wishAmount = wish.magnitude;
             Vector3 wishDir = wishAmount > 1e-4f ? wish / wishAmount : Vector3.zero;
@@ -164,6 +170,13 @@ namespace ItHunts.Movement
                 }
 
                 s.Mode = wallAttached && s.Velocity.y <= 0f ? MovementMode.WallSlide : MovementMode.Air;
+
+                // Hissage (D-074) : contre un mur, en avançant vers lui, dessus du rebord à portée et libre.
+                if (onWall && TryStartMantle(ref s, input, cfg, wishDir, wishAmount, wallNormal, dt, probe))
+                {
+                    MantleTick(ref s, cfg, dt, probe);
+                    return;
+                }
             }
 
             // 2 bis. Dash : appui mémorisé (dashBuffer, un appui pendant un dash part ensuite), une charge, délai
@@ -339,6 +352,11 @@ namespace ItHunts.Movement
                     sideNormal.Normalize();
                     var h = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
                     float into = Vector3.Dot(h, sideNormal);
+                    if (into < 0f && !grounded)
+                    {
+                        s.PreHitSpeed = h.magnitude;                  // pour le hissage : l'élan d'avant le mur
+                        s.PreHitTick = s.Tick;
+                    }
                     // Mur percuté au sol au-dessus de la course : élan cassé (D-073), redescente vers la course.
                     if (grounded && cfg.keepGroundMomentum && h.magnitude > cfg.runSpeed + 1e-3f
                         && -into >= h.magnitude * Mathf.Sin(cfg.momentumWallHitAngle * Mathf.Deg2Rad))
@@ -370,6 +388,76 @@ namespace ItHunts.Movement
             s.Grounded = grounded;
             s.OnWall = onWall;
             s.GroundNormal = grounded ? groundNormal : Vector3.up;
+        }
+
+        /// <summary>
+        /// Départ du hissage (D-074) : en l'air, debout, ni dash ni traction, entrée vers l'avant qui vise le mur, rebord trouvé
+        /// par la sonde entre mantleMinRise et la tête + mantleMaxAboveHead. Vitesse de sortie : mantleKeepSpeed de la vitesse
+        /// horizontale d'avant le contact (au plus 10 ticks avant), dans la direction du mur.
+        /// </summary>
+        public static bool TryStartMantle(ref MovementState s, in MovementInput input, MovementSettings cfg, Vector3 wishDir,
+            float wishAmount, Vector3 wallNormal, float dt, ICollisionProbe probe)
+        {
+            if (!cfg.mantleEnabled || s.Crouched || s.DashTicksLeft > 0 || s.Mode == MovementMode.Traction
+                || wishAmount < 0.1f || input.Move.y <= 0.1f
+                || Vector3.Angle(wishDir, -wallNormal) > cfg.mantleInputAngle)
+                return false;
+            if (s.Tick - s.LastMantleTick < 6)
+                return false;                                       // juste après un hissage : pas de second départ
+            float maxRise = cfg.capsuleHeight + cfg.mantleMaxAboveHead;
+            if (!probe.ProbeLedge(-wallNormal, cfg.mantleMinRise, maxRise, cfg.mantleMinDepth, out Vector3 stand))
+                return false;
+
+            float before = s.HorizontalSpeed;
+            if (s.Tick - s.PreHitTick <= 10)
+                before = Mathf.Max(before, s.PreHitSpeed);
+            s.Mode = MovementMode.Mantle;
+            s.MantleStart = probe.Position;
+            s.MantleTarget = stand;
+            s.MantleTicks = Mathf.Max(2, MovementSettings.SecondsToTicks(cfg.mantleDuration, dt));
+            s.MantleTicksLeft = s.MantleTicks;
+            s.MantleExitSpeed = before * cfg.mantleKeepSpeed;
+            s.MantleDir = -wallNormal;
+            s.LastMantleTick = s.Tick;
+            s.JumpRising = false;
+            s.Crouched = false;
+            return true;
+        }
+
+        /// <summary>Position du hissage à l'avancement u (0 à 1) : monter le long du mur, puis avancer sur le dessus.</summary>
+        public static Vector3 MantlePath(Vector3 start, Vector3 target, float u, float riseShare)
+        {
+            float topY = target.y + 0.02f;
+            if (u <= riseShare)
+            {
+                float k = Mathf.SmoothStep(0f, 1f, u / riseShare);
+                return new Vector3(start.x, Mathf.Lerp(start.y, topY, k), start.z);
+            }
+
+            float f = Mathf.SmoothStep(0f, 1f, (u - riseShare) / (1f - riseShare));
+            return new Vector3(Mathf.Lerp(start.x, target.x, f), topY, Mathf.Lerp(start.z, target.z, f));
+        }
+
+        private static void MantleTick(ref MovementState s, MovementSettings cfg, float dt, ICollisionProbe probe)
+        {
+            int index = s.MantleTicks - s.MantleTicksLeft + 1;
+            float u = index / (float)s.MantleTicks;
+            Vector3 want = MantlePath(s.MantleStart, s.MantleTarget, u, cfg.mantleRiseShare);
+            Vector3 before = probe.Position;
+            probe.SetHeight(cfg.capsuleHeight);
+            probe.Move(want - before, snapToGround: false);
+            s.Velocity = dt > 0f ? (probe.Position - before) / dt : Vector3.zero;
+            s.Position = probe.Position;
+            s.Grounded = false;
+            s.OnWall = false;
+            if (--s.MantleTicksLeft > 0)
+                return;
+
+            // Arrivée : posé sur le dessus, élan gardé en partie, vers l'avant.
+            s.Mode = MovementMode.Air;
+            s.Velocity = new Vector3(s.MantleDir.x * s.MantleExitSpeed, 0f, s.MantleDir.z * s.MantleExitSpeed);
+            s.LastGroundedTick = s.Tick;                          // un saut juste à l'arrivée compte comme au sol (coyote)
+            s.JumpsUsed = 0;
         }
 
         /// <summary>

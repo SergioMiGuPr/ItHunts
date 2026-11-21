@@ -85,6 +85,11 @@ namespace ItHunts.EditorTools
                 nav.Configure(new Vector3(-30f, 10f, 60f), new Vector3(420f, 40f, 260f));
             }
 
+            // Hissage (D-074) : rebords derrière le départ (au sud).
+            MantleCourseBuilder.Build(_root, new Vector3(-20f, 0f, -18f),
+                TestMovementSceneBuilder.Mat("Greybox_Block", new Color(0.45f, 0.45f, 0.5f)),
+                TestMovementSceneBuilder.Mat("Greybox_Landmark", new Color(0.85f, 0.45f, 0.15f)));
+            Label(new Vector3(0f, 3.2f, -12f), "Hissage : derrière vous (rebords de 1.5 à 4.2 m)", new Color(1f, 0.9f, 0.6f));
             report.Add(Distances(start));
             report.Add(Props(kit));
             var vitrine = new GameObject("Vitrine (panneau F1, états des ennemis)").AddComponent<Vitrine>();
