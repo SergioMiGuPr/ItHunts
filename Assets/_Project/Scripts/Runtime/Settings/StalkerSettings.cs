@@ -11,7 +11,7 @@ namespace ItHunts.Settings
     [CreateAssetMenu(fileName = "Stalker_Default", menuName = "ItHunts/Ennemis/Traqueur")]
     public sealed class StalkerSettings : EnemySettings
     {
-        [Header("Vitesses (m/s) — course du joueur 7.5, plafond des gains 20, bunny hop 18 à 26, traction 30")]
+        [Header("Vitesses (m/s) — course du joueur 8.5, plafond des gains 20, bunny hop 18 à 26, traction 30")]
         [Min(0f)] public float roamSpeed = 3f;
         [Tooltip("Alerte : il va voir le dernier bruit ou la dernière position aperçue.")]
         [Min(0f)] public float alertSpeed = 6f;

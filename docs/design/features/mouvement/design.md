@@ -103,7 +103,7 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 
 | Nom | Valeur | Unité | À observer en playtest |
 |---|---|---|---|
-| Vitesse de course | 7.5 | m/s | doit être nettement **plus lente** que le boss (9) |
+| Vitesse de course | 8.5 | m/s | D-072 (7.5 avant) ; juste sous la chasse du boss (9), élan gardé au sol au-delà (D-073) |
 | Accélération au sol | 10 | ×vitesse/s | démarrage net, sans être instantané |
 | Friction au sol | 6 | /s | l'arrêt ne doit pas glisser (arrêt complet en ≈ 0.35 s) |
 | Vitesse d'arrêt (friction minimale) | 2.5 | m/s | |

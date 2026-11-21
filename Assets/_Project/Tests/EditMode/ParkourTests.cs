@@ -26,7 +26,7 @@ namespace ItHunts.Tests
         public void Capacites_SimpleDoubleDash_DansLOrdre()
         {
             ParkourCaps c = Caps();
-            Assert.That(c.Single(0f), Is.EqualTo(4.9f).Within(0.2f), "saut simple en course (7.5 m/s, 1.3 m)");
+            Assert.That(c.Single(0f), Is.EqualTo(5.55f).Within(0.2f), "saut simple en course (8.5 m/s, 1.3 m)");
             Assert.That(c.Double(0f), Is.GreaterThan(c.Single(0f)));
             Assert.That(c.Dash(0f), Is.GreaterThan(c.Double(0f)), "un dash va plus loin qu'un double saut");
             Assert.That(c.Single(c.JumpHeight + 0.1f), Is.EqualTo(0f), "trop haut pour un saut simple");

@@ -215,7 +215,7 @@ jeu, un bon joueur va plus loin.
 
 | Capacité | Mesure | Repère pour le décor |
 |---|---|---|
-| Course | **7.5 m/s** | |
+| Course | **8.5 m/s** (D-072 ; élan gardé au sol jusqu’à 20 m/s en tenant « avancer ») | |
 | Vitesse max des gains (glissade, saut, dash, répulsion) | **20 m/s** | ; bunny hop mesuré jusqu'à **26 m/s** |
 | Saut | **1.3 m** | rebord atteint au sol : ≤ 1.3 m |
 | Double saut (2e saut en l'air) | **+1.6 m**, soit **≈ 2.9 m** au total | rebord atteignable sans aide : ≤ 2.9 m ; un mur de **3 m+** bloque vraiment |

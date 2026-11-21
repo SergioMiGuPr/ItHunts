@@ -4,6 +4,11 @@
 
 ## Étape en cours
 
+**Nuit du 2026-11-21 (`animations`, en autonomie) :** un commit par point ; PR d'art intégrées au fil de l'eau.
+- **1a. Course 7.5 → 8.5 m/s (D-072).** `Movement_Default.runSpeed`, `ParkourCaps.Default`, ART-HANDOFF. Vitesses des ennemis
+  inchangées. Écarts (ennemi − joueur à 8.5) : goule 10 (+1.5, bond 14 : +5.5) ; traqueur Chasse 9 (+0.5), pointe 16 (+7.5) ;
+  Enragé 11 → 18 par paliers (+2.5 → +9.5), pointe enragée 18 (+9.5) ; plafond du traqueur 18 m/s.
+
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;
   menus : pas de logo écrit avec une police ni de boutons dessinés en remplacement, seulement les sprites de la session art.
@@ -936,7 +941,7 @@ Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-023).
 Mouvement de base validé le 2026-11-12 avec les valeurs de `Assets/_Project/Settings/Movement_Default.asset`
 et `Camera_Default.asset` (la note de conception en fait foi) :
 
-- **Sol :** course 7.5 m/s, accélération 10, friction 6, vitesse d'arrêt 2.5 m/s.
+- **Sol :** course 8.5 m/s (D-072), accélération 10, friction 6, vitesse d'arrêt 2.5 m/s.
 - **Saut :** 1.3 m, gravité 20 m/s², chute ×1.5, coupe 0.5, coyote 0.10 s, buffer 0.12 s (« un
   peu flottant », accepté). Saut en l'air 1.6 m ; 2 sauts ; auto-bunny hop activé.
 - **Air :** accélération 10, plafond 1 m/s, contrôle aérien 0.15 (jusqu'à 100°).

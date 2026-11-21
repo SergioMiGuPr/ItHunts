@@ -40,7 +40,7 @@ namespace ItHunts.Settings
         public float BodyScale => bodyHeight / ModelHeight;
 
         [Header("Déplacement au sol")]
-        [Tooltip("Vitesse de course (m/s). Course du joueur : 7.5 ; plafond des gains : 20.")]
+        [Tooltip("Vitesse de course (m/s). Course du joueur : 8.5 ; plafond des gains : 20.")]
         [Min(0f)] public float runSpeed = 10f;
         [Min(0f)] public float acceleration = 40f;
         [Tooltip("Vitesse de rotation (°/s).")]

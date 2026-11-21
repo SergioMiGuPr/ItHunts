@@ -21,8 +21,8 @@ namespace ItHunts.Settings
     public sealed class MovementSettings : ScriptableObject
     {
         [Header("Course au sol")]
-        [Tooltip("Vitesse de course (m/s). Doit rester sous la vitesse de chasse du boss (9 m/s).")]
-        [Min(0f)] public float runSpeed = 7.5f;
+        [Tooltip("Vitesse de course de base (m/s, D-072 : 8.5). La chasse du traqueur est à 9 m/s, sa pointe à 16.")]
+        [Min(0f)] public float runSpeed = 8.5f;
         [Tooltip("Accélération au sol, façon Source (sv_accelerate). Vitesse max atteinte en ≈ 0.15 s.")]
         [Min(0f)] public float groundAcceleration = 10f;
         [Tooltip("Friction au sol (/s), façon Quake/Source (sv_friction).")]
