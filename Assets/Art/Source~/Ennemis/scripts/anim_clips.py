@@ -98,8 +98,10 @@ def _mj(s):
 class Membre:
     """Un appui : côté, type ('main' / 'pied'), instant de pose (fraction du cycle), durée en l'air (fraction), décalage
     avant au milieu de l'appui (m, par rapport à l'épaule / la hanche projetée), écart latéral (m), hauteur de l'arc (m)."""
-    def __init__(self, cote, typ, pose, vol, avance, lat, haut):
+    def __init__(self, cote, typ, pose, vol, avance, lat, haut, frappes=None):
         self.cote, self.typ, self.pose, self.vol, self.avance, self.lat, self.haut = cote, typ, pose, vol, avance, lat, haut
+        # frappes : {numéro du vol (0, 1, ...) : (x du mur (m, valeur absolue), hauteur de l'impact (m), part du vol tenue au mur)}
+        self.frappes = frappes or {}
 
 
 def _etat(m, ph):
@@ -111,7 +113,8 @@ def _etat(m, ph):
     return "appui", (x - m.vol) / (1 - m.vol)
 
 
-def demarche(nom, T, S, membres, posture, hanche_z, n_cycles=1, roulis_pied=35.0, vent_cheveux=0.2, machoire=None):
+def demarche(nom, T, S, membres, posture, hanche_z, n_cycles=1, roulis_pied=35.0, vent_cheveux=0.2, machoire=None,
+             lat_corps=None, extra=None, avant=None):
     """T : durée du cycle (images) ; S : longueur de foulée (m, avance du corps par cycle) ; posture(ph) -> dict de directions
     (buste, tête, clavicules ; les membres sont posés par IK) ; hanche_z(ph) -> hauteur de Racine (décalage, m)."""
     a = A.arm()
@@ -153,7 +156,7 @@ def demarche(nom, T, S, membres, posture, hanche_z, n_cycles=1, roulis_pied=35.0
         # milieu de l'appui k : pose + (1 - vol)/2 du cycle, au cycle k
         tm = (m.pose + (1 - m.vol) / 2 + k) * T
         y = racine_y(tm) + base_y[(m.typ, m.cote)] - m.avance
-        x = (1 if m.cote == "G" else -1) * m.lat
+        x = (1 if m.cote == "G" else -1) * m.lat + (lat_corps((tm / T) % 1.0, (tm / T) % n_cycles) if lat_corps else 0.0)
         return V((x, y, 0.0))
     for f in range(0, fin + 1):
         ph = (f % T) / T
@@ -161,8 +164,11 @@ def demarche(nom, T, S, membres, posture, hanche_z, n_cycles=1, roulis_pied=35.0
         A.remise_a_zero(a)
         rz = hanche_z(ph)
         a.pose.bones["Racine"].location = V((0, 0, 0))
-        A.deplacer_racine((0, racine_y(f), rz))
+        lx = lat_corps(ph, (f / T) % n_cycles) if lat_corps else 0.0
+        A.deplacer_racine((lx, racine_y(f), rz))
         A.poser(posture(ph), a)
+        if avant:
+            avant(f, ph, a)
         for m in membres:
             et, u = _etat(m, ph)
             # index de l'appui courant / suivant
@@ -179,10 +185,28 @@ def demarche(nom, T, S, membres, posture, hanche_z, n_cycles=1, roulis_pied=35.0
                 _poser_membre(a, m, P, roll, "appui", 0.0, pied_rest)
             else:
                 P0 = appui_pos(m, k_pose); P1 = appui_pos(m, k_pose + 1)
-                s_ = _mj(u)
-                P = P0.lerp(P1, s_) + V((0, 0, m.haut * math.sin(math.pi * min(1.0, u * 1.1))))
-                roll = roulis_pied * (1 - _mj(u * 1.6)) if m.typ == "pied" else 0.0
-                _poser_membre(a, m, P, roll, "vol", u, pied_rest)
+                nvol = (k_pose + 1) % n_cycles
+                fr = m.frappes.get(nvol)
+                if fr:
+                    xm, zm, tenue = fr
+                    k = 1 if m.cote == "G" else -1
+                    Wp = V((k * xm, (P0.y + P1.y) / 2 - 1.5, zm))      # murs fixes à ±xm de l'axe du couloir
+                    # temps du vol : aller au mur (0 -> 0.5 - tenue/2), tenue au mur, retour vers la pose
+                    a0 = 0.5 - tenue / 2; a1 = 0.5 + tenue / 2
+                    if u < a0:
+                        q = _mj(u / a0); P = P0.lerp(Wp, q) + V((k * 2.5 * math.sin(math.pi * q), 0, 1.2 * math.sin(math.pi * q) * (1 - q)))
+                    elif u < a1:
+                        P = Wp.copy()
+                    else:
+                        q = _mj((u - a1) / (1 - a1)); P = Wp.lerp(P1, q) + V((k * 1.5 * math.sin(math.pi * q), 0, 0.8 * math.sin(math.pi * q) * (1 - q)))
+                    _poser_membre(a, m, P, 0.0, "frappe", u, pied_rest, (a0, a1))
+                else:
+                    s_ = _mj(min(1.0, u / 0.9))           # l'appui arrive à sa place avant de toucher le sol
+                    P = P0.lerp(P1, s_) + V((0, 0, m.haut * math.sin(math.pi * u) ** 0.8))
+                    roll = roulis_pied * (1 - _mj(u * 1.6)) if m.typ == "pied" else 0.0
+                    _poser_membre(a, m, P, roll, "vol", u, pied_rest)
+        if extra:
+            extra(f, ph, a)
         A.cheveux_gravite(a, 1.0, V((0, vent_cheveux, 0)))
         if machoire:
             a.pose.bones["Machoire"].rotation_quaternion = Quaternion(V((1, 0, 0)), math.radians(machoire(ph)))
@@ -192,7 +216,7 @@ def demarche(nom, T, S, membres, posture, hanche_z, n_cycles=1, roulis_pied=35.0
     return act
 
 
-def _poser_membre(a, m, P, roll, etat, u, pied_rest):
+def _poser_membre(a, m, P, roll, etat, u, pied_rest, fenetre=None):
     s = m.cote
     k = 1 if s == "G" else -1
     if m.typ == "pied":
@@ -208,6 +232,16 @@ def _poser_membre(a, m, P, roll, etat, u, pied_rest):
         # P = pointe des griffes au sol ; main posée à plat, doigts allongés vers l'avant
         if etat == "appui":
             dm = W(0.55, -1, 0.1, k); dd = W(1, -0.25, 0.05, k)
+        elif etat == "frappe":
+            # la main s'ouvre vers le mur (paume vers l'extérieur, doigts écartés vers le haut), puis revient se poser
+            pa_m, pa_d = W(0.55, -1, 0.1, k), W(1, -0.25, 0.05, k)
+            mu_m, mu_d = W(0.2, 0.15, 1, k), W(0.25, 0.45, 1, k)
+            a0, a1 = fenetre
+            if u < a1:
+                o = _mj(u / a0) if u < a0 else 1.0
+                dm = pa_m.lerp(mu_m, o).normalized(); dd = pa_d.lerp(mu_d, o).normalized()
+            else:
+                o = _mj((u - a1) / (1 - a1)); dm = mu_m.lerp(pa_m, o).normalized(); dd = mu_d.lerp(pa_d, o).normalized()
         else:
             # en l'air : la main quitte le sol, pend doigts recourbés, puis s'ouvre et s'allonge avant la pose
             pa_m, pa_d = W(0.55, -1, 0.1, k), W(1, -0.25, 0.05, k)          # main posée
@@ -219,7 +253,7 @@ def _poser_membre(a, m, P, roll, etat, u, pied_rest):
         Lm = (a.data.bones["Main_" + s].tail_local - a.data.bones["Main_" + s].head_local).length
         Ld = (a.data.bones["Doigts_" + s].tail_local - a.data.bones["Doigts_" + s].head_local).length
         poignet = P + V((0, 0, 0.18)) - dd * Ld - dm * Lm
-        A.ik_bras(s, poignet, V((0.5 * k, 1, 0.2)), dm, dd, a)
+        A.ik_bras(s, poignet, V((0.8 * k, 0.7, 0.6)), dm, dd, a)
 
 
 def posture_marche(ph, lat=1.0):
@@ -258,3 +292,119 @@ def marche_b(T=165, S=7.0):
         return d
     return demarche("Traqueur_Marche_B", T, S, mem, post, lambda ph: -1.45 + 0.12 * math.cos(2 * TAU * ph + 0.5),
                     machoire=lambda ph: 6 + 3 * math.sin(TAU * ph + 1.0))
+
+
+# ------------------------------------------------------------------ courses enragées (vidéos de face, couloir de 14 m)
+def posture_course(ph, roul=0.0):
+    w = TAU * ph
+    return {"Bassin": W(1, 0.05), "Colonne_1": W(1, 0.12 + 0.05 * math.sin(2 * w), roul * 0.3, 1),
+            "Colonne_2": W(1, 0.02 + 0.06 * math.sin(2 * w + 0.5), roul * 0.6, 1), "Colonne_3": W(1, -0.18, roul, 1),
+            "Colonne_4": W(1, -0.35, roul, 1), "Cou_1": W(1, 0.15), "Cou_2": W(0.8, 0.6 + 0.1 * math.sin(2 * w + 1.2)),
+            "Tete": W(0.3, 1.0 - 0.15 * math.sin(2 * w + 1.8), -roul, 1),
+            "Clavicule_G": W(0.35 + 0.35 * math.sin(w + 1.6), 0.08, 1, 1), "Clavicule_D": W(0.35 + 0.35 * math.sin(w + 1.6 + math.pi), 0.08, 1, -1)}
+
+
+def course_a(T=39, S=14.3):
+    """Traqueur_CourseEnragee_A (vidéo traqueur_ref_course_enragee, de face) : course à quatre pattes, une main se pose toutes
+    les 0.65 s (cycle 1.3 s relevé sur le bas de la silhouette), le bras qui va se poser frappe d'abord le mur (couloir de 14 m :
+    murs à 7 m de l'axe) ; boucle de 2 cycles : frappes droite, gauche, droite, puis une pose sans frappe (comme la vidéo).
+    11 m/s (vitesse de base enragée du jeu) : foulée de 14.3 m."""
+    mem = [Membre("D", "main", 0.00, 0.62, None, 1.8, 2.0, {0: (6.6, 5.2, 0.14), 1: (6.6, 5.6, 0.12)}),
+           Membre("G", "pied", 0.15, 0.62, 0.3, 1.2, 0.9),
+           Membre("G", "main", 0.50, 0.62, None, 1.8, 2.0, {0: (6.6, 5.4, 0.14)}),
+           Membre("D", "pied", 0.65, 0.62, 0.3, 1.2, 0.9)]
+    return demarche("Traqueur_CourseEnragee_A", T, S, mem, lambda ph: posture_course(ph, 0.06 * math.sin(TAU * ph)),
+                    lambda ph: -2.0 + 0.3 * math.cos(2 * TAU * (ph - 0.1)), n_cycles=2, vent_cheveux=0.6,
+                    machoire=lambda ph: 14 + 6 * math.sin(2 * TAU * ph))
+
+
+def _bosse(t, a, b):
+    """0 hors de [a, b], monte et redescend en douceur (jerk minimal) dans [a, b]."""
+    if t <= a or t >= b:
+        return 0.0
+    u = (t - a) / (b - a)
+    return _mj(min(1.0, u * 2)) if u < 0.5 else _mj(min(1.0, (1 - u) * 2))
+
+
+def course_b(T=39, S=14.3):
+    """Traqueur_CourseEnragee_B (vidéo traqueur_ref_course_enragee_profil, de face) : course à quatre pattes qui va heurter
+    les murs : élan vers le mur droit (0.2 à 1.1 cycle, la main droite reste plaquée au mur), puis vers le mur gauche (1.3 à
+    2.1), puis un cycle au centre en bonds ; boucle de 3 cycles (3.9 s), 11 m/s. Le corps se décale de 3 m vers le mur
+    (Racine, root motion latéral qui revient au centre à chaque boucle)."""
+    def lat(ph, t):
+        return -2.2 * _bosse(t, 0.15, 1.15) + 2.2 * _bosse(t, 1.3, 2.15)
+    # frappes calées sur la vidéo : main droite au mur droit vers 0.9 s (corps plaqué) puis 2.2 s, main gauche au mur gauche vers 2.9 s
+    mem = [Membre("D", "main", 0.00, 0.62, None, 1.8, 2.0, {1: (7.0, 6.5, 0.18), 2: (6.8, 5.5, 0.12)}),
+           Membre("G", "pied", 0.15, 0.62, 0.3, 1.2, 0.9),
+           Membre("G", "main", 0.50, 0.62, None, 1.8, 2.0, {2: (7.0, 6.5, 0.18)}),
+           Membre("D", "pied", 0.65, 0.62, 0.3, 1.2, 0.9)]
+    cyc = {"t": 0.0}
+    def post(ph):
+        return posture_course(ph, 0.0)
+    act = demarche("Traqueur_CourseEnragee_B", T, S, mem, post, lambda ph: -2.0 + 0.3 * math.cos(2 * TAU * (ph - 0.1)),
+                   n_cycles=3, vent_cheveux=0.6, machoire=lambda ph: 16 + 8 * math.sin(2 * TAU * ph), lat_corps=lat,
+                   avant=lambda f, ph, a: _roulis_mur(a, lat(ph, f / T % 3)))
+    return act
+
+
+def _roulis_mur(a, lx):
+    """Le buste se penche vers le mur que le corps va heurter (lx < 0 : mur droit)."""
+    r = max(-1.0, min(1.0, lx / 3.0))
+    for n, k in (("Colonne_2", 0.25), ("Colonne_3", 0.35), ("Colonne_4", 0.35)):
+        pb = a.pose.bones[n]
+        pb.rotation_quaternion = pb.rotation_quaternion @ Quaternion(V((0, 1, 0)), math.radians(-18 * k * r * 3))
+    bpy.context.view_layer.update()
+
+
+def course_c(T=30, S=9.0):
+    """Traqueur_CourseEnragee_C (vidéo traqueur_ref_course_subjective, de face) : course voûtée sur les deux jambes, buste
+    penché, bras libres qui pendent devant et partent frapper les murs (main droite à 0.6 s, main gauche à 1.6 s), le corps
+    qui roule vers le mur frappé ; boucle de 2 cycles (2 s), 9 m/s (vitesse de chasse du jeu)."""
+    mem = [Membre("G", "pied", 0.0, 0.6, 0.6, 1.0, 1.2), Membre("D", "pied", 0.5, 0.6, 0.6, 1.0, 1.2)]
+    def post(ph, t=None):
+        w = TAU * ph
+        return {"Bassin": W(0.25, 1), "Colonne_1": W(0.35, 1), "Colonne_2": W(0.5, 1, 0.05 * math.sin(w), 1),
+                "Colonne_3": W(0.8, 1, 0.08 * math.sin(w), 1), "Colonne_4": W(1, 0.8), "Cou_1": W(1, 0.5),
+                "Cou_2": W(0.5, 1 + 0.1 * math.sin(2 * w)), "Tete": W(0.1, 1, -0.06 * math.sin(w), 1),
+                "Clavicule_G": W(0.35 + 0.2 * math.sin(w), 0.1, 1, 1), "Clavicule_D": W(0.35 - 0.2 * math.sin(w), 0.1, 1, -1)}
+    frappes = {"D": (0.6, 0.25, 0.15, 0.3), "G": (1.6, 0.25, 0.15, 0.3)}     # instant (s), aller, tenue, retour
+    def ouverture(dt, ta, th, tr):
+        if -ta < dt < th + tr:
+            return _mj((dt + ta) / ta) if dt < 0 else (1.0 if dt < th else 1 - _mj((dt - th) / tr))
+        return 0.0
+    def roulis(f, ph, a):
+        t = f / 30.0
+        lx = 0.0
+        for s, k in (("G", 1), ("D", -1)):
+            t0, ta, th, tr = frappes[s]
+            lx += -k * 0.6 * ouverture((t - t0 + 1.0) % 2.0 - 1.0, ta, th, tr)
+        _roulis_mur(a, lx * 3)
+    def bras(f, ph, a):
+        t = f / 30.0
+        for s, k in (("G", 1), ("D", -1)):
+            sh = A.point("Bras_" + s, "head")
+            # bras qui pend devant et se balance à l'opposé de la jambe du même côté
+            bal = math.sin(TAU * ph + (0 if s == "G" else math.pi))
+            P = sh + V((0.7 * k, -1.4 - 1.6 * bal, -6.6 + 0.6 * max(0.0, bal)))
+            t0, ta, th, tr = frappes[s]
+            # instant de la frappe dans la boucle de 2 s (avec répétition)
+            dt = (t - t0 + 1.0) % 2.0 - 1.0
+            if -ta < dt < th + tr:
+                Wp = V((6.6 * k, sh.y - 1.2, 6.6))
+                if dt < 0:
+                    o = _mj((dt + ta) / ta)
+                elif dt < th:
+                    o = 1.0
+                else:
+                    o = 1 - _mj((dt - th) / tr)
+                P = P.lerp(Wp, o)
+                dm = W(0.4, -1, 0.1, k).lerp(W(0.2, 0.15, 1, k), o).normalized()
+                dd = W(0.2, -1, 0.05, k).lerp(W(0.25, 0.45, 1, k), o).normalized()
+            else:
+                dm = W(0.4, -1, 0.1, k); dd = W(0.2 - 0.4 * max(0.0, -bal), -1, 0.05, k)
+            Lm = (a.data.bones["Main_" + s].tail_local - a.data.bones["Main_" + s].head_local).length
+            Ld = (a.data.bones["Doigts_" + s].tail_local - a.data.bones["Doigts_" + s].head_local).length
+            A.ik_bras(s, P - dd * Ld - dm * Lm, V((0.8 * k, 0.7, 0.6)), dm, dd, a)
+    return demarche("Traqueur_CourseEnragee_C", T, S, mem, post, lambda ph: -1.0 + 0.25 * math.cos(2 * TAU * (ph - 0.12)),
+                    n_cycles=2, vent_cheveux=0.6, machoire=lambda ph: 12 + 6 * math.sin(2 * TAU * ph), extra=bras,
+                    avant=roulis)
