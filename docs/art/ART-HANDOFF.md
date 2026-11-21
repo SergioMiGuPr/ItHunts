@@ -837,6 +837,12 @@ Contrôles, vidéos côte à côte et planches : `docs/art/rendus/Traqueur/v4/an
 | `Traqueur_Reception` | 5.0 s | non | **oui** (chute : +6 m vers l'avant, −8.5 m) | mains au sol **0.35 s**, pieds **0.5 s**, le plus bas 0.85 s ; **sortie possible dès 1.1 s** | — |
 | `Traqueur_Escalade` | 4.5 s | non | **oui** (+9.5 m vers l'avant, +7.5 m) ; bloc de 7.5 m | main D en haut **0.25 s**, main G **0.6 s** ; détente **2.55 s** ; pieds sur le bloc **3.25 s** | — |
 | `Traqueur_ChaineGrimpe` | 5.0 s | non | **oui** (+4.8 m de montée) | saut **0.35 s**, mains sur la chaîne **0.55 s** ; montée **1.1 → 2.9 s** en 2 cycles de 0.9 s (+2.4 m chacun ; cette partie boucle) | montée 2.7 m/s |
+| `Traqueur_ChaineSaut` | 6.0 s | non | **oui** (+15 m vers l'avant, jusqu'à un bloc de 3.3 m) | balancement arrière 2.0 → 2.8 s, avant 2.8 → 3.4 s ; **lâcher 3.4 s** ; mains sur le bloc **4.2 s**, pieds **4.35 s** | — |
+| `Traqueur_ChainePrise` | 6.0 s | non | non (pendu, accroche fixe) | bras droit tendu vers le bas **0.75 → 3.5 s** ; **poing 3.75 s** ; main sur la chaîne **5.0 s** | 0 |
+| `Traqueur_PorteEtroite` | 7.0 s | non | **oui** (7 m vers l'avant) | corps abaissé **2.5 → 3.5 s** (hauteur 5.2 m au droit de la porte) ; tête dans la porte vers 3 s ; jambes passées vers 7 s | **1.0 m/s** |
+
+Clips sans vidéo, **non faits** : `Traqueur_MurGrimpe` (pas de vidéo « grimper un mur ») et `Traqueur_Visage_Cri` / `_Grognement` / `_Machoire` (pas de vidéo du visage) ; les 6 formes du visage peuvent être animées par le code en attendant.
+Passage d'une porte : avec `Traqueur_PorteEtroite`, le corps tient dans **4 m de large et 5.2 m de haut** ; les membres s'écartent jusqu'à 3.6 m de l'axe près du sol.
 
 Pour jouer la marche à une autre vitesse sans glissement, il faut multiplier la vitesse de lecture par (vitesse voulue / 1.27). Sinon, utiliser le root motion.
 

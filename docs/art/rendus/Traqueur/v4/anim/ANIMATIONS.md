@@ -294,3 +294,79 @@ Contrôles :
 - le geste le plus rapide est le saut vers la chaîne (60°/image sur 0.2 s, comme dans la vidéo).
 
 **Écart** : dans la vidéo, la chaîne se balance. La chaîne du jeu est un objet du décor ; le clip la suppose droite.
+
+## Lot 5 (PR `art-traqueur-anim-5`) : chaîne (saut, prise), porte étroite
+
+### Traqueur_ChaineSaut
+Vidéo de référence : `traqueur_ref_chaine_saut`, de 0 à 6 s. Durée **6.0 s**, sans boucle.
+
+Le balancement suit un pendule dont le point d'accroche est à 40 m (hors champ, comme dans la vidéo).
+
+Déroulé :
+
+| Temps | Ce qui se passe |
+|---|---|
+| 0 → 2.0 s | pendu replié sur la chaîne, avec un léger balancement |
+| 2.0 → 2.8 s | grand balancement vers l'arrière (−12°) |
+| 2.8 → 3.4 s | balancement vers l'avant (+11°) |
+| **3.4 s** | **il lâche la chaîne** |
+| 3.4 → 4.2 s | vol corps tendu, bras devant ; les deux tiers du trajet sont faits à 3.6 s, comme dans la vidéo |
+| **4.2 s** | les mains se posent sur un **bloc de 3.3 m**, à 15 m de la chaîne |
+| **4.35 s** | les pieds se posent ; il reste accroupi |
+
+Contrôles :
+- verrou : OK ;
+- pics lissés au lâcher, quand bras et jambes sont libres : 37°/image au maximum ;
+- pieds et griffes jamais sous le sol.
+
+### Traqueur_ChainePrise
+Vidéo de référence : `traqueur_ref_chaine_prise`, de 0 à 6 s. Durée **6.0 s**, sans boucle.
+
+Départ : pendu à la chaîne par les jambes et la main gauche.
+
+Déroulé :
+
+| Temps | Ce qui se passe |
+|---|---|
+| départ | la main droite lâche la chaîne et passe par l'extérieur |
+| **0.75 → 3.5 s** | le buste bascule ; la main droite est tendue vers l'avant et le bas, griffes ouvertes |
+| **3.75 s** | **poing** (prise) |
+| 4.0 → 5.0 s | il remonte ; la main droite reprend la chaîne |
+| jusqu'à 6 s | tenu replié |
+
+Contrôles :
+- la main gauche et les pieds restent fixes sur la chaîne ;
+- verrou : OK ;
+- 39°/image au maximum.
+
+### Traqueur_PorteEtroite
+Vidéo de référence : `traqueur_ref_porte_etroite`, de 0 à 7 s. Durée **7.0 s**, sans boucle.
+
+Allure : marche à quatre pattes à **1.0 m/s** (2 cycles de 3.5 s, même ordre d'appuis que la marche). Elle suit les côtés de la vidéo : la main gauche ouvre le cycle.
+
+Déroulé :
+
+| Temps | Ce qui se passe |
+|---|---|
+| **2.5 → 3.5 s** | le corps s'abaisse : la racine descend de 2.3 m, le dos s'aplatit, les coudes se serrent vers l'arrière et les genoux rentrent sous le corps |
+| vers 3 s | tête et bras passent la porte |
+| 3.5 → 5 s | le buste passe |
+| jusqu'à 7 s | les jambes passent |
+
+Mesures au droit de la porte, sur le modèle animé :
+- hauteur maximale **5.2 m** ;
+- le buste tient dans **4 m de large** ;
+- mains, griffes et genoux s'écartent jusqu'à **3.6 m de l'axe** près du sol pendant les pas.
+
+**La plus petite porte franchissable avec ce clip est donc d'environ 4 m de large et 5.5 m de haut pour le corps, avec un dégagement d'environ 7 m au ras du sol pour les membres.** L'estimation « 4 × 6 m » de la v4 est confirmée pour le corps. Les membres demandent une ouverture plus large en bas, ou une collision qui ignore les griffes.
+
+Contrôles :
+- glissement : 3 cm pendant le déroulé du talon, mains fixes ;
+- verrou : OK.
+
+**Défaut restant** : un à-coup des doigts gauches à **6.6 s** (77°/image pendant 2 images, au moment où la main quitte le sol). Les essais de lissage déplaçaient la main posée ou faisaient passer les griffes sous le sol, donc il n'est pas corrigé.
+
+## Clips sans vidéo : non faits (signalé)
+
+- **`Traqueur_MurGrimpe`** : il n'y a pas de vidéo « grimper un mur » dans `docs/art/references-anim/`. `traqueur_ref_escalade` montre un rebord de 7.5 m, et c'est `Traqueur_Escalade`.
+- **`Traqueur_Visage_Cri`, `_Grognement`, `_Machoire`** : il n'y a pas de vidéo du visage. `traqueur_ref_machoire.mp4`, prévue dans la liste V8, n'a pas été livrée. Les 6 formes du visage (blend shapes) existent sur le modèle et peuvent être animées par le code en attendant.
