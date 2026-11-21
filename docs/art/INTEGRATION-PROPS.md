@@ -496,6 +496,79 @@ Lueurs : pupilles par `_EmissionColor` de `M_Traqueur` (rouge par défaut) ; gri
 `M_Traqueur_Mains` (repos (0.35, 0.32, 0.25), prise (3.5, 0.49, 0.21)). Planches : `rendus/Lot2/Traqueur_<Animation>.jpg`,
 `Traqueur_texture_gros_plans.jpg`.
 
+### Kit des nouveaux modules (lot H, 2026-11-21, branche `art-kit-modules`)
+
+D'après les 4 références de l'utilisateur (`docs/art/references-modules/` : prison à étages, caserne, citerne inondée, puits
+circulaire), à l'échelle du jeu (traqueur de 14 m, couloirs de 14 m, joueur de 1.8 m). Modélisé par script dans Blender
+(`Assets/Art/Source~/Modules/scripts/sm_modules.py`), sans génération. **UV en échelle monde** (même projection et mêmes
+tuiles que le kit gothique) ; matériaux du niveau 1 : pierre → `M_Pierre_Monde`, dalles → `M_Dalles_Monde` (UV monde dans le
+shader), bois `M_Bois_Brut`, fer `M_FerRouille`, corde `M_Corde`, chiffon `M_Chiffon_Brule`. Modèles :
+`Assets/Art/Models/Modules/SM_Mod_*.fbx` ; planche `docs/art/rendus/Modules/Planche_Kit_Modules.jpg`. Sans collider : à ajouter
+dans les prefabs du jeu (boîtes simples). Repères Unity : +Y en haut, +Z vers l'avant.
+
+| Pièce (`SM_Mod_…`) | Taille X × Y × Z (m) | Pivot | Triangles | Matériaux | Notes |
+|---|---|---|---|---|---|
+| `EscalierPierre_4m` | 3 × 4 × 6 | sol, centre de l'emprise ; monte vers +Z | 160 | pierre | 16 marches de 0.25 × 0.375 m, plein dessous |
+| `EscalierBois_4m` | 2 × 4 (+0.19 sous le sol) × 5.2 | sol, centre ; monte vers +Z | 288 | bois | ouvert, limons, rampe côté +X |
+| `Echelle_6m` | 0.67 × 6 × 0.06 | pied, au milieu | 328 | bois | barreaux tous les 0.3 m |
+| `Passerelle_8m` | 2.5 × 1.46 × 8.1 | dessus du plancher (0), centre | 576 | bois | garde-corps de 1.1 m des deux côtés ; poutres sous le plancher (−0.36 m) |
+| `PasserellePilotis_8m` | 2 × 3 × 8 | dessus du plancher (0), centre | 480 | bois | pieux jusqu'à −3 m (fond de citerne), sans garde-corps |
+| `PontCordes_12m` | 1.8 × 2.4 × 12.2 | milieu de la ligne des appuis (dessus des planches aux bouts) | 1728 | bois, corde | flèche de 0.8 m, poteaux de 1.4 m ; cordes en aplat (M_Corde) |
+| `Balcon_6m` | 6 × 2.7 × 2.5 | ras du mur, dessus de la dalle (0) ; avance vers +Z (le mur est en −Z) | 180 | dalles, pierre, bois | 3 consoles, garde-corps de bois |
+| `PorteCellule` | 1.2 × 2.4 × 0.18 | bas de la charnière (côté −X) | 208 | fer | tourne autour de Y |
+| `Cellule_4m` | 5 × 4.1 × 4.7 | sol, milieu de la façade (façade vers +Z, cellule vers −Z) | 430 | pierre, dalles, fer | repère `Porte_Charniere` (−0.6, 0, 0) pour `SM_Mod_PorteCellule` |
+| `GrandePorte_4x10` | 10.4 × 12 × 1.9 | sol, milieu de l'ouverture | 344 | pierre | ouverture 4 × 10 m : **le traqueur (14 m) doit se faufiler** (porte_etroite) |
+| `GrandePorte_6x10` | 12.4 × 12 × 1.9 | idem | 344 | pierre | ouverture 6 × 10 m : se faufile (porte_etroite) |
+| `GrandePorte_6x12` | 12.4 × 14 × 1.9 | idem | 344 | pierre | ouverture 6 × 12 m : se baisse (porte_etroite) |
+| `GrandePorte_8x14` | 14.4 × 16 × 1.9 | idem | 344 | pierre | ouverture 8 × 14 m : passe voûté |
+| `GrandePorte_8x16` | 14.4 × 18 × 1.9 | idem | 344 | pierre | ouverture 8 × 16 m : passe debout |
+| `ArcheBrisee_8m` | 9.5 × 14 × 3.5 | sol, milieu entre les piliers | 252 | pierre | piliers de 1.2 m, 9 m de haut, 8 m d'axe en axe ; départs d'arc, blocs tombés |
+| `TuyauGros` | 1.4 × 2.1 × 3 | ras du mur, sur l'axe (le mur est en −Z) | 300 | fer | Ø 1.2 m, coude vers le bas ; repère `FX_Bouche` pour l'eau qui tombe |
+| `RoueEau_8m` | 3.6 × 8.2 × 8.2 | centre de l'axe (tourne autour de X) | 1252 | bois, fer | 16 aubes ; matériaux sans UV monde (elle tourne) |
+| `SolInonde_8m` | 8 × 0.8 × 8 | sol, centre | 208 | dalles, pierre | affaissé jusqu'à −0.5 m au centre ; poser l'eau (`M_Eau_Toon`) vers −0.2 m |
+| `EscalierSpirale_45` | 5.3 × 4 × 8.5 | **centre du puits**, au pied du segment | 318 | pierre, bois | 45° de tour, rayon 9.5 à 12 m, monte de 2.5 m ; 8 segments = un tour de 20 m (tourner de 45° et monter de 2.5 m) |
+| `Coursive_45` | 5.3 × 2.4 × 8.5 | **centre du puits**, dessus de la dalle | 306 | dalles, pierre, bois | anneau de 2.5 m de large, garde-corps côté vide ; 8 segments = un anneau complet |
+| `ChaineGrimpe_12m` | 0.8 × 12.6 × 0.8 | **en haut** (point d'ancrage) | 1932 | fer | maillons de 0.5 m, fil de Ø 0.12 m |
+| `ChaineTendue_16m` | 0.8 × 1.7 × 16.2 | milieu de la ligne des ancrages | 2824 | fer | flèche de 1.2 m |
+| `PlateformeBond_6m` | 3 × 6 × 3 | sol, sous le centre ; dessus à 6 m | 34 | pierre, dalles | pilier de 2 m, dessus de 3 × 3 m |
+| `Rebord_6m` | 6 × 1.4 × 1.2 | ras du mur, dessus du rebord (0) ; avance vers +Z | 60 | pierre | 1.2 m de profondeur, 3 consoles |
+| `MurGrimpe_8x10` | 8 × 10 × 1.05 | sol, milieu de la face grimpable (face vers +Z) | 1408 | pierre, bois | prises saillantes de 0.25 à 0.45 m en quinconce, 4 racines |
+| `Galerie_8m` | 8 × 3.3 × 3 | ras du mur, dessus de la dalle (0) ; avance vers +Z | 184 | dalles, pierre | parapet crénelé de 1.1 m côté vide, 4 consoles |
+| `LitsSuperposes` | 2 × 1.9 × 0.9 | sol, centre | 160 | bois, chiffon | couchages à 0.4 et 1.4 m |
+| `Ratelier` | 2.1 × 2.4 × 0.4 | sol, centre | 192 | bois, fer | 6 lances |
+| `Table` | 2.4 × 0.8 × 2 | sol, centre | 132 | bois | plateau à 0.8 m, deux bancs |
+| `Tonneau` | 0.74 × 1 × 0.72 | sol, centre | 252 | bois, fer | Ø 0.7 m |
+
+**Déjà au catalogue (réutilisés, pas refaits)** : cages suspendues (`SM_Cage`), treuil (`SM_Treuil`), petite chaîne
+(`SM_Chaine`), tuyau (`SM_Tuyau`), colonne brisée (`SM_ColonneBrisee`), échafaudage (`SM_Echafaudage`), grille et herse.
+
+#### Éléments de passage (traqueur et joueur)
+
+| Pièce | Type | Points d'accroche (repères vides du FBX, `Accroche_*`) | Usage |
+|---|---|---|---|
+| `SM_Mod_ChaineGrimpe_12m` | `chaine_grimpe` | `Accroche_00m` (ancrage) puis `Accroche_03m`, `_06m`, `_09m`, `_12m` (bas) le long de la chaîne | maillons assez gros pour le traqueur (main de ~1.5 m) ; le joueur s'y accroche avec la traction |
+| `SM_Mod_ChaineTendue_16m` | `chaine_tendue` | `Accroche_A`, `Accroche_Milieu` (point bas, −1.2 m), `Accroche_B` | on s'y suspend et on avance main sur main ; le traqueur la franchit d'un bond |
+| `SM_Mod_PlateformeBond_6m` | `plateforme_bond` | `Accroche_Dessus` (centre du dessus, 6 m) | espacer de 6 à 10 m pour les bonds du traqueur, 3 à 5 m pour le joueur |
+| `SM_Mod_Rebord_6m` | `rebord` | `Accroche_Bord` (milieu de l'arête avant) | accroche le long de toute l'arête avant (x de −3 à 3 m) |
+| `SM_Mod_MurGrimpe_8x10` | `mur_grimpe` | `Accroche_Pied` et `Accroche_Sommet` (au milieu, 0.5 m devant la face) | toute la face avant est grimpable ; prises visibles |
+| `SM_Mod_Galerie_8m` | `rebord` | `Accroche_Bord` (haut du parapet côté vide) | corniche haute : on s'accroche au parapet |
+| `SM_Mod_Echelle_6m` | `chaine_grimpe` | `Accroche_Bas`, `Accroche_Haut` | échelle pour le joueur ; le traqueur l'ignore (trop étroite) |
+| `SM_Mod_PontCordes_12m` | `rebord` | `Accroche_Bout_A`, `Accroche_Bout_B` | les cordes latérales se saisissent sur toute la longueur |
+| `SM_Mod_GrandePorte_4x10` | `porte_etroite` | milieu de l'ouverture au sol (pivot) | le traqueur passe à quatre pattes (ouverture < sa hauteur voûtée) |
+| `SM_Mod_GrandePorte_6x10` | `porte_etroite` | idem | idem |
+| `SM_Mod_GrandePorte_6x12` | `porte_etroite` | idem | passe voûté, tête baissée |
+
+#### Textures et images qui manquent (à fournir par l'utilisateur)
+
+- **Pierre brute de paroi grimpable** (tuile 4 × 3 m, joints irréguliers, prises marquées) : le mur grimpable utilise la pierre
+  du couloir ; une tuile dédiée rendrait la face lisible comme « grimpable » à pleine vitesse.
+- **Lierre et racines** (feuillage en découpe alpha, tuile 1 × 2 m) : les racines du mur sont des tubes de bois sans feuilles.
+- **Planches de bois usées** (tuile 2 × 1 m, planches en long avec clous) pour les passerelles et le pont : `T_Bois_Brut` est un
+  bois générique.
+- **Corde tressée** (tuile 0.25 × 1 m) : la corde est un aplat (`M_Corde`).
+- **Mousse et dépôts d'eau** (tuile ou masque) pour les pieds de piliers et les sols inondés de la citerne.
+- **Bois de la roue à eau** mouillé et sombre (variante de `T_Bois_Brut`).
+
 ## 5. Props encore à produire (catalogue d'`ART-HANDOFF`)
 
 Greybox actuelles (bornes de leur maillage) : à garder comme cotes et pivots. **Attrapables** : gardent leur Rigidbody,
