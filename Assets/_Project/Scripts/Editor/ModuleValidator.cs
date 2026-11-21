@@ -237,7 +237,12 @@ namespace ItHunts.EditorTools
                     info.Add($"NavMesh : {pairs} paires d'entrées reliées");
 
                 // Cachettes : portée de la main du traqueur.
-                navs.Add(ReachCheck.BuildStalkerNavMesh(container, bounds, out int stalkerAgent));
+                // Portée et taille du traqueur v4 (D-080) : bras + fente, épaule voûtée, hauteur baissée.
+                var stalkerCfg = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
+                ReachCheck.Configure(stalkerCfg);
+                navs.Add(stalkerCfg != null
+                    ? ReachCheck.BuildStalkerNavMesh(container, bounds, out int stalkerAgent, stalkerCfg.width * 0.5f, stalkerCfg.crouchMinHeight)
+                    : ReachCheck.BuildStalkerNavMesh(container, bounds, out stalkerAgent));
                 agentTypes.Add(stalkerAgent);
                 var stalker = new NavMeshQueryFilter { agentTypeID = stalkerAgent, areaMask = NavMesh.AllAreas };
                 var area = new Bounds(offset + Vector3.up * (ceil * 0.5f), new Vector3(ext.x - 0.5f, ceil - 1f, ext.y - 0.5f));

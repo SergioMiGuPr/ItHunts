@@ -231,6 +231,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3064f70594d8c16479928eccc33dac59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.ChestSpot
+  difficulty: 0
+  route: 
 --- !u!1 &533423333338035299
 GameObject:
   m_ObjectHideFlags: 0
@@ -930,8 +932,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2386036090977688575}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 28}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 28, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1700,8 +1702,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4813288331656229069}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 28}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: -0.7071068}
+  m_LocalPosition: {x: -28, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2060,9 +2062,11 @@ MonoBehaviour:
   holeDepth: 6
   laneHalfWidth: 5
   parkour: 0
-  validated: 0
-  validatedHash: 
-  validationReport: 
+  validated: 1
+  validatedHash: 220c6493
+  validationReport: "VALID\xC9 (2026-11-21 11:03)\nNavMesh : 6 paires d'entr\xE9es
+    reli\xE9es\ncachettes : 0 sur 746 points\n4 entr\xE9es, 11 apparitions, 5 habitants,
+    2 coffres, 46120 triangles"
 --- !u!1 &5917454801188549496
 GameObject:
   m_ObjectHideFlags: 0
@@ -2107,6 +2111,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3064f70594d8c16479928eccc33dac59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.ChestSpot
+  difficulty: 0
+  route: 
 --- !u!1 &6159468668187343962
 GameObject:
   m_ObjectHideFlags: 0
@@ -2962,8 +2968,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9094332589628555568}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 28}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  m_LocalPosition: {x: 0, y: 0, z: -28}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -190,47 +190,48 @@ namespace ItHunts.EditorTools
         }
 
         /// <summary>
-        /// Pièce annexe de 12 × 12 m, 6 m de haut (le traqueur passe le bras par la porte), en pièces du kit. Origine sur la face
+        /// Pièce annexe de 12 m de large, 8 m de profondeur, 6 m de haut (le traqueur passe le bras par la porte : coins du fond
+        /// à 10 m de l'ouverture, sous sa portée par une porte, roomReach 10.3 m, D-080), en pièces du kit. Origine sur la face
         /// extérieure du mur du couloir, au pied de la porte de 3 × 3 m ; +Z vers l'intérieur. Le sol passe sous le mur du couloir
         /// (seuil des goules). Verrouillée : porte payante (E / Y) et coffre gratuit dedans.
         /// </summary>
         private static GameObject AnnexPrefab(KitSet kit, bool locked)
         {
-            const float R = 12f, H = 6f, D = 3f;
+            const float R = 12f, RD = 8f, H = 6f, D = 3f;          // RD : profondeur (8 m depuis le traqueur v4, avant 12)
             var root = new GameObject(locked ? "Salle_Verrouillee" : "Piece_Annexe");
             Transform t = root.transform;
-            KitBuild.Box(t, "Sol", new Vector3(0f, -0.5f, R * 0.5f), new Vector3(R + 2f * T, 1f, R + 2f * T), KitBuild.Kind.Sol, kit);   // de la face extérieure du mur du couloir (−T) au fond : pas sous le sol du couloir
+            KitBuild.Box(t, "Sol", new Vector3(0f, -0.5f, RD * 0.5f), new Vector3(R + 2f * T, 1f, RD + 2f * T), KitBuild.Kind.Sol, kit);   // de la face extérieure du mur du couloir (−T) au fond : pas sous le sol du couloir
             // Toit : son bout côté couloir 2 cm dans le mur du couloir (affleurant, il scintille avec lui).
-            KitBuild.Box(t, "Toit", new Vector3(0f, H + 0.5f, R * 0.5f + 0.01f), new Vector3(R + 2f * T, 1f, R + 2f * T - 0.02f), KitBuild.Kind.Sol, kit, walkable: false);
-            KitBuild.Box(t, "Mur du fond", new Vector3(0f, H * 0.5f, R + T * 0.5f), new Vector3(R + 2f * T, H, T), KitBuild.Kind.Mur, kit, walkable: false);
-            KitBuild.Box(t, "Mur 1", new Vector3(R * 0.5f + T * 0.5f, H * 0.5f, R * 0.5f), new Vector3(T, H, R), KitBuild.Kind.Mur, kit, walkable: false);
-            KitBuild.Box(t, "Mur 2", new Vector3(-R * 0.5f - T * 0.5f, H * 0.5f, R * 0.5f), new Vector3(T, H, R), KitBuild.Kind.Mur, kit, walkable: false);
+            KitBuild.Box(t, "Toit", new Vector3(0f, H + 0.5f, RD * 0.5f + 0.01f), new Vector3(R + 2f * T, 1f, RD + 2f * T - 0.02f), KitBuild.Kind.Sol, kit, walkable: false);
+            KitBuild.Box(t, "Mur du fond", new Vector3(0f, H * 0.5f, RD + T * 0.5f), new Vector3(R + 2f * T, H, T), KitBuild.Kind.Mur, kit, walkable: false);
+            KitBuild.Box(t, "Mur 1", new Vector3(R * 0.5f + T * 0.5f, H * 0.5f, RD * 0.5f), new Vector3(T, H, RD), KitBuild.Kind.Mur, kit, walkable: false);
+            KitBuild.Box(t, "Mur 2", new Vector3(-R * 0.5f - T * 0.5f, H * 0.5f, RD * 0.5f), new Vector3(T, H, RD), KitBuild.Kind.Mur, kit, walkable: false);
             // Cadre de 1 m dans un mur de 1 m : 2 cm de plus de chaque côté, sinon ses faces scintillent avec celles du mur.
             KitBuild.Piece(kit.portePiece, t, new Vector3(0f, 0f, -T * 0.5f), 180f, new Vector3(1f, 1f, 1.04f));
             var lamp = new GameObject("Lumière").AddComponent<Light>();
             lamp.transform.SetParent(t, false);
-            lamp.transform.localPosition = new Vector3(0f, H - 1f, R * 0.5f);
+            lamp.transform.localPosition = new Vector3(0f, H - 1f, RD * 0.5f);
             lamp.type = LightType.Point;
             lamp.color = new Color(1f, 0.6f, 0.35f);
             lamp.intensity = 2.5f;
             lamp.range = 14f;
             var holder = new GameObject("Pièce (le traqueur passe le bras)").transform;
             holder.SetParent(t, false);
-            holder.localPosition = new Vector3(0f, H * 0.5f, R * 0.5f);
+            holder.localPosition = new Vector3(0f, H * 0.5f, RD * 0.5f);
             var reach = holder.gameObject.AddComponent<ReachRoom>();
-            holder.gameObject.AddComponent<RoomVolume>().Configure(locked ? "Salle verrouillée" : "Pièce annexe", new Vector3(R, H, R));
+            holder.gameObject.AddComponent<RoomVolume>().Configure(locked ? "Salle verrouillée" : "Pièce annexe", new Vector3(R, H, RD));
             var opening = new GameObject("Ouverture : porte").transform;
             opening.SetParent(holder, false);
-            opening.localPosition = new Vector3(0f, D * 0.5f - H * 0.5f, -R * 0.5f - T * 0.5f);
+            opening.localPosition = new Vector3(0f, D * 0.5f - H * 0.5f, -RD * 0.5f - T * 0.5f);
             opening.localRotation = Quaternion.Euler(0f, 180f, 0f);
             var so = new SerializedObject(reach);
-            so.FindProperty("size").vector3Value = new Vector3(R, H, R);
+            so.FindProperty("size").vector3Value = new Vector3(R, H, RD);
             so.FindProperty("openings").arraySize = 1;
             so.FindProperty("openings").GetArrayElementAtIndex(0).objectReferenceValue = opening;
             so.ApplyModifiedPropertiesWithoutUndo();
-            PropLibrary.Place("Caisse_Attrapable", t, new Vector3(3f, 0f, R * 0.5f));
-            PropLibrary.Place("Tonneau", t, new Vector3(-4.5f, 0f, R - 1.5f));
-            PropLibrary.Place("Etagere", t, new Vector3(4f, 0f, R - 0.6f), 180f);
+            PropLibrary.Place("Caisse_Attrapable", t, new Vector3(3f, 0f, RD * 0.5f));
+            PropLibrary.Place("Tonneau", t, new Vector3(-4.5f, 0f, RD - 1.5f));
+            PropLibrary.Place("Etagere", t, new Vector3(4f, 0f, RD - 0.6f), 180f);
             if (locked)
             {
                 Material doorMat = GrabbableMat("Economy_Locked_Door", new Color(0.35f, 0.22f, 0.12f));
@@ -240,7 +241,7 @@ namespace ItHunts.EditorTools
                 SetRef(ld, "settings", _economy);
                 Transform keep = _level;
                 _level = t;
-                BuildChest("Coffre gratuit", new Vector3(-3f, 0f, R * 0.5f), Quaternion.Euler(0f, 180f, 0f), 0);
+                BuildChest("Coffre gratuit", new Vector3(-3f, 0f, RD * 0.5f), Quaternion.Euler(0f, 180f, 0f), 0);
                 _level = keep;
             }
 
@@ -248,6 +249,17 @@ namespace ItHunts.EditorTools
         }
 
         // ---------- Scène ----------
+
+        /// <summary>Pièces annexes et salles verrouillées seulement (prefabs du niveau aléatoire), D-080.</summary>
+        public static string RebuildAnnexes()
+        {
+            KitSet kit = BuildKit();
+            _economy = LoadOrCreate<EconomySettings>(EconomyPath);       // porte payante et coffre de la salle verrouillée
+            AnnexPrefab(kit, false);
+            AnnexPrefab(kit, true);
+            AssetDatabase.SaveAssets();
+            return "pièces annexes : 12 × 8 m";
+        }
 
         /// <summary>Kit, prefabs, catalogue validé et scène Level_01_Aleatoire. Renvoie un résumé.</summary>
         public static string BuildRandomLevelScene()

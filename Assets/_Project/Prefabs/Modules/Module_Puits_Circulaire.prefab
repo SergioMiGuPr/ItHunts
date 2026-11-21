@@ -2822,7 +2822,7 @@ MonoBehaviour:
   parkour: 0
   validated: 1
   validatedHash: 4eb902b1
-  validationReport: "VALID\xC9 (2026-11-21 10:41)\nNavMesh : 6 paires d'entr\xE9es
+  validationReport: "VALID\xC9 (2026-11-21 11:03)\nNavMesh : 6 paires d'entr\xE9es
     reli\xE9es\nzone de parcours : 0 point(s) hors de port\xE9e dans la fosse (permis)\ncachettes
     : 0 sur 1000 points\n4 entr\xE9es, 10 apparitions, 4 habitants, 3 coffres, 56304
     triangles"

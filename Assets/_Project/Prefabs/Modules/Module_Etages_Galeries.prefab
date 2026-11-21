@@ -115,8 +115,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 580102008882439843}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 32}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: -0.7071068}
+  m_LocalPosition: {x: -32, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -756,9 +756,11 @@ MonoBehaviour:
   holeDepth: 6
   laneHalfWidth: 5
   parkour: 0
-  validated: 0
-  validatedHash: 
-  validationReport: 
+  validated: 1
+  validatedHash: e47c0d6b
+  validationReport: "VALID\xC9 (2026-11-21 11:03)\nNavMesh : 6 paires d'entr\xE9es
+    reli\xE9es\ncachettes : 0 sur 1055 points\n4 entr\xE9es, 14 apparitions, 5 habitants,
+    2 coffres, 53936 triangles"
 --- !u!1 &1594556895699859851
 GameObject:
   m_ObjectHideFlags: 0
@@ -959,6 +961,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3064f70594d8c16479928eccc33dac59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.ChestSpot
+  difficulty: 0
+  route: 
 --- !u!1 &2460263374080868757
 GameObject:
   m_ObjectHideFlags: 0
@@ -1188,8 +1192,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3051110296721831079}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 32}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  m_LocalPosition: {x: 0, y: 0, z: -32}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1615,8 +1619,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5497076412433796923}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 32}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 32, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2353,6 +2357,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3064f70594d8c16479928eccc33dac59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.ChestSpot
+  difficulty: 0
+  route: 
 --- !u!1 &8689835790577450362
 GameObject:
   m_ObjectHideFlags: 0

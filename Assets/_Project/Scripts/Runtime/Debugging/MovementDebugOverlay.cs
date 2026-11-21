@@ -389,7 +389,7 @@ namespace ItHunts.Debugging
                 _text.AppendLine($"  Poursuite : {(st.Direct ? "DROIT SUR TOI" : $"labyrinthe vers {node(st.GoalNode)}")}, dans {node(st.InNode)}, " +
                                  $"arrivé par {node(st.ArrivedFrom)}, demi-tours {st.UTurns}, {(st.Crouching ? $"BAISSÉ ({st.Crouch * st.Settings.height:0.0} m)" : "debout")}");
                 _text.AppendLine($"  Main : {st.Grab}{(st.GrabThroughOpening ? " (par une ouverture)" : "")}{(st.GrabCooldownRemaining > 0f ? $", recharge {st.GrabCooldownRemaining:0.0} s" : "")}, " +
-                                 $"épaule à {Vector3.Distance(st.Shoulder, transform.position):0.0} m (portée {st.Settings.handReach:0} m), " +
+                                 $"épaule à {Vector3.Distance(st.Shoulder, transform.position):0.0} m (portée {st.Settings.GrabReach:0.0} m : bras {st.Settings.armLength:0.0} + fente {st.Settings.grabLunge:0.0}), " +
                                  $"{(st.TargetSheltered ? "HORS DE PORTÉE " : "")}prises {st.GrabAttempts} (dont {st.RoomGrabs} par une ouverture), tués {st.GrabKills} + {st.ContactKills} au contact");
                 if (st.Mode == ItHunts.Enemies.StalkerMode.Enrage)
                     _text.AppendLine($"  Enragé : sur la même cible depuis {st.TimeOnTarget:0.0} s, palier {st.EnragedTier + 1}/{st.Settings.enragedRampSpeeds.Length} (base {st.EnragedBaseSpeed:0.0} m/s)");

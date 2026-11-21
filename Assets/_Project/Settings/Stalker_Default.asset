@@ -59,7 +59,36 @@ MonoBehaviour:
   approachAngle: 200
   nodeArrivalDistance: 9
   retargetInterval: 5
-  crouchMinHeight: 9
+  passagesEnabled: 1
+  leapMaxDistance: 22
+  leapMaxRise: 6
+  leapDuration: 1.1
+  leapArcHeight: 5
+  leapTelegraph: 0.55
+  leapRecovery: 0.8
+  leapHitRadius: 3.2
+  ledgeMaxHeight: 8
+  wallMaxHeight: 16
+  chainMaxHeight: 16
+  chainJumpMaxDistance: 18
+  climbSpeed: 6
+  climbStartPause: 0.2
+  narrowDoorSlowFactor: 0.45
+  narrowDoorHeight: 6
+  narrowDoorWidth: 4
+  provisionalStride: 9
+  provisionalHunch: 62
+  provisionalKneeDrop: 0.3
+  provisionalLegSwing: 24
+  provisionalArmSwing: 20
+  boneChainsEnabled: 1
+  boneChains:
+    stiffness: 0.08
+    damping: 0.12
+    gravity: {x: 0, y: -6, z: 0}
+    inertia: 0.6
+    radius: 0.25
+  crouchMinHeight: 8.5
   crouchSpeedFactor: 0.6
   predictionHorizon: 0.8
   repathInterval: 0.2
@@ -74,8 +103,9 @@ MonoBehaviour:
   searchDuration: 10
   searchRadius: 8
   loseSightTime: 1.5
-  shoulderHeight: 11.1
-  shoulderSide: 1.8
+  shoulderHeight: 10.5
+  shoulderForward: 0.9
+  shoulderSide: 1.37
   pupilGlow: {r: 0.55, g: 0.05, b: 0.03, a: 1}
   pupilGlowIntensity: 1.5
   eyeGlints: 0
@@ -90,7 +120,9 @@ MonoBehaviour:
   walkClipSpeed: 3.71
   crouchClipSpeed: 2.29
   clipPlaybackRange: {x: 0.3, y: 5.5}
-  handReach: 15
+  armLength: 8.3
+  grabLunge: 6.5
+  grabLungeTime: 0.4
   grabTelegraph: 0.5
   grabSlam: 0.12
   grabHold: 0.35
@@ -118,7 +150,7 @@ MonoBehaviour:
   armThickness: 1.5
   handClearance: 4.5
   grabReaim: 0.15
-  roomReach: 15
+  roomReach: 10.3
   edgeLean: 2.5
   cutOffHorizon: 3
   attackRange: 0.3

@@ -316,8 +316,8 @@ MonoBehaviour:
   laneHalfWidth: 5
   parkour: 0
   validated: 1
-  validatedHash: a453bb58
-  validationReport: "VALID\xC9 (2026-11-16 03:24)\nNavMesh : 6 paires d'entr\xE9es
+  validatedHash: 8bec43a4
+  validationReport: "VALID\xC9 (2026-11-21 11:03)\nNavMesh : 6 paires d'entr\xE9es
     reli\xE9es\ncachettes : 0 sur 996 points\n4 entr\xE9es, 13 apparitions, 5 habitants,
     1 coffres, 50011 triangles"
 --- !u!1 &1250553523742860574
@@ -881,6 +881,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3064f70594d8c16479928eccc33dac59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.ChestSpot
+  difficulty: 0
+  route: 
 --- !u!1 &3115423772505945940
 GameObject:
   m_ObjectHideFlags: 0

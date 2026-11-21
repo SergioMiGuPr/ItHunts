@@ -37,6 +37,18 @@ d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
   **5 seeds** : 0 cachette dans les nouveaux modules. **À noter (pas causé par A2, présent avant) :** ReachCheck compte ~200 à
   400 points « hors de portée » dans les couloirs du niveau aléatoire (210 / 274 / 238 / 418 / 236), la nuit en notait 4 à 9 :
   à revoir (mesure ou couloirs gothiques).
+- **PR #27 (`art-traqueur-v4`) :** périmètre, GUID (11, aucun doublon), manifeste, compilation, 476 tests sur `main` ; fusionnée
+  (807a4ac), poussée, `main` dans `animations`.
+- **B. Traqueur v4 : modèle (D-080, D-081).** `SK_Traqueur_v4` (matériaux de la DA) dans les 5 scènes (Test_Arena, Level_01,
+  Level_01_Base, Level_01_Aleatoire, vitrine : 9 traqueurs) par `DecorModelInstaller.InstallStalkersEverywhere` ; contrôleur
+  `Traqueur.controller` construit des clips `Traqueur_*` de la DA (0 au départ). **Plus d'échelle d'os** (StretchScale supprimé,
+  test qui le vérifie dans le code et sur le FBX). Os `Bras_D/_G`. **Portée** : bras 8.3 m + fente 6.5 m en 0.4 s (le corps avance
+  pendant l'annonce, finie à l'impact, arrêtée au bord du NavMesh) ; mesures de la fente dans D-080 (22 modules revalidés, 0 cachette).
+  Épaule voûtée 10.5 / 1.37 / 0.9 (réglages, `ReachCheck.Configure`). Pièces annexes 12 × 8 m (`RebuildAnnexes`). **Portes
+  étroites** : 4 × 6 m (DA), lien du NavMesh à travers la porte (`StalkerPassageMath.DoorPassable`, `DoorEnds`), il se baisse à
+  5.5 m dedans. Hauteur baissée 8.5 m. **Mouvement provisoire** (`StalkerProceduralPose`, C5) calé sur la pose voûtée de la DA :
+  épaule mesurée en jeu à 10.50 m, 0.96 m devant (DA : 10.5 / 0.9). **Cheveux** : 7 `BoneSpringChain` (obstacles sur les os,
+  bornés à la pose de repos). Captures : vitrine (repos de face et de profil, marche voûtée).
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`

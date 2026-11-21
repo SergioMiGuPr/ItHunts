@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -16,7 +17,9 @@ namespace ItHunts.EditorTools
         public const string GhoulController = Dir + "/Goule.controller";
         public const string StalkerController = Dir + "/Traqueur.controller";
         public const string GhoulModel = "Assets/Art/Models/Ennemis/SK_Goule.fbx";
-        public const string StalkerModel = "Assets/Art/Models/Ennemis/SK_Traqueur.fbx";
+        /// <summary>Traqueur v4 (PR #27, D-080) : le modèle ; ses clips Traqueur_&lt;Action&gt; arrivent par les PR art-traqueur-anim.</summary>
+        public const string StalkerModel = "Assets/Art/Models/Ennemis/SK_Traqueur_v4.fbx";
+        public const string StalkerModelV3 = "Assets/Art/Models/Ennemis/SK_Traqueur.fbx";
 
         [MenuItem("ItHunts/Animations : contrôleurs de la goule et du traqueur")]
         public static void Menu() => Debug.Log(Build());
@@ -31,8 +34,24 @@ namespace ItHunts.EditorTools
             return a + " ; " + b;
         }
 
-        public static AnimationClip[] Clips(string model) =>
-            AssetDatabase.LoadAllAssetsAtPath(model).OfType<AnimationClip>().Where(c => !c.name.StartsWith("__preview")).ToArray();
+        public static AnimationClip[] Clips(string model)
+        {
+            if (model != StalkerModel)
+                return AssetDatabase.LoadAllAssetsAtPath(model).OfType<AnimationClip>().Where(c => !c.name.StartsWith("__preview")).ToArray();
+            // Traqueur v4 : clips Traqueur_* du modèle et de tous les fichiers d'animation de la DA (hors ancien modèle v3).
+            var found = new Dictionary<string, AnimationClip>();
+            foreach (string guid in AssetDatabase.FindAssets("Traqueur", new[] { "Assets/Art" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (path == StalkerModelV3 || !(path.EndsWith(".fbx") || path.EndsWith(".anim") || path.EndsWith(".FBX")))
+                    continue;
+                foreach (AnimationClip c in AssetDatabase.LoadAllAssetsAtPath(path).OfType<AnimationClip>())
+                    if (!c.name.StartsWith("__preview") && Short(c).StartsWith("Traqueur_"))
+                        found[Short(c)] = c;
+            }
+
+            return found.Values.ToArray();
+        }
 
         public static string Short(AnimationClip c) => c.name.Contains("|") ? c.name.Substring(c.name.IndexOf('|') + 1) : c.name;
 

@@ -332,13 +332,14 @@ namespace ItHunts.Tests
             Assert.That(s.predictionHorizon, Is.EqualTo(0.8f));
             // Géant (D-034).
             Assert.That(new[] { s.width, s.height }, Is.EqualTo(new[] { 7f, 14f }));
-            Assert.That(new[] { s.handReach, s.grabTelegraph, s.grabCooldown }, Is.EqualTo(new[] { 15f, 0.5f, 2.5f }));
+            Assert.That(new[] { s.armLength, s.grabTelegraph, s.grabCooldown }, Is.EqualTo(new[] { 8.3f, 0.5f, 2.5f }), "bras réel du v4 (D-080)");
             Assert.That(new[] { s.sightRange, s.soundRange, s.shakeRange }, Is.EqualTo(new[] { 60f, 60f, 25f }));
             Assert.That(s.followPlayerSpeedShare, Is.EqualTo(0f), "suivi désactivé par défaut");
             Assert.That(s.handClearance, Is.EqualTo(4.5f), "dégagement de la main au-dessus du point visé");
             // Poursuite façon Pac-Man (D-035).
+            // v4 (D-080) : baissé à 8.5 m (dos à quatre pattes 8.3 m), bras par une porte 10.3 m (8.3 + 2 m d'épaule engagée).
             Assert.That(new[] { s.crouchMinHeight, s.crouchSpeedFactor, s.roomReach, s.retargetInterval, s.grabReaim },
-                Is.EqualTo(new[] { 9f, 0.6f, 15f, 5f, 0.15f }));
+                Is.EqualTo(new[] { 8.5f, 0.6f, 10.3f, 5f, 0.15f }));
             Assert.That(s.allowUTurnWhenEnraged, Is.True);
             // Mains au-dessus de la tête (D-037).
             Assert.That(new[] { s.overheadRadius, s.overheadAboveHead, s.overheadTelegraph, s.overheadDuration, s.overheadCooldown },

@@ -19,6 +19,17 @@ namespace ItHunts.Enemies
         [Tooltip("Sphères (Transform : centre, échelle x : rayon) qui repoussent les os.")]
         public List<SphereCollider> sphereColliders = new List<SphereCollider>();
         public List<CapsuleCollider> capsuleColliders = new List<CapsuleCollider>();
+
+        /// <summary>Obstacle posé sur des os (sans collider : rien ne change pour la physique du jeu) : sphère sur a, ou capsule de a à b.</summary>
+        [System.Serializable]
+        public struct BoneObstacle
+        {
+            public Transform a, b;
+            public float radius;
+        }
+
+        [Tooltip("Obstacles sur les os du modèle (tête, cou, épaules, dos) : les cheveux n'y entrent jamais.")]
+        public List<BoneObstacle> boneObstacles = new List<BoneObstacle>();
         [Tooltip("Pas de simulation (s).")]
         [Min(0.002f)] public float step = 1f / 60f;
 
@@ -141,6 +152,10 @@ namespace ItHunts.Enemies
                         Radius = c.radius * MaxScale(c.transform),
                     });
                 }
+
+            foreach (BoneObstacle o in boneObstacles)
+                if (o.a != null)
+                    _obstacles.Add(new Obstacle { A = o.a.position, B = o.b != null ? o.b.position : o.a.position, Radius = o.radius });
 
             _accum = Mathf.Min(_accum + Time.deltaTime, step * 4f);
             Vector3 rootMove = _bones[0].position - _lastRoot;

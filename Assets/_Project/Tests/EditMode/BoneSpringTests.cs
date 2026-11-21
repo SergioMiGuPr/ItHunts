@@ -78,10 +78,14 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Traqueur_ReglagesPrevus_NonActives()
+        public void Traqueur_CheveuxActives_ReglagesDansStalkerDefault()
         {
+            // D-081 : le v4 est livré (PR #27), le ressort des cheveux est actif ; réglages dans Stalker_Default.
             var cfg = UnityEditor.AssetDatabase.LoadAssetAtPath<StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
-            Assert.That(cfg.boneChainsEnabled, Is.False, "pas activé avant la validation du modèle v4");
+            Assert.That(cfg.boneChainsEnabled, Is.True);
+            Assert.That(cfg.boneChains.stiffness, Is.InRange(0.01f, 0.5f));
+            Assert.That(cfg.boneChains.damping, Is.InRange(0.01f, 0.5f));
+            Assert.That(cfg.boneChains.gravity.y, Is.LessThan(0f));
         }
     }
 }

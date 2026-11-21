@@ -1694,7 +1694,7 @@ MonoBehaviour:
   parkour: 0
   validated: 1
   validatedHash: 1bdc879a
-  validationReport: "VALID\xC9 (2026-11-21 10:41)\nNavMesh : 6 paires d'entr\xE9es
+  validationReport: "VALID\xC9 (2026-11-21 11:03)\nNavMesh : 6 paires d'entr\xE9es
     reli\xE9es\ncachettes : 0 sur 929 points\n4 entr\xE9es, 10 apparitions, 5 habitants,
     3 coffres, 35502 triangles"
 --- !u!1 &4997583247024505575

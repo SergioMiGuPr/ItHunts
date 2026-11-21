@@ -779,7 +779,7 @@ effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retir
 | Coursive basse de la prison | 14 m de profondeur, dessus à 5.5 m | la 2e (11 m) fait 4 m : joueurs seulement |
 | Mezzanine de la caserne | 10 m, dessus à 6 m | |
 | Anneau bas du puits | 10 m, dessus à 11 m ; anneau haut 3 m à 17 m | plafond du puits 30 m |
-| Porte étroite | **8 × 10 m** (le traqueur se faufile, × 0.45) | seuil réglable (`narrowDoorHeight` 10 m, en attendant la mesure du v4) |
+| Porte étroite | **4 × 6 m au moins** (mesure de la DA, v4) : il se faufile (vitesse × 0.45, baissé à 5.5 m) ; les portes des modules font 8 × 10 m | `narrowDoorWidth` 4, `narrowDoorHeight` 6 (D-080) ; plus petite : seul son bras passe |
 | Bond | 22 m au plus, 6 m de dénivelé | arc de 5 m au-dessus de la ligne |
 | Rebord / mur grimpable / chaîne | 8 / 16 / 16 m de haut au plus | |
 | Saut depuis une chaîne | 18 m au plus | |
@@ -809,4 +809,17 @@ effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retir
 
 Les valeurs du § 0 (capsule Ø 7 × 14 m, épaule à 12 m, portée de main 15 m) décrivent l'ancien traqueur étiré par le code ;
 avec la v4 sans étirement, la portée réelle de la main est celle du tableau ci-dessus (à reporter dans `Stalker_Default` par `main`).
+
+## Traqueur v4 dans le jeu (main, matin du 2026-11-21, D-080, D-081)
+
+| Élément | Valeur | Remarque |
+|---|---|---|
+| Modèle | `SK_Traqueur_v4` tel quel (aucune échelle d'os, aucune déformation) | le jeu s'adapte au modèle |
+| Portée de la prise | bras 8.3 m + **fente du corps 6.5 m** (0.4 s, finie à l'impact) | clip de prise : l'impact doit tomber à la fin de la fente (donner l'instant d'impact) |
+| Épaule (pose voûtée) | 10.5 m de haut, 1.37 m de côté, 0.9 m devant | sert à la portée et aux cachettes |
+| Par une porte de pièce | 10.3 m (bras + 2 m d'épaule dans la porte de 3 m) | pièces annexes du niveau aléatoire : 12 × 8 m |
+| Plus petite porte | 4 × 6 m (il se faufile) | `Traqueur_PorteEtroite` : passer sous 6 m |
+| Baissé (ponts, poutres) | 8.5 m | `Traqueur_PassageBas` |
+| Cheveux | ressort maison, os `Cheveux_N_2` à `_4`, obstacles conseillés (NOTES.md) | réglages `Stalker_Default` > boneChains |
+| Clip manquant | mouvement provisoire procédural (dos voûté, bras ballants, cycle de marche) | remplacé par chaque clip `Traqueur_<Action>` livré |
 

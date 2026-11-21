@@ -268,7 +268,9 @@ namespace ItHunts.EditorTools
         {
             // Gréé et animé (PR #6) : SK_Traqueur remplace le corps et les pièces des bras ; les boîtes des bras et des mains restent
             // les zones qui tuent (le jeu ne les dessine plus), le code oriente les os des bras vers elles.
-            var corps = AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + "SK_Traqueur.fbx")
+            // Traqueur v4 (PR #27, D-080) : le modèle de l'utilisateur, jamais mis à l'échelle ni déformé.
+            var corps = AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + "SK_Traqueur_v4.fbx")
+                        ?? AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + "SK_Traqueur.fbx")
                         ?? AssetDatabase.LoadAssetAtPath<GameObject>(StalkerModels + "SM_Traqueur_Corps.fbx");
             var mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Ennemis/M_Traqueur.mat");
             Transform body = root.transform.Find("Corps (se baisse)");
@@ -359,7 +361,8 @@ namespace ItHunts.EditorTools
         {
             string current = EditorSceneManager.GetActiveScene().path;
             var lines = new List<string>();
-            foreach (string path in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
+            foreach (string path in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01.unity", "Assets/Scenes/Level_01_Base.unity", "Assets/Scenes/Level_01_Aleatoire.unity",
+                         "Assets/Scenes/Test_Vitrine.unity" })
             {
                 var scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
                 int here = 0;

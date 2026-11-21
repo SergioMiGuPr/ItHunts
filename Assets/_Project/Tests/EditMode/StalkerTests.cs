@@ -6,6 +6,7 @@ using NUnit.Framework;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools.Utils;
 
 namespace ItHunts.Tests
 {
@@ -81,15 +82,35 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void BrasEtire_SeulLAxeDeLOsSAllonge()
+        public void Fente_CeQuiManqueAuBras_PlafonneeEtSansDepasserLaCible()
         {
-            // D-070 : le bras s'allonge par l'échelle de son os, le long de son axe seulement (épaisseur inchangée) ; la main reçoit
-            // l'inverse et garde sa taille.
-            Vector3 rest = new Vector3(1f, 1f, 1f);
-            Assert.That(Stalker.StretchScale(rest, 1, 3.2f), Is.EqualTo(new Vector3(1f, 3.2f, 1f)));
-            Assert.That(Stalker.StretchScale(new Vector3(2f, 0.5f, 1f), 0, 2f), Is.EqualTo(new Vector3(4f, 0.5f, 1f)));
-            Vector3 arm = Stalker.StretchScale(rest, 2, 3.8f), handLocal = Stalker.StretchScale(rest, 2, 1f / 3.8f);
-            Assert.That(arm.z * handLocal.z, Is.EqualTo(1f).Within(1e-5f), "main : taille gardée");
+            // D-080 (remplace D-070) : plus d'os étiré ; le corps avance de ce qui manque au bras réel, jusqu'à grabLunge.
+            var cfg = ScriptableObject.CreateInstance<StalkerSettings>();
+            _objects.Add(cfg);
+            Assert.That(cfg.GrabReach, Is.EqualTo(cfg.armLength + cfg.grabLunge).Within(1e-5f));
+            Assert.That(EnemyMath.LungeDistance(-2f, 20f, cfg), Is.EqualTo(0f), "à portée du bras : pas de fente");
+            Assert.That(EnemyMath.LungeDistance(2f, 20f, cfg), Is.EqualTo(2f).Within(1e-5f));
+            Assert.That(EnemyMath.LungeDistance(9f, 20f, cfg), Is.EqualTo(cfg.grabLunge).Within(1e-5f), "plafond");
+            Assert.That(EnemyMath.LungeDistance(4f, 2f, cfg), Is.EqualTo(1.5f).Within(1e-5f), "jamais par-dessus la cible");
+            Assert.That(EnemyMath.LungeProgress(9f, 10f, 0.4f), Is.EqualTo(0f), "avant la fenêtre");
+            Assert.That(EnemyMath.LungeProgress(9.8f, 10f, 0.4f), Is.EqualTo(0.5f).Within(1e-4f));
+            Assert.That(EnemyMath.LungeProgress(10f, 10f, 0.4f), Is.EqualTo(1f), "finie à l'impact");
+        }
+
+        [Test]
+        public void ModeleV4_JamaisMisALEchelle_NiDeforme()
+        {
+            // Le modèle ne change jamais : aucun code du traqueur n'écrit d'échelle d'os (localScale) ; seul le ressort des cheveux
+            // déplace des os, en gardant leur longueur.
+            string code = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/Stalker.cs")
+                          + System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/StalkerProceduralPose.cs");
+            Assert.That(code.Contains("StretchScale"), Is.False);
+            foreach (string bone in new[] { "a.localScale =", "e.localScale =", "b[i].localScale =", "_pelvis.localScale =", "].localScale =" })
+                Assert.That(code.Contains(bone), Is.False, bone);
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/Models/Ennemis/SK_Traqueur_v4.fbx");
+            Assert.That(model, Is.Not.Null);
+            foreach (Transform t in model.GetComponentsInChildren<Transform>(true))
+                Assert.That(t.localScale, Is.EqualTo(Vector3.one).Using(Vector3EqualityComparer.Instance), t.name);
         }
 
         [Test]

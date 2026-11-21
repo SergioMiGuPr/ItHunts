@@ -18,7 +18,8 @@ namespace ItHunts.Enemies
     /// <summary>
     /// Passage du traqueur posé par un module (point 9) : de ce point à <see cref="end"/>, d'un type donné. ZoneNavMesh en fait un
     /// lien de NavMesh pour le traqueur seulement (coût = temps de traversée), Stalker le parcourt (arc, montée, ralentissement).
-    /// Une porte étroite n'a pas de lien : c'est une zone où il ralentit (il se faufile).
+    /// Porte étroite : au moins aussi grande que sa plus petite porte (DA : 4 × 6 m, D-080), un lien la traverse (il se faufile,
+    /// ralenti, même si son NavMesh baissé n'y passe pas) ; plus petite, seul son bras passe.
     /// </summary>
     public sealed class StalkerPassage : MonoBehaviour
     {
@@ -82,6 +83,21 @@ namespace ItHunts.Enemies
     public static class StalkerPassageMath
     {
         public static bool IsLeap(StalkerLinkKind k) => k == StalkerLinkKind.Bond || k == StalkerLinkKind.ChaineSaut;
+
+        /// <summary>Porte qu'il franchit en se faufilant : au moins sa plus petite porte (narrowDoorWidth × narrowDoorHeight).</summary>
+        public static bool DoorPassable(Vector3 doorHalfSize, StalkerSettings s) =>
+            doorHalfSize.x * 2f >= s.narrowDoorWidth - 1e-3f && doorHalfSize.y * 2f >= s.narrowDoorHeight - 1e-3f;
+
+        /// <summary>Bouts du lien d'une porte étroite : de part et d'autre de la zone de la porte (repère du passage).</summary>
+        public static void DoorEnds(Transform door, Vector3 doorHalfSize, float radius, out Vector3 a, out Vector3 b)
+        {
+            Vector3 f = door.forward;
+            f.y = 0f;
+            f = f.sqrMagnitude > 1e-4f ? f.normalized : Vector3.forward;
+            float d = doorHalfSize.z + radius + 1f;
+            a = door.position - f * d;
+            b = door.position + f * d;
+        }
 
         public static bool IsClimb(StalkerLinkKind k) =>
             k == StalkerLinkKind.EscaladeRebord || k == StalkerLinkKind.MurGrimpe || k == StalkerLinkKind.ChaineGrimpe;

@@ -371,6 +371,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3064f70594d8c16479928eccc33dac59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.ChestSpot
+  difficulty: 0
+  route: 
 --- !u!1 &757334821610522912
 GameObject:
   m_ObjectHideFlags: 0
@@ -1162,11 +1164,11 @@ MonoBehaviour:
   laneHalfWidth: 4
   parkour: 0
   validated: 1
-  validatedHash: 319397b2
-  validationReport: "VALID\xC9 (2026-11-16 03:24)\nAvertissement : 15 pi\xE8ce(s)
+  validatedHash: 8896b08e
+  validationReport: "VALID\xC9 (2026-11-21 11:03)\nAvertissement : 15 pi\xE8ce(s)
     de structure hors kit (Parcours : poutre x 1, Parcours : poutre z 1, Parcours
     : poutre x -1, Parcours : poutre z -1, Parcours : plateforme x -7)\nNavMesh :
-    6 paires d'entr\xE9es reli\xE9es\nzone de parcours : 3 point(s) hors de port\xE9e
+    6 paires d'entr\xE9es reli\xE9es\nzone de parcours : 5 point(s) hors de port\xE9e
     dans la fosse (permis)\ncachettes : 0 sur 782 points\n4 entr\xE9es, 7 apparitions,
     4 habitants, 1 coffres, 44846 triangles"
 --- !u!1 &3585686620611448138
