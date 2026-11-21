@@ -216,6 +216,11 @@ def demarche(nom, T, S, membres, posture, hanche_z, n_cycles=1, roulis_pied=35.0
     return act
 
 
+POLE_BRAS = (0.8, 0.7, 0.6)     # direction des coudes dans les démarches (vers l'extérieur, l'arrière et le haut)
+POLE_JAMBE = (0.15, -1.0, 0.4)  # direction des genoux (devant, un peu vers l'extérieur)
+MODE_MAIN = "axe"               # orientation des mains : "axe" (lots 1-2) ou "repos" (pivot depuis le repos, sans indétermination)
+
+
 def _poser_membre(a, m, P, roll, etat, u, pied_rest, fenetre=None):
     s = m.cote
     k = 1 if s == "G" else -1
@@ -227,7 +232,7 @@ def _poser_membre(a, m, P, roll, etat, u, pied_rest, fenetre=None):
         cheville = boule + R @ rel_ch
         dp = (R @ dir_pied).normalized()
         do = dir_orteils if etat == "appui" else (Quaternion(V((1, 0, 0)), math.radians(20.0 * math.sin(math.pi * u))) @ dir_orteils)
-        A.ik_jambe(s, cheville, V((0.15 * k, -1, 0.4)), dp, do, a)
+        A.ik_jambe(s, cheville, V((POLE_JAMBE[0] * k, POLE_JAMBE[1], POLE_JAMBE[2])), dp, do, a)
     else:
         # P = pointe des griffes au sol ; main posée à plat, doigts allongés vers l'avant
         if etat == "appui":
@@ -253,7 +258,7 @@ def _poser_membre(a, m, P, roll, etat, u, pied_rest, fenetre=None):
         Lm = (a.data.bones["Main_" + s].tail_local - a.data.bones["Main_" + s].head_local).length
         Ld = (a.data.bones["Doigts_" + s].tail_local - a.data.bones["Doigts_" + s].head_local).length
         poignet = P + V((0, 0, 0.18)) - dd * Ld - dm * Lm
-        A.ik_bras(s, poignet, V((0.8 * k, 0.7, 0.6)), dm, dd, a)
+        A.ik_bras(s, poignet, V((POLE_BRAS[0] * k, POLE_BRAS[1], POLE_BRAS[2])), dm, dd, a, mode_main=MODE_MAIN)
 
 
 def posture_marche(ph, lat=1.0):
@@ -483,6 +488,15 @@ def sequence(nom, cles, fps=30, vent=V((0, 0.15, 0))):
                 dd = _interp_vec(ts, [v[2] for v in vs], t, True)
                 pole = _interp_vec(ts, [v[3] if len(v) > 3 else V((0.8 * k, 0.7, 0.6)) for v in vs], t, True)
                 poignet = P - dd * L("Doigts_" + s) - dm * L("Main_" + s)
+                # garde : le poignet ne s'approche jamais à moins de 30 % de la longueur du bras de l'épaule (le coude basculerait) ;
+                # il est repoussé dans l'axe épaule-poignet (continu), seulement pendant les transitions (jamais atteint en appui)
+                sh = A.point("Bras_" + s, "head")
+                rel = poignet - sh
+                dmin = 0.3 * (L("Bras_" + s) + L("AvantBras_" + s))
+                bouge = ("p", s) not in dernier or (P - dernier[("p", s)]).length > 0.02
+                dernier[("p", s)] = P.copy()
+                if bouge and rel.length < dmin:
+                    poignet = sh + (rel.normalized() if rel.length > 1e-4 else V((k, 0, 0))) * dmin
                 if ("c", s) in dernier:
                     pole = (dernier[("c", s)] - A.point("Bras_" + s, "head")).normalized().lerp(pole, 0.25)
                 dernier[("c", s)] = A.ik_bras(s, poignet, pole, dm, dd, a, mode_main="repos")
@@ -864,3 +878,159 @@ def chaine_grimpe(cy=-3.5):
         cles.append({"t": t, "racine": V((0, cy + 0.8 + 0.05 * math.sin(t * 2), z - 0.1)), "dirs": _avec(DH, Tete=W(0.7, 1, 0.05 * math.sin(t * 1.5), 1)),
                      "mains": {"G": main_ch("G", hg), "D": main_ch("D", hd)}, "pieds": {s: pied_ch(s, pz) for s in "GD"}, "machoire": 6})
     return sequence("Traqueur_ChaineGrimpe", cles)
+
+
+# ------------------------------------------------------------------ lot 5 : chaîne (saut, prise), porte étroite
+PIVOT_Z = 40.0           # point d'accroche de la chaîne (hors champ dans les vidéos)
+
+
+def _rotx(v, ang, cy):
+    """Rotation d'un point autour de l'axe X passant par le point d'accroche (0, cy, PIVOT_Z) : balancement de la chaîne."""
+    p = V(v) - V((0, cy, PIVOT_Z))
+    return Quaternion(V((1, 0, 0)), math.radians(ang)) @ p + V((0, cy, PIVOT_Z))
+
+
+def _rotd(d, ang):
+    return (Quaternion(V((1, 0, 0)), math.radians(ang)) @ V(d)).normalized()
+
+
+def _pendu(cy, hz, ang=0.0, z_racine=0.0):
+    """Pose pendue repliée sur la chaîne (comme la fin de Traqueur_ChaineGrimpe), tournée de `ang` degrés autour de l'accroche."""
+    DH = {"Bassin": W(0.2, 1), "Colonne_1": W(0.15, 1), "Colonne_2": W(0.1, 1), "Colonne_3": W(0.1, 1), "Colonne_4": W(0.2, 1),
+          "Cou_1": W(0.4, 1), "Cou_2": W(0.6, 1), "Tete": W(0.7, 1), "Clavicule_G": W(0.3, 0.8, 1, 1), "Clavicule_D": W(0.3, 0.8, 1, -1)}
+    dirs = {n: _rotd(d, ang) for n, d in DH.items()}
+    def main(s, zm):
+        k = 1 if s == "G" else -1
+        return (_rotx(V((0.15 * k, cy - 0.2, zm)), ang, cy), _rotd(W(0.1, 1, 0.3, k), ang), _rotd(W(0.8, 0.2, 0.0, k), ang), V((0.9 * k, 0.6, -0.2)))
+    def pied(s, zp):
+        k = 1 if s == "G" else -1
+        return (_rotx(V((0.45 * k, cy + 0.35, zp)), ang, cy), _rotd(W(-0.3, -1, -0.5, k), ang), _rotd(W(0.6, -0.4, -0.6, k), ang), V((0.4 * k, -1, 0.6)))
+    racine = _rotx(V((0, cy + 0.9, z_racine)), ang, cy)
+    return racine, dirs, {"G": main("G", hz), "D": main("D", hz - 1.2)}, {s: pied(s, hz - 12.2) for s in "GD"}
+
+
+def chaine_saut(cy=0.0, bloc_y0=-12.5, bloc_z=3.3):
+    """Traqueur_ChaineSaut (vidéo traqueur_ref_chaine_saut, 0 → 6.0 s) : pendu replié sur la chaîne (léger balancement 0 → 2 s),
+    grand balancement arrière (2.0 → 2.8 s) puis avant (2.8 → 3.4 s), lâche la chaîne à 3.4 s, vol corps tendu, bras devant,
+    mains sur un bloc de 3.3 m à 4.2 s, pieds à 4.35 s, accroupi sur le bloc jusqu'à 6 s. Root motion : 15 m vers l'avant."""
+    hz = 16.0; zr = hz - 18.5
+    cles = []
+    for t, ang in ((0.0, 0.0), (0.5, -1.5), (1.0, 0.0), (1.5, 1.5), (2.0, 0.0), (2.8, -12.0), (3.4, 11.0)):
+        r, d, m, p = _pendu(cy, hz, ang, zr)
+        c = {"t": t, "racine": r, "dirs": d, "mains": m, "pieds": p, "machoire": 5 if t < 2.8 else 14}
+        if t == 2.8:
+            c["dirs"] = _avec(d, Colonne_3=_rotd(W(0.4, 1), ang), Colonne_4=_rotd(W(0.6, 1), ang))
+        cles.append(c)
+    rel = cles[-1]["racine"]
+    yL = bloc_y0 - 4.0
+    mainsB = {"G": main_au_sol("G", 1.8, yL - 3.8, bloc_z), "D": main_au_sol("D", -1.8, yL - 3.6, bloc_z)}
+    piedsB = {s: pied_a_plat(s, k * 1.2, yL + 0.6, bloc_z) for s, k in (("G", 1), ("D", -1))}
+    DT = {"Bassin": W(1, 0.2), "Colonne_1": W(1, 0.15), "Colonne_2": W(1, 0.1), "Colonne_3": W(1, 0.05), "Colonne_4": W(1, 0.0),
+          "Cou_1": W(1, 0.05), "Cou_2": W(1, 0.0), "Tete": W(1, -0.1), "Clavicule_G": W(0.9, 0.1, 1, 1), "Clavicule_D": W(0.9, 0.1, 1, -1)}
+    def vol(t):                     # relevé sur la vidéo : les deux tiers du trajet sont faits à 3.6 s, puis il plane jusqu'au bloc
+        y = _pchip([3.4, 3.6, 3.9, 4.2], [rel.y, rel.y + (yL - rel.y) * 0.62, rel.y + (yL - rel.y) * 0.9, yL], t)
+        z = _pchip([3.4, 3.6, 3.9, 4.2], [rel.z, rel.z + 1.2, bloc_z - 1.0, bloc_z - 2.9], t)
+        return V((0, y, z))
+    cles += [
+        {"t": 3.47, "mains": {s: _main_vol(s, vol(3.47), (k * 3.2, -4.5, 13.5)) for s, k in (("G", 1), ("D", -1))}},
+        {"t": 3.55, "racine": vol(3.55), "dirs": DT, "vent": V((0, 0.7, 0.3)),
+         "mains": {s: _main_vol(s, vol(3.55), (k * 2.0, -7.5, 8.0)) for s, k in (("G", 1), ("D", -1))},
+         "pieds": {s: _pied_vol(s, vol(3.55), (k * 1.1, 5.5, 4.5)) for s, k in (("G", 1), ("D", -1))}},
+        {"t": 3.95, "racine": vol(3.95), "dirs": _avec(ACCROUPI_4, Bassin=W(1, 0.6)),
+         "mains": {s: _main_vol(s, vol(3.95), (k * 1.9, -6.0, 4.0), 0.6) for s, k in (("G", 1), ("D", -1))},
+         "pieds": {s: _pied_vol(s, V((0, yL, 0)), (k * 1.2, 1.6, bloc_z + 2.0)) for s, k in (("G", 1), ("D", -1))}},
+        {"t": 4.2, "racine": V((0, yL + 0.3, bloc_z - 3.6)), "dirs": ACCROUPI_4, "mains": mainsB, "machoire": 12},
+        {"t": 4.28, "pieds": {s: (piedsB[s][0] + V((0, 0.15, 0.35)),) + piedsB[s][1:] for s in "GD"}},
+        {"t": 4.35, "racine": V((0, yL + 0.1, bloc_z - 4.3)), "dirs": ACCROUPI_4, "mains": mainsB, "pieds": piedsB, "vent": V((0, 0.1, 0))},
+        {"t": 4.7, "racine": V((0, yL + 0.2, bloc_z - 4.6)), "dirs": _avec(ACCROUPI_4, Colonne_4=W(1, -0.65)), "mains": mainsB, "pieds": piedsB},
+        {"t": 6.0, "racine": V((0, yL + 0.2, bloc_z - 4.2)), "dirs": ACCROUPI_4, "mains": mainsB, "pieds": piedsB, "machoire": 5},
+    ]
+    act = sequence("Traqueur_ChaineSaut", cles)
+    # lâcher de la chaîne : bras et jambes libres pendant 0.2 s, pics lissés (pas d'appui à ce moment)
+    A.adoucir_pics(act, 0, 180, ["Bras_G", "Bras_D", "AvantBras_G", "AvantBras_D", "Main_G", "Main_D", "Doigts_G", "Doigts_D",
+                                 "Cuisse_G", "Cuisse_D", "Jambe_G", "Jambe_D", "Pied_G", "Pied_D"])
+    A.lisser_quaternions(act)
+    return act
+
+
+def chaine_prise(cy=0.0):
+    """Traqueur_ChainePrise (vidéo traqueur_ref_chaine_prise, 0 → 6.0 s) : pendu à la chaîne par les jambes et la main gauche ;
+    le buste bascule vers l'avant et le bras droit descend saisir devant et dessous (tendu 0.75 → 3.5 s, griffes ouvertes),
+    poing à 3.75 s (prise), remonte de 4.0 à 5.0 s, la main droite reprend la chaîne, tenu replié jusqu'à 6 s."""
+    hz = 16.0; zr = hz - 18.5
+    r0, d0, m0, p0 = _pendu(cy, hz, 0.0, zr)
+    D1 = _avec(d0, Bassin=W(0.5, 1), Colonne_1=W(0.8, 1), Colonne_2=W(1, 0.6), Colonne_3=W(1, 0.2), Colonne_4=W(1, -0.2),
+               Cou_1=W(1, -0.3), Cou_2=W(1, -0.5), Tete=W(1, -0.6), Clavicule_D=W(1.0, -0.4, 0.6, -1))
+    r1 = r0 + V((0, 0.6, -0.8))
+    sh = _epaule(r1, D1, "D")
+    bas = V((sh.x - 0.4, sh.y - 6.2, max(1.0, sh.z - 5.0)))
+    ouv = (bas, W(0.8, -1, 0, -1), W(1, -0.5, 0, -1), V((-0.9, 0.5, 0.6)))
+    poing = (bas + V((0, 0.3, 0.3)), W(0.8, -1, 0, -1), W(-0.5, -1, 0, -1), V((-0.9, 0.5, 0.6)))
+    cles = [
+        {"t": 0.0, "racine": r0, "dirs": d0, "mains": m0, "pieds": p0, "machoire": 5},
+        {"t": 0.35, "racine": r0, "dirs": d0, "mains": {"D": m0["D"]}},
+        {"t": 0.45, "mains": {"D": (sh + V((-4.0, -3.0, 4.0)), W(0.6, 0.6, 0.6, -1), W(0.8, 0.4, 0.4, -1), V((-0.9, 0.5, 0.6)))}},
+        {"t": 0.6, "mains": {"D": (sh + V((-3.6, -5.5, -0.5)), W(1, -0.2, 0.3, -1), W(1, -0.2, 0.2, -1), V((-0.9, 0.5, 0.6)))}},
+        {"t": 0.75, "racine": r1, "dirs": D1, "mains": {"D": ouv}, "machoire": 14},
+        {"t": 3.5, "racine": r1 + V((0, -0.05, -0.05)), "dirs": D1, "mains": {"D": ouv}},
+        {"t": 3.75, "mains": {"D": poing}, "machoire": 22},
+        {"t": 4.0, "racine": r1, "dirs": D1, "mains": {"D": poing}},
+        {"t": 4.4, "mains": {"D": (sh + V((-3.6, -5.0, 0.5)), W(1, 0.0, 0.3, -1), W(-0.4, -1, 0, -1), V((-0.9, 0.5, 0.6)))}},
+        {"t": 4.7, "mains": {"D": (sh + V((-3.8, -2.6, 4.5)), W(0.5, 0.8, 0.4, -1), W(0.3, 0.6, 0.3, -1), V((-0.9, 0.5, 0.6)))}},
+        {"t": 5.0, "racine": r0, "dirs": d0, "mains": {"D": m0["D"]}, "machoire": 8},
+        {"t": 6.0, "racine": r0 + V((0, 0.05, 0)), "dirs": d0, "mains": m0, "pieds": p0, "machoire": 5},
+    ]
+    act = sequence("Traqueur_ChainePrise", cles)
+    A.adoucir_pics(act, 0, 180, ["Bras_D", "AvantBras_D", "Main_D", "Doigts_D"])     # la main droite quitte et reprend la chaîne
+    A.lisser_quaternions(act)
+    return act
+
+
+def porte_etroite(T=105, S=3.5, porte_y=-8.0):
+    """Traqueur_PorteEtroite (vidéo traqueur_ref_porte_etroite, 0 → 7.0 s) : marche à quatre pattes vers une porte étroite
+    (4 x 6 m), ralentit, abaisse le corps de 2.5 à 3.5 s (dos à 5 m, coudes serrés) et se faufile : tête et bras passent vers
+    3 s, le buste de 3.5 à 5 s, les jambes jusqu'à 7 s. 1.0 m/s, root motion. 2 cycles de 3.5 s."""
+    mem = [Membre("G", "main", 0.10, 0.25, 1.6, 1.2, 0.9), Membre("D", "pied", 0.44, 0.15, -0.4, 1.0, 0.7),
+           Membre("D", "main", 0.61, 0.25, 1.6, 1.2, 0.9), Membre("G", "pied", 0.91, 0.15, -0.4, 1.0, 0.7)]
+    def bas(f):
+        t = f / 30.0
+        return ss(2.5, 3.5, t)
+    def post(ph):
+        return posture_marche(ph, lat=0.6)
+    def aplatir(f, ph, a):
+        global POLE_BRAS, POLE_JAMBE
+        k = bas(f)
+        POLE_BRAS = (0.8 - 0.65 * k, 0.7 + 0.3 * k, 0.6)          # coudes serrés vers l'arrière pour passer la porte
+        POLE_JAMBE = (0.15 - 0.2 * k, -1.0, 0.4 - 0.3 * k)          # genoux rentrés sous le corps
+        A.deplacer_racine((0, 0, -2.3 * k))
+        for n, dd in (("Bassin", W(1, 0.05)), ("Colonne_1", W(1, 0.05)), ("Colonne_2", W(1, 0.0)), ("Colonne_3", W(1, -0.05)),
+                      ("Colonne_4", W(1, -0.1)), ("Cou_1", W(1, -0.05)), ("Cou_2", W(1, -0.1)), ("Tete", W(1, -0.05))):
+            cur = A.direction(n, a)
+            A.viser(a.pose.bones[n], cur.lerp(dd, k).normalized())
+        for s, kk in (("G", 1), ("D", -1)):
+            cur = A.direction("Clavicule_" + s, a)
+            A.viser(a.pose.bones["Clavicule_" + s], cur.lerp(W(0.6, -0.1, 0.5, kk), k).normalized())
+    global POLE_BRAS, POLE_JAMBE, MODE_MAIN
+    MODE_MAIN = "repos"
+    act = demarche("Traqueur_PorteEtroite", T, S, mem, post, lambda ph: -1.5 + 0.1 * math.cos(2 * TAU * ph), n_cycles=2,
+                   machoire=lambda ph: 4 + 2 * math.sin(TAU * ph), avant=aplatir)
+    POLE_BRAS = (0.8, 0.7, 0.6); POLE_JAMBE = (0.15, -1.0, 0.4); MODE_MAIN = "axe"
+    A.adoucir_pics(act, 0, 2 * T, ["Bras_G", "Bras_D", "AvantBras_G", "AvantBras_D"])   # coudes pendant les vols de main
+    A.lisser_quaternions(act)
+    return act
+
+
+def mur_porte(porte_y, largeur=4.0, hauteur=6.0, nom="_Porte_video"):
+    """Mur avec une porte étroite (rendus de contrôle seulement)."""
+    import bmesh
+    for n in (nom + "_G", nom + "_D", nom + "_H"):
+        o = bpy.data.objects.get(n)
+        if o:
+            bpy.data.objects.remove(o, do_unlink=True)
+    out = []
+    for n, sx, x, sz, z in ((nom + "_G", 10, largeur / 2 + 5, 20, 10), (nom + "_D", 10, -largeur / 2 - 5, 20, 10),
+                            (nom + "_H", largeur, 0, 20 - hauteur, hauteur + (20 - hauteur) / 2)):
+        me = bpy.data.meshes.new(n); bm = bmesh.new(); bmesh.ops.create_cube(bm, size=1.0); bm.to_mesh(me); bm.free()
+        o = bpy.data.objects.new(n, me); bpy.context.scene.collection.objects.link(o)
+        o.scale = (sx, 1.0, sz); o.location = (x, porte_y - 0.5, z); out.append(o)
+    return out
