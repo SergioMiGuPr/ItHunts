@@ -866,3 +866,17 @@ Paramètres > Touches : panneau des menus (`Carte_Legende_Cadre`), marque de foc
 Xbox / PlayStation), onglets « Clavier / souris » et « Manette » (état choisi et non choisi), bouton « Réinitialiser » ; la page
 Paramètres a une 7e ligne « Touches » (copie d'une ligne existante) et « Retour » descend d'un cran.
 
+
+## Eau dans les niveaux : retours du jeu (main, 2026-11-21, point 10 du playtest)
+
+Vérifié côté jeu : **toutes** les surfaces d'eau du niveau aléatoire utilisent `M_Eau_Toon` (`ItHunts/EauToon`, 45 surfaces sur
+une carte avec la citerne) ; le shader avance avec `_Time` en jeu (et dans le build : même shader, profil `PC_RPAsset` avec textures
+de profondeur et opaque). Mesures (deux images à 5 s d'écart) : eau de test `Test_Eau` 16 % de pixels qui changent, bassin d'un
+niveau 35 %. Le playtest la trouve pourtant « fixe, comme une texture ». **Demandes à la DA** (le jeu ne touche pas au matériau) :
+
+1. **Chutes d'eau figées** : l'eau qui tombe des tuyaux de la citerne inondée est un plan vertical avec le même shader ; les uv
+   sont en xz monde, donc **rien ne coule vers le bas** (0 % de pixels qui changent en 5 s, `docs/design/level/captures/eau_chute_figee.png`).
+   Il faudrait un mode « chute » (uv selon y, défilement vertical rapide, écume au pied) ou un matériau dédié.
+2. **Animation trop lente pour un niveau sombre** : courant `_Courant` 0.35 m/s sur une tuile de 6 m, ondulation `_Ondulation` 0.04 ;
+   à distance et dans le noir, le mouvement ne se lit pas (`eau_bassin_5s_ecart.png`). Proposition : courant ≈ 0.8 m/s, ondulation
+   ≈ 0.08, écume qui bouge plus (`_EcumeBruit`), reflets des torches plus présents ; à valider sur `Test_Eau` puis en jeu.
