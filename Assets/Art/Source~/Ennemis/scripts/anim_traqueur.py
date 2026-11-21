@@ -470,3 +470,45 @@ def sous_le_sol(debut, fin, a=None):
         if z < pire[0]:
             pire = (round(z, 3), f)
     return pire
+
+
+def adoucir_pics(act, debut, fin, os_noms, seuil=40.0, rayon=3, passes=3):
+    """Lisse les rotations des os donnés là où leur vitesse dépasse `seuil` °/image (et ±rayon images autour), par moyenne de
+    quaternions alignés. À n'utiliser que sur des transitions sans appui (le bout du membre n'y est pas tenu)."""
+    a = arm()
+    fc = {}
+    for c in _fcurves(act):
+        if c.data_path.endswith("rotation_quaternion"):
+            nom = c.data_path.split('"')[1]
+            if nom in os_noms:
+                fc.setdefault(nom, {})[c.array_index] = c
+    touches = {}
+    for nom, cs in fc.items():
+        if len(cs) < 4:
+            continue
+        q = {f: Quaternion([cs[i].evaluate(f) for i in range(4)]) for f in range(debut, fin + 1)}
+        pics = set()
+        for f in range(debut + 1, fin + 1):
+            d = q[f - 1].rotation_difference(q[f]).angle
+            if math.degrees(min(d, 2 * math.pi - d)) > seuil:
+                pics.update(range(max(debut, f - rayon), min(fin, f + rayon) + 1))
+        if not pics:
+            continue
+        for _ in range(passes):
+            nq = dict(q)
+            for f in pics:
+                acc = V((0, 0, 0, 0)); ref = q[f]
+                for g in range(max(debut, f - 2), min(fin, f + 2) + 1):
+                    qq = q[g] if q[g].dot(ref) >= 0 else -q[g]
+                    acc += V(qq) * (1.0 if g != f else 2.0)
+                nq[f] = Quaternion(acc).normalized()
+            q = nq
+        for f in pics:
+            for i in range(4):
+                for k in cs[i].keyframe_points:
+                    if abs(k.co[0] - f) < 1e-3:
+                        k.co[1] = q[f][i]; k.interpolation = "LINEAR"
+        for i in range(4):
+            cs[i].update()
+        touches[nom] = len(pics)
+    return touches
