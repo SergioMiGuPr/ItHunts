@@ -61,6 +61,8 @@ namespace ItHunts.Level
         public ModuleLevel level = ModuleLevel.Tous;
         [Tooltip("Poids du tirage (0 : jamais tiré).")]
         [Min(0f)] public float weight = 1f;
+        [Tooltip("Module fait dans l'atelier (menu Playtest : « Modules de l'atelier »).")]
+        public bool fromAtelier;
         [Tooltip("Le générateur peut le tourner d'un quart de tour (pas les modules à canal).")]
         public bool rotate = true;
         [Tooltip("Type, pour la hauteur du plafond (réglée par type dans MapLayout) : salle simple, à étages, d'égout.")]

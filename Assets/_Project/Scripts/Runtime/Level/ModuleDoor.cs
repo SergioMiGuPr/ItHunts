@@ -25,6 +25,9 @@ namespace ItHunts.Level
         [Min(0)] public int cell;
         [Tooltip("Obligatoire : le générateur relie toujours cette entrée (sinon le module n'est pas posé à cet endroit).")]
         public bool required;
+        [Tooltip("Taille de la porte vers le couloir (m) : largeur et hauteur de l'ouverture (atelier, vérification).")]
+        [Min(1f)] public float width = 14f;
+        [Min(1f)] public float height = 19f;
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -41,7 +44,7 @@ namespace ItHunts.Level
         {
             Gizmos.color = required ? new Color(1f, 0.6f, 0.1f) : new Color(0.2f, 0.9f, 0.4f);
             Gizmos.matrix = transform.localToWorldMatrix;
-            Gizmos.DrawWireCube(new Vector3(0f, 9.5f, 0f), new Vector3(14f, 19f, 1f));
+            Gizmos.DrawWireCube(new Vector3(0f, height * 0.5f, 0f), new Vector3(width, height, 1f));
             Gizmos.DrawLine(Vector3.zero, Vector3.forward * 6f);
         }
 #endif
