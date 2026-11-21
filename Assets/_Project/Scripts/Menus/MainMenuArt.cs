@@ -34,6 +34,7 @@ namespace ItHunts.Menus
         private GameObject _camp;
         private CampementApercu _campView;
         private Selectable _modify, _ready, _settingsButton, _friends, _back, _plus3, _plus4;
+        private RectTransform _plus2;
         private RectTransform _actSelector;
         private Text _actText;
         private readonly int[] _shownCharacter = { -2, -2, -2, -2 };
@@ -348,6 +349,10 @@ namespace ItHunts.Menus
             Bind(m, _menu.CampBack, _back, interactive);
             if (!interactive || !MenuArtKit.Clicked)
                 return;
+            if (_plus2 == null && _camp != null)
+                _plus2 = _camp.transform.Find("Interface/Plus_2") as RectTransform;   // PR #19 : place 2 vide (+, lanterne éteinte)
+            if (_plus2 != null && _plus2.gameObject.activeInHierarchy && MenuArtKit.Over(_plus2, _cam))
+                _menu.Say("Place 2 : appuyez sur Start sur une 2e manette");
             if (MenuArtKit.Over(Rect(_plus3), _cam) || MenuArtKit.Over(Rect(_plus4), _cam))
                 _menu.Say("Places 3 et 4 : jeu en ligne, plus tard (Start sur une 2e manette : place 2)");
             if (_actSelector != null && MenuArtKit.Over(_actSelector, _cam))
