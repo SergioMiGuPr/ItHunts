@@ -1,0 +1,16 @@
+Renard — repos : droite Boucle_OrbePaume (écart 1,0°), gauche Boucle_PriseAnneau (écart 1,0°)
+Renard — traction : droite Pose_Traction (écart 0,0°), gauche Boucle_PriseAnneau (écart 1,0°)
+Renard — répulsion maintenue : droite Pose_Repulsion (écart 0,0°), gauche Boucle_PriseAnneau (écart 0,8°)
+Renard — objet tenu : droite Pose_TenirObjet (écart 0,0°), gauche Boucle_PriseAnneau (écart 1,0°)
+Renard — répulsion (geste) : droite Pose_Repulsion (écart 0,5°), gauche Boucle_PriseAnneau (écart 1,7°)
+Renard — prise (geste) : droite Pose_Attraper_2 (écart 12,1°), gauche Boucle_PriseAnneau (écart 1,1°)
+Renard — lancer (geste) : droite Pose_Lancer (écart 0,0°), gauche Boucle_PriseAnneau (écart 1,3°)
+Caméléon — repos : droite Boucle_OrbePaume (écart 1,3°), gauche Boucle_Pistolet (écart 1,3°)
+Caméléon — traction : droite Pose_Traction (écart 0,0°), gauche Boucle_Pistolet (écart 1,4°)
+Caméléon — répulsion maintenue : droite Pose_Repulsion (écart 0,0°), gauche Boucle_Pistolet (écart 1,4°)
+Caméléon — objet tenu : droite Pose_TenirObjet (écart 0,0°), gauche Boucle_Pistolet (écart 1,2°)
+Caméléon — répulsion (geste) : droite Pose_Repulsion (écart 0,4°), gauche Boucle_Pistolet (écart 1,1°)
+Caméléon — prise (geste) : droite Pose_Attraper_2 (écart 12,6°), gauche Boucle_Pistolet (écart 1,3°)
+Caméléon — lancer (geste) : droite Pose_Lancer (écart 0,2°), gauche Boucle_Pistolet (écart 1,0°)
+menu pause : Reprendre | Cadrage des mains | Vitrine (assets et ennemis) | Retour au menu principal
+#fin

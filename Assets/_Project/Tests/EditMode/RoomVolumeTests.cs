@@ -115,6 +115,30 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Brouillard_ParJoueur_PartageEnCoop()
+        {
+            // Retours du 2026-11-17 : découverte gardée par joueur, partagée en coop (par défaut) ; sinon chacun sa carte.
+            RoomVolume a = Room("A", new Vector3(0f, 4f, 0f), new Vector3(20f, 8f, 20f));
+            RoomVolume b = Room("B", new Vector3(60f, 4f, 0f), new Vector3(20f, 8f, 20f));
+            var go = new GameObject("Carte");
+            _made.Add(go);
+            var map = go.AddComponent<MapDiscovery>();
+            map.DiscoverAt(new Vector3(0f, 0.5f, 0f), 1);
+            map.DiscoverAt(new Vector3(60f, 0.5f, 0f), 2);
+            Assert.That(map.DiscoveredBy(a, 1) && !map.DiscoveredBy(a, 2), Is.True, "A vue par le joueur 1 seulement");
+            Assert.That(map.SharedInCoop, Is.True, "partagée par défaut");
+            Assert.That(map.IsKnownFor(b, 1) && map.IsKnownFor(a, 2), Is.True, "coop : chacun voit ce que l'autre a vu");
+            Assert.That(map.KnownCountFor(1), Is.EqualTo(2));
+            map.SharedInCoop = false;
+            Assert.That(map.IsKnownFor(a, 1) && !map.IsKnownFor(b, 1), Is.True, "chacun la sienne");
+            Assert.That(map.KnownCountFor(2), Is.EqualTo(1));
+            Assert.That(map.IsKnownPointFor(new Vector3(60f, 1f, 0f), 1), Is.False);
+            Assert.That(map.IsKnownPointFor(new Vector3(60f, 1f, 0f), 2), Is.True);
+            map.Clear();
+            Assert.That(map.KnownCountFor(1) + map.KnownCount, Is.EqualTo(0));
+        }
+
+        [Test]
         public void Reglages_Traction2Charges_Murs85PourcentEt18()
         {
             var m = AssetDatabase.LoadAssetAtPath<MagnetismOrbSettings>("Assets/_Project/Settings/Magnetism_Default.asset");

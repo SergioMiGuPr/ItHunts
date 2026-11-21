@@ -12,8 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13fa3dbaddb3dfc4182c240df6693e26, type: 3}
   m_Name: Hud_Default
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.HudSettings
+  skin: {fileID: 11400000, guid: 1fe93b9ec3d836e48bcbef5afa47b841, type: 2}
   referenceResolution: {x: 1920, y: 1080}
   scale: 1
+  minLayoutWidth: 1100
+  timerFontSize: 56
   safeMargin: 0.05
   crosshairColor: {r: 1, g: 1, b: 1, a: 0.85}
   crosshairSize: 4
@@ -32,6 +35,12 @@ MonoBehaviour:
   fadeSpeed: 1.5
   returnBlinkDuration: 0.2
   returnBlinkBrightness: 1.8
+  ammoSegmentWidth: 8
+  ammoColor: {r: 1, g: 0.75, b: 0.35, a: 0.95}
+  ammoInactiveColor: {r: 0.6, g: 0.6, b: 0.6, a: 0.6}
+  playerHealthSize: {x: 220, y: 10}
+  playerHealthColor: {r: 0.9, g: 0.25, b: 0.25, a: 0.95}
+  friendlyHitColor: {r: 1, g: 0.45, b: 0.85, a: 1}
   damageFontMin: 18
   damageFontMax: 40
   damageNumberPool: 24

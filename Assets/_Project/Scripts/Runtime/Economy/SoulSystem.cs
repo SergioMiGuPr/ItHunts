@@ -224,6 +224,49 @@ namespace ItHunts.Economy
         /// <summary>L'orbe du joueur (dans sa main droite, devant ses yeux).</summary>
         public static Vector3 OrbOf(PlayerHealth p) => p.transform.position + Vector3.up * 1.2f;
 
+        private readonly List<GameObject> _soulVfx = new List<GameObject>();
+        private int _paintedSouls;
+
+        /// <summary>Âmes dessinées par l'effet peint (VFX_Ame, PR #22) cette image.</summary>
+        public int PaintedSouls => _paintedSouls;
+
+        /// <summary>
+        /// Âmes au sol et aspirées : petite flamme gris-bleu peinte de la DA sur les premières (au plus soulVfxCap, réserve
+        /// réutilisée) ; au-delà, l'ancien éclat instancié.
+        /// </summary>
+        private void LateUpdate()
+        {
+            var vfx = ItHunts.Combat.GameVfx.Settings;
+            _paintedSouls = 0;
+            if (vfx == null || vfx.soul == null || settings == null)
+                return;
+            float now = Time.time;
+            foreach (Shard s in _shards)
+            {
+                if (_paintedSouls >= vfx.soulVfxCap)
+                    break;
+                if (s.Collector == 0 && !SoulMath.BlinkVisible(now - s.Born, settings))
+                    continue;
+                if (_paintedSouls >= _soulVfx.Count)
+                {
+                    GameObject go = ItHunts.Combat.GameVfx.Spawn(vfx.soul, s.Position, Quaternion.identity, 1f, transform, 0f);
+                    if (go == null)
+                        return;
+                    _soulVfx.Add(go);
+                }
+
+                GameObject fx = _soulVfx[_paintedSouls++];
+                float bob = s.Collector != 0 ? 0f : Mathf.Sin((now - s.Born) * 3f + s.Born) * 0.08f;
+                fx.transform.position = s.Position + Vector3.up * bob;
+                if (!fx.activeSelf)
+                    fx.SetActive(true);
+            }
+
+            for (int i = _paintedSouls; i < _soulVfx.Count; i++)
+                if (_soulVfx[i] != null && _soulVfx[i].activeSelf)
+                    _soulVfx[i].SetActive(false);
+        }
+
         /// <summary>Dessine les éclats (communs) pour chaque caméra du jeu.</summary>
         private void Draw(ScriptableRenderContext context, Camera cam)
         {
@@ -233,9 +276,12 @@ namespace ItHunts.Economy
                 return;
             int n = 0;
             float now = Time.time, size = settings.soulSize;
+            int skip = _paintedSouls;                                       // déjà dessinées par l'effet peint de la DA
             foreach (Shard s in _shards)
             {
                 if (s.Collector == 0 && !SoulMath.BlinkVisible(now - s.Born, settings))
+                    continue;
+                if (skip-- > 0)
                     continue;
                 float bob = s.Collector != 0 ? 0f : Mathf.Sin((now - s.Born) * 3f + s.Born) * 0.08f;
                 _matrices[n++] = Matrix4x4.TRS(s.Position + Vector3.up * bob, Quaternion.identity, Vector3.one * size);

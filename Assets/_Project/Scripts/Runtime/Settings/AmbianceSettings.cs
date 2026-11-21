@@ -49,6 +49,24 @@ namespace ItHunts.Settings
             return 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(start, gone, d));
         }
 
+        [Header("Étalonnage (HorrorLookSettings.grading) : flaques de lumière dramatiques, pas un éclairage plat")]
+        [Tooltip("Exposition (EV) : négatif assombrit tout, les sources HDR restent vives.")]
+        [Range(-3f, 2f)] public float postExposure = 0f;
+        [Tooltip("Contraste (−100..100) : creuse les noirs autour des îlots de lumière.")]
+        [Range(-100f, 100f)] public float contrast = 15f;
+        [Tooltip("Saturation (−100..100).")]
+        [Range(-100f, 100f)] public float saturation = -10f;
+        [Tooltip("Filtre de couleur global (blanc : aucun).")]
+        public Color colorFilter = Color.white;
+        [Tooltip("Virage des ombres et des hautes lumières (gris : aucun) ; équilibre (−100 : ombres, 100 : hautes lumières).")]
+        public Color splitShadows = new Color(0.5f, 0.5f, 0.5f);
+        public Color splitHighlights = new Color(0.5f, 0.5f, 0.5f);
+        [Range(-100f, 100f)] public float splitBalance = 0f;
+
+        [Header("Lumière d'ambiance horreur (halos, vacillement, lanterne, ombres, effets d'écran)")]
+        [Tooltip("Réglages partagés par les ambiances ; vide : rien de tout ça (scènes de test).")]
+        public HorrorLookSettings look;
+
         [Header("Phase enragée")]
         [Tooltip("Ambiance prise au passage en Enragé (fin du timer de la zone) ; aucune : l'ambiance ne change pas.")]
         public AmbianceSettings enraged;
@@ -73,6 +91,14 @@ namespace ItHunts.Settings
             into.labelFullDistance = Mathf.Lerp(a.labelFullDistance, b.labelFullDistance, t);
             into.labelHiddenDistance = Mathf.Lerp(a.labelHiddenDistance, b.labelHiddenDistance, t);
             into.labelFogShare = Mathf.Lerp(a.labelFogShare, b.labelFogShare, t);
+            into.look = a.look != null ? a.look : b.look;
+            into.postExposure = Mathf.Lerp(a.postExposure, b.postExposure, t);
+            into.contrast = Mathf.Lerp(a.contrast, b.contrast, t);
+            into.saturation = Mathf.Lerp(a.saturation, b.saturation, t);
+            into.colorFilter = Color.Lerp(a.colorFilter, b.colorFilter, t);
+            into.splitShadows = Color.Lerp(a.splitShadows, b.splitShadows, t);
+            into.splitHighlights = Color.Lerp(a.splitHighlights, b.splitHighlights, t);
+            into.splitBalance = Mathf.Lerp(a.splitBalance, b.splitBalance, t);
         }
     }
 }

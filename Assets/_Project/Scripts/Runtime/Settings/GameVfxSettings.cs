@@ -1,0 +1,31 @@
+using UnityEngine;
+
+namespace ItHunts.Settings
+{
+    /// <summary>
+    /// Effets visuels peints de la DA (PR #22, docs/art/VFX-HANDOFF.md) à la place des particules provisoires. Chargé depuis
+    /// Resources/GameVfx_Default ; un effet absent : l'ancien reste.
+    /// </summary>
+    [CreateAssetMenu(fileName = "GameVfx_Default", menuName = "ItHunts/Réglages/Effets visuels")]
+    public sealed class GameVfxSettings : ScriptableObject
+    {
+        public GameObject torchFire;
+        public GameObject lanternJet;
+        public GameObject sparks;
+        public GameObject barrelMuzzle;
+        public GameObject barrelTrace;
+        public GameObject soul;
+        public GameObject ghoulDeath;
+        public GameObject flyerDeath;
+        public GameObject stun;
+        public GameObject parry;
+        public GameObject drainLink;
+        public GameObject healLink;
+        public GameObject stalkerLandingDust;
+
+        [Tooltip("Âmes dessinées avec l'effet peint (les plus proches) ; au-delà, l'ancien éclat.")]
+        [Min(0)] public int soulVfxCap = 32;
+        [Tooltip("Échelle de la flamme sur un ennemi qui brûle.")]
+        [Min(0.05f)] public float burningScale = 0.6f;
+    }
+}

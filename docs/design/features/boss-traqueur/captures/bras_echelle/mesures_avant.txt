@@ -1,0 +1,5 @@
+salle (56.00, 56.00), sol 0,00
+5 m : épaule→cible 9,98 m, bras 3,80 + avant-bras 3,92 m, poignet→centre main 2,25 m, échelles (1.00, 1.00, 1.00) (1.00, 1.00, 1.00) (1.00, 1.00, 1.00)
+10 m : épaule→cible 11,62 m, bras 4,61 + avant-bras 4,76 m, poignet→centre main 2,28 m, échelles (1.00, 1.00, 1.00) (1.00, 1.00, 1.00) (1.00, 1.00, 1.00)
+15 m : épaule→cible 14,85 m, bras 6,20 + avant-bras 6,40 m, poignet→centre main 2,29 m, échelles (1.00, 1.00, 1.00) (1.00, 1.00, 1.00) (1.00, 1.00, 1.00)
+#fin

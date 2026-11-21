@@ -25,7 +25,7 @@ EditorBuildSettings:
     guid: 0c23e6e862c677d499a9c6fa1a2cd65b
   - enabled: 1
     path: Assets/Scenes/Test_Vitrine.unity
-    guid: 645b745a995c5ae459ef12083ba12968
+    guid: 6c04b06eb2c23cb4a9fa19902ed32e59
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

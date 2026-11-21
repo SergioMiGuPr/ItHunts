@@ -10,10 +10,21 @@ namespace ItHunts.Settings
     [CreateAssetMenu(fileName = "Hud_Default", menuName = "ItHunts/Réglages/HUD")]
     public sealed class HudSettings : ScriptableObject
     {
+        [Tooltip("Rangée des munitions et de la recharge de l'artefact sous le viseur (retirée le 2026-11-21 ; le barillet montre ses balles).")]
+        public bool showAmmoRow;
+        [Header("Habillage de la DA (PR #10) : barre de vie, âmes, mini-carte ronde, polices ; vide : HUD greybox")]
+        public HudSkinSettings skin;
+
         [Header("Échelle")]
         [Tooltip("Résolution de référence (le HUD suit la hauteur de la zone de chaque joueur).")]
         public Vector2 referenceResolution = new Vector2(1920f, 1080f);
         [Min(0.1f)] public float scale = 1f;
+        [Tooltip("Largeur minimale de mise en page (px à l'échelle 1) : une vue plus étroite (écran partagé côte à côte, 4:3) réduit le HUD " +
+                 "pour que les coins tiennent. 0 : seule la hauteur compte.")]
+        [Min(0f)] public float minLayoutWidth = 1100f;
+
+        [Header("Timer de la zone")]
+        [Min(8)] public int timerFontSize = 56;
         [Tooltip("Marge de sécurité sur les bords (part de la hauteur) : coins réservés.")]
         [Range(0f, 0.2f)] public float safeMargin = 0.05f;
 

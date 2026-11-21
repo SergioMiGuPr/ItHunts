@@ -50,12 +50,19 @@ namespace ItHunts.EditorTools
             kit.escalier = ModelPiece("Kit_Escalier", "SM_Kit_Escalier") ?? CubePiece("Kit_Escalier", new Vector3(0f, 0.125f, 0.5f), new Vector3(4f, 0.25f, 1f), step);
             kit.pont = ModelPiece("Kit_Pont", "SM_Kit_Pont") ?? CubePiece("Kit_Pont", new Vector3(0f, -0.5f, 0f), new Vector3(3f, 1f, 4f), wood);
             kit.pilier = ModelPiece("Kit_Pilier", "SM_Colonne");
-            kit.arc = ModelPiece("Kit_Arc", "SM_Arc_Couloir");
+            // Arc à écoinçons pleins de la DA (PR #6, même pivot, 14 × 11 × 1.6 m), sinon l'anneau seul.
+            kit.arc = ModelPiece("Kit_Arc", "SM_Arc_Couloir_Ecoincons") ?? ModelPiece("Kit_Arc", "SM_Arc_Couloir");
             kit.portePiece = ModelPiece("Kit_PortePiece", "SM_Porte_Piece");
             kit.grandePorte = ModelPiece("Kit_GrandePorte", "SM_GrandePorte");
             kit.poutre = ModelPiece("Kit_Poutre", "SM_Poutre");
             kit.pontEgout4 = ModelPiece("Kit_PontEgout4", "SM_Pont_Egout_4m");
             kit.pontEgout14 = ModelPiece("Kit_PontEgout14", "SM_Pont_Egout_14m");
+            // Kit gothique des couloirs (PR #8) : voûte en lancette, arcs-doubleaux, colonnes engagées, murs à arcade et à niche.
+            kit.voute8 = ModelPiece("Kit_Voute_Ogive_8m", "SM_Voute_Ogive_8m");
+            kit.arcDoubleau = ModelPiece("Kit_ArcDoubleau_14m", "SM_ArcDoubleau_14m");
+            kit.colonneEngagee = ModelPiece("Kit_Colonne_Engagee_8m", "SM_Colonne_Engagee_8m");
+            kit.murArcade = ModelPiece("Kit_Mur_Arcade_8m", "SM_Mur_Arcade_8m");
+            kit.murNiche = ModelPiece("Kit_Mur_Niche_8m", "SM_Mur_Niche_8m");
             kit.torche = AssetDatabase.LoadAssetAtPath<GameObject>(PropLibrary.Dir + "/Prop_Torche.prefab");
             EditorUtility.SetDirty(kit);
             AssetDatabase.SaveAssets();
@@ -262,7 +269,7 @@ namespace ItHunts.EditorTools
             GameObject annex = AnnexPrefab(kit, false);
             GameObject locked = AnnexPrefab(kit, true);
             KitBuild.Spawner = (prefab, parent) => Object.Instantiate(prefab, parent, false);
-            var water = UnlitMat("Level_Water", "Universal Render Pipeline/Unlit", new Color(0.05f, 0.18f, 0.22f));
+            var water = WaterSetup.Water();                                // eau de la DA (PR #24), sinon greybox
             var zoneSettings = LoadOrCreate<ZoneSettings>(Level01ZonePath);
 
             // Gestion de la zone (comme FinishScene, sans la carte : elle est tirée au chargement).
@@ -335,6 +342,7 @@ namespace ItHunts.EditorTools
             SetRef(gen, "annex", annex);
             SetRef(gen, "lockedAnnex", locked);
             SetRef(gen, "water", water);
+            SetRef(gen, "waterSplash", WaterSetup.Splash());
             SetRef(gen, "nonMagnetic", NonMagneticMat());
             SetRef(gen, "movement", AssetDatabase.LoadAssetAtPath<ItHunts.Settings.MovementSettings>(SettingsDir + "/Movement_Default.asset"));   // écarts des parcours
             SetRef(gen, "zoneNav", nav);

@@ -30,6 +30,17 @@ namespace ItHunts.Enemies
         public Vector3 Velocity => Heading * Speed;
         /// <summary>Coin du chemin vers lequel il va (valable si HasPath).</summary>
         public Vector3 CurrentCorner => HasPath ? _corners[_index] : Destination;
+
+        /// <summary>Coin actuel et suivant du chemin (passages du traqueur : un lien du NavMesh est entre deux coins).</summary>
+        public bool PeekCorners(out Vector3 current, out Vector3 next)
+        {
+            current = next = Vector3.zero;
+            if (!HasPath || _index + 1 >= _count)
+                return false;
+            current = _corners[_index];
+            next = _corners[_index + 1];
+            return true;
+        }
         /// <summary>Passe au coin suivant (fin d'un passage par un mur).</summary>
         public void Advance()
         {

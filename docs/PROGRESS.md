@@ -4,6 +4,274 @@
 
 ## Étape en cours
 
+**Nuit du 2026-11-21 (`animations`, en autonomie) :** un commit par point ; PR d'art intégrées au fil de l'eau.
+- **1a. Course 7.5 → 8.5 m/s (D-072).** `Movement_Default.runSpeed`, `ParkourCaps.Default`, ART-HANDOFF. Vitesses des ennemis
+  inchangées. Écarts (ennemi − joueur à 8.5) : goule 10 (+1.5, bond 14 : +5.5) ; traqueur Chasse 9 (+0.5), pointe 16 (+7.5) ;
+  Enragé 11 → 18 par paliers (+2.5 → +9.5), pointe enragée 18 (+9.5) ; plafond du traqueur 18 m/s.
+- **1b. Élan gardé au sol (D-073).** `MovementMotor.GroundMomentum` (pas fixe, depuis `MovementInput`) : gardé en tenant avancer dans
+  un cône de 45°, plafond 20 m/s au sol, perte progressive (lâché, hors cône, recul, virage > 60°, mur) ; réglages dans
+  `Movement_Default` (« Élan gardé au sol ») ; debug : ligne « Élan au sol » (vitesse et raison). 12 tests (`GroundMomentumTests`).
+- **2. Hissage automatique (D-074).** `MovementMode.Mantle`, `ICollisionProbe.ProbeLedge` (mur devant, dessus marchable, profondeur, place
+  debout et pour monter) ; réglages « Hissage » de `Movement_Default` ; 8 tests (`MantleTests`). Zone d'essai derrière le départ dans
+  `Test_Movement` (x −18 → 18, z −26) et la vitrine (z −18) : rebords de 1.5 à 4.2 m, étroit, bloqué (`MantleCourseBuilder`, ajoutée
+  aux scènes sans les reconstruire). Détection vérifiée sur la vraie géométrie (CharacterController) : 3.7 m oui depuis 1.3 m,
+  4.2 m non, étroit et bloqué non. **Conséquence niveaux :** un mur ne bloque qu'à 5.5 m+ (ART-HANDOFF).
+- **PR #19 (`art-menus-2`) :** périmètre, GUID, compilation, 397 tests : fusionnée dans `main` (a89aa2e), poussée, `main` dans
+  `animations` ; intégrée (ac9652a) : place 2 vide (+, lanterne éteinte, clic), personnages éclairés par `CampementApercu.Occupe`.
+  Unity bloqué après le changement de branche (fil principal à l'arrêt, sans boîte de dialogue) : redémarré.
+- **3. Parade (D-075).** `ParryMath` / `ParryState` (pur), `PlayerParry` (prefab joueur, `Parry_Default`), goule : coup au contact
+  (à l'impact du clip) et bond passent par `PlayerParry.TryParry` ; `EnemyBody.StunFor` ; éclat et tintement provisoires
+  (`DamageFeedback`, `ProceduralSfx.Parry`), icône provisoire du HUD. Touches : E (interagir sur un objet, sinon parer), LB ;
+  **dash manette déplacé sur L3** (à confirmer). Vérifié en Play Mode (Test_Arena) : appui, impact tardif refusé, réussi,
+  goule étourdie 1.5 s, recharge, traqueur insensible. 6 tests (`ParryTests`).
+- **PR #20 (`art-audio`), #21 (`art-ui-jeu`), #22 (`art-vfx`) :** périmètre, GUID, compilation, 397 tests sur `main` ; conflits du
+  manifeste (lignes ajoutées des deux côtés, toutes gardées) ; fusionnées, poussées, `main` dans `animations`. **Leçon :** après un
+  changement de branche, forcer `AssetDatabase.Refresh(ForceSynchronousImport)` + recompilation, sinon Unity teste l'ancien code.
+- **4. Interface en jeu (D-076).** Assembly `ItHunts.HudArt` : `PlayerHudArt` (réticule, charges, parade de la DA, canevas
+  1920 × 1080 sur la caméra du HUD), `ShopPanelArt` (Panneau_Marchand / Panneau_Coffre dans la vue du joueur), `HudArtInstall`
+  (`PlayerHud.Built`, `ShopMenu.Opened`). Logique : `ShopMenu` (Runtime/Economy), `ArtifactMerchant` et `Merchant` interactifs,
+  coffre qui ouvre son choix, `OfferOrb.MenuOnly`. HUD : plus d'anneaux ni de jauges de traction et de répulsion, plus de recharge
+  de tir. Vérifié en Play Mode (Test_Arena) : achat, refus (prix rouge), offres renouvelées, coffre, fermeture et commandes rendues.
+  Captures : `docs/design/features/interface-jeu/captures/`. Icônes des améliorations : à fournir par la DA (masquées).
+- **PR #23 (`art-armes`), #24 (`art-eau`) :** vérifiées, fusionnées dans `main`, poussées, `main` dans `animations`.
+- **7. Eau de la DA.** `WaterSetup` (éditeur) : `M_Eau_Toon` (ItHunts/EauToon) sur toutes les surfaces d'eau (Level_01 et
+  Level_01_Base : 7 canaux ; générateur aléatoire : matériau et éclaboussure du `RandomLevel`), constructeurs branchés ;
+  `WaterSplash` (Runtime) : éclaboussure peinte à la surface quand un joueur, un ennemi ou un objet tombe dans l'eau (canal,
+  fosse), taille 1.2 par mètre (0.4 à 8). Profondeur et texture opaque déjà actives dans `PC_RPAsset`. Capture :
+  `docs/design/features/eau/canal_level01.jpg`. Remarque DA : `M_Campement_Assis_2.mat` est modifié sur disque pendant le
+  Play Mode du menu (contraste, luminosité) : remis tel quel, à voir côté `CampementApercu`.
+- **6. Sons de la DA (PR #20).** `GameAudioSettings` (`Resources/GameAudio_Default`, 20 sons), `GameAudio` (variante au hasard,
+  hauteur ±6 %, son 3D ponctuel ; repli `ProceduralSfx` si un son manque). Traqueur : pas (boucle selon la vitesse, tremblement à
+  chaque pas comme avant), souffle, grognement, cri d'enragé au hasard, cri à la prise ; goule : alerte, 2 attaques au hasard,
+  mort ; volant : cri, ailes en boucle 3D, mort ; barillet : 2 tirs en alternance, recharge ; lanterne : début puis boucle
+  pendant le jet (fondu de fin). Musique en jeu : exploration en boucle, fondu croisé (2.5 s) vers la musique Enragé, retour.
+  Volumes : l'écouteur porte volume général × effets ; les musiques (menu, jeu) multiplient par `GameSettings.MusicGain`.
+- **PR #25 (`art-kit-modules`), #26 (`art-outils`, `NUIT-FIN.md`) :** vérifiées, fusionnées, poussées, `main` dans `animations`.
+  Toutes les PR de la nuit sont intégrées (#19 à #26) ; pas de PR du traqueur v4 (consigne).
+- **8. Effets peints de la DA (PR #22).** `GameVfxSettings` (`Resources/GameVfx_Default`, 13 effets), `GameVfx.Spawn` ; Runtime
+  référence `ItHunts.Art.VFX`. Torches (`Prop_Torche` : `VFX_Torche_Feu` à la place de la flamme), jet de la lanterne (à la place
+  des bouffées), barillet (éclat de bouche, trace peinte, étincelles à l'impact), âmes (`VFX_Ame` sur les 32 plus proches, réserve
+  réutilisée), morts de goule et de volant, étoiles d'étourdissement, éclair de parade, brûlure (flamme à 0.6). Liens du hibou :
+  point 5 ; poussière d'atterrissage du traqueur : point 9. **Coût mesuré** (Play Mode, Level_01_Aleatoire, 235 torches,
+  470 systèmes, ~1 700 particules) : `ParticleSystem.Update` 0.77 ms par image, fil principal 15.1 → 13.2 ms torches éteintes
+  (éditeur). À surveiller en build ; leviers : `debit` des flammes, une torche sur deux (`RandomLevel.ThinTorches`).
+- **5. Koala et hibou (D-077).** `BoneSwordSettings` / `BoneSword` (combo, vitesse, fente, recul), `SpiritBookSettings` /
+  `SpiritBook` (drain, soin, plafonds, recharges), branchés dans `ArtifactHolder` ; `MovementInput.ThrowHeld` ; vue FPS
+  `ArtifactModelView` (modèles de la DA `Artefact_Epee_Koala`, `Artefact_Livre_Hibou` ; coup animé par le code ; liens peints) ;
+  `FirstPersonView.LeftHand`. Koala et hibou jouables (`playable`), descriptions sur l'écran de choix, pool des artefacts.
+  Vérifié en Play Mode : coup du 3e (16 PV) sur une goule, épée et livre visibles en main, lien de drain accroché à 8 m.
+  10 tests (`KoalaOwlArtifactTests`). Captures : `docs/design/features/artefacts/captures/`. Main gauche sans pose de prise
+  (mains gelées).
+- **10. Ressort des chaînes d'os (préparé, inactif).** `BoneSpringChain` (Verlet à pas fixe : raideur vers la pose animée,
+  amortissement, gravité, inertie de la racine, longueur gardée, collisions sphère et capsule, pose d'origine remise avant
+  l'Animator) ; réglages `BoneSpringSettings` dans `Stalker_Default` (`boneChainsEnabled` à faux : rien d'activé, modèle v4 et
+  D-070 non touchés). Chaîne factice de 8 os qui se balance dans la vitrine (x 8, z −8, `BoneChainDemo`). 5 tests.
+- **11. Outils.** `docs/design/OUTILS.md` : packages installés, gratuits officiels utiles plus tard (Animation Rigging,
+  ProBuilder, Splines, Recorder…), payants avec prix indicatifs (Final IK, Magica Cloth 2…). **Rien installé, rien acheté** :
+  AI Navigation (déjà là) couvre les liens du traqueur.
+- **9. Nouveaux modules et passages du traqueur (D-078).** `ModuleLibraryNight` : prison à étages, caserne, citerne inondée,
+  puits circulaire (4 modules **validés** : 0 cachette, NavMesh relié entre toutes les entrées), kit de la DA (PR #25) posé en
+  habillage par ses bornes (sans collision). `StalkerPassage` + `StalkerPassageMath` (permis, durée, arc, coût, prise pendant le
+  bond, récupération), liens dans `ZoneNavMesh` (bouts recalés à 4 m sur le sol du traqueur), traversée dans `Stalker.Locomote`
+  (chasse et ronde). `ChestSpot.difficulty` (0 à 2), tirage pondéré, coffre rare sur ancre difficile (`rareChestOnHardSpot` 0.35).
+  **5 seeds** (11, 22, 33, 44, 55) : 51 salles dont 12 à 17 des nouveaux types, 0 échec de plan, 47 à 77 liens du traqueur,
+  **0 cachette dans les nouveaux modules** (4 à 9 points ailleurs : arène du boss et fosses de parcours, comme avant),
+  construction 5.2 à 6.1 s + NavMesh 1.5 s. **Temps de trajet** (seed tirée en jeu) : bond 2.6 s en moyenne (28 liens : 8 aussi
+  atteignables à pied en 2.6 s, 20 inaccessibles sans le lien), saut de chaîne 2.5 s (12, tous inaccessibles à pied), mur 2.6 s
+  (10), chaîne 3.2 s (4) ; télégraphe et récupération compris : le joueur qui bouge bien a le temps de s'échapper.
+  Enregistrements : `docs/design/features/run-et-niveaux/captures/modules_nuit/` (bond sur une coursive de la prison, chaîne
+  du puits ; mp4 et planches). 6 tests (`StalkerPassageTests`).
+  Captures vue de dessus et en perspective des 4 modules (même dossier). **Pas fait :** couloirs de service plus étroits (les
+  couloirs restent les gothiques) ; poussière d'atterrissage peinte branchée mais pas vue en capture.
+
+**Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
+- **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;
+  menus : pas de logo écrit avec une police ni de boutons dessinés en remplacement, seulement les sprites de la session art.
+- **Lumières qui sautent, vitrine (ccd8dec) :** la lanterne ponctuelle (enfant du corps simulé à 60/s) avançait par à-coups
+  (0 puis 12.5 cm une image sur deux à 7.5 m/s) ; elle suit maintenant la position interpolée du corps, comme la caméra (écart
+  12.5 → 0.0 cm). Le cône suivait déjà le corps (d973e78). Prefab commun : toutes les scènes. Vu de l'extérieur : aucun saut.
+- **Accès à la vitrine (b7ca04b) :** lien « Vitrine (test) (F2) » sur l'écran titre (éditeur et builds de développement), F2 lance la
+  vitrine, Playtest passe sur F3. `docs/design/features/menus/captures/vitrine_acces/`.
+- **PR #17 (`art-ui-c`, lot T) :** méthode abandonnée, ne pas fusionner (la session art la ferme).
+- **PR #18 (`art-menus`) :** vérifiée (périmètre, aucun GUID réutilisé, compilation, 397 tests), fusionnée dans `main` (fdf2b7f) puis
+  sa correction des pieds des personnages assis (6cb410f), poussée, `main` fusionnée dans `animations`. `Campement_Fond.png.meta`
+  (PPU 200 → 100, sans compression) : seul `MenuSkin_Default` s'en servait (taille posée par le code), sans effet ailleurs.
+- **Description courte des artefacts (3522879)** : `ArtifactDefinition.description`, lue par l'écran de choix.
+- **Feu du campement (3a36d50)** : `AudioGain` (+28 dB, limiteur, écrêtage doux), environ 5 dB sous la musique (0.55).
+- **Menus de la DA intégrés (99dd767)** : assembly `ItHunts.Menus` (MainMenuArt, PauseMenuArt) ; logique gardée (brume, J1, Start,
+  Prêt, doublons, ACTE, solo direct) ; choix plein écran (un à la fois) ; `GameSettings` (6 lignes de la DA, menu et pause) ;
+  options d'image et cadrage des mains en « Options d'image (dév.) » dans la pause ; chat masqué ; musique continue, feu au
+  campement. Captures et contrôle : `docs/design/features/menus/captures/maquettes/` (`CONTROLE.txt`) ; bord clair absent du build.
+- **Retours à la DA** (ART-HANDOFF, « Menus : intégration de la PR #18 ») : bande bleue à droite de `Menus_Cadre.png` ; place 2
+  vide sans `+` ni lanterne éteinte ; manifeste sans les prefabs et shaders UI.
+- **En attente :** le prompt mouvement (course 8.5 m/s, élan gardé au sol) n'est pas dans cette session : à redemander.
+- **Timer :** à revoir plus tard, rien changé.
+- **Tests :** EditMode 427 + 1 non concluant attendu.
+
+**Retours des menus du 2026-11-18 (`animations`) :** 4145cf6 (écran titre), 10c747f (campement et transition). Captures avant/après en
+1920 × 1080 et 0,66x : `docs/design/features/menus/captures/retours_2026-11-18/`. Titre : deux styles en attendant le logo
+(`MenuSkin_Default.titleStyle` : Grenze Gotisch SemiBold avec contour par défaut, ou EB Garamond Bold espacé), à choisir. Liseré clair :
+absent de l'image rendue (mesuré), sans doute la vue Game de l'éditeur en zoom fractionnaire ; à confirmer dans un build.
+- **Attendu de la DA pour remplacer les morceaux provisoires :** scène composée de l'écran titre (ciel, lune, nuages raccordables ou
+  déjà posés, château détouré proprement, brume) et du campement (fond sans foyer à effet si l'effet doit rester code, ou foyer animé
+  livré) ; logo IT HUNTS ; personnages 2D du campement (lot C, assis, de face et de dos pour les places du fond) et ancrages des places ;
+  écran de choix du personnage (lot D) ; boutons (normal, survol, pressé, désactivé) et cadre du menu pause ; vraie musique.
+- **Tests :** EditMode 419 + 1 non concluant attendu.
+
+ (2026-11-18, `animations`, pas fusionnée dans `main`) :** un commit par point.
+- **PR #15 (art-ui-b) :** vérifiée (périmètre, `.meta`, manifeste, compilation, 397 tests), fusionnée dans `main` (f223c21), poussée,
+  `main` fusionnée dans `animations`.
+- **Carte ouverte (9a1e62b) :** cadre, parchemin, salles à l'encre, brume dévoilée par les salles et le pinceau (par joueur, partagé
+  en coop), vignette, titre, rose, légende ; écran partagé. `docs/design/features/vue-fps/captures/hud_carte/`.
+- **Menus (b154457 titre, 6f92e58 campement, 77e6c98 choix, 02827cb pause) :** uGUI avec les pièces de la DA, polices EB Garamond et
+  Grenze Gotisch, navigation souris, clavier et manette (focus visible), lisibles en 1920 × 1080, 0,66x et écran partagé. Logique du
+  campement testée (`CampLobbyTests`). Captures : `docs/design/features/menus/captures/`. Réglages : `MenuSkin_Default`.
+- **Pièces à demander à la session art (habillage provisoire en attendant) :** logo IT HUNTS (titre en Grenze Gotisch pour l'instant) ;
+  boutons (normal, survol, pressé, désactivé ; texte et barre pour l'instant) ; cadre du menu pause et des panneaux (le panneau de
+  la légende de la carte sert) ; lot D (écran de choix : cadre, vignettes, grande pose animée, panneau d'artefact, Valider / Prêt) ;
+  lot C (personnages 2D animés du campement ; silhouettes pour l'instant) ; prefab `Fond_Panorama` avec les calques restants (arbres
+  proches, sol, premier plan) et la jonction B2 entre le titre et le campement (deux toiles séparées pour l'instant) ; ancrages des 4
+  places autour du feu (réglés à l'œil dans `MenuSkin_Default`) ; nuages raccordables (bandes coupées d'un côté : elles dérivent au
+  lieu de défiler) ; vraie musique d'ambiance (nappe synthétisée).
+- **Tests :** EditMode 419 + 1 non concluant attendu.
+
+ + PR #13 et #14 (`animations`, pas fusionnée dans `main`) :** un commit par point.
+- **PR #14 (bras FPS à l'endroit) et #13 (traqueur v3) :** vérifiées (périmètre, compilation, 397 tests), fusionnées dans `main`
+  (03af276) et poussées, `main` fusionnée dans `animations`. Intégration #14 (c4e9d2a) : contournement des maillages retournés retiré,
+  test du volume signé des 8 bras. Intégration #13 (519f19f) : traqueurs des 4 scènes et vitrine reconstruits, 3 matériaux du corps,
+  lecture des clips = vitesse ÷ 3.71 / 2.29 (pied posé 5.3 → 0.48 m/s), D-070 vérifié (×1.8 à ×3.0, main à l'échelle 1), sommet 13.9 m
+  en marche, 8.5 m baissé ; **yeux de repli** (2 sphères sur l'os `Tete`, `eyeGlints`) car les pupilles du modèle v3 ne s'affichent
+  pas (trous du visage) : retour DA dans ART-HANDOFF ; `StalkerVisibilityTests` vert.
+- **Lumières qui sautent (d973e78) :** banc d'essai (même trajet scripté, 8 essais, GIF + caméra fixe) : cause = le cône de la lanterne
+  collé à la caméra (halo en retard puis recalé d'un coup après une rotation) ; il suit maintenant le corps (lissage réglable). Seuls
+  sauts restants vus de l'extérieur : lampes qui grésillent (effet voulu, `buzzingLampShare`). `rendu/captures/lumieres_qui_sautent/`.
+- **Orbe (299c1b1, ajout à D-069) :** immobile au repos, couronne face à la caméra, ne tourne que pendant une action, plus vive.
+- **Mains (ce11b28) :** pose « tenir » au repos (doigts à demi refermés vers `Pose_Poing`, réglable par main).
+- **HUD (5a59d49) :** âmes centrées, timer 56 sans objectif, échelle par la largeur sous 1100 px, carte ouverte uGUI par joueur
+  (action `Map` : Tab, croix haut), brouillard par joueur et partagé en coop, icônes de la DA, `Coffre_Rare` (coffres des parcours).
+- **Crash à la fermeture des builds (d1d1128) :** D3D12Core.dll, 0xc0000005 à chaque fermeture des builds récents. Bissection par builds :
+  le stencil écrit par les passes « ItHunts Mains » du renderer. Stencil éteint dans `PC_Renderer`, allumé seulement pendant l'Enragé,
+  éteint avant de quitter (`wantsToQuit`). Vérifié : 3/3 fermetures propres hors Enragé, 3/3 pendant l'Enragé.
+- **Écran partagé, 6 rondes alternées (e2ec285) :** médiane 23.5 → 18.8 ms, 95e centile 45.0 → 30.6 ms, B devant dans les 6 rondes.
+- **Coffre rare (6e90cf3, D-071) :** coffres des parcours, meilleur butin réglable dans `Economy_Default` (table dédiée, +1 choix, ×1.5).
+- **PR #16 (tête du traqueur) :** fusionnée dans `main` (271beee), intégrée : `eyeGlints` décoché, scènes reconstruites (ordre des
+  matériaux du nouveau FBX), test des matériaux ; `StalkerVisibilityTests` vert sans le contournement.
+- **Tests :** EditMode 415 + 1 non concluant attendu ; PlayMode 1/1.
+- **Points ouverts :** PR #15 (art-ui-b) puis les menus : attendre le retour de playtest de l'utilisateur.
+
+**Retours de playtest du 2026-11-17, second lot (`animations`, poussée pour la session art, pas fusionnée dans `main`) :** un
+commit par point.
+- **Tablettes de l'orbe (350108f, D-069) :** une tablette par charge de traction et de répulsion (2 + 1 au départ), une tablette qui
+  apparaît quand une amélioration augmente le maximum, rune éteinte quand la charge est utilisée, lueur à la couleur du personnage.
+- **Lumières qui scintillent en mouvement (cde6ece) :** jusqu'à 678 lumières dans le champ pour 256 gardées par Forward+ ; lumières du
+  décor éteintes au-delà du brouillard (hystérésis), fondu et hystérésis des ombres, atlas 4096, vacillement plus doux. Builds A/B
+  (3 rondes) : solo médiane 12.7 → 10.8 ms, 95e centile 20.8 → 16.5 ms ; écran partagé médiane 18.8 → 17.3 ms, 95e centile
+  28.9 → 32.5 ms (dispersé : 26.8 à 35.4). Détail : `docs/design/features/rendu/captures/scintillement/MESURES.txt`.
+- **Enragé (042e56b) :** le monde seul vire au rouge, 35 % de sa couleur gardée ; vue FPS (stencil) et HUD (Overlay) non étalonnés.
+- **PR #10 art-ui, #11 art-mains, #12 art-orbe :** vérifiées, fusionnées dans `main` (ef79230, acb5d8c, 206f3dc) et poussées, puis
+  intégrées : HUD habillé (d60d273, atlas V2), bras v2 et `Socket_Flottement` (6096721), tablette seule et tourbillon (c30937a).
+  Test des bras mis à 20 os (92e9a65).
+- **Bras du traqueur (f628473, D-070) :** allongement par l'échelle de l'os du bras au lieu d'os glissés (×2.3 à 5 m, ×3.2 à 15 m),
+  portée et prise inchangées ; captures `docs/design/features/boss-traqueur/captures/bras_echelle/`.
+- **Tests :** EditMode 405 réussis + 1 non concluant attendu ; PlayMode 1/1. `PlayFromMainMenu` réactivé après les tests.
+- **Points ouverts :**
+  - PR `art-surfaces` pas encore arrivée (à intégrer : ce que le shader demande, captures avant/après).
+  - DA : FBX des bras v2 retournés (contournement en place) ; traqueur : arrêter `M_Traqueur_Mains` au poignet (bande pâle quand le
+    bras s'allonge) ; notes dans `docs/art/ART-HANDOFF.md`.
+  - Icône `Coffre_Rare` de la minicarte pas encore utilisée.
+  - Les builds de développement B plantent à la fermeture (après la mesure, `PlayerConnection::Cleanup`) : à surveiller.
+
+**Retours de playtest du 2026-11-17, premier lot :** un commit par point.
+- **Orbe (b16d61b) :** le « disque gris » était la sphère greybox de 8 cm (matériau unlit) ; `SM_Orbe` branchée (`OrbModelView`,
+  `OrbModel_Default` : taille d'une pomme, couleur du personnage, anneaux, énergie qui pulse, tablettes = jauge des charges).
+- **Barillet (4ec0015) :** échelle 0.5 (largeur de la paume), chambres × 1.4 au lieu de × 3 ; taille, décalage et flottement dans
+  `Barrel_Default` (« Vue FPS »).
+- **Traqueur invisible (f95490f) :** dans `Test_Vitrine`, 32 os pour 42 dans le maillage (pas dessiné) : vitrine reconstruite ; dans les
+  niveaux, corps noir dans le noir et le brouillard (fin à 35-38 m en sombre et horreur) : lumière d'appoint sur le calque de rendu
+  « Traqueur », pupilles 1.5 ; anciennes mains en boîtes plus en double. Tests : os de tous les rendus gréés (EditMode), traqueur
+  visible à 10, 30, 60 m (**premier test PlayMode**, `Assets/_Project/Tests/PlayMode`, lancé en asynchrone).
+- **Vitrine, zone « Traqueur » (ba826c4) :** couloir gothique de 150 m construit par le code de la carte, galerie haute, 2 poutres,
+  ronde du traqueur (`PatrolPoints`) et poursuite (F1).
+- **Lumière d'ambiance horreur (9d2b30f) :** `HorrorLook` (`HorrorLook_Default`, chaque élément activable) : étalonnage par ambiance,
+  rouge sang presque monochrome en Enragé (12 s), halos (un système de particules), vacillement, cône de la lanterne ombré, 3 lumières
+  ombrées au plus, bloom / vignettage / grain / aberration (menu pause). Coût CPU 0.16 ms dans l'éditeur.
+- **ART-HANDOFF (1fc1b6d) :** demandes au shader toon (normales, sol mouillé, vortex de l'orbe) et inventaire des props (21 greybox).
+- **Tests :** EditMode 403 réussis + 1 non concluant attendu ; PlayMode 1/1 (visibilité du traqueur).
+- **Points ouverts :**
+  - Traqueur au-delà de la fin du brouillard (35-38 m en sombre) : seuls ses yeux se voient ; options à trancher (silhouette pâle
+    qui traverse le brouillard, brouillard plus loin, ou garder « on l'entend avant de le voir »).
+  - En Enragé, tout vire au rouge : le rouge du danger ne se distingue plus que par sa luminosité (15 % de couleur gardée).
+
+**PR #9 (`art-fix`) — 2026-11-17 :** pouce du traqueur repondéré, os correcteurs `Jambe_Pli.L/.R` du creux des genoux de la goule
+(pilotés dans les clips). Vérifiée (périmètre, manifeste, compilation, 397 tests + 1 non concluant attendu), fusionnée dans `main`
+(984efff) et poussée, puis `main` fusionnée dans `animations`. En jeu : 9 clips de la goule et 8 du traqueur branchés et lus sans
+erreur, impact de `Goule_Coup` toujours à 0.24 s ; `Jambe_Pli` ne bouge que dans `Goule_Mort` et `Goule_Etourdie` (0.9 cm).
+
+**PR #8 et voûte gothique (`animations`) — 2026-11-16, non poussée, à tester.** PR #8 vérifiée :
+- périmètre `Assets/Art/`, `docs/art/` et manifeste ; `.meta` des 6 FBX présents (les sources sont dans `Source~`) ;
+- compilation sans erreur, 398 tests ;
+- fusionnée dans `main` (commit de fusion 32ed865, branche `art` gardée) et poussée ; `main` fusionnée dans `animations`.
+
+Un commit par point :
+- **Bras :** poses recuites (repos des doigts fléchi), écart avec les 14 clips 74.7° → 0.0° sur les 8 bras ; koala et hibou
+  branchés sur leurs bras de la DA ; captures `docs/design/features/vue-fps/captures/mains_pr8/`.
+- **Lumière (shader de la PR) :** plus de cercles nets au plafond.
+  - Lanterne du renard ramenée au rouge sang (0.72 ; 0.40 ; 0.33) : le ×1.35 de `_LightSaturation` la mettait dans la saturation
+    des yeux du traqueur.
+  - Captures dans les 3 ambiances : `captures/lumiere_pr8/`.
+- **Couloirs gothiques** (couloirs plats de 14 m, `gothicCorridors`) :
+  - voûte en lancette, arcs-doubleaux sur colonnes engagées, travées de 8 m (arcade aveugle, niche ou mur plein) ;
+  - torches sur les trumeaux à 4 m ; pignon au-dessus des portes ; plafond des galeries entré dans la voûte ;
+  - 5 seeds : 0 cachette, NavMesh complet (goule et traqueur), aucun trou, aucun module traversé par la voûte ;
+  - draw calls +27 % (solo) et +35 % (écran partagé), temps d'image inchangé ; mesures dans
+    `docs/design/features/run-et-niveaux/captures/couloir_gothique/`.
+- **Référence :** `docs/design/references-visuelles/reference_couloir_gothique.png`.
+- **Plantage noté :** un plantage du pilote GPU (D3D12, « device removed ») pendant une capture ; il ne s'est pas reproduit après
+  relance.
+- **Points ouverts :**
+  - **Avant tout build public :** confirmer les droits d'usage commercial des contenus Higgsfield (références, textures) selon
+    le forfait.
+  - Arcades des couloirs : elles sont aveugles (1.2 m de profondeur) ; si on veut les ouvrir sur des pièces annexes, il faudra
+    une décision de level design.
+  - Genou gauche de Goule_Escalade (pic 1,94 à l'image 13), laissé tel quel ; à revoir seulement s'il se voit, ou avec les
+    animations d'après vidéo.
+  - ~~Draw calls des couloirs gothiques (+27 à 35 %)~~ : fusionnés par couloir le 2026-11-17 (éditeur, 6 poses : 4 855 → 3 182,
+    moins que le plafond plat à 4 258).
+  - ~~Physique un peu plus chère avec la voûte (33 468 colliders contre 14 572)~~ : voûte, arcs et coins des portes en un
+    MeshCollider statique par couloir le 2026-11-17 (16 839 colliders ; Physics.Simulate 0.534 → 0.468 ms en A/B dans l'éditeur ;
+    NavMesh, cachettes, fuites et traction inchangés ; détail dans `captures/couloir_gothique/MESURES.txt`). Restent en boîtes :
+    murs de travée (6 077, dans le NavMesh) et colonnes.
+  - Goule, coup au contact : à l'instant des dégâts (0.24 s), le clip `Goule_Coup` en est à 0.21–0.22 s (fondu de 0.06 s) ; un
+    bond peut couper le geste (priorité de l'état), les dégâts tombent quand même. Constaté au contrôle de la PR #9, inchangé par
+    elle ; à revoir seulement si ça se voit.
+- **Performance, mesure comparable (2026-11-17)** (`docs/design/features/run-et-niveaux/mesure_perf_ab_2026-11-17.txt`) :
+  - A/B en alternance dans la même session, 3 rondes : A = 02df035 (référence 9.9 ms), B = HEAD ; médiane / 95e centile :
+    - solo : A 11.6 / 16.9 ms, B 11.9 / 15.9 ms ;
+    - écran partagé : A 19.5 / 28.4 ms, B 19.2 / 26.8 ms.
+  - Pas de régression : l'écart avec 9.9 ms vient de l'état de la machine (le même exe a varié de 14.4 à 25.4 ms d'une session à
+    l'autre).
+  - Règle de mesure : toujours comparer deux builds en alternance dans la même session.
+  - Builds de mesure non suivis : `Builds/Perf_A` et `Builds/Perf_B`.
+
+**Animations (`animations`, depuis `main` après fusion de `retours-lot` et de la PR #6) — 2026-11-16, non poussée, à tester.**
+- **Goule animée** (`SK_Goule`, `Assets/_Project/Animation/Goule.controller`) : un clip par état (repos, course selon la vitesse,
+  annonce calée sur `leapTelegraph`, bond, réception, escalade, coup avec dégâts à l'impact 0.24 s, étourdie ou tenue, mort visible
+  1 s avant de disparaître) ; LOD 0.25 / 0.10 / 0.012 (DA, 1.8 m) ; elle se baisse sous un plafond bas (`minCrouch`).
+- **Passages bas :** agent des goules 0.45 × 1.2 m, porte des salles verrouillées hors de leur NavMesh, pas d'arc devant les portes
+  annexes ; 20 seeds : la goule atteint les 3 425 volumes que le joueur atteint à pied.
+- **Traqueur animé** (`SK_Traqueur`, `Traqueur.controller`, calque `Mâchoire`) : IK épaule-coude-poignet vers les zones de main du
+  code, bras étiré au-delà de sa longueur (portée 15 m) ; épaule lue sur l'os `Bras.R` (2.6 m de côté, 11.66 m, 3.55 m devant) ;
+  lueurs par matériau (pupilles, griffes) ; 0 cachette sur 20 seeds ; esquive 10/10 sans réaction, 0/20 en courant de côté.
+- **Bras FPS :** boucles `Boucle_*` au repos, poses d'action paume vers le haut ; cadrage de la référence
+  (`docs/design/references-visuelles/reference_bras_fps.png`, valeurs de la DA) : viseur dégagé pour tous les gestes, **couverture
+  17 à 26 %** (au-dessus de 15 % : à trancher) ; orbe à `orbInHand` ; lumière d'appoint sur le calque « FPS » (`fillLight*`).
+- **Arcs :** `SM_Arc_Couloir_Ecoincons` (les blocs provisoires ne restent que dans les couloirs en pente, cachés derrière) ; 0 vide
+  sur 1 460 arcs (5 seeds).
+- **Eau :** fosses de parcours avec eau (retour au seul contact), eau plus claire ; 120 vides sur 120 avec de l'eau (5 seeds).
+- **Vitrine :** enclos fermé (murs de 16 m, porte de 4 × 3 m), socles sous les goules et traqueurs animés, scène sous le même GUID.
+- **Build Windows release 0.1.0** : `Builds/ItHunts_0.1.0_Windows.zip` (non suivi par git), LISEZ-MOI.txt.
+- **En attente :** PR #7 (bras peints des 4 personnages), puis fusion de `main` dans `animations`.
+
 **Retours du lot (`retours-lot`, depuis `main` après fusion de `correctifs-rendu`, `integration-lot` et de la PR #5) — 2026-11-16,
 non poussée, à tester en playtest.** PR #5 vérifiée (périmètre, `.meta`, import sans erreur, 392 tests) et fusionnée (commit de
 fusion, branche `art` gardée), `main` poussé ; branches locales `correctifs-rendu` et `integration-lot` supprimées. Un commit par point :
@@ -748,7 +1016,7 @@ Le détail est dans `docs/design/GDD.md` §Decisions (D-001 à D-023).
 Mouvement de base validé le 2026-11-12 avec les valeurs de `Assets/_Project/Settings/Movement_Default.asset`
 et `Camera_Default.asset` (la note de conception en fait foi) :
 
-- **Sol :** course 7.5 m/s, accélération 10, friction 6, vitesse d'arrêt 2.5 m/s.
+- **Sol :** course 8.5 m/s (D-072), accélération 10, friction 6, vitesse d'arrêt 2.5 m/s.
 - **Saut :** 1.3 m, gravité 20 m/s², chute ×1.5, coupe 0.5, coyote 0.10 s, buffer 0.12 s (« un
   peu flottant », accepté). Saut en l'air 1.6 m ; 2 sauts ; auto-bunny hop activé.
 - **Air :** accélération 10, plafond 1 m/s, contrôle aérien 0.15 (jusqu'à 100°).

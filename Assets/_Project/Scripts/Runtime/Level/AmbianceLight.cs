@@ -20,8 +20,15 @@ namespace ItHunts.Level
         /// <summary>Torches et lampes actives (fondu de l'ambiance enragée sans recherche dans la scène).</summary>
         public static readonly System.Collections.Generic.List<AmbianceLight> All = new System.Collections.Generic.List<AmbianceLight>();
 
+        /// <summary>Intensité donnée par l'ambiance (le vacillement de HorrorLook la module) et position de départ de la flamme.</summary>
+        public float BaseIntensity { get; private set; }
+        public Vector3 BaseLocalPosition { get; private set; }
+        public Light Light { get; private set; }
+
         private void OnEnable()
         {
+            Light = GetComponent<Light>();
+            BaseLocalPosition = transform.localPosition;
             All.Add(this);
             Apply();
         }
@@ -50,6 +57,7 @@ namespace ItHunts.Level
             if (a == null || l == null)
                 return;
             l.intensity = kind == Kind.Torche ? a.torchIntensity : a.lampIntensity;
+            BaseIntensity = l.intensity;
             l.range = kind == Kind.Torche ? a.torchRange : a.lampRange;
         }
     }

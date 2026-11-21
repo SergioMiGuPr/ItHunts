@@ -1,0 +1,6 @@
+Poses des bras FPS recuites après la PR #8 (bras d'un seul tenant, repos des doigts légèrement fléchi), cadrage « écarté ».
+Planches (7 vues) : repos, traction, répulsion, prise, objet tenu, lancer, tir ou jet de la lanterne.
+- *_avant.png : nouveaux FBX, ancienne cuisson (écart jusqu'à 74,7° sur Pose_Poing) ; koala et hibou encore en greybox (bras non branchés).
+- *_apres.png : cuisson refaite, 14 clips × 8 bras, écart 0,0° ; koala et hibou branchés sur leurs bras de la DA.
+- *_apres_repos_hd.png : repos en 1920 × 1080 (doigts sans coupure).
+Le disque gris est l'orbe vue par la caméra de capture hors écran (déjà le cas avant).

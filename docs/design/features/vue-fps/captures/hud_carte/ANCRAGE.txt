@@ -1,0 +1,21 @@
+Ancrage de la mini-carte (rectangle à l'écran, px), avant :
+solo_1920x1080 : écran 1920x1080, capture 1920x1080 | J-11358848 vue (x:0.00, y:0.00, width:1920.00, height:1080.00) mini-carte x 1649..1888, y 797..1048
+solo_1280x720 : écran 1280x720, capture 1280x720 | J-11358848 vue (x:0.00, y:0.00, width:1280.00, height:720.00) mini-carte x 1099..1259, y 532..699
+solo_1024x768 : écran 1024x768, capture 1024x768 | J-11358848 vue (x:0.00, y:0.00, width:1024.00, height:768.00) mini-carte x 831..1001, y 567..745
+solo_2560x1080 : écran 2560x1080, capture 2560x1080 | J-11358848 vue (x:0.00, y:0.00, width:2560.00, height:1080.00) mini-carte x 2289..2528, y 797..1048
+solo_1267x713 : écran 1267x713, capture 1267x713 | J-11358848 vue (x:0.00, y:0.00, width:1267.00, height:713.00) mini-carte x 1088..1246, y 526..692
+solo_3840x2160 : écran 3840x2160, capture 3840x2160 | J-11358848 vue (x:0.00, y:0.00, width:3840.00, height:2160.00) mini-carte x 3298..3776, y 1595..2096
+partage_1920x1080 : écran 1920x1080, capture 1920x1080 | J-11358848 vue (x:0.00, y:0.00, width:960.00, height:1080.00) mini-carte x 689..928, y 797..1048 | J-12182078 vue (x:960.00, y:0.00, width:960.00, height:1080.00) mini-carte x 1649..1888, y 797..1048
+partage_1280x720 : écran 1280x720, capture 1280x720 | J-11358848 vue (x:0.00, y:0.00, width:640.00, height:720.00) mini-carte x 459..619, y 532..699 | J-12182078 vue (x:640.00, y:0.00, width:640.00, height:720.00) mini-carte x 1099..1259, y 532..699
+partage_1024x768 : écran 1024x768, capture 1024x768 | J-11358848 vue (x:0.00, y:0.00, width:512.00, height:768.00) mini-carte x 319..489, y 567..745 | J-12182078 vue (x:512.00, y:0.00, width:512.00, height:768.00) mini-carte x 831..1001, y 567..745
+
+Après (échelle : hauteur de la vue, et largeur sous 1100 px) :
+solo_1920x1080 : écran 1920x1080, capture 1920x1080 | J-14026472 vue (x:0.00, y:0.00, width:1920.00, height:1080.00) mini-carte x 1649..1888, y 797..1048
+solo_1280x720 : écran 1280x720, capture 1280x720 | J-14026472 vue (x:0.00, y:0.00, width:1280.00, height:720.00) mini-carte x 1099..1259, y 532..699
+solo_1024x768 : écran 1024x768, capture 1024x768 | J-14026472 vue (x:0.00, y:0.00, width:1024.00, height:768.00) mini-carte x 831..1001, y 567..745
+solo_2560x1080 : écran 2560x1080, capture 2560x1080 | J-14026472 vue (x:0.00, y:0.00, width:2560.00, height:1080.00) mini-carte x 2289..2528, y 797..1048
+solo_1267x713 : écran 1267x713, capture 1267x713 | J-14026472 vue (x:0.00, y:0.00, width:1267.00, height:713.00) mini-carte x 1088..1246, y 526..692
+solo_3840x2160 : écran 3840x2160, capture 3840x2160 | J-14026472 vue (x:0.00, y:0.00, width:3840.00, height:2160.00) mini-carte x 3298..3776, y 1595..2096
+partage_1920x1080 : écran 1920x1080, capture 1920x1080 | J-14026472 vue (x:0.00, y:0.00, width:960.00, height:1080.00) mini-carte x 724..932, y 833..1052 | J-14895308 vue (x:960.00, y:0.00, width:960.00, height:1080.00) mini-carte x 1684..1892, y 833..1052
+partage_1280x720 : écran 1280x720, capture 1280x720 | J-14026472 vue (x:0.00, y:0.00, width:640.00, height:720.00) mini-carte x 482..621, y 555..701 | J-14895308 vue (x:640.00, y:0.00, width:640.00, height:720.00) mini-carte x 1122..1261, y 555..701
+partage_1024x768 : écran 1024x768, capture 1024x768 | J-14026472 vue (x:0.00, y:0.00, width:512.00, height:768.00) mini-carte x 386..497, y 636..753 | J-14895308 vue (x:512.00, y:0.00, width:512.00, height:768.00) mini-carte x 898..1009, y 636..753

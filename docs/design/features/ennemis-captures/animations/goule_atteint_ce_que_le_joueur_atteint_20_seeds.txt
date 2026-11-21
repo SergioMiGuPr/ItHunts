@@ -1,0 +1,22 @@
+seed 104729 : volumes atteints à pied par le joueur 177, par la goule 177
+seed 209458 : volumes atteints à pied par le joueur 149, par la goule 149
+seed 314187 : volumes atteints à pied par le joueur 155, par la goule 155
+seed 418916 : volumes atteints à pied par le joueur 193, par la goule 193
+seed 523645 : volumes atteints à pied par le joueur 145, par la goule 145
+seed 628374 : volumes atteints à pied par le joueur 199, par la goule 199
+seed 733103 : volumes atteints à pied par le joueur 148, par la goule 148
+seed 837832 : volumes atteints à pied par le joueur 173, par la goule 173
+seed 942561 : volumes atteints à pied par le joueur 164, par la goule 164
+seed 1047290 : volumes atteints à pied par le joueur 192, par la goule 192
+seed 1152019 : volumes atteints à pied par le joueur 191, par la goule 191
+seed 1256748 : volumes atteints à pied par le joueur 163, par la goule 163
+seed 1361477 : volumes atteints à pied par le joueur 188, par la goule 188
+seed 1466206 : volumes atteints à pied par le joueur 193, par la goule 193
+seed 1570935 : volumes atteints à pied par le joueur 182, par la goule 182
+seed 1675664 : volumes atteints à pied par le joueur 176, par la goule 176
+seed 1780393 : volumes atteints à pied par le joueur 154, par la goule 154
+seed 1885122 : volumes atteints à pied par le joueur 177, par la goule 177
+seed 1989851 : volumes atteints à pied par le joueur 157, par la goule 157
+seed 2094580 : volumes atteints à pied par le joueur 149, par la goule 149
+TOTAL : 3425 / 3425 volumes atteints par la goule
+#fin

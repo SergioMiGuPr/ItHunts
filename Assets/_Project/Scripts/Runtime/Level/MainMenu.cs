@@ -1,28 +1,90 @@
+using System.Collections.Generic;
 using ItHunts.Hud;
 using ItHunts.Settings;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace ItHunts.Level
 {
     /// <summary>
-    /// Menu principal greybox (D-048) : personnage de chaque joueur (D-064 : caméléon et renard jouables, koala et hibou grisés ;
-    /// jamais deux fois le même en écran partagé), difficulté (Facile seule jouable), lancer le niveau 1, accès direct
-    /// à Test_Movement et Test_Arena (avec le personnage choisi). Inviter un ami, multijoueur, paramètres et touches sont présents mais grisés. Souris,
-    /// clavier et manette. Refait à l'étape 10 (structure de Ravenswatch et Dead by Daylight, aucun menu ne met en pause).
+    /// Menus d'avant-partie : la logique. L'affichage est celui des prefabs de la DA (PR #18, UI-HANDOFF § 2 : maquettes de
+    /// l'utilisateur au pixel), posé par l'assembly ItHunts.Menus (MainMenuArt) qui lit cet état ; sans lui, un repli greybox.
+    /// - Écran titre : Jouer, Paramètres, Quitter ; Vitrine (test, F2) et Playtest (F3) en petit en bas à droite (éditeur et
+    ///   builds de développement).
+    /// - Transition : la brume monte jusqu'à couvrir l'écran, puis se dissipe sur l'autre écran (durées réglables).
+    /// - Campement (CampLobby) : J1 = dernier personnage joué ; un joueur rejoint avec Start sur une autre manette (place 2 ;
+    ///   places 3 et 4 : en ligne, plus tard) ; ACTE I / II / III (◄ ►) ; Prêt : en solo, lance la partie ; en coop, bascule
+    ///   le joueur prêt, la partie part quand tout le monde l'est ; Prêt est grisé si un personnage est pris deux fois.
+    /// - Choix du personnage (CampCharacterPick) : un écran plein (celui de la DA), pour J1 ou pour le joueur qui a rejoint.
+    /// - Paramètres (GameSettings) : volumes, sensibilité, plein écran, réduire les animations.
+    /// - Audio : musique en boucle du titre au campement sans coupure ; crépitement du feu en boucle au campement.
+    /// Navigation : souris, clavier (flèches, Entrée, Échap), manette (croix ou stick, A, B). Aucun menu ne met en pause.
     /// </summary>
     public sealed class MainMenu : MonoBehaviour
     {
         [SerializeField] private RunDefinition run;
+        [SerializeField] private MenuSkinSettings skin;
         [SerializeField] private string movementScene = "Test_Movement";
         [SerializeField] private string arenaScene = "Test_Arena";
         [Tooltip("Carte fixe de référence du niveau 1 (comparer les réglages) ; les vraies parties sont tirées au hasard.")]
         [SerializeField] private string fixedLevelScene = "Level_01";
 
+        /// <summary>Scène vitrine (retours du lot, point 9) : assets de la DA, ennemis dans chaque état, vue FPS.</summary>
+        public const string VitrineScene = "Test_Vitrine";
+        public const string VitrineLinkLabel = "Vitrine (test) (F2)", PlaytestLinkLabel = "Playtest (F3)";
+
+        /// <summary>Le prochain chargement du menu ouvre directement le campement (Retour au campement depuis la pause).</summary>
+        public static bool StartAtCamp { get; set; }
+
+        /// <summary>Playtest : seulement dans l'éditeur et les builds de développement.</summary>
+        public static bool PlaytestVisible => Application.isEditor || Debug.isDebugBuild;
+
+        /// <summary>La vue de la DA (assembly ItHunts.Menus) s'abonne ici : elle se pose sur chaque menu principal.</summary>
+        public static event System.Action<MainMenu> Created;
+
+        public enum Page : byte { Titre, Transition, Campement, Parametres, Playtest }
+
+        // Menus (logique clavier-manette de GreyboxMenu). _menu : le menu Playtest (noms gardés par les tests).
         private readonly GreyboxMenu _menu = new GreyboxMenu();
-        private int _difficulty;
+        private readonly GreyboxMenu _title = new GreyboxMenu(), _camp = new GreyboxMenu(), _settings = new GreyboxMenu();
+        private CampLobby _lobby;
+        private CampCharacterPick _pick;
+        private int _act;
         private string _status = "";
+        private float _statusUntil;
+        private Page _page = Page.Titre, _back = Page.Titre, _target = Page.Campement;
+        private bool _showCamp;
+        private float _transitionT;
+        private bool _campCoop;
+        private bool _launching;
 
         public RunDefinition Run => run;
+        public MenuSkinSettings Skin => skin;
+        public Page Current => _page;
+        /// <summary>Page sous la transition et sous Paramètres (titre ou campement).</summary>
+        public Page Back => _back;
+        public CampLobby Lobby => _lobby;
+        public CharacterRoster Roster => run != null ? run.characters : null;
+        /// <summary>Écran affiché sous la brume : faux le titre, vrai le campement.</summary>
+        public bool ShowsCamp => _showCamp;
+        /// <summary>Brume de la transition (0 : rien, 1 : l'écran est couvert).</summary>
+        public float FogCover { get; private set; }
+        public int Act => _act;
+        public string Status => _status;
+        public GreyboxMenu TitleMenu => _title;
+        public GreyboxMenu CampMenu => _camp;
+        public GreyboxMenu SettingsMenu => _settings;
+        public GreyboxMenu PlaytestMenu => _menu;
+        /// <summary>Choix du personnage ouvert (null : aucun).</summary>
+        public CampCharacterPick Pick => _pick != null && _pick.IsOpen ? _pick : null;
+        /// <summary>Entrées du campement, une par bouton de la maquette.</summary>
+        public GreyboxMenu.Item CampModify { get; private set; }
+        public GreyboxMenu.Item CampReady { get; private set; }
+        public GreyboxMenu.Item CampSettings { get; private set; }
+        public GreyboxMenu.Item CampFriends { get; private set; }
+        public GreyboxMenu.Item CampBack { get; private set; }
+        /// <summary>Habillé par la DA : plus de repli greybox (sauf la page Playtest, de développement).</summary>
+        public bool Skinned { get; set; }
 
         private void Start()
         {
@@ -31,91 +93,208 @@ namespace ItHunts.Level
             ItHunts.Player.PlayerLook.MenuOpen = false;
             RunSession.End();
             RunSession.CoopDevice = null;
+            GameSettings.Apply();
             Build();
+            if (StartAtCamp)
+            {
+                StartAtCamp = false;
+                _page = Page.Campement;
+                _showCamp = true;
+                FocusCamp();
+            }
+
+            StartAudio();
+            Created?.Invoke(this);
         }
 
-        /// <summary>Scène vitrine (retours du lot, point 9) : assets de la DA, ennemis dans chaque état, vue FPS.</summary>
-        public const string VitrineScene = "Test_Vitrine";
+        // ---------- Menus ----------
 
-        private void Build()
+        /// <summary>Menus et salon (public pour les tests).</summary>
+        public void Build()
         {
+            CharacterRoster r = Roster;
+            int first = r != null ? r.defaultIndex : 0;
+            string last = CampLobby.LoadLast();
+            if (r != null && !string.IsNullOrEmpty(last))
+                for (int i = 0; i < r.Count; i++)
+                    if (r[i] != null && r[i].id == last && r[i].Selectable)
+                        first = i;
+            _lobby = new CampLobby(r != null ? r.Selectable() : new bool[0], first);
+            _pick = new CampCharacterPick(r);
+
+            _title.Items.Clear();
+            _title.Add("Jouer", () => GoTo(Page.Campement));
+            _title.Add("Paramètres", () => OpenSettings(Page.Titre));
+            _title.Add("Quitter", Application.Quit);
+            _title.FocusFirst();
+
+            BuildCampMenu();
+
+            _settings.Items.Clear();
+            GameSettings.Fill(_settings);
+            _settings.Add("Retour", () => _page = _back);
+            _settings.FocusFirst();
+
             _menu.Items.Clear();
-            Fix();
-            GreyboxMenu.Item c = _menu.Add("Joueur 1", null);
-            c.Value = () => CharacterLabel(0);
-            c.Change = d => Cycle(0, d);
-            GreyboxMenu.Item diff = _menu.Add("Difficulté", null);
-            diff.Value = () =>
-            {
-                if (run == null || run.difficulties.Count == 0)
-                    return "—";
-                RunDifficulty d = run.difficulties[_difficulty];
-                return d.playable ? d.displayName : $"{d.displayName} (bientôt)";
-            };
-            diff.Change = d => _difficulty = run == null || run.difficulties.Count == 0 ? 0 : (_difficulty + d + run.difficulties.Count) % run.difficulties.Count;
             _menu.Add("Lancer la run (niveau 1)", Launch);
             _menu.Add("Playtest : combat de boss", LaunchBossFight);
             _menu.Add("Playtest : vitrine", () => Direct(VitrineScene));
             _menu.Add("Test_Movement (banc d'essai)", () => Direct(movementScene));
             _menu.Add("Test_Arena (labyrinthe)", () => Direct(arenaScene));
             _menu.Add("Level_01 (carte fixe de référence)", () => Direct(fixedLevelScene));
-            GreyboxMenu.Item coop = _menu.Add("Joueur 2", null);
-            // Le 2e joueur choisit avec sa propre manette (◀ ▶, A pour valider, B pour changer), pas avec le menu du 1er.
-            coop.Value = () => RunSession.CoopDevice == null ? "Start sur sa manette"
-                : CharacterLabel(1) + (_p2Ready ? "  ✓" : "  · A pour valider");
-            _menu.Add("Inviter un ami", null, false);
-            _menu.Add("Multijoueur", null, false);
-            _menu.Add("Paramètres", null, false);
-            _menu.Add("Touches", null, false);
-            _menu.Add("Quitter", Application.Quit);
+            _menu.Add("Retour", () => _page = _back);
             _menu.FocusFirst();
         }
 
-        /// <summary>Chaque joueur a choisi : le 2e joueur (s'il a rejoint) a validé son personnage avec A.</summary>
-        private bool EveryoneChose()
+        /// <summary>
+        /// Boutons du campement (maquette) : Modifier, Prêt, Paramètres, Amis, Retour ; ◄ ► change l'acte depuis n'importe lequel.
+        /// Prêt : en solo, lance la partie ; en coop, bascule J1 prêt (la partie part quand tout le monde l'est).
+        /// </summary>
+        private void BuildCampMenu()
         {
-            if (RunSession.CoopDevice == null || _p2Ready)
-                return true;
-            _status = "Joueur 2 : choisis ton personnage avec ta manette (◀ ▶), puis valide avec A.";
-            return false;
+            _campCoop = _lobby.Count > 1;
+            _camp.Items.Clear();
+            CampModify = _camp.Add("Modifier le personnage", () => OpenSelect(0));
+            CampReady = _camp.Add(_campCoop ? "Prêt" : "Jouer", PressReady);
+            CampReady.Dim = () => ReadyBlocked;
+            CampSettings = _camp.Add("Paramètres", () => OpenSettings(Page.Campement));
+            CampFriends = _camp.Add("Amis", () => Say("Amis et jeu en ligne : plus tard"));
+            CampBack = _camp.Add("Retour", () => GoTo(Page.Titre));
+            foreach (GreyboxMenu.Item it in _camp.Items)
+                it.Change = ChangeAct;
+            FocusCamp();
+        }
+
+        /// <summary>Le focus du campement part sur Prêt (Entrée lance la partie en solo).</summary>
+        private void FocusCamp() => _camp.SetFocus(_camp.Items.IndexOf(CampReady));
+
+        /// <summary>Prêt grisé : un personnage pris deux fois, ou un acte pas encore jouable.</summary>
+        public bool ReadyBlocked => AnyDuplicate || !ActPlayable(_act);
+
+        private bool AnyDuplicate
+        {
+            get
+            {
+                for (int i = 0; i < CampLobby.Seats; i++)
+                    if (_lobby[i] != null && _lobby.Duplicate(i))
+                        return true;
+                return false;
+            }
+        }
+
+        private void PressReady()
+        {
+            if (!ActPlayable(_act))
+            {
+                Say($"{ActLabel(_act)} : pas encore jouable");
+                return;
+            }
+
+            if (_lobby.Count <= 1)
+                Launch();
+            else
+                ToggleReady(0);
+        }
+
+        public void ChangeAct(int d) => _act = (_act + d + 3) % 3;
+
+        public static string ActLabel(int act) => act switch { 0 => "ACTE I", 1 => "ACTE II", _ => "ACTE III" };
+        public static bool ActPlayable(int act) => act == 0;
+
+        private void OpenSettings(Page from)
+        {
+            _back = from;
+            _page = Page.Parametres;
+            _settings.FocusFirst();
+        }
+
+        private void GoTo(Page target)
+        {
+            _target = target;
+            _transitionT = 0f;
+            _page = Page.Transition;
+            _status = "";
+        }
+
+        public void Say(string text, float seconds = 3f)
+        {
+            _status = text;
+            _statusUntil = Time.unscaledTime + seconds;
+        }
+
+        private void ToggleReady(int seat)
+        {
+            if (!_lobby.ToggleReady(seat) && _lobby.Duplicate(seat))
+                Say($"{CharacterName(_lobby[seat].Character)} pris deux fois : changez de personnage pour être prêt.");
+        }
+
+        public string CharacterName(int i) => Roster != null && Roster[i] != null ? Roster[i].displayName : "Ce personnage";
+
+        // ---------- Lancement ----------
+
+        /// <summary>Les personnages du campement passent à la run (J1, puis le joueur qui a rejoint) ; J1 est enregistré.</summary>
+        private void ApplyLobby()
+        {
+            var chars = new List<int> { _lobby[0].Character };
+            RunSession.CoopDevice = null;
+            for (int i = 1; i < CampLobby.Seats; i++)
+                if (_lobby[i] != null)
+                {
+                    chars.Add(_lobby[i].Character);
+                    RunSession.CoopDevice = _lobby[i].Device as InputDevice;
+                    break;                                               // écran partagé à 2 pour l'instant
+                }
+
+            while (chars.Count < 2)
+                chars.Add(-1);
+            RunSession.Characters = chars.ToArray();
+            CharacterDefinition c = Roster != null ? Roster[_lobby[0].Character] : null;
+            if (c != null)
+                CampLobby.SaveLast(c.id);
         }
 
         private void Launch()
         {
-            if (!EveryoneChose())
-                return;
-            if (run == null || run.difficulties.Count == 0)
+            string blocker = _lobby.Blocker(CharacterName);
+            if (blocker != null)
             {
-                _status = "Pas de définition de run.";
+                Say(blocker);
                 return;
             }
 
-            if (!run.difficulties[_difficulty].playable)
+            if (!ActPlayable(_act))
             {
-                _status = $"{run.difficulties[_difficulty].displayName} : pas encore jouable. Facile seulement pour l'instant.";
+                Say($"{ActLabel(_act)} : pas encore jouable");
                 return;
             }
 
-            Fix();
-            string scene = RunSession.Begin(run, _difficulty);
+            int easy = run != null ? run.difficulties.FindIndex(d => d.playable) : -1;
+            if (easy < 0)
+            {
+                Say("Pas de définition de run");
+                return;
+            }
+
+            ApplyLobby();
+            string scene = RunSession.Begin(run, easy);
+            _launching = true;
             if (!RunSession.Load(scene))
             {
+                _launching = false;
                 RunSession.End();
-                _status = $"Scène « {scene} » absente du build (lancer le constructeur du niveau 1).";
+                Say($"Scène « {scene} » absente du build (lancer le constructeur du niveau 1)", 6f);
             }
         }
 
         /// <summary>Playtest : le niveau 1 en Facile, directement dans l'arène du combat de boss (traqueur, pièges, leviers).</summary>
         private void LaunchBossFight()
         {
-            if (!EveryoneChose())
-                return;
             int easy = run != null ? run.difficulties.FindIndex(d => d.playable) : -1;
-            Fix();
+            ApplyLobby();
             string scene = easy >= 0 ? RunSession.Begin(run, easy) : null;
             if (scene == null)
             {
-                _status = "Pas de niveau jouable pour le combat de boss.";
+                Say("Pas de niveau jouable pour le combat de boss");
                 return;
             }
 
@@ -124,164 +303,300 @@ namespace ItHunts.Level
             {
                 RunSession.BossPlaytest = false;
                 RunSession.End();
-                _status = $"Scène « {scene} » absente du build.";
+                Say($"Scène « {scene} » absente du build");
             }
         }
 
         private void Direct(string scene)
         {
-            if (!EveryoneChose())
-                return;
-            Fix();
+            ApplyLobby();
             RunSession.End();
             if (!RunSession.Load(scene))
-                _status = $"Scène « {scene} » absente du build.";
+                Say($"Scène « {scene} » absente du build");
         }
 
-        private bool _p2Ready;
-        private float _p2RepeatAt;
+        /// <summary>Vitrine (test) : lancée directement (F2 ou lien « Vitrine (test) »), éditeur et builds de développement seulement.</summary>
+        public void OpenVitrine()
+        {
+            if (PlaytestVisible)
+                Direct(VitrineScene);
+        }
 
-        /// <summary>Le 2e joueur a validé son personnage (tests, mesures).</summary>
-        public bool SecondPlayerReady => _p2Ready;
+        /// <summary>F2 : vitrine ; F3 : menu Playtest (éditeur et builds de développement).</summary>
+        private void DevKeys()
+        {
+            if (!PlaytestVisible || Keyboard.current == null)
+                return;
+            if (Keyboard.current.f2Key.wasPressedThisFrame)
+                OpenVitrine();
+            else if (Keyboard.current.f3Key.wasPressedThisFrame)
+                OpenPlaytest();
+        }
+
+        public void OpenPlaytest()
+        {
+            if (!PlaytestVisible)
+                return;
+            _back = _page == Page.Campement ? Page.Campement : Page.Titre;
+            _page = Page.Playtest;
+            _menu.FocusFirst();
+        }
+
+        // ---------- Entrées ----------
+
+        private static bool BackPressed(InputDevice except)
+        {
+            Keyboard k = Keyboard.current;
+            if (k != null && k.escapeKey.wasPressedThisFrame)
+                return true;
+            foreach (Gamepad g in Gamepad.all)
+                if (g != except && g.buttonEast.wasPressedThisFrame)
+                    return true;
+            return false;
+        }
+
+        private InputDevice SecondPad => _lobby != null ? (_lobby[1]?.Device as InputDevice) : null;
 
         private void Update()
         {
-            _menu.Exclude = RunSession.CoopDevice;                       // sa manette ne pilote pas le menu du 1er joueur
-            _menu.Update();
-            UpdateSecondPlayer();
-            // Écran partagé (étape 9) : le 2e joueur rejoint avec Start sur une autre manette que celle du 1er.
-            foreach (UnityEngine.InputSystem.Gamepad g in UnityEngine.InputSystem.Gamepad.all)
-                if (g.startButton.wasPressedThisFrame && g != GreyboxMenu.LastNavPad)
+            if (_lobby == null)
+                return;
+            InputDevice p2 = SecondPad;
+            _title.Exclude = _camp.Exclude = _settings.Exclude = _menu.Exclude = p2;
+            if (_status.Length > 0 && Time.unscaledTime > _statusUntil)
+                _status = "";
+            switch (_page)
+            {
+                case Page.Titre:
+                    _title.Update();
+                    DevKeys();
+                    break;
+                case Page.Transition:
+                    UpdateTransition();
+                    break;
+                case Page.Campement:
+                    UpdateCamp(p2);
+                    break;
+                case Page.Parametres:
+                    _settings.Update();
+                    if (BackPressed(p2))
+                        _page = _back;
+                    break;
+                case Page.Playtest:
+                    _menu.Update();
+                    if (BackPressed(p2))
+                        _page = _back;
+                    break;
+            }
+
+            UpdateAudio();
+        }
+
+        /// <summary>La brume monte (couvre l'écran), on change d'écran, puis elle se dissipe.</summary>
+        private void UpdateTransition()
+        {
+            float rise = skin != null ? skin.fogRiseSeconds : 0.8f, clear = skin != null ? skin.fogClearSeconds : 0.8f;
+            _transitionT += Time.unscaledDeltaTime;
+            if (_transitionT < rise)
+                FogCover = Mathf.SmoothStep(0f, 1f, _transitionT / rise);
+            else
+            {
+                _showCamp = _target == Page.Campement;
+                FogCover = 1f - Mathf.SmoothStep(0f, 1f, (_transitionT - rise) / clear);
+                if (_transitionT >= rise + clear)
                 {
-                    RunSession.CoopDevice = RunSession.CoopDevice == g ? null : g;   // Start de nouveau : il se retire
-                    _p2Ready = false;
-                    Fix();                                                        // il prend le premier personnage libre
-                    _status = RunSession.CoopDevice != null
-                        ? $"Joueur 2 a rejoint ({g.displayName}) : choisis ton personnage avec ta manette (◀ ▶), puis A."
-                        : "Joueur 2 retiré.";
+                    FogCover = 0f;
+                    _page = _target;
+                    if (_page == Page.Campement)
+                        FocusCamp();
+                    else
+                        _title.FocusFirst();
                 }
-        }
-
-        /// <summary>Choix du 2e joueur avec sa manette : ◀ ▶ change (personnages libres seulement), A valide, B revient au choix.</summary>
-        private void UpdateSecondPlayer()
-        {
-            if (!(RunSession.CoopDevice is UnityEngine.InputSystem.Gamepad pad))
-                return;
-            if (_p2Ready)
-            {
-                if (pad.buttonEast.wasPressedThisFrame)
-                    _p2Ready = false;
-                return;
-            }
-
-            float x = pad.leftStick.ReadValue().x + pad.dpad.ReadValue().x;
-            if (Mathf.Abs(x) > 0.6f && Time.unscaledTime >= _p2RepeatAt)
-            {
-                Cycle(1, x > 0f ? 1 : -1);
-                _p2RepeatAt = Time.unscaledTime + 0.25f;
-            }
-            else if (Mathf.Abs(x) < 0.2f)
-                _p2RepeatAt = 0f;
-            if (pad.buttonSouth.wasPressedThisFrame)
-            {
-                Fix();
-                _p2Ready = true;
-                _status = $"Joueur 2 : {CharacterLabel(1)}, validé.";
             }
         }
 
-        // ---------- Personnages (D-064) ----------
-
-        private CharacterRoster Roster => run != null ? run.characters : null;
-
-        /// <summary>Choix gardés valides : un personnage jouable par joueur, jamais deux fois le même (CharacterPick).</summary>
-        private void Fix()
+        private void UpdateCamp(InputDevice p2)
         {
-            CharacterRoster r = Roster;
-            if (r == null || r.Count == 0)
-                return;
-            int[] req = RunSession.Characters ?? new[] { -1, -1 };
-            if (req.Length < 2)
-                req = new[] { req.Length > 0 ? req[0] : -1, -1 };
-            RunSession.Characters = ItHunts.Artifacts.CharacterPick.Assign(r.Selectable(), req, 2, r.defaultIndex);
-        }
-
-        private void Cycle(int player, int dir)
-        {
-            CharacterRoster r = Roster;
-            if (r == null || r.Count == 0)
-                return;
-            Fix();
-            int[] all = RunSession.Characters;
-            // Le 2e joueur ne compte que s'il a rejoint ; sans lui, le joueur 1 peut prendre n'importe quel personnage jouable.
-            int[] taken = player == 0 ? (RunSession.CoopDevice != null ? new[] { all[1] } : new int[0]) : new[] { all[0] };
-            all[player] = ItHunts.Artifacts.CharacterPick.Cycle(r.Selectable(), all[player], dir, taken);
-            if (player == 0 && RunSession.CoopDevice == null && all[1] == all[0])
-                all[1] = -1;                                              // repris par le joueur 2 quand il rejoindra
-            RunSession.Characters = all;
-            Fix();
-            _status = "";
-        }
-
-        private string CharacterLabel(int player)
-        {
-            CharacterRoster r = Roster;
-            if (r == null || r.Count == 0)
-                return "—";
-            int[] sel = RunSession.Characters;
-            CharacterDefinition c = r[sel != null && player < sel.Length ? sel[player] : -1];
-            return c != null ? $"{c.displayName} ({c.ArtifactName})" : "—";
-        }
-
-        /// <summary>Les personnages en cartes : couleur, nom, artefact ; grisés s'ils ne sont pas jouables ; [J1] / [J2] sur le choix.</summary>
-        private void DrawCharacters(Rect area)
-        {
-            CharacterRoster r = Roster;
-            if (r == null || r.Count == 0)
-                return;
-            _cardTitle ??= new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold };
-            _cardText ??= new GUIStyle(GUI.skin.label) { fontSize = 17, wordWrap = true };
-            float cardH = Mathf.Min(110f, (area.height - 50f) / r.Count - 12f);
-            GUI.color = new Color(0f, 0f, 0f, 0.75f);
-            GUI.DrawTexture(new Rect(area.x - 16f, area.y - 16f, area.width + 32f, 50f + r.Count * (cardH + 12f) + 20f), Texture2D.whiteTexture);
-            GUI.color = Color.white;
-            _cardTitle.normal.textColor = Color.white;
-            GUI.Label(new Rect(area.x, area.y, area.width, 34f), "Personnages", _cardTitle);
-            int[] sel = RunSession.Characters ?? new int[0];
-            for (int i = 0; i < r.Count; i++)
+            if ((_lobby.Count > 1) != _campCoop)
+                BuildCampMenu();                                         // Prêt bascule en coop, Jouer en solo
+            if (Pick != null)
             {
-                CharacterDefinition c = r[i];
-                if (c == null)
+                _pick.Exclude = _pick.Seat == 0 ? p2 : null;
+                int pick = _pick.Update();
+                if (pick == CampCharacterPick.Cancel)
+                    _pick.Close();
+                else if (pick >= 0)
+                {
+                    _lobby.SetCharacter(_pick.Seat, pick);
+                    _pick.Close();
+                }
+            }
+            else
+            {
+                _camp.Update();
+                if (BackPressed(p2))
+                    GoTo(Page.Titre);
+                DevKeys();
+            }
+
+            // Écran partagé : Start sur une autre manette que celle du joueur 1 fait rejoindre (ou retirer) un joueur.
+            foreach (Gamepad g in Gamepad.all)
+            {
+                if (!g.startButton.wasPressedThisFrame || g == GreyboxMenu.LastNavPad)
                     continue;
-                var card = new Rect(area.x, area.y + 50f + i * (cardH + 12f), area.width, cardH);
-                bool on = c.Selectable;
-                bool p1 = sel.Length > 0 && sel[0] == i;
-                bool p2 = RunSession.CoopDevice != null && sel.Length > 1 && sel[1] == i;
-                GUI.color = p1 || p2 ? new Color(1f, 0.85f, 0.4f, 0.3f) : new Color(1f, 1f, 1f, 0.06f);
-                GUI.DrawTexture(card, Texture2D.whiteTexture);
-                GUI.color = on ? c.color : Color.Lerp(c.color, new Color(0.3f, 0.3f, 0.3f), 0.75f);
-                GUI.DrawTexture(new Rect(card.x + 12f, card.y + 12f, cardH - 24f, cardH - 24f), Texture2D.whiteTexture);
-                GUI.color = Color.white;
-                _cardTitle.normal.textColor = on ? Color.white : new Color(0.5f, 0.5f, 0.5f);
-                _cardText.normal.textColor = on ? new Color(0.85f, 0.85f, 0.85f) : new Color(0.45f, 0.45f, 0.45f);
-                float x = card.x + cardH + 4f, w = card.width - cardH - 12f;
-                string tags = (p1 ? "   [J1]" : "") + (p2 ? (_p2Ready ? "   [J2 ✓]" : "   [J2]") : "");
-                GUI.Label(new Rect(x, card.y + 10f, w, 30f), c.displayName + tags, _cardTitle);
-                GUI.Label(new Rect(x, card.y + 42f, w, cardH - 46f), on ? c.ArtifactName : $"{c.ArtifactName} · bientôt", _cardText);
+                int seat = _lobby.SeatOf(g);
+                if (seat >= 0)
+                {
+                    if (_pick.Seat == seat)
+                        _pick.Close();
+                    _lobby.Leave(g);
+                }
+                else if (_lobby.Join(g) < 0)
+                    Say("Plus de place en écran partagé : le jeu en ligne viendra plus tard");
             }
 
-            _cardTitle.normal.textColor = Color.white;
+            // Les joueurs qui ont rejoint : leur manette seule (A : prêt, Y : modifier, B : plus prêt).
+            for (int seat = 1; seat < CampLobby.Seats; seat++)
+            {
+                if (!(_lobby[seat]?.Device is Gamepad pad) || _pick.Seat == seat)
+                    continue;
+                if (pad.buttonSouth.wasPressedThisFrame)
+                    ToggleReady(seat);
+                else if (pad.buttonNorth.wasPressedThisFrame)
+                    OpenSelect(seat);
+                else if (pad.buttonEast.wasPressedThisFrame && _lobby[seat].Ready)
+                    _lobby[seat].Ready = false;
+            }
+
+            // Coop : tout le monde est prêt, sans doublon, l'acte est jouable : la partie part.
+            if (_lobby.Count > 1 && !_launching && _lobby.CanLaunch && ActPlayable(_act))
+                Launch();
         }
 
-        private GUIStyle _cardTitle, _cardText;
+        /// <summary>Ouvre le choix du personnage de cette place (un seul écran de choix à la fois).</summary>
+        public void OpenSelect(int seat)
+        {
+            CampLobby.Seat s = _lobby[seat];
+            if (s == null || _pick == null)
+                return;
+            if (_pick.IsOpen && _pick.Seat != seat)
+            {
+                Say($"J{_pick.Seat + 1} choisit son personnage");
+                return;
+            }
+
+            _pick.Open(seat, s.Character, seat == 0 ? null : s.Device as InputDevice);
+        }
+
+        // ---------- Audio : musique du titre au campement sans coupure, feu au campement ----------
+
+        private AudioSource _music, _fire;
+        private float _fireLevel;
+
+        /// <summary>Musique et feu (tests, mesures).</summary>
+        public AudioSource MusicSource => _music;
+        public AudioSource FireSource => _fire;
+
+        private void StartAudio()
+        {
+            if (FindFirstObjectByType<AudioListener>() == null)
+                gameObject.AddComponent<AudioListener>();               // la scène du menu n'en avait pas
+            _music = NewSource("Musique du menu", skin != null && skin.music != null ? skin.music : Drone());
+            if (skin != null && skin.fire != null)
+            {
+                _fire = NewSource("Feu du campement", skin.fire);
+                var gain = _fire.gameObject.AddComponent<ItHunts.Audio.AudioGain>();
+                gain.gainDb = skin.fireGainDb;
+                _fireLevel = _showCamp ? 1f : skin.fireOnTitle;
+            }
+
+            UpdateAudio();
+            _music.Play();
+            if (_fire != null)
+                _fire.Play();
+        }
+
+        private AudioSource NewSource(string name, AudioClip clip)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            var src = go.AddComponent<AudioSource>();
+            src.clip = clip;
+            src.loop = true;
+            src.playOnAwake = false;
+            src.spatialBlend = 0f;
+            return src;
+        }
+
+        private void UpdateAudio()
+        {
+            if (_music == null)
+                return;
+            _music.volume = (skin != null ? skin.musicVolume : 0.3f) * GameSettings.MusicGain;   // l'écouteur porte les effets
+            if (_fire == null)
+                return;
+            // Le feu monte quand le campement apparaît sous la brume, et redescend vers le titre.
+            float target = _showCamp ? 1f : skin.fireOnTitle;
+            _fireLevel = Mathf.MoveTowards(_fireLevel, target, Time.unscaledDeltaTime / Mathf.Max(0.05f, skin.fireFadeSeconds));
+            _fire.volume = skin.fireVolume * _fireLevel;                                      // effets : sur l'écouteur
+            var gain = _fire.GetComponent<ItHunts.Audio.AudioGain>();
+            if (gain != null)
+                gain.gainDb = skin.fireGainDb;
+        }
+
+        /// <summary>Nappe synthétisée (si la musique de la DA manque).</summary>
+        private static AudioClip Drone()
+        {
+            const int rate = 22050;
+            const float seconds = 16f;
+            int n = (int)(rate * seconds);
+            var data = new float[n];
+            float noise = 0f;
+            var rng = new System.Random(7);
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)rate;
+                float lfo = 0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * t / seconds * 2f);
+                float s = 0.32f * Mathf.Sin(2f * Mathf.PI * 55f * t) + 0.22f * Mathf.Sin(2f * Mathf.PI * 55.6f * t)
+                          + 0.14f * Mathf.Sin(2f * Mathf.PI * 82.4f * t) * lfo + 0.07f * Mathf.Sin(2f * Mathf.PI * 164.8f * t + Mathf.Sin(t * 0.7f));
+                noise = Mathf.Lerp(noise, (float)rng.NextDouble() * 2f - 1f, 0.02f);
+                data[i] = (s + noise * 0.5f) * 0.5f;
+            }
+
+            int fade = rate / 2;
+            for (int i = 0; i < fade; i++)
+            {
+                float k = i / (float)fade;
+                data[i] *= k;
+                data[n - 1 - i] *= k;
+            }
+
+            AudioClip clip = AudioClip.Create("Ambiance du menu (repli)", n, 1, rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        // ---------- Repli sans habillage (IMGUI), et page Playtest (développement) ----------
 
         private void OnGUI()
         {
-            string desc = run != null && run.difficulties.Count > 0 ? run.difficulties[_difficulty].description : "";
-            float split = Screen.width * 0.62f;
-            _menu.Draw("IT HUNTS", string.IsNullOrEmpty(_status) ? desc : _status, 560f, new Rect(0f, 0f, split, Screen.height));
-            DrawCharacters(new Rect(split + 10f, Screen.height * 0.14f, Mathf.Min(420f, Screen.width - split - 50f), Screen.height * 0.72f));
-            GUI.Label(new Rect(16f, Screen.height - 30f, 900f, 24f), "Greybox (étape 8) : menu provisoire, refait à l'étape 10. Flèches / croix pour choisir, gauche-droite pour changer, Entrée / A.");
+            if (_lobby == null || (Skinned && _page != Page.Playtest))
+                return;
+            if (Pick != null)
+            {
+                CharacterDefinition c = Roster != null ? Roster[_pick.Focus] : null;
+                GUI.Label(new Rect(40f, 40f, 900f, 60f), $"J{_pick.Seat + 1} : ◄ {(c != null ? c.displayName : "?")} ► ({(c != null ? c.ArtifactName : "")})  Entrée valider · Échap retour");
+                return;
+            }
+
+            GreyboxMenu m = _page switch { Page.Campement => _camp, Page.Parametres => _settings, Page.Playtest => _menu, _ => _title };
+            m.Draw(_page == Page.Campement ? ActLabel(_act) : "IT HUNTS", _status, 560f);
+            if (Skinned)
+                return;
+            if (PlaytestVisible && _page == Page.Titre && GUI.Button(new Rect(Screen.width - 180f, Screen.height - 50f, 160f, 34f), PlaytestLinkLabel))
+                OpenPlaytest();
+            if (PlaytestVisible && _page == Page.Titre && GUI.Button(new Rect(Screen.width - 180f, Screen.height - 90f, 160f, 34f), "Vitrine (test) (F2)"))
+                OpenVitrine();
         }
     }
 }

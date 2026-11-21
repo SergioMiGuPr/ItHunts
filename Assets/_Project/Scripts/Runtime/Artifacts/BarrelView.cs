@@ -65,7 +65,7 @@ namespace ItHunts.Artifacts
                 _view.PreviewRecoil();
             BarrelSettings cfg = _holder != null ? _holder.BarrelSettings : null;
             if (cfg != null)
-                _audio.PlayOneShot(_shot, cfg.shotVolume);
+                PlayShot(cfg.shotVolume);
         }
 
         /// <summary>Mesures : angle affiché du barillet (Z local, degrés) et nombre de chambres allumées.</summary>
@@ -150,14 +150,24 @@ namespace ItHunts.Artifacts
         /// de flottement le long de la normale de la paume ; orienté comme la vue (il vise toujours devant), avec une légère
         /// oscillation. Partagé par la lanterne de feu.
         /// </summary>
-        public static void PlaceFloating(Transform root, Vector3 inHand, Vector3 euler, float scale, FpsViewSettings fps, FirstPersonView view)
+        public static void PlaceFloating(Transform root, Vector3 inHand, Vector3 euler, float scale, FpsViewSettings fps, FirstPersonView view) =>
+            PlaceFloating(root, inHand, euler, scale, fps.floatHeight, fps.floatAmplitude, fps.floatPeriod, fps.floatWobble, fps.floatPhaseOffset, view);
+
+        /// <summary>Même chose avec le flottement propre à l'artefact (BarrelSettings : taille, décalage, flottement).</summary>
+        public static void PlaceFloating(Transform root, Vector3 inHand, Vector3 euler, float scale, float height, float amplitude, float period,
+            float wobble, float phase, FirstPersonView view)
         {
             Transform hand = root.parent;
             float t = Time.time;
-            float h = ViewmodelMotion.FloatHeight(t, fps, fps.floatPhaseOffset);
-            root.localPosition = inHand + Vector3.up * h;
+            float h = ViewmodelMotion.FloatHeight(t, height, amplitude, period, phase);
             Quaternion facing = view != null && view.ViewRoot != null ? view.ViewRoot.rotation : hand != null ? hand.rotation : root.rotation;
-            root.rotation = facing * Quaternion.Euler(euler + ViewmodelMotion.FloatWobble(t, fps, fps.floatPhaseOffset));
+            // Bras v2 (PR #11) : l'artefact flotte au-dessus de Socket_Flottement, qui suit la main animée ; sinon, le réglage dans la main.
+            Transform anchor = FpsArms.FloatSocket(hand);
+            if (anchor != null)
+                root.position = anchor.position + facing * Vector3.up * h;
+            else
+                root.localPosition = inHand + Vector3.up * h;
+            root.rotation = facing * Quaternion.Euler(euler + ViewmodelMotion.FloatWobble(t, period, wobble, phase));
             root.localScale = Vector3.one * scale;
         }
 
@@ -174,7 +184,8 @@ namespace ItHunts.Artifacts
             int tick = _motor != null ? _motor.State.Tick : 0;
             FpsViewSettings fps = _view != null ? _view.Settings : null;
             if (barrelRoot != null && fps != null)                          // réglable en Play Mode
-                PlaceFloating(barrelRoot, fps.barrelInHand, fps.barrelInHandEuler, fps.barrelScale, fps, _view);
+                PlaceFloating(barrelRoot, cfg.viewInHand, cfg.viewInHandEuler, cfg.viewScale, fps.floatHeight, cfg.floatAmplitude,
+                    cfg.floatPeriod, cfg.floatWobble, fps.floatPhaseOffset, _view);
 
             // Nouveau tir : traînée, impact, son, un cran de rotation.
             if (b.LastShotTick != MovementState.NeverTick && b.LastShotTick != _seenShotTick)
@@ -190,13 +201,14 @@ namespace ItHunts.Artifacts
                     impact.enabled = shot.Kind != BarrelHitKind.Rien;
                 }
 
-                _audio.PlayOneShot(_shot, cfg.shotVolume);
+                PlayShot(cfg.shotVolume);
+                PaintedShot(shot.Kind != BarrelHitKind.Rien ? shot.Point : (Vector3?)null, shot.Normal);
             }
 
             if (b.Reloading && b.ReloadStartTick != _seenReloadStart)
             {
                 _seenReloadStart = b.ReloadStartTick;
-                _audio.PlayOneShot(_reloadStart, cfg.reloadVolume);
+                ItHunts.Audio.GameAudio.PlayOn(_audio, ItHunts.Audio.GameAudio.Settings != null ? ItHunts.Audio.GameAudio.Settings.barrelReload : null, _reloadStart, cfg.reloadVolume);
             }
 
             if (b.LastReloadDoneTick != MovementState.NeverTick && b.LastReloadDoneTick != _seenReloadDone)
@@ -206,7 +218,9 @@ namespace ItHunts.Artifacts
             }
 
             float age = Time.time - _shotTime;
-            if (tracer != null)
+            if (tracer != null && _trace != null)
+                tracer.enabled = false;                                  // trace peinte de la DA à la place
+            else if (tracer != null)
             {
                 bool on = age < cfg.tracerDuration;
                 tracer.enabled = on;
@@ -247,6 +261,47 @@ namespace ItHunts.Artifacts
             float progress = Barrel.ReloadProgress(b, tick, cfg, Time.fixedDeltaTime);
             int lit = BarrelModel.Lit(b.Rounds, b.Reloading, progress);
             ShownLit = ApplyModel(cylinder, chambers, _chamberBlock, ShownAngle, b.ShotCount + _previewShots, _previewShots > 0 ? BarrelModel.Chambers : lit, b.Inactive, cfg);
+        }
+
+        private int _shotVariant;
+
+        /// <summary>Tir : les deux variantes de la DA en alternance (PR #20), hauteur variée ; sinon le tir provisoire.</summary>
+        private void PlayShot(float volume)
+        {
+            var art = ItHunts.Audio.GameAudio.Settings;
+            AudioClip clip = art != null && art.barrelShots != null && art.barrelShots.Length > 0
+                ? art.barrelShots[_shotVariant++ % art.barrelShots.Length] : null;
+            ItHunts.Audio.GameAudio.PlayOn(_audio, clip, _shot, volume);
+        }
+
+        private ItHunts.Art.VFX.TraceVfx _trace;
+
+        /// <summary>Tir : éclat de bouche peint (VFX_Barillet_Tir), trace peinte jusqu'à l'impact (VFX_Barillet_Trace), étincelles
+        /// sur un mur (VFX_Etincelles) ; effets de la DA (PR #22).</summary>
+        private void PaintedShot(Vector3? impactPoint, Vector3 normal)
+        {
+            var vfx = ItHunts.Combat.GameVfx.Settings;
+            if (vfx == null)
+                return;
+            Transform cam = _view != null && _view.ViewRoot != null ? _view.ViewRoot : transform;
+            ItHunts.Combat.GameVfx.Spawn(vfx.barrelMuzzle, _tracerFrom, Quaternion.LookRotation(cam.forward), 1f, null, 1.5f);
+            if (vfx.barrelTrace != null)
+            {
+                if (_trace == null)
+                {
+                    GameObject go = ItHunts.Combat.GameVfx.Spawn(vfx.barrelTrace, Vector3.zero, Quaternion.identity, 1f, null, 0f);
+                    _trace = go != null ? go.GetComponent<ItHunts.Art.VFX.TraceVfx>() : null;
+                }
+
+                if (_trace != null)
+                {
+                    _trace.detruire = false;
+                    _trace.Tire(_tracerFrom, _tracerTo);
+                }
+            }
+
+            if (impactPoint.HasValue)
+                ItHunts.Combat.GameVfx.Spawn(vfx.sparks, impactPoint.Value + normal * 0.03f, Quaternion.LookRotation(normal.sqrMagnitude > 0.01f ? normal : Vector3.up), 1f, null, 2f);
         }
     }
 }

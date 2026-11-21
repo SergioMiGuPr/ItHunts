@@ -1,0 +1,8 @@
+MarcheVoutee : Traqueur_Marche
+Prise : Traqueur_Prise
+MainPlantee : Traqueur_MainPlantee
+MainsLevees : Traqueur_MainsLevees
+Revers : Traqueur_Revers
+Baisse : Traqueur_PassageBas
+Repos : Traqueur_Repos
+#fin

@@ -19,7 +19,7 @@ namespace ItHunts.EditorTools
     /// dessous), ponts dont le dessous est à 10 m, décor en bordure et en petits groupes séparés d'au moins 8 m (le traqueur
     /// passe partout et sa main atteint tout point où l'on tient debout).
     /// </summary>
-    public static class ModuleLibrary
+    public static partial class ModuleLibrary
     {
         public const string Dir = "Assets/_Project/Prefabs/Modules";
         /// <summary>Plafond du module en cours (hauteur de son type dans MapLayout_Niveau1) : suspensions sous le plafond.</summary>
@@ -50,6 +50,11 @@ namespace ItHunts.EditorTools
             ("Prison", Prison),
             ("Carrefour_Niches", CarrefourNiches),
             ("Carrefour_Encombre", CarrefourEncombre),
+            // Nuit du 2026-11-21 (point 9) : d'après les 4 références de l'utilisateur.
+            ("Prison_Etages", PrisonEtages),
+            ("Caserne", Caserne),
+            ("Citerne_Inondee", Citerne),
+            ("Puits_Circulaire", Puits),
             // Modèles vides à dupliquer (poids 0 : jamais tirés tels quels) : 1 × 1, 1 × 2, 2 × 2.
             ("Modele", m => Modele(m, 1, 1)),
             ("Modele_1x2", m => Modele(m, 1, 2)),

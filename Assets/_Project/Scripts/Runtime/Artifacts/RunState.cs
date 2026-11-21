@@ -86,14 +86,19 @@ namespace ItHunts.Artifacts
         }
 
         /// <summary>Tirage de count améliorations différentes (coffre, marchand) : seed de la run + numéro de tirage.</summary>
-        public UpgradeDefinition[] DrawUpgrades(int count)
+        public UpgradeDefinition[] DrawUpgrades(int count) => DrawUpgrades(count, upgrades);
+
+        /// <summary>Tirage dans une table donnée (coffre rare : sa table dédiée, D-071), même suite aléatoire que la run.</summary>
+        public UpgradeDefinition[] DrawUpgrades(int count, UpgradePool pool)
         {
-            if (upgrades == null || upgrades.upgrades.Count == 0)
+            if (pool == null || pool.upgrades.Count == 0)
+                pool = upgrades;
+            if (pool == null || pool.upgrades.Count == 0)
                 return new UpgradeDefinition[0];
-            int[] idx = ItHunts.Economy.SoulMath.Draw(Seed, _draws++, upgrades.upgrades.Count, Mathf.Min(count, upgrades.upgrades.Count));
+            int[] idx = ItHunts.Economy.SoulMath.Draw(Seed, _draws++, pool.upgrades.Count, Mathf.Min(count, pool.upgrades.Count));
             var r = new UpgradeDefinition[idx.Length];
             for (int i = 0; i < idx.Length; i++)
-                r[i] = upgrades.upgrades[idx[i]];
+                r[i] = pool.upgrades[idx[i]];
             return r;
         }
 

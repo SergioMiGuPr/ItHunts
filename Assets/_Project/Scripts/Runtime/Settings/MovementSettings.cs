@@ -21,14 +21,37 @@ namespace ItHunts.Settings
     public sealed class MovementSettings : ScriptableObject
     {
         [Header("Course au sol")]
-        [Tooltip("Vitesse de course (m/s). Doit rester sous la vitesse de chasse du boss (9 m/s).")]
-        [Min(0f)] public float runSpeed = 7.5f;
+        [Tooltip("Vitesse de course de base (m/s, D-072 : 8.5). La chasse du traqueur est à 9 m/s, sa pointe à 16.")]
+        [Min(0f)] public float runSpeed = 8.5f;
         [Tooltip("Accélération au sol, façon Source (sv_accelerate). Vitesse max atteinte en ≈ 0.15 s.")]
         [Min(0f)] public float groundAcceleration = 10f;
         [Tooltip("Friction au sol (/s), façon Quake/Source (sv_friction).")]
         [Min(0f)] public float groundFriction = 6f;
         [Tooltip("Sous cette vitesse (m/s), la friction freine comme à cette vitesse, pour s'arrêter net (sv_stopspeed).")]
         [Min(0f)] public float stopSpeed = 2.5f;
+
+        [Header("Élan gardé au sol (D-073)")]
+        [Tooltip("Au sol, tant qu'on tient « avancer » dans le cône, la vitesse au-dessus de la course est gardée (pas de friction).")]
+        public bool keepGroundMomentum = true;
+        [Tooltip("Cône (°, demi-angle) autour de la direction de déplacement : entrée dedans = élan gardé, la trajectoire suit l'entrée.")]
+        [Range(0f, 90f)] public float momentumConeAngle = 45f;
+        [Tooltip("Au-delà de cet angle (°) entre l'entrée et la trajectoire, l'élan est cassé (virage) : redescente vers la course. " +
+                 "Entre le cône et cet angle : perte progressive tant qu'on y reste.")]
+        [Range(0f, 180f)] public float momentumTurnAngle = 60f;
+        [Tooltip("Braquage dans le cône : part de l'angle rattrapée par tick de 1/60 s (la vitesse ne change pas).")]
+        [Range(0f, 1f)] public float momentumSteering = 0.2f;
+        [Tooltip("Décroissance de l'élan gardé (m/s²), vers la course. 0 : gardé tel quel tant qu'on avance.")]
+        [Min(0f)] public float momentumDecay = 0f;
+        [Tooltip("Perte progressive de l'élan (m/s²) vers la course : avancer lâché, hors du cône, virage, mur percuté.")]
+        [Min(0f)] public float momentumLossDeceleration = 12f;
+        [Tooltip("Perte quand on recule ou freine (entrée opposée à la trajectoire, m/s²).")]
+        [Min(0f)] public float momentumBrakeDeceleration = 30f;
+        [Tooltip("Plafond au sol (m/s) : au-dessus (atterrissage d'un bunny hop rapide, traction), redescente vers ce plafond.")]
+        [Min(0f)] public float groundSpeedCap = 20f;
+        [Tooltip("Redescente vers le plafond au sol (m/s²).")]
+        [Min(0f)] public float groundOverCapDeceleration = 15f;
+        [Tooltip("Mur percuté au sol : élan cassé si la trajectoire entre dans le mur avec au moins cet angle (°).")]
+        [Range(0f, 90f)] public float momentumWallHitAngle = 20f;
 
         [Header("En l'air (façon Source)")]
         [Tooltip("Accélération en l'air (sv_airaccelerate).")]
@@ -117,6 +140,24 @@ namespace ItHunts.Settings
         public bool wallRefillsJumps = true;
         [Tooltip("Toucher un mur recharge aussi les charges de mouvement (non par défaut : elles reviennent avec le temps).")]
         public bool wallRefillsCharges;
+
+        [Header("Hissage sur un rebord (D-074)")]
+        [Tooltip("En l'air contre un mur en avançant vers lui : si son dessus est à portée, on se hisse dessus automatiquement.")]
+        public bool mantleEnabled = true;
+        [Tooltip("Dessus du rebord au plus à cette hauteur (m) au-dessus de la tête (pieds + capsuleHeight).")]
+        [Min(0f)] public float mantleMaxAboveHead = 0.6f;
+        [Tooltip("Dessus du rebord au moins à cette hauteur (m) au-dessus des pieds (plus bas : on passe par-dessus en sautant).")]
+        [Min(0.05f)] public float mantleMinRise = 0.5f;
+        [Tooltip("Profondeur minimale du dessus (m) : plus étroit, pas de hissage.")]
+        [Min(0.1f)] public float mantleMinDepth = 0.6f;
+        [Tooltip("Durée du hissage (s).")]
+        [Min(0.05f)] public float mantleDuration = 0.3f;
+        [Tooltip("Part de la durée passée à monter le long du mur (le reste : avancer sur le dessus).")]
+        [Range(0.1f, 0.9f)] public float mantleRiseShare = 0.6f;
+        [Tooltip("Part de la vitesse horizontale d'avant (juste avant le contact avec le mur) gardée à la sortie.")]
+        [Range(0f, 1f)] public float mantleKeepSpeed = 0.7f;
+        [Tooltip("L'entrée doit viser le mur à moins de cet angle (°) de sa direction intérieure.")]
+        [Range(0f, 90f)] public float mantleInputAngle = 50f;
 
         [Header("Charges de mouvement et dash")]
         [Tooltip("Charges de mouvement, partagées par le saut en l'air, le dash et le magnétisme (1 chacun). " +

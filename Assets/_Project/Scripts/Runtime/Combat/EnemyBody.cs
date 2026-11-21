@@ -164,6 +164,21 @@ namespace ItHunts.Combat
             return true;
         }
 
+        /// <summary>
+        /// Étourdi pendant <paramref name="duration"/> s par une parade (D-075), même s'il sortait d'un étourdissement
+        /// (l'immunité ne compte pas) ; jamais s'il est tenu ou intuable. Repère et son par AreaEvents.Stunned.
+        /// </summary>
+        public bool StunFor(float duration)
+        {
+            if (settings == null || Held || (_damageable != null && _damageable.ImmuneToOrbs) || duration <= 0f)
+                return false;
+            float now = Time.time;
+            _stunnedUntil = Mathf.Max(_stunnedUntil, now + duration);
+            _immuneUntil = _stunnedUntil + settings.stunImmunity;
+            AreaEvents.RaiseStunned(new StunEvent { Target = transform, Point = transform.position + Vector3.up * 1f, Duration = duration });
+            return true;
+        }
+
         /// <summary>Réapparition : à son poste, immobile, pas étourdi.</summary>
         public void ResetToHome()
         {

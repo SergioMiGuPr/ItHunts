@@ -1,0 +1,6 @@
+Lumière avec le shader toon de la PR #8 (_PointGradient 0,8, _LightSaturation 1,35 : réglages art, non modifiés).
+- plafond_<ambiance>.png : plafond d'une grande salle sous ses lampes. Plus de cercle net : les taches s'estompent en dégradé.
+- lanterne_renard_<ambiance>_avant.png : lanterne du renard (1 ; 0,22 ; 0,08). Le ×1,35 du shader la pousse au cramoisi pur.
+  Mur éclairé : saturation 0,78 à 0,92, teinte 346 à 349°, soit la plage des yeux du traqueur (0,71 à 0,87, 348 à 351°).
+- lanterne_renard_<ambiance>_apres.png : rouge sang moins saturé (0,72 ; 0,40 ; 0,33). Saturation du mur 0,55 à 0,64.
+  Teinte toujours rouge, mais plus le rouge vif réservé au danger.

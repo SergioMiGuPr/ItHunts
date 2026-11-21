@@ -35,8 +35,13 @@ namespace ItHunts.EditorTools
         public static string Build()
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene);
-            AssetDatabase.DeleteAsset(ScenePath);
-            if (!AssetDatabase.CopyAsset(Source, ScenePath))
+            // Le fichier de la scène est remplacé, son .meta (et donc son identifiant, référencé par la liste du build) est gardé.
+            if (System.IO.File.Exists(ScenePath))
+            {
+                System.IO.File.Copy(Source, ScenePath, true);
+                AssetDatabase.ImportAsset(ScenePath, ImportAssetOptions.ForceSynchronousImport);
+            }
+            else if (!AssetDatabase.CopyAsset(Source, ScenePath))
                 return "copie de Test_Arena impossible";
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             GameObject[] roots = scene.GetRootGameObjects();
@@ -80,6 +85,11 @@ namespace ItHunts.EditorTools
                 nav.Configure(new Vector3(-30f, 10f, 60f), new Vector3(420f, 40f, 260f));
             }
 
+            // Hissage (D-074) : rebords derrière le départ (au sud).
+            MantleCourseBuilder.Build(_root, new Vector3(-20f, 0f, -18f),
+                TestMovementSceneBuilder.Mat("Greybox_Block", new Color(0.45f, 0.45f, 0.5f)),
+                TestMovementSceneBuilder.Mat("Greybox_Landmark", new Color(0.85f, 0.45f, 0.15f)));
+            Label(new Vector3(0f, 3.2f, -12f), "Hissage : derrière vous (rebords de 1.5 à 4.2 m)", new Color(1f, 0.9f, 0.6f));
             report.Add(Distances(start));
             report.Add(Props(kit));
             var vitrine = new GameObject("Vitrine (panneau F1, états des ennemis)").AddComponent<Vitrine>();
@@ -87,6 +97,7 @@ namespace ItHunts.EditorTools
             report.Add(Ghouls(so, kit));
             report.Add(Flyers(so));
             report.Add(Stalkers(so, stalkerTemplate, kit));
+            report.Add(StalkerCorridor(so, stalkerTemplate, kit));
             if (stalkerTemplate != null)
                 Object.DestroyImmediate(stalkerTemplate.gameObject);
 
@@ -115,9 +126,8 @@ namespace ItHunts.EditorTools
         private static void AddToBuild()
         {
             var scenes = EditorBuildSettings.scenes.ToList();
-            if (scenes.Any(s => s.path == ScenePath))
-                return;
-            scenes.Add(new EditorBuildSettingsScene(ScenePath, true));
+            scenes.RemoveAll(s => s.path == ScenePath);
+            scenes.Add(new EditorBuildSettingsScene(new GUID(AssetDatabase.AssetPathToGUID(ScenePath)), true));
             EditorBuildSettings.scenes = scenes.ToArray();
         }
 
@@ -277,6 +287,20 @@ namespace ItHunts.EditorTools
 
         private static Vector3 Ground(float x, float z) => new Vector3(x, 0f, z);
 
+        /// <summary>Socle (dalle de 0.25 m) sous un ennemi de la vitrine ; renvoie le dessus.</summary>
+        private static Vector3 Socle(Vector3 at, float radius)
+        {
+            GameObject s = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            s.name = "Socle";
+            s.transform.SetParent(_root, false);
+            s.transform.position = at + Vector3.up * 0.125f;
+            s.transform.localScale = new Vector3(radius * 2f, 0.125f, radius * 2f);
+            var mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Greybox/Module_Pierre.mat");
+            if (mat != null)
+                s.GetComponent<Renderer>().sharedMaterial = mat;
+            return at + Vector3.up * 0.25f;
+        }
+
         private static string Ghouls(SerializedObject so, KitSet kit)
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Niveau/Goule.prefab");
@@ -289,6 +313,8 @@ namespace ItHunts.EditorTools
             for (int i = 0; i < states.Count; i++)
             {
                 Vector3 at = Ground(30f + i * 4.5f, 10f);
+                if (states[i] != VitrineGhoulState.Escalade)
+                    at = Socle(at, 1.6f);                                        // chaque animation sur son socle
                 var g = (GameObject)PrefabUtility.InstantiatePrefab(prefab, _root);
                 g.name = "Goule : " + states[i];
                 g.transform.SetPositionAndRotation(at, Quaternion.Euler(0f, 180f, 0f));
@@ -382,7 +408,7 @@ namespace ItHunts.EditorTools
             list.arraySize = poses.Count;
             for (int i = 0; i < poses.Count; i++)
             {
-                Vector3 at = Ground(20f + i * 22f, 70f);
+                Vector3 at = Socle(Ground(20f + i * 22f, 70f), 9f);
                 var s = Object.Instantiate(template.gameObject, _root);
                 s.name = "Traqueur : " + poses[i];
                 s.transform.SetPositionAndRotation(at, Quaternion.Euler(0f, 180f, 0f));
@@ -396,24 +422,102 @@ namespace ItHunts.EditorTools
 
             // Enclos : un traqueur qui poursuit vraiment le joueur (activable dans le panneau).
             Vector3 c = Ground(60f, 140f);
+            // Murs de 16 m (plus haut que lui, 14 m) tout autour ; le joueur entre par une porte de 4 × 3 m au sud, trop basse pour le
+            // traqueur (son agent fait 3.5 m de haut) : il reste dedans.
+            const float wallH = 16f, door = 4f, doorH = 3f;
             foreach ((Vector3 p, Vector3 sz) in new[]
                      {
-                         (c + new Vector3(0f, 1.5f, 30f), new Vector3(80f, 3f, 1f)), (c + new Vector3(0f, 1.5f, -30f), new Vector3(30f, 3f, 1f)),
-                         (c + new Vector3(-40f, 1.5f, 0f), new Vector3(1f, 3f, 60f)), (c + new Vector3(40f, 1.5f, 0f), new Vector3(1f, 3f, 60f)),
+                         (c + new Vector3(0f, wallH * 0.5f, 30f), new Vector3(81f, wallH, 1f)),
+                         (c + new Vector3(-(20f + door * 0.25f), wallH * 0.5f, -30f), new Vector3(40f - door * 0.5f, wallH, 1f)),
+                         (c + new Vector3(20f + door * 0.25f, wallH * 0.5f, -30f), new Vector3(40f - door * 0.5f, wallH, 1f)),
+                         (c + new Vector3(0f, doorH + (wallH - doorH) * 0.5f, -30f), new Vector3(door, wallH - doorH, 1f)),
+                         (c + new Vector3(-40f, wallH * 0.5f, 0f), new Vector3(1f, wallH, 61f)), (c + new Vector3(40f, wallH * 0.5f, 0f), new Vector3(1f, wallH, 61f)),
                      })
-                KitBuild.Box(_root, "Enclos du traqueur", p, sz, KitBuild.Kind.Mur, kit);
+                KitBuild.Box(_root, "Enclos du traqueur (16 m)", p, sz, KitBuild.Kind.Mur, kit);
             var chaser = Object.Instantiate(template.gameObject, _root);
             chaser.name = "Traqueur de l'enclos (poursuite)";
             chaser.transform.SetPositionAndRotation(c + new Vector3(0f, 0f, 15f), Quaternion.Euler(0f, 180f, 0f));
             so.FindProperty("chaser").objectReferenceValue = chaser.GetComponent<Stalker>();
-            Label(c + new Vector3(0f, 3.5f, -31f), "Enclos : le traqueur te poursuit vraiment (F1 : poursuite)", Title, 0.6f);
+            Label(c + new Vector3(0f, 4.2f, -31f), "Enclos : le traqueur te poursuit vraiment (F1 : poursuite) ; entrée par la porte", Title, 0.6f);
             return $"traqueurs : {poses.Count} poses + enclos";
+        }
+
+        /// <summary>
+        /// Zone « Traqueur » (playtest du 2026-11-17) : couloir gothique de 150 m construit par le code de la carte (mêmes arcs,
+        /// colonnes, collisions et torches), galerie haute côté nord (plancher à 4 m, ouverte sur le couloir jusqu'à la naissance de
+        /// la voûte, marches pour y monter), deux poutres en travers (dessous à 10 m : il se baisse), un traqueur qui fait des
+        /// allers-retours d'un bout à l'autre (F1 : poursuite).
+        /// </summary>
+        private static string StalkerCorridor(SerializedObject so, Stalker template, KitSet kit)
+        {
+            if (template == null)
+                return "zone traqueur : modèle absent";
+            var layout = AssetDatabase.LoadAssetAtPath<MapLayoutSettings>("Assets/_Project/Settings/MapLayout_Niveau1.asset");
+            var tmp = new GameObject("tmp (constructeur du couloir)");
+            var level = tmp.AddComponent<RandomLevel>();
+            var lso = new SerializedObject(level);
+            lso.FindProperty("settings").objectReferenceValue = layout;
+            lso.FindProperty("kit").objectReferenceValue = kit;
+            lso.ApplyModifiedPropertiesWithoutUndo();
+            const float len = 150f, galleryFrom = 55f, galleryTo = 95f, galleryFloor = 4f, spring = 8f;
+            Vector3 start = Ground(-215f, 130f);
+            level.BuildShowcaseGothicCorridor(_root, start, len, 20261117, galleryFrom, galleryTo, galleryFloor, new[] { 30f, 120f });
+            Object.DestroyImmediate(tmp);
+
+            // Galerie haute : plancher (bloc plein de 4 m), fond, bouts ; côté +z du couloir (mur à z + 7..8). Comme dans la carte, son
+            // plafond est à la hauteur du couloir et son bord entre dans la voûte (5.4 m de l'axe) : au-dessus de la naissance, seule la
+            // voûte (que le bras du traqueur traverse) la sépare du couloir.
+            float g0 = start.x + galleryFrom, g1 = start.x + galleryTo, zw = start.z + 8f, depth = 8f;
+            float top = layout != null ? layout.corridorHeight : 16f;
+            float gx = (g0 + g1) * 0.5f, gz = zw + depth * 0.5f;
+            KitBuild.Box(_root, "Galerie haute : plancher (4 m)", new Vector3(gx, galleryFloor * 0.5f, gz), new Vector3(g1 - g0, galleryFloor, depth), KitBuild.Kind.Bloc, kit);
+            KitBuild.Box(_root, "Galerie haute : fond", new Vector3(gx, (top + 1f) * 0.5f, zw + depth + 0.5f), new Vector3(g1 - g0 + 2f, top + 1f, 1f), KitBuild.Kind.Mur, kit, walkable: false);
+            float inner = start.z + 5.4f, outer = zw + depth + 1f;
+            foreach (float x in new[] { g0 - 0.5f, g1 + 0.5f })
+            {
+                KitBuild.Box(_root, "Galerie haute : bout", new Vector3(x, (top + 1f) * 0.5f, gz), new Vector3(1f, top + 1f, depth), KitBuild.Kind.Mur, kit, walkable: false);
+                // Au-dessus de la naissance, entre la voûte et la galerie : fermé (rien ne passe derrière la voûte).
+                KitBuild.Box(_root, "Galerie haute : bout (au-dessus de la naissance)", new Vector3(x, (spring + top + 1f) * 0.5f, (inner + zw) * 0.5f),
+                    new Vector3(1f, top + 1f - spring, zw - inner), KitBuild.Kind.Mur, kit, walkable: false);
+            }
+
+            KitBuild.Box(_root, "Galerie haute : plafond", new Vector3(gx, top + 0.48f, (inner + outer) * 0.5f), new Vector3(g1 - g0 + 2f, 1f, outer - inner), KitBuild.Kind.Sol, kit, walkable: false);
+            // Bouts du couloir fermés (dans la carte : la porte d'une salle) par un mur de 16 m percé d'une porte de 4 × 3 m, trop basse
+            // pour le traqueur : il reste dans le couloir et ne contourne pas la galerie par l'extérieur.
+            foreach (float x in new[] { start.x + 0.5f, start.x + len - 0.5f })
+            {
+                const float doorW = 4f, doorH = 3f, halfW = 7f;
+                float side = (halfW - doorW * 0.5f);
+                foreach (float sz in new[] { -1f, 1f })
+                    KitBuild.Box(_root, "Bout du couloir", new Vector3(x, top * 0.5f, start.z + sz * (doorW * 0.5f + side * 0.5f)), new Vector3(1f, top, side), KitBuild.Kind.Mur, kit, walkable: false);
+                KitBuild.Box(_root, "Bout du couloir (linteau)", new Vector3(x, (doorH + top) * 0.5f, start.z), new Vector3(1f, top - doorH, doorW), KitBuild.Kind.Mur, kit, walkable: false);
+            }
+
+            // Marches contre le mur nord, juste avant l'ouverture (1.3, 2.6 et 3.9 m).
+            for (int i = 0; i < 3; i++)
+            {
+                float hgt = 1.3f * (i + 1);
+                KitBuild.Box(_root, $"Marche de la galerie ({hgt:0.0} m)", new Vector3(g0 - 5f + i * 2f, hgt * 0.5f, start.z + 6f), new Vector3(2f, hgt, 2f), KitBuild.Kind.Bloc, kit);
+            }
+
+            var s = Object.Instantiate(template.gameObject, _root);
+            s.name = "Traqueur du couloir (ronde, F1 : poursuite)";
+            Vector3 a = start + new Vector3(10f, 0f, 0f), b = start + new Vector3(len - 10f, 0f, 0f);
+            s.transform.SetPositionAndRotation(a, Quaternion.Euler(0f, 90f, 0f));
+            so.FindProperty("corridorStalker").objectReferenceValue = s.GetComponent<Stalker>();
+            SerializedProperty patrol = so.FindProperty("corridorPatrol");
+            patrol.arraySize = 2;
+            patrol.GetArrayElementAtIndex(0).vector3Value = a;
+            patrol.GetArrayElementAtIndex(1).vector3Value = b;
+            so.FindProperty("corridorSpawn").vector3Value = new Vector3(gx, 0.1f, start.z - 4f);
+            Label(start + new Vector3(len * 0.5f, 23f, 0f), "Traqueur : couloir gothique (arcs, galerie haute, poutres) — F1 : aller au couloir, poursuite", Title, 0.9f);
+            return "zone traqueur : couloir gothique de 150 m, galerie haute, 2 poutres, ronde";
         }
 
         private static readonly Dictionary<string, string> Names = new Dictionary<string, string>
         {
             ["Repos"] = "Repos", ["Course"] = "Course (sur place)", ["AnnonceDuBond"] = "Annonce du bond", ["Bond"] = "Bond",
-            ["Reception"] = "Réception", ["Escalade"] = "Escalade sur un mur", ["Coup"] = "Coup reçu", ["Etourdie"] = "Étourdie",
+            ["Reception"] = "Réception", ["Escalade"] = "Escalade sur un mur", ["Coup"] = "Coup (frappe, impact à 0,24 s)", ["Etourdie"] = "Étourdie",
             ["Tenue"] = "Tenue (télékinésie)", ["Morte"] = "Morte",
             ["Ronde"] = "Ronde", ["AnnonceDuPique"] = "Annonce du piqué", ["Pique"] = "Piqué", ["EtourdiAuSol"] = "Étourdi au sol",
             ["Tenu"] = "Tenu (télékinésie)",

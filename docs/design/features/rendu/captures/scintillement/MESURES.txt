@@ -1,0 +1,38 @@
+Scintillement des lumières en mouvement (2026-11-17), couloir B1 – C1, seed 104729, ambiance sombre, lanterne du renard.
+Cause principale : jusqu'à 678 lumières dans le champ (salles et couloirs), Forward+ n'en garde que 256 visibles par caméra ; il en
+écartait au hasard de la position. Seules 8 à 13 sont avant la fin du brouillard. Correction : lumières du décor au-delà du brouillard
+éteintes (marge 6 m, hystérésis 4 m), 825 sur 881 à cette pose.
+
+(1) lumières perdues (toutes allumées contre utiles seulement), 60 poses tous les 0.5 m : écart médian 1,15 % des pixels, max 6,91 % ; poses à plus de 0.5 % : 60/60 ; lumières éteintes par le brouillard 827
+(2) vacillement avant : écart-type moyen de la luminance 1,62 millièmes ; pixels qui varient de plus de 0.02 : 0,1 %
+(2) vacillement apres : écart-type moyen de la luminance 0,35 millièmes ; pixels qui varient de plus de 0.02 : 0,1 %
+#fin
+
+Ombres : fondu de l'intensité (0.6 s) et hystérésis de 4 m au lieu d'une bascule ; atlas des ombres additionnelles 2048 → 4096
+(paliers 512 / 1024 / 2048), cône de la lanterne en résolution haute, biais 0.15 / 0.7, cône qui suit le regard avec un lissage
+(18/s) au lieu d'être collé à la caméra. Vacillement : amplitude 0.18 → 0.07, vitesse 7 → 2.2, plus de déplacement de la flamme.
+
+Coût (éditeur, A/B en alternance, 3 rondes de 10 s au pic de vague) :
+salle C4, pic True, ambiance Ambiance_Sombre
+avant (anciens réglages)     : image 29,66 / 95 % 58,30 ms ; fil principal 25,70 ; GPU 7,70 / 95 % 10,08 ; HorrorLook 0,213 ms
+apres (correction 2)         : image 28,04 / 95 % 56,57 ms ; fil principal 24,55 ; GPU 7,73 / 95 % 10,95 ; HorrorLook 0,284 ms
+#fin
+Le marqueur CPU ItHunts.HorrorLook est fiable (+0.07 ms) ; les écarts d'image et de GPU sont dans le bruit de l'éditeur.
+
+== Builds de développement A/B (2026-11-17), seed 104729, 1920 × 1080, 3 rondes en alternance ==
+A = 350108f (avant la correction du scintillement), B = 042e56b (scintillement + Enragé). Médiane des rondes.
+solo  A : image médiane 12.7 ms [12.9, 11.7, 12.7], 5 % les plus lentes (95e centile) 20.8 ms [20.8, 24.0, 18.6], GPU 4.3 ms, draw calls 3375
+solo  B : image médiane 10.8 ms [10.6, 10.9, 10.8], 95e centile 16.5 ms [16.1, 17.5, 16.5], GPU 4.0 ms, draw calls 3358
+split A : image médiane 18.8 ms [18.1, 19.5, 18.8], 95e centile 28.9 ms [25.9, 30.5, 28.9], GPU 6.6 ms, draw calls 4379
+split B : image médiane 17.3 ms [17.3, 16.7, 17.3], 95e centile 32.5 ms [26.8, 35.4, 32.5], GPU 5.8 ms, draw calls 4385
+Lecture : solo plus rapide (médiane −1.9 ms, 95e centile −4.3 ms) ; écran partagé : médiane −1.5 ms, GPU −0.8 ms,
+95e centile plus dispersé (26.8 à 35.4 ms en B contre 25.9 à 30.5 en A), pas de tendance nette sur 3 rondes.
+« Fin du rendu » (PostLateUpdate.FinishFrameRendering) : 5.95 → 4.60 ms en solo, 10.94 → 9.54 ms en écran partagé
+(lumières du décor éteintes au-delà du brouillard).
+Note : les builds B plantent à la fermeture, après la mesure (fin de l'arrêt, PlayerConnection::Cleanup, build de développement).
+
+== 2026-11-18 : écran partagé, 6 rondes en alternance (ordre inversé à chaque ronde), A = 350108f (avant les lumières), B = 4d5d642 (lumières + lot du 2026-11-17), seed 104729, 1920 × 1080
+split A (6 rondes) : médiane 23.5 ms [30.5, 24.3, 21.0, 22.6, 18.8, 38.2], 95 % 45.0 ms [59.9, 39.9, 34.8, 50.0, 26.7, 65.4], GPU 7.2 ms, draw calls 4385, FixedUpdate scripts 4.94, physique 1.44, fin du rendu 12.64, ennemis 79
+split B (6 rondes) : médiane 18.8 ms [27.1, 22.2, 20.0, 17.5, 17.3, 17.1], 95 % 30.6 ms [54.1, 38.0, 31.8, 29.3, 26.4, 24.2], GPU 6.6 ms, draw calls 4392, FixedUpdate scripts 3.81, physique 0.99, fin du rendu 9.91, ennemis 79
+B devant A dans les 6 rondes pour le 95e centile (54.1/59.9, 38.0/39.9, 31.8/34.8, 29.3/50.0, 26.4/26.7, 24.2/65.4).
+Fermetures : A 6 propres ; B 6 plantages D3D12Core.dll (avant le correctif du stencil).

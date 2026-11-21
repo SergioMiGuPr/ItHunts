@@ -45,6 +45,13 @@ namespace ItHunts.Movement
         /// <summary>Vrai si un sol marchable est juste sous les pieds ; normal = normale de ce sol.</summary>
         bool ProbeGround(out Vector3 normal);
 
+        /// <summary>
+        /// Rebord à escalader (hissage, D-074) devant soi dans la direction horizontale dir : un mur au contact dont le dessus,
+        /// marchable, est entre minRise et maxRise au-dessus des pieds, profond d'au moins minDepth, avec la place de se tenir debout
+        /// dessus et de monter le long du mur. standPoint : pieds sur le dessus, un rayon de capsule après le bord.
+        /// </summary>
+        bool ProbeLedge(Vector3 dir, float minRise, float maxRise, float minDepth, out Vector3 standPoint);
+
         /// <summary>Déplace la capsule. snapToGround : la recoller au sol en descente (pentes, marches).</summary>
         MoveResult Move(Vector3 delta, bool snapToGround);
     }

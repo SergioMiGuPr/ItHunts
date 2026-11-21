@@ -11,7 +11,7 @@ namespace ItHunts.Settings
     [CreateAssetMenu(fileName = "Stalker_Default", menuName = "ItHunts/Ennemis/Traqueur")]
     public sealed class StalkerSettings : EnemySettings
     {
-        [Header("Vitesses (m/s) — course du joueur 7.5, plafond des gains 20, bunny hop 18 à 26, traction 30")]
+        [Header("Vitesses (m/s) — course du joueur 8.5, plafond des gains 20, bunny hop 18 à 26, traction 30")]
         [Min(0f)] public float roamSpeed = 3f;
         [Tooltip("Alerte : il va voir le dernier bruit ou la dernière position aperçue.")]
         [Min(0f)] public float alertSpeed = 6f;
@@ -52,6 +52,42 @@ namespace ItHunts.Settings
         [Tooltip("Coop : il change de cible (le joueur le plus proche par le chemin) au plus une fois par intervalle (s).")]
         [Min(0f)] public float retargetInterval = 5f;
 
+        [Header("Passages des modules (point 9, 2026-11-21) : liens typés du NavMesh, un clip par type plus tard")]
+        [Tooltip("Il emprunte les passages posés par les modules (bonds, escalades, chaînes, portes étroites).")]
+        public bool passagesEnabled = true;
+        [Tooltip("Bond : distance horizontale maximale (m) et dénivelé maximal (m).")]
+        [Min(1f)] public float leapMaxDistance = 22f;
+        [Min(0f)] public float leapMaxRise = 6f;
+        [Tooltip("Durée d'un bond (s, à mi-distance) et hauteur de l'arc au-dessus de la ligne (m).")]
+        [Min(0.2f)] public float leapDuration = 1.1f;
+        [Min(0f)] public float leapArcHeight = 5f;
+        [Tooltip("Télégraphe avant un bond (s) : il s'arrête, se ramasse et crie ; le joueur peut esquiver.")]
+        [Min(0f)] public float leapTelegraph = 0.55f;
+        [Tooltip("Récupération après la réception à quatre pattes (s).")]
+        [Min(0f)] public float leapRecovery = 0.8f;
+        [Tooltip("Un bond tue le joueur que son corps traverse (même règle que la prise) : rayon autour du milieu de son corps (m).")]
+        [Min(0f)] public float leapHitRadius = 3.2f;
+        [Tooltip("Hauteurs maximales : rebord, mur grimpable, chaîne (m).")]
+        [Min(0f)] public float ledgeMaxHeight = 8f;
+        [Min(0f)] public float wallMaxHeight = 16f;
+        [Min(0f)] public float chainMaxHeight = 16f;
+        [Tooltip("Saut depuis une chaîne : distance maximale (m).")]
+        [Min(1f)] public float chainJumpMaxDistance = 18f;
+        [Tooltip("Vitesse de montée (escalade, mur, chaîne, m/s).")]
+        [Min(0.1f)] public float climbSpeed = 6f;
+        [Tooltip("Pause avant de grimper (s).")]
+        [Min(0f)] public float climbStartPause = 0.2f;
+        [Tooltip("Porte étroite : part de sa vitesse quand il se faufile.")]
+        [Range(0.1f, 1f)] public float narrowDoorSlowFactor = 0.45f;
+        [Tooltip("Hauteur sous laquelle une porte l'oblige à se faufiler (m ; 10 en attendant la mesure du modèle v4).")]
+        [Min(1f)] public float narrowDoorHeight = 10f;
+
+        [Header("Chaînes d'os à ressort (traqueur v4 : prévu, pas activé, D-070 inchangé)")]
+        [Tooltip("Active les chaînes d'os (cheveux, chaînes, lambeaux) du modèle v4 quand il sera validé.")]
+        public bool boneChainsEnabled;
+        [Tooltip("Réglages des chaînes d'os du modèle v4 (raideur, amortissement, gravité, inertie, rayon de collision).")]
+        public BoneSpringSettings boneChains = BoneSpringSettings.Default;
+
         [Header("Se baisser (D-035)")]
         [Tooltip("Hauteur minimale de passage (m) : sous un pont, une poutre ou un passage plus bas que lui, il se baisse ; " +
                  "plus bas que ça, il ne passe pas.")]
@@ -90,7 +126,16 @@ namespace ItHunts.Settings
         [Tooltip("Pupilles (émission par le masque de M_Traqueur), toujours allumées : rouge sombre et discret (retours du lot, point 3).")]
         [ColorUsage(false, true)] public Color pupilGlow = new Color(0.55f, 0.05f, 0.03f);
         [Tooltip("Intensité des pupilles (× la couleur).")]
-        [Range(0f, 2f)] public float pupilGlowIntensity = 0.6f;
+        [Range(0f, 4f)] public float pupilGlowIntensity = 1.5f;
+        [Tooltip("Repli (v3, PR #13) : les pupilles peintes du modèle ne s'affichent pas (faces de la tête manquantes, diagnostic DA) ; " +
+                 "deux petits points lumineux sur l'os Tete les remplacent. À décocher quand la tête sera corrigée.")]
+        public bool eyeGlints = true;
+        [Tooltip("Points des yeux dans le repère de l'os Tete (m), relevés sur les sommets des pupilles du modèle v3.")]
+        public Vector3 eyeGlintRight = new Vector3(0.24f, 0.44f, 1.75f), eyeGlintLeft = new Vector3(-0.45f, 0.21f, 1.7f);
+        [Tooltip("Diamètre d'un point (m).")]
+        [Min(0.01f)] public float eyeGlintSize = 0.35f;
+        [Tooltip("Intensité des points (× la couleur des pupilles) ; ils traversent le brouillard comme l'émission des matériaux.")]
+        [Range(0f, 10f)] public float eyeGlintIntensity = 3f;
         [Tooltip("Griffes (masque d'émission de M_Traqueur_Mains) : ivoire. Pas de rouge sur les mains : la colonne au sol est le signal.")]
         [ColorUsage(false, true)] public Color clawGlow = new Color(1f, 0.93f, 0.78f);
         [Tooltip("Intensité des griffes au repos, puis pendant la prise (annonce, descente, main au sol).")]
@@ -98,6 +143,15 @@ namespace ItHunts.Settings
         [Range(0f, 3f)] public float clawGlowGrab = 0.7f;
         [Tooltip("Vitesse de passage d'une intensité à l'autre (1/s).")]
         [Min(0.1f)] public float clawGlowRate = 8f;
+
+        [Header("Clips (SK_Traqueur v3, PR #13)")]
+        [Tooltip("Vitesse au sol du clip Traqueur_Marche lu à la vitesse 1 (m/s, mesurée par la DA) : vitesse de lecture = vitesse ÷ cette valeur, " +
+                 "pour que les pieds ne glissent pas.")]
+        [Min(0.1f)] public float walkClipSpeed = 3.71f;
+        [Tooltip("Vitesse au sol du clip Traqueur_PassageBas à la vitesse 1 (m/s).")]
+        [Min(0.1f)] public float crouchClipSpeed = 2.29f;
+        [Tooltip("Vitesse de lecture des clips de déplacement : bornes (évite un clip figé ou frénétique).")]
+        public Vector2 clipPlaybackRange = new Vector2(0.3f, 5.5f);                 // ruée enragée 18 m/s ÷ 3.71 = 4.9
         [Min(0f)] public float handReach = 15f;
         [Tooltip("Annonce : le bras se lève et une lueur rouge marque la zone visée pendant ce temps (s).")]
         [Min(0f)] public float grabTelegraph = 0.5f;
@@ -172,6 +226,18 @@ namespace ItHunts.Settings
                  "largeur / 2, hauteur = hauteur) ; il ne grimpe pas.")]
         [Min(0.5f)] public float width = 7f;
         [Min(0.5f)] public float height = 14f;
+
+        [Header("Lisibilité dans le noir (playtest du 2026-11-17 : corps noir, on l'entendait sans le voir)")]
+        [Tooltip("Lumière d'appoint qui n'éclaire que le traqueur (calque de rendu « Traqueur ») : il se détache du noir sans éclairer le décor.")]
+        public bool selfLight = true;
+        [Tooltip("Couleur froide et pâle (pas le rouge du danger, réservé aux signaux).")]
+        public Color selfLightColor = new Color(0.55f, 0.6f, 0.78f);
+        [Min(0f)] public float selfLightIntensity = 2.8f;
+        [Min(1f)] public float selfLightRange = 22f;
+        [Tooltip("Position de la lumière dans son repère (m) : devant lui, à mi-hauteur, pour modeler le torse et la tête.")]
+        public Vector3 selfLightOffset = new Vector3(0f, 9f, 9f);
+        [Tooltip("Calque de rendu réservé au traqueur (0 = Default, 1 = FPS).")]
+        [Range(2, 7)] public int selfRenderingLayer = 2;
 
         [Header("Sons (provisoires)")]
         [Range(0f, 1f)] public float stepVolume = 0.9f;

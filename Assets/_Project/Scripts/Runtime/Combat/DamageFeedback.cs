@@ -228,6 +228,7 @@ namespace ItHunts.Combat
             AreaEvents.Area += OnArea;
             AreaEvents.Broken += OnBroken;
             AreaEvents.Stunned += OnStunned;
+            ParryEvents.Parried += OnParried;
         }
 
         private void OnDisable()
@@ -237,6 +238,7 @@ namespace ItHunts.Combat
             AreaEvents.Area -= OnArea;
             AreaEvents.Broken -= OnBroken;
             AreaEvents.Stunned -= OnStunned;
+            ParryEvents.Parried -= OnParried;
         }
 
         /// <summary>Cercle bref au point : zone de dégâts (orange) ou onde de répulsion.</summary>
@@ -284,11 +286,65 @@ namespace ItHunts.Combat
             Play(_break, e.Point, settings.breakVolume, Random.Range(0.9f, 1.1f));
         }
 
+        private AudioClip _parryClip;
+
+        /// <summary>Parade réussie (D-075) : grand éclat blanc doré entre le joueur et la goule, tintement (provisoire, en attendant
+        /// l'éclair de parade de la DA).</summary>
+        private void OnParried(ParryEvent e)
+        {
+            if (settings == null || _flashes.Count == 0)
+                return;
+            ParrySettings cfg = e.Player != null && e.Player.TryGetComponent(out ItHunts.Player.PlayerParry pp) ? pp.Settings : null;
+            // Sur la goule (pas entre elle et la caméra : à 1 m des yeux, l'éclat couvrait tout l'écran).
+            Vector3 at = e.Point;
+            if (e.Attacker != null)
+            {
+                Vector3 chest = e.Attacker.position + Vector3.up * 1f;
+                Vector3 away = chest - e.Point;
+                away.y = 0f;
+                at = chest + (away.sqrMagnitude > 1e-4f ? away.normalized * 0.3f : Vector3.zero);
+            }
+            GameVfxSettings vfx = GameVfx.Settings;
+            if (vfx != null && vfx.parry != null && Camera.main != null)
+                GameVfx.Spawn(vfx.parry, at, Quaternion.LookRotation(at - Camera.main.transform.position), 1f, null, 1.5f);
+            else if (vfx != null && vfx.parry != null)
+                GameVfx.Spawn(vfx.parry, at, Quaternion.identity, 1f, null, 1.5f);
+            if (_parryClip == null)
+                _parryClip = ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry());
+            if (vfx != null && vfx.parry != null)
+            {
+                Play(_parryClip, at, cfg != null ? cfg.volume : 0.8f, Random.Range(0.96f, 1.04f));
+                return;                                                // éclair peint de la DA à la place de l'éclat provisoire
+            }
+
+            Flash f = _flashes[_nextFlash];
+            _nextFlash = (_nextFlash + 1) % _flashes.Count;
+            f.Age = 0f;
+            f.Size = cfg != null ? cfg.flashSize : 0.7f;
+            f.Color = cfg != null ? cfg.flashColor : new Color(3f, 2.6f, 1.4f, 1f);
+            f.Transform.position = at;
+            if (_parryClip == null)
+                _parryClip = ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry());
+            Play(_parryClip, at, cfg != null ? cfg.volume : 0.8f, Random.Range(0.96f, 1.04f));
+        }
+
         /// <summary>Ennemi étourdi : trois étoiles jaunes tournent au-dessus de sa tête, gazouillis.</summary>
         private void OnStunned(StunEvent e)
         {
             if (settings == null)
                 return;
+            GameVfxSettings vfx = GameVfx.Settings;
+            if (vfx != null && vfx.stun != null && e.Target != null)
+            {
+                // Étoiles peintes de la DA (VFX_Etourdissement) au-dessus de la tête, le temps de l'étourdissement.
+                float top = e.Point.y + 0.6f;
+                foreach (Renderer r in e.Target.GetComponentsInChildren<Renderer>())
+                    if (!(r is ParticleSystemRenderer))
+                        top = Mathf.Max(top, r.bounds.max.y);
+                GameVfx.Spawn(vfx.stun, new Vector3(e.Target.position.x, top + 0.25f, e.Target.position.z), Quaternion.identity, 1f, e.Target, e.Duration);
+                Play(_stun, e.Point, settings.stunVolume, 1f);
+                return;
+            }
             for (int i = 0; i < 3; i++)
             {
                 GameObject star = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -334,7 +390,16 @@ namespace ItHunts.Combat
             Play(_hit, e.Point, settings.hitVolume * Mathf.Lerp(0.5f, 1f, Mathf.InverseLerp(0f, 60f, e.Damage)),
                 Mathf.Lerp(settings.hitPitchLight, settings.hitPitchHeavy, heavy));
             if (e.Killed)
+            {
+                // Mort d'une goule : son de la DA (PR #20) en plus du coup final ; le volant joue le sien en éclatant.
+                var art = GameAudio.Settings;
+                bool ghoul = e.Target != null && e.Target.GetComponent<ItHunts.Enemies.Ghoul>() != null;
+                if (art != null && art.ghoulDeath != null && ghoul)
+                    GameAudio.PlayAt(art.ghoulDeath, e.Point, art.ghoulVolume);
+                if (ghoul && GameVfx.Settings != null)
+                    GameVfx.Spawn(GameVfx.Settings.ghoulDeath, e.Target.transform.position + Vector3.up * 0.9f, Quaternion.identity, 1f, null, 3f);
                 Play(_kill, e.Point, settings.killVolume, 1f);
+            }
         }
 
         private void UpdateRings()

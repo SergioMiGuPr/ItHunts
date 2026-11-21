@@ -1,3 +1,4 @@
+using ItHunts.Settings;
 using UnityEngine;
 
 namespace ItHunts.Combat
@@ -85,6 +86,8 @@ namespace ItHunts.Combat
             enabled = false;
             if (_fx != null)
                 _fx.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            if (_painted != null)
+                _painted.Arrete();
         }
 
         private void FixedUpdate() => Step(Time.fixedDeltaTime, Time.time);
@@ -93,11 +96,33 @@ namespace ItHunts.Combat
         {
             if (_fx != null && _fx.isEmitting)
                 _fx.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            if (_painted != null)
+                _painted.Arrete();
         }
 
         /// <summary>Flammes sur l'ennemi : petites bouffées additives qui montent, à la taille de ses bornes.</summary>
+        private ItHunts.Art.VFX.VfxPeint _painted;
+
         private void ShowEffect(Material mat)
         {
+            GameVfxSettings vfx = GameVfx.Settings;
+            if (_fx == null && vfx != null && vfx.torchFire != null)
+            {
+                // Flamme peinte de la DA (VFX_Torche_Feu à 0.6) à la place des bouffées créées par code.
+                if (_painted == null)
+                {
+                    GameObject go = GameVfx.Spawn(vfx.torchFire, transform.position + Vector3.up * 0.9f, Quaternion.identity, vfx.burningScale, transform, 0f);
+                    _painted = go != null ? go.GetComponent<ItHunts.Art.VFX.VfxPeint>() : null;
+                }
+
+                if (_painted != null)
+                {
+                    _painted.gameObject.SetActive(true);
+                    _painted.Joue();
+                    return;
+                }
+            }
+
             if (_fx == null)
             {
                 var go = new GameObject("Brûlure (flammes)");

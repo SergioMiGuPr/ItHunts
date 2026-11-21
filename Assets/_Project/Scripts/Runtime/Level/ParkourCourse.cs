@@ -25,7 +25,7 @@ namespace ItHunts.Level
         /// <summary>Valeurs de Movement_Default (au cas où le générateur n'a pas de réglages).</summary>
         public static ParkourCaps Default => new ParkourCaps
         {
-            RunSpeed = 7.5f, Gravity = 20f, FallMultiplier = 1.5f, JumpHeight = 1.3f, AirJumpHeight = 1.6f, AirJump = true,
+            RunSpeed = 8.5f, Gravity = 20f, FallMultiplier = 1.5f, JumpHeight = 1.3f, AirJumpHeight = 1.6f, AirJump = true,
             DashDistance = 6.5f, DashExitSpeed = 12f, WallJumpHeight = 1.8f,
         };
 

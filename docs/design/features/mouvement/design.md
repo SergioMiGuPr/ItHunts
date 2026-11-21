@@ -103,7 +103,15 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 
 | Nom | Valeur | Unité | À observer en playtest |
 |---|---|---|---|
-| Vitesse de course | 7.5 | m/s | doit être nettement **plus lente** que le boss (9) |
+| Vitesse de course | 8.5 | m/s | D-072 (7.5 avant) ; juste sous la chasse du boss (9), élan gardé au sol au-delà (D-073) |
+| Élan au sol : cône (demi-angle) | 45 | ° | entrée dans le cône en tenant avancer : vitesse gardée (D-073) |
+| Élan au sol : virage qui le casse | 60 | ° | au-delà : élan cassé jusqu'à la course |
+| Élan au sol : décroissance | 0 | m/s² | gardé tel quel |
+| Élan au sol : perte (lâché, hors cône, virage, mur) / recul | 12 / 30 | m/s² | progressive, vers 8.5 m/s |
+| Plafond au sol | 20 | m/s | redescente à 15 m/s² au-dessus |
+| Hissage : dessus au plus au-dessus de la tête | 0.6 | m | 3.7 m d'un saut simple (D-074) |
+| Hissage : dessus au moins au-dessus des pieds / profondeur | 0.5 / 0.6 | m | plus bas : on saute dessus ; plus étroit : rien |
+| Hissage : durée / élan gardé | 0.3 / 70 | s / % | 60 % du temps à monter, 40 % à avancer |
 | Accélération au sol | 10 | ×vitesse/s | démarrage net, sans être instantané |
 | Friction au sol | 6 | /s | l'arrêt ne doit pas glisser (arrêt complet en ≈ 0.35 s) |
 | Vitesse d'arrêt (friction minimale) | 2.5 | m/s | |

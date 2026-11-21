@@ -1,0 +1,67 @@
+Couloirs gothiques (kit de la PR #8), 2026-11-16. Couloirs plats de 14 m : 299 sur 335 couloirs (5 seeds, 104729 × k).
+Pièces posées sur ces 5 cartes : 1 082 arcades aveugles, 1 511 niches, 4 587 colonnes engagées.
+
+Dessus de la voûte (volume de 8 à 21.4 m, ±7.6 m) :
+- aucun étage, aucune salle, aucun module voisin, aucune galerie d'un autre couloir ne le traverse ;
+- seulement les pièces attendues :
+  - plafond de la galerie du couloir lui-même, qui entre dans l'épaisseur de la voûte, voulu (270) ;
+  - arcs d'entrée des salles, dans l'embrasure de la porte (19 136 boîtes) ;
+  - seuils non magnétiques des salles de parcours, 0.3 m dans le couloir (216).
+Cachettes (ReachCheck, grille de 4 m, toute la carte) : 0 sur 57 383 points.
+NavMesh :
+- goule : 11 530 chemins complets sur 11 530 (chaque arcade aveugle, chaque travée au pied du mur) ;
+- traqueur : 299 couloirs sur 299 de bout en bout, sous les arcs-doubleaux.
+Trous : 0 rayon sur 363 960 (vers le haut et les côtés, depuis 2, 10 et 16 m) ne sort de la carte.
+Traqueur : sommet 15.1 m (boîte englobante) sous 19.8 m libres.
+Textes en monde, depuis l'axe d'un couloir :
+- à 35 m : 16 sur 16 invisibles ;
+- à 20 m : opacité 1 pour les 8 ;
+  - 2 en ligne de vue directe, lisibles ;
+  - les 6 autres sont décalés de 8 à 18 m dans la salle, derrière les murs, comme avant la voûte.
+- texte le plus haut : 7.7 m.
+
+Performance (build de développement, seed 104729, 1920 × 1080, ambiance sombre).
+Image (médiane / 95e centile) et draw calls, avant → après :
+- solo : 15.0 / 29.9 ms → 14.4 / 18.6 ms ; GPU 4.0 → 3.9 ms ; draw calls 3 670 → 4 651 ; lumières 995 → 880.
+- écran partagé : 26.9 / 47.2 ms → 24.5 / 47.0 ms ; GPU 6.6 → 6.5 ms ; draw calls 4 915 → 6 654.
+Le temps d'image reste dans le bruit de la mesure (fil principal, scripts). Les draw calls montent d'un tiers :
+nouvelles pièces (voûte, arcs, colonnes, murs), regroupées par matériau.
+
+Fusion des pièces gothiques (2026-11-17). Voûte, arcs, colonnes, murs de travée et coins des portes sont fusionnés par couloir et par
+matériau, comme les pièces Kit_*. Les collisions sont sur des objets à part.
+Mesure dans l'éditeur : seed 104729, ennemis coupés, moyenne de 20 images, 6 poses fixes (salle D4 vers 4 directions, couloir B1 – C1
+dans l'axe et vers la voûte).
+- Plafond plat (avant la voûte) : 4 258 draw calls en moyenne, 5 405 rendus actifs.
+- Voûte non fusionnée : 4 855 draw calls, 7 278 rendus.
+- Voûte fusionnée : 3 182 draw calls (−34 %, et −25 % par rapport au plafond plat), 4 576 rendus.
+- Couloir B1 – C1 dans l'axe : 9 299 (plat), 7 053 (non fusionné), 4 619 (fusionné).
+Inchangés après fusion :
+- colliders : 33 468, même somme de contrôle ;
+- NavMesh : 55 038 sommets, 25 488 triangles, 248 965 m² ;
+- liens d'escalade : 812 ; torches actives : 529.
+5 seeds : 0 cachette, NavMesh goule 11 530/11 530, traqueur 299/299, 0 fuite.
+Capture après fusion : fusion_axe.png (identique à gothique_axe.png).
+Temps d'image : à mesurer en build, A/B en alternance (voir PROGRESS).
+
+Collisions de la voûte (2026-11-17). Les anneaux de boîtes de la voûte (20 par couloir), des arcs-doubleaux (20 par arc) et les bandes
+des coins des portes sont remplacés, par couloir, par un seul MeshCollider statique non convexe (solides fermés, profils exacts :
+intrados et extrados en 12 segments par moitié). Un MeshCollider convexe par travée ne convient pas : l'enveloppe convexe d'un anneau
+bouche le couloir. Il garde StalkerPassesThrough (traqueur et NavMesh l'ignorent, comme avant) et NotWalkable.
+Seed 104729 : colliders du niveau 33 537 → 16 839 (14 600 boîtes d'arcs, 1 160 de voûte et 3 480 de coins → 58 maillages,
+189 408 triangles). Murs de travée et colonnes inchangés (boîtes ; les murs comptent dans le NavMesh).
+Physique, A/B en alternance dans l'éditeur (même session, même carte, anciennes boîtes et maillage construits ensemble et activés
+tour à tour ; salle D4, pic de vague, 3 rondes de 20 s ; le maillage passe toujours en second, avec plus de goules) :
+- ronde 1 : Physics.Simulate médiane 0.456 (boîtes) → 0.388 ms (maillage) ;
+- ronde 2 : 0.534 → 0.467 ms ;
+- ronde 3 : 0.683 → 0.549 ms ;
+- total : médiane 0.534 → 0.468 ms (−12 %), 95e centile 0.998 → 0.881 ms ; FixedUpdate.PhysicsFixedUpdate médiane 1.050 → 1.019 ms.
+Traction (398 280 rayons depuis le couloir, à 1.7 et 6 m, vers les murs, les colonnes et la voûte, boîtes contre maillage) :
+- aucun rayon ne passe de « touche » à « ne touche pas » ;
+- point touché : médiane 0.5 cm d'écart, 95 % 1.9 cm, 99 % 2.7 cm ; colonnes 0 cm, murs 0.7 cm au plus ;
+- 16 rayons à plus de 20 cm : ils frôlent exactement l'arête d'un arc-doubleau (la boîte compte le contact rasant, le maillage
+  non) ; sondé de face, l'intrados de l'arc est au même endroit (6.37 / 6.38 m de l'axe).
+Inchangés : NavMesh (55 038 sommets, 25 488 triangles, 248 965 m²), liens d'escalade 812, points debout de ReachCheck (10 966 avec
+les boîtes comme avec le maillage, même carte).
+5 seeds : 0 cachette, NavMesh goule 11 530/11 530, traqueur bout à bout 299/299 (sous les arcs), 0 fuite sur 363 960 rayons.
+Caisses lancées à 30 et 60 m/s vers la voûte et les arcs (6 couloirs, 60 caisses) : aucune ne traverse ; 2 tirs presque
+horizontaux sortent par une ouverture du mur à 5 m (sous la naissance), hors de la voûte.

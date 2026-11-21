@@ -1,0 +1,34 @@
+Couverture de l'écran par les mains et objets, bras peints (PR #7), sans post-traitement ; pixels dans les carrés centraux de 240 et 60 px (viseur).
+Cadrage « référence » :
+Renard â€” repos : 23,8 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” traction : 20,2 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” rÃ©pulsion : 19,1 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” prise : 21,3 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” objet tenu : 22,6 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” lancer : 20,4 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” jet de la lanterne : 22,0 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” repos : 24,1 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” traction : 21,2 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” rÃ©pulsion : 19,7 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” prise : 21,0 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” objet tenu : 21,7 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” lancer : 20,1 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” tir : 28,1 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+#fin
+
+Cadrage « écarté » (±0.29, −0.15, 0.42) :
+Renard â€” repos : 14,3 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” traction : 13,2 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” rÃ©pulsion : 11,7 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” prise : 12,8 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” objet tenu : 13,8 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” lancer : 12,9 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Renard â€” jet de la lanterne : 13,7 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” repos : 13,9 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” traction : 12,7 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” rÃ©pulsion : 11,6 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” prise : 12,9 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” objet tenu : 13,9 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” lancer : 12,8 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+Caméléon â€” tir : 15,8 % ; carrÃ© de 240 px : 0 px ; viseur (60 px) : 0 px
+#fin

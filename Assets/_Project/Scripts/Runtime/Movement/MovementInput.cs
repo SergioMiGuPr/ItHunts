@@ -53,6 +53,9 @@ namespace ItHunts.Movement
         /// </summary>
         public int ThrowPressedTick;
 
+        /// <summary>Action principale maintenue (livre à lien du hibou : le lien dure tant qu'il est tenu).</summary>
+        public bool ThrowHeld;
+
         /// <summary>Recharger l'artefact (R / Y) : tick du dernier appui.</summary>
         public int ReloadPressedTick;
 

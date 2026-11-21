@@ -114,6 +114,25 @@ namespace ItHunts.Enemies
             _audio.playOnAwake = false;
             _screech = ItHunts.Audio.ProceduralSfx.ToClip("Volant : cri", ItHunts.Audio.ProceduralSfx.FlyerScreech());
             _pop = ItHunts.Audio.ProceduralSfx.ToClip("Volant : éclatement", ItHunts.Audio.ProceduralSfx.Break());
+            var art = ItHunts.Audio.GameAudio.Settings;
+            if (art != null && art.flyerWings != null)
+            {
+                // Ailes en boucle (DA, PR #20), en 3D : on l'entend venir.
+                var wings = gameObject.AddComponent<AudioSource>();
+                wings.clip = art.flyerWings;
+                wings.loop = true;
+                wings.spatialBlend = 1f;
+                wings.rolloffMode = AudioRolloffMode.Linear;
+                wings.maxDistance = 30f;
+                wings.minDistance = 2f;
+                wings.dopplerLevel = 0f;
+                wings.volume = art.flyerWingsVolume;
+                wings.pitch = ItHunts.Audio.GameAudio.Pitch();
+                wings.time = Random.Range(0f, art.flyerWings.length * 0.9f);
+                wings.playOnAwake = true;
+                if (isActiveAndEnabled)
+                    wings.Play();
+            }
             if (telegraph != null)
                 telegraph.enabled = false;
         }
@@ -273,8 +292,8 @@ namespace ItHunts.Enemies
                     if (Mode == FlyerMode.Ronde && now >= _nextDive && Vector3.Distance(pos, chest) <= settings.diveRange && Clear(pos, chest))
                     {
                         SetMode(FlyerMode.Annonce);
-                        if (_screech != null)
-                            _audio.PlayOneShot(_screech, 0.8f);
+                        var art = ItHunts.Audio.GameAudio.Settings;      // cri de la DA (PR #20), sinon provisoire
+                        ItHunts.Audio.GameAudio.PlayOn(_audio, art != null ? art.flyerCry : null, _screech, art != null && art.flyerCry != null ? art.flyerVolume : 0.8f);
                     }
 
                     break;
@@ -575,7 +594,12 @@ namespace ItHunts.Enemies
             float r = settings.burstRadius, total = 0f;
             AreaEvents.RaiseArea(new AreaImpactEvent { Point = point, Radius = r, ImpactDamage = settings.burstDamage });
             AreaEvents.RaiseBroken(new BreakEvent { Point = point, Size = Vector3.one * 0.6f, Color = new Color(0.25f, 0.2f, 0.18f) });
-            if (_pop != null)
+            if (ItHunts.Combat.GameVfx.Settings != null)
+                ItHunts.Combat.GameVfx.Spawn(ItHunts.Combat.GameVfx.Settings.flyerDeath, point, Quaternion.identity, 1f, null, 3f);
+            var deathArt = ItHunts.Audio.GameAudio.Settings;
+            if (deathArt != null && deathArt.flyerDeath != null)
+                ItHunts.Audio.GameAudio.PlayAt(deathArt.flyerDeath, point, deathArt.flyerVolume);
+            else if (_pop != null)
                 AudioSource.PlayClipAtPoint(_pop, point, 0.9f);
             int sourceId = -GetInstanceID() - 7;
             var targets = new List<Damageable>(Damageable.All);

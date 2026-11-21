@@ -1,12 +1,16 @@
 using ItHunts.Audio;
+using ItHunts.Level;
+using ItHunts.Settings;
 using UnityEngine;
 
 namespace ItHunts.Enemies
 {
     /// <summary>
-    /// Annonce sonore du traqueur (boss-traqueur, règle 6), provisoire (ProceduralSfx, vrais sons à l'étape 10) : pas
-    /// lourds en 3D au rythme de sa vitesse, souffle en boucle (plus fort en chasse), grondement quand il repère le joueur,
-    /// et une nappe de tension (2D) qui monte en Alerte et en Chasse. On l'entend avant de le voir.
+    /// Sons du traqueur (boss-traqueur, règle 6) et musique en jeu. Sons de la DA (GameAudio_Default, PR #20), repli sur les sons
+    /// provisoires (ProceduralSfx) s'ils manquent : pas lourds en 3D au rythme de sa vitesse (le tremblement de caméra suit
+    /// chaque pas), souffle en boucle à proximité (plus fort en chasse), grognement quand il repère le joueur (Alerte,
+    /// Recherche), cri au hasard au passage en Enragé, cri à la prise. Musique : exploration en boucle, fondu croisé vers la
+    /// musique Enragé à la fin du timer, retour au calme ensuite. Volumes : réglages du joueur (musique, effets).
     /// </summary>
     [RequireComponent(typeof(Stalker))]
     public sealed class StalkerAudio : MonoBehaviour
@@ -14,11 +18,20 @@ namespace ItHunts.Enemies
         /// <summary>Un pas du traqueur : position, distance de tremblement, force (CameraShake de chaque joueur).</summary>
         public static event System.Action<Vector3, float, float> Footstep;
 
+        /// <summary>Choc au sol (réception d'un bond, point 9) : même tremblement que les pas, plus fort.</summary>
+        public static void RaiseFootstep(Vector3 at, float range, float strength) => Footstep?.Invoke(at, range, strength);
+
         private Stalker _stalker;
-        private AudioSource _steps, _breath, _music;
+        private AudioSource _steps, _stepsLoop, _breath, _voice, _explore, _enraged;
         private AudioClip _step, _roar;
         private float _stepPhase;
         private float _seenRoar = float.NegativeInfinity;
+        private StalkerMode _lastMode;
+        private int _seenKills;
+        private bool _artSteps;
+
+        /// <summary>Volume actuel de la musique d'exploration et de la musique enragée (tests, debug).</summary>
+        public Vector2 MusicLevels => new Vector2(_explore != null ? _explore.volume : 0f, _enraged != null ? _enraged.volume : 0f);
 
         private AudioSource Source(string name, bool spatial, float range)
         {
@@ -38,19 +51,41 @@ namespace ItHunts.Enemies
         private void Start()
         {
             _stalker = GetComponent<Stalker>();
+            GameAudioSettings art = GameAudio.Settings;
             float range = _stalker.Settings != null ? _stalker.Settings.soundRange : 45f;
             _steps = Source("Pas du traqueur", true, range);
+            _voice = Source("Voix du traqueur", true, range * 1.5f);
             _breath = Source("Souffle du traqueur", true, range * 0.6f);
-            _music = Source("Tension (provisoire)", false, range);
             _step = ProceduralSfx.ToClip("Traqueur : pas", ProceduralSfx.StalkerStep());
-            _roar = ProceduralSfx.ToClip("Traqueur : grondement", ProceduralSfx.StalkerRoar());
-            _breath.clip = ProceduralSfx.ToClip("Traqueur : souffle", ProceduralSfx.StalkerBreath());
+            _roar = art != null && art.stalkerGrowl != null ? art.stalkerGrowl : ProceduralSfx.ToClip("Traqueur : grondement", ProceduralSfx.StalkerRoar());
+            _breath.clip = art != null && art.stalkerBreath != null ? art.stalkerBreath : ProceduralSfx.ToClip("Traqueur : souffle", ProceduralSfx.StalkerBreath());
             _breath.loop = true;
             _breath.Play();
-            _music.clip = ProceduralSfx.ToClip("Tension", ProceduralSfx.TensionDrone());
-            _music.loop = true;
-            _music.volume = 0f;
-            _music.Play();
+
+            // Pas de la DA : le fichier est une suite de pas ; il tourne en boucle tant que le traqueur avance, plus vite quand il
+            // court (hauteur), et chaque pas compté fait trembler la caméra comme avant.
+            _artSteps = art != null && art.stalkerSteps != null;
+            if (_artSteps)
+            {
+                _stepsLoop = Source("Pas du traqueur (boucle)", true, range);
+                _stepsLoop.clip = art.stalkerSteps;
+                _stepsLoop.loop = true;
+                _stepsLoop.volume = 0f;
+                _stepsLoop.Play();
+            }
+
+            // Musique (2D) : exploration et enragé, en boucle, fondu croisé.
+            _explore = Source("Musique : exploration", false, range);
+            _enraged = Source("Musique : enragé", false, range);
+            _explore.loop = _enraged.loop = true;
+            _explore.volume = _enraged.volume = 0f;
+            _explore.clip = art != null && art.musicExploration != null ? art.musicExploration : ProceduralSfx.ToClip("Tension", ProceduralSfx.TensionDrone());
+            _enraged.clip = art != null && art.musicEnraged != null ? art.musicEnraged : _explore.clip;
+            _explore.Play();
+            _enraged.Play();
+            _lastMode = _stalker.Mode;
+            _seenKills = _stalker.GrabKills;
+            GameSettings.Apply();                                         // volume des effets sur l'écouteur (scène lancée sans le menu)
         }
 
         private void Update()
@@ -58,18 +93,31 @@ namespace ItHunts.Enemies
             if (_stalker == null || _stalker.Settings == null || _steps == null)
                 return;
             var cfg = _stalker.Settings;
+            GameAudioSettings art = GameAudio.Settings;
             float speed = _stalker.Speed;
             float rate = cfg.stepsPerSecondAtChase * Mathf.Max(0.3f, speed / Mathf.Max(0.1f, cfg.chaseSpeed));
-            if (speed > 0.3f)
+            bool moving = speed > 0.3f;
+            if (moving)
             {
                 _stepPhase += rate * Time.deltaTime;
                 if (_stepPhase >= 1f)
                 {
                     _stepPhase -= 1f;
-                    _steps.pitch = Random.Range(0.9f, 1.05f);
-                    _steps.PlayOneShot(_step, cfg.stepVolume);
+                    if (!_artSteps)
+                    {
+                        _steps.pitch = Random.Range(0.9f, 1.05f);
+                        _steps.PlayOneShot(_step, cfg.stepVolume);
+                    }
+
                     Footstep?.Invoke(transform.position, cfg.shakeRange, cfg.shakeStrength);
                 }
+            }
+
+            if (_stepsLoop != null)
+            {
+                float target = moving ? cfg.stepVolume * (art != null ? art.stalkerStepsVolume : 1f) : 0f;
+                _stepsLoop.volume = Mathf.MoveTowards(_stepsLoop.volume, target, Time.deltaTime * 4f);
+                _stepsLoop.pitch = Mathf.Clamp(speed / Mathf.Max(0.1f, cfg.chaseSpeed), 0.85f, 1.2f);
             }
 
             bool hunting = _stalker.Mode == StalkerMode.Chasse || _stalker.Mode == StalkerMode.Enrage;
@@ -77,18 +125,27 @@ namespace ItHunts.Enemies
             if (_stalker.LastRoarTime > _seenRoar)
             {
                 _seenRoar = _stalker.LastRoarTime;
-                _steps.PlayOneShot(_roar, 1f);
+                GameAudio.PlayOn(_voice, art != null ? art.stalkerGrowl : null, _roar, 1f);
             }
 
-            float music = _stalker.Mode switch
+            // Cris : passage en Enragé (une variante au hasard), prise d'un joueur.
+            float cry = art != null ? art.stalkerCryVolume : 1f;
+            if (_stalker.Mode == StalkerMode.Enrage && _lastMode != StalkerMode.Enrage && art != null)
+                GameAudio.PlayOn(_voice, GameAudio.Pick(art.stalkerEnragedCries), null, cry);
+            _lastMode = _stalker.Mode;
+            if (_stalker.GrabKills > _seenKills)
             {
-                StalkerMode.Alerte => 0.25f,
-                StalkerMode.Recherche => 0.2f,
-                StalkerMode.Chasse => 0.55f,
-                StalkerMode.Enrage => 0.7f,
-                _ => 0f,
-            };
-            _music.volume = Mathf.MoveTowards(_music.volume, music, Time.deltaTime * 0.5f);
+                _seenKills = _stalker.GrabKills;
+                if (art != null)
+                    GameAudio.PlayOn(_voice, art.stalkerGrabCry, null, cry);
+            }
+
+            // Musique : enragé en Enragé, exploration sinon (fondu croisé).
+            bool enraged = _stalker.Mode == StalkerMode.Enrage;
+            float level = (art != null ? art.musicVolume : 0.5f) * GameSettings.MusicGain;
+            float fade = Time.deltaTime / Mathf.Max(0.05f, art != null ? art.musicCrossfade : 2.5f);
+            _explore.volume = Mathf.MoveTowards(_explore.volume, enraged ? 0f : level, fade * Mathf.Max(level, 0.01f));
+            _enraged.volume = Mathf.MoveTowards(_enraged.volume, enraged ? level : 0f, fade * Mathf.Max(level, 0.01f));
         }
     }
 }

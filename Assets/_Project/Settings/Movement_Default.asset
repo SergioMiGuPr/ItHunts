@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11be3827bf05e85498532b076d708717, type: 3}
   m_Name: Movement_Default
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.MovementSettings
-  runSpeed: 7.5
+  runSpeed: 8.5
   groundAcceleration: 10
   groundFriction: 6
   stopSpeed: 2.5

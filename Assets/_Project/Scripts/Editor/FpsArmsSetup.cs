@@ -36,8 +36,10 @@ namespace ItHunts.EditorTools
             foreach (string guid in AssetDatabase.FindAssets("t:CharacterDefinition"))
             {
                 var c = AssetDatabase.LoadAssetAtPath<CharacterDefinition>(AssetDatabase.GUIDToAssetPath(guid));
-                string who = c.id.ToLowerInvariant().Contains("renard") ? "Renard" : c.id.ToLowerInvariant().Contains("cam") ? "Cameleon" : null;
-                if (who == null)
+                // Les 4 personnages (koala et hibou : bras livrés avec la PR #8, même armature, même cuisson des poses).
+                string id = c.id.ToLowerInvariant();
+                string who = id.Contains("renard") ? "Renard" : id.Contains("cam") ? "Cameleon" : id.Contains("koala") ? "Koala" : id.Contains("hibou") ? "Hibou" : null;
+                if (who == null || AssetDatabase.LoadAssetAtPath<GameObject>(Fps + $"SK_BrasFPS_{who}_D.fbx") == null)
                     continue;
                 c.fpsArmRight = AssetDatabase.LoadAssetAtPath<GameObject>(Fps + $"SK_BrasFPS_{who}_D.fbx");
                 c.fpsArmLeft = AssetDatabase.LoadAssetAtPath<GameObject>(Fps + $"SK_BrasFPS_{who}_G.fbx");
@@ -133,7 +135,7 @@ namespace ItHunts.EditorTools
                 {
                     // Animations de la DA (clips « Anim_* » : repos animé, gestes) : cuites à 30 images/s, jouées en boucle par FpsArms.
                     string clipName = clip.name.Contains("|") ? clip.name.Substring(clip.name.IndexOf('|') + 1) : clip.name;
-                    if (clipName.StartsWith("Anim_") && !clip.empty)
+                    if ((clipName.StartsWith("Anim_") || clipName.StartsWith("Boucle_")) && !clip.empty)
                     {
                         var anim = new FpsArmPoseSet.Animation { name = clipName, frameRate = 30f };
                         int n = Mathf.Max(1, Mathf.RoundToInt(clip.length * anim.frameRate));

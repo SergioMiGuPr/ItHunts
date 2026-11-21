@@ -416,6 +416,7 @@ namespace ItHunts.EditorTools
                 root.AddComponent<DebugTeleporter>();
                 var view = root.AddComponent<FirstPersonView>();
                 var hud = root.AddComponent<PlayerHud>();
+                root.AddComponent<PlayerParry>().Settings = LoadOrCreate<ParrySettings>(SettingsDir + "/Parry_Default.asset");   // D-075
                 var orbView = root.AddComponent<MagnetismOrbView>();
                 var audio = root.AddComponent<MagnetismAudio>();
                 var tkView = root.AddComponent<TelekinesisView>();
@@ -637,6 +638,7 @@ namespace ItHunts.EditorTools
             BuildMagnetismArea(level, magneticMat, platformMat, rampMat, wallMat, lineMat, landmarkMat);
             BuildGreatHall(level, wallMat, platformMat, magneticMat, lineMat);
             BuildTelekinesisArea(level, blockMat, lineMat);
+            MantleCourseBuilder.Build(level, new Vector3(-18f, 0f, -26f), blockMat, landmarkMat);   // derrière le départ (D-074)
             BuildTeleportPoints();
 
             // État de la run (D-032) : seed et tirage des artefacts.
@@ -685,6 +687,7 @@ namespace ItHunts.EditorTools
         //   x   45..95,  z −30..60  : magnétisme (cibles en bleu, mais toute surface répond)
         //   x −100..−50, z   0..50  : grande salle de 45 m de haut (portée de la traction)
         //   x −100..−50, z −38..−5  : télékinésie (objets à attraper et lancer, lustre suspendu)
+        //   x  −20.. 20, z −29..−26 : hissage (rebords de 1.5 à 4.2 m, étroit, bloqué), derrière le départ
 
         private const float GroundMinX = -200f, GroundMaxX = 200f, GroundMinZ = -40f, GroundMaxZ = 360f;
 

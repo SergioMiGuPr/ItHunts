@@ -75,12 +75,12 @@ namespace ItHunts.EditorTools
         {
             for (int i = barrelRoot.childCount - 1; i >= 0; i--)
                 Object.DestroyImmediate(barrelRoot.GetChild(i).gameObject);
-            var fps = AssetDatabase.LoadAssetAtPath<FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");
-            if (fps != null)
+            var cfg = AssetDatabase.LoadAssetAtPath<BarrelSettings>("Assets/_Project/Settings/Barrel_Default.asset");
+            if (cfg != null)
             {
-                barrelRoot.localPosition = fps.barrelInHand;
-                barrelRoot.localRotation = Quaternion.Euler(fps.barrelInHandEuler);
-                barrelRoot.localScale = Vector3.one * fps.barrelScale;
+                barrelRoot.localPosition = cfg.viewInHand;
+                barrelRoot.localRotation = Quaternion.Euler(cfg.viewInHandEuler);
+                barrelRoot.localScale = Vector3.one * cfg.viewScale;
             }
 
             var model = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath), barrelRoot);

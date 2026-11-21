@@ -132,6 +132,7 @@ namespace ItHunts.Player
                 input.RepelHeld = _reader.RepelHeld;
                 input.GrabPressedTick = _reader.GrabPressedTick;
                 input.ThrowPressedTick = _reader.ThrowPressedTick;
+                input.ThrowHeld = _reader.ThrowHeld;
                 input.ReloadPressedTick = _reader.ReloadPressedTick;
             }
 

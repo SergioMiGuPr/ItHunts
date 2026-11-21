@@ -15,9 +15,10 @@ MonoBehaviour:
   id: cameleon
   displayName: "Cam\xE9l\xE9on"
   color: {r: 1, g: 0.55, b: 0.12, a: 1}
-  lanternColor: {r: 0.66, g: 0.34, b: 0.08, a: 1}
+  lanternColor: {r: 1, g: 0.5, b: 0.1, a: 1}
   fpsArmRight: {fileID: 919132149155446097, guid: bb0204a81d4a40f4b8469ebb3e18b7a6, type: 3}
   fpsArmLeft: {fileID: 919132149155446097, guid: a741e4d184b8f7e4e81a8a56ca7ff52d, type: 3}
   artifact: {fileID: 11400000, guid: 89cfb0254aa64984a862b239ac896e4a, type: 2}
   artifactLabel: "artefact \xE0 concevoir"
   playable: 1
+  description: "Barillet : six balles tir\xE9es des yeux, rechargement rapide."

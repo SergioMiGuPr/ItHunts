@@ -59,6 +59,7 @@ namespace ItHunts.Artifacts
         private MaterialPropertyBlock _block, _glassBlock;
         private AudioSource _audio;
         private AudioClip _jet, _relight;
+        private AudioSource _loop;
         private float _jetClipFor = -1f;
         private int _seenJet;
         private bool _wasReady = true;
@@ -109,13 +110,45 @@ namespace ItHunts.Artifacts
 
         private void OnDestroy()
         {
+            if (_jetVfx != null)
+                Destroy(_jetVfx.gameObject);
             if (_puffRoot != null)
                 Destroy(_puffRoot.gameObject);
         }
 
+        private ItHunts.Art.VFX.VfxPeint _jetVfx;
+        private bool _jetVfxOn;
+
+        /// <summary>Jet peint de la DA (VFX_Lanterne_Jet, PR #22) : remplace les bouffées s'il existe.</summary>
+        public bool PaintedJet => ItHunts.Combat.GameVfx.Settings != null && ItHunts.Combat.GameVfx.Settings.lanternJet != null;
+
+        private void UpdatePaintedJet(bool jetting)
+        {
+            if (_jetVfx == null)
+            {
+                GameObject go = ItHunts.Combat.GameVfx.Spawn(ItHunts.Combat.GameVfx.Settings.lanternJet, transform.position, Quaternion.identity, 1f, null, 0f);
+                if (go == null)
+                    return;
+                go.name = $"Jet de la lanterne ({name})";
+                _jetVfx = go.GetComponent<ItHunts.Art.VFX.VfxPeint>();
+                if (_jetVfx == null)
+                    _jetVfx = go.AddComponent<ItHunts.Art.VFX.VfxPeint>();
+                _jetVfx.Arrete();
+            }
+
+            Vector3 from = muzzle != null && _view != null ? _view.ViewToWorld(muzzle.position) : transform.position + Vector3.up * 1.5f;
+            Transform cam = _camera != null ? _camera.transform : transform;
+            _jetVfx.transform.SetPositionAndRotation(from, Quaternion.LookRotation(cam.forward, Vector3.up));
+            if (jetting && !_jetVfxOn)
+                _jetVfx.Joue();
+            else if (!jetting && _jetVfxOn)
+                _jetVfx.Arrete();
+            _jetVfxOn = jetting;
+        }
+
         private void EnsurePuffs()
         {
-            if (_puffRoot != null || puffMesh == null || puffMaterial == null)
+            if (_puffRoot != null || puffMesh == null || puffMaterial == null || PaintedJet)
                 return;
             _puffRoot = new GameObject($"Flammes de la lanterne ({name})").transform;
             for (int i = 0; i < MaxPuffs; i++)
@@ -168,7 +201,34 @@ namespace ItHunts.Artifacts
                 }
 
                 if (s.Jetting)
-                    _audio.PlayOneShot(_jet, cfg.jetVolume);
+                {
+                    var art = ItHunts.Audio.GameAudio.Settings;          // début puis boucle de la DA (PR #20), sinon le jet provisoire
+                    ItHunts.Audio.GameAudio.PlayOn(_audio, art != null ? art.lanternJetStart : null, _jet, cfg.jetVolume);
+                    if (art != null && art.lanternJetLoop != null)
+                    {
+                        if (_loop == null)
+                        {
+                            _loop = gameObject.AddComponent<AudioSource>();
+                            _loop.playOnAwake = false;
+                            _loop.spatialBlend = 0f;
+                            _loop.loop = true;
+                        }
+
+                        _loop.clip = art.lanternJetLoop;
+                        _loop.volume = cfg.jetVolume;
+                        if (!_loop.isPlaying)
+                            _loop.Play();
+                    }
+                }
+            }
+
+            // Boucle du jet : tant que le jet dure, puis fondu court.
+            if (_loop != null && _loop.isPlaying && !s.Jetting)
+            {
+                var a = ItHunts.Audio.GameAudio.Settings;
+                _loop.volume = Mathf.MoveTowards(_loop.volume, 0f, cfg.jetVolume * Time.deltaTime / Mathf.Max(0.01f, a != null ? a.lanternLoopFade : 0.15f));
+                if (_loop.volume <= 0.001f)
+                    _loop.Stop();
             }
 
             if (ready && !_wasReady && s.JetCount > 0)
@@ -208,6 +268,9 @@ namespace ItHunts.Artifacts
                 _block.SetColor(EmissionColorId, cfg.lanternGlow * k);
                 flame.SetPropertyBlock(_block);
             }
+
+            if (PaintedJet)
+                UpdatePaintedJet(s.Jetting);
 
             // Bouffées : lancées pendant le jet depuis la lanterne, dans le cône du viseur.
             if (s.Jetting && _puffRoot != null)

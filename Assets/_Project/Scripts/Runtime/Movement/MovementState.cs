@@ -11,6 +11,8 @@ namespace ItHunts.Movement
         WallSlide,
         /// <summary>Traction de l'orbe de magnétisme : ligne droite vers un point, sans gravité ni friction.</summary>
         Traction,
+        /// <summary>Hissage sur un rebord (D-074) : trajectoire fixée au départ, ni gravité ni contrôle.</summary>
+        Mantle,
     }
 
     /// <summary>Raison de la fin d'une traction (debug).</summary>
@@ -25,6 +27,21 @@ namespace ItHunts.Movement
         Dash,
         Repulsion,
         Bloquee,
+    }
+
+    /// <summary>Élan au sol (D-073), pour le debug : gardé, ou la raison de sa perte.</summary>
+    public enum MomentumStatus : byte
+    {
+        /// <summary>À la vitesse de course ou en dessous, ou pas au sol : rien à garder.</summary>
+        Aucun,
+        Garde,
+        AvancerLache,
+        Recule,
+        HorsDuCone,
+        Virage,
+        Mur,
+        Plafond,
+        Accroupi,
     }
 
     /// <summary>
@@ -124,6 +141,27 @@ namespace ItHunts.Movement
         public int TractionEndTick;
         public TractionEnd TractionEndReason;
 
+        /// <summary>
+        /// Élan au sol (D-073) : cassé par un virage trop serré ou un mur (jusqu'au retour à la vitesse de course ou au décollage),
+        /// et l'état du dernier tick au sol (debug).
+        /// </summary>
+        public bool MomentumBroken;
+        public MomentumStatus Momentum;
+
+        /// <summary>
+        /// Hissage en cours (Mode == Mantle) : départ, pieds à l'arrivée, ticks au total et restants, vitesse et direction de sortie.
+        /// Dernier contact avec un mur : vitesse horizontale juste avant, et son tick (la collision l'a déjà retirée).
+        /// </summary>
+        public Vector3 MantleStart;
+        public Vector3 MantleTarget;
+        public int MantleTicks;
+        public int MantleTicksLeft;
+        public float MantleExitSpeed;
+        public Vector3 MantleDir;
+        public int LastMantleTick;
+        public float PreHitSpeed;
+        public int PreHitTick;
+
         public static MovementState Create(Vector3 position) => new MovementState
         {
             Tick = 0,
@@ -172,6 +210,17 @@ namespace ItHunts.Movement
             TractionStartTick = NeverTick,
             TractionEndTick = NeverTick,
             TractionEndReason = TractionEnd.Aucune,
+            MantleStart = position,
+            MantleTarget = position,
+            MantleTicks = 0,
+            MantleTicksLeft = 0,
+            MantleExitSpeed = 0f,
+            MantleDir = Vector3.zero,
+            LastMantleTick = NeverTick,
+            PreHitSpeed = 0f,
+            PreHitTick = NeverTick,
+            MomentumBroken = false,
+            Momentum = MomentumStatus.Aucun,
         };
 
         public float HorizontalSpeed => new Vector2(Velocity.x, Velocity.z).magnitude;

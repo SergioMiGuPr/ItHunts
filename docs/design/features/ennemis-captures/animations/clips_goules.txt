@@ -1,0 +1,11 @@
+Repos : Goule_Repos
+Course : Goule_Course
+AnnonceDuBond : Goule_Annonce
+Bond : Goule_Bond
+Reception : Goule_Bond
+Escalade : Goule_Escalade
+Coup : Goule_Coup
+Etourdie : Goule_Etourdie
+Tenue : Goule_Etourdie
+Morte : Goule_Repos
+#fin

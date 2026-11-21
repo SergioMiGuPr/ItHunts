@@ -16,6 +16,13 @@ namespace ItHunts.Player
         Prise,
     }
 
+    /// <summary>Cadrage des mains (menu pause, vitrine) : référence (reference_bras_fps.png) ou écarté.</summary>
+    public enum HandFraming : byte
+    {
+        Reference,
+        Ecarte,
+    }
+
     /// <summary>
     /// Aperçu forcé de la vue (scène vitrine, captures) : une pose de fond ou un état de l'artefact sans passer par la simulation.
     /// Aucun : la vue suit l'état simulé du joueur (en jeu).
@@ -44,6 +51,30 @@ namespace ItHunts.Player
     {
         public const string LayerPrefix = "FirstPersonP";
         private const string IntensityKey = "ItHunts.HandMotionIntensity.P";
+        private const string FramingKey = "ItHunts.HandFraming2.P";      // v2 : « écarté » par défaut (playtest des animations)
+        private HandFraming _framing;
+
+        /// <summary>Cadrage des mains, enregistré par joueur (menu pause, vitrine).</summary>
+        public HandFraming Framing
+        {
+            get => _framing;
+            set
+            {
+                _framing = value;
+                PlayerPrefs.SetInt(FramingKey + _playerIndex, (int)value);
+            }
+        }
+
+        public static string FramingLabel(HandFraming f) => f == HandFraming.Ecarte ? "écarté" : "référence";
+
+        /// <summary>Position et angles de repos d'une main selon le cadrage (gauche : miroir du préréglage droit).</summary>
+        private Vector3 RestPos(bool right) => _framing == HandFraming.Ecarte
+            ? (right ? settings.wideRightHandRest : Vector3.Scale(settings.wideRightHandRest, new Vector3(-1f, 1f, 1f)))
+            : right ? settings.rightHandRest : settings.leftHandRest;
+
+        private Vector3 RestEuler(bool right) => _framing == HandFraming.Ecarte
+            ? (right ? settings.wideRightHandRestEuler : Vector3.Scale(settings.wideRightHandRestEuler, new Vector3(1f, -1f, -1f)))
+            : right ? settings.rightHandRestEuler : settings.leftHandRestEuler;
 
         [SerializeField] private FpsViewSettings settings;
         [SerializeField] private Camera overlayCamera;
@@ -87,6 +118,8 @@ namespace ItHunts.Player
         public Transform Orb => orb;
         /// <summary>Racine des mains (repère de la vue) : l'artefact qui flotte reste pointé vers l'avant de la vue.</summary>
         public Transform ViewRoot => viewRoot;
+        /// <summary>Main gauche de la vue FPS (artefacts).</summary>
+        public Transform LeftHand => leftHand;
         public int Layer => _layer;
         public HandGesture Gesture { get; private set; }
 
@@ -132,7 +165,9 @@ namespace ItHunts.Player
             _mainCamera = playerInput != null ? playerInput.camera : null;
             _playerIndex = playerInput != null ? Mathf.Max(0, playerInput.playerIndex) : 0;
             handMotionIntensity = PlayerPrefs.GetFloat(IntensityKey + _playerIndex, handMotionIntensity);
+            _framing = (HandFraming)Mathf.Clamp(PlayerPrefs.GetInt(FramingKey + _playerIndex, (int)HandFraming.Ecarte), 0, 1);
             SetupCameras();
+            SetupFillLight();
             if (orb != null && settings != null)
             {
                 orb.localPosition = settings.orbInHand;
@@ -185,6 +220,37 @@ namespace ItHunts.Player
                 if (!baseData.cameraStack.Contains(overlayCamera))
                     baseData.cameraStack.Add(overlayCamera);
             }
+        }
+
+        private Light _fill;
+
+        /// <summary>Lumière d'appoint de la vue (point lumineux sans ombre, enfant de la caméra) : n'éclaire que le calque « FPS ».</summary>
+        public Light FillLight => _fill;
+
+        private void SetupFillLight()
+        {
+            Transform cam = viewRoot != null && viewRoot.parent != null ? viewRoot.parent : transform;
+            var go = new GameObject("Lumière d'appoint (vue FPS)");
+            go.transform.SetParent(cam, false);
+            _fill = go.AddComponent<Light>();
+            _fill.type = LightType.Point;
+            _fill.shadows = LightShadows.None;
+            uint fps = 1u << ItHunts.Level.AmbianceLight.FpsRenderingLayer;
+            _fill.renderingLayerMask = (int)fps;
+            var data = go.AddComponent<UniversalAdditionalLightData>();
+            data.renderingLayers = fps;
+            UpdateFillLight();
+        }
+
+        private void UpdateFillLight()
+        {
+            if (_fill == null || settings == null)
+                return;
+            _fill.enabled = settings.fillLight;
+            _fill.intensity = settings.fillLightIntensity;
+            _fill.range = settings.fillLightRange;
+            _fill.color = settings.fillLightColor;
+            _fill.transform.localPosition = settings.fillLightOffset;
         }
 
         /// <summary>Affiche ou cache les mains (mesures de performance).</summary>
@@ -268,6 +334,7 @@ namespace ItHunts.Player
             viewRoot.localRotation = Quaternion.Euler(_swayEuler + new Vector3(0f, 0f, settings.slideRoll * _slide));
 
             UpdateHands(s, kp);
+            UpdateFillLight();                                           // réglable en Play Mode
         }
 
         private void UpdateHands(in MovementState s, float kp)
@@ -349,8 +416,8 @@ namespace ItHunts.Player
             _rightCurl = Mathf.Lerp(_rightCurl, curl, kp);
             if (rightHand != null)
             {
-                rightHand.localPosition = settings.rightHandRest + _rightOffset + gesture;
-                rightHand.localRotation = Quaternion.Euler(settings.rightHandRestEuler + _rightEuler);
+                rightHand.localPosition = RestPos(true) + _rightOffset + gesture;
+                rightHand.localRotation = Quaternion.Euler(RestEuler(true) + _rightEuler);
             }
 
             if (rightFingers != null)
@@ -402,8 +469,8 @@ namespace ItHunts.Player
             _leftCurl = Mathf.Lerp(_leftCurl, leftCurl, kp);
             if (leftHand != null)
             {
-                leftHand.localPosition = settings.leftHandRest + leftOffset;
-                leftHand.localRotation = Quaternion.Euler(settings.leftHandRestEuler + leftEuler);
+                leftHand.localPosition = RestPos(false) + leftOffset;
+                leftHand.localRotation = Quaternion.Euler(RestEuler(false) + leftEuler);
             }
 
             if (leftFingers != null)

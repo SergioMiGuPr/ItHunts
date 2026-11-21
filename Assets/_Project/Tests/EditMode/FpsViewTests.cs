@@ -25,6 +25,108 @@ namespace ItHunts.Tests
         [TearDown]
         public void TearDown() => Object.DestroyImmediate(_cfg);
 
+        // ---------- Bras de la DA ----------
+
+        [Test]
+        public void BrasFps_FacesVersLExterieur()
+        {
+            // PR #14 : les bras v2 sont réexportés à l'endroit ; le contour des mains (coque, faces avant cachées) suppose un volume
+            // signé positif. Un maillage retourné ferait des bras noirs.
+            int n = 0;
+            foreach (string who in new[] { "Renard", "Cameleon", "Koala", "Hibou" })
+                foreach (string side in new[] { "D", "G" })
+                    foreach (Mesh m in AssetDatabase.LoadAllAssetsAtPath($"Assets/Art/Models/FPS/SK_BrasFPS_{who}_{side}.fbx").OfType<Mesh>())
+                    {
+                        Assert.That(HandsOutline.SignedVolume(m), Is.GreaterThan(0.0), $"{m.name} retourné (faces vers l'intérieur)");
+                        n++;
+                    }
+            Assert.That(n, Is.GreaterThanOrEqualTo(8), "un maillage par bras et par personnage");
+        }
+
+        [Test]
+        public void PoseTenir_SeulsLesDoigtsSeReferment_PouceAttenue()
+        {
+            Assert.That(FpsArms.HoldWeight("Index_2", 0.45f, 0.5f), Is.EqualTo(0.45f));
+            Assert.That(FpsArms.HoldWeight("Auriculaire_1", 0.45f, 0.5f), Is.EqualTo(0.45f));
+            Assert.That(FpsArms.HoldWeight("Pouce_2", 0.45f, 0.5f), Is.EqualTo(0.225f).Within(1e-5f));
+            foreach (string b in new[] { "Avant_Bras", "Poignet", "Metacarpe_Annulaire", "Paume_Pouce" })
+                Assert.That(FpsArms.HoldWeight(b, 0.45f, 0.5f), Is.EqualTo(0f), b);
+            Assert.That(FpsArms.HoldWeight("Index_1", 0f, 0.5f), Is.EqualTo(0f));
+            var cfg = AssetDatabase.LoadAssetAtPath<FpsViewSettings>("Assets/_Project/Settings/FpsView_Default.asset");
+            var poses = AssetDatabase.LoadAssetAtPath<FpsArmPoseSet>("Assets/_Project/Settings/FpsArmPoses.asset");
+            Assert.That(poses.right.Find(cfg.holdTowardPose), Is.Not.Null, "pose du poing de la DA");
+            Assert.That(cfg.restHoldRight, Is.InRange(0.2f, 0.8f), "à demi refermée");
+        }
+
+        [Test]
+        public void Hud_Echelle_VueEtroite_LesCoinsTiennent()
+        {
+            var hud = AssetDatabase.LoadAssetAtPath<HudSettings>("Assets/_Project/Settings/Hud_Default.asset");
+            Assert.That(PlayerHud.ScaleFor(1920f, 1080f, hud), Is.EqualTo(1f).Within(1e-4f), "1080p : échelle 1");
+            Assert.That(PlayerHud.ScaleFor(3840f, 2160f, hud), Is.EqualTo(2f).Within(1e-4f));
+            Assert.That(PlayerHud.ScaleFor(2560f, 1080f, hud), Is.EqualTo(1f).Within(1e-4f), "ultra-large : la hauteur");
+            // Écran partagé côte à côte (960 × 1080) et 4:3 : la largeur réduit le HUD pour que les coins tiennent.
+            Assert.That(PlayerHud.ScaleFor(960f, 1080f, hud), Is.LessThan(1f));
+            Assert.That(PlayerHud.ScaleFor(960f, 1080f, hud) * hud.minLayoutWidth, Is.LessThanOrEqualTo(960f + 0.01f));
+            Assert.That(PlayerHud.ScaleFor(512f, 768f, hud) * hud.minLayoutWidth, Is.LessThanOrEqualTo(512f + 0.01f));
+        }
+
+        [Test]
+        public void CarteOuverte_IconesDeLaDA_CoffreRare_ToucheParJoueur()
+        {
+            var skin = AssetDatabase.LoadAssetAtPath<HudSkinSettings>("Assets/_Project/Settings/HudSkin_Default.asset");
+            Assert.That(skin.iconChestRare, Is.Not.Null, "MiniCarte_Coffre_Rare branchée");
+            Assert.That(skin.iconChestRare.name, Does.Contain("Rare"));
+            var go = new GameObject("Coffre");
+            try
+            {
+                var chest = go.AddComponent<ItHunts.Economy.Chest>();
+                Assert.That(PlayerHud.MarkIcon(skin, chest, 1), Is.EqualTo(skin.iconChest));
+                chest.Rare = true;
+                Assert.That(PlayerHud.MarkIcon(skin, chest, 1), Is.EqualTo(skin.iconChestRare));
+            }
+            finally
+            {
+                Object.DestroyImmediate(go);
+            }
+
+            Assert.That(skin.mapIconSize, Is.GreaterThanOrEqualTo(24f), "icônes lisibles sur la carte ouverte");
+            // La carte sans déformation dans sa zone.
+            Vector2 fit = PlayerHud.FitMap(new Vector2(800f, 600f), new Vector2(400f, 100f));
+            Assert.That(fit.x, Is.EqualTo(800f).Within(0.01f));
+            Assert.That(fit.y, Is.EqualTo(200f).Within(0.01f));
+            // Touche de la carte par joueur (Tab, croix haut).
+            var actions = AssetDatabase.LoadAssetAtPath<UnityEngine.InputSystem.InputActionAsset>("Assets/_Project/Input/PlayerControls.inputactions");
+            var map = actions.FindAction("Player/Map");
+            Assert.That(map, Is.Not.Null);
+            Assert.That(map.bindings.Select(b => b.path), Is.SupersetOf(new[] { "<Keyboard>/tab", "<Gamepad>/dpad/up" }));
+        }
+
+        [Test]
+        public void CarteOuverte_HabillageDeLaDA_BrumeEtPinceau()
+        {
+            var skin = AssetDatabase.LoadAssetAtPath<HudSkinSettings>("Assets/_Project/Settings/HudSkin_Default.asset");
+            foreach (Object o in new Object[] { skin.mapFrame, skin.mapParchment, skin.mapVignette, skin.mapFog, skin.mapFogBrush, skin.mapLegendFrame,
+                         skin.mapCompass, skin.mapLegendFont, skin.mapInkMaterial, skin.mapFogMaterial })
+                Assert.That(o, Is.Not.Null, "pièce de la carte ouverte (UI-HANDOFF § 2 bis)");
+            Assert.That(skin.mapFrame.border.x / skin.mapFrame.pixelsPerUnit * 100f, Is.EqualTo(PlayerHud.MapFrameBorder).Within(0.5f), "bordure 130 px en 1080p");
+            // La brume tendue sur une zone deux fois plus large que la carte : la carte reste en [0, 1].
+            Rect uv = PlayerHud.FogUv(new Vector2(800f, 400f), new Vector2(400f, 400f));
+            Assert.That(uv.xMin, Is.EqualTo(-0.5f).Within(1e-4f));
+            Assert.That(uv.xMax, Is.EqualTo(1.5f).Within(1e-4f));
+            Assert.That(uv.yMin, Is.EqualTo(0f).Within(1e-4f));
+            // Le pinceau dévoile autour du point, pas ailleurs, et ne réassombrit jamais.
+            var px = new Color32[64 * 64];
+            var stamp = new float[4 * 4];
+            for (int i = 0; i < stamp.Length; i++) stamp[i] = 1f;
+            MinimapHud.StampAt(px, 64, stamp, 4, new Vector2(0.5f, 0.5f), 0.05f);
+            Assert.That(px[32 * 64 + 32].r, Is.EqualTo(255));
+            Assert.That(px[2 * 64 + 2].r, Is.EqualTo(0));
+            stamp[0] = 0f;
+            MinimapHud.StampAt(px, 64, stamp, 4, new Vector2(0.5f, 0.5f), 0.05f);
+            Assert.That(px[32 * 64 + 32].r, Is.EqualTo(255), "jamais réassombri");
+        }
+
         // ---------- Mouvement des mains ----------
 
         [Test]
@@ -303,6 +405,27 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Traqueur_Gree_HuitClips_CalqueMachoire_EpauleDuModele()
+        {
+            var ctrl = AssetDatabase.LoadAssetAtPath<UnityEditor.Animations.AnimatorController>("Assets/_Project/Animation/Traqueur.controller");
+            Assert.That(ctrl, Is.Not.Null);
+            Assert.That(ctrl.layers.Length, Is.EqualTo(2), "calque de la mâchoire");
+            Assert.That(ctrl.layers[1].avatarMask, Is.Not.Null, "masque limité à l'os Machoire");
+            Assert.That(ctrl.animationClips.Select(c => c.name).Distinct().Count(), Is.EqualTo(8));
+            foreach (string clip in new[] { "Traqueur_Marche", "Traqueur_PassageBas", "Traqueur_Prise", "Traqueur_MainsLevees", "Traqueur_MainPlantee", "Traqueur_Revers", "Traqueur_Repos" })
+                Assert.That(ctrl.layers[0].stateMachine.states.Any(s => s.state.name == clip), Is.True, clip);
+            // Le modèle gréé dans les scènes de jeu, avec son Animator.
+            string guid = AssetDatabase.AssetPathToGUID("Assets/Art/Models/Ennemis/SK_Traqueur.fbx");
+            Assert.That(System.IO.File.ReadAllText("Assets/Scenes/Level_01_Aleatoire.unity").Contains(guid), Is.True);
+            // Épaule du modèle (par défaut, avant lecture sur l'os) : 2.6 m du centre, 11.7 m, 4 m devant le pivot.
+            Assert.That(ItHunts.Level.ReachCheck.ShoulderSide, Is.InRange(2.4f, 2.8f));
+            Assert.That(ItHunts.Level.ReachCheck.ShoulderHeight, Is.InRange(11.4f, 12f));
+            Assert.That(ItHunts.Level.ReachCheck.ShoulderForward, Is.InRange(3.4f, 4.1f));
+            var stalker = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
+            Assert.That(stalker.handReach, Is.EqualTo(15f), "la portée de 15 m ne change pas");
+        }
+
+        [Test]
         public void Vitrine_SceneDansLeBuild_EnnemisDansChaqueEtat_AccesMenus()
         {
             const string path = "Assets/Scenes/Test_Vitrine.unity";
@@ -317,6 +440,10 @@ namespace ItHunts.Tests
             Assert.That(ItHunts.Level.MainMenu.VitrineScene, Is.EqualTo("Test_Vitrine"));
             string menu = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/MainMenu.cs");
             Assert.That(menu.Contains("\"Playtest : vitrine\""), Is.True);
+            // Retours du 2026-11-18 : lien « Vitrine (test) » sur l'écran titre (développement seulement) et F2 qui lance la vitrine.
+            Assert.That(menu.Contains("\"Vitrine (test) (F2)\""), Is.True, "lien de l'écran titre");
+            Assert.That(menu.Contains("f2Key.wasPressedThisFrame)\n                OpenVitrine();") || menu.Contains("f2Key.wasPressedThisFrame)\r\n                OpenVitrine();"), Is.True, "F2 lance la vitrine");
+            Assert.That(ItHunts.Level.MainMenu.PlaytestVisible, Is.True, "visible dans l'éditeur");
             string pause = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/PauseMenu.cs");
             Assert.That(pause.Contains("MainMenu.VitrineScene"), Is.True, "accès depuis le menu pause des scènes de test");
         }
@@ -334,8 +461,11 @@ namespace ItHunts.Tests
                 hi = Mathf.Max(hi, h);
             }
             Assert.That(hi - lo, Is.EqualTo(2f * fps.floatAmplitude).Within(0.002f), "monte et descend");
-            Assert.That(lo, Is.GreaterThan(0f), "toujours au-dessus de la paume");
+            Assert.That(lo, Is.GreaterThanOrEqualTo(-fps.floatAmplitude - 1e-4f), "autour du point de la DA au-dessus de la paume (Socket_Orbe, Socket_Artefact)");
             Assert.That(fps.rightHandRest.y, Is.GreaterThan(-0.2f), "mains plus hautes");
+            Assert.That(fps.fillLight, Is.True, "lumière d'appoint de la vue (calque FPS seulement)");
+            Assert.That(fps.fillLightIntensity, Is.InRange(0.05f, 2f), "faible");
+            Assert.That(fps.fillLightRange, Is.LessThan(3f), "n'atteint que les mains et les artefacts");
 
             var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");
             Assert.That(player.GetComponentsInChildren<Transform>(true).Any(t => t.name == "Canon"), Is.False, "plus de canon greybox");
@@ -371,14 +501,23 @@ namespace ItHunts.Tests
             Assert.That(lod.x, Is.GreaterThan(lod.y));
             Assert.That(lod.y, Is.GreaterThan(lod.z));
             Assert.That(lod.z, Is.GreaterThan(0f));
-            // Mêmes distances de bascule que les seuils de la DA pour 1.1 m (0.20 / 0.08 / 0.01).
-            Assert.That(lod.x / ghoul.BodyScale, Is.EqualTo(0.20f).Within(0.01f));
-            Assert.That(lod.y / ghoul.BodyScale, Is.EqualTo(0.08f).Within(0.005f));
+            // Seuils conseillés par la DA pour la goule de 1.8 m (PR #6) : LOD1 à ≈ 5 m, LOD2 à ≈ 13 m, cachée au-delà de ≈ 105 m.
+            Assert.That(lod.x, Is.EqualTo(0.25f).Within(1e-3f));
+            Assert.That(lod.y, Is.EqualTo(0.10f).Within(1e-3f));
+            Assert.That(lod.z, Is.EqualTo(0.012f).Within(1e-4f));
+            // Modèle animé : SK_Goule, Animator et son contrôleur (9 clips), trois LOD skinnés.
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Niveau/Goule.prefab");
+            var anim = prefab.GetComponentInChildren<Animator>(true);
+            Assert.That(anim, Is.Not.Null);
+            Assert.That(anim.runtimeAnimatorController, Is.Not.Null);
+            Assert.That(anim.runtimeAnimatorController.animationClips.Length, Is.EqualTo(9));
+            Assert.That(prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length, Is.EqualTo(3), "trois LOD qui suivent le squelette");
+            Assert.That(ghoul.contactImpactDelay, Is.EqualTo(0.24f).Within(1e-4f), "dégâts à l'impact du clip Goule_Coup");
             foreach (string scene in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
             {
                 string text = System.IO.File.ReadAllText(scene);
                 Assert.That(text.Contains("smallRadius: 0.45"), Is.True, scene);
-                Assert.That(text.Contains("smallHeight: 1.5"), Is.True, scene + " : agent des goules 0.45 × 1.5 m");
+                Assert.That(text.Contains("smallHeight: 1.2"), Is.True, scene + " : agent des goules 0.45 × 1.2 m (elle se baisse)");
             }
         }
 
@@ -438,7 +577,7 @@ namespace ItHunts.Tests
             var arms = prefab.GetComponentInChildren<FpsArms>(true);
             Assert.That(arms, Is.Not.Null, "bras de la DA posés par FpsArms");
             var poses = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FpsArmPoseSet>("Assets/_Project/Settings/FpsArmPoses.asset");
-            Assert.That(poses.right.bones.Length, Is.EqualTo(17));
+            Assert.That(poses.right.bones.Length, Is.EqualTo(20), "bras v2 (PR #11) : 20 os");
             Assert.That(poses.right.Find("Pose_Attraper_1"), Is.Not.Null);
             Assert.That(poses.right.Find("Pose_Attraper_1").fromClip, Is.True, "Pose_Attraper a des courbes");
             foreach (string id in new[] { "renard", "cameleon" })

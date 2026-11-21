@@ -60,5 +60,15 @@ namespace ItHunts.Settings
         [Min(0.5f)] public float orbInteractRange = 8f;
         [Tooltip("Tolérance de visée de l'interaction (°).")]
         [Min(0f)] public float interactAngle = 12f;
+
+        [Header("Coffre rare (D-071) : coffres des parcours, difficiles d'accès, meilleur butin")]
+        [Tooltip("Table de butin dédiée aux coffres rares (vide : la table de la run).")]
+        public UpgradePool rarePool;
+        [Tooltip("Choix en plus au-dessus d'un coffre rare.")]
+        [Min(0)] public int rareExtraChoices = 1;
+        [Tooltip("Bonus de rareté : la valeur de chaque amélioration tirée × ce facteur (entiers arrondis au-dessus, réductions plafonnées).")]
+        [Min(1f)] public float rareAmountMultiplier = 1.5f;
+        [Tooltip("Plafond des réductions (cadence, rechargement : part retirée) d'une amélioration rare.")]
+        [Range(0.1f, 0.9f)] public float rareCutCap = 0.6f;
     }
 }

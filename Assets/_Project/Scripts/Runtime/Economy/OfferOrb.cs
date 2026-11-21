@@ -83,7 +83,21 @@ namespace ItHunts.Economy
             transform.Rotate(0f, 40f * Time.deltaTime, 0f, Space.World);
         }
 
-        public bool Available(PlayerHealth p) => !Taken && p != null && (RestrictedTo == 0 || RestrictedTo == p.PlayerId);
+        /// <summary>Offre présentée par un menu (marchand, coffre) : on ne la prend plus directement avec E / F.</summary>
+        public bool MenuOnly { get; set; }
+
+        public bool Available(PlayerHealth p) => !MenuOnly && CanTake(p);
+
+        private bool CanTake(PlayerHealth p) => !Taken && p != null && (RestrictedTo == 0 || RestrictedTo == p.PlayerId);
+
+        /// <summary>Prise depuis le menu du marchand ou du coffre : mêmes règles que l'orbe. Vrai si prise.</summary>
+        public bool TakeFromMenu(PlayerHealth p)
+        {
+            if (!CanTake(p))
+                return false;
+            Take(p);
+            return Taken;
+        }
 
         public string Prompt(PlayerHealth p)
         {
@@ -93,8 +107,12 @@ namespace ItHunts.Economy
 
         public void Interact(PlayerHealth p)
         {
-            if (!Available(p))
-                return;
+            if (Available(p))
+                Take(p);
+        }
+
+        private void Take(PlayerHealth p)
+        {
             RunState run = RunState.Current;
             if (Price > 0 && !Prices.TryBuy(Pricing, p, PriceKind.Marchand, Price))
                 return;                                                  // refus en rouge (RunState.Refused)

@@ -1,0 +1,9 @@
+repos : rotation du modèle par rapport à la caméra en 1 s = 0,00°, activité 0,00
+traction 0.5 s : activité 1,00
+après 0,25 s : activité 0,26, anneau SM_Orbe_Anneau_2 (0, 139, 0)
+après 0,50 s : activité 0,00, anneau SM_Orbe_Anneau_2 (0, 68, 0)
+après 0,75 s : activité 0,00, anneau SM_Orbe_Anneau_2 (0, 32, 0)
+après 1,00 s : activité 0,00, anneau SM_Orbe_Anneau_2 (0, 15, 0)
+après 1,25 s : activité 0,00, anneau SM_Orbe_Anneau_2 (0, 7, 0)
+après 1,50 s : activité 0,00, anneau SM_Orbe_Anneau_2 (0, 3, 0)
+#fin

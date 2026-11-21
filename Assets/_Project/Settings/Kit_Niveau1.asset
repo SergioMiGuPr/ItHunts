@@ -25,4 +25,9 @@ MonoBehaviour:
   poutre: {fileID: 300915052556697382, guid: db3a9670c230ee64cab21bcf7c59003e, type: 3}
   pontEgout4: {fileID: 6583957339011043023, guid: 718362cbf901f4541a12e0d3044c3d8f, type: 3}
   pontEgout14: {fileID: 2994761807298617888, guid: 16d1eafab6c3fbc458c2012b7e3fc28f, type: 3}
+  voute8: {fileID: 1864445344258365395, guid: bc0e9e90c2640a34e9222da48e32bda7, type: 3}
+  arcDoubleau: {fileID: 3352219958528084251, guid: be5057a9f709d4744935b4e878e39184, type: 3}
+  colonneEngagee: {fileID: 4086730995358913476, guid: 2dbe023b537cd34479f7904836118c13, type: 3}
+  murArcade: {fileID: 1783488939778700296, guid: 73d8fb23f3a87be40af65829c7b8e285, type: 3}
+  murNiche: {fileID: 2833713543833477400, guid: d5b588483307d8e4e8e4646e5bc0a2f1, type: 3}
   torche: {fileID: 8079578767649395306, guid: 02e333798c771e8408bc98f23211ba8c, type: 3}

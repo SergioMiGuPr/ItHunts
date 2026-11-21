@@ -1,0 +1,21 @@
+{
+    "name": "ItHunts.HudArt",
+    "rootNamespace": "ItHunts.HudArt",
+    "references": [
+        "ItHunts.Runtime",
+        "ItHunts.Art.UIJeu",
+        "ItHunts.Art.Menus",
+        "ItHunts.Menus",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

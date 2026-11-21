@@ -15,7 +15,10 @@ MonoBehaviour:
   id: koala
   displayName: Koala
   color: {r: 0.35, g: 0.78, b: 0.35, a: 1}
-  lanternColor: {r: 0.16, g: 0.42, b: 0.14, a: 1}
-  artifact: {fileID: 0}
+  lanternColor: {r: 0.38, g: 1, b: 0.33, a: 1}
+  fpsArmRight: {fileID: 919132149155446097, guid: dbcb252d6770b1b4893e58c6e2fe937b, type: 3}
+  fpsArmLeft: {fileID: 919132149155446097, guid: cb08b4ff61ebb0a489143abad130c745, type: 3}
+  artifact: {fileID: 11400000, guid: 5e7c0a79944f9fa40910be8557cc43da, type: 2}
   artifactLabel: "artefact \xE0 concevoir"
-  playable: 0
+  playable: 1
+  description: "Artefact \xE0 concevoir."

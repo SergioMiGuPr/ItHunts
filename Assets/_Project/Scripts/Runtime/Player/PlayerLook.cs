@@ -80,14 +80,14 @@ namespace ItHunts.Player
             {
                 if (Cursor.lockState == CursorLockMode.Locked)
                 {
-                    Vector2 mouse = _reader.LookMouseDelta * settings.mouseSensitivity * AssistSlowdown(false, peek: true);
+                    Vector2 mouse = _reader.LookMouseDelta * (settings.mouseSensitivity * ItHunts.Level.GameSettings.Sensitivity) * AssistSlowdown(false, peek: true);
                     _yaw += mouse.x;
                     _pitch += settings.invertMouseY ? mouse.y : -mouse.y;
                 }
 
                 Vector2 stick = _reader.LookStick;
                 float magnitude = stick.magnitude;
-                float slow = AssistSlowdown(_reader.UsingGamepad);
+                float slow = AssistSlowdown(_reader.UsingGamepad) * ItHunts.Level.GameSettings.Sensitivity;   // réglage du joueur (Paramètres)
                 if (magnitude > 1e-4f)
                 {
                     stick = stick / magnitude * Mathf.Pow(magnitude, settings.gamepadResponseExponent);

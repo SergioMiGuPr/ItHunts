@@ -38,3 +38,7 @@ MonoBehaviour:
   interactRange: 4
   orbInteractRange: 8
   interactAngle: 12
+  rarePool: {fileID: 0}
+  rareExtraChoices: 1
+  rareAmountMultiplier: 1.5
+  rareCutCap: 0.6

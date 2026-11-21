@@ -29,6 +29,214 @@ namespace ItHunts.Hud
 
         public bool FullMap { get; private set; }
 
+        /// <summary>La mini-carte de la scène (lue par le HUD habillé de chaque joueur).</summary>
+        public static MinimapHud Current { get; private set; }
+        /// <summary>
+        /// Vrai quand le HUD habillé (PR #10) dessine la mini-carte ronde de chaque joueur : ici, il ne reste que la carte entière
+        /// (Tab).
+        /// </summary>
+        public static bool RoundMinimap { get; set; }
+        /// <summary>Salles découvertes peintes (nord en haut) et l'emprise de la carte qu'elles couvrent.</summary>
+        public Texture MapTexture => _mapTex;
+
+        private readonly Dictionary<int, (Texture2D tex, int painted, List<bool> known)> _perPlayer =
+            new Dictionary<int, (Texture2D, int, List<bool>)>();
+
+        /// <summary>
+        /// Carte de ce joueur : coop partagée, la carte commune ; sinon la sienne (peinte quand il découvre un volume).
+        /// </summary>
+        public Texture TextureFor(int playerId)
+        {
+            MapDiscovery fog = MapDiscovery.Current;
+            if (fog == null || fog.SharedInCoop || _all.size.sqrMagnitude < 1f)
+                return _mapTex;
+            if (!_perPlayer.TryGetValue(playerId, out var e) || e.tex == null || e.painted != fog.KnownCountFor(playerId))
+            {
+                var tex = e.tex != null ? e.tex : new Texture2D(TexSize, TexSize, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+                var known = e.known ?? new List<bool>();
+                PaintInto(tex, r => fog.IsKnownFor(r, playerId));
+                known.Clear();
+                foreach ((Vector3 at, Color _, string _, Object owner) in _marks)
+                    known.Add(owner is ExitDoor || fog.IsKnownPointFor(at + Vector3.up, playerId));
+                _perPlayer[playerId] = (tex, fog.KnownCountFor(playerId), known);
+                e = _perPlayer[playerId];
+            }
+
+            return e.tex;
+        }
+
+        // ---------- Pinceau de dévoilement (carte ouverte, UI-HANDOFF § 2 bis) ----------
+
+        /// <summary>Pinceau de la DA (Carte_Brume_Pinceau), posé par le HUD habillé ; null : disque doux.</summary>
+        public static Texture BrushSource { get; set; }
+        /// <summary>Rayon du pinceau (m) et intervalle entre deux coups (s).</summary>
+        public static float BrushMeters = 16f, BrushInterval = 0.15f;
+        private const int MaskSize = 256, StampSize = 32;
+        private readonly Dictionary<int, Texture2D> _masks = new Dictionary<int, Texture2D>();
+        private readonly Dictionary<int, Color32[]> _maskPx = new Dictionary<int, Color32[]>();
+        private float[] _stamp;
+        private float _nextStamp;
+
+        /// <summary>
+        /// Masque de dévoilement de ce joueur (r : 0 dans la brume, 1 dévoilé), sur l'emprise du niveau : coop partagée, le masque commun
+        /// (tous les joueurs y peignent) ; sinon le sien.
+        /// </summary>
+        public Texture BrushFor(int playerId)
+        {
+            MapDiscovery fog = MapDiscovery.Current;
+            int key = fog == null || fog.SharedInCoop ? int.MinValue : playerId;
+            return _masks.TryGetValue(key, out Texture2D t) ? t : Mask(key);
+        }
+
+        private Texture2D Mask(int key)
+        {
+            if (_masks.TryGetValue(key, out Texture2D t))
+                return t;
+            t = new Texture2D(MaskSize, MaskSize, TextureFormat.R8, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, name = "Dévoilement " + key };
+            var px = new Color32[MaskSize * MaskSize];
+            t.SetPixels32(px);
+            t.Apply(false);
+            _masks[key] = t;
+            _maskPx[key] = px;
+            return t;
+        }
+
+        /// <summary>Le pinceau en petit (StampSize²), lu une fois sur la texture de la DA (rendu dans une RenderTexture).</summary>
+        private float[] Stamp()
+        {
+            if (_stamp != null)
+                return _stamp;
+            _stamp = new float[StampSize * StampSize];
+            if (BrushSource != null)
+            {
+                RenderTexture rt = RenderTexture.GetTemporary(StampSize, StampSize, 0);
+                Graphics.Blit(BrushSource, rt);
+                RenderTexture keep = RenderTexture.active;
+                RenderTexture.active = rt;
+                var read = new Texture2D(StampSize, StampSize, TextureFormat.RGBA32, false);
+                read.ReadPixels(new Rect(0, 0, StampSize, StampSize), 0, 0);
+                read.Apply(false);
+                RenderTexture.active = keep;
+                RenderTexture.ReleaseTemporary(rt);
+                Color32[] c = read.GetPixels32();
+                for (int i = 0; i < c.Length; i++)
+                    _stamp[i] = Mathf.Max(c[i].r, c[i].a) / 255f * (c[i].a / 255f);
+                Destroy(read);
+            }
+            else
+                for (int y = 0; y < StampSize; y++)
+                for (int x = 0; x < StampSize; x++)
+                {
+                    float d = new Vector2(x - StampSize / 2f + 0.5f, y - StampSize / 2f + 0.5f).magnitude / (StampSize / 2f);
+                    _stamp[y * StampSize + x] = Mathf.Clamp01(1f - d * d);
+                }
+
+            return _stamp;
+        }
+
+        /// <summary>Un coup de pinceau au point (UV de la carte) dans ce masque (pur sur les pixels, testable).</summary>
+        public static void StampAt(Color32[] px, int size, float[] stamp, int stampSize, Vector2 uv, float radiusUv)
+        {
+            int r = Mathf.Max(1, Mathf.RoundToInt(radiusUv * size));
+            int cx = Mathf.RoundToInt(uv.x * size), cy = Mathf.RoundToInt(uv.y * size);
+            for (int y = -r; y <= r; y++)
+            for (int x = -r; x <= r; x++)
+            {
+                int px0 = cx + x, py0 = cy + y;
+                if (px0 < 0 || py0 < 0 || px0 >= size || py0 >= size)
+                    continue;
+                int sx = Mathf.Clamp(Mathf.FloorToInt((x + r) / (2f * r + 1f) * stampSize), 0, stampSize - 1);
+                int sy = Mathf.Clamp(Mathf.FloorToInt((y + r) / (2f * r + 1f) * stampSize), 0, stampSize - 1);
+                byte v = (byte)Mathf.RoundToInt(stamp[sy * stampSize + sx] * 255f);
+                int i = py0 * size + px0;
+                if (v > px[i].r)
+                    px[i].r = v;
+            }
+        }
+
+        private void PaintBrush()
+        {
+            if (Time.time < _nextStamp || _all.size.x < 1f || _all.size.z < 1f)
+                return;
+            _nextStamp = Time.time + BrushInterval;
+            float[] stamp = Stamp();
+            float radius = BrushMeters / Mathf.Max(_all.size.x, _all.size.z);
+            var dirty = new HashSet<int>();
+            foreach (PlayerHealth p in PlayerHealth.All)
+            {
+                if (p == null || p.Dead)
+                    continue;
+                Vector3 w = p.transform.position;
+                var uv = new Vector2((w.x - _all.min.x) / _all.size.x, (w.z - _all.min.z) / _all.size.z);
+                foreach (int key in new[] { int.MinValue, p.PlayerId })
+                {
+                    Mask(key);
+                    StampAt(_maskPx[key], MaskSize, stamp, StampSize, uv, radius);
+                    dirty.Add(key);
+                }
+            }
+
+            foreach (int key in dirty)
+            {
+                _masks[key].SetPixels32(_maskPx[key]);
+                _masks[key].Apply(false);
+            }
+        }
+
+        /// <summary>Point clé i sur la carte de ce joueur.</summary>
+        public bool MarkFor(int i, int playerId, out Vector3 at, out Object owner)
+        {
+            MapDiscovery fog = MapDiscovery.Current;
+            if (fog == null || fog.SharedInCoop || !_perPlayer.TryGetValue(playerId, out var e) || e.known == null)
+                return Mark(i, out at, out owner);
+            at = default;
+            owner = null;
+            if (i < 0 || i >= _marks.Count || i >= e.known.Count || !e.known[i] || _marks[i].owner == null)
+                return false;
+            at = _marks[i].at;
+            owner = _marks[i].owner;
+            return true;
+        }
+        public Bounds AllBounds => _all;
+        public int MarkCount => _marks.Count;
+
+        /// <summary>Point clé i s'il est connu (sinon faux) : position et objet (coffre, marchand, salle verrouillée, sortie, départ).</summary>
+        public bool Mark(int i, out Vector3 at, out Object owner)
+        {
+            at = default;
+            owner = null;
+            if (i < 0 || i >= _marks.Count || i >= _markKnown.Count || !_markKnown[i] || _marks[i].owner == null)
+                return false;
+            at = _marks[i].at;
+            owner = _marks[i].owner;
+            return true;
+        }
+
+        private void OnEnable() => Current = this;
+
+        private void OnDisable()
+        {
+            if (Current == this)
+                Current = null;
+        }
+
+        /// <summary>Carte à jour (salles découvertes, points clés) : à chaque image, même quand rien n'est dessiné ici.</summary>
+        private void LateUpdate()
+        {
+            if (Time.time >= _refreshAt || _volumes.Count == 0)
+            {
+                Refresh();
+                _paintedKnown = -1;
+                foreach (int k in new List<int>(_perPlayer.Keys))
+                    _perPlayer[k] = (_perPlayer[k].tex, -1, _perPlayer[k].known);
+            }
+
+            MapDiscovery fog = MapDiscovery.Current;
+            if (_mapTex == null || (fog != null ? fog.KnownCount : 0) != _paintedKnown)
+                Paint(fog);
+            PaintBrush();
+        }
+
         // Performance (étape 8, après playtest : 7 ms d'IMGUI au pic) : les salles découvertes sont peintes dans une texture,
         // refaite seulement quand une salle est découverte ; chaque image n'affiche que cette texture et quelques repères.
         private Texture2D _mapTex;
@@ -43,11 +251,20 @@ namespace ItHunts.Hud
                 _mapTex = new Texture2D(TexSize, TexSize, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             }
 
+            PaintInto(_mapTex, r => fog == null || fog.IsKnown(r));
+            _markKnown.Clear();
+            foreach ((Vector3 at, Color _, string _, Object owner) in _marks)
+                _markKnown.Add(MarkVisible(owner, at, fog));
+            _paintedKnown = fog != null ? fog.KnownCount : 0;
+        }
+
+        private void PaintInto(Texture2D tex, System.Func<RoomVolume, bool> known)
+        {
             var px = new Color32[TexSize * TexSize];
             float sx = (TexSize - 2) / Mathf.Max(1f, _all.size.x), sz = (TexSize - 2) / Mathf.Max(1f, _all.size.z);
             foreach (RoomVolume r in _volumes)
             {
-                if (r == null || (fog != null && !fog.IsKnown(r)))
+                if (r == null || !known(r))
                     continue;
                 Bounds b = r.WorldBounds();
                 bool high = b.min.y > 8f;
@@ -62,12 +279,8 @@ namespace ItHunts.Hud
                     px[z * TexSize + x] = col;
             }
 
-            _mapTex.SetPixels32(px);
-            _mapTex.Apply(false);
-            _markKnown.Clear();
-            foreach ((Vector3 at, Color _, string _, Object owner) in _marks)
-                _markKnown.Add(MarkVisible(owner, at, fog));
-            _paintedKnown = fog != null ? fog.KnownCount : 0;
+            tex.SetPixels32(px);
+            tex.Apply(false);
         }
 
         private void Refresh()
@@ -108,23 +321,31 @@ namespace ItHunts.Hud
         {
             if (_mapTex != null)
                 Destroy(_mapTex);
+            foreach (var e in _perPlayer.Values)
+                if (e.tex != null)
+                    Destroy(e.tex);
+            foreach (Texture2D m in _masks.Values)
+                if (m != null)
+                    Destroy(m);
         }
 
-        private void Update() => FullMap = Keyboard.current != null && Keyboard.current.tabKey.isPressed;
+        /// <summary>Carte entière IMGUI (sans habillage seulement) : un joueur maintient sa touche de carte.</summary>
+        private void Update()
+        {
+            bool any = false;
+            foreach (PlayerHealth p in PlayerHealth.All)
+                if (p != null && p.TryGetComponent(out ItHunts.Input.PlayerInputReader r) && r.MapHeld)
+                    any = true;
+            FullMap = any;
+        }
 
         private void OnGUI()
         {
-            if (Event.current.type != EventType.Repaint || PlayerLook.MenuOpen)
+            if (Event.current.type != EventType.Repaint || PlayerLook.MenuOpen || _mapTex == null)
                 return;
-            if (Time.time >= _refreshAt || _volumes.Count == 0)
-            {
-                Refresh();
-                _paintedKnown = -1;
-            }
-
+            if (RoundMinimap)
+                return;                                                 // HUD habillé : mini-carte ronde et carte ouverte par joueur
             MapDiscovery fog = MapDiscovery.Current;
-            if (_mapTex == null || (fog != null ? fog.KnownCount : 0) != _paintedKnown)
-                Paint(fog);
             foreach (PlayerHealth p in PlayerHealth.All)
             {
                 if (p == null)

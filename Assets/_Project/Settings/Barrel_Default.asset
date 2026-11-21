@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.BarrelSettings
   id: barillet
   displayName: Barillet
+  description: "6 balles tir\xE9es depuis la chambre active."
   upgrades: {fileID: 11400000, guid: fd7eb9e02f368b644a015ec3ea4167dd, type: 2}
   rounds: 6
   damage: 12
@@ -38,7 +39,7 @@ MonoBehaviour:
   recoilPitch: 8
   recoilDuration: 0.12
   chamberEmission: {r: 1, g: 0.86, b: 0.66, a: 1}
-  chamberEmissionIntensity: 3
+  chamberEmissionIntensity: 1.4
   chamberInactiveFactor: 0.2
   chamberBaseColor: {r: 0.101960786, g: 0.07058824, b: 0.047058824, a: 1}
   spinDuration: 0.08

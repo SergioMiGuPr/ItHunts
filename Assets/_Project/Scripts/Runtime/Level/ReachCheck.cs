@@ -24,7 +24,8 @@ namespace ItHunts.Level
         /// <summary>Rayon du corps du traqueur (m) : l'épaule est à son bord.</summary>
         public const float BodyRadius = 3.5f;
         /// <summary>Épaule du traqueur (StalkerSettings.shoulderHeight, shoulderSide) : hauteur debout (m) et écart au centre (m).</summary>
-        public static float ShoulderHeight = 11.1f, ShoulderSide = 1.8f;
+        /// <summary>Épaule droite du traqueur (repère du traqueur tourné vers la cible) : lue sur l'os Bras.R de SK_Traqueur (Stalker).</summary>
+        public static float ShoulderHeight = 11.6f, ShoulderSide = 2.6f, ShoulderForward = 3.56f;   // v3 (PR #13)
 
         /// <summary>Points où un joueur tient debout dans la zone (grille de step m, tous les étages).</summary>
         public static List<Vector3> StandPoints(PhysicsScene physics, Bounds area, float step)
@@ -147,7 +148,10 @@ namespace ItHunts.Level
                 // L'épaule du modèle de la DA : 11.1 m de haut (6.7 m baissé), à 1.8 m du centre, du côté du joueur.
                 Vector3 toward = new Vector3(body.x - s.x, 0f, body.z - s.z);
                 float hd = toward.magnitude;
-                Vector3 sh = s + Vector3.up * shoulder + (hd > 0.01f ? toward / hd * Mathf.Min(ShoulderSide, hd) : Vector3.zero);
+                // L'épaule du modèle : 4 m devant le pivot (dos voûté) et 2.6 m sur sa droite, le buste tourné vers le joueur.
+                Vector3 fwd = hd > 0.01f ? toward / hd : Vector3.forward;
+                Vector3 side = Vector3.Cross(Vector3.up, fwd);
+                Vector3 sh = s + Vector3.up * shoulder + fwd * Mathf.Min(ShoulderForward, hd) + side * ShoulderSide;
                 Vector3 d = body - sh;
                 float len = d.magnitude;
                 if (len > reach)

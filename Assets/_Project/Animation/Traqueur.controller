@@ -1,0 +1,385 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1107 &-6370235541814724232
+AnimatorStateMachine:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Base Layer
+  m_ChildStates:
+  - serializedVersion: 1
+    m_State: {fileID: 974062762931667024}
+    m_Position: {x: 200, y: 0, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -2938192603381097777}
+    m_Position: {x: 235, y: 65, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 2460352981596732461}
+    m_Position: {x: 270, y: 130, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 8808304383658725093}
+    m_Position: {x: 305, y: 195, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -1396158065461762024}
+    m_Position: {x: 340, y: 260, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 8988923782849734563}
+    m_Position: {x: 375, y: 325, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -5067582617660830323}
+    m_Position: {x: 410, y: 390, z: 0}
+  m_ChildStateMachines: []
+  m_AnyStateTransitions: []
+  m_EntryTransitions: []
+  m_StateMachineTransitions: {}
+  m_StateMachineBehaviours: []
+  m_AnyStatePosition: {x: 50, y: 20, z: 0}
+  m_EntryPosition: {x: 50, y: 120, z: 0}
+  m_ExitPosition: {x: 800, y: 120, z: 0}
+  m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
+  m_DefaultState: {fileID: 974062762931667024}
+--- !u!1102 &-5067582617660830323
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_Prise
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 8480759867742903759, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &-2938192603381097777
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_Revers
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 1089905379509020179, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &-1796479890603626120
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_Machoire
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -8984376102859889504, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &-1396158065461762024
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_Marche
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -6246176764017382251, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!91 &9100000
+AnimatorController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur
+  serializedVersion: 5
+  m_AnimatorParameters: []
+  m_AnimatorLayers:
+  - serializedVersion: 5
+    m_Name: Base Layer
+    m_StateMachine: {fileID: -6370235541814724232}
+    m_Mask: {fileID: 0}
+    m_Motions: []
+    m_Behaviours: []
+    m_BlendingMode: 0
+    m_SyncedLayerIndex: -1
+    m_DefaultWeight: 0
+    m_IKPass: 0
+    m_SyncedLayerAffectsTiming: 0
+    m_Controller: {fileID: 9100000}
+  - serializedVersion: 5
+    m_Name: "M\xE2choire"
+    m_StateMachine: {fileID: 2402734910423096180}
+    m_Mask: {fileID: 8851615674233677512}
+    m_Motions: []
+    m_Behaviours: []
+    m_BlendingMode: 0
+    m_SyncedLayerIndex: -1
+    m_DefaultWeight: 1
+    m_IKPass: 0
+    m_SyncedLayerAffectsTiming: 0
+    m_Controller: {fileID: 9100000}
+--- !u!1102 &974062762931667024
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_Repos
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -5493754032747257190, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1107 &2402734910423096180
+AnimatorStateMachine:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: "M\xE2choire"
+  m_ChildStates:
+  - serializedVersion: 1
+    m_State: {fileID: -1796479890603626120}
+    m_Position: {x: 200, y: 0, z: 0}
+  m_ChildStateMachines: []
+  m_AnyStateTransitions: []
+  m_EntryTransitions: []
+  m_StateMachineTransitions: {}
+  m_StateMachineBehaviours: []
+  m_AnyStatePosition: {x: 50, y: 20, z: 0}
+  m_EntryPosition: {x: 50, y: 120, z: 0}
+  m_ExitPosition: {x: 800, y: 120, z: 0}
+  m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
+  m_DefaultState: {fileID: -1796479890603626120}
+--- !u!1102 &2460352981596732461
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_MainPlantee
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1651344394205444554, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &8808304383658725093
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_MainsLevees
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 608328055261285156, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!319 &8851615674233677512
+AvatarMask:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: "Masque : m\xE2choire"
+  m_Mask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+  m_Elements:
+  - m_Path: SK_Traqueur
+    m_Weight: 0
+  - m_Path: SK_Traqueur_Cheveux
+    m_Weight: 0
+  - m_Path: Traqueur
+    m_Weight: 0
+  - m_Path: Traqueur/Racine
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse.L/Jambe.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse.L/Jambe.L/Pied.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse.L/Jambe.L/Pied.L/Orteils.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse.R/Jambe.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse.R/Jambe.R/Pied.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse.R/Jambe.R/Pied.R/Orteils.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Cou
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Cou/Tete
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Cou/Tete/Machoire
+    m_Weight: 1
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L/Main.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L/Main.L/Doigts_1.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L/Main.L/Doigts_1.L/Doigts_2.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L/Main.L/Pouce_1.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L/Main.L/Pouce_1.L/Pouce_2.L
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R/Main.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R/Main.R/Doigts_1.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R/Main.R/Doigts_1.R/Doigts_2.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R/Main.R/Pouce_1.R
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R/Main.R/Pouce_1.R/Pouce_2.R
+    m_Weight: 0
+--- !u!1102 &8988923782849734563
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_PassageBas
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 1250823365541066942, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 

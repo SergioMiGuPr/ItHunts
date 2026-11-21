@@ -12,22 +12,35 @@ namespace ItHunts.Settings
     {
         [Header("Taille (retours du lot, point 4)")]
         [Tooltip("Hauteur de la goule (m), à la taille du joueur : le modèle (1.1 m à l'import), la capsule (zone où on la touche) et " +
-                 "le disque d'annonce suivent. Le NavMesh des goules (ZoneNavMesh, petit agent) : 0.45 × 1.5 m (goule voûtée en course ; à 1.9 m, des passages se fermaient).")]
+                 "le disque d'annonce suivent. Le NavMesh des goules (ZoneNavMesh, petit agent) : 0.45 × 1.2 m ; sous un plafond plus bas que sa taille, elle se baisse (minCrouch).")]
         [Min(0.3f)] public float bodyHeight = 1.8f;
         [Tooltip("Rayon de la capsule (m).")]
         [Min(0.1f)] public float bodyRadius = 0.55f;
 
         [Tooltip("Seuils de LOD de SM_Goule (part de la hauteur de l'écran, LOD0 → LOD1 → LOD2 → caché). La DA conseille 0.20 / " +
-                 "0.08 / 0.01 pour une goule de 1.1 m ; recalés pour 1.8 m (× 1.64) afin de garder les mêmes distances de bascule : " +
-                 "LOD1 à 4 m, LOD2 à 10 m, cachée au-delà de 78 m (champ de vision de 70°).")]
-        public Vector3 lodTransitions = new Vector3(0.33f, 0.13f, 0.016f);
+                 "0.08 / 0.01 à 1.1 m ; pour 1.8 m (PR #6) : 0.25 / 0.10 / 0.012 (champ de vision de 70°) : " +
+                 "LOD1 à ≈ 5 m, LOD2 à ≈ 13 m, cachée au-delà de ≈ 105 m.")]
+        public Vector3 lodTransitions = new Vector3(0.25f, 0.10f, 0.012f);
+
+        [Header("Animations (SK_Goule, PR #6) et passages bas")]
+        [Tooltip("Coup au contact : délai entre le début du geste (Goule_Coup) et les dégâts (impact du clip à 0.24 s).")]
+        [Min(0f)] public float contactImpactDelay = 0.24f;
+        [Tooltip("Distance d'arrêt (écart entre les capsules, m) : à portée, elle s'arrête et frappe au lieu d'avancer contre le joueur " +
+                 "(elle le poussait). Elle repart quand l'écart dépasse contactRange.")]
+        [Min(0f)] public float attackStopGap = 0.2f;
+        [Tooltip("Mort : le corps reste visible ce temps (Goule_Mort, 1 s) avant de disparaître ; ses collisions s'éteignent tout de suite.")]
+        [Min(0f)] public float deathVisualTime = 1f;
+        [Tooltip("Passages bas : la goule se baisse sous un plafond plus bas que sa taille, jusqu'à cette part de sa hauteur.")]
+        [Range(0.3f, 1f)] public float minCrouch = 0.6f;
+        [Tooltip("Vitesse à laquelle elle se baisse et se relève (1/s).")]
+        [Min(0.1f)] public float crouchRate = 10f;
 
         /// <summary>Hauteur du modèle et de la capsule du prefab (m), avant mise à l'échelle.</summary>
         public const float ModelHeight = 1.1f;
         public float BodyScale => bodyHeight / ModelHeight;
 
         [Header("Déplacement au sol")]
-        [Tooltip("Vitesse de course (m/s). Course du joueur : 7.5 ; plafond des gains : 20.")]
+        [Tooltip("Vitesse de course (m/s). Course du joueur : 8.5 ; plafond des gains : 20.")]
         [Min(0f)] public float runSpeed = 10f;
         [Min(0f)] public float acceleration = 40f;
         [Tooltip("Vitesse de rotation (°/s).")]

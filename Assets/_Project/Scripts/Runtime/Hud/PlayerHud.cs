@@ -20,7 +20,7 @@ namespace ItHunts.Hud
     /// - Coins réservés (vides) : âmes (haut gauche), timer (haut droite), traqueur enragé (sous le timer).
     /// </summary>
     [DefaultExecutionOrder(200)]
-    public sealed class PlayerHud : MonoBehaviour
+    public sealed partial class PlayerHud : MonoBehaviour
     {
         [SerializeField] private HudSettings settings;
         [Tooltip("Couleurs du magnétisme, anneaux, refus.")]
@@ -65,6 +65,13 @@ namespace ItHunts.Hud
         private float _refusedAt = float.NegativeInfinity, _soulsGainAt = float.NegativeInfinity;
         private AudioClip _refusalClip;
         private ItHunts.Economy.PlayerInteractor _interactor;
+        private PlayerParry _parry;
+        private CanvasGroup _parryGroup;
+        private Image _parryBack, _parryFill;
+        private readonly GaugeFade _parryFade = new GaugeFade();
+
+        /// <summary>Remplissage de l'icône de parade affichée (1 = prête), -1 sans parade.</summary>
+        public float ParryIconFill => _parryFill != null ? _parryFill.fillAmount : -1f;
 
         private struct Number
         {
@@ -108,7 +115,36 @@ namespace ItHunts.Hud
             if (settings == null || _motor == null)
                 return;
             Build();
+            Built?.Invoke(this);
         }
+
+        /// <summary>HUD construit : la vue de la DA (ItHunts.HudArt) y pose le réticule, les charges et la parade.</summary>
+        public static event System.Action<PlayerHud> Built;
+
+        /// <summary>Habillage du HUD (prefabs de la DA, polices).</summary>
+        public HudSkinSettings HudSkin => settings != null ? settings.skin : null;
+
+        /// <summary>Canevas du HUD (caméra, calque) : la vue de la DA y aligne le sien.</summary>
+        public Canvas HudCanvas => _canvas;
+
+        /// <summary>Réticule, charges et parade de la DA posés : le point, l'anneau de la télékinésie, les segments des charges et
+        /// l'icône provisoire de la parade sont masqués.</summary>
+        public bool ArtGauges { get; private set; }
+
+        public void UseArtGauges()
+        {
+            ArtGauges = true;
+            if (_dot != null)
+                _dot.gameObject.SetActive(false);
+            if (_tkRing != null)
+                _tkRing.gameObject.SetActive(false);
+            if (_moveGroup != null)
+                _moveGroup.gameObject.SetActive(false);
+            if (_parryGroup != null)
+                _parryGroup.gameObject.SetActive(false);
+        }
+
+        private Image _dot;
 
         private void OnEnable()
         {
@@ -126,31 +162,35 @@ namespace ItHunts.Hud
 
         private void Build()
         {
-            _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _font = settings.skin != null && settings.skin.textFont != null ? settings.skin.textFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             _white = Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 4f, 4f), new Vector2(0.5f, 0.5f));
 
-            Camera uiCamera = _view != null && _view.OverlayCamera != null && _view.OverlayCamera.enabled ? _view.OverlayCamera : _worldCamera;
             var go = new GameObject("HUD (joueur)");
             go.transform.SetParent(transform, false);
             if (_view != null && _view.Layer >= 0)
                 go.layer = _view.Layer;
+            // Superposé (Screen Space - Overlay) : dessiné après le rendu, donc jamais étalonné par le post-process (Enragé rouge sang).
+            // Écran partagé : la racine épouse le rectangle de la caméra du joueur, l'échelle suit la hauteur de sa vue (LateUpdate).
             _canvas = go.AddComponent<Canvas>();
-            _canvas.renderMode = RenderMode.ScreenSpaceCamera;
-            _canvas.worldCamera = uiCamera;
-            _canvas.planeDistance = uiCamera != null ? uiCamera.nearClipPlane + 0.04f : 0.1f;
-            var scaler = go.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = settings.referenceResolution / Mathf.Max(0.1f, settings.scale);
-            scaler.matchWidthOrHeight = 1f;
-            _root = (RectTransform)go.transform;
+            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            _canvas.sortingOrder = 10 + (_motor != null ? Mathf.Max(0, PlayerHealth.IdOf(transform)) : 0);
+            _scaler = go.AddComponent<CanvasScaler>();
+            _scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            var view = new GameObject("Vue du joueur", typeof(RectTransform));
+            view.layer = go.layer;
+            view.transform.SetParent(go.transform, false);
+            _root = (RectTransform)view.transform;
+            _root.offsetMin = Vector2.zero;
+            _root.offsetMax = Vector2.zero;
+            FitView();
 
             RectTransform center = Rect("Viseur", _root, Vector2.one * 0.5f, Vector2.zero, Vector2.zero);
             _center = center;
             Image dot = NewImage("Point", center, Vector2.zero, Vector2.one * settings.crosshairSize, settings.crosshairColor);
             dot.raycastTarget = false;
+            _dot = dot;
             float thickness = feedback != null ? feedback.ringThickness : 2f;
-            _attractRing = Ring("Anneau traction", center, feedback != null ? feedback.attractRingRadius : 8f, thickness);
-            _repelRing = Ring("Anneau répulsion", center, feedback != null ? feedback.repelRingRadius : 13f, thickness);
+            // Traction et répulsion : plus d'anneaux ni de jauges, elles sont sur les tablettes de l'orbe (2026-11-21).
             _tkRing = Ring("Anneau télékinésie", center, tkFeedback != null ? tkFeedback.grabRingRadius : 18f, thickness);
 
             // Rangée 1 : charges de mouvement.
@@ -159,9 +199,23 @@ namespace ItHunts.Hud
             _moveGroup = Group("Charges de mouvement", center);
             Segments(_moveGroup.transform, moves, -Width(moves) * 0.5f, y, _moveSegments);
 
-            // Rangée 2 : charges d'attraction puis répulsion.
+            // Parade (D-075) : icône provisoire à droite des charges (recharge qui se remplit), en attendant celle de la DA.
+            _parry = GetComponent<PlayerParry>();
+            if (_parry != null)
+            {
+                _parryGroup = Group("Parade (provisoire)", center);
+                float px = Width(moves) * 0.5f + settings.groupGap + settings.segmentHeight;
+                _parryBack = NewImage("Parade (fond)", _parryGroup.transform, new Vector2(px, y - settings.segmentHeight * 0.5f),
+                    Vector2.one * settings.segmentHeight * 2f, settings.emptyColor);
+                _parryBack.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+                _parryFill = NewImage("Parade", _parryBack.rectTransform, Vector2.zero, Vector2.one * settings.segmentHeight * 2f, Color.white);
+                _parryFill.type = Image.Type.Filled;
+                _parryFill.fillMethod = Image.FillMethod.Vertical;
+            }
+
+            // Rangée 2 (charges d'attraction, répulsion) retirée le 2026-11-21 : sur les tablettes de l'orbe.
             y -= settings.segmentHeight + settings.rowGap;
-            MagnetismOrbSettings mc = _motor.MagnetismSettings;
+            MagnetismOrbSettings mc = null;
             if (mc != null)
             {
                 int attract = mc.attractCharges;
@@ -206,9 +260,9 @@ namespace ItHunts.Hud
             // Coins réservés (vides), dans la marge de sécurité.
             float m = settings.safeMargin;
             SoulsCorner = Rect("Coin : âmes", _root, new Vector2(m, 1f - m), Vector2.zero, new Vector2(240f, 60f), new Vector2(0f, 1f));
-            TimerCorner = Rect("Coin : timer", _root, new Vector2(1f - m, 1f - m), Vector2.zero, new Vector2(240f, 60f), new Vector2(1f, 1f));
+            TimerCorner = Rect("Coin : timer", _root, new Vector2(1f - m, 1f - m), Vector2.zero, new Vector2(260f, settings.timerFontSize + 16f), new Vector2(1f, 1f));
             StalkerCorner = Rect("Coin : traqueur enragé", _root, new Vector2(1f - m, 1f - m), new Vector2(0f, -70f), new Vector2(240f, 40f), new Vector2(1f, 1f));
-            _timerText = NewText("Timer de la zone", TimerCorner, Vector2.zero, new Vector2(240f, 60f), 34, TextAnchor.MiddleRight);
+            _timerText = NewText("Timer de la zone", TimerCorner, Vector2.zero, new Vector2(260f, settings.timerFontSize + 16f), settings.timerFontSize, TextAnchor.MiddleRight);
             _stalkerText = NewText("Traqueur enragé", StalkerCorner, Vector2.zero, new Vector2(240f, 40f), 22, TextAnchor.MiddleRight);
             _stalkerText.fontStyle = FontStyle.Bold;
             _zoneMessage = NewText("Message de zone", _root, new Vector2(0f, 120f), new Vector2(900f, 60f), 36, TextAnchor.MiddleCenter);
@@ -231,6 +285,8 @@ namespace ItHunts.Hud
                 sh.effectDistance = new Vector2(2f, -2f);
                 t.text = string.Empty;
             }
+
+            BuildSkin();                                                // habillage de la DA (PR #10), s'il est réglé
 
             // Monde : barres de PV, chiffres de dégâts, durabilité.
             var world = Rect("Monde", _root, Vector2.one * 0.5f, Vector2.zero, Vector2.zero);
@@ -367,10 +423,37 @@ namespace ItHunts.Hud
 
         // ---------- Mise à jour ----------
 
+        private CanvasScaler _scaler;
+
+        /// <summary>Racine du HUD sur le rectangle de la caméra du joueur ; échelle = hauteur de sa vue / hauteur de référence.</summary>
+        private void FitView()
+        {
+            Camera cam = _worldCamera;
+            Rect r = cam != null ? cam.rect : new Rect(0f, 0f, 1f, 1f);
+            _root.anchorMin = r.min;
+            _root.anchorMax = r.max;
+            Rect px = cam != null ? cam.pixelRect : new Rect(0f, 0f, Screen.width, Screen.height);
+            _scaler.scaleFactor = ScaleFor(px.width, px.height, settings);
+        }
+
+        /// <summary>
+        /// Échelle du HUD (pur, testable) : la hauteur de la vue rapportée à 1080, et la largeur quand la vue est plus étroite que
+        /// minLayoutWidth (écran partagé côte à côte, 4:3) : les coins (âmes, mini-carte, timer) ne se chevauchent pas et restent dans
+        /// la vue.
+        /// </summary>
+        public static float ScaleFor(float viewWidth, float viewHeight, HudSettings s)
+        {
+            float k = Mathf.Max(0.1f, s.scale);
+            float byHeight = viewHeight / Mathf.Max(1f, s.referenceResolution.y / k);
+            float byWidth = s.minLayoutWidth > 0f ? viewWidth / Mathf.Max(1f, s.minLayoutWidth / k) : float.MaxValue;
+            return Mathf.Max(0.01f, Mathf.Min(byHeight, byWidth));
+        }
+
         private void LateUpdate()
         {
             if (_canvas == null)
                 return;
+            FitView();
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
             float now = Time.time, dt = Time.deltaTime, fixedDt = Time.fixedDeltaTime;
             int tick = _motor.State.Tick;
@@ -382,6 +465,16 @@ namespace ItHunts.Hud
             _moveGroup.alpha = _moveFade.Update(moveCharges, _moveSegments.Count, false, now, dt, settings.idleAlpha,
                 settings.idleDelay, settings.fadeSpeed, settings.returnBlinkDuration);
             FillSegments(_moveSegments, moveCharges, settings.movementColor, settings.emptyColor, _moveFade.Blinking(now));
+
+            if (_parryFill != null && _parry.Settings != null && !ArtGauges)
+            {
+                float fill = _parry.Fill;
+                _parryFill.fillAmount = fill;
+                Color pc = _parry.Settings.hudColor;
+                _parryFill.color = fill >= 1f ? pc : new Color(pc.r * 0.6f, pc.g * 0.6f, pc.b * 0.6f, pc.a);
+                _parryGroup.alpha = _parryFade.Update(fill >= 1f ? 1f : 0f, 1f, fill < 1f, now, dt, settings.idleAlpha,
+                    settings.idleDelay, settings.fadeSpeed, settings.returnBlinkDuration);
+            }
 
             MagnetismOrbSettings mc = _motor.MagnetismSettings;
             if (mc != null && _attractGroup != null)
@@ -420,6 +513,9 @@ namespace ItHunts.Hud
             UpdateSouls(now);
             UpdateAmmo(tick, now, dt, fixedDt);
             UpdatePlayerHealth(now);
+            UpdateHealthBar(now, dt);
+            UpdateFullMap();
+            UpdateMinimap();
             UpdateWorld();
         }
 
@@ -443,16 +539,8 @@ namespace ItHunts.Hud
             }
 
             int left = Mathf.CeilToInt(_zone.TimeLeft);
-            // D-048 : avant la sortie de la salle de départ, le timer attend ; ensuite, prochains événements (traqueur, sortie).
-            if (!_zone.Started)
-                _timerText.text = $"{left / 60}:{left % 60:00}\n<size={Mathf.RoundToInt(_timerText.fontSize * 0.45f)}>sors de la salle de départ</size>";
-            else
-            {
-                string next = _zone.InGrace ? $"traqueur dans {Clock(_zone.GraceLeft)}"
-                    : !_zone.ExitUnlocked ? $"sortie dans {Clock(_zone.ExitUnlockLeft)}"
-                    : !_zone.Enraged ? "sortie ouverte" : string.Empty;
-                _timerText.text = next.Length > 0 ? $"{left / 60}:{left % 60:00}\n<size={Mathf.RoundToInt(_timerText.fontSize * 0.45f)}>{next}</size>" : $"{left / 60}:{left % 60:00}";
-            }
+            // Le temps seul, en grand (retours du 2026-11-17 : plus de texte d'objectif dessous). Il attend la sortie de la salle de départ (D-048).
+            _timerText.text = $"{left / 60}:{left % 60:00}";
             _timerText.color = _zone.Enraged ? new Color(1f, 0.25f, 0.2f) : left <= 30 ? new Color(1f, 0.7f, 0.3f) : Color.white;
             _stalkerText.text = _zone.Enraged ? "TRAQUEUR ENRAGÉ" : string.Empty;
             // D-038 : plus il accélère, plus l'indication pulse fort ; éclat d'une seconde à chaque palier.
@@ -512,10 +600,10 @@ namespace ItHunts.Hud
                 return;
             var run = ItHunts.Artifacts.RunState.Current;
             int souls = run != null ? run.Souls(_health.PlayerId) : 0;
-            _soulsText.text = $"Âmes  {souls}";
+            _soulsText.text = _skin != null ? souls.ToString() : $"Âmes  {souls}";
             float refused = Mathf.Clamp01(1f - (now - _refusedAt) / 0.8f);
             float gain = Mathf.Clamp01(1f - (now - _soulsGainAt) / 0.3f);
-            Color normal = Color.Lerp(new Color(0.55f, 0.95f, 1f), Color.white, gain);
+            Color normal = Color.Lerp(_skin != null ? _skin.soulsTextColor : new Color(0.55f, 0.95f, 1f), Color.white, gain);
             _soulsText.color = refused > 0f ? Color.Lerp(normal, new Color(1f, 0.2f, 0.15f), refused) : normal;
             _soulsText.rectTransform.localScale = Vector3.one * (1f + 0.25f * refused + 0.08f * gain);
             if (_interactor == null)
@@ -530,6 +618,8 @@ namespace ItHunts.Hud
         /// <summary>Munitions du barillet : un segment par munition ; en rechargement, ils se remplissent ; grisés si inactif.</summary>
         private void UpdateAmmo(int tick, float now, float dt, float fixedDt)
         {
+            if (!settings.showAmmoRow)
+                return;                                                  // recharge de tir retirée du HUD (2026-11-21)
             ItHunts.Settings.BarrelSettings cfg = _artifact != null ? _artifact.BarrelSettings : null;
             ItHunts.Settings.FireLanternSettings lantern = _artifact != null ? _artifact.LanternSettings : null;
             int rounds = cfg != null ? cfg.rounds : lantern != null ? 1 : 0;   // lanterne (D-065) : un seul segment, sa recharge
@@ -585,7 +675,7 @@ namespace ItHunts.Hud
 
         private void UpdatePlayerHealth(float now)
         {
-            if (_health == null || _healthBack == null)
+            if (_health == null || _healthBack == null || _skin != null)
                 return;
             HealthState h = _health.Health;
             bool show = h.Dead || h.Current < h.Max;
@@ -638,6 +728,8 @@ namespace ItHunts.Hud
 
         private static void SetRing(Image ring, bool on, Color color)
         {
+            if (ring == null)
+                return;
             ring.enabled = on;
             if (on)
                 ring.color = color;

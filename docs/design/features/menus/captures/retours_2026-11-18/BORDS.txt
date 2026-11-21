@@ -1,0 +1,30 @@
+Liseré clair en bas et à droite (point 7)
+
+Mesure : luminance moyenne de la dernière colonne et de la dernière ligne de chaque capture (image rendue par le jeu), comparée à
+4 px plus loin. Un liseré clair donnerait un bord nettement plus lumineux.
+
+Avant (captures v2) :
+- titre 1920 × 1080 : droite 0.065 (4 px : 0.066), bas 0.426 (4 px : 0.423)
+- titre 0,66x : droite 0.065 (4 px : 0.068), bas 0.434 (4 px : 0.432)
+- campement 1920 × 1080 : droite 0.076 (4 px : 0.083), bas 0.091 (4 px : 0.073)
+Après (v3) : voir ci-dessous, mêmes valeurs au bord et à 4 px.
+
+Conclusion : le liseré n'est pas dans l'image rendue par le jeu, ni avant ni après. Cause la plus probable : la vue Game de l'éditeur
+en zoom fractionnaire (0,66x), qui laisse voir son fond gris clair sur un pixel en bas et à droite de l'image. À confirmer dans un
+build (fenêtre native). Par précaution, un seul écran est désormais actif (le titre ou le campement, plus de page voisine décalée
+d'une largeur d'écran), et le canvas a un fond noir plein écran.
+
+Après :
+titre_gothique_1080p : bord droit 0,317 (4 px plus loin 0,316), bord bas 0,435
+titre_garamond_1080p : bord droit 0,316 (4 px plus loin 0,316), bord bas 0,435
+campement_solo_1080p : bord droit 0,076 (4 px plus loin 0,081), bord bas 0,091
+campement_coop_doublon_1080p : bord droit 0,076 (4 px plus loin 0,081), bord bas 0,091
+campement_coop_jouer_refuse_1080p : bord droit 0,076 (4 px plus loin 0,081), bord bas 0,091
+campement_coop_j2_pret_acte2_1080p : bord droit 0,076 (4 px plus loin 0,081), bord bas 0,091
+titre_gothique_066x : bord droit 0,309 (4 px plus loin 0,310), bord bas 0,435
+titre_garamond_066x : bord droit 0,310 (4 px plus loin 0,309), bord bas 0,436
+campement_solo_066x : bord droit 0,076 (4 px plus loin 0,086), bord bas 0,083
+campement_coop_doublon_066x : bord droit 0,076 (4 px plus loin 0,086), bord bas 0,083
+campement_coop_jouer_refuse_066x : bord droit 0,076 (4 px plus loin 0,086), bord bas 0,083
+campement_coop_j2_pret_acte2_066x : bord droit 0,076 (4 px plus loin 0,086), bord bas 0,083
+#fin

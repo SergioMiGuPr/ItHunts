@@ -11,7 +11,7 @@ namespace ItHunts.Economy
     /// (3 améliorations tirées avec la seed et un soin), avec leur prix, achetées avec E / Y (ou F) ; une offre achetée disparaît.
     /// Étape 8 : un marchand en plus dans la zone de départ sûre des zones 2 et 3.
     /// </summary>
-    public sealed class Merchant : MonoBehaviour
+    public sealed class Merchant : MonoBehaviour, IInteractable
     {
         [SerializeField] private EconomySettings settings;
         [Tooltip("Emplacements possibles (un est tiré avec la seed de la run).")]
@@ -25,6 +25,28 @@ namespace ItHunts.Economy
         public IReadOnlyList<OfferOrb> Offers => _offers;
 
         private void Start() => Place();
+
+        private void OnEnable() => Interactables.All.Add(this);
+        private void OnDisable() => Interactables.All.Remove(this);
+
+        // Interagir ouvre le menu de ses offres (point 4, 2026-11-21) ; les orbes restent la vitrine, prises par le menu seulement.
+        public Vector3 Point => transform.position + Vector3.up * 1.4f;
+        public float Range => settings != null ? settings.orbInteractRange : 8f;
+        public bool AcceptsGrab => false;
+
+        public bool Available(PlayerHealth p)
+        {
+            if (p == null || p.Dead || ShopMenu.Of(p) != null)
+                return false;
+            foreach (OfferOrb o in _offers)
+                if (o != null && !o.Taken)
+                    return true;
+            return false;
+        }
+
+        public string Prompt(PlayerHealth p) => "voir les offres du marchand";
+
+        public void Interact(PlayerHealth p) => ShopMenu.Show(p, ShopMenu.Kind.Marchand, "Marchand", _offers);
 
         /// <summary>Place le marchand (emplacement tiré avec la seed) et pose ses offres ; remise à zéro de la zone : de nouveau.</summary>
         public void Place()
@@ -54,6 +76,7 @@ namespace ItHunts.Economy
                     ? OfferOrb.Create(transform, at, drawn[i], drawn[i].merchantPrice, 0f, 0, range, orbMaterial)
                     : OfferOrb.Create(transform, at, null, settings != null ? settings.healPrice : 35, settings != null ? settings.healAmount : 40f, 0, range, orbMaterial);
                 orb.Pricing = settings;
+                orb.MenuOnly = true;
                 orb.TakenBy += (o, p) => _offers.Remove(o);
                 _offers.Add(orb);
             }

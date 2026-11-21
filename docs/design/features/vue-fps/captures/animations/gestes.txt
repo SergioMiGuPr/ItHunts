@@ -1,0 +1,17 @@
+Renard — Repos (orbe et artefact flottent) : poses Boucle_OrbePaume / Boucle_PriseAnneau
+Renard — Traction : poses Pose_Traction / Boucle_PriseAnneau
+Renard — Répulsion : poses Pose_Repulsion / Boucle_PriseAnneau
+Renard — Prise : poses Pose_Attraper_2 / Boucle_PriseAnneau
+Renard — Objet tenu : poses Pose_TenirObjet / Boucle_PriseAnneau
+Renard — Lancer : poses Pose_Lancer / Boucle_PriseAnneau
+Renard — Jet de la lanterne : poses Boucle_OrbePaume / Boucle_PriseAnneau
+ordre : Repos (orbe et artefact flottent) | Traction | Répulsion | Prise | Objet tenu | Lancer | Jet de la lanterne
+Caméléon — Repos (orbe et artefact flottent) : poses Boucle_OrbePaume / Boucle_Pistolet
+Caméléon — Traction : poses Pose_Traction / Boucle_Pistolet
+Caméléon — Répulsion : poses Pose_Repulsion / Boucle_Pistolet
+Caméléon — Prise : poses Pose_Attraper_2 / Boucle_Pistolet
+Caméléon — Objet tenu : poses Pose_TenirObjet / Boucle_Pistolet
+Caméléon — Lancer : poses Pose_Lancer / Boucle_Pistolet
+Caméléon — Tir (barillet) : poses Boucle_OrbePaume / Boucle_Pistolet
+ordre : Repos (orbe et artefact flottent) | Traction | Répulsion | Prise | Objet tenu | Lancer | Tir (barillet)
+#fin

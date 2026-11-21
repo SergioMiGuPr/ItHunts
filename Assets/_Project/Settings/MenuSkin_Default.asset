@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dad1513921922d46a75ccb3b4b8f856, type: 3}
+  m_Name: MenuSkin_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.MenuSkinSettings
+  titleScreen: {fileID: 8259101211829253740, guid: 1c3ef0510289d484a8d68e62ab90dc07, type: 3}
+  campScreen: {fileID: 2004154082164157192, guid: e5c4edc7300fb47449d6fc77527b3759, type: 3}
+  choiceScreen: {fileID: 6276208912917991764, guid: 5cd2da1f797d67149b7f6ca53df0575d, type: 3}
+  pauseScreen: {fileID: 105743282666029876, guid: 147f130a5c792fb42b52c7bb1ab434da, type: 3}
+  settingsScreen: {fileID: 9025060666553366663, guid: 06830e2b212e6c24595728f5c76b8179, type: 3}
+  playerNameFormat: Joueur {0}
+  showChat: 0
+  textFont: {fileID: 12800000, guid: 514fed4c22662ec449fc8e84addc8bab, type: 3}
+  textBold: {fileID: 12800000, guid: 9c0d1388ac19db84387d4c02dd031f52, type: 3}
+  titleFont: {fileID: 12800000, guid: beb1fe48b368ab24e8f157905953e401, type: 3}
+  textItalic: {fileID: 12800000, guid: 829b5eb3831bb4944957da7ae4082a5c, type: 3}
+  panel: {fileID: 21300000, guid: f31ba3294eba4964baae8d26b7c3f425, type: 3}
+  focusMark: {fileID: 21300000, guid: 39db84b571535514d964fdc472895e8b, type: 3}
+  additive: {fileID: 2100000, guid: 3bf54dc1f744f494296e7544850236ff, type: 2}
+  fogRiseSeconds: 0.8
+  fogClearSeconds: 0.8
+  transitionFog: {r: 0.36, g: 0.42, b: 0.55, a: 1}
+  transitionFogMaterial: {fileID: 2100000, guid: 93bb597bf138b034fa640773a26b96e0, type: 2}
+  music: {fileID: 8300000, guid: 9969bfdfbc41e9d4999636c4dcdac961, type: 3}
+  musicVolume: 0.55
+  fire: {fileID: 8300000, guid: 725464ae0f154cf4d92a0868b5260258, type: 3}
+  fireVolume: 1
+  fireGainDb: 28
+  fireOnTitle: 0
+  fireFadeSeconds: 1.2

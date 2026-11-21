@@ -16,6 +16,11 @@ réglage qui y figure change, ce document est mis à jour par le côté code (br
 >   en plus du test de profondeur. Lignes de 0.28 m (sortie 0.5 m), toujours face à l'écran, **toujours à l'échelle du monde**
 >   (même posés sur une porte étirée). Sur une porte (sortie, salle verrouillée), **un texte devant chaque face**, à 0.12 m : un
 >   modèle de porte doit donc avoir une **collision pleine** (sinon le texte de l'autre face se voit à travers).
+> - **Animations (PR #6, branche `animations`, 2026-11-16)** : goule et traqueur gréés branchés (contrôleurs dans
+>   `Assets/_Project/Animation/`, un état par clip, fondus par le code) ; épaule du traqueur lue sur l'os `Bras.R` : **3.55 m devant le
+>   pivot** dans la pose de repos animée (4 m annoncés) ; bras du traqueur étirés par le code au-delà de leur longueur quand la main va
+>   à 15 m. Bras FPS : cadrage de `reference_bras_fps.png` appliqué ; avec la lanterne (échelle 0.6) et le barillet, **17 à 26 % de
+>   l'écran** est couvert (objectif du jeu : 15 %) : à voir avec l'utilisateur (objets plus petits ou mains plus écartées).
 > - **Retours du lot (branche `retours-lot`, 2026-11-16)** :
 >   - **Arc de couloir (`SM_Arc_Couloir`)** : le plafond des couloirs est **plat** (15 m), l'arc est un **anneau en ogive** de
 >     14 × 11 m posé sur des piédroits de 4 m : seule la clé touchait le plafond, il restait 3 à 6 m de vide de chaque côté entre
@@ -98,7 +103,7 @@ Un modèle doit tenir dans ces volumes (± 10 %), sauf mention contraire. Pivot 
 | **Marchand** (au hasard, retiré à l'étape 8) / **marchand de l'artefact** (salle de départ) | silhouette **0.9 × 2.2 m** + enseigne **1.6 × 0.4 m**, centrée à **5.5 m** de haut, 1.6 m devant lui (au-dessus de la rangée d'offres, dans leur plan) | scènes | 4 offres à 1.6 m de haut, 1.6 m devant lui ; l'enseigne ne doit cacher aucune étiquette d'offre |
 | **Grande porte de sortie** | **10 × 10 m** | `Level01Builder` | escalier de 20 marches de 0.4 × 1.6 m, 10 m de large, palier de 12 m |
 | **Portes des pièces** (annexes, salles verrouillées) | **3 × 3 m** dans un mur de 1 m ; fenêtre 3 × 1.5 m | constructeurs | sous la porte, le jeu ajoute un seuil pour les goules : ne pas y mettre de marche ni d'objet |
-| **Couloirs** | **14 m de large, 15 m de haut** (16 m de large en pente ; 15 m au moins : le traqueur fait 14 m) ; tronçons de 40 m au plus | `MapLayout_Niveau1` | voie centrale de 8 m, décor dans une bande de 3 m le long des murs |
+| **Couloirs** | **14 m de large** ; couloirs plats : **voûte gothique** du kit de la PR #8 (murs jusqu'à la naissance à 8 m, voûte en lancette, clé à 20.5 m, **dessus à 21.2 m**, arcs-doubleaux sur colonnes engagées à chaque travée et contre chaque bout, 19.8 m libres) ; travées de 8 m ajustées à la longueur du couloir (pièces étirées en z, UV monde) ; murs de travée : arcade aveugle (renfoncement de 1.2 m, fond et sol posés par le jeu), niche ou mur plein ; porte des salles inchangée (14 × 15 m, arc d'entrée), pignon de pierre au-dessus jusqu'à 21.6 m. Couloirs en pente : 16 m de large, plafond plat à 15 m ; tronçons de 40 m au plus | `MapLayout_Niveau1` (`gothicCorridors`, `gothicArcadeShare` 0.25, `gothicNicheShare` 0.35) | voie centrale de 8 m, décor dans une bande de 3 m le long des murs ; torches à 4 m sur les trumeaux, à 2.2 m de la colonne (une travée sur deux, en quinconce), jamais sur une arcade ; la collision de la voûte et des arcs est traversée par le traqueur (comme les anciens arcs) |
 | **Salles** | **46 à 66 m** de côté (modules de 48, 56, 64 m) ; plafond par type : **salle simple 18 m, salle à étages 22 m, salle d'égout 16 m** ; carrefours **20 m**, plafond **16 m** ; niveau haut à **+16 m** | `MapLayout_Niveau1` | voies dégagées en croix de 11 m entre les ouvertures |
 | **Pièces annexes** | **12 × 12 m, 6 m de haut** | constructeurs | profondeur ≤ 15 m depuis une ouverture |
 | **Passages en hauteur** | ouverture **3 × 3 m à 4.5 m** du sol, conduit 8 × 3.5 × 3 m | `LevelParkour` | murs autour non magnétiques |
@@ -140,9 +145,10 @@ Le jeu décide du moment des coups ; l'animation doit montrer l'annonce **pendan
 
 ## 0 quater. Couleurs : orbe par action (D-024) et codes du jeu
 
-> **À venir (D-066) :** avec l'orbe v2, l'orbe prend la **couleur du personnage** (rouge, orange, vert, bleu) en permanence et
-> les actions passent par les anneaux et les runes ; le tableau ci-dessous vaut jusque-là. Attention aux couleurs réservées
-> (rouge = annonce d'attaque et refus) : la teinte exacte des personnages est à choisir avec la DA.
+> **Fait (D-066, 2026-11-17) :** l'orbe v2 (`SM_Orbe`) est branchée en vue FPS : énergie et glyphes à la **couleur du
+> personnage** (`CharacterDefinition.color`) en permanence ; anneaux qui tournent (plus vite en traction), tablettes = jauge des
+> charges (`OrbModelView`, réglages `OrbModel_Default`). Le tableau ci-dessous reste vrai pour le **trait, l'ancre, les marques et
+> les signaux** (plus pour l'orbe elle-même). Attention aux couleurs réservées (rouge = annonce d'attaque et refus).
 
 | Couleur | Sens |
 |---|---|
@@ -209,12 +215,13 @@ jeu, un bon joueur va plus loin.
 
 | Capacité | Mesure | Repère pour le décor |
 |---|---|---|
-| Course | **7.5 m/s** | |
+| Course | **8.5 m/s** (D-072 ; élan gardé au sol jusqu’à 20 m/s en tenant « avancer ») | |
 | Vitesse max des gains (glissade, saut, dash, répulsion) | **20 m/s** | ; bunny hop mesuré jusqu'à **26 m/s** |
 | Saut | **1.3 m** | rebord atteint au sol : ≤ 1.3 m |
-| Double saut (2e saut en l'air) | **+1.6 m**, soit **≈ 2.9 m** au total | rebord atteignable sans aide : ≤ 2.9 m ; un mur de **3 m+** bloque vraiment |
-| Saut en course | **≈ 4.9 m** | trou franchissable par tous |
-| Saut + double saut en course | **≈ 9 m** | |
+| Double saut (2e saut en l'air) | **+1.6 m**, soit **≈ 2.9 m** au total | rebord atteint en sautant dessus : ≤ 2.9 m |
+| Hissage automatique (D-074) | dessus du rebord jusqu'à **0.6 m au-dessus de la tête** : **3.7 m** avec un saut, **≈ 5.3 m** avec le double saut ; 0.3 s | un mur ne bloque vraiment qu'à **5.5 m+** ; dessus d'au moins **0.6 m** de profondeur et **1.8 m** de vide au-dessus pour qu'on s'y hisse |
+| Saut en course | **≈ 5.5 m** (8.5 m/s) | trou franchissable par tous |
+| Saut + double saut en course | **≈ 10 m** | |
 | Dash (au sol ou en l'air) | **6.5 m** en 0.3 s | s'ajoute aux sauts |
 | Bunny hop à 20 m/s | **≈ 13 m** par saut | les arènes doivent être **longues** (lignes de 50 m+) |
 | Wall jump | **1.8 m** de haut, poussée de 7.5 m/s (**6.4 m/s** effectifs : −15 % sur les murs, gains arrêtés à **18 m/s**, D-044) | murs de wall slide : **≥ 6 m** de haut, longs |
@@ -301,9 +308,10 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
   paume). Prévoir un point d'attache nommé `Orb_Socket` à cet endroit ; l'orbe reste un objet séparé (le jeu change sa
   couleur, HDR, bloom).
 - **Barillet (premier artefact, main gauche, D-032) : modèle `SM_Barillet` branché (2026-11-15, branche `barillet-modele`).**
-  Tenu dans la paume gauche, axe de tir (+Z) dans le sens des doigts. Repère `Barillet (vue)` en **(0, 0.065, 0.05)** dans
-  le repère de la main gauche, rotation (0, 0, 0), échelle 1 (= 0.10 m de diamètre) : réglables dans `FpsView_Default`
-  (« Barillet »). Le modèle entier tourne de **−60° autour de son Z local à chaque tir** (sens horaire vu du joueur), en
+  Flotte au-dessus de la paume gauche, axe de tir (+Z) vers l'avant de la vue. Repère `Barillet (vue)` en **(0, 0.11, 0.05)**
+  dans le repère de la main gauche, rotation (0, 0, 0), **échelle 0.5 (= 0.05 m de diamètre, la largeur de la paume ;
+  2026-11-17, il couvrait un tiers de l'écran à l'échelle 1)** : taille, décalage et flottement réglables dans
+  `Barrel_Default` (« Vue FPS »). Le modèle entier tourne de **−60° autour de son Z local à chaque tir** (sens horaire vu du joueur), en
   0.08 s (courbe réglable, `Barrel_Default`), et finit toujours sur un multiple de 60°. Mesures (m) :
 
   | Pièce | Taille | Position (repère du barillet) |
@@ -313,7 +321,7 @@ point d'ancrage et les mêmes axes, et le jeu n'a rien à retoucher.
   | Canon (**greybox, à modéliser**) | cylindre Ø 0.022 × 0.10 | centre (0, 0.0307, 0.1055), dans l'axe de la chambre du haut |
   | Bouche du canon (départ de la traînée) | — | (0, 0.0307, 0.1565) |
 
-  **Les munitions se lisent sur les chambres** : chargée = **émission** (blanc chaud provisoire (1, 0.86, 0.66) × 3,
+  **Les munitions se lisent sur les chambres** : chargée = **émission** (blanc chaud provisoire (1, 0.86, 0.66) × 1.4 depuis le 2026-11-17, × 3 éblouissait,
   au-delà du seuil de bloom, réglable dans `Barrel_Default`, pas le violet de la télékinésie) ; vide = **couleur de base
   seule #1A120C** ; barillet inactif (objet tenu) : émission × 0.2. La chambre du haut est la prochaine à tirer ; au
   rechargement, les chambres se rallument une à une. Matériaux (provisoires, la liste sera validée avec la DA) : le corps
@@ -624,6 +632,111 @@ Nombre utilisé : niveau 1 (modules, couloirs, annexes) après génération du 2
   sud, tours de 11 m (6 × 6 m), galerie de 6 m dans la poche est ; herse à x = −18 (poche de 22 m) ; 6 leviers (plaque de
   1.2 × 0.8 × 1.2 m sur un socle de 1.2 m, orange puis vert) ; 5 plateformes de 2.4 m qui tombent au-dessus de la fosse.
 
+## Rendu : demandes à la session art et inventaire des props (2026-11-17)
+
+Contexte : la lumière d'ambiance horreur est en place côté `main` (`HorrorLook`, réglages `HorrorLook_Default`) : étalonnage
+par ambiance, halos des torches, torches qui vacillent, cône de la lanterne qui projette des ombres (3 lumières ombrées au plus,
+les plus proches des joueurs), bloom, vignettage, grain. Captures : `docs/design/features/rendu/captures/ambiance_horreur/`.
+Pour que ces flaques de lumière révèlent la matière, il manque des choses **dans le shader toon** (`Assets/Art/Shaders`, périmètre
+de la DA, rien n'a été modifié) :
+
+| Demande | Pourquoi | Piste |
+|---|---|---|
+| **Cartes normales** (`_BumpMap`, `_BumpScale`, mot-clé `_NORMALMAP`) dans `ItHunts_ToonForwardPass` et la passe DepthNormals | une torche à 4 m sur un mur et le cône de la lanterne arrivent **rasants** : avec une normale peinte, les joints et le relief des pierres sortent du noir ; aujourd'hui le mur est plat sous la lumière | normale en espace tangent (`TransformTangentToWorld`), utilisée pour `ndl` des lumières additionnelles et du contour ; textures `T_*_Normal` pour `M_Pierre`, `M_Dalles`, `M_Voute_Briques`, kit gothique |
+| **Sol mouillé brillant** | des reflets des torches au sol donnent la profondeur d'une cave humide et guident l'œil le long des couloirs | reflet spéculaire **en aplat** (une bande, dans le style) piloté par un masque de flaques (`_WetMask`, ou le canal alpha de `T_Dalles_BaseColor`) et `_WetSmoothness` ; sur `M_Dalles`, `M_Egout` |
+| **Ombres des lumières additionnelles** | le cône de la lanterne et les torches proches projettent des ombres | **déjà reçues** (`_ADDITIONAL_LIGHT_SHADOWS`, `light.shadowAttenuation`) : à garder ; vérifier que les modèles du décor ont bien leur passe ShadowCaster et que l'ombre en bande ne crénèle pas de près (biais) |
+| **Tourbillon de l'énergie de l'orbe** | l'énergie de `SM_Orbe` est une sphère unie : sa rotation ne se voit pas | shader de vortex (UV sphériques réservées par `MATERIAUX.md`) : bandes qui défilent, couleur par `_EmissionColor` (le jeu l'écrit par bloc de propriétés) |
+| **Corps du traqueur dans le noir** | `T_Traqueur_BaseColor` est très sombre : de loin, dans le brouillard des ambiances sombres, on ne voit que ses yeux | côté jeu : lumière d'appoint qui n'éclaire que lui (calque de rendu « Traqueur ») ; côté DA, au choix : texture un peu plus claire, ou un rim léger sur `M_Traqueur` |
+
+**Inventaire des props du catalogue (prefabs `Assets/_Project/Prefabs/Props`) :**
+
+- **Importés (modèle de la DA)** : `Prop_Caisse_Attrapable` (`SM_Caisse`), `Prop_Cage`, `Prop_Chaine`, `Prop_Colonne`,
+  `Prop_ColonneBrisee`, `Prop_Echafaudage`, `Prop_Grille`, `Prop_Tapisserie`, `Prop_Torche` et `Prop_TorcheEteinte` (`SM_Torche`),
+  `Prop_Tuyau` ; le kit de la carte (murs, sols, escalier, pont, poutre, pilier, porte de pièce, grande porte, arcs, kit gothique)
+  et l'arène du boss (herse, leviers, treuil, plateformes) sont aussi au modèle.
+- **Manquants (encore greybox)**, par nombre utilisé dans le niveau 1 : `Prop_Tonneau` (212), `Prop_Tonneau_Attrapable` (131),
+  `Prop_Etagere` (117), `Prop_Caisse` (100, fixe), `Prop_CoffreDeco` (85), `Prop_Table` (82), `Prop_Banc` (79),
+  `Prop_PileDeCaisses` (78), `Prop_Paille` (77), `Prop_Gravats` (72), `Prop_Statue` (69), `Prop_Chaise_Attrapable` (63),
+  `Prop_Sarcophage` (52), `Prop_Ratelier` (40), `Prop_Armoire` (30), `Prop_Lit` (23), `Prop_Chaudron` (14), `Prop_MurEffondre` (11),
+  `Prop_Autel` (4), `Prop_Poutre` (0) ; **`Prop_Lanterne` (258, une lumière : son halo est déjà dessiné par le jeu)**.
+- **Hors catalogue, encore greybox** : `Coffre` (coffre à âmes), `Marchand_Artefact`, `Volant` (ennemi).
+
+## Interface : intégration du lot A (PR #10, 2026-11-17)
+
+- **HUD habillé branché** (`PlayerHud` + `PlayerHud.Skin.cs`, réglages `HudSkin_Default` relié par `Hud_Default`) : barre de vie
+  (fond, traînée des dégâts récents, remplissage rouge sang, cadre, « PV/max » en EB Garamond SemiBold), cartouche des âmes (flamme,
+  nombre), mini-carte ronde (fond, masque, cadre, icônes : coffre, coffre ouvert, bougie = marchand, flamme = salle verrouillée,
+  porte finale verrouillée / ouverte, pastilles des alliés par personnage, tête de mort, flèche du joueur), messages et titres en
+  Grenze Gotisch. Mesures d'UI-HANDOFF (coins, k, canal, rond). `MiniCarte_Coffre_Rare` n'est pas utilisée : il n'y a pas encore de
+  coffre rare en jeu.
+- **Différence avec UI-HANDOFF § 0 :** le canevas du HUD est **Screen Space - Overlay** (plus Screen Space - Camera) pour que
+  l'étalonnage de l'Enragé ne le teinte pas ; sa racine épouse le rectangle de la caméra du joueur et l'échelle suit la hauteur
+  de sa vue (référence 1080) : les tailles en pixels 1080p de la DA restent valables, écran partagé compris.
+- **Atlas converti en V2 sur `main`** (demande de l'utilisateur) : *Sprite Packer* sur *Sprite Atlas V2 - Enabled*,
+  `Assets/Art/UI/Atlas_HUD.spriteatlas` remplacé par `Atlas_HUD.spriteatlasv2` (mêmes dossiers `HUD` et `MiniCarte`, mêmes réglages :
+  marge 4 px, ni rotation ni découpe serrée, 4096, compression haute qualité). **La branche `art-ui` doit faire un pull de `main`
+  avant de toucher à l'atlas.**
+
+## Bras FPS v2 : intégration (PR #11, 2026-11-17)
+
+- Poses recuites (`FpsArmsSetup`, 20 os, 14 poses + 4 boucles) ; **orbe et artefact accrochés à `Socket_Flottement`** (ils suivent
+  la main animée, plus le flottement de la vue) ; `Pose_MainOuverte` = **répulsion** (geste et maintenue), `Pose_Griffe` =
+  **traction** (noms réglables dans `FpsView_Default`). Planche des 4 personnages et 14 poses :
+  `docs/design/features/vue-fps/captures/bras_v2/`.
+- **Orientation des bras (corrigée par la PR #14, 2026-11-17)** : les 8 FBX `SK_BrasFPS_*` sont à l'endroit (volume signé positif,
+  1 339 à 1 686 cm³). Le contournement côté `main` (contour inversé pour les maillages retournés) est retiré : le contour des mains
+  (`ItHunts/ContourMains`, coque qui cache les faces avant) suppose des **normales vers l'extérieur**. Le test
+  `FpsViewTests.BrasFps_FacesVersLExterieur` vérifie chaque livraison (un bras retourné serait noir). Captures après la PR #14 :
+  `docs/design/features/vue-fps/captures/bras_pr14/`.
+
+## Bras du traqueur : allongement par l'échelle des os (D-070, 2026-11-17)
+
+- **Ce que fait le code** : au-delà de la longueur du bras (environ 3.95 m de l'épaule au poignet), le bras se tend vers la cible,
+  puis **l'os `Bras.L/.R` reçoit une échelle le long de son axe** (l'axe vers `AvantBras`, **Y** sur le modèle actuel) ; l'avant-bras,
+  aligné, hérite de l'allongement ; **`Main` reçoit l'échelle inverse** et garde sa taille. Mesuré : **×2.3 à 5 m, ×2.4 à 10 m,
+  ×3.2 à 15 m** (jusqu'à ×3.8 dans le pire cas). Portée (15 m) et zone qui tue inchangées. Captures avant/après :
+  `docs/design/features/boss-traqueur/captures/bras_echelle/`.
+- **Pour le nouveau maillage et le gréement** : garder la chaîne `Bras` → `AvantBras` → `Main` (mêmes noms, `.L`/`.R`), l'axe de
+  chaque os **le long du membre** (l'os suivant posé sur un seul axe local), **pas d'échelle ni de rotation figée** sur ces os à
+  l'export, et le coude droit possible (le code tend le bras avant d'allonger). **La texture s'étire avec le bras** (×3 à 4 en
+  longueur) : préférer sur le bras et l'avant-bras un motif qui supporte l'étirement (veines, peau tendue) et **arrêter
+  `M_Traqueur_Mains` au poignet** : aujourd'hui sa zone claire couvre le bas de l'avant-bras et devient une longue bande pâle
+  quand le bras s'allonge.
+
+
+### Traqueur v3 (PR #13) : intégration et retours (2026-11-17)
+
+- **Intégré sur `main` (branche `animations`)** : prefabs et scènes reconstruits (4 scènes de jeu, `Test_Vitrine`), 3 matériaux du
+  corps lus dans l'ordre `M_Traqueur`, `M_Traqueur_Tete`, `M_Traqueur_Mains` ; la lueur des pupilles ne va qu'aux matériaux qui ont un
+  masque d'émission (`M_Traqueur` v3 n'en a plus : le corps reste éteint). Lecture des clips : vitesse au sol ÷ 3.71 (`Traqueur_Marche`)
+  ou ÷ 2.29 (`Traqueur_PassageBas`), réglables dans `Stalker_Default` (`walkClipSpeed`, `crouchClipSpeed`) ; pied posé mesuré à
+  0.48 m/s en poursuite (5.3 m/s avant). Allongement D-070 : ×1.8 à ×3.0 de 5 à 15 m, main à l'échelle 1. Sommet : 13.9 m en marche,
+  8.5 m baissé (poutres à 10 m). Mesures et captures : `docs/design/features/boss-traqueur/captures/v3/`.
+- **Tête v3 corrigée (PR #16, 2026-11-18)** : tête reprise sans borne, pupilles en disques de 0.4 m (hauteurs différentes, voulu).
+  Repli `eyeGlints` **décoché** dans `Stalker_Default` (le code reste, réactivable). `StalkerVisibilityTests` passe sans lui :
+  luminance 0.56 à 10 m, 0.34 à 30 m, 0.14 à 60 m dans le brouillard (seuil 0.06). **Attention à l'ordre des matériaux** : le FBX
+  de la PR #16 range la tête en dernier (`M_Traqueur`, `M_Traqueur_Mains`, `M_Traqueur_Tete`) ; les instances des scènes gardaient
+  l'ancien ordre (la tête prenait le matériau des mains) : traqueurs des scènes reconstruits, et `SkinnedBonesTests` vérifie
+  désormais que chaque rendu a les matériaux de son FBX dans le même ordre. Capture : `tete_v3_pr16.png`.
+
+## Menus : intégration de la PR #18 (art-menus, 2026-11-18)
+
+Les cinq prefabs (`Menu_Titre`, `Menu_Campement`, `Menu_Choix`, `Menu_Pause`, `Menu_Parametres`) sont branchés tels quels sur la
+logique du jeu, par l'assembly `ItHunts.Menus` (`Assets/_Project/Scripts/Menus/`). Les composants d'aperçu (`TitreApercu`,
+`CampementApercu`, `ChoixPersoApercu`, `OptionDefilante`, `TeinteGroupe`, `SelectionAuSurvol`) sont **coupés** dans le jeu (ils
+lisaient eux-mêmes le clavier, la manette ou l'EventSystem) ; leurs méthodes sont appelées (`Applique`, `Occupe`, `Libere`, `Pret`,
+`Choisit`) et les teintes du § 2.1 de l'UI-HANDOFF sont posées par le code. Garder ces noms d'objets et ces méthodes, ou prévenir.
+Réglages : `MenuSkin_Default` (prefabs, musique 0.55, feu à +28 dB puis limiteur, feu absent au titre). « Réduire les
+animations » pilote `MenuFige`. Champ `ArtifactDefinition.description` ajouté. Captures : `docs/design/features/menus/captures/maquettes/`.
+
+Retours à la DA :
+- **`Menus_Cadre.png`** : la colonne de droite garde des pixels bleutés semi-transparents (ciel de la maquette ; par exemple
+  (36, 57, 89) à alpha 182 sur la dernière colonne) : une bande bleue verticale se voit à droite du cadre de la pause et des
+  paramètres.
+- **Place 2 (pierre) vide** (J1 seul) : ni `+` ni lanterne éteinte livrés (seulement pour les places 3 et 4) ; la pierre reste nue.
+- Pause : la maquette a 4 boutons ; le jeu en a jusqu'à 6 (Quitter l'écran partagé, outils de développement) : le 4e cartouche est
+  reproduit au même pas et le cadre allongé (9 tranches). Si un autre pas est voulu, le donner.
+- Manifeste : les 5 prefabs et les 4 shaders `ItHunts/UI/*` n'ont pas de ligne.
 ## Sons du jeu (lot B, 2026-11-21, branche `art-audio`)
 
 20 sons générés par l'utilisateur sur Higgsfield (effets : Mirelo ; musiques : ElevenLabs Music v2.5), sources MP3 dans
@@ -655,3 +768,21 @@ ceux de `ProceduralSfx` et des vues qui les jouent).
 Réglages d'import : effets courts **Decompress On Load** (aucune latence au tir), boucles d'effets **Compressed In Memory**,
 musiques **Streaming** (chargement en arrière-plan) ; Vorbis 0,7, fréquence d'origine (44,1 kHz) ; mono forcé pour tous les
 effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retirés et raccords : `sons_jeu.json`.
+
+## Nouveaux modules et passages du traqueur (main, 2026-11-21, D-078)
+
+Échelle de jeu des 4 modules (64 × 64 m) et des passages du traqueur, pour remplacer les blocs par le kit (PR #25) :
+
+| Élément | Mesure | Remarque |
+|---|---|---|
+| Plateforme où le traqueur se pose (coursive, mezzanine, anneau) | **10 m de profondeur au moins** | il fait 7 m de large ; plus étroit : joueurs seulement |
+| Coursive basse de la prison | 14 m de profondeur, dessus à 5.5 m | la 2e (11 m) fait 4 m : joueurs seulement |
+| Mezzanine de la caserne | 10 m, dessus à 6 m | |
+| Anneau bas du puits | 10 m, dessus à 11 m ; anneau haut 3 m à 17 m | plafond du puits 30 m |
+| Porte étroite | **8 × 10 m** (le traqueur se faufile, × 0.45) | seuil réglable (`narrowDoorHeight` 10 m, en attendant la mesure du v4) |
+| Bond | 22 m au plus, 6 m de dénivelé | arc de 5 m au-dessus de la ligne |
+| Rebord / mur grimpable / chaîne | 8 / 16 / 16 m de haut au plus | |
+| Saut depuis une chaîne | 18 m au plus | |
+| Garde-corps | sans collision | une collision cachait le joueur à la main du traqueur |
+| Cages suspendues du puits | dessus à 16 m au plus | au-dessus, cachette |
+

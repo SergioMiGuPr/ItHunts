@@ -160,13 +160,43 @@ namespace ItHunts.Combat
         public Color ExtraGlow { get; set; } = Color.black;
 
         /// <summary>
+        /// Mort animée (goule de la DA) : à la mort, les collisions s'éteignent tout de suite, les rendus après ce délai (s) ; 0 :
+        /// tout disparaît d'un coup.
+        /// </summary>
+        public float HideDelay { get; set; }
+        private float _hideAt;
+
+        /// <summary>
         /// Lueur propre à certains rendus (mains du traqueur : griffes ivoire, alors que ses pupilles sont rouges) ; remplace
         /// ExtraGlow pour eux. Le coup reçu et l'étourdissement l'emportent toujours.
         /// </summary>
         public readonly Dictionary<Renderer, Color> GlowOverrides = new Dictionary<Renderer, Color>();
 
+        /// <summary>
+        /// Lueur d'un matériau d'un rendu (traqueur gréé : un seul rendu, pupilles sur M_Traqueur, griffes sur M_Traqueur_Mains) :
+        /// pour ces rendus, l'émission est écrite matériau par matériau ; ExtraGlow pour les matériaux sans entrée.
+        /// </summary>
+        public readonly Dictionary<(Renderer, int), Color> MaterialGlows = new Dictionary<(Renderer, int), Color>();
+        private readonly HashSet<Renderer> _perMaterial = new HashSet<Renderer>();
+        private MaterialPropertyBlock _matBlock;
+
+        public void SetMaterialGlow(Renderer r, int index, Color c)
+        {
+            MaterialGlows[(r, index)] = c;
+            _perMaterial.Add(r);
+        }
+
         private void Update()
         {
+            if (_hideAt > 0f && Time.time >= _hideAt)
+            {
+                _hideAt = 0f;
+                if (_health.Dead && _renderers != null)
+                    foreach (Renderer r in _renderers)
+                        if (r != null)
+                            r.enabled = false;
+            }
+
             if (_health.Dead && respawns && HealthState.TryRespawn(ref _health, Time.time, settings != null ? settings.respawnDelay : 3f))
             {
                 if (_body != null)
@@ -183,7 +213,26 @@ namespace ItHunts.Combat
                 : Stunned ? stunColor * (stunGlowIntensity * (0.6f + 0.4f * Mathf.Sin(Time.time * 18f)))
                 : ExtraGlow;
             foreach (Renderer r in _renderers)
-                if (r != null)
+                if (r != null && _perMaterial.Contains(r))
+                {
+                    if (_matBlock == null)
+                        _matBlock = new MaterialPropertyBlock();
+                    Material[] mats = r.sharedMaterials;
+                    for (int i = 0; i < mats.Length; i++)
+                    {
+                        r.GetPropertyBlock(_matBlock, i);
+                        Color c = !whole && MaterialGlows.TryGetValue((r, i), out Color mg) ? mg : glow;
+                        _matBlock.SetColor(EmissionId, c);
+                        if (mats[i] != null && mats[i].HasProperty(EmissionMapId))
+                        {
+                            Texture own = mats[i].GetTexture(EmissionMapId);
+                            _matBlock.SetTexture(EmissionMapId, whole || own == null ? Texture2D.whiteTexture : own);
+                        }
+
+                        r.SetPropertyBlock(_matBlock, i);
+                    }
+                }
+                else if (r != null)
                 {
                     r.GetPropertyBlock(_block);                           // garde les autres propriétés (lueur du bond, D-bloc 4)
                     _block.SetColor(EmissionId, !whole && GlowOverrides.TryGetValue(r, out Color ownGlow) ? ownGlow : glow);
@@ -205,6 +254,9 @@ namespace ItHunts.Combat
             foreach (Collider c in _colliders)
                 if (c != null)
                     c.enabled = alive;
+            _hideAt = !alive && HideDelay > 0f ? Time.time + HideDelay : 0f;
+            if (!alive && HideDelay > 0f)
+                return;                                                   // le corps reste visible le temps de sa mort
             foreach (Renderer r in _renderers)
                 if (r != null)
                     r.enabled = alive;

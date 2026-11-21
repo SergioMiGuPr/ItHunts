@@ -457,7 +457,7 @@ namespace ItHunts.Tests
             Assert.That(roster, Is.Not.Null);
             Assert.That(roster.Count, Is.EqualTo(4));
             string[] names = { "Renard", "Caméléon", "Koala", "Hibou" };
-            bool[] playable = { true, true, false, false };
+            bool[] playable = { true, true, true, true };                // koala et hibou jouables (D-077)
             for (int i = 0; i < 4; i++)
             {
                 Assert.That(roster[i].displayName, Is.EqualTo(names[i]));
