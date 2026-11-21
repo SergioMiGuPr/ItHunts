@@ -496,6 +496,16 @@ Lueurs : pupilles par `_EmissionColor` de `M_Traqueur` (rouge par défaut) ; gri
 `M_Traqueur_Mains` (repos (0.35, 0.32, 0.25), prise (3.5, 0.49, 0.21)). Planches : `rendus/Lot2/Traqueur_<Animation>.jpg`,
 `Traqueur_texture_gros_plans.jpg`.
 
+### Armes du koala et du hibou (lot E, 2026-11-21, branche `art-armes`)
+
+Planche : `docs/art/rendus/Armes/Vitrine_Armes.jpg` (vue FPS, caméra 60°, bras gauche à la pose de repos, scène
+`Assets/Art/Scenes/Vitrine_Armes.unity`). Constructeur : `Assets/Art/Source~/Armes/scripts/ArmesBuilder.cs`.
+
+| Objet | Prefab | Mesures, pivot, repères | Matériaux et réglages |
+|---|---|---|---|
+| Épée en os du koala | `Assets/Art/Prefabs/FPS/Artefact_Epee_Koala.prefab` (modèle `SM_Epee_Koala.fbx`) | **0.62 m** de long, 0.113 m de large (garde), 0.053 m d'épaisseur ; **8 000 triangles** ; **pivot au milieu de la poignée** ; lame le long de **+Z** (comme l'axe de tir du barillet), plat de la lame vers +Y ; repères `FX_Epee_Garde` (0, 0, 0.084) et `FX_Epee_Pointe` (0, 0, 0.523) ; se pose sur **`Socket_Artefact`** du bras gauche, rotation nulle | `M_Epee_Koala` (`ItHunts/Toon`) : texture `T_Epee_Koala_BaseColor` (2048), **runes émissives vertes** (`T_Epee_Koala_Emission` = tons les plus clairs de la texture, ~2 % des pixels ; `_EmissionColor` (0.56, 3.5, 1.2) HDR), rim vert ; **lueur discrète** : lumière ponctuelle `Lueur_Verte` (0.35, portée 0.9 m, sans ombres), à couper si le budget de lumières l'exige ; `T_Epee_Koala_Normal` livrée (le toon ne la lit pas encore) |
+| Livre du hibou | `Assets/Art/Prefabs/FPS/Artefact_Livre_Hibou.prefab` (modèle `SM_Livre_Hibou.fbx`) | ouvert : 0.23 × 0.18 m (× 0.6 en main = 0.14 m), **812 triangles** ; pivot au milieu du dos ; les pages regardent **−Z** (le joueur) ; enfants `SM_Livre_Hibou_Pages_Libres` (3 pages soulevées) et `SM_Livre_Hibou_Volutes` (3 rubans) ; repère `FX_Livre` (départ des liens de drain et de soin, lot D) ; **flotte** au-dessus de `Socket_Artefact` : `ArtefactFlottant` (repos (0.01, 0.13, 0.09), rotation (−15, 8, 0), échelle 0.6, flottement 1.2 cm à 0.35 Hz, balancement 4° à 0.23 Hz) | shader **`ItHunts/Spectre`** (translucide, bords en 2 paliers nets, lignes de texte qui défilent, bruit qui monte, **pages qui frémissent** : couleur de sommet R = poids, 0 au dos, 1 au bord ; `_Fremit` amplitude et fréquence) : `M_Livre_Couverture`, `M_Livre_Pages`, `M_Livre_Volutes` ; lumière `Lueur_Bleue` (0.5, portée 1.2 m) |
+
 ## 5. Props encore à produire (catalogue d'`ART-HANDOFF`)
 
 Greybox actuelles (bornes de leur maillage) : à garder comme cotes et pivots. **Attrapables** : gardent leur Rigidbody,
