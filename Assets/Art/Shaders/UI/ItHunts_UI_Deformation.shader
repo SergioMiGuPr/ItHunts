@@ -3,6 +3,10 @@
 // grandit vers le bas), flottement (décalage vertical du graphique), orbite des traînées de lumière (rotation dans une
 // ellipse). Poids : texture _Poids (R respiration, G cape, B phase) si _POIDS_TEXTURE, sinon profil vertical.
 // Gelé (_ItHuntsMenuFige = 1) : aucune déformation, le rendu est l'image peinte.
+// Éclairage de scène (_Eclairage = 1, personnages assis du campement) : valeur et saturation ramenées à celles des
+// personnages de la maquette, ombres froides bleu-violet, côté du feu plus chaud et clair, côté opposé sombre et froid,
+// liseré orange sur les bords tournés vers le feu (palpite avec lui), lueur de la lanterne sur les jambes. Les positions
+// du feu et de la lanterne sont en uv du sprite (posées par CampementApercu selon la place). Gelé : rien ne palpite.
 Shader "ItHunts/UI/Deformation"
 {
     Properties
@@ -22,6 +26,26 @@ Shader "ItHunts/UI/Deformation"
         _Orbite ("Orbite (tours par seconde, 0 = aucune)", Range(-0.5, 0.5)) = 0
         _Centre ("Centre de l'orbite (uv x y), aplatissement (z)", Vector) = (0.5, 0.5, 0.45, 0)
         _Opaque ("Opaque (recadrage du fond)", Range(0, 1)) = 0
+
+        _Eclairage ("Éclairage de scène (0 ou 1)", Range(0, 1)) = 0
+        _Luminosite ("Luminosité", Range(0, 2)) = 1
+        _Saturation ("Saturation", Range(0, 2)) = 1
+        _Contraste ("Contraste (exposant sur la luminance : noirs plus profonds)", Range(0.5, 3)) = 1
+        _OmbreCouleur ("Ombres : teinte froide", Color) = (0.34, 0.33, 0.62, 1)
+        _OmbreForce ("Ombres : force de la teinte", Range(0, 1)) = 0.5
+        _OmbreSeuil ("Ombres : luminance haute (linéaire)", Range(0.01, 0.5)) = 0.12
+        _FeuUV ("Feu (uv x y du sprite)", Vector) = (2, 0.3, 0, 0)
+        _ChaudCouleur ("Côté feu : gain chaud", Color) = (1.25, 1.02, 0.82, 1)
+        _FroidCouleur ("Côté opposé : gain froid", Color) = (0.62, 0.66, 0.86, 1)
+        _Transition ("Largeur de la transition chaud-froid (uv)", Range(0.05, 2)) = 0.7
+        _LisereCouleur ("Liseré du feu", Color) = (1, 0.48, 0.16, 1)
+        _LisereForce ("Liseré : force", Range(0, 3)) = 0.9
+        _LisereLargeur ("Liseré : largeur (pixels du sprite)", Range(0.5, 6)) = 2.2
+        _Palpite ("Palpitation avec le feu", Range(0, 1)) = 0.35
+        _PalpiteVitesse ("Palpitation : vitesse", Range(0, 4)) = 1.1
+        _LanterneUV ("Lanterne (uv x y du sprite, rayon en uv y)", Vector) = (0.5, 0.1, 0.25, 0)
+        _LanterneCouleur ("Lanterne : couleur", Color) = (1, 0.8, 0.5, 1)
+        _LanterneForce ("Lanterne : force sur les jambes", Range(0, 3)) = 0.8
 
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
@@ -53,6 +77,43 @@ Shader "ItHunts/UI/Deformation"
             sampler2D _Poids;
             float _Pivot, _Respiration, _Rythme, _Cape, _CapeHaut, _Phase, _Flottement, _FlotteVitesse, _Orbite, _Opaque;
             float4 _Centre;
+            float _Eclairage, _Luminosite, _Saturation, _Contraste, _OmbreForce, _OmbreSeuil, _Transition, _LisereForce, _LisereLargeur, _Palpite, _PalpiteVitesse, _LanterneForce;
+            float4 _FeuUV, _LanterneUV; fixed4 _OmbreCouleur, _ChaudCouleur, _FroidCouleur, _LisereCouleur, _LanterneCouleur;
+
+            // lumière de la scène sur un pixel du personnage (couleur droite, linéaire)
+            float3 Eclaire(float3 rgb, float2 uv, float a, float t, float actif)
+            {
+                float2 asp = float2(_MainTex_TexelSize.y / _MainTex_TexelSize.x, 1.0);   // uv -> repère carré (unités de hauteur)
+                // valeur et saturation (comme les personnages de la maquette)
+                float L = dot(rgb, float3(0.2126, 0.7152, 0.0722));
+                float g = _Luminosite * pow(max(L, 1e-5), _Contraste - 1.0);   // L' = lum * L^contraste
+                rgb = lerp(L.xxx, rgb, _Saturation) * g;
+                L *= g;
+                // ombres froides bleu-violet
+                float o = (1.0 - smoothstep(0.0, _OmbreSeuil, L)) * _OmbreForce;
+                rgb = lerp(rgb, rgb * _OmbreCouleur.rgb * 2.0 + _OmbreCouleur.rgb * 0.004, o);
+                // côté feu chaud, côté opposé froid (projection sur la direction du feu, depuis le centre du sprite)
+                float2 df = (_FeuUV.xy - 0.5) * asp;
+                float2 dir = normalize(df + 1e-5);
+                float s = dot((uv - 0.5) * asp, dir) / max(_Transition, 1e-3) + 0.5;
+                s = smoothstep(0.0, 1.0, s);
+                float fl = Vacille(t * _PalpiteVitesse, 3.7) * _Palpite * actif;
+                float3 gain = lerp(_FroidCouleur.rgb, _ChaudCouleur.rgb * (1.0 + fl * 0.5), s);
+                rgb *= gain;
+                // liseré : pixel opaque dont le voisin vers le feu est transparent
+                float2 dpx = normalize((_FeuUV.xy - uv) / _MainTex_TexelSize.xy + 1e-5);   // direction du feu, en pixels
+                float2 pas = dpx * _MainTex_TexelSize.xy * _LisereLargeur;
+                float an = tex2D(_MainTex, uv + pas).a;
+                float an2 = tex2D(_MainTex, uv + pas * 2.0).a;
+                float rim = a * saturate(1.0 - (an + an2) * 0.5);
+                rgb += rim * _LisereCouleur.rgb * _LisereForce * (1.0 + fl) * (0.35 + 0.65 * s);
+                // lueur de la lanterne (éclaire surtout les jambes : illumination de la couleur + un peu d'ajout)
+                float2 dl = (uv - _LanterneUV.xy) * asp;
+                float gl = exp(-dot(dl, dl) / max(_LanterneUV.z * _LanterneUV.z, 1e-4));
+                float fll = 1.0 + Vacille(t * 1.2, 8.1) * 0.25 * actif;
+                rgb += (rgb * 2.5 + 0.01) * gl * _LanterneCouleur.rgb * _LanterneForce * fll;
+                return rgb;
+            }
 
             v2f_ui vert(appdata_ui v)
             {
@@ -95,6 +156,8 @@ Shader "ItHunts/UI/Deformation"
                     uv = _Centre.xy + d;
                 }
                 fixed4 c = tex2D(_MainTex, uv) * i.color;
+                UNITY_BRANCH if (_Eclairage > 0.0)
+                    c.rgb = lerp(c.rgb, Eclaire(c.rgb, uv, c.a, t, actif), _Eclairage);
                 c.a = lerp(c.a, i.color.a, _Opaque);
                 ITHUNTS_UI_CLIP(i, c)
                 c.rgb *= c.a;

@@ -12,6 +12,8 @@ namespace ItHunts.Art.Menus
     /// vides. Le nom du joueur est du texte Unity dans le cartouche vidé de la place. Petite apparition quand un joueur
     /// rejoint. Touches d'aperçu (éditeur) : 1 à 4 font tourner l'occupant de la place, R bascule « prêt ».
     /// La logique de salon (main) appelle Occupe / Libere / Pret.
+    /// Éclairage des personnages (shader ItHunts/UI/Deformation, _Eclairage = 1) : valeur et saturation par personnage,
+    /// feu (foyer) et lanterne posés en uv du sprite à chaque Occupe ; ombre de contact sous le siège et les pieds.
     /// </summary>
     public sealed class CampementApercu : MonoBehaviour
     {
@@ -22,6 +24,12 @@ namespace ItHunts.Art.Menus
             public Sprite corps;
             public Sprite lanterne;
             public Color couleur = Color.white;
+            [Tooltip("Gain de valeur (ramène le personnage aux valeurs du renard et du hibou de la maquette).")]
+            public float luminosite = 1f;
+            [Tooltip("Saturation (1 = celle du sprite).")]
+            public float saturation = 1f;
+            [Tooltip("Contraste (exposant sur la luminance) : noirs profonds comme sur la maquette.")]
+            public float contraste = 1f;
         }
 
         [Serializable]
@@ -31,6 +39,8 @@ namespace ItHunts.Art.Menus
             public int place;
             public Rect corps;      // pixels de la maquette (x, y depuis le haut gauche, w, h)
             public Rect lanterne;
+            [Tooltip("Pieds : x gauche, x droit (pixels de la maquette), pour l'ombre de contact.")]
+            public Vector2 pieds;
         }
 
         [Serializable]
@@ -45,7 +55,9 @@ namespace ItHunts.Art.Menus
             public GameObject plus;             // places 3 et 4 : bouton +
             public GameObject lanterneEteinte;  // places 3 et 4
             public GameObject coche;
+            public Image ombre;                 // ombre de contact (multiplication douce) sous le siège et les pieds
             [NonSerialized] public int occupant = -1;
+            [NonSerialized] public Material matJeu;   // copie du matériau en jeu (les assets restent intacts)
         }
 
         public Perso[] persos = Array.Empty<Perso>();
@@ -60,6 +72,14 @@ namespace ItHunts.Art.Menus
         public float rayonLueur = 0.95f;
         [Tooltip("Durée de l'apparition (s).")]
         public float dureeApparition = 0.6f;
+        [Tooltip("Centre des flammes du feu de camp (pixels de la maquette) : côté chaud et liseré des personnages.")]
+        public Vector2 foyer = new Vector2(990, 700);
+        [Tooltip("Rayon de la lueur de lanterne sur le personnage, en hauteurs de lanterne.")]
+        public float rayonLanterneCorps = 0.9f;
+        [Tooltip("Mélange de la couleur du personnage dans la lueur de sa lanterne (0 = lumière chaude neutre).")]
+        public float teinteLanterne = 0.55f;
+        [Tooltip("Ombre de contact : opacité, hauteur (fraction de la largeur), débord de chaque côté (px).")]
+        public Vector3 ombre = new Vector3(0.62f, 0.2f, 18f);
 
         private void Start()
         {
@@ -117,6 +137,17 @@ namespace ItHunts.Art.Menus
                 pl.corps.sprite = p.corps;
                 MenuEcran.Pose(pl.corps.rectTransform, pc.corps.x, pc.corps.y, pc.corps.width, pc.corps.height);
                 pl.corps.gameObject.SetActive(true);
+                Eclaire(pl, p, pc);
+            }
+            if (pc != null && pl.ombre != null)
+            {
+                Rect r = pc.corps;
+                float x0 = Mathf.Min(pc.pieds.x, r.center.x - r.width * 0.22f) - ombre.z;
+                float x1 = Mathf.Max(pc.pieds.y, r.center.x + r.width * 0.22f) + ombre.z;
+                float h = (x1 - x0) * ombre.y;
+                MenuEcran.Pose(pl.ombre.rectTransform, x0, r.yMax - h * 0.62f, x1 - x0, h);
+                pl.ombre.color = new Color(0, 0, 0, ombre.x);
+                pl.ombre.gameObject.SetActive(true);
             }
             if (pc != null && pl.lanterne != null)
             {
@@ -153,12 +184,42 @@ namespace ItHunts.Art.Menus
                 return;
             pl.occupant = -1;
             if (pl.corps != null) pl.corps.gameObject.SetActive(false);
+            if (pl.ombre != null) pl.ombre.gameObject.SetActive(false);
             if (pl.lanterne != null) pl.lanterne.gameObject.SetActive(false);
             if (pl.lueur != null) pl.lueur.gameObject.SetActive(false);
             if (pl.cartouche != null) pl.cartouche.SetActive(false);
             if (pl.plus != null) pl.plus.SetActive(true);
             if (pl.lanterneEteinte != null) pl.lanterneEteinte.SetActive(true);
             if (pl.coche != null) pl.coche.SetActive(false);
+        }
+
+        /// <summary>Lumière de la scène sur le personnage : feu et lanterne en uv du sprite, valeur et saturation.</summary>
+        private void Eclaire(Place pl, Perso p, Placement pc)
+        {
+            Material m = pl.corps.material;
+            if (m == null)
+                return;
+            if (Application.isPlaying)
+            {
+                // en jeu : une copie par place (les matériaux de l'asset restent ceux de l'aperçu)
+                if (pl.matJeu == null)
+                {
+                    pl.matJeu = new Material(m) { name = m.name + " (jeu)" };
+                    pl.corps.material = pl.matJeu;
+                }
+                m = pl.matJeu;
+            }
+            Rect r = pc.corps;
+            Vector2 Uv(Vector2 px) => new Vector2((px.x - r.x) / r.width, 1f - (px.y - r.y) / r.height);
+            Vector2 f = Uv(foyer);
+            m.SetVector("_FeuUV", new Vector4(f.x, f.y, 0, 0));
+            Vector2 l = Uv(new Vector2(pc.lanterne.center.x, pc.lanterne.y + pc.lanterne.height * 0.45f));
+            m.SetVector("_LanterneUV", new Vector4(l.x, l.y, pc.lanterne.height * rayonLanterneCorps / r.height, 0));
+            Color chaud = new Color(1f, 0.78f, 0.5f);
+            m.SetColor("_LanterneCouleur", Color.Lerp(chaud, p.couleur, teinteLanterne));
+            m.SetFloat("_Luminosite", p.luminosite);
+            m.SetFloat("_Saturation", p.saturation);
+            m.SetFloat("_Contraste", p.contraste);
         }
 
         public void Pret(int place, bool pret)

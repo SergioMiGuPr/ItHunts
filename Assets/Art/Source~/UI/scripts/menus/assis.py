@@ -163,8 +163,35 @@ def grade(F, a, st, scale_px):
     rr = reg.blur(right, sh * 0.8) * am
     tt = reg.blur(top, sh * 0.8) * am
     fire = np.array([1.0, 0.55, 0.22]); moon = np.array([0.55, 0.65, 1.0])
-    Fg = Fg + rr[..., None] * fire * 0.22 + tt[..., None] * moon * 0.10
+    # le liseré du feu est maintenant dans le shader (côté du feu selon la place, palpite avec le feu) : seul le liseré
+    # froid de la lune reste peint
+    Fg = Fg + rr[..., None] * fire * 0.0 + tt[..., None] * moon * 0.10
     return np.clip(Fg, 0, 1)
+
+
+def detoure(rgba, erosion=1):
+    """Détourage propre d'un sprite réduit (alpha droit) : la couleur des bords est remplacée par celle de l'intérieur
+    (plus de liseré clair du fond gris), puis l'alpha est rongé de `erosion` px (minimum 3 x 3) et légèrement resserré."""
+    a = rgba[..., 3]
+    rgb = rgba[..., :3].copy()
+    inner = reg.erode((a > 0.97).astype(np.float32), 2) > 0.5
+    w = inner.astype(np.float32)
+    acc = rgb * w[..., None]
+    known = w.copy()
+    # propagation des couleurs intérieures vers le bord (moyenne des voisins connus, 6 pas)
+    for _ in range(6):
+        s = reg.blur(acc, 1.0); n = reg.blur(known, 1.0)
+        fill = (known < 0.5) & (n > 1e-3)
+        acc[fill] = s[fill] / n[fill, None]
+        known = np.where(fill, 1.0, known)
+    prop = np.where(known[..., None] > 0.5, acc, rgb)
+    # seuls les bords plus clairs que l'intérieur voisin sont du fond gris : l'encre (sombre) reste
+    bord = (1 - w) * reg.smoothstep(0.0, 0.06, reg.gray(rgb) - reg.gray(prop))
+    rgb = rgb * (1 - bord[..., None]) + prop * bord[..., None]
+    for _ in range(int(erosion)):
+        a = reg.erode(a, 1)
+    a = np.clip((a - 0.2) / 0.8, 0, 1)
+    return np.concatenate([rgb, a[..., None]], -1)
 
 
 def main():
@@ -225,6 +252,7 @@ def main():
             pre = np.concatenate([rgb[y0:y1, x0:x1] * alpha[y0:y1, x0:x1, None], alpha[y0:y1, x0:x1, None]], -1)
             small = reg.resize(pre, tw, th)
             rgba = np.concatenate([small[..., :3] / np.maximum(small[..., 3:], 1e-4), small[..., 3:]], -1)
+            rgba = detoure(rgba, erosion=0)
             reg.save(os.path.join(OUT, "Campement_Assis_%s%s.png" % (name, suffix)), np.clip(rgba, 0, 1), "RGBA")
             info[part] = {"rect_image": [x0, y0, x1 - x0, y1 - y0], "taille_sprite": [tw, th]}
         info["capuche_image"] = p["capuche"]
