@@ -4,6 +4,45 @@
 
 ## Étape en cours
 
+**Après-midi du 2026-11-21 : retours de playtest, points 1 à 11 (fusionnés dans `main`).** Un commit par point sur `animations`,
+décisions D-084 à D-090, PR d'art #34 (art-menus-3) intégrée ; **art-effets-2 pas encore arrivée** (ses effets de traction et de
+répulsion se branchent dans `MagnetismFeedback_Default.tractionVfx` / `repelVfx`). Build : `Builds/Matin_2026-11-21/ItHunts.exe`.
+- **1. « Collection was modified »** : `PauseMenuArt.LateUpdate` parcourait les menus ouverts pendant qu'un clic (Reprendre,
+  Paramètres…) en ouvrait ou fermait un (journal du build : PauseMenuArt.cs:58). Parcours d'une copie. Test PlayMode
+  `ConsoleCleanTests` (30 s de menu en survolant, puis 30 s de niveau aléatoire où le menu pause s'ouvre et se ferme à la souris) :
+  **il échoue sans la correction** (même exception), passe avec.
+- **2. Modules** : Jouer et Lancer la run tirent `Level_01_Aleatoire` (catalogue du niveau 1, 19 modules). Mesuré sur 200 seeds :
+  caserne, citerne, prison à étages, puits dans **100 %** des cartes, les autres 81 à 99 % ; chaque module sort en 5 parties (test).
+  Menu Playtest : « Niveau aléatoire (seed) » (◄ ► change la seed) et « Salle de test d'un module (traqueur) » (◄ ► choisit le
+  module, posé contre la salle de départ, première seed qui le relie, ≤ 60 ms).
+- **3. Dash (D-084)** : la sortie garde 75 % de la vitesse du dash (16.3 m/s depuis l'arrêt), au sol comme en l'air, plafond 20 ;
+  gardée comme l'élan, perdue seulement selon les règles d'élan ; dash-jump +3 sur la sortie. **3 dashs d'affilée : 16.3 → 17.3 →
+  18.3 m/s** ; écart avec le traqueur : +9.3 (chasse 9), +2.3 (pointe 16), +0.3 (pointe enragée 18).
+- **4. Hissage** : plongeon 14 cm puis remontée, tangage 4°, roulis 3° (0.45 s), réglable (`GameFeel_Default`).
+- **5. Parade (D-086)** : impact du coup de goule mesuré sur le clip (main au plus loin à 0.23–0.24 s) = dégâts à 0.24 s : calé.
+  Retour : arrêt sur image 80 ms, éclair, son, secousse, goule étourdie repoussée et éclairée ; son sec si ratée ; debug « réussie /
+  ratée de X ms ». **Proposition** (pas appliquée) : `Parry_Default.lateWindow` 0.04 à 0.06 (réussite 74 % → 98 % pour une réaction
+  de 210 ± 45 ms).
+- **6. Épée (D-087)** : taille horizontale, diagonale, estoc ; traînée de lame ; impact 60 ms après le clic ; arrêt sur image,
+  secousse, recul au 3e ; portée 3.2 m, arc 55°, aide à la visée (35 % de l'écart, ≤ 10°), élan vers la cible (≥ 5 m/s, jamais de
+  freinage). Planche : `docs/design/features/artefacts/captures/epee_trois_coups.png`.
+- **7. Livre (D-088)** : drain continu (20 m / 30 m, vue perdue 0.5 s, 15 PV/s, 20 % rendus, recharge 1 s quand il casse) ; soin
+  inchangé. **Plus tard : multi-cibles.** Dégâts par seconde : barillet 26.7, épée 31.3 (56.3 à pleine vitesse), livre 15 (+3 de soin).
+- **8. Interface (D-090)** : flot de fumée peinte vers le point de traction (plus de rayon), répulsion réduite (plus de point
+  orange, d'éclat ni d'anneaux ; étincelles réduites + secousse), réticule de la DA seule visée.
+- **9. Sensations (D-085)** : Paramètres « Intensité des effets » et « Réduire les secousses » (lignes ajoutées à l'écran de la DA,
+  qui se resserre). Ajouté : secousses (atterrissage fort, répulsion, coups reçus, parade, cri du traqueur), FOV + 6° au dash
+  (et celui de la vitesse), arrêts sur image (objets lancés, épée, parade), plongeon d'atterrissage, lignes de vitesse au-delà de
+  14 m/s, étincelles de la DA aux impacts, flou de vitesse (URP, solo, qualité basse, 0 à 0.2). Corrigé : la vitesse de chute à
+  l'atterrissage valait toujours 0 (bruit d'atterrissage dur jamais émis). **Réseau** : l'arrêt sur image règle Time.timeScale.
+- **10. Eau** : le shader de la DA est partout (45 surfaces) et animé (35 % de pixels qui changent en 5 s) ; **à la DA** (notes
+  dans ART-HANDOFF) : chutes d'eau figées (uv xz), animation trop lente pour un niveau sombre.
+- **11. Traqueur (D-089)** : cri qui ouvre la mâchoire (os 34° + forme), mâchoire pendante qui oscille ; IK des mains seulement
+  à portée réelle (+ debug `limbIkDebug`) ; prise : pivot vers le joueur et IK de la main pendant la fente ; os par rôle
+  (`StalkerRig`) et liste de ce qui changera avec l'Humanoid : `docs/design/features/boss-traqueur/humanoid.md`.
+- **PR #34 (art-menus-3)** : intégrée ; ses nouveaux matériaux (lanternes, ombres, éclairage) étaient écrits en mode édition :
+  copiés eux aussi (A1 étendu, test).
+
 **Matin du 2026-11-21 (fusionné dans `main`) :** corrections A1 à A6, traqueur v4 en jeu (modèle B, animations C), PR d'art #27 à
 #33 intégrées au fil de l'eau (aucune bloquée). Build de développement : `Builds/Matin_2026-11-21/ItHunts.exe`. **À valider en
 playtest :** fente de la prise (6.5 m), durée des passages avec les clips (bond 6 s), pièces annexes 12 × 8 m, menu des touches.
