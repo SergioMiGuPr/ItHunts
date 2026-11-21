@@ -66,6 +66,12 @@ d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
   la pose des mains (4.6 s), réception jusqu'à la fin du clip (récupération 1.4 s) ; **bond-prise** (`Traqueur_BondPrise` :
   décollage 1.05 s, mains 3.0 s) si un joueur est à moins de 10 m de l'arrivée. Pendant un passage ou une prise, la trajectoire
   est celle du code (avancée et montée du clip retirées de Racine). Instants réglables dans `Stalker_Default` (clip*).
+- **C3, C4. IK et visage (D-082).** `StalkerLimbIK` (deux os, après l'Animator, rotations seules) : appuis au sol réel, mains au mur
+  en course (main écartée de plus de 2 m vers un mur à 9 m au plus), mains sur la chaîne et le mur pendant les escalades.
+  `StalkerFace` : regard, mâchoire, cri (Enragé, avant la prise : sons synchronisés dans `StalkerAudio`), grognement de
+  proximité, yeux, clignements, bave. Réglages « IK des membres » et « Visage » de `Stalker_Default`. **Coût** (éditeur, 240
+  images de poursuite) : cheveux 0.082 ms (pic 0.52), visage 0.020 ms, IK 0.037 ms (un pic à 3.6 ms à l'entrée). Animation
+  Rigging non installé (voir D-082). 2 tests (IK : cible atteinte sans changer les longueurs ; enveloppe du cri).
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`

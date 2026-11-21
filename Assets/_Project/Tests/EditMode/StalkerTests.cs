@@ -114,12 +114,50 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Visage_CriEtGrognement_Enveloppe()
+        {
+            Assert.That(StalkerFace.Envelope(-0.1f, 1.4f), Is.EqualTo(0f));
+            Assert.That(StalkerFace.Envelope(0.06f, 1.4f), Is.EqualTo(0.5f).Within(1e-4f), "montée");
+            Assert.That(StalkerFace.Envelope(0.7f, 1.4f), Is.EqualTo(1f), "tenue");
+            Assert.That(StalkerFace.Envelope(1.4f, 1.4f), Is.EqualTo(0f).Within(1e-4f), "fin");
+            Assert.That(StalkerFace.Envelope(2f, 1.4f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void IK_DeuxOs_AtteintLaCible_SansChangerLesLongueurs()
+        {
+            // C3 : IK analytique, rotations seules (le modèle ne se déforme jamais).
+            var a = new GameObject("Cuisse").transform;
+            var m = new GameObject("Jambe").transform;
+            var e = new GameObject("Pied").transform;
+            _objects.Add(a.gameObject);
+            m.SetParent(a, false);
+            e.SetParent(m, false);
+            a.position = new Vector3(0f, 7f, 0f);
+            m.position = new Vector3(0f, 3.5f, 0.4f);
+            e.position = new Vector3(0f, 0f, 0f);
+            float l1 = Vector3.Distance(a.position, m.position), l2 = Vector3.Distance(m.position, e.position);
+            Vector3 target = new Vector3(0.3f, 0.8f, 0.5f);                    // une marche de 0.8 m
+            StalkerLimbIK.SolveTwoBone(a, m, e, target, 1f);
+            Assert.That(Vector3.Distance(e.position, target), Is.LessThan(0.01f), "le pied est sur la marche");
+            Assert.That(Vector3.Distance(a.position, m.position), Is.EqualTo(l1).Within(1e-4f));
+            Assert.That(Vector3.Distance(m.position, e.position), Is.EqualTo(l2).Within(1e-4f));
+            Assert.That(m.position.z, Is.GreaterThan(0f), "le genou reste devant");
+            foreach (Transform t in new[] { a, m, e })
+                Assert.That(t.localScale, Is.EqualTo(Vector3.one));
+            StalkerLimbIK.SolveTwoBone(a, m, e, new Vector3(0f, -20f, 0f), 1f);     // hors d'atteinte : tendu, jamais allongé
+            Assert.That(Vector3.Distance(a.position, e.position), Is.LessThanOrEqualTo(l1 + l2 + 1e-3f));
+        }
+
+        [Test]
         public void ModeleV4_JamaisMisALEchelle_NiDeforme()
         {
             // Le modèle ne change jamais : aucun code du traqueur n'écrit d'échelle d'os (localScale) ; seul le ressort des cheveux
             // déplace des os, en gardant leur longueur.
             string code = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/Stalker.cs")
-                          + System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/StalkerProceduralPose.cs");
+                          + System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/StalkerProceduralPose.cs")
+                          + System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/StalkerLimbIK.cs")
+                          + System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/StalkerFace.cs");
             Assert.That(code.Contains("StretchScale"), Is.False);
             foreach (string bone in new[] { "a.localScale =", "e.localScale =", "b[i].localScale =", "_pelvis.localScale =", "].localScale =" })
                 Assert.That(code.Contains(bone), Is.False, bone);

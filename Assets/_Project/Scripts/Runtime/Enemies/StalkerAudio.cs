@@ -25,7 +25,7 @@ namespace ItHunts.Enemies
         private AudioSource _steps, _stepsLoop, _breath, _voice, _explore, _enraged;
         private AudioClip _step, _roar;
         private float _stepPhase;
-        private float _seenRoar = float.NegativeInfinity;
+        private float _seenRoar = float.NegativeInfinity, _seenGrab = float.NegativeInfinity, _seenGrowl = float.NegativeInfinity;
         private StalkerMode _lastMode;
         private int _seenKills;
         private bool _artSteps;
@@ -133,11 +133,19 @@ namespace ItHunts.Enemies
             if (_stalker.Mode == StalkerMode.Enrage && _lastMode != StalkerMode.Enrage && art != null)
                 GameAudio.PlayOn(_voice, GameAudio.Pick(art.stalkerEnragedCries), null, cry);
             _lastMode = _stalker.Mode;
-            if (_stalker.GrabKills > _seenKills)
+            // Cri juste avant la prise (C4 : avec la forme Cri du visage), plus au moment où elle tue.
+            if (_stalker.LastGrabStart > _seenGrab)
             {
-                _seenKills = _stalker.GrabKills;
+                _seenGrab = _stalker.LastGrabStart;
                 if (art != null)
                     GameAudio.PlayOn(_voice, art.stalkerGrabCry, null, cry);
+            }
+
+            // Grognement de proximité (lèvres retroussées).
+            if (_stalker.LastGrowlTime > _seenGrowl)
+            {
+                _seenGrowl = _stalker.LastGrowlTime;
+                GameAudio.PlayOn(_voice, art != null ? art.stalkerGrowl : null, _roar, 0.7f);
             }
 
             // Musique : enragé en Enragé, exploration sinon (fondu croisé).

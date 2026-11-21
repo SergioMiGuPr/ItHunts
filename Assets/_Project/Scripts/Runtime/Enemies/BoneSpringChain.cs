@@ -124,10 +124,14 @@ namespace ItHunts.Enemies
                 _bones[0].localRotation = _localRot[0];
         }
 
+        /// <summary>Coût mesuré (Profiler : « Traqueur.Cheveux »).</summary>
+        public static readonly Unity.Profiling.ProfilerMarker Marker = new Unity.Profiling.ProfilerMarker(Unity.Profiling.ProfilerCategory.Scripts, "Traqueur.Cheveux");
+
         private void LateUpdate()
         {
             if (_bones.Length < 2)
                 return;
+            using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
             if (_rest.Length != _bones.Length)
                 _rest = new Vector3[_bones.Length];
             for (int i = 0; i < _bones.Length; i++)

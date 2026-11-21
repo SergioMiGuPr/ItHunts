@@ -278,6 +278,7 @@ namespace ItHunts.Enemies
                 }
                 else
                     PinRoot();
+                UpdateFace();
                 ApplyArmIK(Time.deltaTime);
             }
         }
@@ -405,7 +406,26 @@ namespace ItHunts.Enemies
             }
             else
                 PinRoot();
+            UpdateFace();
             ApplyArmIK(Time.deltaTime);
+        }
+
+        public static readonly Unity.Profiling.ProfilerMarker FaceMarker = new Unity.Profiling.ProfilerMarker(Unity.Profiling.ProfilerCategory.Scripts, "Traqueur.Visage");
+        public static readonly Unity.Profiling.ProfilerMarker IkMarker = new Unity.Profiling.ProfilerMarker(Unity.Profiling.ProfilerCategory.Scripts, "Traqueur.IK");
+
+        private void UpdateFace()
+        {
+            if (_face == null)
+                return;
+            using Unity.Profiling.ProfilerMarker.AutoScope scope = FaceMarker.Auto();
+            var input = new StalkerFaceInput
+            {
+                HasTarget = Target != null && !Target.Dead, Sees = SeesTarget || Mode == StalkerMode.Enrage,
+                Enraged = Mode == StalkerMode.Enrage, Moving = CurrentGroundSpeed() > 0.5f,
+                LookAt = Target != null ? Target.transform.position + Vector3.up * 1.6f : transform.position + transform.forward * 10f,
+                Now = Time.time, LastCry = LastCryTime, LastGrowl = LastGrowlTime,
+            };
+            _face.Update(input, settings, Time.deltaTime);
         }
 
         private Transform _racine;
@@ -442,6 +462,18 @@ namespace ItHunts.Enemies
         private readonly Transform[] _boneR = new Transform[3], _boneL = new Transform[3];   // Bras, AvantBras, Main
         private Vector3[] _restR, _restL;                                                     // positions locales (rendues à chaque image)
         private StalkerProceduralPose _pose;                                                  // mouvement provisoire (clips absents, C5)
+        private StalkerFace _face;                                                            // visage (C4)
+        private StalkerLimbIK _limbIk;                                                        // IK des membres (C3)
+
+        /// <summary>IK des membres (tests, coût).</summary>
+        public StalkerLimbIK LimbIK => _limbIk;
+
+        /// <summary>Visage du v4 (tests, coût).</summary>
+        public StalkerFace Face => _face;
+        /// <summary>Dernier cri (passage en Enragé, juste avant une prise) et dernier grognement de proximité : visage et sons.</summary>
+        public float LastCryTime { get; private set; } = float.NegativeInfinity;
+        public float LastGrowlTime { get; private set; } = float.NegativeInfinity;
+        private float _nextGrowl;
         private readonly List<BoneSpringChain> _hair = new List<BoneSpringChain>();
         private float _ikR, _ikL;
         private bool _wantIkR, _wantIkL;
@@ -479,6 +511,12 @@ namespace ItHunts.Enemies
             ItHunts.Level.ReachCheck.Configure(settings);
             // Mouvement provisoire tant qu'un clip manque (C5) ; cheveux à ressort (D-081). Le modèle n'est jamais mis à l'échelle.
             _pose = new StalkerProceduralPose(_anim.transform, transform);
+            SkinnedMeshRenderer faceSkin = null;
+            foreach (SkinnedMeshRenderer r in _anim.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                if (r.sharedMesh != null && r.sharedMesh.blendShapeCount > 0)
+                    faceSkin = r;
+            _face = new StalkerFace(all, transform, faceSkin, settings);
+            _limbIk = new StalkerLimbIK(all, transform);
             _racine = System.Array.Find(all, t => t.name == "Racine");
             if (_racine != null)
                 _racineRest = _racine.localPosition;
@@ -726,11 +764,20 @@ namespace ItHunts.Enemies
         /// </summary>
         private void ApplyArmIK(float dt)
         {
+            using Unity.Profiling.ProfilerMarker.AutoScope scope = IkMarker.Auto();
             float rate = dt / 0.15f;
             _ikR = Mathf.MoveTowards(_ikR, _wantIkR ? 1f : 0f, rate);
             _ikL = Mathf.MoveTowards(_ikL, _wantIkL ? 1f : 0f, rate);
             Restore(_boneR, _restR);
             Restore(_boneL, _restL);
+            if (_limbIk != null)
+            {
+                bool climbing = _trav.Active && (_trav.Kind == StalkerLinkKind.MurGrimpe || _trav.Kind == StalkerLinkKind.EscaladeRebord);
+                Vector3? chain = _trav.Active && _trav.Kind == StalkerLinkKind.ChaineGrimpe ? _trav.From : (Vector3?)null;
+                bool running = _family == "course" || _family == "enrage";
+                _limbIk.Apply(settings, dt, _ikR > 0.001f, _ikL > 0.001f, running, chain, climbing);
+            }
+
             if (_ikR > 0.001f && hand != null)
                 SolveArm(_boneR, hand.position, _ikR, 1f);
             if (_ikL > 0.001f && leftHand != null && _boneL[2] != null)
@@ -955,7 +1002,10 @@ namespace ItHunts.Enemies
             if (before == StalkerMode.Repaire || (Mode == StalkerMode.Enrage && before != StalkerMode.Enrage))
                 LastRoarTime = now;
             if (Mode == StalkerMode.Enrage && before != StalkerMode.Enrage)
+            {
                 _enragedSince = now;
+                LastCryTime = now;                                       // cri (visage, cri_enrage)
+            }
 
             ChooseTarget(pos, now);
             TrackNodes(pos, enraged);
@@ -970,6 +1020,11 @@ namespace ItHunts.Enemies
 
             Vector3 feet = Target.transform.position;
             Vector3 vel = EnemySenses.VelocityOf(Target);
+            if (now >= _nextGrowl && Flat(feet - pos) <= settings.faceGrowlRange && _grab == GrabPhase.Aucune)
+            {
+                LastGrowlTime = now;                                     // grognement de proximité (visage, son)
+                _nextGrowl = now + settings.faceGrowlCooldown;
+            }
             SeesTarget = EnemySenses.Sees(pos + Vector3.up * settings.eyeHeight * _crouch, _move.Heading, Target,
                 settings.sightRange, settings.sightAngle, transform);
             Predicted = EnemyMath.Predict(feet, vel, settings.predictionHorizon);
@@ -1585,6 +1640,7 @@ namespace ItHunts.Enemies
                         _grabOpening = opening;
                         StartLunge(now, aim, opening);
                         StartGrabClip(aim);
+                        LastCryTime = now;                                   // cri juste avant la prise (visage, cri_prise)
                         _reaimed = false;
                         GrabAttempts++;
                         if (opening != null)

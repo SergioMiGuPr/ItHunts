@@ -93,6 +93,37 @@ namespace ItHunts.Settings
         [Range(0f, 60f)] public float provisionalLegSwing = 24f;
         [Range(0f, 60f)] public float provisionalArmSwing = 20f;
 
+        [Header("Visage (couche séparée, C4) : regard, mâchoire, cri, grognement, clignements, bave")]
+        [Tooltip("Regard vers le joueur repéré : angle maximal à gauche et à droite, en haut et en bas (°), vitesse d'entrée (1/s).")]
+        [Range(0f, 120f)] public float faceLookYaw = 70f;
+        [Range(0f, 90f)] public float faceLookPitch = 45f;
+        [Min(0.1f)] public float faceLookSpeed = 3f;
+        [Tooltip("Mâchoire qui pend (poids de MachoirePendante, 0 à 100) et son oscillation.")]
+        [Range(0f, 100f)] public float faceJawHang = 22f;
+        [Range(0f, 50f)] public float faceJawSway = 14f;
+        [Tooltip("Durée du cri (forme Cri) au passage en Enragé et juste avant une prise (s), avec cri_enrage ou cri_prise.")]
+        [Min(0.2f)] public float faceCryDuration = 1.4f;
+        [Tooltip("Grognement à proximité : distance (m), durée de la forme (s), temps entre deux grognements (s).")]
+        [Min(0f)] public float faceGrowlRange = 15f;
+        [Min(0.2f)] public float faceGrowlDuration = 1.6f;
+        [Min(0.5f)] public float faceGrowlCooldown = 7f;
+        [Tooltip("Clignements : intervalle au hasard (s).")]
+        public Vector2 faceBlinkInterval = new Vector2(2.5f, 6f);
+        [Tooltip("Bave en particules (gouttes par seconde, 0 : aucune).")]
+        [Min(0f)] public float faceDroolRate = 3f;
+
+        [Header("IK des membres (C3, visuelle) : appuis au sol, mains aux murs et aux chaînes")]
+        public bool limbIkEnabled = true;
+        [Tooltip("Fondu d'entrée et de sortie de l'IK (s).")]
+        [Min(0.01f)] public float limbIkBlend = 0.15f;
+        [Tooltip("Un pied ou une main à moins de cette hauteur au-dessus de son sol (m) est en appui : il va sur le sol réel.")]
+        [Min(0f)] public float limbIkPlantHeight = 0.5f;
+        [Tooltip("Écart de sol corrigé au plus (m) : au-delà (vide, fosse), l'appui garde la pose du clip.")]
+        [Min(0f)] public float limbIkMaxReach = 2f;
+        [Tooltip("Course : une main écartée de plus de cette distance de l'axe (m) va se plaquer sur un mur à portée (m).")]
+        [Min(0f)] public float limbIkWallSpread = 2f;
+        [Min(1f)] public float limbIkWallReach = 9f;
+
         [Header("Cheveux : chaînes d'os à ressort (v4, D-081)")]
         [Tooltip("Active le ressort des cheveux (os Cheveux_N_2 à _4) du modèle v4.")]
         public bool boneChainsEnabled = true;
