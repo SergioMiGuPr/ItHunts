@@ -31,6 +31,7 @@ namespace ItHunts.Input
         private InputAction _reload;
         private InputAction _interact;
         private ItHunts.Economy.PlayerInteractor _interactor;
+        private InputAction _parry;
         private InputAction _toggleDebug;
         private InputAction _pause;
         private InputAction _map;
@@ -55,6 +56,8 @@ namespace ItHunts.Input
         public int ThrowPressedTick { get; private set; } = MovementState.NeverTick;
         public int ReloadPressedTick { get; private set; } = MovementState.NeverTick;
         public bool ToggleDebugPressed { get; private set; }
+        /// <summary>Parer (E / LB, D-075) cette image ; E sur un objet utilisable reste l'interaction.</summary>
+        public bool ParryPressed { get; private set; }
         /// <summary>E / Y maintenu (réanimation d'un allié, étape 9).</summary>
         public bool InteractHeld => _interact != null && _interact.IsPressed();
         public bool PausePressed { get; private set; }
@@ -85,6 +88,7 @@ namespace ItHunts.Input
             _interactor = GetComponent<ItHunts.Economy.PlayerInteractor>();
             if (_interactor == null)
                 _interactor = gameObject.AddComponent<ItHunts.Economy.PlayerInteractor>();   // coffres, marchand, porte (D-043)
+            _parry = actions.FindAction("Player/Parry", throwIfNotFound: false);
             _toggleDebug = actions.FindAction("Player/ToggleDebug", throwIfNotFound: true);
             _pause = actions.FindAction("Player/Pause", throwIfNotFound: true);
             _map = actions.FindAction("Player/Map", throwIfNotFound: false);
@@ -126,6 +130,9 @@ namespace ItHunts.Input
                 ThrowPressedTick = next;                      // lancer si l'orbe tient un objet, sinon tir de l'artefact
             if (_reload.WasPressedThisFrame() && aimReady && !(UsingGamepad && focus))
                 ReloadPressedTick = next;                     // R / Y : recharger l'artefact (Y visant un objet : il l'utilise)
+            // E sert aussi à interagir (même touche, D-075) : sur un objet utilisable, c'est l'interaction, pas la parade.
+            bool interacting = focus && _interact != null && _interact.WasPressedThisFrame();
+            ParryPressed = _parry != null && _parry.WasPressedThisFrame() && !interacting;
             ToggleDebugPressed = _toggleDebug.WasPressedThisFrame();
             PausePressed = _pause.WasPressedThisFrame();
         }

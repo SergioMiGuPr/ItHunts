@@ -90,6 +90,8 @@ namespace ItHunts.Enemies
         public float Speed => Mode == GhoulMode.Bond ? new Vector3(_leapVelocity.x, 0f, _leapVelocity.z).magnitude : _move.Speed;
         public int LeapCount { get; private set; }
         public int LeapHits { get; private set; }
+        /// <summary>Attaques parées par un joueur (D-075).</summary>
+        public int Parried { get; private set; }
         public int WallLeaps { get; private set; }
         public int Climbs { get; private set; }
         public Vector3 LastLeapStart { get; private set; }
@@ -785,6 +787,13 @@ namespace ItHunts.Enemies
                         continue;
                     _leapHit = true;
                     LeapHits++;
+                    if (ItHunts.Player.PlayerParry.TryParry(p, this, now, p.Center))
+                    {
+                        Parried++;                                     // paré (D-075) : ni dégâts ni poussée, elle est étourdie
+                        _nextContact = now + settings.contactInterval;
+                        break;
+                    }
+
                     if (p.TakeEnemyDamage(settings.leapDamage, p.Center, now))
                         _nextContact = now + settings.contactInterval;
                     Vector3 push = flat.sqrMagnitude > 0.01f ? flat.normalized * settings.leapPush : Vector3.zero;
@@ -1216,7 +1225,13 @@ namespace ItHunts.Enemies
                 PlayerHealth target = _strikeTarget;
                 _strikeTarget = null;
                 if (target != null && !target.Dead && Gap(target) <= settings.contactRange + 0.4f)
-                    target.TakeEnemyDamage(settings.contactDamage, target.Center, now);
+                {
+                    if (ItHunts.Player.PlayerParry.TryParry(target, this, now, target.Center))
+                        Parried++;                                    // paré (D-075) : aucun dégât, elle est étourdie
+                    else
+                        target.TakeEnemyDamage(settings.contactDamage, target.Center, now);
+                }
+
                 return;
             }
 

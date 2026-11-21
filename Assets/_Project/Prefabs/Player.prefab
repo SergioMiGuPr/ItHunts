@@ -2249,6 +2249,7 @@ GameObject:
   - component: {fileID: 6065823669421373103}
   - component: {fileID: 2871147801486767660}
   - component: {fileID: 8304892189617520199}
+  - component: {fileID: 2850125333353091860}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2656,6 +2657,19 @@ MonoBehaviour:
   - {fileID: 8489564662261617457}
   crown: {fileID: 8281932456528921795}
   tabletPrefab: {fileID: 919132149155446097, guid: fd6b3d97603956243b8c2094ea1cecb5, type: 3}
+--- !u!114 &2850125333353091860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4554349776337732255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cb97954cad2f264589116b5d89ecd87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Player.PlayerParry
+  settings: {fileID: 11400000, guid: 5673632af7f3b7c489e0832da1d86357, type: 2}
 --- !u!1 &4845387433230401943
 GameObject:
   m_ObjectHideFlags: 0

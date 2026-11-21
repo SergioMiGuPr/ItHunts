@@ -65,6 +65,13 @@ namespace ItHunts.Hud
         private float _refusedAt = float.NegativeInfinity, _soulsGainAt = float.NegativeInfinity;
         private AudioClip _refusalClip;
         private ItHunts.Economy.PlayerInteractor _interactor;
+        private PlayerParry _parry;
+        private CanvasGroup _parryGroup;
+        private Image _parryBack, _parryFill;
+        private readonly GaugeFade _parryFade = new GaugeFade();
+
+        /// <summary>Remplissage de l'icône de parade affichée (1 = prête), -1 sans parade.</summary>
+        public float ParryIconFill => _parryFill != null ? _parryFill.fillAmount : -1f;
 
         private struct Number
         {
@@ -162,6 +169,20 @@ namespace ItHunts.Hud
             int moves = _motor.Settings != null ? _motor.Settings.movementCharges : 0;
             _moveGroup = Group("Charges de mouvement", center);
             Segments(_moveGroup.transform, moves, -Width(moves) * 0.5f, y, _moveSegments);
+
+            // Parade (D-075) : icône provisoire à droite des charges (recharge qui se remplit), en attendant celle de la DA.
+            _parry = GetComponent<PlayerParry>();
+            if (_parry != null)
+            {
+                _parryGroup = Group("Parade (provisoire)", center);
+                float px = Width(moves) * 0.5f + settings.groupGap + settings.segmentHeight;
+                _parryBack = NewImage("Parade (fond)", _parryGroup.transform, new Vector2(px, y - settings.segmentHeight * 0.5f),
+                    Vector2.one * settings.segmentHeight * 2f, settings.emptyColor);
+                _parryBack.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+                _parryFill = NewImage("Parade", _parryBack.rectTransform, Vector2.zero, Vector2.one * settings.segmentHeight * 2f, Color.white);
+                _parryFill.type = Image.Type.Filled;
+                _parryFill.fillMethod = Image.FillMethod.Vertical;
+            }
 
             // Rangée 2 : charges d'attraction puis répulsion.
             y -= settings.segmentHeight + settings.rowGap;
@@ -415,6 +436,16 @@ namespace ItHunts.Hud
             _moveGroup.alpha = _moveFade.Update(moveCharges, _moveSegments.Count, false, now, dt, settings.idleAlpha,
                 settings.idleDelay, settings.fadeSpeed, settings.returnBlinkDuration);
             FillSegments(_moveSegments, moveCharges, settings.movementColor, settings.emptyColor, _moveFade.Blinking(now));
+
+            if (_parryFill != null && _parry.Settings != null)
+            {
+                float fill = _parry.Fill;
+                _parryFill.fillAmount = fill;
+                Color pc = _parry.Settings.hudColor;
+                _parryFill.color = fill >= 1f ? pc : new Color(pc.r * 0.6f, pc.g * 0.6f, pc.b * 0.6f, pc.a);
+                _parryGroup.alpha = _parryFade.Update(fill >= 1f ? 1f : 0f, 1f, fill < 1f, now, dt, settings.idleAlpha,
+                    settings.idleDelay, settings.fadeSpeed, settings.returnBlinkDuration);
+            }
 
             MagnetismOrbSettings mc = _motor.MagnetismSettings;
             if (mc != null && _attractGroup != null)

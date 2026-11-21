@@ -228,6 +228,7 @@ namespace ItHunts.Combat
             AreaEvents.Area += OnArea;
             AreaEvents.Broken += OnBroken;
             AreaEvents.Stunned += OnStunned;
+            ParryEvents.Parried += OnParried;
         }
 
         private void OnDisable()
@@ -237,6 +238,7 @@ namespace ItHunts.Combat
             AreaEvents.Area -= OnArea;
             AreaEvents.Broken -= OnBroken;
             AreaEvents.Stunned -= OnStunned;
+            ParryEvents.Parried -= OnParried;
         }
 
         /// <summary>Cercle bref au point : zone de dégâts (orange) ou onde de répulsion.</summary>
@@ -282,6 +284,35 @@ namespace ItHunts.Combat
             }
 
             Play(_break, e.Point, settings.breakVolume, Random.Range(0.9f, 1.1f));
+        }
+
+        private AudioClip _parryClip;
+
+        /// <summary>Parade réussie (D-075) : grand éclat blanc doré entre le joueur et la goule, tintement (provisoire, en attendant
+        /// l'éclair de parade de la DA).</summary>
+        private void OnParried(ParryEvent e)
+        {
+            if (settings == null || _flashes.Count == 0)
+                return;
+            ParrySettings cfg = e.Player != null && e.Player.TryGetComponent(out ItHunts.Player.PlayerParry pp) ? pp.Settings : null;
+            // Sur la goule (pas entre elle et la caméra : à 1 m des yeux, l'éclat couvrait tout l'écran).
+            Vector3 at = e.Point;
+            if (e.Attacker != null)
+            {
+                Vector3 chest = e.Attacker.position + Vector3.up * 1f;
+                Vector3 away = chest - e.Point;
+                away.y = 0f;
+                at = chest + (away.sqrMagnitude > 1e-4f ? away.normalized * 0.3f : Vector3.zero);
+            }
+            Flash f = _flashes[_nextFlash];
+            _nextFlash = (_nextFlash + 1) % _flashes.Count;
+            f.Age = 0f;
+            f.Size = cfg != null ? cfg.flashSize : 0.7f;
+            f.Color = cfg != null ? cfg.flashColor : new Color(3f, 2.6f, 1.4f, 1f);
+            f.Transform.position = at;
+            if (_parryClip == null)
+                _parryClip = ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry());
+            Play(_parryClip, at, cfg != null ? cfg.volume : 0.8f, Random.Range(0.96f, 1.04f));
         }
 
         /// <summary>Ennemi étourdi : trois étoiles jaunes tournent au-dessus de sa tête, gazouillis.</summary>

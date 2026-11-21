@@ -416,6 +416,7 @@ namespace ItHunts.EditorTools
                 root.AddComponent<DebugTeleporter>();
                 var view = root.AddComponent<FirstPersonView>();
                 var hud = root.AddComponent<PlayerHud>();
+                root.AddComponent<PlayerParry>().Settings = LoadOrCreate<ParrySettings>(SettingsDir + "/Parry_Default.asset");   // D-075
                 var orbView = root.AddComponent<MagnetismOrbView>();
                 var audio = root.AddComponent<MagnetismAudio>();
                 var tkView = root.AddComponent<TelekinesisView>();

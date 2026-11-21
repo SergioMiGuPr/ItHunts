@@ -16,6 +16,14 @@
   `Test_Movement` (x −18 → 18, z −26) et la vitrine (z −18) : rebords de 1.5 à 4.2 m, étroit, bloqué (`MantleCourseBuilder`, ajoutée
   aux scènes sans les reconstruire). Détection vérifiée sur la vraie géométrie (CharacterController) : 3.7 m oui depuis 1.3 m,
   4.2 m non, étroit et bloqué non. **Conséquence niveaux :** un mur ne bloque qu'à 5.5 m+ (ART-HANDOFF).
+- **PR #19 (`art-menus-2`) :** périmètre, GUID, compilation, 397 tests : fusionnée dans `main` (a89aa2e), poussée, `main` dans
+  `animations` ; intégrée (ac9652a) : place 2 vide (+, lanterne éteinte, clic), personnages éclairés par `CampementApercu.Occupe`.
+  Unity bloqué après le changement de branche (fil principal à l'arrêt, sans boîte de dialogue) : redémarré.
+- **3. Parade (D-075).** `ParryMath` / `ParryState` (pur), `PlayerParry` (prefab joueur, `Parry_Default`), goule : coup au contact
+  (à l'impact du clip) et bond passent par `PlayerParry.TryParry` ; `EnemyBody.StunFor` ; éclat et tintement provisoires
+  (`DamageFeedback`, `ProceduralSfx.Parry`), icône provisoire du HUD. Touches : E (interagir sur un objet, sinon parer), LB ;
+  **dash manette déplacé sur L3** (à confirmer). Vérifié en Play Mode (Test_Arena) : appui, impact tardif refusé, réussi,
+  goule étourdie 1.5 s, recharge, traqueur insensible. 6 tests (`ParryTests`).
 
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;

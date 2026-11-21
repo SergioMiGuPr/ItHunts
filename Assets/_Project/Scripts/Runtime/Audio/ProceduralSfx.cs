@@ -187,6 +187,24 @@ namespace ItHunts.Audio
             return Normalize(s, 0.7f);
         }
 
+        /// <summary>Parade (D-075) : tintement métallique clair (deux partiels inharmoniques) sur un claquement bref.</summary>
+        public static float[] Parry()
+        {
+            float duration = 0.45f;
+            float[] s = new float[Samples(duration)];
+            var rng = new System.Random(75);
+            for (int i = 0; i < s.Length; i++)
+            {
+                float t = i / (float)SampleRate;
+                float ring = Mathf.Exp(-t * 9f) * (Mathf.Sin(2f * Mathf.PI * 1850f * t) + 0.6f * Mathf.Sin(2f * Mathf.PI * 2930f * t)
+                                                   + 0.35f * Mathf.Sin(2f * Mathf.PI * 4410f * t));
+                float clack = t < 0.02f ? (float)(rng.NextDouble() * 2.0 - 1.0) * (1f - t / 0.02f) : 0f;
+                s[i] = ring * Mathf.Min(1f, t / 0.002f) + clack * 0.8f;
+            }
+
+            return Normalize(s, 0.8f);
+        }
+
         /// <summary>Tir du barillet (D-032) : claquement (bruit très bref) et coup grave (90 → 45 Hz).</summary>
         public static float[] BarrelShot()
         {
