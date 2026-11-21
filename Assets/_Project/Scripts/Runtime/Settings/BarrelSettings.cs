@@ -11,6 +11,8 @@ namespace ItHunts.Settings
     [CreateAssetMenu(fileName = "Barrel_Default", menuName = "ItHunts/Artefacts/Barillet")]
     public sealed class BarrelSettings : ArtifactDefinition
     {
+        public BarrelSettings() => viewScale = 0.5f;
+
         [Header("Tir")]
         [Tooltip("Munitions dans le barillet.")]
         [Min(1)] public int rounds = 6;
@@ -51,8 +53,8 @@ namespace ItHunts.Settings
         [Min(0.02f)] public float recoilDuration = 0.12f;
 
         [Header("Vue FPS : taille, décalage et flottement au-dessus de la paume gauche")]
-        [Tooltip("Échelle du barillet (1 = taille modélisée, 0.10 m de diamètre ; 0.5 ≈ la largeur de la paume).")]
-        [Min(0.05f)] public float viewScale = 0.5f;
+        // Échelle du barillet : viewScale de ArtifactDefinition (un seul champ sérialisé ; 0.5 ≈ la largeur de la paume, le modèle
+        // fait 0.10 m de diamètre). Le champ était déclaré deux fois (erreur de sérialisation au build du matin du 2026-11-21).
         [Tooltip("Centre du barillet dans le repère de la main gauche (m), au-dessus de la paume ; son axe de tir (+Z) vise devant.")]
         public Vector3 viewInHand = new Vector3(0f, 0.11f, 0.05f);
         [Tooltip("Rotation du barillet (degrés), en plus de l'orientation de la vue.")]

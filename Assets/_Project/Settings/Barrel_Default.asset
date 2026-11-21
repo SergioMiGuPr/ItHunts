@@ -16,6 +16,10 @@ MonoBehaviour:
   displayName: Barillet
   description: "6 balles tir\xE9es depuis la chambre active."
   upgrades: {fileID: 11400000, guid: fd7eb9e02f368b644a015ec3ea4167dd, type: 2}
+  viewModel: {fileID: 0}
+  viewOffset: {x: 0, y: 0.12, z: 0.06}
+  viewEuler: {x: 0, y: 0, z: 0}
+  viewScale: 0.5
   rounds: 6
   damage: 12
   fireInterval: 0.25
@@ -38,6 +42,11 @@ MonoBehaviour:
   recoilKick: 0.035
   recoilPitch: 8
   recoilDuration: 0.12
+  viewInHand: {x: 0, y: 0.11, z: 0.05}
+  viewInHandEuler: {x: 0, y: 0, z: 0}
+  floatAmplitude: 0.006
+  floatPeriod: 2.6
+  floatWobble: 4
   chamberEmission: {r: 1, g: 0.86, b: 0.66, a: 1}
   chamberEmissionIntensity: 1.4
   chamberInactiveFactor: 0.2

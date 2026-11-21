@@ -113,6 +113,9 @@ playtest :** fente de la prise (6.5 m), durée des passages avec les clips (bond
   **Limites vues :** la chaîne, plus haute que le clip, est jouée au ralenti, mais le bassin du clip monte et descend pendant la
   prise main sur main (le corps semble redescendre un peu ; à voir avec la DA : clip de chaîne en place) ; le gros plan du cri
   n'est pas pris (au repos, la tête pend et la caméra voyait la nuque).
+- **Build** : erreur de sérialisation relevée au build (« même champ sérialisé deux fois ») : `BarrelSettings.viewScale` doublait celui
+  d'`ArtifactDefinition` (nuit, point 5). Champ unique, 0.5 par défaut pour le barillet et écrit dans `Barrel_Default` (taille
+  inchangée). 489 tests + 1 non concluant attendu.
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`
