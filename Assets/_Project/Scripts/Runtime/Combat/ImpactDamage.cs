@@ -124,6 +124,9 @@ namespace ItHunts.Combat
 
         /// <summary>Balle du barillet (D-032) : ni vitesse d'impact ni masse.</summary>
         public bool Bullet;
+
+        /// <summary>Coup d'épée (corps à corps) : ses sensations (arrêt sur image, secousse) sont données par l'épée.</summary>
+        public bool Melee;
     }
 
     /// <summary>Canal des coups portés dans le monde. Chaque joueur affiche les chiffres pour sa propre caméra.</summary>

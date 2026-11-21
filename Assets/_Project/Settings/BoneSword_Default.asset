@@ -28,8 +28,18 @@ MonoBehaviour:
   comboRecovery: 0.25
   comboWindow: 0.8
   pressBuffer: 0.2
-  range: 2.5
-  arcHalfAngle: 40
+  range: 3.2
+  arcHalfAngle: 55
+  strikeDelay: 0.06
+  assistRange: 6
+  assistAngle: 35
+  assistTurn: 0.35
+  assistMaxTurn: 10
+  lungeSpeed: 5
+  lungeMinDistance: 1.6
+  hitTrauma: 0.12
+  thirdHitTrauma: 0.22
+  thirdHitStopFactor: 1.4
   speedRef: 8.5
   speedFull: 20
   speedMaxMultiplier: 1.8
@@ -40,4 +50,8 @@ MonoBehaviour:
   hitMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  swingAnimDuration: 0.22
+  swingAnimDuration: 0.26
+  trailMaterial: {fileID: 2100000, guid: 43a5d8ed3ace485449d395dd77493e1f, type: 2}
+  trailWidth: 0.045
+  trailLength: 0.45
+  trailTone: {r: 0.85, g: 0.82, b: 0.72, a: 1}

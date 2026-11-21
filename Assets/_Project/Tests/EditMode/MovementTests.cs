@@ -158,6 +158,9 @@ namespace ItHunts.Tests
         public void SetUp()
         {
             _cfg = ScriptableObject.CreateInstance<MovementSettings>();
+            // Mécanique de base du dash avec la sortie minimale (dashExitSpeed) : la part gardée de la vitesse du dash (D-084) a ses
+            // tests, sur les réglages du jeu (DashMomentumTests).
+            _cfg.dashExitCarry = 0f;
             _probe = new FakeGroundProbe { Position = Vector3.zero };
             _state = MovementState.Create(Vector3.zero);
             Step(MovementInput.Neutral); // un tick pour se poser
@@ -617,7 +620,8 @@ namespace ItHunts.Tests
                 DashPressedTick = MovementState.NeverTick });
             Assert.That(_state.DashTicksLeft, Is.EqualTo(0));
             Assert.That(_state.Velocity.y, Is.GreaterThan(0f), "le saut part");
-            Assert.That(_state.HorizontalSpeed, Is.EqualTo(_cfg.dashExitSpeed).Within(1e-3f), "vitesse de sortie du dash");
+            // Parti du sol : c'est aussi un dash-jump, +3 sur la sortie (D-084).
+            Assert.That(_state.HorizontalSpeed, Is.EqualTo(_cfg.dashExitSpeed + _cfg.dashJumpSpeedGain).Within(1e-3f), "sortie du dash + 3");
         }
 
         [Test]
@@ -695,7 +699,7 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Dash_EnLAirAucunGainEtRedirection([Values(0, 2, 4, 6)] int sector)
+        public void Dash_EnLAirMemeGainQuAuSolEtRedirection([Values(0, 2, 4, 6)] int sector)
         {
             InAirSinceLongAgo(new Vector3(15f, 0f, 0f));
             float a = sector * 45f * Mathf.Deg2Rad;
@@ -704,7 +708,7 @@ namespace ItHunts.Tests
             while (_state.DashTicksLeft > 0)
                 Step(MovementInput.Neutral);
             var h = new Vector3(_state.Velocity.x, 0f, _state.Velocity.z);
-            Assert.That(h.magnitude, Is.EqualTo(15f).Within(1e-3f), "vitesse exactement conservée");
+            Assert.That(h.magnitude, Is.EqualTo(15f + _cfg.dashSpeedGain).Within(1e-3f), "gain du dash en l'air comme au sol (D-084)");
             Assert.That(Vector3.Angle(h, MovementMath.WishVector(move, 0f)), Is.LessThan(0.5f), "redirigée");
         }
 
@@ -722,7 +726,7 @@ namespace ItHunts.Tests
                 Step(MovementInput.Neutral);
             Step(JumpNow());
             Assert.That(_state.LastDashJumpSuccess, Is.True);
-            Assert.That(_state.HorizontalSpeed, Is.EqualTo(18f).Within(1e-3f), "15 + 3");
+            Assert.That(_state.HorizontalSpeed, Is.EqualTo(19f).Within(1e-3f), "sortie 15 + 1, puis + 3 (D-084)");
         }
 
         [Test]
@@ -734,7 +738,7 @@ namespace ItHunts.Tests
                 Step(MovementInput.Neutral);
             Step(JumpNow());
             Assert.That(_state.LastDashJumpSuccess, Is.True);
-            Assert.That(_state.HorizontalSpeed, Is.EqualTo(18f).Within(1e-3f));
+            Assert.That(_state.HorizontalSpeed, Is.EqualTo(19f).Within(1e-3f), "sortie 16 + 3 (D-084)");
         }
 
         [Test]
@@ -768,7 +772,7 @@ namespace ItHunts.Tests
             Step(MovementInput.Neutral);
             Step(JumpNow());                                                 // saut en l'air pendant le dash
             Assert.That(_state.LastDashJumpTick, Is.EqualTo(MovementState.NeverTick), "pas de dash-jump en l'air");
-            Assert.That(_state.HorizontalSpeed, Is.EqualTo(15f).Within(1e-3f), "aucun gain");
+            Assert.That(_state.HorizontalSpeed, Is.EqualTo(15f + _cfg.dashSpeedGain).Within(1e-3f), "gain du dash seul, pas de +3");
         }
 
         [Test]

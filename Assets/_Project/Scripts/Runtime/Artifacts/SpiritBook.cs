@@ -20,10 +20,13 @@ namespace ItHunts.Artifacts
         /// <summary>PV retirés et rendus pendant le lien en cours.</summary>
         public float Drained, Returned, Healed;
         public int Links;
+        /// <summary>Drain : tick où la ligne de vue s'est perdue (NeverTick : en vue).</summary>
+        public int SightLostTick;
 
         public static BookState Create() => new BookState
         {
             StartTick = MovementState.NeverTick, EndTick = MovementState.NeverTick, LastConsumedPressTick = MovementState.NeverTick,
+            SightLostTick = MovementState.NeverTick,
         };
     }
 
@@ -49,6 +52,7 @@ namespace ItHunts.Artifacts
             s.StartTick = tick;
             s.LastConsumedPressTick = pressTick;
             s.Drained = s.Returned = s.Healed = 0f;
+            s.SightLostTick = MovementState.NeverTick;
             s.Links++;
         }
 
@@ -62,29 +66,47 @@ namespace ItHunts.Artifacts
             s.Link = BookLink.Aucun;
         }
 
-        /// <summary>Le lien doit-il casser ce tick ? (bouton relâché, durée, portée, vue, cible morte, plafond)</summary>
-        public static BookEnd Check(in BookState s, int tick, bool held, bool targetAlive, float distance, bool inSight, SpiritBookSettings cfg, float dt)
+        /// <summary>
+        /// Le lien doit-il casser ce tick ? Drain (D-088) : relâché, cible morte, au-delà de la portée de maintien, ou ligne de vue perdue
+        /// depuis plus de sightGrace ; ni durée ni plafond. Soin (inchangé) : relâché, durée, portée, vue, plafond. Met à jour le
+        /// début de la perte de vue du drain.
+        /// </summary>
+        public static BookEnd Check(ref BookState s, int tick, bool held, bool targetAlive, float distance, bool inSight, SpiritBookSettings cfg, float dt)
         {
             if (!held)
                 return BookEnd.Relache;
             if (!targetAlive)
                 return BookEnd.CibleMorte;
+            if (s.Link == BookLink.Drain)
+            {
+                if (distance > cfg.holdRange)
+                    return BookEnd.Portee;
+                if (inSight)
+                    s.SightLostTick = MovementState.NeverTick;
+                else
+                {
+                    if (s.SightLostTick == MovementState.NeverTick)
+                        s.SightLostTick = tick;
+                    if (tick - s.SightLostTick >= Mathf.Max(1, MovementSettings.SecondsToTicks(cfg.sightGrace, dt)))
+                        return BookEnd.Vue;
+                }
+
+                return BookEnd.Aucune;
+            }
+
             if (tick - s.StartTick >= MovementSettings.SecondsToTicks(cfg.maxDuration, dt))
                 return BookEnd.Duree;
             if (distance > cfg.range)
                 return BookEnd.Portee;
             if (!inSight)
                 return BookEnd.Vue;
-            if (s.Link == BookLink.Drain && s.Drained >= cfg.maxDrainPerLink)
-                return BookEnd.Plafond;
             if (s.Link == BookLink.Soin && s.Healed >= cfg.maxHealPerLink)
                 return BookEnd.Plafond;
             return BookEnd.Aucune;
         }
 
-        /// <summary>PV à retirer ce tick (drain), plafonnés par lien.</summary>
-        public static float DrainTick(in BookState s, SpiritBookSettings cfg, float dt) =>
-            Mathf.Max(0f, Mathf.Min(cfg.drainDps * dt, cfg.maxDrainPerLink - s.Drained));
+        /// <summary>PV à retirer ce tick (drain continu, D-088 : sans plafond par lien).</summary>
+        public static float DrainTick(in BookState s, SpiritBookSettings cfg, float dt) => Mathf.Max(0f, cfg.drainDps * dt);
 
         /// <summary>PV à rendre ce tick (soin) : jamais au-delà du maximum de l'allié ni du plafond du lien.</summary>
         public static float HealTick(in BookState s, float allyMissing, SpiritBookSettings cfg, float dt) =>
@@ -104,7 +126,7 @@ namespace ItHunts.Artifacts
             enemy = null;
             ally = null;
             float best = float.PositiveInfinity;
-            int n = Physics.OverlapSphereNonAlloc(eye, cfg.range, Overlaps, ~0, QueryTriggerInteraction.Collide);
+            int n = Physics.OverlapSphereNonAlloc(eye, Mathf.Max(cfg.castRange, cfg.range), Overlaps, ~0, QueryTriggerInteraction.Collide);
             for (int i = 0; i < n; i++)
             {
                 Collider c = Overlaps[i];
@@ -117,6 +139,8 @@ namespace ItHunts.Artifacts
                 if (e != null && !Targetable(e))
                     continue;
                 Vector3 point = c.bounds.center;
+                if (Vector3.Distance(eye, point) > (e != null ? cfg.castRange : cfg.range))
+                    continue;                                            // lancement : 20 m sur un ennemi, 15 m sur un allié
                 float angle = Vector3.Angle(aim, point - eye);
                 if (angle > cfg.aimHalfAngle || angle >= best || !InSight(eye, point, c.transform, self, cfg))
                     continue;

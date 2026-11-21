@@ -42,6 +42,14 @@ namespace ItHunts.Artifacts
         /// <summary>Cible du lien en cours (ennemi drainé ou allié soigné), null sans lien.</summary>
         public Transform BookTarget => _bookEnemy != null ? _bookEnemy.transform : _bookAlly != null ? _bookAlly.transform : null;
         private SwordState _sword = SwordState.Create();
+        private SwordStep _pendingSwing;
+        private int _pendingSwingTick = MovementState.NeverTick;
+        private Vector3 _pendingAim;
+        private bool _pendingAssisted;
+
+        /// <summary>Dernier coup d'épée : cible visée par l'aide (debug, tests), élan donné (m/s).</summary>
+        public Damageable LastSwordTarget { get; private set; }
+        public float LastSwordLunge { get; private set; }
         private BookState _book = BookState.Create();
         private Damageable _bookEnemy;
         private PlayerHealth _bookAlly;
@@ -136,7 +144,7 @@ namespace ItHunts.Artifacts
             Vector3 point = target != null ? TargetPoint(target) : eye;
             float distance = Vector3.Distance(eye, point);
             bool sight = alive && SpiritBook.InSight(eye, point, target, transform, bk);
-            BookEnd end = SpiritBook.Check(_book, tick, input.ThrowHeld, alive, distance, sight, bk, dt);
+            BookEnd end = SpiritBook.Check(ref _book, tick, input.ThrowHeld, alive, distance, sight, bk, dt);
             if (end != BookEnd.Aucune)
             {
                 LastBookEnd = end;
@@ -210,8 +218,45 @@ namespace ItHunts.Artifacts
                 SwordStep st = BoneSword.Step(ref _sword, tick, input.ThrowPressedTick, heldAtTickStart, holdingNow, lunge, sw, dt);
                 if (st.Swung)
                 {
-                    LastSwordHits = BoneSword.Strike(eye, aim, ms.Velocity, st, ms.HorizontalSpeed, sw, transform, _playerId, Time.time);
+                    // Aide au corps à corps (2026-11-21) : cible visée, la vue tourne un peu vers elle, petit élan sans perte de vitesse.
+                    _pendingAssisted = BoneSword.FindTarget(eye, aim, sw, transform, out Damageable target, out Vector3 point);
+                    LastSwordTarget = target;
+                    LastSwordLunge = 0f;
+                    _pendingAim = _pendingAssisted ? (point - eye).normalized : aim;
+                    if (_pendingAssisted)
+                    {
+                        var look = GetComponent<PlayerLook>();
+                        if (look != null)
+                            look.Nudge(point - eye, sw.assistTurn, sw.assistMaxTurn);
+                        Vector3 push = st.Lunge ? Vector3.zero : BoneSword.LungePush(ms.Velocity, point - eye, sw);
+                        if (push.sqrMagnitude > 1e-4f && _motor != null)
+                        {
+                            _motor.AddVelocity(push);
+                            LastSwordLunge = push.magnitude;
+                        }
+                    }
+
+                    _pendingSwing = st;
+                    _pendingSwingTick = tick + MovementSettings.SecondsToTicks(sw.strikeDelay, dt);
+                }
+
+                // L'impact tombe quand la lame passe devant (strikeDelay) : dégâts, arrêt sur image, secousse.
+                if (_pendingSwingTick != MovementState.NeverTick && tick >= _pendingSwingTick)
+                {
+                    _pendingSwingTick = MovementState.NeverTick;
+                    Vector3 strikeAim = _pendingAssisted ? _pendingAim : aim;
+                    LastSwordHits = BoneSword.Strike(eye, strikeAim, ms.Velocity, _pendingSwing, ms.HorizontalSpeed, sw, transform, _playerId, Time.time);
                     TotalSwordHits += LastSwordHits;
+                    if (LastSwordHits > 0)
+                    {
+                        bool third = _pendingSwing.Index == 2 || _pendingSwing.Lunge;
+                        GameFeelSettings feel = GameFeel.Settings;
+                        if (feel != null)
+                            HitStop.Request(feel.swordHitStop * (third ? sw.thirdHitStopFactor : 1f));
+                        var shake = GetComponent<CameraShake>();
+                        if (shake != null)
+                            shake.AddTrauma(third ? sw.thirdHitTrauma : sw.hitTrauma);
+                    }
                 }
             }
             else if (Current is SpiritBookSettings bk)

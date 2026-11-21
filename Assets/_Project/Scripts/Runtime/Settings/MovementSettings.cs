@@ -174,11 +174,15 @@ namespace ItHunts.Settings
         [Tooltip("Profil de vitesse du dash. Progressif : départ au pic puis baisse jusqu'à la vitesse de sortie " +
                  "(le pic est calculé pour parcourir dashDistance).")]
         public DashProfile dashProfile = DashProfile.Progressif;
-        [Tooltip("Gain de vitesse (m/s) d'un dash AU SOL par rapport à la vitesse d'avant. En l'air : aucun gain.")]
+        [Tooltip("Gain de vitesse (m/s) d'un dash par rapport à la vitesse d'avant, au sol comme en l'air (D-084), sous le plafond commun.")]
         [Min(0f)] public float dashSpeedGain = 1f;
+        [Tooltip("Part de la vitesse moyenne du dash (dashDistance / dashDuration) gardée à la sortie, sous le plafond commun (D-084) : " +
+                 "0.75 → ≈ 16 m/s depuis l'arrêt. Gardée ensuite comme l'élan (sol : avancer dans le cône ; air : comme le bunny hop). " +
+                 "0 : ancienne sortie (dashExitSpeed).")]
+        [Range(0f, 1f)] public float dashExitCarry = 0.75f;
         [Tooltip("Dash-jump : sauter pendant un dash au sol ou dans cette fenêtre (s) après sa fin.")]
         [Min(0f)] public float dashJumpWindow = 0.15f;
-        [Tooltip("Gain de vitesse (m/s) d'un dash-jump réussi, par rapport à la vitesse d'avant le dash.")]
+        [Tooltip("Gain de vitesse (m/s) d'un dash-jump réussi, ajouté à la vitesse de sortie du dash (D-084), sous le plafond commun.")]
         [Min(0f)] public float dashJumpSpeedGain = 3f;
         [Tooltip("À la sortie du dash, vitesse horizontale = la plus grande entre celle d'avant et celle-ci (m/s).")]
         [Min(0f)] public float dashExitSpeed = 12f;

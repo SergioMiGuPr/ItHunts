@@ -145,6 +145,8 @@ namespace ItHunts.Combat
         /// </summary>
         private void OnConeWave(ConeWaveEvent e)
         {
+            if (settings != null && !settings.repelConeRings)
+                return;                                                  // animation de répulsion très réduite (point 8)
             if (e.Continuous && Time.time - _lastHoldRing < holdRingInterval)
                 return;
             if (e.Continuous)
@@ -384,6 +386,18 @@ namespace ItHunts.Combat
 
             if (e.Target != null)
                 e.Target.Flash(Color.white * settings.targetFlashIntensity, settings.targetFlashDuration);
+
+            // Sensations de jeu (point 9) : étincelles de la DA et arrêt sur image aux impacts d'objets lancés (ni zone, ni balle :
+            // les balles ont leurs étincelles dans BarrelView).
+            GameFeelSettings feel = ItHunts.Player.GameFeel.Settings;
+            if (feel != null && !e.Area && !e.Bullet)
+            {
+                GameVfxSettings fx = GameVfx.Settings;
+                if (feel.impactSparks && e.Damage >= feel.sparksMinDamage && fx != null && fx.sparks != null && ItHunts.Player.GameFeel.Intensity > 0.01f)
+                    GameVfx.Spawn(fx.sparks, e.Point, Quaternion.LookRotation(Vector3.up), Mathf.Lerp(0.7f, 1.4f, Mathf.InverseLerp(5f, 60f, e.Damage)), null, 2f);
+                if (!e.Melee && e.Damage >= feel.throwHitStopMinDamage)
+                    ItHunts.Player.HitStop.Request(feel.throwHitStop * (e.Killed ? 1.4f : 1f));
+            }
 
             // Son 3D au point d'impact : plus grave pour un objet lourd, plus fort pour un gros coup.
             float heavy = Mathf.InverseLerp(5f, 40f, e.SourceMass);

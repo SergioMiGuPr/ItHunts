@@ -194,6 +194,14 @@ namespace ItHunts.Movement
             speed >= cap ? speed : Mathf.Min(speed + gain, cap);
 
         /// <summary>
+        /// Vitesse de sortie d'un dash (D-084), au sol comme en l'air : la plus grande entre la vitesse d'avant (jamais de perte),
+        /// la sortie minimale, la part gardée de la vitesse moyenne du dash et la vitesse d'avant + le gain, ces deux-là sous le
+        /// plafond commun des gains.
+        /// </summary>
+        public static float DashExitSpeed(float before, float dashAverage, float carry, float minExit, float gain, float cap) =>
+            Mathf.Max(before, Mathf.Max(minExit, Mathf.Max(Mathf.Min(cap, carry * dashAverage), CappedGain(before, gain, cap))));
+
+        /// <summary>
         /// Profil du dash : vitesse au tick index (0 = départ) sur ticks, entre le pic et la sortie. Progressif :
         /// baisse linéaire du pic vers la sortie ; Constant : le pic pendant tout le dash.
         /// </summary>

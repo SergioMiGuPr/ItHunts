@@ -24,10 +24,30 @@ namespace ItHunts.Settings
         [Min(0f)] public float pressBuffer = 0.2f;
 
         [Header("Portée et visée")]
-        [Tooltip("Portée du coup (m) depuis les yeux.")]
-        [Min(0.5f)] public float range = 2.5f;
-        [Tooltip("Demi-angle de l'arc touché (°) : aide à la visée légère.")]
-        [Range(5f, 90f)] public float arcHalfAngle = 40f;
+        [Tooltip("Portée du coup (m) depuis les yeux (2026-11-21 : 2.5 → 3.2, corps à corps plus facile).")]
+        [Min(0.5f)] public float range = 3.2f;
+        [Tooltip("Demi-angle de l'arc touché (°) (2026-11-21 : 40 → 55).")]
+        [Range(5f, 90f)] public float arcHalfAngle = 55f;
+        [Tooltip("Délai entre le clic et l'impact (s) : l'impact tombe quand la lame passe devant (animation du coup).")]
+        [Min(0f)] public float strikeDelay = 0.06f;
+
+        [Header("Aide au corps à corps (2026-11-21)")]
+        [Tooltip("Cible visée : ennemi à moins de assistRange (m) et de assistAngle (°) du viseur, visible. Le coup part vers elle.")]
+        [Min(0f)] public float assistRange = 6f;
+        [Range(0f, 90f)] public float assistAngle = 35f;
+        [Tooltip("La vue tourne vers la cible de cette part de l'angle, au plus assistMaxTurn (°), au départ du coup.")]
+        [Range(0f, 1f)] public float assistTurn = 0.35f;
+        [Range(0f, 30f)] public float assistMaxTurn = 10f;
+        [Tooltip("Petit élan vers la cible (m/s) : vitesse vers elle portée au moins à cette valeur, jamais de perte de vitesse ; " +
+                 "seulement si elle est à plus de lungeMinDistance (m). 0 : aucun.")]
+        [Min(0f)] public float lungeSpeed = 5f;
+        [Min(0f)] public float lungeMinDistance = 1.6f;
+
+        [Header("Sensations à l'impact (arrêt sur image : GameFeel_Default.swordHitStop)")]
+        [Range(0f, 1f)] public float hitTrauma = 0.12f;
+        [Range(0f, 1f)] public float thirdHitTrauma = 0.22f;
+        [Tooltip("3e coup : arrêt sur image plus long (× ce facteur).")]
+        [Min(1f)] public float thirdHitStopFactor = 1.4f;
 
         [Header("Vitesse : plus fort en pleine vitesse")]
         [Tooltip("Vitesse (m/s) sous laquelle les dégâts sont ceux de base.")]
@@ -52,8 +72,13 @@ namespace ItHunts.Settings
         [Tooltip("Calques touchés.")]
         public LayerMask hitMask = ~0;
 
-        [Header("Vue (provisoire : animation procédurale du coup)")]
+        [Header("Vue : l'épée flottante frappe (mains gelées) : taille horizontale, diagonale, estoc")]
         [Tooltip("Durée de l'animation d'un coup (s).")]
-        [Min(0.05f)] public float swingAnimDuration = 0.22f;
+        [Min(0.05f)] public float swingAnimDuration = 0.26f;
+        [Tooltip("Traînée de lame : matériau de la DA (trace peinte), largeur (m), part de l'arc couverte.")]
+        public Material trailMaterial;
+        [Min(0.005f)] public float trailWidth = 0.045f;
+        [Range(0.05f, 1f)] public float trailLength = 0.45f;
+        [ColorUsage(false, true)] public Color trailTone = new Color(0.85f, 0.82f, 0.72f, 1f);
     }
 }

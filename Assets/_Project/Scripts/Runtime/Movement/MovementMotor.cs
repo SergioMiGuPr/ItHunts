@@ -191,12 +191,10 @@ namespace ItHunts.Movement
                 s.DashDir = wishAmount > 1e-4f ? wishDir : Quaternion.Euler(0f, input.Yaw, 0f) * Vector3.forward;
                 s.DashSpeedBefore = s.HorizontalSpeed;
                 s.DashStartedGrounded = grounded;
-                // Sortie : au sol, gain plafonné ; en l'air, exactement la vitesse d'avant (redirigée) ; jamais
-                // sous dashExitSpeed. Pic calculé pour parcourir dashDistance.
-                float afterGain = grounded
-                    ? MovementMath.CappedGain(s.DashSpeedBefore, cfg.dashSpeedGain, cfg.movementGainCap)
-                    : s.DashSpeedBefore;
-                s.DashExitTarget = Mathf.Max(cfg.dashExitSpeed, afterGain);
+                // Sortie (D-084) : au sol comme en l'air, part de la vitesse du dash gardée et gain plafonnés à 20 m/s, jamais
+                // sous la vitesse d'avant ni sous dashExitSpeed ; gardée ensuite comme l'élan. Pic calculé pour parcourir dashDistance.
+                s.DashExitTarget = MovementMath.DashExitSpeed(s.DashSpeedBefore, cfg.dashDistance / (dashDurationTicks * dt),
+                    cfg.dashExitCarry, cfg.dashExitSpeed, cfg.dashSpeedGain, cfg.movementGainCap);
                 s.DashPeakSpeed = MovementMath.DashPeakSpeed(cfg.dashDistance, dashDurationTicks, dt, s.DashExitTarget,
                     cfg.dashProfile == DashProfile.Progressif);
                 s.DashTicksLeft = dashDurationTicks;
@@ -588,8 +586,8 @@ namespace ItHunts.Movement
             if (sinceEnd <= windowTicks)
             {
                 var h = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
-                float target = Mathf.Max(h.magnitude,
-                    MovementMath.CappedGain(s.DashSpeedBefore, cfg.dashJumpSpeedGain, cfg.movementGainCap));
+                float target = Mathf.Max(h.magnitude,                     // + le gain sur la sortie du dash (D-084)
+                    MovementMath.CappedGain(Mathf.Max(s.DashSpeedBefore, s.DashExitTarget), cfg.dashJumpSpeedGain, cfg.movementGainCap));
                 Vector3 dir = h.sqrMagnitude > 1e-6f ? h.normalized : s.DashDir;
                 s.Velocity = new Vector3(dir.x * target, s.Velocity.y, dir.z * target);
                 s.LastDashJumpSuccess = true;

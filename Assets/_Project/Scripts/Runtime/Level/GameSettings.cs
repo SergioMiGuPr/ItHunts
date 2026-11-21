@@ -13,16 +13,21 @@ namespace ItHunts.Level
     {
         private const string Prefix = "ItHunts.Reglages.";
 
-        public enum Line : byte { VolumeGeneral, Musique, Effets, Sensibilite, PleinEcran, ReduireAnimations }
+        public enum Line : byte { VolumeGeneral, Musique, Effets, Sensibilite, PleinEcran, ReduireAnimations, IntensiteEffets, ReduireSecousses }
 
-        /// <summary>Libellés, dans l'ordre de l'écran de la DA.</summary>
-        public static readonly string[] Labels = { "Volume général", "Musique", "Effets", "Sensibilité", "Plein écran", "Réduire les animations" };
+        /// <summary>Libellés, dans l'ordre de l'écran de la DA (les deux derniers : sensations de jeu, 2026-11-21, lignes ajoutées).</summary>
+        public static readonly string[] Labels =
+            { "Volume général", "Musique", "Effets", "Sensibilité", "Plein écran", "Réduire les animations", "Intensité des effets", "Réduire les secousses" };
 
         public static float MasterVolume { get => Get("Volume", 1f); set => Set("Volume", value, 0f, 1f); }
         public static float MusicVolume { get => Get("Musique", 0.8f); set => Set("Musique", value, 0f, 1f); }
         public static float EffectsVolume { get => Get("Effets", 0.8f); set => Set("Effets", value, 0f, 1f); }
         /// <summary>Multiplie la sensibilité de la souris et du stick (1 : réglage de CameraSettings).</summary>
         public static float Sensitivity { get => Get("Sensibilite", 1f); set => Set("Sensibilite", value, 0.25f, 2f); }
+        /// <summary>Sensations de jeu (secousses, FOV, arrêts sur image, traînées…) : 0 à 1, pas de 10 %.</summary>
+        public static float FeelIntensity { get => Get("IntensiteEffets", 1f); set => Set("IntensiteEffets", value, 0f, 1f); }
+        /// <summary>Secousses et mouvements de caméra réduits (GameFeelSettings.reducedShakeScale).</summary>
+        public static bool ReduceShake { get => PlayerPrefs.GetInt(Prefix + "ReduireSecousses", 0) == 1; set { PlayerPrefs.SetInt(Prefix + "ReduireSecousses", value ? 1 : 0); Changed?.Invoke(); } }
         public static bool ReduceMotion { get => PlayerPrefs.GetInt(Prefix + "ReduireAnimations", 0) == 1; set { PlayerPrefs.SetInt(Prefix + "ReduireAnimations", value ? 1 : 0); Changed?.Invoke(); } }
 
         public static bool FullScreen
@@ -69,6 +74,8 @@ namespace ItHunts.Level
             Line.Effets => Percent(EffectsVolume),
             Line.Sensibilite => Percent(Sensitivity),
             Line.PleinEcran => FullScreen ? "oui" : "non",
+            Line.IntensiteEffets => Percent(FeelIntensity),
+            Line.ReduireSecousses => ReduceShake ? "oui" : "non",
             _ => ReduceMotion ? "oui" : "non",
         };
 
@@ -84,6 +91,8 @@ namespace ItHunts.Level
                 case Line.Effets: EffectsVolume = StepValue(EffectsVolume, d, 0f, 1f, 0.1f); break;
                 case Line.Sensibilite: Sensitivity = StepValue(Sensitivity, d, 0.25f, 2f, 0.05f); break;
                 case Line.PleinEcran: FullScreen = !FullScreen; break;
+                case Line.IntensiteEffets: FeelIntensity = StepValue(FeelIntensity, d, 0f, 1f, 0.1f); break;
+                case Line.ReduireSecousses: ReduceShake = !ReduceShake; break;
                 default: ReduceMotion = !ReduceMotion; break;
             }
         }
@@ -91,7 +100,7 @@ namespace ItHunts.Level
         /// <summary>Un pas, sans boucler aux bornes (on ne passe pas de 100 % à 0 % d'un coup).</summary>
         public static float StepValue(float v, int d, float min, float max, float step) => Mathf.Clamp(Mathf.Round((v + d * step) / step) * step, min, max);
 
-        /// <summary>Les six lignes de l'écran Paramètres, dans un menu (Entrée = pas suivant).</summary>
+        /// <summary>Les lignes de l'écran Paramètres, dans un menu (Entrée = pas suivant).</summary>
         public static void Fill(GreyboxMenu menu, System.Action openKeys = null)
         {
             for (int i = 0; i < Labels.Length; i++)

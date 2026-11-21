@@ -61,6 +61,14 @@ namespace ItHunts.Level
         public static int SeedOverride;
         /// <summary>Poids imposé d'un module (mesures : faire tirer les modèles de grande salle) ; null : son poids.</summary>
         public static System.Func<RoomModule, float> WeightOverride;
+        /// <summary>
+        /// Salle de test d'un module (menu Playtest, point 2 du 2026-11-21) : nom du module (displayName) posé juste à côté de la salle
+        /// de départ (poids renforcé, première seed qui le relie au départ) ; le reste de la carte et le traqueur sont ceux du jeu.
+        /// </summary>
+        public static string TestModule;
+        /// <summary>Poids du module de test (multiplie le sien) et nombre de seeds essayées pour le poser contre le départ.</summary>
+        public const float TestModuleWeight = 8f;
+        public const int TestModuleTries = 400;
         public static RandomLevel Current { get; private set; }
 
         public MapPlan Plan { get; private set; }
@@ -159,6 +167,26 @@ namespace ItHunts.Level
             return unchecked(runSeed * 73856093 ^ (RunSession.LevelIndex + 1) * 19349663);
         }
 
+        /// <summary>Première seed (à partir de from) dont le plan relie ce module à la salle de départ par un couloir ; from sinon.</summary>
+        public static int TestModuleSeed(MapLayoutSettings settings, List<ModuleInfo> infos, int target, int from)
+        {
+            for (int i = 0; i < TestModuleTries; i++)
+            {
+                int s = unchecked(from + i);
+                MapPlan p = MapPlanner.Plan(settings, infos, s);
+                if (p.Start < 0)
+                    continue;
+                foreach (PlanLink l in p.Links)
+                {
+                    int other = l.A == p.Start ? l.B : l.B == p.Start ? l.A : -1;
+                    if (other >= 0 && p.Rooms[other].Module == target)
+                        return s;
+                }
+            }
+
+            return from;
+        }
+
         /// <summary>Tire et construit la carte (remplace la précédente).</summary>
         public void Generate(int seed)
         {
@@ -183,12 +211,26 @@ namespace ItHunts.Level
                 Resources.UnloadUnusedAssets();
                 System.GC.Collect();
             }
-            LevelSeed = seed;
-            float Weight(RoomModule m) => WeightOverride != null ? WeightOverride(m) : m.weight;
+            float Weight(RoomModule m)
+            {
+                float w = WeightOverride != null ? WeightOverride(m) : m.weight;
+                return w > 0f && !string.IsNullOrEmpty(TestModule) && m.displayName == TestModule ? w * TestModuleWeight : w;
+            }
+
             _modules = catalog != null ? catalog.modules.Where(m => m != null && m.validated && Weight(m) > 0f).ToList() : new List<RoomModule>();
             var infos = _modules.Select((m, i) => ModuleInfo.From(m, i)).ToList();
             foreach (ModuleInfo info in infos)
                 info.Weight = Weight(_modules[info.Index]);
+            if (!string.IsNullOrEmpty(TestModule))
+            {
+                int target = _modules.FindIndex(m => m.displayName == TestModule);
+                int found = target >= 0 ? TestModuleSeed(settings, infos, target, seed) : seed;
+                Debug.Log(target < 0 ? $"Salle de test : module « {TestModule} » absent du catalogue"
+                    : $"Salle de test : « {TestModule} » à côté du départ (seed {found})");
+                seed = found;
+            }
+
+            LevelSeed = seed;
             var sw = Stopwatch.StartNew();
             Plan = MapPlanner.Plan(settings, infos, seed);
             PlanMs = (float)sw.Elapsed.TotalMilliseconds;

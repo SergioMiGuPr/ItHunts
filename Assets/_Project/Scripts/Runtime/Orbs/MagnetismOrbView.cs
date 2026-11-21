@@ -51,6 +51,12 @@ namespace ItHunts.Orbs
         private readonly Flash _attractFlash = new Flash();
         private int _seenRepelTick = MovementState.NeverTick;
         private int _seenTractionTick = MovementState.NeverTick;
+        private ParticleSystem _stream;
+        private GameObject _tractionArt;
+        private float _streamCarry;
+
+        /// <summary>Flot de traction actif (tests, debug).</summary>
+        public bool StreamActive => (_stream != null && _stream.particleCount > 0) || (_tractionArt != null && _tractionArt.activeSelf);
 
         private void Awake()
         {
@@ -143,9 +149,10 @@ namespace ItHunts.Orbs
         {
             bool tracting = s.Mode == MovementMode.Traction;
             Color glow = settings.attractColor * settings.lineIntensity;
+            UpdateStream(tracting, s.TractionPoint);
             if (line != null)
             {
-                line.enabled = tracting;
+                line.enabled = tracting && settings.showTractionLine;
                 if (tracting)
                 {
                     line.SetPosition(0, _view != null ? _view.LineStart : orbRenderer.transform.position);
@@ -157,7 +164,7 @@ namespace ItHunts.Orbs
 
             if (anchorMarker != null)
             {
-                anchorMarker.enabled = tracting;
+                anchorMarker.enabled = tracting && settings.showTractionMarks;
                 if (tracting)
                 {
                     Place(anchorMarker.transform, s.TractionPoint, m.TractionNormal);
@@ -170,7 +177,8 @@ namespace ItHunts.Orbs
             if (m.LastTractionStartTick != MovementState.NeverTick && m.LastTractionStartTick != _seenTractionTick)
             {
                 _seenTractionTick = m.LastTractionStartTick;
-                Trigger(_attractFlash, s.TractionPoint, m.TractionNormal);
+                if (settings.showTractionMarks)
+                    Trigger(_attractFlash, s.TractionPoint, m.TractionNormal);
             }
 
             Animate(_attractFlash, settings.attractColor, settings.tractionFlashDuration, settings.tractionFlashGrowth);
@@ -180,7 +188,7 @@ namespace ItHunts.Orbs
         {
             if (aimMarker != null)
             {
-                bool show = m.RepelInRange;
+                bool show = m.RepelInRange && settings.showRepelAimMarker;
                 aimMarker.enabled = show;
                 if (show)
                 {
@@ -196,10 +204,128 @@ namespace ItHunts.Orbs
             if (m.LastRepelTick != MovementState.NeverTick && m.LastRepelTick != _seenRepelTick)
             {
                 _seenRepelTick = m.LastRepelTick;
-                Trigger(_repelFlash, m.LastRepelPoint, m.LastRepelNormal);
+                if (settings.showRepelImpactFlash)
+                    Trigger(_repelFlash, m.LastRepelPoint, m.LastRepelNormal);
+                RepelBurst(m.LastRepelPoint);
             }
 
             Animate(_repelFlash, settings.repelColor, settings.repelFlashDuration, settings.repelFlashGrowth);
+        }
+
+        /// <summary>Départ du flot : la main de l'orbe (vue FPS ramenée dans le monde), sinon l'orbe.</summary>
+        private Vector3 StreamStart => _view != null ? _view.LineStart : orbRenderer.transform.position;
+
+        /// <summary>
+        /// Traction (point 8) : un flot qui file de l'orbe vers le point visé. Effet de la DA s'il est fourni (posé à l'orbe, tourné
+        /// vers le point), sinon des bouffées de fumée peinte (matériau de la DA, teinte de la traction) émises à la main et lancées vers
+        /// le point, qui s'éteignent en l'atteignant.
+        /// </summary>
+        private void UpdateStream(bool tracting, Vector3 point)
+        {
+            Vector3 from = StreamStart;
+            if (settings.tractionVfx != null)
+            {
+                if (_tractionArt == null && tracting)
+                    _tractionArt = Instantiate(settings.tractionVfx);
+                if (_tractionArt != null)
+                {
+                    _tractionArt.SetActive(tracting);
+                    if (tracting && (point - from).sqrMagnitude > 1e-4f)
+                        _tractionArt.transform.SetPositionAndRotation(from, Quaternion.LookRotation(point - from));
+                }
+
+                return;
+            }
+
+            if (!tracting && _stream == null)
+                return;
+            if (_stream == null)
+                _stream = CreateStream();
+            if (!tracting)
+                return;                                                  // les bouffées en vol finissent leur course
+            Vector3 d = point - from;
+            float dist = d.magnitude;
+            if (dist < 0.5f)
+                return;
+            _streamCarry += settings.tractionStreamRate * Time.deltaTime * ItHunts.Player.GameFeel.Intensity;
+            var p = new ParticleSystem.EmitParams { applyShapeToPosition = false };
+            while (_streamCarry >= 1f)
+            {
+                _streamCarry -= 1f;
+                float speed = settings.tractionStreamSpeed * Random.Range(0.85f, 1.15f);
+                p.position = from + Random.insideUnitSphere * 0.08f;
+                p.velocity = (d / dist) * speed + Random.insideUnitSphere * 0.6f;
+                p.startLifetime = dist / speed;
+                p.startSize = Random.Range(settings.tractionStreamSize.x, settings.tractionStreamSize.y);
+                p.rotation = Random.Range(0f, 360f);
+                _stream.Emit(p, 1);
+            }
+        }
+
+        private ParticleSystem CreateStream()
+        {
+            var go = new GameObject("Traction : flot vers le point");
+            var ps = go.AddComponent<ParticleSystem>();
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            ParticleSystem.MainModule main = ps.main;
+            main.loop = true;
+            main.playOnAwake = false;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.maxParticles = 300;
+            main.startColor = Color.white;
+            ParticleSystem.EmissionModule em = ps.emission;
+            em.rateOverTime = 0f;
+            ParticleSystem.SizeOverLifetimeModule size = ps.sizeOverLifetime;
+            size.enabled = true;
+            size.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(new Keyframe(0f, 0.6f), new Keyframe(0.5f, 1f), new Keyframe(1f, 0.4f)));
+            ParticleSystem.ColorOverLifetimeModule col = ps.colorOverLifetime;
+            col.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 0.7f), new GradientAlphaKey(0.3f, 1f) });
+            col.color = g;
+            var r = go.GetComponent<ParticleSystemRenderer>();
+            r.renderMode = ParticleSystemRenderMode.Billboard;
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            if (settings.tractionStreamMaterial != null)
+            {
+                r.sharedMaterial = settings.tractionStreamMaterial;
+                var block = new MaterialPropertyBlock();                // teinte de la traction, le matériau de la DA reste intact
+                block.SetColor("_Ton1", settings.tractionStreamTone * 0.35f);
+                block.SetColor("_Ton2", settings.tractionStreamTone * 0.65f);
+                block.SetColor("_Ton3", settings.tractionStreamTone);
+                r.SetPropertyBlock(block);
+            }
+
+            ps.Play();
+            return ps;
+        }
+
+        /// <summary>Répulsion (point 8) : effet bref de la DA devant l'orbe, réduit ; la secousse vient des sensations de jeu.</summary>
+        private void RepelBurst(Vector3 point)
+        {
+            Vector3 from = StreamStart;
+            Vector3 dir = point - from;
+            Quaternion rot = dir.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(dir) : Quaternion.identity;
+            GameObject prefab = settings.repelVfx;
+            if (prefab == null)
+            {
+                GameVfxSettings vfx = ItHunts.Combat.GameVfx.Settings;
+                prefab = vfx != null ? vfx.sparks : null;
+            }
+
+            if (prefab != null && ItHunts.Player.GameFeel.Intensity > 0.01f)
+                ItHunts.Combat.GameVfx.Spawn(prefab, from + (dir.sqrMagnitude > 1e-4f ? dir.normalized * 0.6f : Vector3.zero), rot,
+                    settings.repelVfxScale, null, settings.repelVfxLife);
+        }
+
+        private void OnDestroy()
+        {
+            if (_stream != null)
+                Destroy(_stream.gameObject);
+            if (_tractionArt != null)
+                Destroy(_tractionArt);
         }
 
         private static void Trigger(Flash flash, Vector3 point, Vector3 normal)

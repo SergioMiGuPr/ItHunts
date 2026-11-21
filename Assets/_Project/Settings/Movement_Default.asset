@@ -16,6 +16,16 @@ MonoBehaviour:
   groundAcceleration: 10
   groundFriction: 6
   stopSpeed: 2.5
+  keepGroundMomentum: 1
+  momentumConeAngle: 45
+  momentumTurnAngle: 60
+  momentumSteering: 0.2
+  momentumDecay: 0
+  momentumLossDeceleration: 12
+  momentumBrakeDeceleration: 30
+  groundSpeedCap: 20
+  groundOverCapDeceleration: 15
+  momentumWallHitAngle: 20
   airAcceleration: 10
   airWishSpeedCap: 1
   airControl: 0.15
@@ -52,6 +62,14 @@ MonoBehaviour:
   allowSameWallJump: 0
   wallRefillsJumps: 1
   wallRefillsCharges: 0
+  mantleEnabled: 1
+  mantleMaxAboveHead: 0.6
+  mantleMinRise: 0.5
+  mantleMinDepth: 0.6
+  mantleDuration: 0.3
+  mantleRiseShare: 0.6
+  mantleKeepSpeed: 0.7
+  mantleInputAngle: 50
   movementCharges: 3
   chargeRechargeTimeGround: 2
   chargeRechargeTimeAir: 4
@@ -59,6 +77,7 @@ MonoBehaviour:
   dashDuration: 0.3
   dashProfile: 0
   dashSpeedGain: 1
+  dashExitCarry: 0.75
   dashJumpWindow: 0.15
   dashJumpSpeedGain: 3
   dashExitSpeed: 12

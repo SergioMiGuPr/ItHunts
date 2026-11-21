@@ -28,6 +28,8 @@ namespace ItHunts.Level
         [SerializeField] private string arenaScene = "Test_Arena";
         [Tooltip("Carte fixe de référence du niveau 1 (comparer les réglages) ; les vraies parties sont tirées au hasard.")]
         [SerializeField] private string fixedLevelScene = "Level_01";
+        [Tooltip("Modules du niveau aléatoire (menu Playtest : salle de test d'un module).")]
+        [SerializeField] private ModuleCatalog moduleCatalog;
 
         /// <summary>Scène vitrine (retours du lot, point 9) : assets de la DA, ennemis dans chaque état, vue FPS.</summary>
         public const string VitrineScene = "Test_Vitrine";
@@ -93,6 +95,9 @@ namespace ItHunts.Level
             ItHunts.Player.PlayerLook.MenuOpen = false;
             RunSession.End();
             RunSession.CoopDevice = null;
+            RandomLevel.SeedOverride = 0;                                     // seed et salle de test : seulement pour le lancement choisi
+            RandomLevel.TestModule = null;
+            _playSeed = Random.Range(1, 100000);
             GameSettings.Apply();
             Build();
             if (StartAtCamp)
@@ -137,6 +142,13 @@ namespace ItHunts.Level
 
             _menu.Items.Clear();
             _menu.Add("Lancer la run (niveau 1)", Launch);
+            // Niveau aléatoire d'une seed choisie (◄ ►), et salle de test de chaque module avec le traqueur (point 2 du 2026-11-21).
+            GreyboxMenu.Item seedItem = _menu.Add(SeedLabel, () => LaunchRandom(_playSeed, null));
+            seedItem.Value = () => _playSeed.ToString();
+            seedItem.Change = d => _playSeed = Mathf.Max(1, _playSeed + d);
+            GreyboxMenu.Item moduleItem = _menu.Add(ModuleTestLabel, () => LaunchRandom(_playSeed, TestModuleName));
+            moduleItem.Value = () => TestModuleName ?? "aucun module";
+            moduleItem.Change = d => _testModule = TestModules.Count == 0 ? 0 : ((_testModule + d) % TestModules.Count + TestModules.Count) % TestModules.Count;
             _menu.Add("Playtest : combat de boss", LaunchBossFight);
             _menu.Add("Playtest : vitrine", () => Direct(VitrineScene));
             _menu.Add("Test_Movement (banc d'essai)", () => Direct(movementScene));
@@ -283,6 +295,45 @@ namespace ItHunts.Level
                 _launching = false;
                 RunSession.End();
                 Say($"Scène « {scene} » absente du build (lancer le constructeur du niveau 1)", 6f);
+            }
+        }
+
+        public const string SeedLabel = "Niveau aléatoire (seed)", ModuleTestLabel = "Salle de test d'un module (traqueur)";
+        private int _playSeed = 1;
+        private int _testModule;
+
+        /// <summary>Modules jouables du niveau aléatoire (noms), dans l'ordre du catalogue.</summary>
+        public List<string> TestModules
+        {
+            get
+            {
+                var r = new List<string>();
+                if (moduleCatalog != null)
+                    foreach (RoomModule m in moduleCatalog.Usable())
+                        r.Add(m.displayName);
+                return r;
+            }
+        }
+
+        public string TestModuleName
+        {
+            get
+            {
+                List<string> l = TestModules;
+                return l.Count > 0 ? l[Mathf.Clamp(_testModule, 0, l.Count - 1)] : null;
+            }
+        }
+
+        /// <summary>La run du niveau 1, sur cette seed de carte, avec ce module à côté du départ (null : carte normale).</summary>
+        public void LaunchRandom(int seed, string module)
+        {
+            RandomLevel.SeedOverride = seed;
+            RandomLevel.TestModule = module;
+            Launch();
+            if (!_launching)
+            {
+                RandomLevel.SeedOverride = 0;
+                RandomLevel.TestModule = null;
             }
         }
 

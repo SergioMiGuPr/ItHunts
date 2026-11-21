@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0c61c5608e6654459cfffed1912773d, type: 3}
+  m_Name: GameFeel_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.GameFeelSettings
+  reducedShakeScale: 0.3
+  mantleCamera: 1
+  mantleCameraTime: 0.45
+  mantleDipShare: 0.4
+  mantleDipDepth: 0.14
+  mantleRiseOvershoot: 0.04
+  mantlePitch: 4
+  mantleRoll: 3
+  hardLandingSpeedMin: 13
+  hardLandingSpeedFull: 26
+  hardLandingTrauma: 0.35
+  repelTrauma: 0.22
+  hurtTrauma: 0.45
+  hurtTraumaDamage: 25
+  parryTrauma: 0.25
+  stalkerCryTrauma: 0.4
+  stalkerCryRange: 30
+  dashFovPunch: 6
+  fovPunchDecay: 18
+  throwHitStop: 0.045
+  throwHitStopMinDamage: 8
+  swordHitStop: 0.05
+  parryHitStop: 0.08
+  maxHitStop: 0.12
+  landDipSpeedMin: 5
+  landDipSpeedFull: 20
+  landDipDepth: 0.14
+  landDipPitch: 1.5
+  landDipTime: 0.28
+  speedTrails: 1
+  trailSpeedMin: 14
+  trailSpeedFull: 22
+  trailRate: 70
+  trailMaterial: {fileID: 2100000, guid: 2d076503a8477cb4282a917d37c8ff0c, type: 2}
+  trailColor: {r: 1, g: 1, b: 1, a: 1}
+  trailTone: {r: 0.8, g: 0.9, b: 1.2, a: 1}
+  trailWidth: 0.035
+  impactSparks: 1
+  sparksMinDamage: 4
+  speedBlur: 1
+  blurSpeedMin: 14
+  blurSpeedFull: 24
+  blurMaxIntensity: 0.2

@@ -3,37 +3,43 @@ using UnityEngine;
 namespace ItHunts.Settings
 {
     /// <summary>
-    /// Livre magique à lien du hibou (point 5 de la nuit du 2026-11-21, D-077) : clic gauche maintenu sur un ennemi à portée et en
-    /// vue = lien de drain (lui retire des PV, en rend une partie au hibou) ; sur un allié = lien de soin (sans coût). Le lien casse
-    /// hors de portée, sans ligne de vue, au relâchement ou au bout de la durée maximale, puis recharge. Le traqueur est
-    /// insensible (aucun lien). En coop en ligne, le lien sera décidé par l'hôte.
+    /// Livre magique à lien du hibou (D-077 ; drain continu : D-088, playtest du 2026-11-21) : clic gauche maintenu sur un ennemi =
+    /// lien de **drain continu**, sans durée maximale, tant que le clic est tenu et que la cible reste à portée de maintien (la ligne
+    /// de vue peut se perdre un court instant) ; il retire des PV et en rend une part au hibou ; pas de recharge pendant le lien, une
+    /// courte quand il casse. Sur un allié : lien de **soin**, inchangé (portée, durée maximale, plafond, recharge). Le traqueur est
+    /// insensible. Plus tard : améliorations multi-cibles. En coop en ligne, le lien sera décidé par l'hôte.
     /// </summary>
     [CreateAssetMenu(fileName = "SpiritBook_Default", menuName = "ItHunts/Artefacts/Livre à lien")]
     public sealed class SpiritBookSettings : ArtifactDefinition
     {
         [Header("Lien")]
-        [Tooltip("Portée du lien (m).")]
-        [Min(1f)] public float range = 15f;
         [Tooltip("Cône de visée pour accrocher une cible (demi-angle, °).")]
         [Range(1f, 30f)] public float aimHalfAngle = 8f;
-        [Tooltip("Durée maximale d'un lien (s).")]
+
+        [Header("Drain (ennemi) : continu, sans durée maximale (D-088)")]
+        [Tooltip("Portée de lancement (m) : un ennemi plus loin ne s'accroche pas.")]
+        [Min(1f)] public float castRange = 20f;
+        [Tooltip("Portée de maintien (m) : le lien casse au-delà.")]
+        [Min(1f)] public float holdRange = 30f;
+        [Tooltip("Ligne de vue perdue : le lien tient encore ce temps (s), puis casse.")]
+        [Min(0f)] public float sightGrace = 0.5f;
+        [Tooltip("PV retirés par seconde.")]
+        [Min(0f)] public float drainDps = 15f;
+        [Tooltip("Part des PV retirés rendue au hibou (soin).")]
+        [Range(0f, 1f)] public float drainReturn = 0.2f;
+        [Tooltip("Recharge quand le lien de drain casse (s) ; aucune pendant le lien.")]
+        [Min(0f)] public float drainCooldown = 1f;
+
+        [Header("Soin (allié) : inchangé")]
+        [Tooltip("Portée du soin (m), au lancement comme au maintien.")]
+        [Min(1f)] public float range = 15f;
+        [Tooltip("Durée maximale d'un lien de soin (s).")]
         [Min(0.1f)] public float maxDuration = 4f;
-
-        [Header("Drain (ennemi)")]
-        [Min(0f)] public float drainDps = 6f;
-        [Tooltip("Part des PV retirés rendue au hibou.")]
-        [Range(0f, 1f)] public float drainReturn = 0.5f;
-        [Tooltip("Recharge après un lien de drain (s).")]
-        [Min(0f)] public float drainCooldown = 6f;
-
-        [Header("Soin (allié)")]
         [Min(0f)] public float healDps = 8f;
         [Tooltip("Recharge après un lien de soin (s).")]
         [Min(0f)] public float healCooldown = 8f;
 
         [Header("Plafonds")]
-        [Tooltip("PV retirés au plus par lien (plafond de sécurité).")]
-        [Min(0f)] public float maxDrainPerLink = 30f;
         [Tooltip("PV rendus au plus par lien de soin.")]
         [Min(0f)] public float maxHealPerLink = 32f;
 

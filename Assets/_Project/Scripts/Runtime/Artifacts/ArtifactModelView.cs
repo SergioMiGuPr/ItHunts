@@ -108,16 +108,126 @@ namespace ItHunts.Artifacts
                 }
 
                 float u = (Time.time - _swingAt) / Mathf.Max(0.05f, sw.swingAnimDuration);
-                if (u >= 0f && u < 1f)
+                Transform cam = _view.ViewRoot;
+                bool swinging = u >= 0f && u < 1f && cam != null;
+                if (swinging)
                 {
-                    // Arc de taille : de l'épaule vers le bas-centre ; le 3e coup et la fente plus amples, le 2e en revers.
-                    float amp = _swingLunge ? 70f : _swingIndex == 2 ? 110f : 80f;
-                    float dir = _swingIndex == 1 ? -1f : 1f;
-                    float k = Mathf.Sin(u * Mathf.PI);
-                    _root.rotation *= Quaternion.Euler(amp * k * 0.6f, 0f, dir * amp * (u - 0.5f));
-                    _root.position += _root.rotation * Vector3.forward * (_swingLunge ? 0.12f : 0.05f) * k;
+                    // L'épée flottante frappe (mains gelées) : du flottement vers la trajectoire du coup, puis retour.
+                    SwingTiming(u, out float w, out float sp);
+                    SwordPose(_swingIndex, _swingLunge, sp, out Vector3 hilt, out Vector3 dir, out Vector3 up);
+                    Vector3 pos = cam.TransformPoint(hilt);
+                    Quaternion rot = cam.rotation * Quaternion.LookRotation(dir, up);
+                    _root.SetPositionAndRotation(Vector3.Lerp(_root.position, pos, w), Quaternion.Slerp(_root.rotation, rot, w));
                 }
+
+                UpdateSwordTrail(sw, cam, swinging ? u : -1f);
             }
+            else if (_trail != null)
+                _trail.enabled = false;
+        }
+
+        private LineRenderer _trail;
+        private MaterialPropertyBlock _trailBlock;
+        private const int TrailPoints = 12;
+        private readonly Vector3[] _trailPts = new Vector3[TrailPoints];
+
+        /// <summary>Longueur de la lame (m) pour la pointe de la traînée (SM_Epee_Koala : pointe à ≈ 0.53 m de la garde).</summary>
+        public const float BladeLength = 0.53f;
+
+        /// <summary>
+        /// Déroulé d'un coup (u : 0 à 1) : w = poids de la trajectoire face au flottement (montée rapide, retour à la fin),
+        /// s = avancée sur la trajectoire (rapide au milieu : l'impact, strikeDelay ≈ 0.06 s après le clic).
+        /// </summary>
+        public static void SwingTiming(float u, out float w, out float s)
+        {
+            w = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(u / 0.12f)) * (1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((u - 0.62f) / 0.38f)));
+            s = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((u - 0.06f) / 0.42f));
+        }
+
+        /// <summary>
+        /// Trajectoires des trois coups dans le repère de la caméra (garde, direction de la lame, normale du plat) à l'avancée s :
+        /// 0 taille horizontale de droite à gauche, 1 diagonale du haut à droite vers le bas à gauche, 2 (et la fente) estoc vers l'avant.
+        /// </summary>
+        public static void SwordPose(int index, bool lunge, float s, out Vector3 hilt, out Vector3 dir, out Vector3 up)
+        {
+            if (lunge || index == 2)
+            {
+                float thrust = Mathf.Sin(Mathf.Clamp01(s) * Mathf.PI * 0.5f);
+                hilt = Vector3.Lerp(new Vector3(0.05f, -0.27f, 0.3f), new Vector3(0f, -0.2f, 0.78f), thrust);
+                dir = Vector3.Slerp(new Vector3(0.08f, 0.12f, 1f).normalized, new Vector3(0f, 0.02f, 1f).normalized, thrust);
+                up = Vector3.right;                                      // tranchant vertical
+                return;
+            }
+
+            if (index == 1)
+            {
+                hilt = Vector3.Lerp(new Vector3(0.24f, -0.06f, 0.5f), new Vector3(-0.16f, -0.32f, 0.52f), s);
+                Vector3 a = new Vector3(0.6f, 0.65f, 0.45f).normalized, b = new Vector3(-0.55f, -0.6f, 0.55f).normalized;
+                dir = Vector3.Slerp(a, b, s);
+                up = Vector3.Cross(a, b).normalized;                     // plat dans le plan du coup
+                return;
+            }
+
+            hilt = Vector3.Lerp(new Vector3(0.22f, -0.24f, 0.48f), new Vector3(-0.22f, -0.26f, 0.48f), s);
+            dir = Vector3.Slerp(new Vector3(0.88f, 0.06f, 0.48f).normalized, new Vector3(-0.88f, -0.04f, 0.48f).normalized, s);
+            up = Vector3.up;
+        }
+
+        /// <summary>Traînée de lame : ruban dans le repère de la caméra le long de l'arc parcouru par la pointe (matériau de la DA).</summary>
+        private void UpdateSwordTrail(BoneSwordSettings sw, Transform cam, float u)
+        {
+            if (u < 0f || cam == null || sw.trailMaterial == null)
+            {
+                if (_trail != null)
+                    _trail.enabled = false;
+                return;
+            }
+
+            if (_trail == null)
+            {
+                var go = new GameObject("Traînée de lame");
+                _trail = go.AddComponent<LineRenderer>();
+                _trail.useWorldSpace = false;
+                _trail.positionCount = TrailPoints;
+                _trail.alignment = LineAlignment.View;
+                _trail.textureMode = LineTextureMode.Stretch;
+                _trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                _trail.receiveShadows = false;
+                _trail.numCapVertices = 2;
+                _trailBlock = new MaterialPropertyBlock();
+            }
+
+            if (_trail.transform.parent != cam)
+            {
+                _trail.transform.SetParent(cam, false);
+                _trail.gameObject.layer = _root != null ? _root.gameObject.layer : cam.gameObject.layer;
+            }
+
+            _trail.sharedMaterial = sw.trailMaterial;
+            SwingTiming(u, out _, out float s);
+            float from = Mathf.Max(0f, s - sw.trailLength);
+            bool visible = s - from > 0.04f && u < 0.75f;
+            _trail.enabled = visible;
+            if (!visible)
+                return;
+            for (int i = 0; i < TrailPoints; i++)
+            {
+                float t = Mathf.Lerp(from, s, i / (float)(TrailPoints - 1));
+                SwordPose(_swingIndex, _swingLunge, t, out Vector3 hilt, out Vector3 dir, out _);
+                _trailPts[i] = hilt + dir * BladeLength;
+            }
+
+            _trail.SetPositions(_trailPts);
+            float fade = 1f - Mathf.Clamp01((u - 0.45f) / 0.3f);
+            _trail.widthCurve = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(1f, sw.trailWidth * Mathf.Max(0.2f, fade)));
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                new[] { new GradientAlphaKey(0.3f * fade, 0f), new GradientAlphaKey(fade, 1f) });
+            _trail.colorGradient = g;
+            _trailBlock.SetColor("_Ton1", sw.trailTone * 0.45f);
+            _trailBlock.SetColor("_Ton2", sw.trailTone * 0.75f);
+            _trailBlock.SetColor("_Ton3", sw.trailTone);
+            _trail.SetPropertyBlock(_trailBlock);
         }
 
         /// <summary>Lien du livre : bande peinte entre le livre (vue FPS ramenée dans le monde) et la cible.</summary>

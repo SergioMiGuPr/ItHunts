@@ -21,6 +21,9 @@ namespace ItHunts.Enemies
         /// <summary>Choc au sol (réception d'un bond, point 9) : même tremblement que les pas, plus fort.</summary>
         public static void RaiseFootstep(Vector3 at, float range, float strength) => Footstep?.Invoke(at, range, strength);
 
+        /// <summary>Cri du traqueur (prise, passage en Enragé) : position (sensations de jeu : secousse des joueurs proches).</summary>
+        public static event System.Action<Vector3> Cry;
+
         private Stalker _stalker;
         private AudioSource _steps, _stepsLoop, _breath, _voice, _explore, _enraged;
         private AudioClip _step, _roar;
@@ -130,8 +133,12 @@ namespace ItHunts.Enemies
 
             // Cris : passage en Enragé (une variante au hasard), prise d'un joueur.
             float cry = art != null ? art.stalkerCryVolume : 1f;
-            if (_stalker.Mode == StalkerMode.Enrage && _lastMode != StalkerMode.Enrage && art != null)
-                GameAudio.PlayOn(_voice, GameAudio.Pick(art.stalkerEnragedCries), null, cry);
+            if (_stalker.Mode == StalkerMode.Enrage && _lastMode != StalkerMode.Enrage)
+            {
+                if (art != null)
+                    GameAudio.PlayOn(_voice, GameAudio.Pick(art.stalkerEnragedCries), null, cry);
+                Cry?.Invoke(transform.position);
+            }
             _lastMode = _stalker.Mode;
             // Cri juste avant la prise (C4 : avec la forme Cri du visage), plus au moment où elle tue.
             if (_stalker.LastGrabStart > _seenGrab)
@@ -139,6 +146,7 @@ namespace ItHunts.Enemies
                 _seenGrab = _stalker.LastGrabStart;
                 if (art != null)
                     GameAudio.PlayOn(_voice, art.stalkerGrabCry, null, cry);
+                Cry?.Invoke(transform.position);
             }
 
             // Grognement de proximité (lèvres retroussées).

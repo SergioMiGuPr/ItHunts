@@ -21,6 +21,7 @@ namespace ItHunts.Debugging
         private const int HistoryTicks = 60;
 
         private PlayerMotor _motor;
+        private ItHunts.Player.PlayerParry _parry;
         private PlayerInputReader _reader;
         private PlayerLook _look;
         private DebugTeleporter _teleporter;
@@ -40,6 +41,7 @@ namespace ItHunts.Debugging
         private void Awake()
         {
             _motor = GetComponent<PlayerMotor>();
+            _parry = GetComponent<ItHunts.Player.PlayerParry>();
             _reader = GetComponent<PlayerInputReader>();
             _look = GetComponent<PlayerLook>();
             _teleporter = GetComponent<DebugTeleporter>();
@@ -227,6 +229,9 @@ namespace ItHunts.Debugging
             _text.Clear();
             _text.AppendLine($"Debug, page {_page}/{PageCount} : {PageNames[_page]}   (F3 / Select : page suivante, puis caché)");
             _text.AppendLine($"Contrôle : {scheme}");
+            string parry = _parry != null ? _parry.DebugLine : "";
+            if (parry.Length > 0)
+                _text.AppendLine(parry);
             if (_page == 2)
                 AppendOrbPage(s, dt);
             else if (_page == 3)

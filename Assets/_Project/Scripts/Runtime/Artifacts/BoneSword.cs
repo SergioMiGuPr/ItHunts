@@ -105,6 +105,67 @@ namespace ItHunts.Artifacts
         }
 
         private static readonly Collider[] Overlaps = new Collider[64];
+        private static readonly RaycastHit[] SightHits = new RaycastHit[16];
+
+        /// <summary>
+        /// Cible visée (aide au corps à corps) : l'ennemi parable le plus proche du viseur à moins de assistRange et assistAngle,
+        /// visible depuis les yeux. Le traqueur n'est jamais visé (intouchable).
+        /// </summary>
+        public static bool FindTarget(Vector3 eye, Vector3 aim, BoneSwordSettings cfg, Transform shooter, out Damageable target, out Vector3 point)
+        {
+            target = null;
+            point = Vector3.zero;
+            if (cfg.assistRange <= 0f || cfg.assistAngle <= 0f)
+                return false;
+            int count = Physics.OverlapSphereNonAlloc(eye, cfg.assistRange, Overlaps, cfg.hitMask, QueryTriggerInteraction.Collide);
+            float best = float.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                Collider c = Overlaps[i];
+                if (c == null || (shooter != null && c.transform.IsChildOf(shooter)))
+                    continue;
+                var enemy = c.GetComponentInParent<Damageable>();
+                if (enemy == null || enemy.Dead || enemy.ImmuneToOrbs)
+                    continue;
+                Vector3 p = c.bounds.center;
+                Vector3 to = p - eye;
+                float angle = Vector3.Angle(aim, to);
+                if (angle > cfg.assistAngle || to.magnitude > cfg.assistRange || angle >= best || !Visible(eye, p, enemy, shooter))
+                    continue;
+                best = angle;
+                target = enemy;
+                point = p;
+            }
+
+            return target != null;
+        }
+
+        private static bool Visible(Vector3 eye, Vector3 p, Damageable enemy, Transform shooter)
+        {
+            Vector3 to = p - eye;
+            int n = Physics.RaycastNonAlloc(eye, to.normalized, SightHits, to.magnitude, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < n; i++)
+            {
+                Transform t = SightHits[i].transform;
+                if ((shooter != null && t.IsChildOf(shooter)) || t.IsChildOf(enemy.transform) || SightHits[i].collider.attachedRigidbody != null)
+                    continue;
+                return false;                                            // un mur entre les deux
+            }
+
+            return true;
+        }
+
+        /// <summary>Élan vers la cible : vitesse à ajouter pour aller vers elle au moins à lungeSpeed ; jamais de freinage.</summary>
+        public static Vector3 LungePush(Vector3 velocity, Vector3 toTarget, BoneSwordSettings cfg)
+        {
+            var flat = new Vector3(toTarget.x, 0f, toTarget.z);
+            float d = flat.magnitude;
+            if (cfg.lungeSpeed <= 0f || d <= cfg.lungeMinDistance)
+                return Vector3.zero;
+            Vector3 dir = flat / d;
+            float along = Vector3.Dot(new Vector3(velocity.x, 0f, velocity.z), dir);
+            return dir * Mathf.Max(0f, cfg.lungeSpeed - along);
+        }
 
         /// <summary>
         /// Touche le monde : arc devant les yeux (portée, demi-angle), ou fente le long du déplacement (capsule). Chaque ennemi
@@ -144,7 +205,7 @@ namespace ItHunts.Artifacts
                     DamageEvents.Raise(new DamageEvent
                     {
                         Target = enemy, Damage = taken, Point = point, Killed = killed,
-                        Tier = step.Index == 2 || step.Lunge ? HitTier.Gros : HitTier.Moyen, Time = time,
+                        Tier = step.Index == 2 || step.Lunge ? HitTier.Gros : HitTier.Moyen, Time = time, Melee = true,
                     });
                 if (!killed && step.Index == 2 && !step.Lunge && cfg.knockback > 0f)
                 {

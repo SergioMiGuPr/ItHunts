@@ -41,6 +41,10 @@ namespace ItHunts.Player
         private ItHunts.Artifacts.ArtifactHolder _artifact;
 
         public MovementState State => _state;
+        /// <summary>Dernier atterrissage : vitesse de chute (m/s) et nombre d'atterrissages (sensations de jeu).</summary>
+        public float LastLandingSpeed { get; private set; }
+        public int LandingCount { get; private set; }
+        private float _airFallSpeed;
         public MovementSettings Settings => settings;
         public MagnetismState Magnetism => _magnet;
         public MagnetismOrbSettings MagnetismSettings => magnetism;
@@ -161,8 +165,19 @@ namespace ItHunts.Player
             // part ; partir des yeux après le mouvement décalait l'impact d'un tick de déplacement, 0.13 m à 7.5 m/s).
             Vector3 eyeAtClick = MagnetismOrb.EyePosition(_state, settings);
             bool wasGrounded = _state.Grounded;
-            float fallSpeed = -_state.Velocity.y;
+            // Vitesse de chute : la dernière lue en l'air (au tick du contact, la vitesse verticale est déjà remise à 0 avant que
+            // l'état passe au sol ; lue au tick de l'atterrissage, elle valait toujours 0).
+            if (!wasGrounded && _state.Velocity.y < 0f)
+                _airFallSpeed = -_state.Velocity.y;
+            float fallSpeed = Mathf.Max(-_state.Velocity.y, _airFallSpeed);
             MovementMotor.Step(ref _state, input, settings, dt, _probe);
+            if (_state.Grounded)
+                _airFallSpeed = 0f;
+            if (!wasGrounded && _state.Grounded)
+            {
+                LastLandingSpeed = fallSpeed;                               // sensations de jeu (plongeon, secousse)
+                LandingCount++;
+            }
             if (!wasGrounded && _state.Grounded && fallSpeed >= ItHunts.Enemies.NoiseEvents.HardLandingSpeed)
                 ItHunts.Enemies.NoiseEvents.Raise(new ItHunts.Enemies.Noise
                 {

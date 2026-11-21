@@ -131,6 +131,21 @@ namespace ItHunts.Menus
         /// </summary>
         private void OwnCampMaterials()
         {
+            if (_camp != null)
+            {
+                // Tous les matériaux propres du campement (lanternes, ombres portées, éclairage : PR #34) ont leur copie : le script de la
+                // DA les règle aussi hors du jeu (tests EditMode) et écrivait alors dans les assets partagés (A1).
+                foreach (Graphic g in _camp.GetComponentsInChildren<Graphic>(true))
+                {
+                    Material shared = g.material;
+                    if (shared == null || shared == g.defaultMaterial || _ownedMaterials.Contains(shared))
+                        continue;
+                    var copy = new Material(shared) { name = shared.name + " (jeu)", hideFlags = HideFlags.DontSave };
+                    g.material = copy;
+                    _ownedMaterials.Add(copy);
+                }
+            }
+
             if (_campView == null || _campView.places == null)
                 return;
             foreach (CampementApercu.Place pl in _campView.places)
@@ -138,6 +153,12 @@ namespace ItHunts.Menus
                 if (pl?.corps == null || pl.corps.material == null || pl.matJeu != null)
                     continue;
                 Material m = pl.corps.material;
+                if (_ownedMaterials.Contains(m))
+                {
+                    pl.matJeu = m;                                      // déjà copié ci-dessus
+                    continue;
+                }
+
                 pl.matJeu = new Material(m) { name = m.name + " (jeu)", hideFlags = HideFlags.DontSave };
                 pl.corps.material = pl.matJeu;
                 _ownedMaterials.Add(pl.matJeu);
@@ -191,34 +212,9 @@ namespace ItHunts.Menus
             if (_skin.settingsScreen == null)
                 return;
             _settings = MenuArtKit.Spawn(_skin.settingsScreen, Page("Paramètres"), "Menu_Parametres");
-            for (int i = 0; i < GameSettings.Labels.Length; i++)
-            {
-                Transform row = _settings.transform.Find("Option_" + i);
-                if (row == null)
-                    continue;
-                var label = row.Find("Libelle")?.GetComponent<Text>();
-                if (label != null)
-                    label.text = GameSettings.Labels[i];
-                _rows.Add(((RectTransform)row, row.Find("Valeur")?.GetComponent<Text>(), MenuArtKit.Targets(row.GetComponent<Selectable>())));
-            }
-
-            // Ligne « Touches » (A5) : une 7e ligne, copie de la dernière ligne de la DA, « Retour » descend d'un cran.
-            Transform last = _settings.transform.Find("Option_" + (GameSettings.Labels.Length - 1));
-            Transform prev = _settings.transform.Find("Option_" + (GameSettings.Labels.Length - 2));
-            if (last != null && prev != null && _settings.transform.Find("Option_" + GameSettings.Labels.Length) == null)
-            {
-                float step = ((RectTransform)last).anchoredPosition.y - ((RectTransform)prev).anchoredPosition.y;
-                var keys = (RectTransform)Instantiate(last, last.parent);
-                keys.name = "Option_" + GameSettings.Labels.Length;
-                keys.anchoredPosition = ((RectTransform)last).anchoredPosition + new Vector2(0f, step);
-                var label = keys.Find("Libelle")?.GetComponent<Text>();
-                if (label != null)
-                    label.text = GameSettings.KeysLabel;
-                _rows.Add((keys, keys.Find("Valeur")?.GetComponent<Text>(), MenuArtKit.Targets(keys.GetComponent<Selectable>())));
-                var back = _settings.transform.Find("Retour") as RectTransform;
-                if (back != null)
-                    back.anchoredPosition += new Vector2(0f, step);
-            }
+            // Lignes de la DA, puis les lignes ajoutées (sensations de jeu, Touches) : même cartouche, l'écran se resserre.
+            var labels = new System.Collections.Generic.List<string>(GameSettings.Labels) { GameSettings.KeysLabel };
+            _rows.AddRange(MenuArtKit.SettingsRows(_settings, labels));
 
             _settingsBack = MenuArtKit.Find<Selectable>(_settings, "Retour");
             _settings.SetActive(false);

@@ -103,6 +103,68 @@ namespace ItHunts.Menus
         public static bool Clicked => !IgnoreMouse && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
         public static bool MouseDown => Mouse.current != null && Mouse.current.leftButton.isPressed;
 
+        /// <summary>
+        /// Lignes de l'écran Paramètres de la DA (Option_0…) pour ces libellés : au-delà des lignes de la maquette, la dernière est
+        /// reproduite ; l'ensemble se resserre (pas et hauteur) pour tenir avec « Retour » dans le cadre, agrandi d'au plus maxGrow px.
+        /// </summary>
+        public static System.Collections.Generic.List<(RectTransform rect, Text value, Graphic[] tint)> SettingsRows(GameObject screen,
+            System.Collections.Generic.IReadOnlyList<string> labels, float maxGrow = 40f)
+        {
+            var rows = new System.Collections.Generic.List<(RectTransform, Text, Graphic[])>();
+            Transform t = screen.transform;
+            int have = 0;
+            while (t.Find("Option_" + have) != null)
+                have++;
+            if (have == 0)
+                return rows;
+            var first = (RectTransform)t.Find("Option_0");
+            var lastOriginal = (RectTransform)t.Find("Option_" + (have - 1));
+            float step = have > 1 ? ((RectTransform)t.Find("Option_1")).anchoredPosition.y - first.anchoredPosition.y : -80f;
+            var back = t.Find("Retour") as RectTransform;
+            float backGap = back != null ? back.anchoredPosition.y - lastOriginal.anchoredPosition.y : step;
+            for (int i = have; i < labels.Count; i++)
+            {
+                var prev = (RectTransform)t.Find("Option_" + (i - 1));
+                RectTransform copy = Object.Instantiate(prev, prev.parent, false);
+                copy.name = "Option_" + i;
+            }
+
+            int n = Mathf.Max(have, labels.Count);
+            if (n > have)
+            {
+                // Même hauteur totale (+ maxGrow) répartie sur n lignes et « Retour ».
+                float span = (have - 1) * step + backGap - Mathf.Sign(step) * maxGrow;
+                float newStep = span / (n - 1 + backGap / step);
+                float rowHeight = first.rect.height;
+                float scale = Mathf.Min(1f, (Mathf.Abs(newStep) - 4f) / Mathf.Max(1f, rowHeight));
+                Vector2 p0 = first.anchoredPosition;                       // avant de déplacer la première ligne
+                float width = first.rect.width;
+                for (int i = 0; i < n; i++)
+                {
+                    var r = (RectTransform)t.Find("Option_" + i);
+                    r.anchoredPosition = new Vector2(p0.x + width * (1f - scale) * 0.5f, p0.y + i * newStep);
+                    r.localScale = new Vector3(scale, scale, 1f);
+                }
+
+                if (back != null)
+                    back.anchoredPosition = new Vector2(back.anchoredPosition.x, p0.y + (n - 1) * newStep + backGap * (newStep / step));
+                var frame = t.Find("Cadre") as RectTransform;
+                if (frame != null)
+                    frame.sizeDelta += new Vector2(0f, maxGrow);
+            }
+
+            for (int i = 0; i < labels.Count; i++)
+            {
+                Transform row = t.Find("Option_" + i);
+                var label = row.Find("Libelle")?.GetComponent<Text>();
+                if (label != null)
+                    label.text = labels[i];
+                rows.Add(((RectTransform)row, row.Find("Valeur")?.GetComponent<Text>(), Targets(row.GetComponent<Selectable>())));
+            }
+
+            return rows;
+        }
+
         /// <summary>Enfant par chemin (« Interface/Pret »), composant demandé.</summary>
         public static T Find<T>(GameObject root, string path) where T : Component
         {

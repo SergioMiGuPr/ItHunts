@@ -17,6 +17,14 @@ namespace ItHunts.Player
         private ParryState _state = ParryState.Create();
         private PlayerInputReader _reader;
         private PlayerHealth _health;
+        private float _missCheckedFor = float.NegativeInfinity;
+        private static AudioClip _missClip;
+
+        /// <summary>Texte du debug de la dernière parade (vide au-delà de 5 s).</summary>
+        public string DebugLine => Time.time - _state.ResultTime < 5f ? ParryMath.Describe(_state, settings) : "";
+
+        /// <summary>Parades dans le vide (son sec) : nombre (tests, mesures).</summary>
+        public int Misses { get; private set; }
 
         public ParrySettings Settings { get => settings; set => settings = value; }
         public ParryState State => _state;
@@ -33,9 +41,66 @@ namespace ItHunts.Player
 
         private void Update()
         {
-            if (settings == null || _reader == null || !_reader.ParryPressed || (_health != null && _health.Dead))
+            if (settings == null)
                 return;
-            Press(Time.time);
+            float now = Time.time;
+            // Fenêtre passée sans rien parer : petit son sec (raté), une fois par appui.
+            if (_state.LastPress > _state.LastSuccess && _state.LastPress != _missCheckedFor
+                && now - _state.LastPress > settings.window + settings.lateWindow)
+            {
+                _missCheckedFor = _state.LastPress;
+                Misses++;
+                if (_state.LastResult == ParryResult.Aucun || _state.ResultTime < _state.LastPress)
+                {
+                    _state.LastResult = ParryResult.Vide;
+                    _state.ResultTime = now;
+                }
+
+                if (_missClip == null)
+                    _missClip = ItHunts.Audio.ProceduralSfx.ToClip("Parade ratée", ItHunts.Audio.ProceduralSfx.BarrelReloadDone());
+                ItHunts.Audio.GameAudio.PlayAt(_missClip, transform.position + Vector3.up * 1.4f, settings.missVolume);
+            }
+
+            if (_reader == null || !_reader.ParryPressed || (_health != null && _health.Dead))
+                return;
+            Press(now);
+        }
+
+        /// <summary>Tolérance après l'impact (s) de la parade de ce joueur (0 : aucune).</summary>
+        public static float LateWindowOf(PlayerHealth player)
+        {
+            var parry = player != null ? player.GetComponent<PlayerParry>() : null;
+            return parry != null && parry.settings != null ? parry.settings.lateWindow : 0f;
+        }
+
+        /// <summary>Coup au contact gardé en attente (lateWindow) : paré par un appui juste après l'impact ?</summary>
+        public static bool TryLateParry(PlayerHealth player, Component attacker, float impact, float now, Vector3 point)
+        {
+            var parry = player != null ? player.GetComponent<PlayerParry>() : null;
+            if (parry == null || parry.settings == null)
+                return false;
+            if (!ParryMath.TryLateParry(ref parry._state, impact, now, parry.settings, ParryMath.Parryable(attacker)))
+                return false;
+            Succeed(parry, player, attacker, point);
+            return true;
+        }
+
+        private static void Succeed(PlayerParry parry, PlayerHealth player, Component attacker, Vector3 point)
+        {
+            EnemyBody body = attacker.GetComponentInParent<EnemyBody>();
+            if (body != null && body.StunFor(parry.settings.stunDuration))
+            {
+                // Goule parée bien visible : repoussée, éclair blanc (en plus des étoiles et du clip Goule_Etourdie).
+                Vector3 away = attacker.transform.position - player.transform.position;
+                away.y = 0f;
+                if (away.sqrMagnitude > 1e-4f && parry.settings.parryPush > 0f)
+                    body.Push(away.normalized * parry.settings.parryPush + Vector3.up * 1.5f);
+            }
+
+            var dmg = attacker.GetComponentInParent<Damageable>();
+            if (dmg != null && parry.settings.parryFlash > 0f)
+                dmg.Flash(Color.white * 3f, parry.settings.parryFlash);
+            ParryEvents.Raise(new ParryEvent { Player = player.transform, Attacker = attacker.transform, Point = point });
         }
 
         /// <summary>Appui (aussi pour les tests et le debug).</summary>
@@ -54,10 +119,7 @@ namespace ItHunts.Player
                 return false;
             if (!ParryMath.TryParry(ref parry._state, now, parry.settings, ParryMath.Parryable(attacker)))
                 return false;
-            EnemyBody body = attacker.GetComponentInParent<EnemyBody>();
-            if (body != null)
-                body.StunFor(parry.settings.stunDuration);
-            ParryEvents.Raise(new ParryEvent { Player = player.transform, Attacker = attacker.transform, Point = point });
+            Succeed(parry, player, attacker, point);
             return true;
         }
     }

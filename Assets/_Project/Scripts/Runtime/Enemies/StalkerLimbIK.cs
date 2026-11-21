@@ -26,17 +26,41 @@ namespace ItHunts.Enemies
         /// <summary>Membres en appui corrigés à cette image, mains au mur (tests, debug).</summary>
         public int Planted { get; private set; }
         public int OnWall { get; private set; }
+        /// <summary>Murs trouvés mais hors de portée réelle du bras à cette image (refusés, aucune IK).</summary>
+        public int OutOfReach { get; private set; }
+
+        /// <summary>Portée réelle d'un membre (m) : épaule ou hanche → coude ou genou → poignet ou cheville → griffes.</summary>
+        public static float Reach(Transform a, Transform m, Transform e, Transform contact) =>
+            Vector3.Distance(a.position, m.position) + Vector3.Distance(m.position, e.position) + Vector3.Distance(e.position, contact.position);
+
+        /// <summary>Un point de mur est-il à portée réelle du membre (marge) ?</summary>
+        public static bool WithinReach(Vector3 shoulder, Vector3 point, float reach, float margin) =>
+            Vector3.Distance(shoulder, point) <= reach * margin;
+
+        private readonly System.Collections.Generic.List<(Vector3 p, bool ok)> _debug = new System.Collections.Generic.List<(Vector3, bool)>();
+        private Transform[] _markers;
+        private MaterialPropertyBlock _markerBlock;
         public bool Valid => _limbs.Length == 4;
 
         public StalkerLimbIK(Transform[] bones, Transform stalker)
         {
             _self = stalker;
-            Transform B(string n) => System.Array.Find(bones, t => t.name == n);
+            Transform B(StalkerRig.Role r) => StalkerRig.Find(bones, r);          // rôles : prêt pour un avatar Humanoid
             var list = new System.Collections.Generic.List<Limb>();
-            foreach ((string side, bool right) in new[] { ("_D", true), ("_G", false) })
+            foreach (bool right in new[] { true, false })
             {
-                var leg = new Limb { A = B("Cuisse" + side), M = B("Jambe" + side), E = B("Pied" + side), Contact = B("Contact_Pied" + side), Right = right };
-                var arm = new Limb { A = B("Bras" + side), M = B("AvantBras" + side), E = B("Main" + side), Contact = B("Contact_Main" + side), Arm = true, Right = right };
+                var leg = new Limb
+                {
+                    A = B(right ? StalkerRig.Role.CuisseD : StalkerRig.Role.CuisseG), M = B(right ? StalkerRig.Role.JambeD : StalkerRig.Role.JambeG),
+                    E = B(right ? StalkerRig.Role.PiedD : StalkerRig.Role.PiedG), Contact = B(right ? StalkerRig.Role.ContactPiedD : StalkerRig.Role.ContactPiedG),
+                    Right = right,
+                };
+                var arm = new Limb
+                {
+                    A = B(right ? StalkerRig.Role.BrasD : StalkerRig.Role.BrasG), M = B(right ? StalkerRig.Role.AvantBrasD : StalkerRig.Role.AvantBrasG),
+                    E = B(right ? StalkerRig.Role.MainD : StalkerRig.Role.MainG), Contact = B(right ? StalkerRig.Role.ContactMainD : StalkerRig.Role.ContactMainG),
+                    Arm = true, Right = right,
+                };
                 foreach (Limb l in new[] { leg, arm })
                     if (l.A != null && l.M != null && l.E != null && l.Contact != null)
                         list.Add(l);
@@ -53,8 +77,13 @@ namespace ItHunts.Enemies
         {
             Planted = 0;
             OnWall = 0;
+            OutOfReach = 0;
+            _debug.Clear();
             if (s == null || !s.limbIkEnabled)
+            {
+                ShowDebug(false);
                 return;
+            }
             Vector3 up = _self.up, right = _self.right, fwd = _self.forward;
             float rate = dt / Mathf.Max(0.01f, s.limbIkBlend);
             foreach (Limb l in _limbs)
@@ -79,8 +108,17 @@ namespace ItHunts.Enemies
                 else if (l.Arm && climbWall && Physics.Raycast(contact - fwd * 3f, fwd, out RaycastHit wall, 8f, ~0, QueryTriggerInteraction.Ignore)
                          && IsDecor(wall.collider))
                 {
-                    goal = wall.point - fwd * 0.15f;
-                    wantWall = 1f;
+                    if (WithinReach(l.A.position, wall.point, Reach(l.A, l.M, l.E, l.Contact), s.limbIkReachMargin))
+                    {
+                        goal = wall.point - fwd * 0.15f;
+                        wantWall = 1f;
+                        _debug.Add((wall.point, true));
+                    }
+                    else
+                    {
+                        OutOfReach++;
+                        _debug.Add((wall.point, false));
+                    }
                 }
                 // Course : la main écartée vers un mur à portée s'y plaque (frappes des courses enragées).
                 else if (l.Arm && running)
@@ -92,8 +130,18 @@ namespace ItHunts.Enemies
                         && Physics.Raycast(shoulder, (side * 0.8f - up * 0.6f).normalized, out RaycastHit w, s.limbIkWallReach, ~0, QueryTriggerInteraction.Ignore)
                         && IsDecor(w.collider) && Mathf.Abs(w.normal.y) < 0.4f)
                     {
-                        goal = w.point + w.normal * 0.15f;
-                        wantWall = Mathf.Clamp01((lateral - s.limbIkWallSpread) / 1.5f);
+                        // Seulement un vrai mur à portée réelle de la main : sinon la main se tendait dans le vide.
+                        if (WithinReach(shoulder, w.point, Reach(l.A, l.M, l.E, l.Contact), s.limbIkReachMargin))
+                        {
+                            goal = w.point + w.normal * 0.15f;
+                            wantWall = Mathf.Clamp01((lateral - s.limbIkWallSpread) / 1.5f);
+                            _debug.Add((w.point, true));
+                        }
+                        else
+                        {
+                            OutOfReach++;
+                            _debug.Add((w.point, false));
+                        }
                     }
                 }
 
@@ -109,6 +157,7 @@ namespace ItHunts.Enemies
                         {
                             goal = contact + up * offset;
                             Planted++;
+                            _debug.Add((goal.Value, true));
                         }
                     }
                 }
@@ -122,6 +171,50 @@ namespace ItHunts.Enemies
                 // Le point de contact (sous les griffes) va sur le but : la cheville ou le poignet se déplace d'autant.
                 Vector3 tip = l.E.position + (goal.Value - contact);
                 SolveTwoBone(l.A, l.M, l.E, tip, wantWall > 0f ? Mathf.Min(l.Weight, l.WallWeight) : l.Weight);
+            }
+
+            ShowDebug(s.limbIkDebug);
+        }
+
+        /// <summary>Debug visuel des contacts : sphères (vert : posé, rouge : mur hors de portée) et lignes dans la vue Scene.</summary>
+        private void ShowDebug(bool on)
+        {
+            if (!on)
+            {
+                if (_markers != null)
+                    foreach (Transform t in _markers)
+                        if (t != null)
+                            t.gameObject.SetActive(false);
+                return;
+            }
+
+            if (_markers == null)
+            {
+                _markers = new Transform[8];
+                _markerBlock = new MaterialPropertyBlock();
+                Shader sh = Shader.Find("Universal Render Pipeline/Unlit");
+                for (int i = 0; i < _markers.Length; i++)
+                {
+                    GameObject g = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    g.name = "IK du traqueur : contact";
+                    Object.Destroy(g.GetComponent<Collider>());
+                    g.transform.localScale = Vector3.one * 0.5f;
+                    if (sh != null)
+                        g.GetComponent<Renderer>().sharedMaterial = new Material(sh);
+                    _markers[i] = g.transform;
+                }
+            }
+
+            for (int i = 0; i < _markers.Length; i++)
+            {
+                bool show = i < _debug.Count;
+                _markers[i].gameObject.SetActive(show);
+                if (!show)
+                    continue;
+                _markers[i].position = _debug[i].p;
+                _markerBlock.SetColor("_BaseColor", _debug[i].ok ? new Color(0.2f, 1f, 0.3f) : new Color(1f, 0.15f, 0.1f));
+                _markers[i].GetComponent<Renderer>().SetPropertyBlock(_markerBlock);
+                Debug.DrawLine(_self.position + _self.up * 9f, _debug[i].p, _debug[i].ok ? Color.green : Color.red);
             }
         }
 

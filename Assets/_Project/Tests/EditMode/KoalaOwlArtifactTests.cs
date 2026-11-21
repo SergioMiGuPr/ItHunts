@@ -118,28 +118,65 @@ namespace ItHunts.Tests
         [Test]
         public void Livre_DrainEtSoin_ReglagesParDefaut()
         {
-            Assert.That(_book.range, Is.EqualTo(15f));
-            Assert.That(_book.drainDps, Is.EqualTo(6f));
-            Assert.That(_book.drainReturn, Is.EqualTo(0.5f));
-            Assert.That(_book.maxDuration, Is.EqualTo(4f));
-            Assert.That(_book.drainCooldown, Is.EqualTo(6f));
+            // Drain continu (D-088, playtest du 2026-11-21) ; soin inchangé.
+            Assert.That(_book.castRange, Is.EqualTo(20f));
+            Assert.That(_book.holdRange, Is.EqualTo(30f));
+            Assert.That(_book.sightGrace, Is.EqualTo(0.5f));
+            Assert.That(_book.drainDps, Is.EqualTo(15f));
+            Assert.That(_book.drainReturn, Is.EqualTo(0.2f));
+            Assert.That(_book.drainCooldown, Is.EqualTo(1f));
+            Assert.That(_book.range, Is.EqualTo(15f), "soin : portée inchangée");
+            Assert.That(_book.maxDuration, Is.EqualTo(4f), "soin : durée inchangée");
             Assert.That(_book.healDps, Is.EqualTo(8f));
             Assert.That(_book.healCooldown, Is.EqualTo(8f));
         }
 
         [Test]
-        public void Livre_LienCasse_Relache_Portee_Vue_Duree()
+        public void Livre_Drain_SansDureeMax_PorteeDeMaintien_VuePerdue05s()
         {
             BookState s = BookState.Create();
             SpiritBook.Start(ref s, BookLink.Drain, 10, 10);
-            Assert.That(SpiritBook.Check(s, 11, true, true, 10f, true, _book, Dt), Is.EqualTo(BookEnd.Aucune));
-            Assert.That(SpiritBook.Check(s, 11, false, true, 10f, true, _book, Dt), Is.EqualTo(BookEnd.Relache));
-            Assert.That(SpiritBook.Check(s, 11, true, true, 15.5f, true, _book, Dt), Is.EqualTo(BookEnd.Portee));
-            Assert.That(SpiritBook.Check(s, 11, true, true, 10f, false, _book, Dt), Is.EqualTo(BookEnd.Vue));
-            Assert.That(SpiritBook.Check(s, 10 + 240, true, true, 10f, true, _book, Dt), Is.EqualTo(BookEnd.Duree), "4 s au plus");
+            Assert.That(SpiritBook.Check(ref s, 11, true, true, 10f, true, _book, Dt), Is.EqualTo(BookEnd.Aucune));
+            Assert.That(SpiritBook.Check(ref s, 10 + 60 * 60, true, true, 10f, true, _book, Dt), Is.EqualTo(BookEnd.Aucune), "1 min : toujours là");
+            Assert.That(SpiritBook.Check(ref s, 11, false, true, 10f, true, _book, Dt), Is.EqualTo(BookEnd.Relache));
+            Assert.That(SpiritBook.Check(ref s, 11, true, true, 29.5f, true, _book, Dt), Is.EqualTo(BookEnd.Aucune), "maintien jusqu'à 30 m");
+            Assert.That(SpiritBook.Check(ref s, 11, true, true, 30.5f, true, _book, Dt), Is.EqualTo(BookEnd.Portee));
+            // Vue perdue : 0.5 s de tolérance (30 ticks), puis le lien casse ; la vue revenue remet la tolérance à zéro.
+            Assert.That(SpiritBook.Check(ref s, 100, true, true, 10f, false, _book, Dt), Is.EqualTo(BookEnd.Aucune));
+            Assert.That(SpiritBook.Check(ref s, 125, true, true, 10f, false, _book, Dt), Is.EqualTo(BookEnd.Aucune), "0.42 s sans vue : tient");
+            Assert.That(SpiritBook.Check(ref s, 126, true, true, 10f, true, _book, Dt), Is.EqualTo(BookEnd.Aucune), "vue revenue");
+            Assert.That(SpiritBook.Check(ref s, 140, true, true, 10f, false, _book, Dt), Is.EqualTo(BookEnd.Aucune));
+            Assert.That(SpiritBook.Check(ref s, 170, true, true, 10f, false, _book, Dt), Is.EqualTo(BookEnd.Vue), "0.5 s sans vue : cassé");
+            Assert.That(SpiritBook.DrainTick(s, _book, Dt), Is.EqualTo(15f * Dt).Within(1e-5f), "15 PV/s, sans plafond par lien");
             SpiritBook.End(ref s, 250, _book, Dt);
-            Assert.That(SpiritBook.Ready(s, 250 + 300), Is.False, "recharge de 6 s");
-            Assert.That(SpiritBook.Ready(s, 250 + 360), Is.True);
+            Assert.That(SpiritBook.Ready(s, 250 + 50), Is.False, "recharge de 1 s quand il casse");
+            Assert.That(SpiritBook.Ready(s, 250 + 60), Is.True);
+        }
+
+        [Test]
+        public void Livre_Soin_Inchange_Duree_Portee_Vue()
+        {
+            BookState s = BookState.Create();
+            SpiritBook.Start(ref s, BookLink.Soin, 10, 10);
+            Assert.That(SpiritBook.Check(ref s, 11, true, true, 15.5f, true, _book, Dt), Is.EqualTo(BookEnd.Portee), "soin : 15 m");
+            Assert.That(SpiritBook.Check(ref s, 11, true, true, 10f, false, _book, Dt), Is.EqualTo(BookEnd.Vue), "soin : vue coupée tout de suite");
+            Assert.That(SpiritBook.Check(ref s, 10 + 240, true, true, 10f, true, _book, Dt), Is.EqualTo(BookEnd.Duree), "soin : 4 s au plus");
+        }
+
+        /// <summary>Dégâts par seconde soutenus des trois armes du jeu (mesure du 2026-11-21).</summary>
+        [Test]
+        public void Mesure_DegatsParSeconde_LivreBarilletEpee()
+        {
+            var barrel = AssetDatabase.LoadAssetAtPath<BarrelSettings>("Assets/_Project/Settings/Barrel_Default.asset");
+            float barrelDps = barrel.rounds * barrel.damage / (barrel.rounds * barrel.fireInterval + barrel.reloadTime);
+            float combo = _sword.comboDamage[0] + _sword.comboDamage[1] + _sword.comboDamage[2];
+            float swordDps = combo / (3f * _sword.swingInterval + _sword.comboRecovery);
+            float swordFull = swordDps * _sword.speedMaxMultiplier;
+            float bookDps = _book.drainDps;
+            Assert.That(bookDps, Is.LessThan(barrelDps), "le livre soigne en plus : il reste sous le barillet");
+            Assert.Pass($"barillet {barrelDps:0.0} PV/s (cadence pleine, recharge comprise) ; épée {swordDps:0.0} PV/s à la course, " +
+                        $"{swordFull:0.0} PV/s à pleine vitesse ; livre {bookDps:0.0} PV/s en continu (+{bookDps * _book.drainReturn:0.0} PV/s de soin " +
+                        $"pour le hibou), sans visée fine, jusqu'à {_book.holdRange:0} m");
         }
 
         [Test]
