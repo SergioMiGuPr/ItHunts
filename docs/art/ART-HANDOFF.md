@@ -834,6 +834,9 @@ Contrôles, vidéos côte à côte et planches : `docs/art/rendus/Traqueur/v4/an
 | `Traqueur_Bond` | 6.0 s | non | **oui**, 19.4 m vers l'avant, +5.4 m vers le haut (sur un bloc) | décollage **2.05 s** ; mains sur le bloc **4.6 s**, pieds **4.85 s** | — |
 | `Traqueur_BondPrise` | 5.0 s | non | **oui**, 8.4 m vers l'avant | décollage **1.05 s** ; **poing 2.55 → 2.72 s** ; mains au sol **3.0 s**, pieds **3.15 s** | — |
 | `Traqueur_PriseRebord` | 6.0 s | non | oui (0.2 m) ; à jouer au sommet d'un rebord de 6 m | bras tendu vers le bas **1.75 → 3.1 s** ; **poing 3.25 s** ; retour du poing 4.4 → 5.2 s | 0 |
+| `Traqueur_Reception` | 5.0 s | non | **oui** (chute : +6 m vers l'avant, −8.5 m) | mains au sol **0.35 s**, pieds **0.5 s**, le plus bas 0.85 s ; **sortie possible dès 1.1 s** | — |
+| `Traqueur_Escalade` | 4.5 s | non | **oui** (+9.5 m vers l'avant, +7.5 m) ; bloc de 7.5 m | main D en haut **0.25 s**, main G **0.6 s** ; détente **2.55 s** ; pieds sur le bloc **3.25 s** | — |
+| `Traqueur_ChaineGrimpe` | 5.0 s | non | **oui** (+4.8 m de montée) | saut **0.35 s**, mains sur la chaîne **0.55 s** ; montée **1.1 → 2.9 s** en 2 cycles de 0.9 s (+2.4 m chacun ; cette partie boucle) | montée 2.7 m/s |
 
 Pour jouer la marche à une autre vitesse sans glissement, il faut multiplier la vitesse de lecture par (vitesse voulue / 1.27). Sinon, utiliser le root motion.
 
