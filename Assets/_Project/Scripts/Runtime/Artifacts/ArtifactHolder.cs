@@ -144,7 +144,7 @@ namespace ItHunts.Artifacts
             Vector3 point = target != null ? TargetPoint(target) : eye;
             float distance = Vector3.Distance(eye, point);
             bool sight = alive && SpiritBook.InSight(eye, point, target, transform, bk);
-            BookEnd end = SpiritBook.Check(_book, tick, input.ThrowHeld, alive, distance, sight, bk, dt);
+            BookEnd end = SpiritBook.Check(ref _book, tick, input.ThrowHeld, alive, distance, sight, bk, dt);
             if (end != BookEnd.Aucune)
             {
                 LastBookEnd = end;

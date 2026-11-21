@@ -20,15 +20,17 @@ MonoBehaviour:
   viewOffset: {x: 0, y: 0.16, z: 0.06}
   viewEuler: {x: 0, y: 0, z: 0}
   viewScale: 1
-  range: 15
   aimHalfAngle: 8
+  castRange: 20
+  holdRange: 30
+  sightGrace: 0.5
+  drainDps: 15
+  drainReturn: 0.2
+  drainCooldown: 1
+  range: 15
   maxDuration: 4
-  drainDps: 6
-  drainReturn: 0.5
-  drainCooldown: 6
   healDps: 8
   healCooldown: 8
-  maxDrainPerLink: 30
   maxHealPerLink: 32
   sightMask:
     serializedVersion: 2
