@@ -27,6 +27,9 @@ namespace ItHunts.Tests
             Assert.That(StalkerPassageMath.Allowed(StalkerLinkKind.MurGrimpe, a, new Vector3(5f, 17f, 0f), _cfg), Is.False, "mur de 16 m au plus");
             Assert.That(StalkerPassageMath.Allowed(StalkerLinkKind.EscaladeRebord, a, new Vector3(5f, 9f, 0f), _cfg), Is.False, "rebord de 8 m au plus");
             Assert.That(StalkerPassageMath.Allowed(StalkerLinkKind.ChaineSaut, a, new Vector3(19f, -5f, 0f), _cfg), Is.False, "saut de chaîne de 18 m au plus");
+            Assert.That(StalkerPassageMath.Allowed(StalkerLinkKind.ChaineSaut, new Vector3(0f, 11f, 0f), new Vector3(12f, 0f, 12f), _cfg), Is.True,
+                "il se laisse tomber de 11 m depuis la chaîne (puits)");
+            Assert.That(StalkerPassageMath.Allowed(StalkerLinkKind.MurGrimpe, a, new Vector3(11f, 11f, 11f), _cfg), Is.True, "bouts recalés : 16 m à plat au plus");
         }
 
         [Test]
@@ -90,6 +93,20 @@ namespace ItHunts.Tests
                 Assert.That(go.GetComponentsInChildren<StalkerPassage>().Length, Is.GreaterThan(0), n + " : passages du traqueur");
                 var spots = go.GetComponentsInChildren<ItHunts.Level.ChestSpot>();
                 Assert.That(System.Array.Exists(spots, s => s.difficulty == 2), Is.True, n + " : une ancre difficile");
+                // B3 : aucune porte étroite plus petite que sa plus petite porte (DA : 4 × 5.2 m) : il la franchit en se faufilant.
+                var stalkerCfg = UnityEditor.AssetDatabase.LoadAssetAtPath<StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
+                Assert.That(stalkerCfg.narrowDoorWidth, Is.EqualTo(4f));
+                Assert.That(stalkerCfg.narrowDoorHeight, Is.EqualTo(5.2f));
+                foreach (StalkerPassage door in go.GetComponentsInChildren<StalkerPassage>(true))
+                    if (door.kind == StalkerLinkKind.PorteEtroite)
+                        Assert.That(StalkerPassageMath.DoorPassable(door.doorHalfSize, stalkerCfg), Is.True, $"{n} : {door.name}");
+                // A2 : chaque pièce du kit de la DA a sa collision ; garde-corps, cordes et chaînes laissent passer la main du traqueur.
+                foreach (Transform t in go.GetComponentsInChildren<Transform>())
+                    if (t.name.StartsWith("Kit (DA)"))
+                        Assert.That(t.GetComponentsInChildren<Collider>().Length, Is.GreaterThan(0), $"{n} : {t.name} sans collision");
+                foreach (Collider c in go.GetComponentsInChildren<Collider>())
+                    if (c.name.Contains("garde-corps") || c.name.Contains("cordes") || c.name.Contains("chaîne"))
+                        Assert.That(c.GetComponentInParent<StalkerPassesThrough>(true), Is.Not.Null, $"{n} : {c.name}");
             }
         }
     }

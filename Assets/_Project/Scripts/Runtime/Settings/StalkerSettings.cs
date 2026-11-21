@@ -79,19 +79,62 @@ namespace ItHunts.Settings
         [Min(0f)] public float climbStartPause = 0.2f;
         [Tooltip("Porte étroite : part de sa vitesse quand il se faufile.")]
         [Range(0.1f, 1f)] public float narrowDoorSlowFactor = 0.45f;
-        [Tooltip("Hauteur sous laquelle une porte l'oblige à se faufiler (m ; 10 en attendant la mesure du modèle v4).")]
-        [Min(1f)] public float narrowDoorHeight = 10f;
+        [Tooltip("Plus petite porte qu'il franchit en se faufilant (m) : mesurée par la DA sur Traqueur_PorteEtroite (PR #32) : 4 × 5.2 m ; " +
+                 "plus petite : seul son bras passe.")]
+        [Min(1f)] public float narrowDoorHeight = 5.2f;
+        [Min(1f)] public float narrowDoorWidth = 4f;
 
-        [Header("Chaînes d'os à ressort (traqueur v4 : prévu, pas activé, D-070 inchangé)")]
-        [Tooltip("Active les chaînes d'os (cheveux, chaînes, lambeaux) du modèle v4 quand il sera validé.")]
-        public bool boneChainsEnabled;
+        [Header("Mouvement provisoire (clips de la DA absents, C5)")]
+        [Tooltip("Foulée du cycle de marche provisoire (m par cycle de deux pas) : les pieds suivent la vitesse au sol.")]
+        [Min(1f)] public float provisionalStride = 9f;
+        [Tooltip("Dos voûté au repos (°, réparti sur la colonne et le cou ; la tête regarde devant).")]
+        [Range(0f, 80f)] public float provisionalHunch = 62f;
+        [Tooltip("Genoux fléchis au repos (m dont le bassin descend) : avec le dos voûté, épaule à 10.5 m et 0.9 m devant (DA).")]
+        [Range(0f, 2f)] public float provisionalKneeDrop = 0.3f;
+        [Range(0f, 60f)] public float provisionalLegSwing = 24f;
+        [Range(0f, 60f)] public float provisionalArmSwing = 20f;
+
+        [Header("Visage (couche séparée, C4) : regard, mâchoire, cri, grognement, clignements, bave")]
+        [Tooltip("Regard vers le joueur repéré : angle maximal à gauche et à droite, en haut et en bas (°), vitesse d'entrée (1/s).")]
+        [Range(0f, 120f)] public float faceLookYaw = 70f;
+        [Range(0f, 90f)] public float faceLookPitch = 45f;
+        [Min(0.1f)] public float faceLookSpeed = 3f;
+        [Tooltip("Mâchoire qui pend (poids de MachoirePendante, 0 à 100) et son oscillation.")]
+        [Range(0f, 100f)] public float faceJawHang = 22f;
+        [Range(0f, 50f)] public float faceJawSway = 14f;
+        [Tooltip("Durée du cri (forme Cri) au passage en Enragé et juste avant une prise (s), avec cri_enrage ou cri_prise.")]
+        [Min(0.2f)] public float faceCryDuration = 1.4f;
+        [Tooltip("Grognement à proximité : distance (m), durée de la forme (s), temps entre deux grognements (s).")]
+        [Min(0f)] public float faceGrowlRange = 15f;
+        [Min(0.2f)] public float faceGrowlDuration = 1.6f;
+        [Min(0.5f)] public float faceGrowlCooldown = 7f;
+        [Tooltip("Clignements : intervalle au hasard (s).")]
+        public Vector2 faceBlinkInterval = new Vector2(2.5f, 6f);
+        [Tooltip("Bave en particules (gouttes par seconde, 0 : aucune).")]
+        [Min(0f)] public float faceDroolRate = 3f;
+
+        [Header("IK des membres (C3, visuelle) : appuis au sol, mains aux murs et aux chaînes")]
+        public bool limbIkEnabled = true;
+        [Tooltip("Fondu d'entrée et de sortie de l'IK (s).")]
+        [Min(0.01f)] public float limbIkBlend = 0.15f;
+        [Tooltip("Un pied ou une main à moins de cette hauteur au-dessus de son sol (m) est en appui : il va sur le sol réel.")]
+        [Min(0f)] public float limbIkPlantHeight = 0.5f;
+        [Tooltip("Écart de sol corrigé au plus (m) : au-delà (vide, fosse), l'appui garde la pose du clip.")]
+        [Min(0f)] public float limbIkMaxReach = 2f;
+        [Tooltip("Course : une main écartée de plus de cette distance de l'axe (m) va se plaquer sur un mur à portée (m).")]
+        [Min(0f)] public float limbIkWallSpread = 2f;
+        [Min(1f)] public float limbIkWallReach = 9f;
+
+        [Header("Cheveux : chaînes d'os à ressort (v4, D-081)")]
+        [Tooltip("Active le ressort des cheveux (os Cheveux_N_2 à _4) du modèle v4.")]
+        public bool boneChainsEnabled = true;
         [Tooltip("Réglages des chaînes d'os du modèle v4 (raideur, amortissement, gravité, inertie, rayon de collision).")]
         public BoneSpringSettings boneChains = BoneSpringSettings.Default;
 
         [Header("Se baisser (D-035)")]
         [Tooltip("Hauteur minimale de passage (m) : sous un pont, une poutre ou un passage plus bas que lui, il se baisse ; " +
                  "plus bas que ça, il ne passe pas.")]
-        [Min(1f)] public float crouchMinHeight = 9f;
+        [Min(1f)] public float crouchMinHeight = 8.5f;
         [Tooltip("Vitesse quand il est baissé (part de sa vitesse).")]
         [Range(0.1f, 1f)] public float crouchSpeedFactor = 0.6f;
 
@@ -118,11 +161,13 @@ namespace ItHunts.Settings
         [Min(0f)] public float loseSightTime = 1.5f;
 
         [Header("Prise à la main (D-034) : elle tue quels que soient les PV")]
-        [Tooltip("Hauteur de l'épaule (m) ; la main atteint tout point à moins de handReach de l'épaule, en hauteur aussi. " +
-                 "11.1 m : l'épaule du modèle de la DA (SM_Traqueur_Corps).")]
-        [Min(0f)] public float shoulderHeight = 11.1f;
-        [Tooltip("Écart latéral de l'épaule au centre (m) : 1.8 m, l'épaule visible du modèle (avant : 0.4 × la largeur, 2.8 m).")]
-        [Min(0f)] public float shoulderSide = 1.8f;
+        [Tooltip("Hauteur de l'épaule (m) dans sa pose voûtée (DA, NOTES.md du v4 : 10.5 m ; debout bras tendu : 11.1 m) ; la main " +
+                 "atteint tout point à moins de GrabReach (bras + fente) de l'épaule, en hauteur aussi.")]
+        [Min(0f)] public float shoulderHeight = 10.5f;
+        [Tooltip("Avance de l'épaule devant ses pieds dans la pose voûtée (m, DA : 0.9 m).")]
+        public float shoulderForward = 0.9f;
+        [Tooltip("Écart latéral de l'épaule au centre (m) : 1.37 m sur SK_Traqueur_v4 (os Bras_D).")]
+        [Min(0f)] public float shoulderSide = 1.37f;
         [Tooltip("Pupilles (émission par le masque de M_Traqueur), toujours allumées : rouge sombre et discret (retours du lot, point 3).")]
         [ColorUsage(false, true)] public Color pupilGlow = new Color(0.55f, 0.05f, 0.03f);
         [Tooltip("Intensité des pupilles (× la couleur).")]
@@ -144,15 +189,42 @@ namespace ItHunts.Settings
         [Tooltip("Vitesse de passage d'une intensité à l'autre (1/s).")]
         [Min(0.1f)] public float clawGlowRate = 8f;
 
-        [Header("Clips (SK_Traqueur v3, PR #13)")]
+        [Header("Clips du traqueur v4 (DA, PR #28 et #29 : vitesses réelles des cycles)")]
         [Tooltip("Vitesse au sol du clip Traqueur_Marche lu à la vitesse 1 (m/s, mesurée par la DA) : vitesse de lecture = vitesse ÷ cette valeur, " +
                  "pour que les pieds ne glissent pas.")]
-        [Min(0.1f)] public float walkClipSpeed = 3.71f;
+        [Min(0.1f)] public float walkClipSpeed = 1.27f;
+        [Tooltip("Vitesse au sol des courses enragées A et B (quatre pattes) et C (deux jambes) à la vitesse 1 (m/s, DA).")]
+        [Min(0.1f)] public float runClipSpeedA = 11f, runClipSpeedB = 11f, runClipSpeedC = 9f;
+        [Tooltip("Instants des clips de la DA (s, ART-HANDOFF) : impact de la prise (poing), prise depuis un rebord, bond-prise ; décollage " +
+                 "et pose des mains du bond et du bond-prise. La mort du joueur tombe à l'instant d'impact du clip.")]
+        [Min(0f)] public float clipPriseImpact = 2.37f, clipPriseRebordImpact = 3.25f, clipBondPriseImpact = 2.55f;
+        [Min(0f)] public float clipBondTakeoff = 2.05f, clipBondLand = 4.6f, clipBondPriseTakeoff = 1.05f, clipBondPriseLand = 3.0f;
+        [Tooltip("Chaîne (Traqueur_ChaineGrimpe) : partie qui boucle (début, durée d'un cycle, s) et montée par cycle (m) ; montée " +
+                 "couverte par le clip sans boucle supplémentaire (m). Réception : sortie possible (s).")]
+        [Min(0f)] public float clipChainLoopStart = 1.1f, clipChainCycle = 0.9f, clipChainRisePerCycle = 2.4f, clipChainBaseRise = 4.8f;
+        [Min(0f)] public float clipReceptionExit = 1.1f;
+        [Tooltip("Saut depuis une chaîne (Traqueur_ChaineSaut) : lâcher et pose des mains (s) ; prise depuis la chaîne : poing (s).")]
+        [Min(0f)] public float clipChainJumpRelease = 3.4f, clipChainJumpLand = 4.2f, clipChainGrabImpact = 3.75f;
+        [Tooltip("Durées des clips des passages (s, DA) : bond, saut de chaîne, escalade, chaîne, porte étroite ; servent au coût des " +
+                 "liens du NavMesh (le traqueur choisit le chemin le plus court en temps). 0 : durée calculée sans clip.")]
+        [Min(0f)] public float clipBondLength = 6f, clipChainJumpLength = 6f, clipClimbLength = 4.5f, clipChainClimbLength = 5f, clipDoorLength = 7f;
+        [Tooltip("Prise depuis un rebord (clip Traqueur_PriseRebord) : la cible est au moins à cette hauteur sous ses pieds (m).")]
+        [Min(0f)] public float ledgeGrabDrop = 4f;
+        [Tooltip("Au-dessus de cette vitesse (m/s), il court (courses enragées) ; en dessous, il marche à quatre pattes (Rôde).")]
+        [Min(0.5f)] public float runThreshold = 4.5f;
         [Tooltip("Vitesse au sol du clip Traqueur_PassageBas à la vitesse 1 (m/s).")]
         [Min(0.1f)] public float crouchClipSpeed = 2.29f;
         [Tooltip("Vitesse de lecture des clips de déplacement : bornes (évite un clip figé ou frénétique).")]
         public Vector2 clipPlaybackRange = new Vector2(0.3f, 5.5f);                 // ruée enragée 18 m/s ÷ 3.71 = 4.9
-        [Min(0f)] public float handReach = 15f;
+        [Header("Portée réelle du modèle v4 (D-080) : bras + fente du corps, aucun os étiré")]
+        [Tooltip("Longueur du bras tendu, de l'épaule au bout des griffes (m) : mesurée par la DA sur SK_Traqueur_v4 (NOTES.md : 8.3 m).")]
+        [Min(1f)] public float armLength = 8.3f;
+        [Tooltip("Fente : distance dont le corps avance vers la cible pendant la prise (m) ; portée de la prise = bras + fente.")]
+        [Min(0f)] public float grabLunge = 4.5f;
+        [Tooltip("Durée de la fente (s), qui finit à l'impact de la main.")]
+        [Min(0.05f)] public float grabLungeTime = 0.4f;
+        /// <summary>Portée de la prise depuis l'épaule (m) : bras réel + fente (D-080, remplace les 15 m de D-070).</summary>
+        public float GrabReach => armLength + grabLunge;
         [Tooltip("Annonce : le bras se lève et une lueur rouge marque la zone visée pendant ce temps (s).")]
         [Min(0f)] public float grabTelegraph = 0.5f;
         [Tooltip("Durée de la descente de la main (s), puis temps où elle reste au sol (s).")]
@@ -210,8 +282,8 @@ namespace ItHunts.Settings
         [Tooltip("Visée corrigée (s) : à ce temps avant la descente, il vise de nouveau le point prédit.")]
         [Min(0f)] public float grabReaim = 0.15f;
         [Tooltip("Pièces où il n'entre pas : il s'arrête devant la porte ou la fenêtre et passe le bras ; sa main va jusqu'à " +
-                 "cette distance (m) à l'intérieur, depuis l'ouverture.")]
-        [Min(0f)] public float roomReach = 15f;
+                 "cette distance (m) à l'intérieur, depuis l'ouverture (v4 : bras de 8.3 m + 2 m d'épaule engagée dans une porte de 3 m, D-080).")]
+        [Min(0f)] public float roomReach = 10.3f;
         [Tooltip("Bords de la carte : collé à un mur, il se penche et tend le bras de cette longueur en plus (m).")]
         [Min(0f)] public float edgeLean = 2.5f;
         [Tooltip("Il ne peut pas t'atteindre (passage étroit) : il vise où tu seras dans ce temps (s) pour te couper la sortie.")]

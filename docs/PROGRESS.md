@@ -4,6 +4,116 @@
 
 ## Étape en cours
 
+**Matin du 2026-11-21 (fusionné dans `main`) :** corrections A1 à A6, traqueur v4 en jeu (modèle B, animations C), PR d'art #27 à
+#33 intégrées au fil de l'eau (aucune bloquée). Build de développement : `Builds/Matin_2026-11-21/ItHunts.exe`. **À valider en
+playtest :** fente de la prise (6.5 m), durée des passages avec les clips (bond 6 s), pièces annexes 12 × 8 m, menu des touches.
+- **A1. Matériaux d'art jamais modifiés.** Cause : `CampementApercu.Eclaire` (DA) ne copie le matériau qu'en Play Mode ; en mode
+  édition (test `Campement_PlacesSuiventLeSalon`), il écrivait dans `M_Campement_Assis_N.mat`, sauvegardé ensuite.
+  `MainMenuArt.OwnCampMaterials` donne une copie à chaque place dès la construction (édition et jeu). Autres scripts vérifiés :
+  eau, effets (`VfxPeint` : MaterialPropertyBlock ; `LienVfx` : instance), HUD, marchand : instances. Test : matériaux de la DA
+  intacts et non sales. Vérifié : `git status` propre après 30 s de Play Mode du menu et `SaveAssets`.
+- **A6. Garde-fous** : `.claude/settings.json` refuse `git reset --hard`, `git clean`, `git checkout -- .` (aussi en fin de
+  commande composée) et `git restore .`.
+- **A4. Parade sur sa touche (D-079).** Alt gauche / R3 ; E = interagir seulement ; dash manette revenu sur LB. Plus de partage
+  E dans `PlayerInputReader`. Test des touches mis à jour (seul Y reste partagé : recharger ou interagir).
+- **A3. Salles fermées et hissage.** Mesuré (sonde de plafond sur 7 × 7 points du sol de chaque salle) : Test_Arena, Level_01 et
+  le niveau aléatoire (seeds 11, 33, 55) : **toutes** les salles (pièces verrouillées, annexes, départ, sortie, arène du boss,
+  modules) ont un plafond au-dessus de 100 % de leur sol ; rien à corriger. Test `LevelClosureTests` (Salle_Verrouillee,
+  Piece_Annexe, Sortie_Arene) pour que ça reste vrai.
+- **A2. Collisions du kit des modules (PR #25).** Chaque pièce posée a des collisions simples (`ModuleLibraryNight.KitColliders`,
+  cotes d'INTEGRATION-PROPS) en 4 types : *solide* ; *garde* (garde-corps, cordes, échelle, chaînes : bloque les joueurs, pas la
+  main ni le regard du traqueur, hors NavMesh) ; *traverse* (solide pour les joueurs, le traqueur passe : piliers d'arche, rampe
+  de l'escalier en spirale, lits) ; *décor* (solide, jamais un sol). **Pièces corrigées :** grande porte 4×10 / 6×10 (jambages,
+  linteau ; échelle non uniforme : ouverture = porte étroite 8 × 10), cellule (murs, toit), échelle, mur grimpable, chaîne à
+  grimper et chaîne tendue (capsules), pont de cordes (cordes ; tablier = pont du module, posé à 11 m), rebord, lits superposés,
+  balcon (dalle à 6 m au ras de la mezzanine, garde-corps ; déplacé hors de la voie à x 10), râtelier, passerelle sur pilotis
+  (plancher au ras du sol, sur sa plateforme), arche brisée (piliers ; rive sud tournée le long de la voie), gros tuyau, roue à
+  eau, escalier en spirale (rampe lisse en 3 segments, 0 → 2.5 m), coursive en arc (dalle au ras de l'anneau à 11 m).
+  Modules reconstruits et **validés** (0 cachette, entrées reliées). Validation alignée sur le jeu : le NavMesh de contrôle du
+  traqueur ignore aussi ce qu'il traverse (`ReachCheck.BuildStalkerNavMesh`).
+  **Liens du traqueur (seed 11) : 43 → 67, 0 rejeté.** Trois défauts de la nuit corrigés au passage : caserne (lits de la
+  mezzanine : plus de NavMesh du traqueur, rebord et bond jamais reliés ; il enjambe les lits) ; prison (côté +z, le pont de
+  planches à 11 m passe au-dessus de la 1re coursive : mur grimpable déplacé côté −z) ; puits (escalades : bouts recalés au-delà
+  de 12 m à plat, limite passée à 16 m ; saut depuis la chaîne : chute de 11 m permise, jusqu'à la hauteur de chaîne).
+  **5 seeds** : 0 cachette dans les nouveaux modules. **À noter (pas causé par A2, présent avant) :** ReachCheck compte ~200 à
+  400 points « hors de portée » dans les couloirs du niveau aléatoire (210 / 274 / 238 / 418 / 236), la nuit en notait 4 à 9 :
+  à revoir (mesure ou couloirs gothiques).
+- **PR #27 (`art-traqueur-v4`) :** périmètre, GUID (11, aucun doublon), manifeste, compilation, 476 tests sur `main` ; fusionnée
+  (807a4ac), poussée, `main` dans `animations`.
+- **B. Traqueur v4 : modèle (D-080, D-081).** `SK_Traqueur_v4` (matériaux de la DA) dans les 5 scènes (Test_Arena, Level_01,
+  Level_01_Base, Level_01_Aleatoire, vitrine : 9 traqueurs) par `DecorModelInstaller.InstallStalkersEverywhere` ; contrôleur
+  `Traqueur.controller` construit des clips `Traqueur_*` de la DA (0 au départ). **Plus d'échelle d'os** (StretchScale supprimé,
+  test qui le vérifie dans le code et sur le FBX). Os `Bras_D/_G`. **Portée** : bras 8.3 m + fente 6.5 m en 0.4 s (le corps avance
+  pendant l'annonce, finie à l'impact, arrêtée au bord du NavMesh) ; mesures de la fente dans D-080 (22 modules revalidés, 0 cachette).
+  Épaule voûtée 10.5 / 1.37 / 0.9 (réglages, `ReachCheck.Configure`). Pièces annexes 12 × 8 m (`RebuildAnnexes`). **Portes
+  étroites** : 4 × 6 m (DA), lien du NavMesh à travers la porte (`StalkerPassageMath.DoorPassable`, `DoorEnds`), il se baisse à
+  5.5 m dedans. Hauteur baissée 8.5 m. **Mouvement provisoire** (`StalkerProceduralPose`, C5) calé sur la pose voûtée de la DA :
+  épaule mesurée en jeu à 10.50 m, 0.96 m devant (DA : 10.5 / 0.9). **Cheveux** : 7 `BoneSpringChain` (obstacles sur les os,
+  bornés à la pose de repos). Captures : vitrine (repos de face et de profil, marche voûtée).
+- **PR #28 (`art-traqueur-anim-1`), #29 (`art-traqueur-anim-2`) :** périmètre, GUID, compilation, 476 tests sur `main` après chacune ;
+  fusionnées (9809696, 0472d08), poussées ; `main` dans `animations` (conflit d'ART-HANDOFF : les deux sections gardées).
+- **C1/C2 (lots 1 et 2). Animator du v4** : 6 états (Repos, Marche_A/B, CourseEnragee_A/B/C), avatar et nœud de root motion de la DA.
+  Repos à l'arrêt ; Rôde (sous 4.5 m/s) : marche A ou B au hasard, décalage de cycle au hasard, lecture = vitesse ÷ 1.27 ;
+  Chasse : course A, B ou C ; Enragé : A ou B (quatre pattes) ; lecture = vitesse ÷ vitesse du cycle (11 / 11 / 9 m/s). Fondus de
+  0.3 s. **Root motion** : l'avancée de `Racine` est retirée après l'Animator (le code déplace le traqueur) ; écart latéral et
+  hauteur gardés ; dérive mesurée en poursuite : 0.00 m. Clip absent (prise, passages, baissé) : mouvement provisoire, Animator
+  coupé, racine remise au repos. Passages : la traversée dure le clip quand il est livré (un clip par type de lien).
+- **PR #30 (`art-traqueur-anim-3`) :** vérifiée, 476 tests sur `main`, fusionnée (c89a5fe), poussée, `main` dans `animations`.
+- **C2 (lot 3). Prise et bonds sur les instants de la DA.** Prise : `Traqueur_Prise`, ou `Traqueur_PriseRebord` si la cible est
+  4 m ou plus sous ses pieds ; le clip démarre décalé (`ClipOffsetForImpact`) pour que le poing (2.37 s ; rebord 3.25 s) tombe à
+  l'impact du jeu (annonce 0.5 s + descente 0.12 s) : **la mort du joueur se déclenche à l'instant d'impact du clip**, le temps
+  pour esquiver ne change pas ; mesuré en jeu : descente à 2.27 s du clip, main au sol de 2.7 à 2.9 s. L'IK du bras laisse voir
+  le geste du clip pendant l'annonce, puis pose la main sur la zone qui tue. Bond : appel jusqu'au décollage (2.05 s), vol jusqu'à
+  la pose des mains (4.6 s), réception jusqu'à la fin du clip (récupération 1.4 s) ; **bond-prise** (`Traqueur_BondPrise` :
+  décollage 1.05 s, mains 3.0 s) si un joueur est à moins de 10 m de l'arrivée. Pendant un passage ou une prise, la trajectoire
+  est celle du code (avancée et montée du clip retirées de Racine). Instants réglables dans `Stalker_Default` (clip*).
+- **C3, C4. IK et visage (D-082).** `StalkerLimbIK` (deux os, après l'Animator, rotations seules) : appuis au sol réel, mains au mur
+  en course (main écartée de plus de 2 m vers un mur à 9 m au plus), mains sur la chaîne et le mur pendant les escalades.
+  `StalkerFace` : regard, mâchoire, cri (Enragé, avant la prise : sons synchronisés dans `StalkerAudio`), grognement de
+  proximité, yeux, clignements, bave. Réglages « IK des membres » et « Visage » de `Stalker_Default`. **Coût** (éditeur, 240
+  images de poursuite) : cheveux 0.082 ms (pic 0.52), visage 0.020 ms, IK 0.037 ms (un pic à 3.6 ms à l'entrée). Animation
+  Rigging non installé (voir D-082). 2 tests (IK : cible atteinte sans changer les longueurs ; enveloppe du cri).
+- **PR #31 (`art-traqueur-anim-4`) :** vérifiée, 476 tests sur `main`, fusionnée (0be81e2), poussée, `main` dans `animations`.
+- **C2 (lot 4).** `Traqueur_Escalade` sur les murs grimpables et les rebords (la traversée dure le clip) ; `Traqueur_ChaineGrimpe` :
+  la montée main sur main (1.1 → 2.9 s, +2.4 m par cycle de 0.9 s) boucle autant que la chaîne l'exige (11 m : 3 cycles de plus),
+  temps du clip piloté par le code ; `Traqueur_Reception` après un saut sans clip propre (saut depuis une chaîne), sortie dès 1.1 s.
+  Test : cycles de la chaîne. Contrôleur : 13 états.
+- **A5. Menu des touches (D-083).** `RebindStore` (Runtime/Input : lignes par onglet, conflit, échange, réinitialisation, JSON par
+  joueur dans `persistentDataPath`, chargement dans `PlayerInputReader.Awake`, invites `Prompt`), `KeyBindingsPanel` (Runtime/Hud :
+  vue uGUI avec le panneau, la marque de focus, le cartouche `Menus_Cartouche_M` et les polices des menus de la DA ; navigation
+  complète manette et clavier, souris). Page Paramètres de la DA : 7e ligne « Touches » (copie d'une ligne, Retour descendu d'un
+  cran) ; menu pause : ligne ajoutée. Invite d'interaction du HUD = touche actuelle. 5 tests (`KeyBindingsTests` : lignes,
+  sauvegarde et rechargement, conflit oui / non, réinitialisation, 2 joueurs). Capture :
+  `docs/design/features/interface-jeu/captures/menu_touches.png`. **Pour la DA (provisoire) :** icônes des touches (clavier,
+  souris, manette), onglets Clavier / Manette, bouton Réinitialiser.
+- **PR #32 (`art-traqueur-anim-5`, dernier lot) :** vérifiée, 476 tests sur `main`, fusionnée (a6af686), poussée, `main` dans
+  `animations`. Clips non faits faute de vidéo (DA) : `Traqueur_MurGrimpe` (remplacé par `Traqueur_Escalade`), clips du visage
+  (remplacés par les formes pilotées par le code, C4).
+- **C2 (lot 5) et B3.** `Traqueur_ChaineSaut` (lâcher 3.4 s, mains 4.2 s, réception jusqu'à la fin), `Traqueur_ChainePrise` (poing
+  3.75 s, s'il attrape pendant une montée de chaîne), `Traqueur_PorteEtroite` (7 s). **Seuil des portes étroites : 4 × 5.2 m**
+  (mesuré par la DA sur le clip, au lieu de l'estimation 4 × 6) ; il se baisse à 5.2 m dans la porte. Les 4 modules : toutes les
+  portes étroites franchissables (test), 0 cachette (validés). **5 seeds** (portée configurée, 14.8 m) : liens du traqueur 69 / 72 /
+  46 / 62 / 48 (1 rejeté sur la seed 22), 0 porte trop petite, **0 cachette dans les nouveaux modules** après correction (seed 22 :
+  2 points sur la 2e coursive de la prison, l'échafaudage est maintenant traversé par le traqueur). Contrôleur : 16 états.
+- **PR #33 (`art-fin-2`, `NUIT-FIN-2.md`) :** vérifiée, 476 tests sur `main`, fusionnée (31e198c), poussée, `main` dans
+  `animations`. Toutes les PR de la nuit 2 (#27 à #33) sont intégrées, aucune bloquée.
+- **C6. Équilibre (mesures, vitesses des ennemis inchangées).** Écarts avec le joueur à 8.5 m/s (inchangés) : traqueur Chasse 9
+  (+0.5), pointe 16 (+7.5), Enragé 11 → 18 par paliers (+2.5 → +9.5) ; goule 10 (+1.5), bond 14 (+5.5). Les clips sont lus à la
+  vitesse réelle de leur cycle (marche 1.27 m/s, courses 11 / 11 / 9 m/s), donc sans changer ces vitesses. **Passages, avec les
+  clips (cette nuit, sans clip) :** bond 6.0 s (2.6), saut de chaîne 6.0 s (2.5), mur ou rebord 4.5 s (2.6), chaîne de 11 m
+  7.7 s (3.2), porte étroite 7.0 s. Coût des liens du NavMesh calculé sur ces durées (`StalkerPassageMath.ClipTime`) : il ne prend
+  un passage que si le détour à pied est plus long en temps ; pendant un bond, le joueur parcourt 51 m. **Prise** : annonce 0.5 s
+  + descente 0.12 s inchangées, mais le corps avance de 6.5 m en 0.4 s (16 m/s) : la colonne rouge reste le signal à lire.
+  **Le joueur qui bouge bien lui échappe davantage qu'avant** (passages 2 à 2.5 fois plus longs) ; à revoir en playtest (on peut
+  raccourcir l'appel du bond en jouant le clip plus vite : `clipBondTakeoff`).
+- **C7. Contrôles.** `docs/design/features/boss-traqueur/captures/v4/` : repos de face et de profil (clip), marche A (profil),
+  course enragée C (poursuite), planches du bond, de la chaîne et de la prise ; **vidéos côte à côte avec les références** :
+  `traqueur_v4_bond_cote_a_cote.mp4`, `traqueur_v4_chaine_cote_a_cote.mp4`, `traqueur_v4_prise_cote_a_cote.mp4` (jeu à gauche,
+  vidéo de référence à droite, 30 i/s ; outil `FrameDump`, assemblage ffmpeg). Commande de contrôle `Stalker.DebugTraverse`.
+  **Limites vues :** la chaîne, plus haute que le clip, est jouée au ralenti, mais le bassin du clip monte et descend pendant la
+  prise main sur main (le corps semble redescendre un peu ; à voir avec la DA : clip de chaîne en place) ; le gros plan du cri
+  n'est pas pris (au repos, la tête pend et la caméra voyait la nuque).
+
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`
 (357 Mo, lancé 35 s sans exception). Tests EditMode : 476 + 1 non concluant attendu. Réglages modifiés par le build remis (non

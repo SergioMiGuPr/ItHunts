@@ -228,6 +228,41 @@ namespace ItHunts.Enemies
         }
 
         /// <summary>
+        /// Fente de la prise (D-080) : ce qui manque au bras réel pour atteindre la cible (need, m), jamais plus que grabLunge ni
+        /// plus loin que la place devant lui (room : distance à plat jusqu'à la cible moins son rayon).
+        /// </summary>
+        public static float LungeDistance(float need, float room, StalkerSettings s) =>
+            Mathf.Clamp(need, 0f, Mathf.Min(s.grabLunge, Mathf.Max(0f, room - 0.5f)));
+
+        /// <summary>Cycles « main sur main » à ajouter au clip de la chaîne pour une montée donnée (m).</summary>
+        public static int ChainExtraCycles(float rise, StalkerSettings s) =>
+            Mathf.Max(0, Mathf.CeilToInt((rise - s.clipChainBaseRise) / Mathf.Max(0.1f, s.clipChainRisePerCycle)));
+
+        /// <summary>
+        /// Temps à montrer dans le clip de la chaîne après <paramref name="elapsed"/> s de passage : début, partie qui boucle
+        /// <paramref name="extra"/> fois de plus, puis la fin du clip.
+        /// </summary>
+        public static float ChainClipTime(float elapsed, int extra, StalkerSettings s)
+        {
+            float loopEnd = s.clipChainLoopStart + extra * s.clipChainCycle;
+            if (elapsed <= s.clipChainLoopStart)
+                return elapsed;
+            if (elapsed < loopEnd)
+                return s.clipChainLoopStart + Mathf.Repeat(elapsed - s.clipChainLoopStart, s.clipChainCycle);
+            return elapsed - extra * s.clipChainCycle;
+        }
+
+        /// <summary>Départ dans le clip (s) pour que son instant d'impact tombe après <paramref name="untilImpact"/> s (jamais négatif).</summary>
+        public static float ClipOffsetForImpact(float clipImpact, float untilImpact) => Mathf.Max(0f, clipImpact - untilImpact);
+
+        /// <summary>Avancée de la fente (0 à 1, douce) : elle se fait pendant les lungeTime dernières secondes avant l'impact.</summary>
+        public static float LungeProgress(float now, float impactAt, float lungeTime)
+        {
+            float k = Mathf.Clamp01((now - (impactAt - lungeTime)) / Mathf.Max(0.01f, lungeTime));
+            return k * k * (3f - 2f * k);
+        }
+
+        /// <summary>
         /// Revers (D-039, piste a) : le joueur (pieds) est-il dans la zone, à backhandReach du bord du corps à l'horizontale et
         /// pas plus haut que backhandHeight au-dessus de ses pieds ?
         /// </summary>

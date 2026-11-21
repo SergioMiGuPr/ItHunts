@@ -123,10 +123,40 @@ namespace ItHunts.Menus
             _titleView = _title.GetComponentInChildren<TitreApercu>(true);
         }
 
+        private readonly System.Collections.Generic.List<Material> _ownedMaterials = new System.Collections.Generic.List<Material>();
+
+        /// <summary>
+        /// Chaque place reçoit sa copie du matériau d'éclairage (A1, matin du 2026-11-21) : CampementApercu ne copie qu'en Play
+        /// Mode ; en mode édition (tests, aperçu) il écrivait dans le matériau partagé de la DA (M_Campement_Assis_N.mat).
+        /// </summary>
+        private void OwnCampMaterials()
+        {
+            if (_campView == null || _campView.places == null)
+                return;
+            foreach (CampementApercu.Place pl in _campView.places)
+            {
+                if (pl?.corps == null || pl.corps.material == null || pl.matJeu != null)
+                    continue;
+                Material m = pl.corps.material;
+                pl.matJeu = new Material(m) { name = m.name + " (jeu)", hideFlags = HideFlags.DontSave };
+                pl.corps.material = pl.matJeu;
+                _ownedMaterials.Add(pl.matJeu);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            foreach (Material m in _ownedMaterials)
+                if (m != null)
+                    DestroyImmediate(m);
+            _ownedMaterials.Clear();
+        }
+
         private void BuildCamp()
         {
             _camp = MenuArtKit.Spawn(_skin.campScreen, Page("Campement"), "Menu_Campement");
             _campView = _camp.GetComponent<CampementApercu>();
+            OwnCampMaterials();
             _modify = MenuArtKit.Find<Selectable>(_camp, "Interface/Modifier");
             _ready = MenuArtKit.Find<Selectable>(_camp, "Interface/Pret");
             _settingsButton = MenuArtKit.Find<Selectable>(_camp, "Interface/Parametres");
@@ -170,6 +200,24 @@ namespace ItHunts.Menus
                 if (label != null)
                     label.text = GameSettings.Labels[i];
                 _rows.Add(((RectTransform)row, row.Find("Valeur")?.GetComponent<Text>(), MenuArtKit.Targets(row.GetComponent<Selectable>())));
+            }
+
+            // Ligne « Touches » (A5) : une 7e ligne, copie de la dernière ligne de la DA, « Retour » descend d'un cran.
+            Transform last = _settings.transform.Find("Option_" + (GameSettings.Labels.Length - 1));
+            Transform prev = _settings.transform.Find("Option_" + (GameSettings.Labels.Length - 2));
+            if (last != null && prev != null && _settings.transform.Find("Option_" + GameSettings.Labels.Length) == null)
+            {
+                float step = ((RectTransform)last).anchoredPosition.y - ((RectTransform)prev).anchoredPosition.y;
+                var keys = (RectTransform)Instantiate(last, last.parent);
+                keys.name = "Option_" + GameSettings.Labels.Length;
+                keys.anchoredPosition = ((RectTransform)last).anchoredPosition + new Vector2(0f, step);
+                var label = keys.Find("Libelle")?.GetComponent<Text>();
+                if (label != null)
+                    label.text = GameSettings.KeysLabel;
+                _rows.Add((keys, keys.Find("Valeur")?.GetComponent<Text>(), MenuArtKit.Targets(keys.GetComponent<Selectable>())));
+                var back = _settings.transform.Find("Retour") as RectTransform;
+                if (back != null)
+                    back.anchoredPosition += new Vector2(0f, step);
             }
 
             _settingsBack = MenuArtKit.Find<Selectable>(_settings, "Retour");
@@ -497,7 +545,10 @@ namespace ItHunts.Menus
                 if (over && MenuArtKit.Clicked)
                 {
                     m.SetFocus(i);
-                    it.Change?.Invoke(MenuArtKit.LocalX(rect, _cam) < 0.5f ? -1 : 1);
+                    if (it.Change != null)
+                        it.Change(MenuArtKit.LocalX(rect, _cam) < 0.5f ? -1 : 1);
+                    else
+                        it.Submit?.Invoke();                               // « Touches » : ouvre le menu des touches
                 }
             }
 

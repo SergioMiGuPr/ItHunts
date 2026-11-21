@@ -131,7 +131,7 @@ namespace ItHunts.Level
             BuildCampMenu();
 
             _settings.Items.Clear();
-            GameSettings.Fill(_settings);
+            GameSettings.Fill(_settings, OpenKeys);
             _settings.Add("Retour", () => _page = _back);
             _settings.FocusFirst();
 
@@ -357,10 +357,22 @@ namespace ItHunts.Level
 
         private InputDevice SecondPad => _lobby != null ? (_lobby[1]?.Device as InputDevice) : null;
 
+        /// <summary>Menu des touches (A5) : une copie des actions du jeu, touches du joueur 1 (place au choix).</summary>
+        private void OpenKeys()
+        {
+            if (skin == null || skin.controls == null)
+                return;
+            var copy = Instantiate(skin.controls);
+            ItHunts.Input.RebindStore.Load(copy, 0);
+            ItHunts.Hud.KeyBindingsPanel.Open(copy, 0, true, null, skin, null, ownsAsset: true);
+        }
+
         private void Update()
         {
             if (_lobby == null)
                 return;
+            if (ItHunts.Hud.KeyBindingsPanel.IsOpen)
+                return;                                                  // le menu des touches a la main
             InputDevice p2 = SecondPad;
             _title.Exclude = _camp.Exclude = _settings.Exclude = _menu.Exclude = p2;
             if (_status.Length > 0 && Time.unscaledTime > _statusUntil)

@@ -779,11 +779,11 @@ effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retir
 | Coursive basse de la prison | 14 m de profondeur, dessus à 5.5 m | la 2e (11 m) fait 4 m : joueurs seulement |
 | Mezzanine de la caserne | 10 m, dessus à 6 m | |
 | Anneau bas du puits | 10 m, dessus à 11 m ; anneau haut 3 m à 17 m | plafond du puits 30 m |
-| Porte étroite | **8 × 10 m** (le traqueur se faufile, × 0.45) | seuil réglable (`narrowDoorHeight` 10 m, en attendant la mesure du v4) |
+| Porte étroite | **4 × 5.2 m au moins** (mesure de la DA sur `Traqueur_PorteEtroite`) : il se faufile (vitesse × 0.45, baissé à 5.2 m) ; les portes des modules font 8 × 10 m | `narrowDoorWidth` 4, `narrowDoorHeight` 5.2 (D-080) ; plus petite : seul son bras passe |
 | Bond | 22 m au plus, 6 m de dénivelé | arc de 5 m au-dessus de la ligne |
 | Rebord / mur grimpable / chaîne | 8 / 16 / 16 m de haut au plus | |
 | Saut depuis une chaîne | 18 m au plus | |
-| Garde-corps | sans collision | une collision cachait le joueur à la main du traqueur |
+| Garde-corps, cordes, échelles, chaînes | collision pour les joueurs, traversée par la main et le regard du traqueur (A2, matin du 2026-11-21) | une collision pleine cachait le joueur à la main du traqueur |
 | Cages suspendues du puits | dessus à 16 m au plus | au-dessus, cachette |
 
 ## Traqueur v4 : modèle verrouillé, mesures et portée (2026-11-21, branche `art-traqueur-v4`)
@@ -845,4 +845,24 @@ Clips sans vidéo, **non faits** : `Traqueur_MurGrimpe` (pas de vidéo « grimpe
 Passage d'une porte : avec `Traqueur_PorteEtroite`, le corps tient dans **4 m de large et 5.2 m de haut** ; les membres s'écartent jusqu'à 3.6 m de l'axe près du sol.
 
 Pour jouer la marche à une autre vitesse sans glissement, il faut multiplier la vitesse de lecture par (vitesse voulue / 1.27). Sinon, utiliser le root motion.
+
+## Traqueur v4 dans le jeu (main, matin du 2026-11-21, D-080, D-081)
+
+| Élément | Valeur | Remarque |
+|---|---|---|
+| Modèle | `SK_Traqueur_v4` tel quel (aucune échelle d'os, aucune déformation) | le jeu s'adapte au modèle |
+| Portée de la prise | bras 8.3 m + **fente du corps 6.5 m** (0.4 s, finie à l'impact) | clip de prise : l'impact doit tomber à la fin de la fente (donner l'instant d'impact) |
+| Épaule (pose voûtée) | 10.5 m de haut, 1.37 m de côté, 0.9 m devant | sert à la portée et aux cachettes |
+| Par une porte de pièce | 10.3 m (bras + 2 m d'épaule dans la porte de 3 m) | pièces annexes du niveau aléatoire : 12 × 8 m |
+| Plus petite porte | 4 × 5.2 m (il se faufile, mesure sur le clip) | `Traqueur_PorteEtroite` |
+| Baissé (ponts, poutres) | 8.5 m | `Traqueur_PassageBas` |
+| Cheveux | ressort maison, os `Cheveux_N_2` à `_4`, obstacles conseillés (NOTES.md) | réglages `Stalker_Default` > boneChains |
+| Clip manquant | mouvement provisoire procédural (dos voûté, bras ballants, cycle de marche) | remplacé par chaque clip `Traqueur_<Action>` livré |
+
+## Menu des touches (main, matin du 2026-11-21, A5, D-083)
+
+Paramètres > Touches : panneau des menus (`Carte_Legende_Cadre`), marque de focus (`Carte_Rose`), cartouche de ligne
+(`Menus_Cartouche_M`), polices des menus. **Provisoire, à fournir :** icônes des touches (clavier, souris, boutons de manette
+Xbox / PlayStation), onglets « Clavier / souris » et « Manette » (état choisi et non choisi), bouton « Réinitialiser » ; la page
+Paramètres a une 7e ligne « Touches » (copie d'une ligne existante) et « Retour » descend d'un cran.
 

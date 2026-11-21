@@ -92,7 +92,7 @@ namespace ItHunts.Level
         public static float StepValue(float v, int d, float min, float max, float step) => Mathf.Clamp(Mathf.Round((v + d * step) / step) * step, min, max);
 
         /// <summary>Les six lignes de l'écran Paramètres, dans un menu (Entrée = pas suivant).</summary>
-        public static void Fill(GreyboxMenu menu)
+        public static void Fill(GreyboxMenu menu, System.Action openKeys = null)
         {
             for (int i = 0; i < Labels.Length; i++)
             {
@@ -102,7 +102,16 @@ namespace ItHunts.Level
                 item.Change = d => Step(line, d);
                 item.Submit = () => Step(line, 1);
             }
+
+            // Menu des touches (A5) : clavier et souris, manette ; par joueur.
+            if (openKeys != null)
+            {
+                GreyboxMenu.Item keys = menu.Add(KeysLabel, openKeys);
+                keys.Value = () => "changer";
+            }
         }
+
+        public const string KeysLabel = "Touches";
 
         /// <summary>Lignes de développement (éditeur et builds de développement) : options d'image, à la suite des six lignes.</summary>
         public static void FillDevelopment(GreyboxMenu menu)

@@ -405,24 +405,23 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Traqueur_Gree_HuitClips_CalqueMachoire_EpauleDuModele()
+        public void Traqueur_V4_ClipsDeLaDA_EpauleDuModele()
         {
             var ctrl = AssetDatabase.LoadAssetAtPath<UnityEditor.Animations.AnimatorController>("Assets/_Project/Animation/Traqueur.controller");
             Assert.That(ctrl, Is.Not.Null);
-            Assert.That(ctrl.layers.Length, Is.EqualTo(2), "calque de la mâchoire");
-            Assert.That(ctrl.layers[1].avatarMask, Is.Not.Null, "masque limité à l'os Machoire");
-            Assert.That(ctrl.animationClips.Select(c => c.name).Distinct().Count(), Is.EqualTo(8));
-            foreach (string clip in new[] { "Traqueur_Marche", "Traqueur_PassageBas", "Traqueur_Prise", "Traqueur_MainsLevees", "Traqueur_MainPlantee", "Traqueur_Revers", "Traqueur_Repos" })
-                Assert.That(ctrl.layers[0].stateMachine.states.Any(s => s.state.name == clip), Is.True, clip);
-            // Le modèle gréé dans les scènes de jeu, avec son Animator.
-            string guid = AssetDatabase.AssetPathToGUID("Assets/Art/Models/Ennemis/SK_Traqueur.fbx");
+            // Un état par clip Traqueur_* livré par la DA (PR art-traqueur-anim) ; les autres passent par le mouvement provisoire.
+            foreach (var st in ctrl.layers[0].stateMachine.states)
+                Assert.That(st.state.name, Does.StartWith("Traqueur_"), st.state.name);
+            // Le modèle v4 dans les scènes de jeu, avec son Animator.
+            string guid = AssetDatabase.AssetPathToGUID("Assets/Art/Models/Ennemis/SK_Traqueur_v4.fbx");
             Assert.That(System.IO.File.ReadAllText("Assets/Scenes/Level_01_Aleatoire.unity").Contains(guid), Is.True);
-            // Épaule du modèle (par défaut, avant lecture sur l'os) : 2.6 m du centre, 11.7 m, 4 m devant le pivot.
-            Assert.That(ItHunts.Level.ReachCheck.ShoulderSide, Is.InRange(2.4f, 2.8f));
-            Assert.That(ItHunts.Level.ReachCheck.ShoulderHeight, Is.InRange(11.4f, 12f));
-            Assert.That(ItHunts.Level.ReachCheck.ShoulderForward, Is.InRange(3.4f, 4.1f));
+            // Épaule du v4 dans sa pose voûtée (DA) : 1.37 m du centre, 10.5 m, 0.9 m devant les pieds.
+            ItHunts.Level.ReachCheck.Configure(AssetDatabase.LoadAssetAtPath<ItHunts.Settings.StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset"));
+            Assert.That(ItHunts.Level.ReachCheck.ShoulderSide, Is.EqualTo(1.37f).Within(0.01f));
+            Assert.That(ItHunts.Level.ReachCheck.ShoulderHeight, Is.EqualTo(10.5f).Within(0.01f));
+            Assert.That(ItHunts.Level.ReachCheck.ShoulderForward, Is.EqualTo(0.9f).Within(0.01f));
             var stalker = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
-            Assert.That(stalker.handReach, Is.EqualTo(15f), "la portée de 15 m ne change pas");
+            Assert.That(stalker.GrabReach, Is.EqualTo(stalker.armLength + stalker.grabLunge).Within(1e-4f), "portée = bras réel + fente (D-080)");
         }
 
         [Test]

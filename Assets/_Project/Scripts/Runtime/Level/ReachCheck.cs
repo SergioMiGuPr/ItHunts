@@ -25,7 +25,21 @@ namespace ItHunts.Level
         public const float BodyRadius = 3.5f;
         /// <summary>Épaule du traqueur (StalkerSettings.shoulderHeight, shoulderSide) : hauteur debout (m) et écart au centre (m).</summary>
         /// <summary>Épaule droite du traqueur (repère du traqueur tourné vers la cible) : lue sur l'os Bras.R de SK_Traqueur (Stalker).</summary>
-        public static float ShoulderHeight = 11.6f, ShoulderSide = 2.6f, ShoulderForward = 3.56f;   // v3 (PR #13)
+        public static float ShoulderHeight = 10.5f, ShoulderSide = 1.37f, ShoulderForward = 0.9f;   // v4 voûté (DA, D-080)
+        /// <summary>Portée de la prise (bras + fente) et portée par une ouverture de pièce (m), depuis StalkerSettings.</summary>
+        public static float GrabReach = 14.8f, RoomReach = 10.3f;
+
+        /// <summary>Épaule et portées du traqueur (Stalker au démarrage, validation des modules).</summary>
+        public static void Configure(ItHunts.Settings.StalkerSettings s)
+        {
+            if (s == null)
+                return;
+            ShoulderHeight = s.shoulderHeight;
+            ShoulderSide = s.shoulderSide;
+            ShoulderForward = s.shoulderForward;
+            GrabReach = s.GrabReach;
+            RoomReach = s.roomReach;
+        }
 
         /// <summary>Points où un joueur tient debout dans la zone (grille de step m, tous les étages).</summary>
         public static List<Vector3> StandPoints(PhysicsScene physics, Bounds area, float step)
@@ -58,8 +72,10 @@ namespace ItHunts.Level
         /// Points hors de portée : aucun point du NavMesh du traqueur (filter) à moins de reach + 12 m dont l'épaule (7 ou 12 m) voit
         /// le joueur (centre du corps à 0.9 m) à moins de reach.
         /// </summary>
-        public static Result Run(PhysicsScene physics, Bounds area, float step, NavMeshQueryFilter stalker, float reach = 15f)
+        public static Result Run(PhysicsScene physics, Bounds area, float step, NavMeshQueryFilter stalker, float reach = -1f)
         {
+            if (reach < 0f)
+                reach = GrabReach;
             var result = new Result();
             List<Vector3> points = StandPoints(physics, area, step);
             result.Points = points.Count;
@@ -72,7 +88,7 @@ namespace ItHunts.Level
                     continue;
                 }
 
-                if (!Reachable(physics, p, stalker, reach) && !InReachRoom(p, reach))
+                if (!Reachable(physics, p, stalker, reach) && !InReachRoom(p, RoomReach))
                     result.Hidden.Add(p);
             }
 
@@ -83,8 +99,10 @@ namespace ItHunts.Level
         /// Pièce fermée (ReachRoom) : le traqueur y passe le bras par une ouverture (règle du jeu : 15 m au plus depuis
         /// l'ouverture la plus proche).
         /// </summary>
-        public static bool InReachRoom(Vector3 p, float reach = 15f)
+        public static bool InReachRoom(Vector3 p, float reach = -1f)
         {
+            if (reach < 0f)
+                reach = RoomReach;
             foreach (ReachRoom r in ReachRoom.All)
             {
                 if (r == null || !r.Contains(p + Vector3.up * 0.9f))
@@ -118,8 +136,10 @@ namespace ItHunts.Level
             return sb.ToString();
         }
 
-        public static bool Reachable(PhysicsScene physics, Vector3 p, NavMeshQueryFilter stalker, float reach = 15f)
+        public static bool Reachable(PhysicsScene physics, Vector3 p, NavMeshQueryFilter stalker, float reach = -1f)
         {
+            if (reach < 0f)
+                reach = GrabReach;
             Vector3 body = p + Vector3.up * 0.9f;
             // Points candidats du NavMesh du traqueur : le plus proche, puis autour (8 directions, 4 à 14 m).
             var candidates = new List<Vector3>(17);
@@ -218,7 +238,9 @@ namespace ItHunts.Level
             agentType = s.agentTypeID;
             var sources = new List<NavMeshBuildSource>();
             NavMeshBuilder.CollectSources(root, ~0, NavMeshCollectGeometry.PhysicsColliders, 0, new List<NavMeshBuildMarkup>(), sources);
-            sources.RemoveAll(src => src.component is Collider c && (c.isTrigger || c.attachedRigidbody != null));
+            // Comme ZoneNavMesh : ce que le traqueur traverse (arcs, garde-corps, piliers d'arche) n'est pas un obstacle pour lui.
+            sources.RemoveAll(src => src.component is Collider c && (c.isTrigger || c.attachedRigidbody != null
+                                                                     || c.GetComponentInParent<ItHunts.Enemies.StalkerPassesThrough>() != null));
             for (int i = 0; i < sources.Count; i++)
                 if (sources[i].component != null && sources[i].component.GetComponentInParent<NotWalkable>() != null)
                 {

@@ -143,6 +143,7 @@ namespace ItHunts.Enemies
             // Passages du traqueur posés par les modules (point 9) : liens typés, coût = temps de traversée.
             StalkerLinkCount = 0;
             StalkerLinksRejected = 0;
+            NarrowDoorsTooSmall = 0;
             if (stalkerSettings == null)
             {
                 var st = FindFirstObjectByType<Stalker>(FindObjectsInactive.Include);
@@ -154,13 +155,24 @@ namespace ItHunts.Enemies
                 foreach (StalkerPassage p in FindObjectsByType<StalkerPassage>(FindObjectsSortMode.None))
                 {
                     p.Linked = false;
+                    Vector3 rawA = p.RawA, rawB = p.RawB;
                     if (p.kind == StalkerLinkKind.PorteEtroite)
-                        continue;
+                    {
+                        // Porte étroite (D-080) : un lien la traverse si elle est au moins aussi grande que sa plus petite porte.
+                        if (!StalkerPassageMath.DoorPassable(p.doorHalfSize, stalkerSettings))
+                        {
+                            NarrowDoorsTooSmall++;
+                            continue;
+                        }
+
+                        StalkerPassageMath.DoorEnds(p.transform, p.doorHalfSize, stalkerRadius, out rawA, out rawB);
+                    }
+
                     // Bouts recalés sur le NavMesh du traqueur (4 m au plus) : un lit, un garde-corps ou le bord érodé décalent le sol
                     // praticable ; sans sol proche, pas de lien.
                     var filter = new NavMeshQueryFilter { agentTypeID = StalkerAgent, areaMask = NavMesh.AllAreas };
-                    if (!NavMesh.SamplePosition(p.RawA, out NavMeshHit ha, 4f, filter) || !NavMesh.SamplePosition(p.RawB, out NavMeshHit hb, 4f, filter)
-                        || Mathf.Abs(ha.position.y - p.RawA.y) > 1.5f || Mathf.Abs(hb.position.y - p.RawB.y) > 1.5f
+                    if (!NavMesh.SamplePosition(rawA, out NavMeshHit ha, 4f, filter) || !NavMesh.SamplePosition(rawB, out NavMeshHit hb, 4f, filter)
+                        || Mathf.Abs(ha.position.y - rawA.y) > 1.5f || Mathf.Abs(hb.position.y - rawB.y) > 1.5f
                         || !StalkerPassageMath.Allowed(p.kind, ha.position, hb.position, stalkerSettings))
                     {
                         StalkerLinksRejected++;
@@ -196,6 +208,8 @@ namespace ItHunts.Enemies
 
         /// <summary>Liens des passages du traqueur ajoutés (dernière construction).</summary>
         public int StalkerLinkCount { get; private set; }
+        /// <summary>Portes étroites plus petites que sa plus petite porte (4 × 6 m) : pas de lien, seul son bras passe.</summary>
+        public int NarrowDoorsTooSmall { get; private set; }
         /// <summary>Passages sans lien (pas de sol praticable du traqueur à moins de 4 m d'un bout, ou trop long).</summary>
         public int StalkerLinksRejected { get; private set; }
 

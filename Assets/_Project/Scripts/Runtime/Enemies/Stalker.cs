@@ -187,10 +187,10 @@ namespace ItHunts.Enemies
         /// gréé (SK_Traqueur, pose de repos : 2.6 m du centre, 11.7 m, 4 m devant le pivot) ; réglages en repli sans modèle.
         /// </summary>
         public Vector3 ShoulderOffset => _shoulderOffset.sqrMagnitude > 0.01f ? _shoulderOffset
-            : settings != null ? new Vector3(settings.shoulderSide, settings.shoulderHeight, 0f) : new Vector3(2.6f, 11.7f, 4f);
+            : settings != null ? new Vector3(settings.shoulderSide, settings.shoulderHeight, settings.shoulderForward) : new Vector3(1.37f, 10.5f, 0.9f);
         private Vector3 _shoulderOffset;
 
-        /// <summary>Épaule pour la portée : il pivote le buste vers le point visé. Portée = handReach depuis ce point.</summary>
+        /// <summary>Épaule pour la portée : il pivote le buste vers le point visé. Portée = GrabReach (bras + fente) depuis ce point.</summary>
         public Vector3 ReachShoulder(Vector3 target) => ShoulderFrom(_rb != null ? _rb.position : transform.position, target);
 
         private Vector3 ShoulderFrom(Vector3 feet, Vector3 target)
@@ -269,7 +269,18 @@ namespace ItHunts.Enemies
         {
             UpdateClawGlow(Time.deltaTime);
             if (_anim != null)
+            {
+                if (ClipMissing && _pose != null)
+                {
+                    if (_racine != null)
+                        _racine.localPosition = _racineRest;
+                    _pose.Apply(_clip, _clip == "Traqueur_Marche" ? settings.chaseSpeed : 0f, _crouch, settings, Time.deltaTime);
+                }
+                else
+                    PinRoot();
+                UpdateFace();
                 ApplyArmIK(Time.deltaTime);
+            }
         }
 
         /// <summary>
@@ -286,7 +297,7 @@ namespace ItHunts.Enemies
             {
                 string clip = pose switch
                 {
-                    ShowcasePose.MarcheVoutee => "Traqueur_Marche",
+                    ShowcasePose.MarcheVoutee => HasClip("Traqueur_Marche_A") ? "Traqueur_Marche_A" : "Traqueur_Marche",
                     ShowcasePose.Prise => "Traqueur_Prise",
                     ShowcasePose.MainPlantee => "Traqueur_MainPlantee",
                     ShowcasePose.MainsLevees => "Traqueur_MainsLevees",
@@ -387,8 +398,62 @@ namespace ItHunts.Enemies
             if (_anim == null)
                 return;
             Animate();
+            if (ClipMissing && _pose != null)
+            {
+                if (_racine != null)
+                    _racine.localPosition = _racineRest;                  // Animator coupé : la racine revient au repos
+                _pose.Apply(_clip, CurrentGroundSpeed(), _crouch, settings, Time.deltaTime);
+            }
+            else
+                PinRoot();
+            UpdateFace();
             ApplyArmIK(Time.deltaTime);
         }
+
+        public static readonly Unity.Profiling.ProfilerMarker FaceMarker = new Unity.Profiling.ProfilerMarker(Unity.Profiling.ProfilerCategory.Scripts, "Traqueur.Visage");
+        public static readonly Unity.Profiling.ProfilerMarker IkMarker = new Unity.Profiling.ProfilerMarker(Unity.Profiling.ProfilerCategory.Scripts, "Traqueur.IK");
+
+        private void UpdateFace()
+        {
+            if (_face == null)
+                return;
+            using Unity.Profiling.ProfilerMarker.AutoScope scope = FaceMarker.Auto();
+            var input = new StalkerFaceInput
+            {
+                HasTarget = Target != null && !Target.Dead, Sees = SeesTarget || Mode == StalkerMode.Enrage,
+                Enraged = Mode == StalkerMode.Enrage, Moving = CurrentGroundSpeed() > 0.5f,
+                LookAt = Target != null ? Target.transform.position + Vector3.up * 1.6f : transform.position + transform.forward * 10f,
+                Now = Time.time, LastCry = LastCryTime, LastGrowl = LastGrowlTime,
+            };
+            _face.Update(input, settings, Time.deltaTime);
+        }
+
+        private Transform _racine;
+        private Vector3 _racineRest;
+
+        /// <summary>
+        /// Root motion des clips (avancée de Racine vers l'avant) : c'est le code qui déplace le traqueur (NavMesh, vitesse réglée),
+        /// l'os reste donc sur place vers l'avant ; l'écart latéral (course B : 2.2 m vers les murs) et la hauteur sont gardés.
+        /// Position d'os seulement (permise par la DA sur Racine et Bassin) : rien n'est mis à l'échelle.
+        /// </summary>
+        private void PinRoot()
+        {
+            if (_racine == null || _racine.parent == null)
+                return;
+            Vector3 world = _racine.parent.TransformVector(_racine.localPosition - _racineRest);
+            Vector3 local = transform.InverseTransformVector(world);
+            local.z = 0f;
+            if (_trav.Active || _grab != GrabPhase.Aucune)
+                local = new Vector3(local.x, 0f, 0f);                        // passage, prise : trajectoire du code seulement
+            _racine.localPosition = _racineRest + _racine.parent.InverseTransformVector(transform.TransformVector(local));
+        }
+
+        /// <summary>Avancée de Racine vers l'avant après correction (m) : tests (doit rester nulle).</summary>
+        public float RootDrift => _racine == null ? 0f
+            : Mathf.Abs(transform.InverseTransformVector(_racine.parent.TransformVector(_racine.localPosition - _racineRest)).z);
+
+        private float CurrentGroundSpeed() =>
+            Mathf.Max(_rb != null ? new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.z).magnitude : 0f, WantedSpeed);
 
         // ---------- Modèle gréé (SK_Traqueur, PR #6) ----------
 
@@ -396,8 +461,20 @@ namespace ItHunts.Enemies
         private string _clip;
         private readonly Transform[] _boneR = new Transform[3], _boneL = new Transform[3];   // Bras, AvantBras, Main
         private Vector3[] _restR, _restL;                                                     // positions locales (rendues à chaque image)
-        private Vector3[] _scaleR, _scaleL;                                                   // échelles locales au repos
-        private int _axisR = 1, _axisL = 1;                                                   // axe de l'os du bras (local), allongé par l'échelle
+        private StalkerProceduralPose _pose;                                                  // mouvement provisoire (clips absents, C5)
+        private StalkerFace _face;                                                            // visage (C4)
+        private StalkerLimbIK _limbIk;                                                        // IK des membres (C3)
+
+        /// <summary>IK des membres (tests, coût).</summary>
+        public StalkerLimbIK LimbIK => _limbIk;
+
+        /// <summary>Visage du v4 (tests, coût).</summary>
+        public StalkerFace Face => _face;
+        /// <summary>Dernier cri (passage en Enragé, juste avant une prise) et dernier grognement de proximité : visage et sons.</summary>
+        public float LastCryTime { get; private set; } = float.NegativeInfinity;
+        public float LastGrowlTime { get; private set; } = float.NegativeInfinity;
+        private float _nextGrowl;
+        private readonly List<BoneSpringChain> _hair = new List<BoneSpringChain>();
         private float _ikR, _ikL;
         private bool _wantIkR, _wantIkL;
         private Renderer _bodyRenderer;
@@ -416,8 +493,9 @@ namespace ItHunts.Enemies
             Transform[] all = _anim.GetComponentsInChildren<Transform>(true);
             for (int i = 0; i < 3; i++)
             {
-                _boneR[i] = System.Array.Find(all, t => t.name == names[i] + ".R");
-                _boneL[i] = System.Array.Find(all, t => t.name == names[i] + ".L");
+                // v4 (SK_Traqueur_v4) : Bras_D / Bras_G ; ancien modèle : Bras.R / Bras.L.
+                _boneR[i] = System.Array.Find(all, t => t.name == names[i] + "_D") ?? System.Array.Find(all, t => t.name == names[i] + ".R");
+                _boneL[i] = System.Array.Find(all, t => t.name == names[i] + "_G") ?? System.Array.Find(all, t => t.name == names[i] + ".L");
             }
 
             if (_boneR[0] == null || _boneR[1] == null || _boneR[2] == null)
@@ -427,20 +505,22 @@ namespace ItHunts.Enemies
             }
 
             _restR = new[] { _boneR[0].localPosition, _boneR[1].localPosition, _boneR[2].localPosition };
-            _scaleR = new[] { _boneR[0].localScale, _boneR[1].localScale, _boneR[2].localScale };
-            _axisR = BoneAxis(_boneR[1].localPosition);
             if (_boneL[2] != null)
-            {
                 _restL = new[] { _boneL[0].localPosition, _boneL[1].localPosition, _boneL[2].localPosition };
-                _scaleL = new[] { _boneL[0].localScale, _boneL[1].localScale, _boneL[2].localScale };
-                _axisL = BoneAxis(_boneL[1].localPosition);
-            }
-            _anim.Update(0f);
-            Vector3 local = transform.InverseTransformPoint(_boneR[0].position);
-            _shoulderOffset = new Vector3(Mathf.Abs(local.x), local.y, local.z);
-            ItHunts.Level.ReachCheck.ShoulderHeight = _shoulderOffset.y;
-            ItHunts.Level.ReachCheck.ShoulderSide = _shoulderOffset.x;
-            ItHunts.Level.ReachCheck.ShoulderForward = _shoulderOffset.z;
+            // Épaule de la pose voûtée (réglages, mesurée par la DA sur le v4) et pas celle de la pose de repos du fichier (bras en A).
+            ItHunts.Level.ReachCheck.Configure(settings);
+            // Mouvement provisoire tant qu'un clip manque (C5) ; cheveux à ressort (D-081). Le modèle n'est jamais mis à l'échelle.
+            _pose = new StalkerProceduralPose(_anim.transform, transform);
+            SkinnedMeshRenderer faceSkin = null;
+            foreach (SkinnedMeshRenderer r in _anim.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                if (r.sharedMesh != null && r.sharedMesh.blendShapeCount > 0)
+                    faceSkin = r;
+            _face = new StalkerFace(all, transform, faceSkin, settings);
+            _limbIk = new StalkerLimbIK(all, transform);
+            _racine = System.Array.Find(all, t => t.name == "Racine");
+            if (_racine != null)
+                _racineRest = _racine.localPosition;
+            SetupHair(all);
             // Bras et mains en boîtes : zones qui tuent, invisibles (le modèle gréé les dessine). forceRenderingOff et pas enabled :
             // Damageable rallume ses rendus (enabled) quand il se remet en vie, ce qui affichait les anciennes mains en double.
             foreach (Transform t in new[] { arm, hand, leftArm, leftHand })
@@ -530,16 +610,96 @@ namespace ItHunts.Enemies
             _selfLight.transform.localPosition = settings.selfLightOffset;
         }
 
-        private void Play(string clip, float fade = 0.15f, float speed = 1f)
+        private void Play(string clip, float fade = 0.15f, float speed = 1f) => Play(clip, fade, speed, 0f);
+
+        private void Play(string clip, float fade, float speed, float offset)
         {
-            if (_anim == null || !_anim.isActiveAndEnabled)
+            if (_anim == null)
+                return;
+            if (_clip == clip)
+            {
+                if (_anim.enabled)
+                    _anim.speed = speed;
+                return;
+            }
+
+            _clip = clip;
+            // Clip livré par la DA : l'Animator le joue ; sinon mouvement provisoire (StalkerProceduralPose) et Animator coupé.
+            bool has = _anim.runtimeAnimatorController != null && _anim.HasState(0, Animator.StringToHash(clip));
+            ClipMissing = !has;
+            _anim.enabled = has;
+            if (!has)
                 return;
             _anim.speed = speed;
-            if (_clip == clip)
-                return;
-            _clip = clip;
-            _anim.CrossFadeInFixedTime(clip, fade, 0);
+            _anim.CrossFadeInFixedTime(clip, fade, 0, offset);
         }
+
+        private bool HasClip(string clip) =>
+            _anim != null && _anim.runtimeAnimatorController != null && _anim.HasState(0, Animator.StringToHash(clip));
+
+        /// <summary>Durée du clip (s), 0 s'il n'est pas livré.</summary>
+        public float ClipLength(string clip)
+        {
+            if (_anim == null || _anim.runtimeAnimatorController == null)
+                return 0f;
+            foreach (AnimationClip c in _anim.runtimeAnimatorController.animationClips)
+                if (c != null && (c.name == clip || c.name.EndsWith("|" + clip)))
+                    return c.length;
+            return 0f;
+        }
+
+        private static readonly string[] WalkVariants = { "Traqueur_Marche_A", "Traqueur_Marche_B" };
+        private static readonly string[] RunVariants = { "Traqueur_CourseEnragee_A", "Traqueur_CourseEnragee_B", "Traqueur_CourseEnragee_C" };
+        private string _family, _variant;
+
+        /// <summary>Variante de marche ou de course en cours (tests, vitrine).</summary>
+        public string Variant => _variant;
+
+        /// <summary>
+        /// Marche (Rôde) ou course enragée (Chasse, Enragé) : une variante au hasard à chaque entrée dans la famille, avec un décalage
+        /// de cycle au hasard ; vitesse de lecture = vitesse au sol ÷ vitesse réelle du cycle (pieds sans glisser). Chasse : les
+        /// trois courses ; Enragé : les deux courses à quatre pattes (A, B).
+        /// </summary>
+        private void PlayLocomotion(bool run, float v)
+        {
+            string family = run ? (Mode == StalkerMode.Enrage ? "enrage" : "course") : "marche";
+            if (family != _family || _variant == null)
+            {
+                _family = family;
+                string[] pool = run ? (Mode == StalkerMode.Enrage ? new[] { RunVariants[0], RunVariants[1] } : RunVariants) : WalkVariants;
+                var have = System.Array.FindAll(pool, HasClip);
+                _variant = have.Length > 0 ? have[Random.Range(0, have.Length)] : run ? "Traqueur_Course" : "Traqueur_Marche";
+                _clip = null;                                                // rejoue avec le décalage
+                Play(_variant, 0.3f, 1f, Random.value * ClipLength(_variant));
+            }
+
+            float clipSpeed = _variant.EndsWith("_A") && run ? settings.runClipSpeedA : _variant.EndsWith("_B") && run ? settings.runClipSpeedB
+                : _variant.EndsWith("_C") ? settings.runClipSpeedC : settings.walkClipSpeed;
+            Play(_variant, 0.3f, ClipPlayback(v, clipSpeed, settings));
+        }
+
+        /// <summary>Clip d'un passage (un par type de lien) ; le premier nom livré par la DA.</summary>
+        public static string[] TraversalClips(StalkerLinkKind k, bool caughtSomeone) => k switch
+        {
+            StalkerLinkKind.Bond => caughtSomeone ? new[] { "Traqueur_BondPrise", "Traqueur_Bond" } : new[] { "Traqueur_Bond" },
+            StalkerLinkKind.EscaladeRebord => new[] { "Traqueur_EscaladeRebord", "Traqueur_Escalade" },
+            StalkerLinkKind.MurGrimpe => new[] { "Traqueur_MurGrimpe", "Traqueur_Mur", "Traqueur_Escalade" },
+            StalkerLinkKind.ChaineGrimpe => new[] { "Traqueur_ChaineGrimpe" },
+            StalkerLinkKind.ChaineSaut => new[] { "Traqueur_ChaineSaut" },
+            StalkerLinkKind.PorteEtroite => new[] { "Traqueur_PorteEtroite" },
+            _ => new[] { "Traqueur_Bond" },
+        };
+
+        private string FirstClip(string[] names)
+        {
+            foreach (string n in names)
+                if (HasClip(n))
+                    return n;
+            return names[0];
+        }
+
+        /// <summary>Le clip voulu n'est pas livré : mouvement provisoire (C5).</summary>
+        public bool ClipMissing { get; private set; }
 
         /// <summary>Vitesse de lecture d'un clip de déplacement : vitesse au sol ÷ vitesse du clip à 1 (pieds sans glisser), bornée.</summary>
         public static float ClipPlayback(float groundSpeed, float clipSpeed, ItHunts.Settings.StalkerSettings s)
@@ -552,22 +712,56 @@ namespace ItHunts.Enemies
                 return;
             float v = _rb != null ? new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.z).magnitude : 0f;
             v = Mathf.Max(v, WantedSpeed);
-            _wantIkR = _grab != GrabPhase.Aucune || Planted || OverheadUsesRight;
+            _wantIkR = (_grab != GrabPhase.Aucune && !(_grab == GrabPhase.Annonce && _grabClip != null)) || Planted || OverheadUsesRight;
             _wantIkL = _over != OverheadPhase.Aucune || _back != BackhandPhase.Aucune;
             if (_back != BackhandPhase.Aucune)
                 Play("Traqueur_Revers", 0.06f);
             else if (_over != OverheadPhase.Aucune)
                 Play("Traqueur_MainsLevees", 0.06f);
+            else if (Planted && HasClip("Traqueur_MainPlantee"))
+                Play("Traqueur_MainPlantee", 0.06f);
+            else if (_grab != GrabPhase.Aucune && _grabClip != null)
+                Play(_grabClip, 0.1f);                                       // clip de la DA, lancé calé sur l'impact (StartGrabClip)
             else if (Planted || _grab == GrabPhase.Descente)
                 Play("Traqueur_MainPlantee", 0.06f);
             else if (_grab == GrabPhase.Annonce)
                 Play("Traqueur_Prise", 0.05f, 0.5f / Mathf.Max(0.05f, settings.grabTelegraph));
+            else if ((_trav.Active || Time.time < _trav.RecoverUntil) && _trav.Clip != null)
+            {
+                _family = null;
+                Play(_trav.Clip, 0.12f);                                     // le clip du lien, de l'appel à la fin de la réception
+                if (_chainExtra > 0 && _trav.Active && _anim.enabled)
+                {
+                    // Chaîne plus haute que le clip : le clip est ralenti sur toute la montée (la montée de la DA est portée par le
+                    // bassin : la boucler faisait redescendre le corps d'un cran à chaque cycle).
+                    float len = ClipLength(_trav.Clip);
+                    _anim.speed = len / Mathf.Max(0.1f, len + _chainExtra * settings.clipChainCycle);
+                }
+            }
+            else if (_trav.Active)
+            {
+                _family = null;
+                Play(FirstClip(TraversalClips(_trav.Kind, _trav.Caught)), 0.12f);
+            }
+            else if (Time.time < _trav.RecoverUntil)
+            {
+                _family = null;
+                Play("Traqueur_Reception", 0.08f);
+            }
             else if (Crouching)
+            {
+                _family = null;
                 Play("Traqueur_PassageBas", 0.25f, ClipPlayback(v, settings.crouchClipSpeed, settings));
+            }
+            else if (v > settings.runThreshold)
+                PlayLocomotion(true, v);
             else if (v > 0.5f)
-                Play("Traqueur_Marche", 0.25f, ClipPlayback(v, settings.walkClipSpeed, settings));
+                PlayLocomotion(false, v);
             else
+            {
+                _family = null;
                 Play("Traqueur_Repos", 0.3f);
+            }
         }
 
         /// <summary>
@@ -577,50 +771,37 @@ namespace ItHunts.Enemies
         /// </summary>
         private void ApplyArmIK(float dt)
         {
+            using Unity.Profiling.ProfilerMarker.AutoScope scope = IkMarker.Auto();
             float rate = dt / 0.15f;
             _ikR = Mathf.MoveTowards(_ikR, _wantIkR ? 1f : 0f, rate);
             _ikL = Mathf.MoveTowards(_ikL, _wantIkL ? 1f : 0f, rate);
-            Restore(_boneR, _restR, _scaleR);
-            Restore(_boneL, _restL, _scaleL);
+            Restore(_boneR, _restR);
+            Restore(_boneL, _restL);
+            if (_limbIk != null)
+            {
+                bool climbing = _trav.Active && (_trav.Kind == StalkerLinkKind.MurGrimpe || _trav.Kind == StalkerLinkKind.EscaladeRebord);
+                Vector3? chain = _trav.Active && _trav.Kind == StalkerLinkKind.ChaineGrimpe ? _trav.From : (Vector3?)null;
+                bool running = _family == "course" || _family == "enrage";
+                _limbIk.Apply(settings, dt, _ikR > 0.001f, _ikL > 0.001f, running, chain, climbing);
+            }
+
             if (_ikR > 0.001f && hand != null)
-                SolveArm(_boneR, _scaleR, _axisR, hand.position, _ikR, 1f);
+                SolveArm(_boneR, hand.position, _ikR, 1f);
             if (_ikL > 0.001f && leftHand != null && _boneL[2] != null)
-                SolveArm(_boneL, _scaleL, _axisL, leftHand.position, _ikL, -1f);
+                SolveArm(_boneL, leftHand.position, _ikL, -1f);
         }
 
-        /// <summary>Axe local (0 X, 1 Y, 2 Z) le long duquel l'os suivant est posé : l'axe de l'os.</summary>
-        private static int BoneAxis(Vector3 child)
-        {
-            Vector3 a = new Vector3(Mathf.Abs(child.x), Mathf.Abs(child.y), Mathf.Abs(child.z));
-            return a.x >= a.y && a.x >= a.z ? 0 : a.y >= a.z ? 1 : 2;
-        }
-
-        private static void Restore(Transform[] b, Vector3[] rest, Vector3[] scale)
+        /// <summary>Longueurs des os rendues (une animation ne déplace que Racine et Bassin) ; jamais d'échelle (D-080).</summary>
+        private static void Restore(Transform[] b, Vector3[] rest)
         {
             if (rest == null)
                 return;
-            for (int i = 0; i < 3; i++)
+            for (int i = 1; i < 3; i++)
                 if (b[i] != null)
-                {
-                    if (i > 0)
-                        b[i].localPosition = rest[i];
-                    if (scale != null)
-                        b[i].localScale = scale[i];
-                }
+                    b[i].localPosition = rest[i];
         }
 
-        /// <summary>
-        /// Allongement visible du bras (D-070) : l'os du bras est étiré le long de son axe (l'avant-bras, aligné, hérite de
-        /// l'étirement), la main reçoit l'échelle inverse sur le même axe pour garder sa taille. Le bras grossit en longueur
-        /// seulement, son épaisseur ne change pas.
-        /// </summary>
-        public static Vector3 StretchScale(Vector3 rest, int axis, float k)
-        {
-            rest[axis] *= k;
-            return rest;
-        }
-
-        private void SolveArm(Transform[] b, Vector3[] scale, int axis, Vector3 handCenter, float weight, float side)
+        private void SolveArm(Transform[] b, Vector3 handCenter, float weight, float side)
         {
             Transform a = b[0], m = b[1], e = b[2];
             Vector3 ap = a.position;
@@ -632,16 +813,10 @@ namespace ItHunts.Enemies
             Quaternion ra = a.rotation, rm = m.rotation, re = e.rotation;
             if (d > l1 + l2 - 0.01f)
             {
-                // Étirement : le bras se tend vers la cible (coude droit), puis l'os du bras s'allonge par son échelle le long de son
-                // axe ; l'avant-bras, aligné, hérite de l'allongement ; la main garde sa taille (échelle inverse).
+                // Hors d'atteinte : le bras se tend vers la cible, coude droit, sans jamais s'allonger (D-080 : la fente du corps
+                // rapproche l'épaule pendant la prise).
                 a.rotation = Quaternion.FromToRotation(m.position - ap, target - ap) * a.rotation;
                 m.rotation = Quaternion.FromToRotation(e.position - m.position, target - m.position) * m.rotation;
-                float k = Mathf.Lerp(1f, d / Mathf.Max(0.01f, l1 + l2), weight);
-                if (scale != null)
-                {
-                    a.localScale = StretchScale(scale[0], axis, k);
-                    e.localScale = StretchScale(scale[2], BoneAxis(e.InverseTransformDirection(m.position - e.position)), 1f / k);
-                }
             }
             else
             {
@@ -834,7 +1009,10 @@ namespace ItHunts.Enemies
             if (before == StalkerMode.Repaire || (Mode == StalkerMode.Enrage && before != StalkerMode.Enrage))
                 LastRoarTime = now;
             if (Mode == StalkerMode.Enrage && before != StalkerMode.Enrage)
+            {
                 _enragedSince = now;
+                LastCryTime = now;                                       // cri (visage, cri_enrage)
+            }
 
             ChooseTarget(pos, now);
             TrackNodes(pos, enraged);
@@ -849,6 +1027,11 @@ namespace ItHunts.Enemies
 
             Vector3 feet = Target.transform.position;
             Vector3 vel = EnemySenses.VelocityOf(Target);
+            if (now >= _nextGrowl && Flat(feet - pos) <= settings.faceGrowlRange && _grab == GrabPhase.Aucune)
+            {
+                LastGrowlTime = now;                                     // grognement de proximité (visage, son)
+                _nextGrowl = now + settings.faceGrowlCooldown;
+            }
             SeesTarget = EnemySenses.Sees(pos + Vector3.up * settings.eyeHeight * _crouch, _move.Heading, Target,
                 settings.sightRange, settings.sightAngle, transform);
             Predicted = EnemyMath.Predict(feet, vel, settings.predictionHorizon);
@@ -893,7 +1076,7 @@ namespace ItHunts.Enemies
             WantedSpeed *= EnemyMath.GrabMoveFactor(_grab != GrabPhase.Aucune, Planted, settings);   // main plantée : il continue (piste b)
             if (_hasDest && Flat(_dest - pos) < 1f)
                 WantedSpeed = 0f;
-            MoveTo(Locomote(pos, WantedSpeed, settings.turnRate * (Planted ? settings.plantedTurnFactor : 1f), dt, now));
+            MoveTo(Lunge(Locomote(pos, WantedSpeed, settings.turnRate * (Planted ? settings.plantedTurnFactor : 1f), dt, now), now));
             CountUTurns(enraged);
             UpdateGrab(now);
             UpdateOverhead(now, dt);
@@ -1180,7 +1363,9 @@ namespace ItHunts.Enemies
         {
             float full = settings.height;
             float clear = Mathf.Min(Clearance(pos), Clearance(pos + _move.Heading * (Radius + 3f)));
-            float wanted = Mathf.Clamp(clear - 0.4f, settings.crouchMinHeight, full) / full;
+            // Porte étroite (D-080) : il se faufile jusqu'à la hauteur de sa plus petite porte ; ailleurs, baissé à crouchMinHeight au plus.
+            float lowest = _trav.Active && _trav.Kind == StalkerLinkKind.PorteEtroite ? settings.narrowDoorHeight : settings.crouchMinHeight;
+            float wanted = Mathf.Clamp(clear - 0.4f, lowest, full) / full;
             _crouch = Mathf.MoveTowards(_crouch, wanted, dt * 1.5f);
             if (Crouching)
                 CrouchSeconds += dt;
@@ -1217,7 +1402,7 @@ namespace ItHunts.Enemies
         /// <summary>
         /// Peut-il attraper un joueur qui se tient en <paramref name="feet"/> ? Dans une pièce : depuis une ouverture
         /// (roomReach). Ailleurs : depuis un point où il tient debout sur son NavMesh (le plus proche parmi plusieurs
-        /// essais), épaule tournée vers le joueur, portée handReach (+ edgeLean s'il ne peut pas se placer dessous),
+        /// essais), épaule tournée vers le joueur, portée GrabReach (+ edgeLean s'il ne peut pas se placer dessous),
         /// ligne libre pour le bras et place au-dessus du point pour la main.
         /// </summary>
         public bool CanReach(Vector3 feet, out Vector3 stand, out Transform opening)
@@ -1247,7 +1432,7 @@ namespace ItHunts.Enemies
                     continue;
                 Vector3 fd = FlatDir(feet - s);
                 Vector3 shoulder = s + Vector3.up * ShoulderOffset.y + fd * ShoulderOffset.z + Vector3.Cross(Vector3.up, fd) * ShoulderOffset.x;
-                float reach = settings.handReach + (flat > Radius + 1f ? settings.edgeLean : 0f);
+                float reach = settings.GrabReach + (flat > Radius + 1f ? settings.edgeLean : 0f);
                 if ((chest - shoulder).magnitude > reach)
                     continue;
                 if (!Clear(shoulder, chest) && !Clear(s + Vector3.up * 2f, chest))
@@ -1290,6 +1475,193 @@ namespace ItHunts.Enemies
             return v.sqrMagnitude > 1e-4f ? v.normalized : Vector3.forward;
         }
 
+        // ---------- Clips de la prise et des passages (C2) ----------
+
+        private string _grabClip;
+
+        /// <summary>Clip de la prise en cours (null : mouvement provisoire) ; tests.</summary>
+        public string GrabClip => _grabClip;
+
+        /// <summary>
+        /// Prise : Traqueur_Prise, ou Traqueur_PriseRebord si la cible est bien plus bas (il est au bord d'un rebord). Le clip démarre
+        /// avec le décalage qui fait tomber son instant d'impact (le poing, donné par la DA) exactement sur l'impact du jeu
+        /// (annonce + descente) : la mort du joueur se déclenche à l'instant d'impact du clip, le temps pour esquiver ne change pas.
+        /// </summary>
+        private void StartGrabClip(Vector3 aim)
+        {
+            _grabClip = null;
+            bool onChain = _trav.Active && _trav.Kind == StalkerLinkKind.ChaineGrimpe && HasClip("Traqueur_ChainePrise");
+            bool ledge = !onChain && _rb.position.y - aim.y >= settings.ledgeGrabDrop && HasClip("Traqueur_PriseRebord");
+            string clip = onChain ? "Traqueur_ChainePrise" : ledge ? "Traqueur_PriseRebord" : "Traqueur_Prise";
+            if (!HasClip(clip))
+                return;
+            _grabClip = clip;
+            float impact = onChain ? settings.clipChainGrabImpact : ledge ? settings.clipPriseRebordImpact : settings.clipPriseImpact;
+            _clip = null;
+            Play(clip, 0.1f, 1f, EnemyMath.ClipOffsetForImpact(impact, settings.grabTelegraph + settings.grabSlam));
+        }
+
+        /// <summary>
+        /// Passage : clip du type de lien. Bond : l'appel dure jusqu'au décollage du clip, le vol jusqu'à la pose des mains, la
+        /// réception jusqu'à la fin du clip ; bond-prise si un joueur est près de l'arrivée. Autres liens : la traversée dure le clip.
+        /// </summary>
+        private int _chainExtra;
+
+        /// <summary>
+        /// Contrôle et vitrine : lance la traversée d'un passage depuis sa position actuelle jusqu'à <paramref name="to"/>, comme la
+        /// poursuite le fait sur un lien du NavMesh (mêmes clips, mêmes temps).
+        /// </summary>
+        public void DebugTraverse(StalkerLinkKind kind, Vector3 to)
+        {
+            float now = Time.time;
+            Vector3 pos = _rb.position;
+            bool leap = StalkerPassageMath.IsLeap(kind);
+            _trav = new StalkerTraversal
+            {
+                Active = true, Kind = kind, From = pos, To = to, Start = now,
+                Telegraph = leap ? settings.leapTelegraph : settings.climbStartPause,
+                Duration = StalkerPassageMath.Duration(kind, pos, to, settings),
+            };
+            StartTraversalClip(kind, to);
+            Vector3 face = to - pos;
+            face.y = 0f;
+            if (face.sqrMagnitude > 0.01f)
+                _move.Heading = face.normalized;
+        }
+
+        private void StartTraversalClip(StalkerLinkKind kind, Vector3 to)
+        {
+            _chainExtra = 0;
+            _trav.Clip = null;
+            _trav.ClipRecovery = 0f;
+            bool hunt = kind == StalkerLinkKind.Bond && Target != null && Vector3.Distance(Target.transform.position, to) <= 10f
+                        && HasClip("Traqueur_BondPrise");
+            string clip = hunt ? "Traqueur_BondPrise" : FirstClip(TraversalClips(kind, false));
+            float len = ClipLength(clip);
+            if (len <= 0.3f)
+                return;
+            _trav.Clip = clip;
+            _clip = null;
+            if (StalkerPassageMath.IsLeap(kind) && (clip == "Traqueur_Bond" || clip == "Traqueur_BondPrise" || clip == "Traqueur_ChaineSaut"))
+            {
+                bool chain = clip == "Traqueur_ChaineSaut";
+                float takeoff = chain ? settings.clipChainJumpRelease : hunt ? settings.clipBondPriseTakeoff : settings.clipBondTakeoff;
+                float land = chain ? settings.clipChainJumpLand : hunt ? settings.clipBondPriseLand : settings.clipBondLand;
+                _trav.Telegraph = takeoff;
+                _trav.Duration = Mathf.Max(0.3f, land - takeoff);
+                _trav.ClipRecovery = Mathf.Max(0f, len - land);
+            }
+            else if (kind == StalkerLinkKind.ChaineGrimpe && clip == "Traqueur_ChaineGrimpe")
+            {
+                // Chaîne plus longue que le clip : la montée main sur main boucle (cycles de la DA).
+                _chainExtra = EnemyMath.ChainExtraCycles(to.y - _rb.position.y, settings);
+                _trav.Duration = Mathf.Max(0.3f, len + _chainExtra * settings.clipChainCycle - _trav.Telegraph);
+            }
+            else
+                _trav.Duration = Mathf.Max(0.3f, len - _trav.Telegraph);
+            Play(clip, 0.12f, 1f, 0f);
+        }
+
+        // ---------- Fente du corps pendant la prise (D-080) ----------
+
+        private Vector3 _lungeDir;
+        private float _lungeTotal, _lungeDone, _lungeImpactAt;
+
+        /// <summary>Fente prévue pour la prise en cours (m) ; tests et debug.</summary>
+        public float LungeDistance => _lungeTotal;
+        /// <summary>Fente déjà faite (m).</summary>
+        public float LungeDone => _lungeDone;
+
+        /// <summary>
+        /// Le bras réel (armLength) ne suffit pas : le corps avance vers la cible de ce qui manque, jusqu'à grabLunge, pendant les
+        /// grabLungeTime dernières secondes avant l'impact. Par une ouverture de pièce : pas de fente (il est déjà collé au mur).
+        /// </summary>
+        private void StartLunge(float now, Vector3 aim, Transform opening)
+        {
+            Vector3 pos = _rb.position;
+            _lungeDir = FlatDir(aim - pos);
+            _lungeDone = 0f;
+            _lungeImpactAt = now + settings.grabTelegraph + settings.grabSlam;
+            float need = (aim + Vector3.up - ShoulderFrom(pos, aim)).magnitude - settings.armLength;
+            _lungeTotal = opening != null ? 0f : EnemyMath.LungeDistance(need, Flat(aim - pos) - Radius, settings);
+        }
+
+        private Vector3 Lunge(Vector3 next, float now)
+        {
+            if (_lungeTotal <= 0f || (_grab != GrabPhase.Annonce && _grab != GrabPhase.Descente))
+                return next;
+            float k = EnemyMath.LungeProgress(now, _lungeImpactAt, settings.grabLungeTime);
+            float want = _lungeTotal * k, delta = want - _lungeDone;
+            if (delta <= 0f)
+                return next;
+            Vector3 candidate = next + _lungeDir * delta;
+            if (!_move.Snap(candidate, 1.5f, out Vector3 onMesh) || Mathf.Abs(onMesh.y - candidate.y) > 1f)
+            {
+                _lungeTotal = _lungeDone;                                   // bord du NavMesh : la fente s'arrête là
+                return next;
+            }
+
+            _lungeDone = want;
+            return new Vector3(onMesh.x, next.y, onMesh.z);
+        }
+
+        // ---------- Cheveux à ressort (D-081) ----------
+
+        /// <summary>Cheveux : 7 chaînes (Cheveux_N_1 animé, _2 à _4 simulés), obstacles tête, cou, épaules, dos, poitrine.</summary>
+        private void SetupHair(Transform[] all)
+        {
+            foreach (BoneSpringChain c in _hair)
+                if (c != null)
+                    Destroy(c);
+            _hair.Clear();
+            if (settings == null || !settings.boneChainsEnabled)
+                return;
+            Transform Bone(string n) => System.Array.Find(all, t => t.name == n);
+            var obstacles = new List<BoneSpringChain.BoneObstacle>
+            {
+                new BoneSpringChain.BoneObstacle { a = Bone("Tete"), radius = 0.95f },
+                new BoneSpringChain.BoneObstacle { a = Bone("Cou_1"), b = Bone("Cou_2"), radius = 0.4f },
+                new BoneSpringChain.BoneObstacle { a = Bone("Clavicule_G"), b = Bone("Bras_G"), radius = 0.55f },
+                new BoneSpringChain.BoneObstacle { a = Bone("Clavicule_D"), b = Bone("Bras_D"), radius = 0.55f },
+                new BoneSpringChain.BoneObstacle { a = Bone("Colonne_3"), b = Bone("Colonne_4"), radius = 0.75f },
+                new BoneSpringChain.BoneObstacle { a = Bone("Colonne_4"), radius = 0.9f },
+            };
+            obstacles.RemoveAll(o => o.a == null);
+            // Rayons conseillés par la DA, bornés pour qu'aucun os de cheveu ne soit dedans au repos (sinon il serait repoussé à
+            // chaque image et la mèche se dresserait).
+            for (int i = 0; i < obstacles.Count; i++)
+            {
+                BoneSpringChain.BoneObstacle o = obstacles[i];
+                Vector3 a = o.a.position, b = o.b != null ? o.b.position : a;
+                foreach (Transform t in all)
+                    if (t.name.StartsWith("Cheveux_") && !t.name.EndsWith("_1"))
+                    {
+                        Vector3 ab = b - a;
+                        float u = ab.sqrMagnitude > 1e-6f ? Mathf.Clamp01(Vector3.Dot(t.position - a, ab) / ab.sqrMagnitude) : 0f;
+                        o.radius = Mathf.Min(o.radius, Vector3.Distance(t.position, a + ab * u) - 0.05f);
+                    }
+
+                o.radius = Mathf.Max(0.1f, o.radius);
+                obstacles[i] = o;
+            }
+
+            for (int n = 1; n <= 7; n++)
+            {
+                Transform first = Bone($"Cheveux_{n}_1");
+                if (first == null)
+                    continue;
+                var chain = first.gameObject.AddComponent<BoneSpringChain>();
+                chain.root = first;
+                chain.settings = settings.boneChains;
+                chain.boneObstacles = obstacles;
+                chain.Setup();
+                _hair.Add(chain);
+            }
+        }
+
+        /// <summary>Chaînes de cheveux actives (tests, coût).</summary>
+        public IReadOnlyList<BoneSpringChain> Hair => _hair;
+
         // ---------- Prise à la main (D-034) ----------
 
         private void UpdateGrab(float now)
@@ -1306,6 +1678,9 @@ namespace ItHunts.Enemies
                         _grabStart = now;
                         _grabTarget = aim;
                         _grabOpening = opening;
+                        StartLunge(now, aim, opening);
+                        StartGrabClip(aim);
+                        LastCryTime = now;                                   // cri juste avant la prise (visage, cri_prise)
                         _reaimed = false;
                         GrabAttempts++;
                         if (opening != null)
@@ -1437,7 +1812,7 @@ namespace ItHunts.Enemies
                 if (!OverheadClear(aim))
                     continue;
                 Vector3 shoulder = ShoulderFrom(pos, aim);
-                float reach = settings.handReach + settings.edgeLean;
+                float reach = settings.GrabReach + settings.edgeLean;
                 if ((aim + Vector3.up - shoulder).magnitude > reach)
                     continue;
                 if (!Clear(shoulder, aim + Vector3.up) && !Clear(pos + Vector3.up * 2f, aim + Vector3.up))
@@ -1735,7 +2110,7 @@ namespace ItHunts.Enemies
         private Vector3 ClampReach(Vector3 shoulder, Vector3 point)
         {
             Vector3 d = point - shoulder;
-            return d.magnitude <= settings.handReach ? point : shoulder + d.normalized * settings.handReach;
+            return d.magnitude <= settings.GrabReach ? point : shoulder + d.normalized * settings.GrabReach;
         }
 
         /// <summary>Le joueur (capsule) touche-t-il un bras ou une main (boîtes orientées du modèle) ?</summary>
@@ -1853,6 +2228,7 @@ namespace ItHunts.Enemies
                             Telegraph = leap ? settings.leapTelegraph : settings.climbStartPause,
                             Duration = StalkerPassageMath.Duration(p.kind, pos, to, settings),
                         };
+                        StartTraversalClip(p.kind, to);
                         if (leap)
                             LastRoarTime = now;                          // cri du télégraphe (StalkerAudio)
                         Vector3 face = to - pos;
@@ -1884,6 +2260,8 @@ namespace ItHunts.Enemies
             if (u >= 1f)
             {
                 bool missed = StalkerPassageMath.Land(ref _trav, now, settings);
+                if (leap && _trav.Clip == null && HasClip("Traqueur_Reception"))
+                    _trav.RecoverUntil = Mathf.Max(_trav.RecoverUntil, now + settings.clipReceptionExit);   // réception de la DA
                 PassagesUsed++;
                 _move.Clear();
                 _move.Speed = 0f;

@@ -18,7 +18,8 @@ namespace ItHunts.Enemies
     /// <summary>
     /// Passage du traqueur posé par un module (point 9) : de ce point à <see cref="end"/>, d'un type donné. ZoneNavMesh en fait un
     /// lien de NavMesh pour le traqueur seulement (coût = temps de traversée), Stalker le parcourt (arc, montée, ralentissement).
-    /// Une porte étroite n'a pas de lien : c'est une zone où il ralentit (il se faufile).
+    /// Porte étroite : au moins aussi grande que sa plus petite porte (DA : 4 × 6 m, D-080), un lien la traverse (il se faufile,
+    /// ralenti, même si son NavMesh baissé n'y passe pas) ; plus petite, seul son bras passe.
     /// </summary>
     public sealed class StalkerPassage : MonoBehaviour
     {
@@ -76,6 +77,9 @@ namespace ItHunts.Enemies
         public float Start, Telegraph, Duration;
         public float RecoverUntil;
         public bool Caught;
+        /// <summary>Clip de la DA joué pendant la traversée (null : mouvement provisoire) et récupération après la réception (s).</summary>
+        public string Clip;
+        public float ClipRecovery;
     }
 
     /// <summary>Calculs des passages du traqueur (purs, testables) : permis, durée, trajectoire, coût pour le choix du chemin.</summary>
@@ -83,20 +87,39 @@ namespace ItHunts.Enemies
     {
         public static bool IsLeap(StalkerLinkKind k) => k == StalkerLinkKind.Bond || k == StalkerLinkKind.ChaineSaut;
 
+        /// <summary>Porte qu'il franchit en se faufilant : au moins sa plus petite porte (narrowDoorWidth × narrowDoorHeight).</summary>
+        public static bool DoorPassable(Vector3 doorHalfSize, StalkerSettings s) =>
+            doorHalfSize.x * 2f >= s.narrowDoorWidth - 1e-3f && doorHalfSize.y * 2f >= s.narrowDoorHeight - 1e-3f;
+
+        /// <summary>Bouts du lien d'une porte étroite : de part et d'autre de la zone de la porte (repère du passage).</summary>
+        public static void DoorEnds(Transform door, Vector3 doorHalfSize, float radius, out Vector3 a, out Vector3 b)
+        {
+            Vector3 f = door.forward;
+            f.y = 0f;
+            f = f.sqrMagnitude > 1e-4f ? f.normalized : Vector3.forward;
+            float d = doorHalfSize.z + radius + 1f;
+            a = door.position - f * d;
+            b = door.position + f * d;
+        }
+
         public static bool IsClimb(StalkerLinkKind k) =>
             k == StalkerLinkKind.EscaladeRebord || k == StalkerLinkKind.MurGrimpe || k == StalkerLinkKind.ChaineGrimpe;
 
         /// <summary>Distance horizontale et dénivelé permis pour ce type (Stalker_Default).</summary>
+        public const float ClimbMaxFlat = 16f;
+
         public static bool Allowed(StalkerLinkKind k, Vector3 a, Vector3 b, StalkerSettings cfg)
         {
             float flat = new Vector2(b.x - a.x, b.z - a.z).magnitude, rise = Mathf.Abs(b.y - a.y);
             return k switch
             {
                 StalkerLinkKind.Bond => flat <= cfg.leapMaxDistance && rise <= cfg.leapMaxRise,
-                StalkerLinkKind.ChaineSaut => flat <= cfg.chainJumpMaxDistance && rise <= cfg.leapMaxRise + 4f,
-                StalkerLinkKind.EscaladeRebord => rise <= cfg.ledgeMaxHeight && flat <= 12f,
-                StalkerLinkKind.MurGrimpe => rise <= cfg.wallMaxHeight && flat <= 12f,
-                StalkerLinkKind.ChaineGrimpe => rise <= cfg.chainMaxHeight && flat <= 12f,
+                // Saut depuis une chaîne : il se laisse tomber de la hauteur où il s'accroche (jusqu'à la hauteur de chaîne).
+                StalkerLinkKind.ChaineSaut => flat <= cfg.chainJumpMaxDistance && rise <= Mathf.Max(cfg.leapMaxRise + 4f, cfg.chainMaxHeight),
+                // Escalades : 16 m à plat au plus (pied du mur et bord d'arrivée recalés sur son NavMesh, 4 m chacun).
+                StalkerLinkKind.EscaladeRebord => rise <= cfg.ledgeMaxHeight && flat <= ClimbMaxFlat,
+                StalkerLinkKind.MurGrimpe => rise <= cfg.wallMaxHeight && flat <= ClimbMaxFlat,
+                StalkerLinkKind.ChaineGrimpe => rise <= cfg.chainMaxHeight && flat <= ClimbMaxFlat,
                 _ => true,
             };
         }
@@ -113,8 +136,25 @@ namespace ItHunts.Enemies
         }
 
         /// <summary>Temps total d'un passage (télégraphe, traversée, récupération) : ce que compare le choix du chemin.</summary>
-        public static float TotalTime(StalkerLinkKind k, Vector3 a, Vector3 b, StalkerSettings cfg) =>
-            Duration(k, a, b, cfg) + (IsLeap(k) ? cfg.leapTelegraph + cfg.leapRecovery : cfg.climbStartPause);
+        public static float TotalTime(StalkerLinkKind k, Vector3 a, Vector3 b, StalkerSettings cfg)
+        {
+            // Clips de la DA (C6) : le passage dure le clip (bond : appel, vol, réception ; chaîne : montée en boucle selon la hauteur).
+            float clip = ClipTime(k, Mathf.Abs(b.y - a.y), cfg);
+            if (clip > 0f)
+                return clip;
+            return Duration(k, a, b, cfg) + (IsLeap(k) ? cfg.leapTelegraph + cfg.leapRecovery : cfg.climbStartPause);
+        }
+
+        /// <summary>Durée d'un passage d'après les clips de la DA (s), 0 sans clip réglé.</summary>
+        public static float ClipTime(StalkerLinkKind k, float rise, StalkerSettings cfg) => k switch
+        {
+            StalkerLinkKind.Bond => cfg.clipBondLength > 0f ? Mathf.Max(cfg.clipBondLength, cfg.clipBondLand + cfg.leapRecovery) : 0f,
+            StalkerLinkKind.ChaineSaut => cfg.clipChainJumpLength > 0f ? Mathf.Max(cfg.clipChainJumpLength, cfg.clipChainJumpLand + cfg.leapRecovery) : 0f,
+            StalkerLinkKind.EscaladeRebord or StalkerLinkKind.MurGrimpe => cfg.clipClimbLength,
+            StalkerLinkKind.ChaineGrimpe => cfg.clipChainClimbLength > 0f ? cfg.clipChainClimbLength + EnemyMath.ChainExtraCycles(rise, cfg) * cfg.clipChainCycle : 0f,
+            StalkerLinkKind.PorteEtroite => cfg.clipDoorLength,
+            _ => 0f,
+        };
 
         /// <summary>
         /// Coût du lien pour le NavMesh (multiplicateur de longueur) : le temps du passage ramené à la marche en Chasse ; le chemin
@@ -162,7 +202,8 @@ namespace ItHunts.Enemies
             t.Active = false;
             if (!IsLeap(t.Kind))
                 return false;
-            t.RecoverUntil = now + cfg.leapRecovery;
+            // Réception : la fin du clip si elle est plus longue que la récupération réglée (clip livré par la DA).
+            t.RecoverUntil = now + Mathf.Max(cfg.leapRecovery, t.ClipRecovery);
             return !t.Caught;
         }
 

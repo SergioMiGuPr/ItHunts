@@ -3,7 +3,7 @@ using UnityEngine;
 namespace ItHunts.Settings
 {
     /// <summary>
-    /// Parade (D-075) : appuyer sur « Parer » (E / LB) juste avant l'impact d'une attaque de goule annule ses dégâts et
+    /// Parade (D-075) : appuyer sur « Parer » (Alt gauche / R3, D-079) juste avant l'impact d'une attaque de goule annule ses dégâts et
     /// l'étourdit. Ne ralentit jamais le joueur. Sans effet contre le traqueur (sa prise passe). Modifiable en Play Mode.
     /// </summary>
     [CreateAssetMenu(fileName = "Parry_Default", menuName = "ItHunts/Réglages/Parade")]

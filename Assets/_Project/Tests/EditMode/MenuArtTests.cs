@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Reflection;
 using ItHunts.Level;
 using ItHunts.Menus;
@@ -149,9 +150,13 @@ namespace ItHunts.Tests
                 Assert.That(menu.CampMenu.Focus, Is.EqualTo(menu.CampMenu.Items.IndexOf(menu.CampReady)), "le focus part sur Prêt");
 
                 // Un 2e joueur rejoint (place 2), prend le même personnage : Prêt grisé ; il change, se met prêt : coche.
+                var shared = new[] { 1, 2 }.Select(i => AssetDatabase.LoadAssetAtPath<Material>($"Assets/Art/UI/Menus/Materiaux/M_Campement_Assis_{i}.mat")).ToArray();
+                string before = string.Join(";", shared.Select(m => $"{m.GetFloat("_Contraste")},{m.GetFloat("_Luminosite")},{m.GetVector("_FeuUV")}"));
                 Assert.That(menu.Lobby.Join("manette 2"), Is.EqualTo(1));
                 menu.Lobby[1].Character = menu.Lobby[0].Character;
                 view.Sync();
+                Assert.That(string.Join(";", shared.Select(m => $"{m.GetFloat("_Contraste")},{m.GetFloat("_Luminosite")},{m.GetVector("_FeuUV")}")), Is.EqualTo(before),
+                    "matériaux de la DA intacts (copie par place, A1)");
                 Assert.That(camp.transform.Find("Place_2/Corps").gameObject.activeSelf, Is.True, "J2 assis à la place 2");
                 Assert.That(menu.ReadyBlocked, Is.True, "doublon : Prêt grisé");
                 Assert.That(camp.transform.Find("Interface/Pret").GetComponent<Image>().canvasRenderer.GetColor(), Is.EqualTo(MenuArtKit.Disabled));
@@ -228,7 +233,12 @@ namespace ItHunts.Tests
                     Assert.That(row.Find("Libelle").GetComponent<Text>().text, Is.EqualTo(GameSettings.Labels[i]));
                     Assert.That(row.Find("Valeur").GetComponent<Text>().text, Is.EqualTo("‹  " + GameSettings.Value((GameSettings.Line)i) + "  ›"));
                 }
-                Assert.That(menu.SettingsMenu.Items.Count, Is.EqualTo(7), "6 lignes et Retour");
+                Assert.That(menu.SettingsMenu.Items.Count, Is.EqualTo(8), "6 lignes, Touches et Retour");
+                // A5 : 7e ligne « Touches » (copie d'une ligne de la DA), Retour descendu d'un cran, toujours dans le cadre.
+                Transform keys = view.SettingsScreen.transform.Find("Option_" + GameSettings.Labels.Length);
+                Assert.That(keys.Find("Libelle").GetComponent<Text>().text, Is.EqualTo(GameSettings.KeysLabel));
+                var back = (RectTransform)view.SettingsScreen.transform.Find("Retour");
+                Assert.That(back.anchoredPosition.y, Is.LessThan(((RectTransform)keys).anchoredPosition.y - 40f), "Retour sous Touches");
             }
             finally
             {

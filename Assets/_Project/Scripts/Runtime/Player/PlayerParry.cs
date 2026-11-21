@@ -6,7 +6,7 @@ using UnityEngine;
 namespace ItHunts.Player
 {
     /// <summary>
-    /// Parade du joueur (D-075) : « Parer » (E / LB) ouvre une fenêtre courte ; une attaque de goule qui touche dans cette
+    /// Parade du joueur (D-075) : « Parer » (Alt gauche / R3, D-079) ouvre une fenêtre courte ; une attaque de goule qui touche dans cette
     /// fenêtre ne fait aucun dégât et étourdit la goule. Ne touche jamais au mouvement (on pare en courant, en sautant, en
     /// glissant). Recharge après chaque appui. Sans effet contre le traqueur. En coop en ligne, l'hôte décidera.
     /// </summary>

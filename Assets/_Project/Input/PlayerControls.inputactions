@@ -407,7 +407,7 @@
                 {
                     "name": "",
                     "id": "beac1a59-4fb1-477b-af5c-3135a345ea32",
-                    "path": "<Gamepad>/leftStickPress",
+                    "path": "<Gamepad>/leftShoulder",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -572,7 +572,7 @@
                 {
                     "name": "",
                     "id": "0cb472fa-7214-432e-a532-4c63816d7899",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/leftAlt",
                     "interactions": "",
                     "processors": "",
                     "groups": "KeyboardMouse",
@@ -583,7 +583,7 @@
                 {
                     "name": "",
                     "id": "c68730a3-aaa7-434e-b729-adc4d807e179",
-                    "path": "<Gamepad>/leftShoulder",
+                    "path": "<Gamepad>/rightStickPress",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",

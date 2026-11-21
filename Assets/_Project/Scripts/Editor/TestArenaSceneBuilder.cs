@@ -275,7 +275,6 @@ namespace ItHunts.EditorTools
                 s.height = 14f;
                 s.eyeHeight = 12.5f;
                 s.shoulderHeight = 11.1f;
-                s.handReach = 15f;
                 s.sightRange = 60f;
                 s.soundRange = 60f;
                 s.attackRange = 0.3f;

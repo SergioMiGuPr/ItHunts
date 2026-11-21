@@ -1,46 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1107 &-6370235541814724232
-AnimatorStateMachine:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Base Layer
-  m_ChildStates:
-  - serializedVersion: 1
-    m_State: {fileID: 974062762931667024}
-    m_Position: {x: 200, y: 0, z: 0}
-  - serializedVersion: 1
-    m_State: {fileID: -2938192603381097777}
-    m_Position: {x: 235, y: 65, z: 0}
-  - serializedVersion: 1
-    m_State: {fileID: 2460352981596732461}
-    m_Position: {x: 270, y: 130, z: 0}
-  - serializedVersion: 1
-    m_State: {fileID: 8808304383658725093}
-    m_Position: {x: 305, y: 195, z: 0}
-  - serializedVersion: 1
-    m_State: {fileID: -1396158065461762024}
-    m_Position: {x: 340, y: 260, z: 0}
-  - serializedVersion: 1
-    m_State: {fileID: 8988923782849734563}
-    m_Position: {x: 375, y: 325, z: 0}
-  - serializedVersion: 1
-    m_State: {fileID: -5067582617660830323}
-    m_Position: {x: 410, y: 390, z: 0}
-  m_ChildStateMachines: []
-  m_AnyStateTransitions: []
-  m_EntryTransitions: []
-  m_StateMachineTransitions: {}
-  m_StateMachineBehaviours: []
-  m_AnyStatePosition: {x: 50, y: 20, z: 0}
-  m_EntryPosition: {x: 50, y: 120, z: 0}
-  m_ExitPosition: {x: 800, y: 120, z: 0}
-  m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
-  m_DefaultState: {fileID: 974062762931667024}
---- !u!1102 &-5067582617660830323
+--- !u!1102 &-8433884774054285688
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
@@ -60,20 +20,20 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 8480759867742903759, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Motion: {fileID: -1845944588123483321, guid: aff75ec62af92ee4997a1f6df95107cc, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!1102 &-2938192603381097777
+--- !u!1102 &-7142628705414060874
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Traqueur_Revers
+  m_Name: Traqueur_CourseEnragee_C
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -86,13 +46,575 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 1089905379509020179, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Motion: {fileID: -1845944588123483321, guid: 1331b586e2800ea488c0d43612897008, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!1102 &-1796479890603626120
+--- !u!1107 &-4524906556666291298
+AnimatorStateMachine:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: "M\xE2choire"
+  m_ChildStates:
+  - serializedVersion: 1
+    m_State: {fileID: 6445120455676829070}
+    m_Position: {x: 200, y: 0, z: 0}
+  m_ChildStateMachines: []
+  m_AnyStateTransitions: []
+  m_EntryTransitions: []
+  m_StateMachineTransitions: {}
+  m_StateMachineBehaviours: []
+  m_AnyStatePosition: {x: 50, y: 20, z: 0}
+  m_EntryPosition: {x: 50, y: 120, z: 0}
+  m_ExitPosition: {x: 800, y: 120, z: 0}
+  m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
+  m_DefaultState: {fileID: 6445120455676829070}
+--- !u!1102 &-3717009960510570513
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_Escalade
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: cbe3aec27281e8e4e9352244cbae00cd, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &-3535229443686135718
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_Marche_A
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: 2e8b3256f8bd7584982e12f184181d8f, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &-2265818752053362588
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_Marche_B
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: 2f24d99a5247a814b9ead28fd681d124, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1107 &-1470481006498719731
+AnimatorStateMachine:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Base Layer
+  m_ChildStates:
+  - serializedVersion: 1
+    m_State: {fileID: 1412352155059751952}
+    m_Position: {x: 200, y: 0, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 6529839545511049563}
+    m_Position: {x: 235, y: 65, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 961407664265046059}
+    m_Position: {x: 270, y: 130, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 5945716566172582118}
+    m_Position: {x: 305, y: 195, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 4759692425950715273}
+    m_Position: {x: 340, y: 260, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 3038138755541198500}
+    m_Position: {x: 375, y: 325, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 4388290791189803392}
+    m_Position: {x: 410, y: 390, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -7142628705414060874}
+    m_Position: {x: 445, y: 455, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -3717009960510570513}
+    m_Position: {x: 480, y: 520, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -3535229443686135718}
+    m_Position: {x: 515, y: 585, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -2265818752053362588}
+    m_Position: {x: 550, y: 650, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 5666678956188692931}
+    m_Position: {x: 585, y: 715, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -8433884774054285688}
+    m_Position: {x: 620, y: 780, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 8488176420493968589}
+    m_Position: {x: 655, y: 845, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -16042536119458138}
+    m_Position: {x: 690, y: 910, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 7507976031322085685}
+    m_Position: {x: 725, y: 975, z: 0}
+  m_ChildStateMachines: []
+  m_AnyStateTransitions: []
+  m_EntryTransitions: []
+  m_StateMachineTransitions: {}
+  m_StateMachineBehaviours: []
+  m_AnyStatePosition: {x: 50, y: 20, z: 0}
+  m_EntryPosition: {x: 50, y: 120, z: 0}
+  m_ExitPosition: {x: 800, y: 120, z: 0}
+  m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
+  m_DefaultState: {fileID: 7507976031322085685}
+--- !u!1102 &-16042536119458138
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_Reception
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: 7a80ef92abdff344fae9f8425148ff18, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!91 &9100000
+AnimatorController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur
+  serializedVersion: 5
+  m_AnimatorParameters: []
+  m_AnimatorLayers:
+  - serializedVersion: 5
+    m_Name: Base Layer
+    m_StateMachine: {fileID: -1470481006498719731}
+    m_Mask: {fileID: 0}
+    m_Motions: []
+    m_Behaviours: []
+    m_BlendingMode: 0
+    m_SyncedLayerIndex: -1
+    m_DefaultWeight: 0
+    m_IKPass: 0
+    m_SyncedLayerAffectsTiming: 0
+    m_Controller: {fileID: 9100000}
+  - serializedVersion: 5
+    m_Name: "M\xE2choire"
+    m_StateMachine: {fileID: -4524906556666291298}
+    m_Mask: {fileID: 1569808594449927713}
+    m_Motions: []
+    m_Behaviours: []
+    m_BlendingMode: 0
+    m_SyncedLayerIndex: -1
+    m_DefaultWeight: 1
+    m_IKPass: 0
+    m_SyncedLayerAffectsTiming: 0
+    m_Controller: {fileID: 9100000}
+--- !u!1102 &961407664265046059
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_ChaineGrimpe
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: 9508eadad53f6894599bdc6fdd867130, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &1412352155059751952
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_Bond
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: 06d8f802fadc0d246935d21dce1bba0e, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!319 &1569808594449927713
+AvatarMask:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: "Masque : m\xE2choire"
+  m_Mask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+  m_Elements:
+  - m_Path: SK_Traqueur_v4_Cheveux
+    m_Weight: 0
+  - m_Path: SK_Traqueur_v4_Corps
+    m_Weight: 0
+  - m_Path: SK_Traqueur_v4_Tete
+    m_Weight: 0
+  - m_Path: Traqueur
+    m_Weight: 0
+  - m_Path: Traqueur/Racine
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_D/Bras_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_D/Bras_D/AvantBras_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_D/Bras_D/AvantBras_D/Main_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_D/Bras_D/AvantBras_D/Main_D/Doigts_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_D/Bras_D/AvantBras_D/Main_D/Doigts_D/Contact_Main_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_G/Bras_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_G/Bras_G/AvantBras_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_G/Bras_G/AvantBras_G/Main_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_G/Bras_G/AvantBras_G/Main_G/Doigts_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Clavicule_G/Bras_G/AvantBras_G/Main_G/Doigts_G/Contact_Main_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_1_1
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_1_1/Cheveux_1_2
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_1_1/Cheveux_1_2/Cheveux_1_3
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_1_1/Cheveux_1_2/Cheveux_1_3/Cheveux_1_4
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_2_1
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_2_1/Cheveux_2_2
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_2_1/Cheveux_2_2/Cheveux_2_3
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_2_1/Cheveux_2_2/Cheveux_2_3/Cheveux_2_4
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_3_1
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_3_1/Cheveux_3_2
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_3_1/Cheveux_3_2/Cheveux_3_3
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_3_1/Cheveux_3_2/Cheveux_3_3/Cheveux_3_4
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_4_1
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_4_1/Cheveux_4_2
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_4_1/Cheveux_4_2/Cheveux_4_3
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_4_1/Cheveux_4_2/Cheveux_4_3/Cheveux_4_4
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_5_1
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_5_1/Cheveux_5_2
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_5_1/Cheveux_5_2/Cheveux_5_3
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_5_1/Cheveux_5_2/Cheveux_5_3/Cheveux_5_4
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_6_1
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_6_1/Cheveux_6_2
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_6_1/Cheveux_6_2/Cheveux_6_3
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_6_1/Cheveux_6_2/Cheveux_6_3/Cheveux_6_4
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_7_1
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_7_1/Cheveux_7_2
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_7_1/Cheveux_7_2/Cheveux_7_3
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Cheveux_7_1/Cheveux_7_2/Cheveux_7_3/Cheveux_7_4
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Colonne_1/Colonne_2/Colonne_3/Colonne_4/Cou_1/Cou_2/Tete/Machoire
+    m_Weight: 1
+  - m_Path: Traqueur/Racine/Bassin/Cuisse_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse_D/Jambe_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse_D/Jambe_D/Pied_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse_D/Jambe_D/Pied_D/Contact_Pied_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse_D/Jambe_D/Pied_D/Orteils_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse_G/Jambe_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse_G/Jambe_G/Pied_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse_G/Jambe_G/Pied_G/Contact_Pied_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Bassin/Cuisse_G/Jambe_G/Pied_G/Orteils_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/IK_Main_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/IK_Main_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/IK_Pied_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/IK_Pied_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Pole_Coude_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Pole_Coude_G
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Pole_Genou_D
+    m_Weight: 0
+  - m_Path: Traqueur/Racine/Pole_Genou_G
+    m_Weight: 0
+--- !u!1102 &3038138755541198500
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_CourseEnragee_A
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: 1985bff039d4988479e7766d8e235d06, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &4388290791189803392
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_CourseEnragee_B
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: b99cd228b2362cf448952765c5231db0, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &4759692425950715273
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_ChaineSaut
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: 127a477a8b61d4d4bac386528ae8db33, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &5666678956188692931
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_PorteEtroite
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: 62508f90168449344ba93cd23e2ff5de, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &5945716566172582118
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Traqueur_ChainePrise
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: -1845944588123483321, guid: fd645859b4857ec4ba9dec37983ca012, type: 3}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1102 &6445120455676829070
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
@@ -112,20 +634,20 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -8984376102859889504, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Motion: {fileID: 0}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!1102 &-1396158065461762024
+--- !u!1102 &6529839545511049563
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Traqueur_Marche
+  m_Name: Traqueur_BondPrise
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -138,47 +660,13 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -6246176764017382251, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Motion: {fileID: -1845944588123483321, guid: 531ccb8128349ba45b8f98d7f58d6e3d, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!91 &9100000
-AnimatorController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Traqueur
-  serializedVersion: 5
-  m_AnimatorParameters: []
-  m_AnimatorLayers:
-  - serializedVersion: 5
-    m_Name: Base Layer
-    m_StateMachine: {fileID: -6370235541814724232}
-    m_Mask: {fileID: 0}
-    m_Motions: []
-    m_Behaviours: []
-    m_BlendingMode: 0
-    m_SyncedLayerIndex: -1
-    m_DefaultWeight: 0
-    m_IKPass: 0
-    m_SyncedLayerAffectsTiming: 0
-    m_Controller: {fileID: 9100000}
-  - serializedVersion: 5
-    m_Name: "M\xE2choire"
-    m_StateMachine: {fileID: 2402734910423096180}
-    m_Mask: {fileID: 8851615674233677512}
-    m_Motions: []
-    m_Behaviours: []
-    m_BlendingMode: 0
-    m_SyncedLayerIndex: -1
-    m_DefaultWeight: 1
-    m_IKPass: 0
-    m_SyncedLayerAffectsTiming: 0
-    m_Controller: {fileID: 9100000}
---- !u!1102 &974062762931667024
+--- !u!1102 &7507976031322085685
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
@@ -198,42 +686,20 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -5493754032747257190, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Motion: {fileID: -1845944588123483321, guid: 64ffa75a52214774180e6c1e1c3b03fa, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!1107 &2402734910423096180
-AnimatorStateMachine:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: "M\xE2choire"
-  m_ChildStates:
-  - serializedVersion: 1
-    m_State: {fileID: -1796479890603626120}
-    m_Position: {x: 200, y: 0, z: 0}
-  m_ChildStateMachines: []
-  m_AnyStateTransitions: []
-  m_EntryTransitions: []
-  m_StateMachineTransitions: {}
-  m_StateMachineBehaviours: []
-  m_AnyStatePosition: {x: 50, y: 20, z: 0}
-  m_EntryPosition: {x: 50, y: 120, z: 0}
-  m_ExitPosition: {x: 800, y: 120, z: 0}
-  m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
-  m_DefaultState: {fileID: -1796479890603626120}
---- !u!1102 &2460352981596732461
+--- !u!1102 &8488176420493968589
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Traqueur_MainPlantee
+  m_Name: Traqueur_PriseRebord
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions: []
@@ -246,138 +712,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -1651344394205444554, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
-  m_Tag: 
-  m_SpeedParameter: 
-  m_MirrorParameter: 
-  m_CycleOffsetParameter: 
-  m_TimeParameter: 
---- !u!1102 &8808304383658725093
-AnimatorState:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Traqueur_MainsLevees
-  m_Speed: 1
-  m_CycleOffset: 0
-  m_Transitions: []
-  m_StateMachineBehaviours: []
-  m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
-  m_WriteDefaultValues: 1
-  m_Mirror: 0
-  m_SpeedParameterActive: 0
-  m_MirrorParameterActive: 0
-  m_CycleOffsetParameterActive: 0
-  m_TimeParameterActive: 0
-  m_Motion: {fileID: 608328055261285156, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
-  m_Tag: 
-  m_SpeedParameter: 
-  m_MirrorParameter: 
-  m_CycleOffsetParameter: 
-  m_TimeParameter: 
---- !u!319 &8851615674233677512
-AvatarMask:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: "Masque : m\xE2choire"
-  m_Mask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
-  m_Elements:
-  - m_Path: SK_Traqueur
-    m_Weight: 0
-  - m_Path: SK_Traqueur_Cheveux
-    m_Weight: 0
-  - m_Path: Traqueur
-    m_Weight: 0
-  - m_Path: Traqueur/Racine
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Cuisse.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Cuisse.L/Jambe.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Cuisse.L/Jambe.L/Pied.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Cuisse.L/Jambe.L/Pied.L/Orteils.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Cuisse.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Cuisse.R/Jambe.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Cuisse.R/Jambe.R/Pied.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Cuisse.R/Jambe.R/Pied.R/Orteils.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Cou
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Cou/Tete
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Cou/Tete/Machoire
-    m_Weight: 1
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L/Main.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L/Main.L/Doigts_1.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L/Main.L/Doigts_1.L/Doigts_2.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L/Main.L/Pouce_1.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.L/Bras.L/AvantBras.L/Main.L/Pouce_1.L/Pouce_2.L
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R/Main.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R/Main.R/Doigts_1.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R/Main.R/Doigts_1.R/Doigts_2.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R/Main.R/Pouce_1.R
-    m_Weight: 0
-  - m_Path: Traqueur/Racine/Bassin/Dos_1/Dos_2/Poitrine/Epaule.R/Bras.R/AvantBras.R/Main.R/Pouce_1.R/Pouce_2.R
-    m_Weight: 0
---- !u!1102 &8988923782849734563
-AnimatorState:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Traqueur_PassageBas
-  m_Speed: 1
-  m_CycleOffset: 0
-  m_Transitions: []
-  m_StateMachineBehaviours: []
-  m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
-  m_WriteDefaultValues: 1
-  m_Mirror: 0
-  m_SpeedParameterActive: 0
-  m_MirrorParameterActive: 0
-  m_CycleOffsetParameterActive: 0
-  m_TimeParameterActive: 0
-  m_Motion: {fileID: 1250823365541066942, guid: 6aad0a4deed7f814aaf9f7523b2138e4, type: 3}
+  m_Motion: {fileID: -1845944588123483321, guid: 6e04f33dfdb956d47a216caf26087fe0, type: 3}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 

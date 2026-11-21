@@ -6,6 +6,7 @@ using NUnit.Framework;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools.Utils;
 
 namespace ItHunts.Tests
 {
@@ -81,26 +82,116 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void BrasEtire_SeulLAxeDeLOsSAllonge()
+        public void Fente_CeQuiManqueAuBras_PlafonneeEtSansDepasserLaCible()
         {
-            // D-070 : le bras s'allonge par l'échelle de son os, le long de son axe seulement (épaisseur inchangée) ; la main reçoit
-            // l'inverse et garde sa taille.
-            Vector3 rest = new Vector3(1f, 1f, 1f);
-            Assert.That(Stalker.StretchScale(rest, 1, 3.2f), Is.EqualTo(new Vector3(1f, 3.2f, 1f)));
-            Assert.That(Stalker.StretchScale(new Vector3(2f, 0.5f, 1f), 0, 2f), Is.EqualTo(new Vector3(4f, 0.5f, 1f)));
-            Vector3 arm = Stalker.StretchScale(rest, 2, 3.8f), handLocal = Stalker.StretchScale(rest, 2, 1f / 3.8f);
-            Assert.That(arm.z * handLocal.z, Is.EqualTo(1f).Within(1e-5f), "main : taille gardée");
+            // D-080 (remplace D-070) : plus d'os étiré ; le corps avance de ce qui manque au bras réel, jusqu'à grabLunge.
+            var cfg = ScriptableObject.CreateInstance<StalkerSettings>();
+            _objects.Add(cfg);
+            Assert.That(cfg.GrabReach, Is.EqualTo(cfg.armLength + cfg.grabLunge).Within(1e-5f));
+            Assert.That(EnemyMath.LungeDistance(-2f, 20f, cfg), Is.EqualTo(0f), "à portée du bras : pas de fente");
+            Assert.That(EnemyMath.LungeDistance(2f, 20f, cfg), Is.EqualTo(2f).Within(1e-5f));
+            Assert.That(EnemyMath.LungeDistance(9f, 20f, cfg), Is.EqualTo(cfg.grabLunge).Within(1e-5f), "plafond");
+            Assert.That(EnemyMath.LungeDistance(4f, 2f, cfg), Is.EqualTo(1.5f).Within(1e-5f), "jamais par-dessus la cible");
+            Assert.That(EnemyMath.LungeProgress(9f, 10f, 0.4f), Is.EqualTo(0f), "avant la fenêtre");
+            Assert.That(EnemyMath.LungeProgress(9.8f, 10f, 0.4f), Is.EqualTo(0.5f).Within(1e-4f));
+            Assert.That(EnemyMath.LungeProgress(10f, 10f, 0.4f), Is.EqualTo(1f), "finie à l'impact");
+        }
+
+        [Test]
+        public void Prise_ImpactDuClip_CaleSurLImpactDuJeu()
+        {
+            // C2 : le clip de la DA démarre décalé pour que son poing (2.37 s) tombe à la fin de l'annonce et de la descente.
+            var cfg = ScriptableObject.CreateInstance<StalkerSettings>();
+            _objects.Add(cfg);
+            float untilImpact = cfg.grabTelegraph + cfg.grabSlam;
+            float offset = EnemyMath.ClipOffsetForImpact(cfg.clipPriseImpact, untilImpact);
+            Assert.That(offset + untilImpact, Is.EqualTo(cfg.clipPriseImpact).Within(1e-4f), "mort du joueur à l'instant d'impact du clip");
+            Assert.That(EnemyMath.ClipOffsetForImpact(0.3f, untilImpact), Is.EqualTo(0f), "jamais avant le début du clip");
+            Assert.That(cfg.clipBondLand, Is.GreaterThan(cfg.clipBondTakeoff));
+            var t = new StalkerTraversal { Active = true, Kind = StalkerLinkKind.Bond, ClipRecovery = 1.4f };
+            StalkerPassageMath.Land(ref t, 10f, cfg);
+            Assert.That(t.RecoverUntil, Is.EqualTo(11.4f).Within(1e-4f), "réception : la fin du clip");
+        }
+
+        [Test]
+        public void Chaine_MontéeMainSurMain_BouclePourUneChaineLongue()
+        {
+            var cfg = ScriptableObject.CreateInstance<StalkerSettings>();
+            _objects.Add(cfg);
+            Assert.That(EnemyMath.ChainExtraCycles(4f, cfg), Is.EqualTo(0), "chaîne courte : le clip suffit");
+            Assert.That(EnemyMath.ChainExtraCycles(11f, cfg), Is.EqualTo(3), "11 m : 3 cycles de 2.4 m de plus");
+            Assert.That(EnemyMath.ChainClipTime(0.5f, 3, cfg), Is.EqualTo(0.5f), "saut vers la chaîne");
+            Assert.That(EnemyMath.ChainClipTime(1.1f + 0.9f * 2f + 0.3f, 3, cfg), Is.EqualTo(1.4f).Within(1e-4f), "en boucle");
+            Assert.That(EnemyMath.ChainClipTime(1.1f + 2.7f + 1f, 3, cfg), Is.EqualTo(2.1f).Within(1e-4f), "puis la fin du clip");
+        }
+
+        [Test]
+        public void Visage_CriEtGrognement_Enveloppe()
+        {
+            Assert.That(StalkerFace.Envelope(-0.1f, 1.4f), Is.EqualTo(0f));
+            Assert.That(StalkerFace.Envelope(0.06f, 1.4f), Is.EqualTo(0.5f).Within(1e-4f), "montée");
+            Assert.That(StalkerFace.Envelope(0.7f, 1.4f), Is.EqualTo(1f), "tenue");
+            Assert.That(StalkerFace.Envelope(1.4f, 1.4f), Is.EqualTo(0f).Within(1e-4f), "fin");
+            Assert.That(StalkerFace.Envelope(2f, 1.4f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void IK_DeuxOs_AtteintLaCible_SansChangerLesLongueurs()
+        {
+            // C3 : IK analytique, rotations seules (le modèle ne se déforme jamais).
+            var a = new GameObject("Cuisse").transform;
+            var m = new GameObject("Jambe").transform;
+            var e = new GameObject("Pied").transform;
+            _objects.Add(a.gameObject);
+            m.SetParent(a, false);
+            e.SetParent(m, false);
+            a.position = new Vector3(0f, 7f, 0f);
+            m.position = new Vector3(0f, 3.5f, 0.4f);
+            e.position = new Vector3(0f, 0f, 0f);
+            float l1 = Vector3.Distance(a.position, m.position), l2 = Vector3.Distance(m.position, e.position);
+            Vector3 target = new Vector3(0.3f, 0.8f, 0.5f);                    // une marche de 0.8 m
+            StalkerLimbIK.SolveTwoBone(a, m, e, target, 1f);
+            Assert.That(Vector3.Distance(e.position, target), Is.LessThan(0.01f), "le pied est sur la marche");
+            Assert.That(Vector3.Distance(a.position, m.position), Is.EqualTo(l1).Within(1e-4f));
+            Assert.That(Vector3.Distance(m.position, e.position), Is.EqualTo(l2).Within(1e-4f));
+            Assert.That(m.position.z, Is.GreaterThan(0f), "le genou reste devant");
+            foreach (Transform t in new[] { a, m, e })
+                Assert.That(t.localScale, Is.EqualTo(Vector3.one));
+            StalkerLimbIK.SolveTwoBone(a, m, e, new Vector3(0f, -20f, 0f), 1f);     // hors d'atteinte : tendu, jamais allongé
+            Assert.That(Vector3.Distance(a.position, e.position), Is.LessThanOrEqualTo(l1 + l2 + 1e-3f));
+        }
+
+        [Test]
+        public void ModeleV4_JamaisMisALEchelle_NiDeforme()
+        {
+            // Le modèle ne change jamais : aucun code du traqueur n'écrit d'échelle d'os (localScale) ; seul le ressort des cheveux
+            // déplace des os, en gardant leur longueur.
+            string code = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/Stalker.cs")
+                          + System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/StalkerProceduralPose.cs")
+                          + System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/StalkerLimbIK.cs")
+                          + System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/StalkerFace.cs");
+            Assert.That(code.Contains("StretchScale"), Is.False);
+            foreach (string bone in new[] { "a.localScale =", "e.localScale =", "b[i].localScale =", "_pelvis.localScale =", "].localScale =" })
+                Assert.That(code.Contains(bone), Is.False, bone);
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/Models/Ennemis/SK_Traqueur_v4.fbx");
+            Assert.That(model, Is.Not.Null);
+            foreach (Transform t in model.GetComponentsInChildren<Transform>(true))
+                Assert.That(t.localScale, Is.EqualTo(Vector3.one).Using(Vector3EqualityComparer.Instance), t.name);
         }
 
         [Test]
         public void Clips_VitesseDeLecture_PiedsSansGlisser()
         {
-            // PR #13 : Traqueur_Marche avance de 3.71 m/s à la vitesse 1, Traqueur_PassageBas de 2.29 m/s.
+            // Clips v4 (DA, PR #28 et #29) : marche à quatre pattes 1.27 m/s à la vitesse 1, courses A et B 11 m/s, C 9 m/s.
             var cfg = ScriptableObject.CreateInstance<StalkerSettings>();
             _objects.Add(cfg);
-            Assert.That(Stalker.ClipPlayback(cfg.chaseSpeed, cfg.walkClipSpeed, cfg) * 3.71f, Is.EqualTo(cfg.chaseSpeed).Within(0.01f));
-            Assert.That(Stalker.ClipPlayback(4.58f, cfg.crouchClipSpeed, cfg), Is.EqualTo(2f).Within(0.01f));
-            Assert.That(Stalker.ClipPlayback(cfg.enragedBurstSpeed, cfg.walkClipSpeed, cfg) * cfg.walkClipSpeed,
+            Assert.That(cfg.walkClipSpeed, Is.EqualTo(1.27f));
+            Assert.That(new[] { cfg.runClipSpeedA, cfg.runClipSpeedB, cfg.runClipSpeedC }, Is.EqualTo(new[] { 11f, 11f, 9f }));
+            Assert.That(Stalker.ClipPlayback(cfg.roamSpeed, cfg.walkClipSpeed, cfg) * cfg.walkClipSpeed, Is.EqualTo(cfg.roamSpeed).Within(0.01f), "Rôde : marche");
+            Assert.That(cfg.roamSpeed, Is.LessThan(cfg.runThreshold), "il marche en rôdant");
+            Assert.That(cfg.chaseSpeed, Is.GreaterThan(cfg.runThreshold), "il court en chasse");
+            Assert.That(Stalker.ClipPlayback(cfg.chaseSpeed, cfg.runClipSpeedC, cfg), Is.EqualTo(1f).Within(0.01f), "Chasse : course C à sa vitesse");
+            Assert.That(Stalker.ClipPlayback(cfg.enragedBurstSpeed, cfg.runClipSpeedA, cfg) * cfg.runClipSpeedA,
                 Is.EqualTo(cfg.enragedBurstSpeed).Within(0.01f), "même la ruée enragée ne glisse pas");
             Assert.That(Stalker.ClipPlayback(0.1f, cfg.walkClipSpeed, cfg), Is.EqualTo(cfg.clipPlaybackRange.x), "borne basse");
         }
