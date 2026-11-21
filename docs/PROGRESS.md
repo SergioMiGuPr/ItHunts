@@ -55,6 +55,13 @@
   point 5 ; poussière d'atterrissage du traqueur : point 9. **Coût mesuré** (Play Mode, Level_01_Aleatoire, 235 torches,
   470 systèmes, ~1 700 particules) : `ParticleSystem.Update` 0.77 ms par image, fil principal 15.1 → 13.2 ms torches éteintes
   (éditeur). À surveiller en build ; leviers : `debit` des flammes, une torche sur deux (`RandomLevel.ThinTorches`).
+- **5. Koala et hibou (D-077).** `BoneSwordSettings` / `BoneSword` (combo, vitesse, fente, recul), `SpiritBookSettings` /
+  `SpiritBook` (drain, soin, plafonds, recharges), branchés dans `ArtifactHolder` ; `MovementInput.ThrowHeld` ; vue FPS
+  `ArtifactModelView` (modèles de la DA `Artefact_Epee_Koala`, `Artefact_Livre_Hibou` ; coup animé par le code ; liens peints) ;
+  `FirstPersonView.LeftHand`. Koala et hibou jouables (`playable`), descriptions sur l'écran de choix, pool des artefacts.
+  Vérifié en Play Mode : coup du 3e (16 PV) sur une goule, épée et livre visibles en main, lien de drain accroché à 8 m.
+  10 tests (`KoalaOwlArtifactTests`). Captures : `docs/design/features/artefacts/captures/`. Main gauche sans pose de prise
+  (mains gelées).
 
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;

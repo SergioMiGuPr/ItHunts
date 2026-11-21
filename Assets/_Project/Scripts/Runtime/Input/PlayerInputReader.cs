@@ -54,6 +54,7 @@ namespace ItHunts.Input
         public bool RepelHeld { get; private set; }
         public int GrabPressedTick { get; private set; } = MovementState.NeverTick;
         public int ThrowPressedTick { get; private set; } = MovementState.NeverTick;
+        public bool ThrowHeld { get; private set; }
         public int ReloadPressedTick { get; private set; } = MovementState.NeverTick;
         public bool ToggleDebugPressed { get; private set; }
         /// <summary>Parer (E / LB, D-075) cette image ; E sur un objet utilisable reste l'interaction.</summary>
@@ -128,6 +129,7 @@ namespace ItHunts.Input
             }
             if (_throw.WasPressedThisFrame() && aimReady)
                 ThrowPressedTick = next;                      // lancer si l'orbe tient un objet, sinon tir de l'artefact
+            ThrowHeld = _throw.IsPressed() && aimReady;
             if (_reload.WasPressedThisFrame() && aimReady && !(UsingGamepad && focus))
                 ReloadPressedTick = next;                     // R / Y : recharger l'artefact (Y visant un objet : il l'utilise)
             // E sert aussi à interagir (même touche, D-075) : sur un objet utilisable, c'est l'interaction, pas la parade.

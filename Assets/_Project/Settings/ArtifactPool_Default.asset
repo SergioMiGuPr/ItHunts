@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.ArtifactPool
   artifacts:
   - {fileID: 11400000, guid: 89cfb0254aa64984a862b239ac896e4a, type: 2}
+  - {fileID: 11400000, guid: 5e7c0a79944f9fa40910be8557cc43da, type: 2}
+  - {fileID: 11400000, guid: ed9b848f21df83b478ceb8dba5805e3d, type: 2}

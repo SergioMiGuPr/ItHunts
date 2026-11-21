@@ -118,6 +118,8 @@ namespace ItHunts.Player
         public Transform Orb => orb;
         /// <summary>Racine des mains (repère de la vue) : l'artefact qui flotte reste pointé vers l'avant de la vue.</summary>
         public Transform ViewRoot => viewRoot;
+        /// <summary>Main gauche de la vue FPS (artefacts).</summary>
+        public Transform LeftHand => leftHand;
         public int Layer => _layer;
         public HandGesture Gesture { get; private set; }
 

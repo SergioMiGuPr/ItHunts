@@ -18,7 +18,7 @@ MonoBehaviour:
   lanternColor: {r: 0.2, g: 0.4, b: 1, a: 1}
   fpsArmRight: {fileID: 919132149155446097, guid: bae9ca71804417f43967c53790628988, type: 3}
   fpsArmLeft: {fileID: 919132149155446097, guid: 22571ad2e5ca84042987b8fc376e3443, type: 3}
-  artifact: {fileID: 0}
+  artifact: {fileID: 11400000, guid: ed9b848f21df83b478ceb8dba5805e3d, type: 2}
   artifactLabel: "artefact \xE0 concevoir"
-  playable: 0
+  playable: 1
   description: "Artefact \xE0 concevoir."

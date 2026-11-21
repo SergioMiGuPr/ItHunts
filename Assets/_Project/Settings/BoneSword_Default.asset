@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d6711f4d539c964494d2fbe784b5943, type: 3}
+  m_Name: BoneSword_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.BoneSwordSettings
+  id: epee_os
+  displayName: "\xC9p\xE9e en os"
+  description: Combo de 3 coups ; frappe plus fort en pleine vitesse.
+  upgrades: {fileID: 0}
+  viewModel: {fileID: 3435471222887614119, guid: 2e8cb3d42286b324a8b8db805b8b1eff, type: 3}
+  viewOffset: {x: 0, y: 0.1, z: 0.08}
+  viewEuler: {x: -20, y: 0, z: -25}
+  viewScale: 1
+  comboDamage:
+  - 10
+  - 10
+  - 16
+  swingInterval: 0.3
+  comboRecovery: 0.25
+  comboWindow: 0.8
+  pressBuffer: 0.2
+  range: 2.5
+  arcHalfAngle: 40
+  speedRef: 8.5
+  speedFull: 20
+  speedMaxMultiplier: 1.8
+  knockback: 6
+  lungeLength: 4.5
+  lungeRadius: 1
+  lungeDamageFactor: 1.2
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  swingAnimDuration: 0.22
