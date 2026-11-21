@@ -27,6 +27,21 @@ namespace ItHunts.Movement
         Bloquee,
     }
 
+    /// <summary>Élan au sol (D-073), pour le debug : gardé, ou la raison de sa perte.</summary>
+    public enum MomentumStatus : byte
+    {
+        /// <summary>À la vitesse de course ou en dessous, ou pas au sol : rien à garder.</summary>
+        Aucun,
+        Garde,
+        AvancerLache,
+        Recule,
+        HorsDuCone,
+        Virage,
+        Mur,
+        Plafond,
+        Accroupi,
+    }
+
     /// <summary>
     /// État complet du mouvement d'un joueur. Données seulement (pas de référence Unity) :
     /// copiable, comparable et rejouable pour la prédiction réseau. Les délais sont en ticks.
@@ -124,6 +139,13 @@ namespace ItHunts.Movement
         public int TractionEndTick;
         public TractionEnd TractionEndReason;
 
+        /// <summary>
+        /// Élan au sol (D-073) : cassé par un virage trop serré ou un mur (jusqu'au retour à la vitesse de course ou au décollage),
+        /// et l'état du dernier tick au sol (debug).
+        /// </summary>
+        public bool MomentumBroken;
+        public MomentumStatus Momentum;
+
         public static MovementState Create(Vector3 position) => new MovementState
         {
             Tick = 0,
@@ -172,6 +194,8 @@ namespace ItHunts.Movement
             TractionStartTick = NeverTick,
             TractionEndTick = NeverTick,
             TractionEndReason = TractionEnd.Aucune,
+            MomentumBroken = false,
+            Momentum = MomentumStatus.Aucun,
         };
 
         public float HorizontalSpeed => new Vector2(Velocity.x, Velocity.z).magnitude;

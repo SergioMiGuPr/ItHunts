@@ -41,6 +41,12 @@ namespace ItHunts.Movement
             // 1. Sol. On ne se colle pas au sol pendant une montée (sinon le saut serait annulé).
             bool groundHit = probe.ProbeGround(out Vector3 groundNormal);
             bool grounded = !traction && groundHit && s.Velocity.y <= 1e-3f;
+            if (!grounded)
+            {
+                s.MomentumBroken = false;                     // en l'air : l'élan n'est plus cassé (bunny hop, saut)
+                s.Momentum = MomentumStatus.Aucun;
+            }
+
             if (grounded)
             {
                 s.LastGroundedTick = s.Tick;
@@ -235,10 +241,15 @@ namespace ItHunts.Movement
             }
             else if (grounded)
             {
-                float topSpeed = s.Crouched ? cfg.crouchSpeed : cfg.runSpeed;
-                if (s.Tick >= s.DashGraceUntilTick)                   // pas de friction juste après un dash
-                    s.Velocity = MovementMath.ApplyFriction(s.Velocity, cfg.groundFriction, cfg.stopSpeed, dt);
-                s.Velocity = MovementMath.Accelerate(s.Velocity, wishDir, topSpeed * wishAmount, cfg.groundAcceleration, dt);
+                // Élan gardé (D-073) : au-dessus de la course, la vitesse est gardée en avançant dans le cône, sinon perdue
+                // progressivement ; à la course ou en dessous, sol façon Source.
+                if (!cfg.keepGroundMomentum || !GroundMomentum(ref s, input, cfg, wishDir, wishAmount, dt))
+                {
+                    float topSpeed = s.Crouched ? cfg.crouchSpeed : cfg.runSpeed;
+                    if (s.Tick >= s.DashGraceUntilTick)                   // pas de friction juste après un dash
+                        s.Velocity = MovementMath.ApplyFriction(s.Velocity, cfg.groundFriction, cfg.stopSpeed, dt);
+                    s.Velocity = MovementMath.Accelerate(s.Velocity, wishDir, topSpeed * wishAmount, cfg.groundAcceleration, dt);
+                }
             }
             else if (s.Tick >= s.SteerLockUntilTick)
             {
@@ -328,6 +339,14 @@ namespace ItHunts.Movement
                     sideNormal.Normalize();
                     var h = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
                     float into = Vector3.Dot(h, sideNormal);
+                    // Mur percuté au sol au-dessus de la course : élan cassé (D-073), redescente vers la course.
+                    if (grounded && cfg.keepGroundMomentum && h.magnitude > cfg.runSpeed + 1e-3f
+                        && -into >= h.magnitude * Mathf.Sin(cfg.momentumWallHitAngle * Mathf.Deg2Rad))
+                    {
+                        s.MomentumBroken = true;
+                        s.Momentum = MomentumStatus.Mur;
+                    }
+
                     if (into < 0f)
                     {
                         h -= sideNormal * into;
@@ -351,6 +370,89 @@ namespace ItHunts.Movement
             s.Grounded = grounded;
             s.OnWall = onWall;
             s.GroundNormal = grounded ? groundNormal : Vector3.up;
+        }
+
+        /// <summary>
+        /// Élan au sol (D-073), debout en mode Sol, au-dessus de la vitesse de course. Gardé (décroissance momentumDecay, 0 par
+        /// défaut) tant qu'on tient « avancer » avec l'entrée dans le cône autour de la trajectoire, qui suit alors l'entrée ;
+        /// perdu progressivement vers la course sinon : avancer lâché, hors du cône, recul (freinage), virage au-delà de
+        /// momentumTurnAngle ou mur percuté (élan cassé jusqu'au retour à la course ou au décollage). Au-dessus de groundSpeedCap,
+        /// redescente vers ce plafond. Renvoie faux à la course ou en dessous (sol façon Source) : rien à garder.
+        /// </summary>
+        public static bool GroundMomentum(ref MovementState s, in MovementInput input, MovementSettings cfg, Vector3 wishDir,
+            float wishAmount, float dt)
+        {
+            var h = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
+            float speed = h.magnitude;
+            float run = cfg.runSpeed;
+            if (speed <= run + 1e-3f)
+            {
+                s.MomentumBroken = false;
+                s.Momentum = MomentumStatus.Aucun;
+                return false;
+            }
+
+            if (s.Crouched)
+            {
+                s.Momentum = MomentumStatus.Accroupi;
+                return false;                                  // accroupi : friction normale
+            }
+
+            Vector3 dir = h / speed;
+            bool hasWish = wishAmount > 0.1f;
+            float angle = hasWish ? Vector3.Angle(dir, wishDir) : 180f;
+            bool forward = input.Move.y > 0.1f;
+
+            MomentumStatus status;
+            if (hasWish && (input.Move.y < -0.1f || angle > 120f))
+                status = MomentumStatus.Recule;
+            else if (s.MomentumBroken)
+                status = s.Momentum == MomentumStatus.Mur ? MomentumStatus.Mur : MomentumStatus.Virage;
+            else if (!forward)
+                status = MomentumStatus.AvancerLache;
+            else if (angle > cfg.momentumTurnAngle)
+            {
+                status = MomentumStatus.Virage;
+                s.MomentumBroken = true;
+            }
+            else if (angle > cfg.momentumConeAngle)
+                status = MomentumStatus.HorsDuCone;
+            else
+                status = MomentumStatus.Garde;
+
+            float newSpeed;
+            if (status == MomentumStatus.Garde)
+            {
+                newSpeed = Mathf.Max(run, speed - cfg.momentumDecay * dt);
+                if (cfg.momentumSteering > 0f)
+                    dir = MovementMath.AirControl(dir, wishDir, cfg.momentumSteering, dt).normalized;
+            }
+            else
+            {
+                float decel = status == MomentumStatus.Recule ? cfg.momentumBrakeDeceleration : cfg.momentumLossDeceleration;
+                if (s.Tick < s.DashGraceUntilTick && status != MomentumStatus.Recule)
+                    decel = 0f;                                // sortie de dash : pas de perte tout de suite
+                newSpeed = Mathf.Max(run, speed - decel * dt);
+            }
+
+            if (newSpeed > cfg.groundSpeedCap)
+            {
+                newSpeed = Mathf.Max(cfg.groundSpeedCap, speed - cfg.groundOverCapDeceleration * dt);
+                if (status == MomentumStatus.Garde)
+                    status = MomentumStatus.Plafond;
+            }
+
+            Vector3 v = dir * newSpeed;
+            // En perdant l'élan, l'entrée de côté ou vers l'avant oriente encore la trajectoire (sans faire accélérer).
+            if (status != MomentumStatus.Garde && status != MomentumStatus.Plafond && hasWish && angle <= 90f)
+            {
+                v = MovementMath.Accelerate(v, wishDir, run * wishAmount, cfg.groundAcceleration, dt);
+                v = MovementMath.ClampHorizontal(v, newSpeed);
+            }
+
+            s.Velocity = new Vector3(v.x, s.Velocity.y, v.z);
+            s.Momentum = status;
+            return true;
         }
 
         /// <summary>

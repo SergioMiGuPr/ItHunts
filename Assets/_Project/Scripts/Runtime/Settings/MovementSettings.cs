@@ -30,6 +30,29 @@ namespace ItHunts.Settings
         [Tooltip("Sous cette vitesse (m/s), la friction freine comme à cette vitesse, pour s'arrêter net (sv_stopspeed).")]
         [Min(0f)] public float stopSpeed = 2.5f;
 
+        [Header("Élan gardé au sol (D-073)")]
+        [Tooltip("Au sol, tant qu'on tient « avancer » dans le cône, la vitesse au-dessus de la course est gardée (pas de friction).")]
+        public bool keepGroundMomentum = true;
+        [Tooltip("Cône (°, demi-angle) autour de la direction de déplacement : entrée dedans = élan gardé, la trajectoire suit l'entrée.")]
+        [Range(0f, 90f)] public float momentumConeAngle = 45f;
+        [Tooltip("Au-delà de cet angle (°) entre l'entrée et la trajectoire, l'élan est cassé (virage) : redescente vers la course. " +
+                 "Entre le cône et cet angle : perte progressive tant qu'on y reste.")]
+        [Range(0f, 180f)] public float momentumTurnAngle = 60f;
+        [Tooltip("Braquage dans le cône : part de l'angle rattrapée par tick de 1/60 s (la vitesse ne change pas).")]
+        [Range(0f, 1f)] public float momentumSteering = 0.2f;
+        [Tooltip("Décroissance de l'élan gardé (m/s²), vers la course. 0 : gardé tel quel tant qu'on avance.")]
+        [Min(0f)] public float momentumDecay = 0f;
+        [Tooltip("Perte progressive de l'élan (m/s²) vers la course : avancer lâché, hors du cône, virage, mur percuté.")]
+        [Min(0f)] public float momentumLossDeceleration = 12f;
+        [Tooltip("Perte quand on recule ou freine (entrée opposée à la trajectoire, m/s²).")]
+        [Min(0f)] public float momentumBrakeDeceleration = 30f;
+        [Tooltip("Plafond au sol (m/s) : au-dessus (atterrissage d'un bunny hop rapide, traction), redescente vers ce plafond.")]
+        [Min(0f)] public float groundSpeedCap = 20f;
+        [Tooltip("Redescente vers le plafond au sol (m/s²).")]
+        [Min(0f)] public float groundOverCapDeceleration = 15f;
+        [Tooltip("Mur percuté au sol : élan cassé si la trajectoire entre dans le mur avec au moins cet angle (°).")]
+        [Range(0f, 90f)] public float momentumWallHitAngle = 20f;
+
         [Header("En l'air (façon Source)")]
         [Tooltip("Accélération en l'air (sv_airaccelerate).")]
         [Min(0f)] public float airAcceleration = 10f;

@@ -8,6 +8,9 @@
 - **1a. Course 7.5 → 8.5 m/s (D-072).** `Movement_Default.runSpeed`, `ParkourCaps.Default`, ART-HANDOFF. Vitesses des ennemis
   inchangées. Écarts (ennemi − joueur à 8.5) : goule 10 (+1.5, bond 14 : +5.5) ; traqueur Chasse 9 (+0.5), pointe 16 (+7.5) ;
   Enragé 11 → 18 par paliers (+2.5 → +9.5), pointe enragée 18 (+9.5) ; plafond du traqueur 18 m/s.
+- **1b. Élan gardé au sol (D-073).** `MovementMotor.GroundMomentum` (pas fixe, depuis `MovementInput`) : gardé en tenant avancer dans
+  un cône de 45°, plafond 20 m/s au sol, perte progressive (lâché, hors cône, recul, virage > 60°, mur) ; réglages dans
+  `Movement_Default` (« Élan gardé au sol ») ; debug : ligne « Élan au sol » (vitesse et raison). 12 tests (`GroundMomentumTests`).
 
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;

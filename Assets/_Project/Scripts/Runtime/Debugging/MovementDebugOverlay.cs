@@ -268,6 +268,18 @@ namespace ItHunts.Debugging
             int boostLeft = s.LastSlideBoostTick == MovementState.NeverTick ? 0
                 : Mathf.Max(0, boostTicks - (s.Tick - s.LastSlideBoostTick));
             _text.AppendLine($"État : {mode}   Au sol : {(s.Grounded ? "oui" : "non")}");
+            _text.AppendLine($"Élan au sol : {s.HorizontalSpeed:0.0} m/s (course {cfg.runSpeed:0.0}, plafond {cfg.groundSpeedCap:0}) — " + s.Momentum switch
+            {
+                MomentumStatus.Garde => "GARDÉ",
+                MomentumStatus.AvancerLache => "perdu : avancer lâché",
+                MomentumStatus.Recule => "perdu : recul / freinage",
+                MomentumStatus.HorsDuCone => $"perdu : entrée hors du cône ({cfg.momentumConeAngle:0}°)",
+                MomentumStatus.Virage => $"cassé : virage au-delà de {cfg.momentumTurnAngle:0}°",
+                MomentumStatus.Mur => "cassé : mur percuté",
+                MomentumStatus.Plafond => "gardé, redescente vers le plafond",
+                MomentumStatus.Accroupi => "perdu : accroupi",
+                _ => "—",
+            });
             _text.AppendLine(boostLeft > 0
                 ? $"Bonus de glissade : recharge {boostLeft * dt:0.0} s"
                 : "Bonus de glissade : prêt");
