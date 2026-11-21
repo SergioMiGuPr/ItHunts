@@ -66,6 +66,9 @@
   amortissement, gravité, inertie de la racine, longueur gardée, collisions sphère et capsule, pose d'origine remise avant
   l'Animator) ; réglages `BoneSpringSettings` dans `Stalker_Default` (`boneChainsEnabled` à faux : rien d'activé, modèle v4 et
   D-070 non touchés). Chaîne factice de 8 os qui se balance dans la vitrine (x 8, z −8, `BoneChainDemo`). 5 tests.
+- **11. Outils.** `docs/design/OUTILS.md` : packages installés, gratuits officiels utiles plus tard (Animation Rigging,
+  ProBuilder, Splines, Recorder…), payants avec prix indicatifs (Final IK, Magica Cloth 2…). **Rien installé, rien acheté** :
+  AI Navigation (déjà là) couvre les liens du traqueur.
 
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;
