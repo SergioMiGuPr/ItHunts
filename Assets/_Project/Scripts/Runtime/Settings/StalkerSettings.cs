@@ -52,6 +52,36 @@ namespace ItHunts.Settings
         [Tooltip("Coop : il change de cible (le joueur le plus proche par le chemin) au plus une fois par intervalle (s).")]
         [Min(0f)] public float retargetInterval = 5f;
 
+        [Header("Passages des modules (point 9, 2026-11-21) : liens typés du NavMesh, un clip par type plus tard")]
+        [Tooltip("Il emprunte les passages posés par les modules (bonds, escalades, chaînes, portes étroites).")]
+        public bool passagesEnabled = true;
+        [Tooltip("Bond : distance horizontale maximale (m) et dénivelé maximal (m).")]
+        [Min(1f)] public float leapMaxDistance = 22f;
+        [Min(0f)] public float leapMaxRise = 6f;
+        [Tooltip("Durée d'un bond (s, à mi-distance) et hauteur de l'arc au-dessus de la ligne (m).")]
+        [Min(0.2f)] public float leapDuration = 1.1f;
+        [Min(0f)] public float leapArcHeight = 5f;
+        [Tooltip("Télégraphe avant un bond (s) : il s'arrête, se ramasse et crie ; le joueur peut esquiver.")]
+        [Min(0f)] public float leapTelegraph = 0.55f;
+        [Tooltip("Récupération après la réception à quatre pattes (s).")]
+        [Min(0f)] public float leapRecovery = 0.8f;
+        [Tooltip("Un bond tue le joueur que son corps traverse (même règle que la prise) : rayon autour du milieu de son corps (m).")]
+        [Min(0f)] public float leapHitRadius = 3.2f;
+        [Tooltip("Hauteurs maximales : rebord, mur grimpable, chaîne (m).")]
+        [Min(0f)] public float ledgeMaxHeight = 8f;
+        [Min(0f)] public float wallMaxHeight = 16f;
+        [Min(0f)] public float chainMaxHeight = 16f;
+        [Tooltip("Saut depuis une chaîne : distance maximale (m).")]
+        [Min(1f)] public float chainJumpMaxDistance = 18f;
+        [Tooltip("Vitesse de montée (escalade, mur, chaîne, m/s).")]
+        [Min(0.1f)] public float climbSpeed = 6f;
+        [Tooltip("Pause avant de grimper (s).")]
+        [Min(0f)] public float climbStartPause = 0.2f;
+        [Tooltip("Porte étroite : part de sa vitesse quand il se faufile.")]
+        [Range(0.1f, 1f)] public float narrowDoorSlowFactor = 0.45f;
+        [Tooltip("Hauteur sous laquelle une porte l'oblige à se faufiler (m ; 10 en attendant la mesure du modèle v4).")]
+        [Min(1f)] public float narrowDoorHeight = 10f;
+
         [Header("Chaînes d'os à ressort (traqueur v4 : prévu, pas activé, D-070 inchangé)")]
         [Tooltip("Active les chaînes d'os (cheveux, chaînes, lambeaux) du modèle v4 quand il sera validé.")]
         public bool boneChainsEnabled;

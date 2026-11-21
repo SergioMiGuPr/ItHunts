@@ -1531,12 +1531,33 @@ namespace ItHunts.Level
                 ChestSpot[] spots = inst.GetComponentsInChildren<ChestSpot>();
                 if (spots.Length == 0)
                     continue;
-                ChestSpot s = spots[_rng.Next(spots.Length)];
+                ChestSpot s = PickSpot(spots);
                 GameObject c = Instantiate(chest, s.transform.position, s.transform.rotation, _root);
                 c.name = $"Coffre : {Plan.Rooms[r].Name}";
+                // Ancre difficile (point 9) : parfois un coffre rare (meilleur butin) au bout de la route la plus dure.
+                if (ChestSpot.RareAllowed(s.difficulty) && _rng.NextDouble() < settings.rareChestOnHardSpot
+                    && c.TryGetComponent(out Economy.Chest hardChest))
+                    hardChest.Rare = true;
                 if (Plan.Rooms[r].Parkour)
                     c.AddComponent<Orbs.NonMagneticSurface>();               // salle de parcours : rien n'y est magnétique
             }
+        }
+
+        /// <summary>Ancre tirée au hasard, les plus difficiles préférées (poids 1, 2, 3).</summary>
+        private ChestSpot PickSpot(ChestSpot[] spots)
+        {
+            float total = 0f;
+            foreach (ChestSpot s in spots)
+                total += ChestSpot.Weight(s.difficulty);
+            double roll = _rng.NextDouble() * total;
+            foreach (ChestSpot s in spots)
+            {
+                roll -= ChestSpot.Weight(s.difficulty);
+                if (roll <= 0)
+                    return s;
+            }
+
+            return spots[spots.Length - 1];
         }
 
         private void Residents()

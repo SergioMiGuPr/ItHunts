@@ -103,6 +103,8 @@ namespace ItHunts.Level
         public float canalWidth = 6f;
         public float canalDepth = 4f;
         public float waterDamage = 20f;
+        [Tooltip("Chance (0 à 1) qu'un coffre posé sur une ancre difficile soit rare (point 9).")]
+        [Range(0f, 1f)] public float rareChestOnHardSpot = 0.35f;
         public float lightIntensity = 6f;
         public float lightRange = 50f;
 

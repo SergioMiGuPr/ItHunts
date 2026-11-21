@@ -69,6 +69,20 @@
 - **11. Outils.** `docs/design/OUTILS.md` : packages installés, gratuits officiels utiles plus tard (Animation Rigging,
   ProBuilder, Splines, Recorder…), payants avec prix indicatifs (Final IK, Magica Cloth 2…). **Rien installé, rien acheté** :
   AI Navigation (déjà là) couvre les liens du traqueur.
+- **9. Nouveaux modules et passages du traqueur (D-078).** `ModuleLibraryNight` : prison à étages, caserne, citerne inondée,
+  puits circulaire (4 modules **validés** : 0 cachette, NavMesh relié entre toutes les entrées), kit de la DA (PR #25) posé en
+  habillage par ses bornes (sans collision). `StalkerPassage` + `StalkerPassageMath` (permis, durée, arc, coût, prise pendant le
+  bond, récupération), liens dans `ZoneNavMesh` (bouts recalés à 4 m sur le sol du traqueur), traversée dans `Stalker.Locomote`
+  (chasse et ronde). `ChestSpot.difficulty` (0 à 2), tirage pondéré, coffre rare sur ancre difficile (`rareChestOnHardSpot` 0.35).
+  **5 seeds** (11, 22, 33, 44, 55) : 51 salles dont 12 à 17 des nouveaux types, 0 échec de plan, 47 à 77 liens du traqueur,
+  **0 cachette dans les nouveaux modules** (4 à 9 points ailleurs : arène du boss et fosses de parcours, comme avant),
+  construction 5.2 à 6.1 s + NavMesh 1.5 s. **Temps de trajet** (seed tirée en jeu) : bond 2.6 s en moyenne (28 liens : 8 aussi
+  atteignables à pied en 2.6 s, 20 inaccessibles sans le lien), saut de chaîne 2.5 s (12, tous inaccessibles à pied), mur 2.6 s
+  (10), chaîne 3.2 s (4) ; télégraphe et récupération compris : le joueur qui bouge bien a le temps de s'échapper.
+  Enregistrements : `docs/design/features/run-et-niveaux/captures/modules_nuit/` (bond sur une coursive de la prison, chaîne
+  du puits ; mp4 et planches). 6 tests (`StalkerPassageTests`).
+  Captures vue de dessus et en perspective des 4 modules (même dossier). **Pas fait :** couloirs de service plus étroits (les
+  couloirs restent les gothiques) ; poussière d'atterrissage peinte branchée mais pas vue en capture.
 
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;

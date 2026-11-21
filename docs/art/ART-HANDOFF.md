@@ -768,3 +768,21 @@ ceux de `ProceduralSfx` et des vues qui les jouent).
 Réglages d'import : effets courts **Decompress On Load** (aucune latence au tir), boucles d'effets **Compressed In Memory**,
 musiques **Streaming** (chargement en arrière-plan) ; Vorbis 0,7, fréquence d'origine (44,1 kHz) ; mono forcé pour tous les
 effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retirés et raccords : `sons_jeu.json`.
+
+## Nouveaux modules et passages du traqueur (main, 2026-11-21, D-078)
+
+Échelle de jeu des 4 modules (64 × 64 m) et des passages du traqueur, pour remplacer les blocs par le kit (PR #25) :
+
+| Élément | Mesure | Remarque |
+|---|---|---|
+| Plateforme où le traqueur se pose (coursive, mezzanine, anneau) | **10 m de profondeur au moins** | il fait 7 m de large ; plus étroit : joueurs seulement |
+| Coursive basse de la prison | 14 m de profondeur, dessus à 5.5 m | la 2e (11 m) fait 4 m : joueurs seulement |
+| Mezzanine de la caserne | 10 m, dessus à 6 m | |
+| Anneau bas du puits | 10 m, dessus à 11 m ; anneau haut 3 m à 17 m | plafond du puits 30 m |
+| Porte étroite | **8 × 10 m** (le traqueur se faufile, × 0.45) | seuil réglable (`narrowDoorHeight` 10 m, en attendant la mesure du v4) |
+| Bond | 22 m au plus, 6 m de dénivelé | arc de 5 m au-dessus de la ligne |
+| Rebord / mur grimpable / chaîne | 8 / 16 / 16 m de haut au plus | |
+| Saut depuis une chaîne | 18 m au plus | |
+| Garde-corps | sans collision | une collision cachait le joueur à la main du traqueur |
+| Cages suspendues du puits | dessus à 16 m au plus | au-dessus, cachette |
+

@@ -893,7 +893,7 @@ namespace ItHunts.Enemies
             WantedSpeed *= EnemyMath.GrabMoveFactor(_grab != GrabPhase.Aucune, Planted, settings);   // main plantée : il continue (piste b)
             if (_hasDest && Flat(_dest - pos) < 1f)
                 WantedSpeed = 0f;
-            MoveTo(_move.Step(pos, WantedSpeed, settings.acceleration, settings.turnRate * (Planted ? settings.plantedTurnFactor : 1f), dt));
+            MoveTo(Locomote(pos, WantedSpeed, settings.turnRate * (Planted ? settings.plantedTurnFactor : 1f), dt, now));
             CountUTurns(enraged);
             UpdateGrab(now);
             UpdateOverhead(now, dt);
@@ -962,7 +962,7 @@ namespace ItHunts.Enemies
             WantedSpeed = EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 0f, settings);
             if (Crouching)
                 WantedSpeed *= settings.crouchSpeedFactor;
-            MoveTo(_move.Step(pos, WantedSpeed, settings.acceleration, settings.turnRate, dt));
+            MoveTo(Locomote(pos, WantedSpeed, settings.turnRate, dt, now));   // passages des modules compris (point 9)
             UpdateMarker();
         }
 
@@ -1801,6 +1801,117 @@ namespace ItHunts.Enemies
         }
 
         private static float Flat(Vector3 v) => new Vector2(v.x, v.z).magnitude;
+
+        private StalkerTraversal _trav;
+
+        /// <summary>Passage en cours (debug, tests, animations à venir : un clip par type).</summary>
+        public StalkerTraversal Traversal => _trav;
+        public bool Traversing => _trav.Active;
+        public bool Recovering => Time.time < _trav.RecoverUntil;
+        public int PassagesUsed { get; private set; }
+        public int LeapKills { get; private set; }
+        public int LeapsMissed { get; private set; }
+
+        /// <summary>
+        /// Déplacement avec les passages des modules (point 9) : quand le chemin prend un lien (coin actuel et suivant aux deux
+        /// bouts d'un StalkerPassage), il le traverse : bond (télégraphe : arrêt, cri ; arc ; réception à quatre pattes puis
+        /// récupération ; le bond tue le joueur que son corps traverse), escalade, mur ou chaîne (montée à vitesse réglable) ; dans
+        /// une porte étroite, il ralentit. Sinon, la locomotion normale. Réseau : calculé par l'hôte (comme la prise).
+        /// </summary>
+        private Vector3 Locomote(Vector3 pos, float speed, float turnRate, float dt, float now)
+        {
+            if (settings.passagesEnabled)
+            {
+                if (now < _trav.RecoverUntil)
+                {
+                    _move.Speed = 0f;
+                    return pos;                                          // récupération après le bond
+                }
+
+                if (_trav.Active)
+                    return Traverse(pos, now);
+
+                StalkerPassage p = null;
+                Vector3 from = default, to = default;
+                if (_move.HasPath)
+                {
+                    // Le lien est entre deux coins : soit devant (coin actuel au départ, suivant à l'arrivée), soit déjà commencé
+                    // (le coin du départ est passé : le traqueur est au départ, le coin actuel à l'arrivée).
+                    if (_move.PeekCorners(out Vector3 corner, out Vector3 next) && Flat(corner - pos) <= Radius + 2.5f)
+                        p = StalkerPassageMath.Find(corner, next, StalkerPassage.All, 2.5f, out from, out to);
+                    if (p == null)
+                        p = StalkerPassageMath.Find(pos, _move.CurrentCorner, StalkerPassage.All, Radius + 3f, 2.5f, out from, out to);
+                }
+
+                {
+                    if (p != null && StalkerPassageMath.Allowed(p.kind, from, to, settings))
+                    {
+                        bool leap = StalkerPassageMath.IsLeap(p.kind);
+                        _trav = new StalkerTraversal
+                        {
+                            Active = true, Kind = p.kind, From = pos, To = to, Start = now,
+                            Telegraph = leap ? settings.leapTelegraph : settings.climbStartPause,
+                            Duration = StalkerPassageMath.Duration(p.kind, pos, to, settings),
+                        };
+                        if (leap)
+                            LastRoarTime = now;                          // cri du télégraphe (StalkerAudio)
+                        Vector3 face = to - pos;
+                        face.y = 0f;
+                        if (face.sqrMagnitude > 0.01f)
+                            _move.Heading = face.normalized;
+                        _move.Speed = 0f;
+                        return pos;
+                    }
+                }
+
+                foreach (StalkerPassage d in StalkerPassage.All)
+                    if (d != null && d.InDoor(pos))
+                    {
+                        speed *= settings.narrowDoorSlowFactor;          // il se faufile
+                        break;
+                    }
+            }
+
+            return _move.Step(pos, speed, settings.acceleration, turnRate, dt);
+        }
+
+        private Vector3 Traverse(Vector3 pos, float now)
+        {
+            float u = (now - _trav.Start - _trav.Telegraph) / Mathf.Max(0.05f, _trav.Duration);
+            if (u < 0f)
+                return pos;                                              // télégraphe : il se ramasse
+            bool leap = StalkerPassageMath.IsLeap(_trav.Kind);
+            if (u >= 1f)
+            {
+                bool missed = StalkerPassageMath.Land(ref _trav, now, settings);
+                PassagesUsed++;
+                _move.Clear();
+                _move.Speed = 0f;
+                if (leap)
+                {
+                    if (missed)
+                        LeapsMissed++;
+                    var vfx = ItHunts.Combat.GameVfx.Settings;            // poussière de la réception (DA, PR #22)
+                    if (vfx != null)
+                        ItHunts.Combat.GameVfx.Spawn(vfx.stalkerLandingDust, _trav.To, Quaternion.identity, 1f, null, 3f);
+                    StalkerAudio.RaiseFootstep(_trav.To, settings.shakeRange * 1.5f, settings.shakeStrength * 2f);
+                }
+
+                return _trav.To;
+            }
+
+            Vector3 p = StalkerPassageMath.Position(_trav.Kind, _trav.From, _trav.To, u, settings);
+            if (leap && !_trav.Caught)
+                foreach (PlayerHealth pl in PlayerHealth.All)
+                    if (pl != null && !pl.Dead && StalkerPassageMath.LeapHits(p, pl.Center, settings) && StalkerStrike.Hit(pl, now))
+                    {
+                        _trav.Caught = true;
+                        Kills++;
+                        LeapKills++;
+                    }
+
+            return p;
+        }
 
         private void MoveTo(Vector3 position)
         {

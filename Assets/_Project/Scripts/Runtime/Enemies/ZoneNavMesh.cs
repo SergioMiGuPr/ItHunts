@@ -140,9 +140,64 @@ namespace ItHunts.Enemies
                 AutoClimbMilliseconds = auto.ElapsedMilliseconds;
             }
 
+            // Passages du traqueur posés par les modules (point 9) : liens typés, coût = temps de traversée.
+            StalkerLinkCount = 0;
+            StalkerLinksRejected = 0;
+            if (stalkerSettings == null)
+            {
+                var st = FindFirstObjectByType<Stalker>(FindObjectsInactive.Include);
+                if (st != null)
+                    stalkerSettings = st.Settings;
+            }
+
+            if (StalkerAgent != EnemyLocomotion.NoAgent && stalkerSettings != null && stalkerSettings.passagesEnabled)
+                foreach (StalkerPassage p in FindObjectsByType<StalkerPassage>(FindObjectsSortMode.None))
+                {
+                    p.Linked = false;
+                    if (p.kind == StalkerLinkKind.PorteEtroite)
+                        continue;
+                    // Bouts recalés sur le NavMesh du traqueur (4 m au plus) : un lit, un garde-corps ou le bord érodé décalent le sol
+                    // praticable ; sans sol proche, pas de lien.
+                    var filter = new NavMeshQueryFilter { agentTypeID = StalkerAgent, areaMask = NavMesh.AllAreas };
+                    if (!NavMesh.SamplePosition(p.RawA, out NavMeshHit ha, 4f, filter) || !NavMesh.SamplePosition(p.RawB, out NavMeshHit hb, 4f, filter)
+                        || Mathf.Abs(ha.position.y - p.RawA.y) > 1.5f || Mathf.Abs(hb.position.y - p.RawB.y) > 1.5f
+                        || !StalkerPassageMath.Allowed(p.kind, ha.position, hb.position, stalkerSettings))
+                    {
+                        StalkerLinksRejected++;
+                        continue;
+                    }
+
+                    NavMeshLinkInstance li = NavMesh.AddLink(new NavMeshLinkData
+                    {
+                        startPosition = ha.position,
+                        endPosition = hb.position,
+                        width = p.width,
+                        costModifier = StalkerPassageMath.CostModifier(p.kind, ha.position, hb.position, stalkerSettings),
+                        bidirectional = true,
+                        area = 0,
+                        agentTypeID = StalkerAgent,
+                    });
+                    if (li.valid)
+                    {
+                        _links.Add(li);
+                        StalkerLinkCount++;
+                        p.LinkA = ha.position;
+                        p.LinkB = hb.position;
+                        p.Linked = true;
+                    }
+                }
+
             BuildMilliseconds = watch.ElapsedMilliseconds;
             Built = true;
         }
+
+        [Tooltip("Réglages du traqueur (passages : distances maximales, coût des liens).")]
+        [SerializeField] private ItHunts.Settings.StalkerSettings stalkerSettings;
+
+        /// <summary>Liens des passages du traqueur ajoutés (dernière construction).</summary>
+        public int StalkerLinkCount { get; private set; }
+        /// <summary>Passages sans lien (pas de sol praticable du traqueur à moins de 4 m d'un bout, ou trop long).</summary>
+        public int StalkerLinksRejected { get; private set; }
 
         /// <summary>Seuils de porte ajoutés au NavMesh des goules (dernière construction).</summary>
         public int ThresholdCount { get; private set; }

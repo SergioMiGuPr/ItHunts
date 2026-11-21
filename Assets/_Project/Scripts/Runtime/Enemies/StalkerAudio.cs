@@ -18,6 +18,9 @@ namespace ItHunts.Enemies
         /// <summary>Un pas du traqueur : position, distance de tremblement, force (CameraShake de chaque joueur).</summary>
         public static event System.Action<Vector3, float, float> Footstep;
 
+        /// <summary>Choc au sol (réception d'un bond, point 9) : même tremblement que les pas, plus fort.</summary>
+        public static void RaiseFootstep(Vector3 at, float range, float strength) => Footstep?.Invoke(at, range, strength);
+
         private Stalker _stalker;
         private AudioSource _steps, _stepsLoop, _breath, _voice, _explore, _enraged;
         private AudioClip _step, _roar;
