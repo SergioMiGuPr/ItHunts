@@ -393,7 +393,7 @@ namespace ItHunts.Combat
                 GameVfxSettings fx = GameVfx.Settings;
                 if (feel.impactSparks && e.Damage >= feel.sparksMinDamage && fx != null && fx.sparks != null && ItHunts.Player.GameFeel.Intensity > 0.01f)
                     GameVfx.Spawn(fx.sparks, e.Point, Quaternion.LookRotation(Vector3.up), Mathf.Lerp(0.7f, 1.4f, Mathf.InverseLerp(5f, 60f, e.Damage)), null, 2f);
-                if (e.Damage >= feel.throwHitStopMinDamage)
+                if (!e.Melee && e.Damage >= feel.throwHitStopMinDamage)
                     ItHunts.Player.HitStop.Request(feel.throwHitStop * (e.Killed ? 1.4f : 1f));
             }
 

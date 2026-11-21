@@ -29,6 +29,21 @@ namespace ItHunts.Player
         /// <summary>Rapidité de descente et de remontée de la vue en glissade / accroupi (/s).</summary>
         private const float EyeHeightLerpSpeed = 15f;
 
+        /// <summary>
+        /// Aide à la visée d'un coup (épée) : la vue tourne vers cette direction (monde) de part × l'écart, au plus maxDegrees.
+        /// </summary>
+        public void Nudge(Vector3 direction, float part, float maxDegrees)
+        {
+            if (direction.sqrMagnitude < 1e-6f || part <= 0f || maxDegrees <= 0f)
+                return;
+            Quaternion q = Quaternion.LookRotation(direction.normalized);
+            float yaw = q.eulerAngles.y, pitch = Mathf.DeltaAngle(0f, q.eulerAngles.x);
+            float dy = Mathf.Clamp(Mathf.DeltaAngle(_yaw, yaw) * part, -maxDegrees, maxDegrees);
+            float dp = Mathf.Clamp((pitch - _pitch) * part, -maxDegrees, maxDegrees);
+            _yaw = Mathf.Repeat(_yaw + dy, 360f);
+            _pitch = Mathf.Clamp(_pitch + dp, -settings.pitchLimit, settings.pitchLimit);
+        }
+
         /// <summary>Oriente la vue (téléportation, réapparition).</summary>
         public void SetView(float yaw, float pitch)
         {
