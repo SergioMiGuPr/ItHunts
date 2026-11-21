@@ -732,10 +732,10 @@ namespace ItHunts.Enemies
                 Play(_trav.Clip, 0.12f);                                     // le clip du lien, de l'appel à la fin de la réception
                 if (_chainExtra > 0 && _trav.Active && _anim.enabled)
                 {
-                    // Chaîne : le temps du clip est piloté (partie main sur main en boucle).
+                    // Chaîne plus haute que le clip : le clip est ralenti sur toute la montée (la montée de la DA est portée par le
+                    // bassin : la boucler faisait redescendre le corps d'un cran à chaque cycle).
                     float len = ClipLength(_trav.Clip);
-                    _anim.speed = 0f;
-                    _anim.Play(_trav.Clip, 0, EnemyMath.ChainClipTime(Time.time - _trav.Start, _chainExtra, settings) / Mathf.Max(0.01f, len));
+                    _anim.speed = len / Mathf.Max(0.1f, len + _chainExtra * settings.clipChainCycle);
                 }
             }
             else if (_trav.Active)
@@ -1506,6 +1506,28 @@ namespace ItHunts.Enemies
         /// réception jusqu'à la fin du clip ; bond-prise si un joueur est près de l'arrivée. Autres liens : la traversée dure le clip.
         /// </summary>
         private int _chainExtra;
+
+        /// <summary>
+        /// Contrôle et vitrine : lance la traversée d'un passage depuis sa position actuelle jusqu'à <paramref name="to"/>, comme la
+        /// poursuite le fait sur un lien du NavMesh (mêmes clips, mêmes temps).
+        /// </summary>
+        public void DebugTraverse(StalkerLinkKind kind, Vector3 to)
+        {
+            float now = Time.time;
+            Vector3 pos = _rb.position;
+            bool leap = StalkerPassageMath.IsLeap(kind);
+            _trav = new StalkerTraversal
+            {
+                Active = true, Kind = kind, From = pos, To = to, Start = now,
+                Telegraph = leap ? settings.leapTelegraph : settings.climbStartPause,
+                Duration = StalkerPassageMath.Duration(kind, pos, to, settings),
+            };
+            StartTraversalClip(kind, to);
+            Vector3 face = to - pos;
+            face.y = 0f;
+            if (face.sqrMagnitude > 0.01f)
+                _move.Heading = face.normalized;
+        }
 
         private void StartTraversalClip(StalkerLinkKind kind, Vector3 to)
         {

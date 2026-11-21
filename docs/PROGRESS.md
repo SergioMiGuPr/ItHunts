@@ -94,6 +94,24 @@ d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
   portes étroites franchissables (test), 0 cachette (validés). **5 seeds** (portée configurée, 14.8 m) : liens du traqueur 69 / 72 /
   46 / 62 / 48 (1 rejeté sur la seed 22), 0 porte trop petite, **0 cachette dans les nouveaux modules** après correction (seed 22 :
   2 points sur la 2e coursive de la prison, l'échafaudage est maintenant traversé par le traqueur). Contrôleur : 16 états.
+- **PR #33 (`art-fin-2`, `NUIT-FIN-2.md`) :** vérifiée, 476 tests sur `main`, fusionnée (31e198c), poussée, `main` dans
+  `animations`. Toutes les PR de la nuit 2 (#27 à #33) sont intégrées, aucune bloquée.
+- **C6. Équilibre (mesures, vitesses des ennemis inchangées).** Écarts avec le joueur à 8.5 m/s (inchangés) : traqueur Chasse 9
+  (+0.5), pointe 16 (+7.5), Enragé 11 → 18 par paliers (+2.5 → +9.5) ; goule 10 (+1.5), bond 14 (+5.5). Les clips sont lus à la
+  vitesse réelle de leur cycle (marche 1.27 m/s, courses 11 / 11 / 9 m/s), donc sans changer ces vitesses. **Passages, avec les
+  clips (cette nuit, sans clip) :** bond 6.0 s (2.6), saut de chaîne 6.0 s (2.5), mur ou rebord 4.5 s (2.6), chaîne de 11 m
+  7.7 s (3.2), porte étroite 7.0 s. Coût des liens du NavMesh calculé sur ces durées (`StalkerPassageMath.ClipTime`) : il ne prend
+  un passage que si le détour à pied est plus long en temps ; pendant un bond, le joueur parcourt 51 m. **Prise** : annonce 0.5 s
+  + descente 0.12 s inchangées, mais le corps avance de 6.5 m en 0.4 s (16 m/s) : la colonne rouge reste le signal à lire.
+  **Le joueur qui bouge bien lui échappe davantage qu'avant** (passages 2 à 2.5 fois plus longs) ; à revoir en playtest (on peut
+  raccourcir l'appel du bond en jouant le clip plus vite : `clipBondTakeoff`).
+- **C7. Contrôles.** `docs/design/features/boss-traqueur/captures/v4/` : repos de face et de profil (clip), marche A (profil),
+  course enragée C (poursuite), planches du bond, de la chaîne et de la prise ; **vidéos côte à côte avec les références** :
+  `traqueur_v4_bond_cote_a_cote.mp4`, `traqueur_v4_chaine_cote_a_cote.mp4`, `traqueur_v4_prise_cote_a_cote.mp4` (jeu à gauche,
+  vidéo de référence à droite, 30 i/s ; outil `FrameDump`, assemblage ffmpeg). Commande de contrôle `Stalker.DebugTraverse`.
+  **Limites vues :** la chaîne, plus haute que le clip, est jouée au ralenti, mais le bassin du clip monte et descend pendant la
+  prise main sur main (le corps semble redescendre un peu ; à voir avec la DA : clip de chaîne en place) ; le gros plan du cri
+  n'est pas pris (au repos, la tête pend et la caméra voyait la nuque).
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`

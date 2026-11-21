@@ -205,6 +205,9 @@ namespace ItHunts.Settings
         [Min(0f)] public float clipReceptionExit = 1.1f;
         [Tooltip("Saut depuis une chaîne (Traqueur_ChaineSaut) : lâcher et pose des mains (s) ; prise depuis la chaîne : poing (s).")]
         [Min(0f)] public float clipChainJumpRelease = 3.4f, clipChainJumpLand = 4.2f, clipChainGrabImpact = 3.75f;
+        [Tooltip("Durées des clips des passages (s, DA) : bond, saut de chaîne, escalade, chaîne, porte étroite ; servent au coût des " +
+                 "liens du NavMesh (le traqueur choisit le chemin le plus court en temps). 0 : durée calculée sans clip.")]
+        [Min(0f)] public float clipBondLength = 6f, clipChainJumpLength = 6f, clipClimbLength = 4.5f, clipChainClimbLength = 5f, clipDoorLength = 7f;
         [Tooltip("Prise depuis un rebord (clip Traqueur_PriseRebord) : la cible est au moins à cette hauteur sous ses pieds (m).")]
         [Min(0f)] public float ledgeGrabDrop = 4f;
         [Tooltip("Au-dessus de cette vitesse (m/s), il court (courses enragées) ; en dessous, il marche à quatre pattes (Rôde).")]

@@ -136,8 +136,25 @@ namespace ItHunts.Enemies
         }
 
         /// <summary>Temps total d'un passage (télégraphe, traversée, récupération) : ce que compare le choix du chemin.</summary>
-        public static float TotalTime(StalkerLinkKind k, Vector3 a, Vector3 b, StalkerSettings cfg) =>
-            Duration(k, a, b, cfg) + (IsLeap(k) ? cfg.leapTelegraph + cfg.leapRecovery : cfg.climbStartPause);
+        public static float TotalTime(StalkerLinkKind k, Vector3 a, Vector3 b, StalkerSettings cfg)
+        {
+            // Clips de la DA (C6) : le passage dure le clip (bond : appel, vol, réception ; chaîne : montée en boucle selon la hauteur).
+            float clip = ClipTime(k, Mathf.Abs(b.y - a.y), cfg);
+            if (clip > 0f)
+                return clip;
+            return Duration(k, a, b, cfg) + (IsLeap(k) ? cfg.leapTelegraph + cfg.leapRecovery : cfg.climbStartPause);
+        }
+
+        /// <summary>Durée d'un passage d'après les clips de la DA (s), 0 sans clip réglé.</summary>
+        public static float ClipTime(StalkerLinkKind k, float rise, StalkerSettings cfg) => k switch
+        {
+            StalkerLinkKind.Bond => cfg.clipBondLength > 0f ? Mathf.Max(cfg.clipBondLength, cfg.clipBondLand + cfg.leapRecovery) : 0f,
+            StalkerLinkKind.ChaineSaut => cfg.clipChainJumpLength > 0f ? Mathf.Max(cfg.clipChainJumpLength, cfg.clipChainJumpLand + cfg.leapRecovery) : 0f,
+            StalkerLinkKind.EscaladeRebord or StalkerLinkKind.MurGrimpe => cfg.clipClimbLength,
+            StalkerLinkKind.ChaineGrimpe => cfg.clipChainClimbLength > 0f ? cfg.clipChainClimbLength + EnemyMath.ChainExtraCycles(rise, cfg) * cfg.clipChainCycle : 0f,
+            StalkerLinkKind.PorteEtroite => cfg.clipDoorLength,
+            _ => 0f,
+        };
 
         /// <summary>
         /// Coût du lien pour le NavMesh (multiplicateur de longueur) : le temps du passage ramené à la marche en Chasse ; le chemin
