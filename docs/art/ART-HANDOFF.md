@@ -786,3 +786,27 @@ effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retir
 | Garde-corps, cordes, échelles, chaînes | collision pour les joueurs, traversée par la main et le regard du traqueur (A2, matin du 2026-11-21) | une collision pleine cachait le joueur à la main du traqueur |
 | Cages suspendues du puits | dessus à 16 m au plus | au-dessus, cachette |
 
+## Traqueur v4 : modèle verrouillé, mesures et portée (2026-11-21, branche `art-traqueur-v4`)
+
+- **Modèle** : `Assets/Art/Models/Ennemis/SK_Traqueur_v4.fbx` (armature `Traqueur`, 68 os, **57 978 triangles** : corps 38 000,
+  tête 15 827 avec bouche et dents, cheveux 4 152 ; 6 formes sur la tête). Matériaux `M_Traqueur_v4_Corps`, `_Tete`, `_Orbite`,
+  `_Dents`, `_Cheveux` (toon). Vitrine : `Assets/Art/Scenes/Vitrine_Traqueur_v4.unity`. Planche : `docs/art/rendus/Traqueur/v4/planche_v4b.png`.
+- **14 m** debout (sommet du crâne ; cheveux 14.2 m), pieds à 0, Z Unity en avant. **Une seule échelle uniforme** sur tout le
+  modèle (aucune proportion changée) ; tête Tripo à × 1.05 (cou de la tête = cou du corps).
+- **Verrou** : maillage, poids et formes ne changent plus (`docs/art/rendus/Traqueur/v4/EMPREINTE.md`). Les animations ne
+  tournent que les os (plus la position de `Racine` et de `Bassin`) ; **aucune échelle d'os** : le code ne doit plus étirer les
+  bras de cette version (D-070 concerne l'ancien traqueur).
+- **Os utiles au code** : `Contact_Main_G/D` (sous les griffes), `Contact_Pied_G/D` (sous la plante, à z = 0), cibles `IK_Main_*`,
+  `IK_Pied_*`, pôles `Pole_Coude_*`, `Pole_Genou_*` (non déformants) ; `Machoire` ; chaînes `Cheveux_1_*` à `Cheveux_7_*` (4 os)
+  pour `BoneSpringChain` (simuler `_2` à `_4` ; collisions conseillées dans `NOTES.md`).
+
+| Posture | Portée réelle |
+|---|---|
+| Debout, bras tendu | épaule à **11.1 m** (1.37 m de l'axe) ; bras tendu **8.3 m** ; portée horizontale **9.6 m** depuis l'axe ; vers le haut **19.4 m** |
+| Voûté (repos des vidéos) | hauteur **11.7 m** ; épaules à 10.5 m ; portée devant **≈ 9.2 m** à hauteur d'épaule ; griffes ballantes à 2.3 m du sol |
+| À quatre pattes | dos **≈ 8.3 m**, épaules 7.6 à 8 m ; portée devant ≈ 3.3 m (épaules hautes) à **≈ 7 m** (aplati) ; estimation |
+| Se faufiler | **plus petite porte ≈ 4 × 6 m** (largeur × hauteur), estimation à confirmer avec `Traqueur_PorteEtroite` |
+
+Les valeurs du § 0 (capsule Ø 7 × 14 m, épaule à 12 m, portée de main 15 m) décrivent l'ancien traqueur étiré par le code ;
+avec la v4 sans étirement, la portée réelle de la main est celle du tableau ci-dessus (à reporter dans `Stalker_Default` par `main`).
+
