@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e32cc50ddede034b956c26dcd65b47e, type: 3}
+  m_Name: Fiche_Module_Puits_Circulaire
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.ModuleSheet
+  displayName: Puits circulaire
+  kind: 0
+  shape: 1
+  footprint: {x: 1, y: 1}
+  size: 64
+  difficulty: 0
+  weight: 1
+  active: 1
+  prefab: {fileID: 3919942992798366041, guid: b2e9c7f1571661b4d8cbebeb09f6d6c7, type: 3}
+  connectors:
+  - side: 0
+    cell: 0
+    required: 0
+    width: 14
+    height: 19
+  - side: 1
+    cell: 0
+    required: 0
+    width: 14
+    height: 19
+  - side: 2
+    cell: 0
+    required: 0
+    width: 14
+    height: 19
+  - side: 3
+    cell: 0
+    required: 0
+    width: 14
+    height: 19
+  bounds:
+    m_Center: {x: 0, y: 15, z: 0}
+    m_Extent: {x: 32, y: 15, z: 32}
+  chests: 3
+  spawns: 14
+  passages: 7
+  lights: 17
+  triangles: 56304
+  pieces: 99
+  lastReport: "VALID\xC9 (2026-11-21 17:26)\nNavMesh : 6 paires d'entr\xE9es reli\xE9es\nzone
+    de parcours : 0 point(s) hors de port\xE9e dans la fosse (permis)\ncachettes
+    : 0 sur 1000 points\nNavMesh du traqueur : entr\xE9es reli\xE9es\npassages du
+    traqueur : 7 valide(s)\ncoffre Emplacement de coffre : atteignable \xE0 pied\ncoffre
+    Emplacement de coffre : atteignable en traction (magn\xE9tisme)\ncoffre Emplacement
+    de coffre : atteignable en traction (magn\xE9tisme)\n4 entr\xE9es, 10 apparitions,
+    4 habitants, 3 coffres\nco\xFBt : 1626 pi\xE8ces, 56304 triangles, 17 lumi\xE8re(s)"

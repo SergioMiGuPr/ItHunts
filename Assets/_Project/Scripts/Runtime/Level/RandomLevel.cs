@@ -68,6 +68,33 @@ namespace ItHunts.Level
         public static string TestModule;
         /// <summary>Poids du module de test (multiplie le sien) et nombre de seeds essayées pour le poser contre le départ.</summary>
         public const float TestModuleWeight = 8f;
+        /// <summary>
+        /// Module de l'atelier à tester (« Jouer ce module ») : ajouté au tirage même s'il n'est pas encore validé ni au catalogue, et le
+        /// joueur part dans sa salle. Posé par l'atelier (éditeur) ou le menu Playtest.
+        /// </summary>
+        public static RoomModule TestModulePrefab;
+        /// <summary>Le joueur commence dans la salle du module de test (au lieu de la salle de départ).</summary>
+        public static bool TestStartInModule;
+
+#if UNITY_EDITOR
+        /// <summary>« Jouer ce module » depuis l'atelier : le choix survit au rechargement du Play Mode (SessionState).</summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void AtelierTestFromEditor()
+        {
+            string path = UnityEditor.SessionState.GetString("ItHunts.Atelier.TestModule", "");
+            if (string.IsNullOrEmpty(path))
+                return;
+            UnityEditor.SessionState.EraseString("ItHunts.Atelier.TestModule");
+            var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            TestModulePrefab = prefab != null ? prefab.GetComponent<RoomModule>() : null;
+            if (TestModulePrefab != null)
+            {
+                TestModule = TestModulePrefab.displayName;
+                TestStartInModule = true;
+                SeedOverride = UnityEditor.SessionState.GetInt("ItHunts.Atelier.TestSeed", 1);
+            }
+        }
+#endif
         public const int TestModuleTries = 400;
         public static RandomLevel Current { get; private set; }
 
@@ -218,6 +245,8 @@ namespace ItHunts.Level
             }
 
             _modules = catalog != null ? catalog.modules.Where(m => m != null && m.validated && Weight(m) > 0f).ToList() : new List<RoomModule>();
+            if (TestModulePrefab != null && !_modules.Contains(TestModulePrefab))
+                _modules.Add(TestModulePrefab);                                // atelier : testé même avant validation
             var infos = _modules.Select((m, i) => ModuleInfo.From(m, i)).ToList();
             foreach (ModuleInfo info in infos)
                 info.Weight = Weight(_modules[info.Index]);
@@ -1556,6 +1585,19 @@ namespace ItHunts.Level
             Vector3 mAt = st.Center + new Vector3(hx * 0.15f, 0f, hz * 0.2f);
             if (merchant != null)
                 Instantiate(merchant, mAt, Quaternion.LookRotation(startAt - mAt, Vector3.up), _root).name = "Marchand de l'artefact (salle de départ)";
+            // Atelier (« Jouer ce module ») : le joueur part dans la salle du module, sur son sol.
+            if (TestStartInModule && !string.IsNullOrEmpty(TestModule))
+                for (int i = 0; i < Plan.Rooms.Count; i++)
+                {
+                    PlanRoom r = Plan.Rooms[i];
+                    if (r.Module < 0 || r.Module >= _modules.Count || _modules[r.Module].displayName != TestModule)
+                        continue;
+                    Vector3 probe = r.Center + new Vector3(r.Extent.x * 0.25f, 40f, r.Extent.y * 0.25f);
+                    startAt = Physics.Raycast(probe, Vector3.down, out RaycastHit hit, 80f, ~0, QueryTriggerInteraction.Ignore)
+                        ? hit.point + Vector3.up * 0.1f : r.Center + Vector3.up * 0.1f;
+                    break;
+                }
+
             if (playerStart != null)
                 playerStart.SetPositionAndRotation(startAt, Quaternion.Euler(0f, 45f, 0f));
             foreach (Player.PlayerHealth p in FindObjectsByType<Player.PlayerHealth>(FindObjectsSortMode.None))

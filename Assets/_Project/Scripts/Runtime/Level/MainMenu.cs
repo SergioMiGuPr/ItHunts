@@ -97,6 +97,8 @@ namespace ItHunts.Level
             RunSession.CoopDevice = null;
             RandomLevel.SeedOverride = 0;                                     // seed et salle de test : seulement pour le lancement choisi
             RandomLevel.TestModule = null;
+            RandomLevel.TestModulePrefab = null;
+            RandomLevel.TestStartInModule = false;
             _playSeed = Random.Range(1, 100000);
             GameSettings.Apply();
             Build();
@@ -149,6 +151,14 @@ namespace ItHunts.Level
             GreyboxMenu.Item moduleItem = _menu.Add(ModuleTestLabel, () => LaunchRandom(_playSeed, TestModuleName));
             moduleItem.Value = () => TestModuleName ?? "aucun module";
             moduleItem.Change = d => _testModule = TestModules.Count == 0 ? 0 : ((_testModule + d) % TestModules.Count + TestModules.Count) % TestModules.Count;
+            // Modules faits dans l'atelier (◄ ► choisit) : le joueur part dans la salle du module, traqueur et goules compris.
+            GreyboxMenu.Item atelierItem = _menu.Add(AtelierLabel, LaunchAtelier);
+            atelierItem.Value = () => AtelierModule != null ? AtelierModule.displayName : "aucun module de l'atelier";
+            atelierItem.Change = d =>
+            {
+                int n = AtelierModules().Count;
+                _atelierIndex = n == 0 ? 0 : ((_atelierIndex + d) % n + n) % n;
+            };
             _menu.Add("Playtest : combat de boss", LaunchBossFight);
             _menu.Add("Playtest : vitrine", () => Direct(VitrineScene));
             _menu.Add("Test_Movement (banc d'essai)", () => Direct(movementScene));
@@ -299,6 +309,48 @@ namespace ItHunts.Level
         }
 
         public const string SeedLabel = "Niveau aléatoire (seed)", ModuleTestLabel = "Salle de test d'un module (traqueur)";
+        public const string AtelierLabel = "Modules de l'atelier";
+        private int _atelierIndex;
+
+        /// <summary>Modules faits dans l'atelier (catalogue du niveau 1).</summary>
+        public List<RoomModule> AtelierModules()
+        {
+            var r = new List<RoomModule>();
+            if (moduleCatalog != null)
+                foreach (RoomModule m in moduleCatalog.modules)
+                    if (m != null && m.fromAtelier)
+                        r.Add(m);
+            return r;
+        }
+
+        private RoomModule AtelierModule
+        {
+            get
+            {
+                List<RoomModule> l = AtelierModules();
+                return l.Count > 0 ? l[Mathf.Clamp(_atelierIndex, 0, l.Count - 1)] : null;
+            }
+        }
+
+        /// <summary>Joue un module de l'atelier : niveau aléatoire avec ce module (même non validé), départ dans sa salle.</summary>
+        private void LaunchAtelier()
+        {
+            RoomModule m = AtelierModule;
+            if (m == null)
+            {
+                Say("Aucun module de l'atelier dans la génération");
+                return;
+            }
+
+            RandomLevel.TestModulePrefab = m;
+            RandomLevel.TestStartInModule = true;
+            LaunchRandom(_playSeed, m.displayName);
+            if (!_launching)
+            {
+                RandomLevel.TestModulePrefab = null;
+                RandomLevel.TestStartInModule = false;
+            }
+        }
         private int _playSeed = 1;
         private int _testModule;
 
