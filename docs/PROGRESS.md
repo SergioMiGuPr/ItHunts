@@ -57,6 +57,15 @@ d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
   0.3 s. **Root motion** : l'avancée de `Racine` est retirée après l'Animator (le code déplace le traqueur) ; écart latéral et
   hauteur gardés ; dérive mesurée en poursuite : 0.00 m. Clip absent (prise, passages, baissé) : mouvement provisoire, Animator
   coupé, racine remise au repos. Passages : la traversée dure le clip quand il est livré (un clip par type de lien).
+- **PR #30 (`art-traqueur-anim-3`) :** vérifiée, 476 tests sur `main`, fusionnée (c89a5fe), poussée, `main` dans `animations`.
+- **C2 (lot 3). Prise et bonds sur les instants de la DA.** Prise : `Traqueur_Prise`, ou `Traqueur_PriseRebord` si la cible est
+  4 m ou plus sous ses pieds ; le clip démarre décalé (`ClipOffsetForImpact`) pour que le poing (2.37 s ; rebord 3.25 s) tombe à
+  l'impact du jeu (annonce 0.5 s + descente 0.12 s) : **la mort du joueur se déclenche à l'instant d'impact du clip**, le temps
+  pour esquiver ne change pas ; mesuré en jeu : descente à 2.27 s du clip, main au sol de 2.7 à 2.9 s. L'IK du bras laisse voir
+  le geste du clip pendant l'annonce, puis pose la main sur la zone qui tue. Bond : appel jusqu'au décollage (2.05 s), vol jusqu'à
+  la pose des mains (4.6 s), réception jusqu'à la fin du clip (récupération 1.4 s) ; **bond-prise** (`Traqueur_BondPrise` :
+  décollage 1.05 s, mains 3.0 s) si un joueur est à moins de 10 m de l'arrivée. Pendant un passage ou une prise, la trajectoire
+  est celle du code (avancée et montée du clip retirées de Racine). Instants réglables dans `Stalker_Default` (clip*).
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`

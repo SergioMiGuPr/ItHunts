@@ -423,6 +423,8 @@ namespace ItHunts.Enemies
             Vector3 world = _racine.parent.TransformVector(_racine.localPosition - _racineRest);
             Vector3 local = transform.InverseTransformVector(world);
             local.z = 0f;
+            if (_trav.Active || _grab != GrabPhase.Aucune)
+                local = new Vector3(local.x, 0f, 0f);                        // passage, prise : trajectoire du code seulement
             _racine.localPosition = _racineRest + _racine.parent.InverseTransformVector(transform.TransformVector(local));
         }
 
@@ -672,16 +674,25 @@ namespace ItHunts.Enemies
                 return;
             float v = _rb != null ? new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.z).magnitude : 0f;
             v = Mathf.Max(v, WantedSpeed);
-            _wantIkR = _grab != GrabPhase.Aucune || Planted || OverheadUsesRight;
+            _wantIkR = (_grab != GrabPhase.Aucune && !(_grab == GrabPhase.Annonce && _grabClip != null)) || Planted || OverheadUsesRight;
             _wantIkL = _over != OverheadPhase.Aucune || _back != BackhandPhase.Aucune;
             if (_back != BackhandPhase.Aucune)
                 Play("Traqueur_Revers", 0.06f);
             else if (_over != OverheadPhase.Aucune)
                 Play("Traqueur_MainsLevees", 0.06f);
+            else if (Planted && HasClip("Traqueur_MainPlantee"))
+                Play("Traqueur_MainPlantee", 0.06f);
+            else if (_grab != GrabPhase.Aucune && _grabClip != null)
+                Play(_grabClip, 0.1f);                                       // clip de la DA, lancé calé sur l'impact (StartGrabClip)
             else if (Planted || _grab == GrabPhase.Descente)
                 Play("Traqueur_MainPlantee", 0.06f);
             else if (_grab == GrabPhase.Annonce)
                 Play("Traqueur_Prise", 0.05f, 0.5f / Mathf.Max(0.05f, settings.grabTelegraph));
+            else if ((_trav.Active || Time.time < _trav.RecoverUntil) && _trav.Clip != null)
+            {
+                _family = null;
+                Play(_trav.Clip, 0.12f);                                     // le clip du lien, de l'appel à la fin de la réception
+            }
             else if (_trav.Active)
             {
                 _family = null;
@@ -1402,6 +1413,60 @@ namespace ItHunts.Enemies
             return v.sqrMagnitude > 1e-4f ? v.normalized : Vector3.forward;
         }
 
+        // ---------- Clips de la prise et des passages (C2) ----------
+
+        private string _grabClip;
+
+        /// <summary>Clip de la prise en cours (null : mouvement provisoire) ; tests.</summary>
+        public string GrabClip => _grabClip;
+
+        /// <summary>
+        /// Prise : Traqueur_Prise, ou Traqueur_PriseRebord si la cible est bien plus bas (il est au bord d'un rebord). Le clip démarre
+        /// avec le décalage qui fait tomber son instant d'impact (le poing, donné par la DA) exactement sur l'impact du jeu
+        /// (annonce + descente) : la mort du joueur se déclenche à l'instant d'impact du clip, le temps pour esquiver ne change pas.
+        /// </summary>
+        private void StartGrabClip(Vector3 aim)
+        {
+            _grabClip = null;
+            bool ledge = _rb.position.y - aim.y >= settings.ledgeGrabDrop && HasClip("Traqueur_PriseRebord");
+            string clip = ledge ? "Traqueur_PriseRebord" : "Traqueur_Prise";
+            if (!HasClip(clip))
+                return;
+            _grabClip = clip;
+            float impact = ledge ? settings.clipPriseRebordImpact : settings.clipPriseImpact;
+            _clip = null;
+            Play(clip, 0.1f, 1f, EnemyMath.ClipOffsetForImpact(impact, settings.grabTelegraph + settings.grabSlam));
+        }
+
+        /// <summary>
+        /// Passage : clip du type de lien. Bond : l'appel dure jusqu'au décollage du clip, le vol jusqu'à la pose des mains, la
+        /// réception jusqu'à la fin du clip ; bond-prise si un joueur est près de l'arrivée. Autres liens : la traversée dure le clip.
+        /// </summary>
+        private void StartTraversalClip(StalkerLinkKind kind, Vector3 to)
+        {
+            _trav.Clip = null;
+            _trav.ClipRecovery = 0f;
+            bool hunt = kind == StalkerLinkKind.Bond && Target != null && Vector3.Distance(Target.transform.position, to) <= 10f
+                        && HasClip("Traqueur_BondPrise");
+            string clip = hunt ? "Traqueur_BondPrise" : FirstClip(TraversalClips(kind, false));
+            float len = ClipLength(clip);
+            if (len <= 0.3f)
+                return;
+            _trav.Clip = clip;
+            _clip = null;
+            if (StalkerPassageMath.IsLeap(kind) && (clip == "Traqueur_Bond" || clip == "Traqueur_BondPrise"))
+            {
+                float takeoff = hunt ? settings.clipBondPriseTakeoff : settings.clipBondTakeoff;
+                float land = hunt ? settings.clipBondPriseLand : settings.clipBondLand;
+                _trav.Telegraph = takeoff;
+                _trav.Duration = Mathf.Max(0.3f, land - takeoff);
+                _trav.ClipRecovery = Mathf.Max(0f, len - land);
+            }
+            else
+                _trav.Duration = Mathf.Max(0.3f, len - _trav.Telegraph);
+            Play(clip, 0.12f, 1f, 0f);
+        }
+
         // ---------- Fente du corps pendant la prise (D-080) ----------
 
         private Vector3 _lungeDir;
@@ -1519,6 +1584,7 @@ namespace ItHunts.Enemies
                         _grabTarget = aim;
                         _grabOpening = opening;
                         StartLunge(now, aim, opening);
+                        StartGrabClip(aim);
                         _reaimed = false;
                         GrabAttempts++;
                         if (opening != null)
@@ -2066,10 +2132,7 @@ namespace ItHunts.Enemies
                             Telegraph = leap ? settings.leapTelegraph : settings.climbStartPause,
                             Duration = StalkerPassageMath.Duration(p.kind, pos, to, settings),
                         };
-                        // Clip livré pour ce type de lien : la traversée dure le clip (télégraphe compris), C2.
-                        float len = ClipLength(FirstClip(TraversalClips(p.kind, false)));
-                        if (len > 0.3f)
-                            _trav.Duration = Mathf.Max(0.3f, len - _trav.Telegraph);
+                        StartTraversalClip(p.kind, to);
                         if (leap)
                             LastRoarTime = now;                          // cri du télégraphe (StalkerAudio)
                         Vector3 face = to - pos;

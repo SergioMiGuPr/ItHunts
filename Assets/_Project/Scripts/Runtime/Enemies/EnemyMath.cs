@@ -234,6 +234,9 @@ namespace ItHunts.Enemies
         public static float LungeDistance(float need, float room, StalkerSettings s) =>
             Mathf.Clamp(need, 0f, Mathf.Min(s.grabLunge, Mathf.Max(0f, room - 0.5f)));
 
+        /// <summary>Départ dans le clip (s) pour que son instant d'impact tombe après <paramref name="untilImpact"/> s (jamais négatif).</summary>
+        public static float ClipOffsetForImpact(float clipImpact, float untilImpact) => Mathf.Max(0f, clipImpact - untilImpact);
+
         /// <summary>Avancée de la fente (0 à 1, douce) : elle se fait pendant les lungeTime dernières secondes avant l'impact.</summary>
         public static float LungeProgress(float now, float impactAt, float lungeTime)
         {

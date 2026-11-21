@@ -98,6 +98,22 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Prise_ImpactDuClip_CaleSurLImpactDuJeu()
+        {
+            // C2 : le clip de la DA démarre décalé pour que son poing (2.37 s) tombe à la fin de l'annonce et de la descente.
+            var cfg = ScriptableObject.CreateInstance<StalkerSettings>();
+            _objects.Add(cfg);
+            float untilImpact = cfg.grabTelegraph + cfg.grabSlam;
+            float offset = EnemyMath.ClipOffsetForImpact(cfg.clipPriseImpact, untilImpact);
+            Assert.That(offset + untilImpact, Is.EqualTo(cfg.clipPriseImpact).Within(1e-4f), "mort du joueur à l'instant d'impact du clip");
+            Assert.That(EnemyMath.ClipOffsetForImpact(0.3f, untilImpact), Is.EqualTo(0f), "jamais avant le début du clip");
+            Assert.That(cfg.clipBondLand, Is.GreaterThan(cfg.clipBondTakeoff));
+            var t = new StalkerTraversal { Active = true, Kind = StalkerLinkKind.Bond, ClipRecovery = 1.4f };
+            StalkerPassageMath.Land(ref t, 10f, cfg);
+            Assert.That(t.RecoverUntil, Is.EqualTo(11.4f).Within(1e-4f), "réception : la fin du clip");
+        }
+
+        [Test]
         public void ModeleV4_JamaisMisALEchelle_NiDeforme()
         {
             // Le modèle ne change jamais : aucun code du traqueur n'écrit d'échelle d'os (localScale) ; seul le ressort des cheveux

@@ -163,6 +163,12 @@ namespace ItHunts.Settings
         [Min(0.1f)] public float walkClipSpeed = 1.27f;
         [Tooltip("Vitesse au sol des courses enragées A et B (quatre pattes) et C (deux jambes) à la vitesse 1 (m/s, DA).")]
         [Min(0.1f)] public float runClipSpeedA = 11f, runClipSpeedB = 11f, runClipSpeedC = 9f;
+        [Tooltip("Instants des clips de la DA (s, ART-HANDOFF) : impact de la prise (poing), prise depuis un rebord, bond-prise ; décollage " +
+                 "et pose des mains du bond et du bond-prise. La mort du joueur tombe à l'instant d'impact du clip.")]
+        [Min(0f)] public float clipPriseImpact = 2.37f, clipPriseRebordImpact = 3.25f, clipBondPriseImpact = 2.55f;
+        [Min(0f)] public float clipBondTakeoff = 2.05f, clipBondLand = 4.6f, clipBondPriseTakeoff = 1.05f, clipBondPriseLand = 3.0f;
+        [Tooltip("Prise depuis un rebord (clip Traqueur_PriseRebord) : la cible est au moins à cette hauteur sous ses pieds (m).")]
+        [Min(0f)] public float ledgeGrabDrop = 4f;
         [Tooltip("Au-dessus de cette vitesse (m/s), il court (courses enragées) ; en dessous, il marche à quatre pattes (Rôde).")]
         [Min(0.5f)] public float runThreshold = 4.5f;
         [Tooltip("Vitesse au sol du clip Traqueur_PassageBas à la vitesse 1 (m/s).")]

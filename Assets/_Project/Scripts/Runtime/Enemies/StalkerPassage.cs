@@ -77,6 +77,9 @@ namespace ItHunts.Enemies
         public float Start, Telegraph, Duration;
         public float RecoverUntil;
         public bool Caught;
+        /// <summary>Clip de la DA joué pendant la traversée (null : mouvement provisoire) et récupération après la réception (s).</summary>
+        public string Clip;
+        public float ClipRecovery;
     }
 
     /// <summary>Calculs des passages du traqueur (purs, testables) : permis, durée, trajectoire, coût pour le choix du chemin.</summary>
@@ -182,7 +185,8 @@ namespace ItHunts.Enemies
             t.Active = false;
             if (!IsLeap(t.Kind))
                 return false;
-            t.RecoverUntil = now + cfg.leapRecovery;
+            // Réception : la fin du clip si elle est plus longue que la récupération réglée (clip livré par la DA).
+            t.RecoverUntil = now + Mathf.Max(cfg.leapRecovery, t.ClipRecovery);
             return !t.Caught;
         }
 
