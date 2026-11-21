@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Campement_Lanterne_4
+  m_Shader: {fileID: 4800000, guid: 6c4e97a492b56e644a0c9206cafd88b4, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Poids:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Cape: 0
+    - _CapeHaut: 0.45
+    - _ColorMask: 15
+    - _Contraste: 1
+    - _Detail: 1
+    - _DetailRayon: 2.5
+    - _Douceur: 0.5
+    - _Eclairage: 1
+    - _FlotteVitesse: 0.35
+    - _Flottement: 0
+    - _GardeLumiere: 0.3
+    - _LanterneForce: 0
+    - _LisereFace: 3
+    - _LisereForce: 0.45
+    - _LisereLargeur: 1
+    - _Luminosite: 0.3608
+    - _OmbreForce: 0.5
+    - _OmbreSeuil: 0.12
+    - _Opaque: 0
+    - _Orbite: 0
+    - _Palpite: 0.35
+    - _PalpiteVitesse: 1.1
+    - _Phase: 0
+    - _Pivot: 0.2
+    - _Respiration: 0
+    - _Rythme: 0.22
+    - _Saturation: 0.8343
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _Transition: 0.7
+    - _UsePoids: 0
+    m_Colors:
+    - _Centre: {r: 0.5, g: 0.5, b: 0.45, a: 0}
+    - _ChaudCouleur: {r: 1.25, g: 1.02, b: 0.82, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _FeuUV: {r: -10.633604, g: -0.68855953, b: 0, a: 0}
+    - _FroidCouleur: {r: 0.62, g: 0.66, b: 0.86, a: 1}
+    - _LanterneCouleur: {r: 1, g: 0.8, b: 0.5, a: 1}
+    - _LanterneUV: {r: 0.5, g: 0.1, b: 0.25, a: 0}
+    - _LisereCouleur: {r: 1, g: 0.48, b: 0.16, a: 1}
+    - _OmbreCouleur: {r: 0.34, g: 0.33, b: 0.62, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -41,6 +41,17 @@ namespace ItHunts.Art.Menus
             public Rect lanterne;
             [Tooltip("Pieds : x gauche, x droit (pixels de la maquette), pour l'ombre de contact.")]
             public Vector2 pieds;
+            [Header("Fondu dans le décor (mesuré par place : fondu.py)")]
+            [Tooltip("Luminosité du corps à cette place (0 = celle du personnage).")]
+            public float luminosite;
+            [Tooltip("Saturation du corps à cette place (0 = celle du personnage).")]
+            public float saturation;
+            [Tooltip("Douceur (rayon du flou en pixels du sprite) : égale la netteté du décor peint autour.")]
+            public float douceur = 1f;
+            [Tooltip("Contraste des détails fins (1 = celui du sprite) : égale le contraste des détails du décor peint.")]
+            public float detail = 1f;
+            [Tooltip("Luminosité et saturation de la lanterne (hors verre allumé).")]
+            public Vector2 reglageLanterne = new Vector2(1f, 1f);
         }
 
         [Serializable]
@@ -55,7 +66,13 @@ namespace ItHunts.Art.Menus
             public GameObject plus;             // places 3 et 4 : bouton +
             public GameObject lanterneEteinte;  // places 3 et 4
             public GameObject coche;
-            public Image ombre;                 // ombre de contact (multiplication douce) sous le siège et les pieds
+            public Image ombre;                 // ancienne ombre de contact (tache), cachée quand ombrePortee existe
+            public Image ombrePortee;           // ombre du corps (shader ItHunts/UI/OmbrePortee) : contact et portée au sol
+            public Image ombreLanterne;         // ombre de la lanterne
+            public Image eclairage;             // lumière de la lanterne sur le sol, la bûche et les jambes (ItHunts/UI/Eclaire)
+            [NonSerialized] public Material matLanterneJeu;
+            [NonSerialized] public Material matOmbreJeu;
+            [NonSerialized] public Material matOmbreLanterneJeu;
             [NonSerialized] public int occupant = -1;
             [NonSerialized] public Material matJeu;   // copie du matériau en jeu (les assets restent intacts)
         }
@@ -80,6 +97,17 @@ namespace ItHunts.Art.Menus
         public float teinteLanterne = 0.55f;
         [Tooltip("Ombre de contact : opacité, hauteur (fraction de la largeur), débord de chaque côté (px).")]
         public Vector3 ombre = new Vector3(0.62f, 0.2f, 18f);
+        [Header("Fondu (2026-11-22)")]
+        [Tooltip("Teinte des ombres du décor peint autour de chaque place (linéaire, mesurée sur Campement_Fond).")]
+        public Color[] ombresPlaces = { new Color(0.89f, 0.58f, 1f), new Color(0.46f, 0.46f, 1f), new Color(0.52f, 0.44f, 1f), new Color(0.31f, 0.39f, 1f) };
+        [Tooltip("Ombre portée : marges de l'image autour du sprite (gauche, droite, bas, en fraction du sprite).")]
+        public Vector3 margeOmbre = new Vector3(0.7f, 0.7f, 0.3f);
+        [Tooltip("Ombre portée : luminance de la couleur multipliée (0 = noir, 1 = aucune ombre).")]
+        public float valeurOmbre = 0.34f;
+        [Tooltip("Ombre portée : cisaillement à l'opposé du feu (uv x par uv de hauteur).")]
+        public float cisaillement = 0.55f;
+        [Tooltip("Lumière de la lanterne au sol : rayon (hauteurs de lanterne), aplatissement, mélange de la couleur du personnage.")]
+        public Vector3 eclairageLanterne = new Vector3(2.1f, 0.5f, 0.7f);
 
         private void Start()
         {
@@ -139,7 +167,23 @@ namespace ItHunts.Art.Menus
                 pl.corps.gameObject.SetActive(true);
                 Eclaire(pl, p, pc);
             }
-            if (pc != null && pl.ombre != null)
+            if (pl.ombre != null && pl.ombrePortee != null)
+                pl.ombre.gameObject.SetActive(false);
+            if (pc != null && pl.ombrePortee != null)
+                PoseOmbre(ref pl.matOmbreJeu, pl.ombrePortee, p.corps, pc.corps, place, false);
+            if (pc != null && pl.ombreLanterne != null)
+                PoseOmbre(ref pl.matOmbreLanterneJeu, pl.ombreLanterne, p.lanterne, pc.lanterne, place, true);
+            if (pc != null && pl.eclairage != null)
+            {
+                Vector2 c = new Vector2(pc.lanterne.center.x, pc.lanterne.yMax - pc.lanterne.height * 0.12f);
+                float r = pc.lanterne.height * eclairageLanterne.x;
+                MenuEcran.Pose(pl.eclairage.rectTransform, c.x - r, c.y - r * eclairageLanterne.y, r * 2, r * eclairageLanterne.y * 2);
+                Color lc = Color.Lerp(new Color(1f, 0.78f, 0.5f), p.couleur, eclairageLanterne.z);
+                lc.a = 1f;
+                pl.eclairage.color = lc;
+                pl.eclairage.gameObject.SetActive(true);
+            }
+            if (pc != null && pl.ombre != null && pl.ombrePortee == null)
             {
                 Rect r = pc.corps;
                 float x0 = Mathf.Min(pc.pieds.x, r.center.x - r.width * 0.22f) - ombre.z;
@@ -158,9 +202,16 @@ namespace ItHunts.Art.Menus
             if (pc != null && pl.lueur != null)
             {
                 Vector2 c = pc.lanterne.center;
-                // lueur au sol autour du pied de la lanterne (ellipse aplatie)
                 float r = Mathf.Max(pc.lanterne.width, pc.lanterne.height) * rayonLueur;
-                MenuEcran.Pose(pl.lueur.rectTransform, c.x - r, pc.lanterne.yMax - r * 0.55f, r * 2, r * 0.9f);
+                if (pl.eclairage != null)
+                {
+                    // halo autour du verre (la lumière reçue par le sol et la bûche est la couche Eclairage)
+                    float rv = pc.lanterne.height * 0.75f;
+                    float cy = pc.lanterne.y + pc.lanterne.height * 0.6f;
+                    MenuEcran.Pose(pl.lueur.rectTransform, c.x - rv, cy - rv * 0.9f, rv * 2, rv * 1.8f);
+                }
+                else // lueur au sol autour du pied de la lanterne (ellipse aplatie)
+                    MenuEcran.Pose(pl.lueur.rectTransform, c.x - r, pc.lanterne.yMax - r * 0.55f, r * 2, r * 0.9f);
                 pl.lueur.color = p.couleur;
                 pl.lueur.gameObject.SetActive(true);
             }
@@ -185,6 +236,9 @@ namespace ItHunts.Art.Menus
             pl.occupant = -1;
             if (pl.corps != null) pl.corps.gameObject.SetActive(false);
             if (pl.ombre != null) pl.ombre.gameObject.SetActive(false);
+            if (pl.ombrePortee != null) pl.ombrePortee.gameObject.SetActive(false);
+            if (pl.ombreLanterne != null) pl.ombreLanterne.gameObject.SetActive(false);
+            if (pl.eclairage != null) pl.eclairage.gameObject.SetActive(false);
             if (pl.lanterne != null) pl.lanterne.gameObject.SetActive(false);
             if (pl.lueur != null) pl.lueur.gameObject.SetActive(false);
             if (pl.cartouche != null) pl.cartouche.SetActive(false);
@@ -217,9 +271,70 @@ namespace ItHunts.Art.Menus
             m.SetVector("_LanterneUV", new Vector4(l.x, l.y, pc.lanterne.height * rayonLanterneCorps / r.height, 0));
             Color chaud = new Color(1f, 0.78f, 0.5f);
             m.SetColor("_LanterneCouleur", Color.Lerp(chaud, p.couleur, teinteLanterne));
-            m.SetFloat("_Luminosite", p.luminosite);
-            m.SetFloat("_Saturation", p.saturation);
+            m.SetFloat("_Luminosite", pc.luminosite > 0f ? pc.luminosite : p.luminosite);
+            m.SetFloat("_Saturation", pc.saturation > 0f ? pc.saturation : p.saturation);
             m.SetFloat("_Contraste", p.contraste);
+            m.SetFloat("_Douceur", pc.douceur);
+            m.SetFloat("_Detail", pc.detail);
+            int i = Array.IndexOf(places, pl);
+            Color oc = i >= 0 && i < ombresPlaces.Length ? ombresPlaces[i] : new Color(0.5f, 0.5f, 1f);
+            m.SetColor("_OmbreCouleur", oc * 0.6f);
+            // lanterne : même lumière de scène (feu, ombres du décor), sans sa propre lueur ; le verre allumé reste tel quel
+            if (pl.lanterne != null && pl.lanterne.material != null && pl.lanterne.material.shader == m.shader)
+            {
+                Material ml = pl.lanterne.material;
+                if (Application.isPlaying)
+                {
+                    if (pl.matLanterneJeu == null)
+                    {
+                        pl.matLanterneJeu = new Material(ml) { name = ml.name + " (jeu)" };
+                        pl.lanterne.material = pl.matLanterneJeu;
+                    }
+                    ml = pl.matLanterneJeu;
+                }
+                Rect rl = pc.lanterne;
+                Vector2 fl = new Vector2((foyer.x - rl.x) / rl.width, 1f - (foyer.y - rl.y) / rl.height);
+                ml.SetVector("_FeuUV", new Vector4(fl.x, fl.y, 0, 0));
+                ml.SetFloat("_Luminosite", pc.reglageLanterne.x);
+                ml.SetFloat("_Saturation", pc.reglageLanterne.y);
+                ml.SetFloat("_Contraste", 1f);
+                ml.SetFloat("_Douceur", pc.douceur);
+                ml.SetFloat("_Detail", 1f);
+                ml.SetColor("_OmbreCouleur", oc * 0.6f);
+            }
+        }
+
+        /// <summary>Ombre (contact et portée) d'un sprite posé dans le rect r : image élargie, uv du sprite aux coins.</summary>
+        private void PoseOmbre(ref Material matJeu, Image im, Sprite spr, Rect r, int place, bool estLanterne)
+        {
+            if (spr == null)
+                return;
+            im.sprite = spr;
+            float gx = margeOmbre.x * r.width, dx = margeOmbre.y * r.width, by = margeOmbre.z * r.height;
+            if (estLanterne) { gx *= 0.8f; dx *= 0.8f; by *= 0.6f; }
+            MenuEcran.Pose(im.rectTransform, r.x - gx, r.y, r.width + gx + dx, r.height + by);
+            Material m = im.material;
+            if (m == null)
+                return;
+            if (Application.isPlaying)
+            {
+                if (matJeu == null)
+                {
+                    matJeu = new Material(m) { name = m.name + " (jeu)" };
+                    im.material = matJeu;
+                }
+                m = matJeu;
+            }
+            m.SetVector("_Cadre", new Vector4(-gx / r.width, -by / r.height, 1f + dx / r.width, 1f));
+            float cote = Mathf.Sign(foyer.x - r.center.x);   // +1 : feu à droite
+            Color oc = place < ombresPlaces.Length ? ombresPlaces[place] : new Color(0.5f, 0.5f, 1f);
+            float lum = oc.r * 0.2126f + oc.g * 0.7152f + oc.b * 0.0722f;
+            Color mul = oc * (valeurOmbre / Mathf.Max(lum, 1e-3f));
+            mul.r = Mathf.Min(mul.r, 1f); mul.g = Mathf.Min(mul.g, 1f); mul.b = Mathf.Min(mul.b, 1f); mul.a = 1f;
+            m.SetColor("_Couleur", mul);
+            m.SetFloat("_Cisaille", -cote * cisaillement);
+            m.SetVector("_ContactDecal", new Vector4(-cote * 0.012f, -0.018f, 0, 0));
+            im.gameObject.SetActive(true);
         }
 
         public void Pret(int place, bool pret)

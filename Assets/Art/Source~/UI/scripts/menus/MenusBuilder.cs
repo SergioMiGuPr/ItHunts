@@ -577,7 +577,40 @@ public static class MenusBuilder
         m.SetFloat("_OmbreForce", 0.5f); m.SetFloat("_OmbreSeuil", 0.12f); m.SetColor("_OmbreCouleur", new Color(0.34f, 0.33f, 0.62f));
         m.SetColor("_ChaudCouleur", new Color(1.25f, 1.02f, 0.82f)); m.SetColor("_FroidCouleur", new Color(0.62f, 0.66f, 0.86f));
         m.SetFloat("_Transition", 0.7f); m.SetColor("_LisereCouleur", new Color(1f, 0.48f, 0.16f)); m.SetFloat("_LisereForce", 0.6f);
-        m.SetFloat("_LisereLargeur", 1.3f); m.SetFloat("_Palpite", 0.35f); m.SetFloat("_PalpiteVitesse", 1.1f); m.SetFloat("_LanterneForce", 0.8f);
+        m.SetFloat("_LisereLargeur", 1.0f); m.SetFloat("_Palpite", 0.35f); m.SetFloat("_PalpiteVitesse", 1.1f); m.SetFloat("_LanterneForce", 0.8f);
+        // 2026-11-22 : liseré du feu fin et seulement sur les bords tournés vers le feu ; plus de liseré ailleurs
+        m.SetFloat("_LisereForce", 0.35f); m.SetFloat("_LisereFace", 3f); m.SetFloat("_GardeLumiere", 2f);
+    }
+
+    const string FONDU = "Assets/Art/Source~/UI/scripts/menus/fondu_reglages.json";
+
+    // fondu_reglages.json (écrit par fondu.py --ajuste) : une ligne par personnage et par place, luminosité, saturation et
+    // netteté égales à celles du décor peint autour de la place
+    public class ReglageFondu { public string perso; public int place; public float lum, sat, douceur, detail = 1, lanterneLum = 1, lanterneSat = 1; }
+
+    // lecture simple (JsonUtility ne lit pas les types d'un script chargé à la volée) : un objet { } par réglage
+    static List<ReglageFondu> LitFondu()
+    {
+        var res = new List<ReglageFondu>();
+        if (!File.Exists(FONDU)) return res;
+        string t = File.ReadAllText(FONDU);
+        foreach (System.Text.RegularExpressions.Match o in System.Text.RegularExpressions.Regex.Matches(t, @"\{[^{}]*\}"))
+        {
+            string c = o.Value;
+            string Brut(string cle)
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(c, "\"" + cle + @"""\s*:\s*""?([^"",}\s]+)");
+                return m.Success ? m.Groups[1].Value : null;
+            }
+            float F(string cle, float def) { var b = Brut(cle); return b != null ? float.Parse(b, CI) : def; }
+            if (Brut("perso") == null) continue;
+            res.Add(new ReglageFondu
+            {
+                perso = Brut("perso"), place = (int)F("place", 0), lum = F("lum", 0), sat = F("sat", 0), douceur = F("douceur", 1), detail = F("detail", 1),
+                lanterneLum = F("lanterneLum", 1), lanterneSat = F("lanterneSat", 1)
+            });
+        }
+        return res;
     }
 
     static void CompleteCampement(GameObject e, CampementApercu ca)
@@ -593,6 +626,19 @@ public static class MenusBuilder
             pc.corps = new Rect(src.v[0], src.v[1], src.v[2], src.v[3]); pc.lanterne = new Rect(src.v[4], src.v[5], src.v[6], src.v[7]);
             if (src.v.Length >= 10) pc.pieds = new Vector2(src.v[8], src.v[9]);
         }
+        // fondu (2026-11-22) : ombres et lumière de lanterne (valeurs écrites ici : le constructeur fait foi)
+        ca.ombresPlaces = new[] { new Color(0.89f, 0.58f, 1f), new Color(0.46f, 0.46f, 1f), new Color(0.52f, 0.44f, 1f), new Color(0.31f, 0.39f, 1f) };
+        ca.margeOmbre = new Vector3(0.9f, 0.5f, 0.12f);
+        ca.valeurOmbre = 0.3f;
+        ca.cisaillement = 1.1f;
+        ca.eclairageLanterne = new Vector3(1.6f, 0.55f, 0.85f);
+        var fondu = LitFondu();
+        foreach (var pc in ca.placements)
+            foreach (var f in fondu)
+                if (f.perso == pc.perso && f.place == pc.place)
+                {
+                    pc.luminosite = f.lum; pc.saturation = f.sat; pc.douceur = f.douceur; pc.detail = f.detail; pc.reglageLanterne = new Vector2(f.lanterneLum, f.lanterneSat);
+                }
         var mBase = AssetDatabase.LoadAssetAtPath<Material>($"{MAT}/M_Campement_Assis.mat");
         if (mBase != null) { ReglesEclairage(mBase); EditorUtility.SetDirty(mBase); }
         var ui = e.transform.Find("Interface");
@@ -611,6 +657,47 @@ public static class MenusBuilder
             }
             om.SetSiblingIndex(0);
             pl.ombre = om.GetComponent<Image>();
+            om.gameObject.SetActive(false);
+            // fondu (2026-11-22) : lumière de la lanterne sur le décor, ombres calculées depuis les silhouettes
+            int ip = i;
+            Image Couche(string nom, string mat, string shader, Action<Material> regle)
+            {
+                var tr = racine.Find(nom);
+                Image im = tr != null ? tr.GetComponent<Image>() : Img(racine, nom, null, R(0, 0, 10, 10));
+                im.material = Mat(mat + "_" + (ip + 1), shader, regle);
+                im.raycastTarget = false;
+                return im;
+            }
+            pl.eclairage = Couche("Eclairage", "M_Campement_Eclairage", "ItHunts/UI/Eclaire", m =>
+            {
+                m.SetFloat("_Force", 0.9f); m.SetVector("_Centre", new Vector4(0.5f, 0.45f, 0.05f, 0)); m.SetFloat("_Durete", 1.5f);
+                m.SetFloat("_Vacille", 0.25f); m.SetFloat("_Vitesse", 1.2f); m.SetFloat("_Graine", 11 + ip * 3.7f);
+            });
+            pl.ombrePortee = Couche("Ombre_Portee", "M_Campement_Ombre", "ItHunts/UI/OmbrePortee", m =>
+            {
+                m.SetFloat("_ContactForce", 1.5f); m.SetFloat("_ContactFlou", 9f); m.SetFloat("_ContactHaut", 0.6f); m.SetFloat("_Sol", 0.03f);
+                m.SetFloat("_PorteeForce", 0.8f); m.SetFloat("_Ecrase", 0.3f); m.SetFloat("_PorteeFlou", 4f); m.SetFloat("_PorteeFlouHaut", 18f);
+                m.SetFloat("_PorteeLongueur", 0.7f); m.SetFloat("_Max", 0.8f);
+            });
+            pl.ombreLanterne = Couche("Ombre_Lanterne", "M_Campement_OmbreLanterne", "ItHunts/UI/OmbrePortee", m =>
+            {
+                m.SetFloat("_ContactForce", 1.0f); m.SetFloat("_ContactFlou", 3f); m.SetFloat("_ContactHaut", 0.3f); m.SetFloat("_Sol", 0.04f);
+                m.SetFloat("_PorteeForce", 0.6f); m.SetFloat("_Ecrase", 0.3f); m.SetFloat("_PorteeFlou", 2f); m.SetFloat("_PorteeFlouHaut", 8f);
+                m.SetFloat("_PorteeLongueur", 0.8f); m.SetFloat("_Max", 0.75f);
+            });
+            pl.eclairage.transform.SetSiblingIndex(0);
+            pl.ombrePortee.transform.SetSiblingIndex(1);
+            pl.ombreLanterne.transform.SetSiblingIndex(2);
+            if (pl.lanterne != null)
+                pl.lanterne.material = Mat("M_Campement_Lanterne_" + (ip + 1), "ItHunts/UI/Deformation", m =>
+                {
+                    m.SetFloat("_UsePoids", 0); m.DisableKeyword("_POIDS_TEXTURE");
+                    m.SetFloat("_Respiration", 0); m.SetFloat("_Cape", 0); m.SetFloat("_Flottement", 0); m.SetFloat("_Orbite", 0);
+                    ReglesEclairage(m);
+                    m.SetFloat("_LanterneForce", 0); m.SetFloat("_LisereForce", 0.45f); m.SetFloat("_GardeLumiere", 0.3f);
+                });
+            // l'ancienne lueur additive (brouillard coloré) devient un petit halo autour du verre
+            if (pl.lueur != null && pl.lueur.material != null) { pl.lueur.material.SetFloat("_Intensite", 0.4f); EditorUtility.SetDirty(pl.lueur.material); }
             if (i != 1) continue;
             // place 2 (pierre) : lanterne éteinte (celle du banc, pied au pied de la lanterne de la place 2) et bouton +
             if (pl.lanterneEteinte == null)
