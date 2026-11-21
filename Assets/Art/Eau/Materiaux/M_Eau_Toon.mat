@@ -32,7 +32,9 @@ Material:
     - _EcumeBruit: 0.5
     - _EcumeLargeur: 0.22
     - _EncreLargeur: 0.04
+    - _Mouvement: 1.5
     - _Reflets: 2.5
+    - _RefletsOndule: 1.2
     - _RefletsSeuil: 0.04
     - _RefletsTaille: 40
     - _Refraction: 0.02
@@ -41,13 +43,16 @@ Material:
     - _Tuile: 6
     m_Colors:
     - _Ciel: {r: 0.049999982, g: 0.079999976, b: 0.09999997, a: 1}
-    - _Courant: {r: 0.35, g: 0.1, b: 0.12, a: 0}
+    - _Courant: {r: 0.35, g: 0.1, b: 0.3, a: 0}
     - _Ecume: {r: 0.62, g: 0.78, b: 0.6, a: 1}
+    - _EcumePulse: {r: 0.35, g: 0.7, b: 0, a: 0}
     - _Encre: {r: 0.01, g: 0.02, b: 0.02, a: 1}
     - _Moyen: {r: 0.06999998, g: 0.14999998, b: 0.10999996, a: 1}
-    - _Ondulation: {r: 0.04, g: 0.45, b: 0, a: 0}
+    - _Ondulation: {r: 0.09, g: 0.45, b: 0, a: 0}
     - _Paliers: {r: 0.35, g: 1.4, b: 0, a: 0}
     - _PeuProfond: {r: 0.19999996, g: 0.31999996, b: 0.21999997, a: 1}
     - _Profond: {r: 0.015, g: 0.035, b: 0.035, a: 1}
+    - _VagueCouleur: {r: 0.15999997, g: 0.25999996, b: 0.19999996, a: 1}
+    - _Vaguelettes: {r: 0.55, g: 0.9, b: 0.6, a: 0.06}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -5,7 +5,8 @@ ItHunts/VFX/Peint, réglable par effet) :
   R = ton (0 = encre, ~0,33 = ton sombre, ~0,66 = ton moyen, 1 = cœur clair) ; G = bruit de dissolution (la particule
   s'efface par morceaux, comme un trait qui se défait, au lieu d'un fondu) ; B = 0 ; A = couverture (bord net, 1 px adouci).
 Planches : flamme 4 x 4 en boucle, fumée 4 x 4 (bouffée qui gonfle et se défait), éclat 2 x 2 (étoile qui se referme),
-étincelle, étoile à 5 branches, anneau, trace (bande effilée), lien (bande ondulée raccordable en x), poussière 4 x 4.
+étincelle, étoile à 5 branches, anneau, trace (bande effilée), lien (bande ondulée raccordable en x), poussière 4 x 4,
+arc de lame 2 x 2 (2026-11-22 : croissant balayé qui se déploie puis se défait).
 Sorties : Assets/Art/VFX/Textures/T_VFX_*.png ; planche de contrôle docs/art/rendus/VFX/Textures_VFX.png.
 
 Usage : python vfx_textures.py
@@ -177,6 +178,39 @@ def eclat(S=128, N=4, branches=8):
     return save("T_VFX_Eclat_2x2", p[..., 0], p[..., 1], p[..., 3])
 
 
+# ------------------------------------------------------------------ arc de lame (épée du koala, 2026-11-22)
+def arc(S=256, N=4):
+    """Croissant balayé de gauche à droite : la tête (à droite) est épaisse et claire sur son bord extérieur (le fil de la
+    lame), la queue s'effile. Images : balayage à 45 %, 80 %, 100 %, puis amincie et trouée (elle se défait)."""
+    frames = []
+    for i in range(N):
+        x, y = grille(S, S)
+        cx, cy, R = 0.0, -0.75, 1.25
+        d = np.hypot(x - cx, y - cy)
+        a = np.arctan2(y - cy, x - cx)                     # angle : pi à gauche, 0 à droite
+        a0, a1 = np.radians(158), np.radians(22)            # début (queue, gauche) et fin (tête, droite)
+        balaye = [0.45, 0.8, 1.0, 1.0][i]
+        tete = a0 + (a1 - a0) * balaye
+        s_ = np.clip((a0 - a) / (a0 - a1), 0, 1) / max(balaye, 1e-3)    # 0 queue -> 1 tête
+        dans = (a <= a0) & (a >= tete)
+        ep = (0.05 + 0.32 * s_ ** 1.2) * (1.0 - 0.45 * (i == 3))
+        # le fil (bord extérieur) est le plus clair : champ qui monte vers l'extérieur
+        rr = (d - (R - ep)) / np.maximum(ep, 1e-3)            # 0 bord intérieur -> 1 bord extérieur
+        champ = np.clip(1 - np.abs(rr - 0.62) / 0.62, 0, 1) * dans
+        champ = champ * (0.55 + 0.6 * rr.clip(0, 1)) * smooth(0.0, 0.12, s_)
+        # tête arrondie
+        champ *= smooth(0.0, 0.03, (tete - a) * -1 + 0.03) if False else 1.0
+        nz = fbm(S, S, 5, 700 + i, oct=3)
+        if i == 3:
+            champ = champ * (0.6 + 0.6 * nz) - 0.25 * (1 - nz)
+        champ = np.clip(champ * 1.5, 0, 1)
+        R_, A = peint(champ, (0.05, 0.32, 0.66), encre=2.5, seed=40 + i)
+        G = fbm(S, S, 6, 720 + i, oct=3)
+        frames.append(np.stack([R_, G, np.zeros_like(R_), A], -1))
+    p = planche(frames, 2)
+    return save("T_VFX_Arc_2x2", p[..., 0], p[..., 1], p[..., 3])
+
+
 def simple(nom, champ, seuils=(0.04, 0.3, 0.6), encre=2.0, seed=0):
     R, A = peint(champ, seuils, encre=encre, seed=seed)
     G = fbm(champ.shape[0], champ.shape[1], 6, 900 + seed, oct=3)
@@ -189,6 +223,7 @@ def main():
     rep["fumee"] = bouffee("T_VFX_Fumee_4x4", seed=3)
     rep["poussiere"] = bouffee("T_VFX_Poussiere_4x4", lobes=9, seed=8, monte=0.05)
     rep["eclat"] = eclat()
+    rep["arc"] = arc()
     # étincelle : losange étiré (la particule est étirée par la vitesse)
     x, y = grille(64, 64)
     rep["etincelle"] = simple("T_VFX_Etincelle", np.clip(1 - (np.abs(x) / 0.35 + np.abs(y) / 0.95), 0, 1) * 1.6, (0.04, 0.3, 0.55), encre=1.5, seed=1)
@@ -228,9 +263,9 @@ def main():
         t = Image.fromarray((c * 255).astype(np.uint8)).resize((max(1, int(ww * sc)), max(1, int(hh * sc))), Image.NEAREST)
         canvas = Image.new("RGB", (264, 264), (40, 40, 46)); canvas.paste(t, (4, 4))
         tiles.append(canvas)
-    W = Image.new("RGB", (264 * 5, 264 * 2), (20, 20, 24))
+    W = Image.new("RGB", (264 * 6, 264 * 2), (20, 20, 24))
     for i, t in enumerate(tiles):
-        W.paste(t, ((i % 5) * 264, (i // 5) * 264))
+        W.paste(t, ((i % 6) * 264, (i // 6) * 264))
     W.save(os.path.join(CTRL, "Textures_VFX.png"))
     print({k: v.shape for k, v in rep.items()})
 

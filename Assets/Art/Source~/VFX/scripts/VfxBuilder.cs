@@ -1,4 +1,5 @@
-// Effets peints (lot D, 2026-11-21) : import des textures, matériaux, prefabs, mesure du coût, captures.
+// Effets peints (lot D, 2026-11-21 ; lot 2 des retours, 2026-11-22 : ConstruitLot2) : import des textures, matériaux,
+// prefabs, mesure du coût, captures.
 // `unity cmd ... script run --file VfxBuilder.cs --entry VfxBuilder.<Construit|Mesure|Capture>` (éditeur du projet art).
 using System;
 using System.Collections.Generic;
@@ -71,6 +72,9 @@ public static class VfxBuilder
         public float cyclesFlip = 1f; public bool flipAleatoire = true; public Vector3 rotationForme;
         public bool rotation = true; public float dissout = 1f; public int max = 64;
         public Vector3 orbitalXYZ;
+        public bool local;                 // quad dans le plan XY de l'objet (anneau sur un mur, arc de lame) au lieu de faire face
+        public Vector3 vitesseVie;         // vitesse ajoutée au fil de la vie (repère de simulation)
+        public bool feuilleLineaire;       // planche lue dans l'ordre, sans image de départ au hasard
     }
 
     static ParticleSystem PS(Transform parent, P p)
@@ -111,6 +115,12 @@ public static class VfxBuilder
             if (p.flipAleatoire) ts.startFrame = new ParticleSystem.MinMaxCurve(0f, p.tuiles * p.tuiles - 1);
             // pas d'interpolation entre images : animation dessinée image par image
         }
+        if (p.vitesseVie != Vector3.zero)
+        {
+            var vv = ps.velocityOverLifetime; vv.enabled = true;
+            vv.space = p.monde ? ParticleSystemSimulationSpace.World : ParticleSystemSimulationSpace.Local;
+            vv.x = p.vitesseVie.x; vv.y = p.vitesseVie.y; vv.z = p.vitesseVie.z;
+        }
         if (p.orbitalXYZ != Vector3.zero)
         {
             var vo = ps.velocityOverLifetime; vo.enabled = true;
@@ -124,6 +134,8 @@ public static class VfxBuilder
         r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
         r.sortMode = ParticleSystemSortMode.YoungestInFront;
         r.minParticleSize = 0f; r.maxParticleSize = 5f;
+        if (p.local) r.alignment = ParticleSystemRenderSpace.Local;
+        if (p.feuilleLineaire && p.tuiles > 1) { var ts = ps.textureSheetAnimation; ts.startFrame = 0f; ts.cycleCount = 1; }
         return ps;
     }
 
@@ -253,6 +265,164 @@ public static class VfxBuilder
 
         AssetDatabase.SaveAssets();
         return string.Join(", ", Directory.GetFiles(PRE, "*.prefab").Select(Path.GetFileNameWithoutExtension));
+    }
+
+
+    // ------------------------------------------------------------------ lot 2 des retours (2026-11-22)
+    // traction (flux bleu de l'orbe au point visé), répulsion (onde courte orange), épée du koala (3 coups + impact vert),
+    // sensations (traînées de vitesse, impacts génériques, poussière d'atterrissage du joueur). Les 13 prefabs du lot D ne
+    // sont pas reconstruits.
+    public static string ConstruitLot2()
+    {
+        if (!BonProjet()) return "MAUVAIS PROJET";
+        Importe();
+        var etin = AssetDatabase.LoadAssetAtPath<Material>($"{MAT}/M_VFX_Etincelle.mat");
+        var pous = AssetDatabase.LoadAssetAtPath<Material>($"{MAT}/M_VFX_Poussiere.mat");
+        var debris = AssetDatabase.LoadAssetAtPath<Material>($"{MAT}/M_VFX_Debris.mat");
+        var trFum = Mat("M_VFX_Traction_Fumee", "T_VFX_Fumee_4x4", C(0.02f, 0.04f, 0.12f), C(0.08f, 0.2f, 0.55f), C(0.22f, 0.52f, 1f), C(0.72f, 0.9f, 1f), 2.2f, false, 0.45f);
+        var trEcl = Mat("M_VFX_Traction_Eclat", "T_VFX_Etincelle", C(0.02f, 0.04f, 0.12f), C(0.2f, 0.45f, 1f), C(0.5f, 0.78f, 1f), C(0.9f, 0.97f, 1f), 3.2f, false, 0.5f);
+        var rep = Mat("M_VFX_Repulsion_Onde", "T_VFX_Anneau", ENCRE, C(0.6f, 0.2f, 0.03f), C(1f, 0.5f, 0.1f), C(1f, 0.85f, 0.5f), 2.4f, false, 0.6f);
+        var repE = Mat("M_VFX_Repulsion_Eclat", "T_VFX_Etincelle", ENCRE, C(0.7f, 0.25f, 0.03f), C(1f, 0.55f, 0.15f), C(1f, 0.88f, 0.6f), 2.6f, false, 0.6f);
+        var arc = Mat("M_VFX_Epee_Arc", "T_VFX_Arc_2x2", ENCRE, C(0.22f, 0.42f, 0.28f), C(0.62f, 0.9f, 0.66f), C(0.95f, 1f, 0.9f), 2.4f);
+        var estoc = Mat("M_VFX_Epee_Estoc", "T_VFX_Etincelle", ENCRE, C(0.22f, 0.42f, 0.28f), C(0.62f, 0.9f, 0.66f), C(0.95f, 1f, 0.9f), 2.6f, false, 0.7f);
+        var impV = Mat("M_VFX_Epee_Impact", "T_VFX_Eclat_2x2", ENCRE, C(0.08f, 0.42f, 0.14f), C(0.35f, 0.95f, 0.4f), C(0.86f, 1f, 0.8f), 3f);
+        var impVA = Mat("M_VFX_Epee_Anneau", "T_VFX_Anneau", ENCRE, C(0.08f, 0.42f, 0.14f), C(0.35f, 0.95f, 0.4f), C(0.86f, 1f, 0.8f), 2.6f, false, 0.7f);
+        var vit = Mat("M_VFX_Vitesse", "T_VFX_Etincelle", ENCRE, C(0.35f, 0.42f, 0.55f), C(0.65f, 0.72f, 0.85f), C(0.9f, 0.94f, 1f), 0.9f, true);
+        var imp = Mat("M_VFX_Impact", "T_VFX_Eclat_2x2", ENCRE, C(0.55f, 0.45f, 0.35f), C(0.95f, 0.85f, 0.7f), C(1f, 1f, 0.95f), 2.6f);
+
+        // traction : fumée et éclats bleus qui filent de l'orbe au point visé (FluxVfx pose les particules sur le trajet)
+        var go = Racine("VFX_Traction", 1.1f);
+        var f1 = PS(go.transform, new P { nom = "Fumee", mat = trFum, tuiles = 4, debit = 80, vie = new Vector2(0.5f, 0.5f), vitesse = Vector2.zero, taille = new Vector2(0.22f, 0.38f), rayon = 0.01f, etire = true, etirement = 0.018f, max = 280, dissout = 0.7f });
+        var f2 = PS(go.transform, new P { nom = "Eclats", mat = trEcl, debit = 55, vie = new Vector2(0.5f, 0.5f), vitesse = Vector2.zero, taille = new Vector2(0.03f, 0.05f), rayon = 0.01f, etire = true, etirement = 0.014f, max = 220, dissout = 0.4f });
+        var fx = go.AddComponent<FluxVfx>();
+        fx.systemes = new[] { f1, f2 }; fx.poids = new[] { 1f, 0.7f }; fx.densite = 9f; fx.debitMax = 300f; fx.spirale = new Vector2(0.09f, 2f);
+        Sauve(go);
+
+        // répulsion : onde courte orange au point visé (dans le plan de la surface : +Z = normale) + quelques éclats
+        go = Racine("VFX_Repulsion");
+        PS(go.transform, new P { nom = "Onde", mat = rep, boucle = false, duree = 0.3f, rafale = 1, vie = new Vector2(0.2f, 0.2f), vitesse = Vector2.zero, taille = new Vector2(0.5f, 0.5f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.35f, 1, 3.2f), max = 2, dissout = 0.9f, local = true, monde = false });
+        PS(go.transform, new P { nom = "Eclats", mat = repE, boucle = false, duree = 0.3f, rafale = 6, vie = new Vector2(0.12f, 0.2f), vitesse = new Vector2(3f, 5f), taille = new Vector2(0.025f, 0.04f), forme = ParticleSystemShapeType.Circle, rayon = 0.1f, etire = true, etirement = 0.03f, max = 8, dissout = 0.5f });
+        go.GetComponent<VfxPeint>().detruireALaFin = true;
+        Sauve(go);
+
+        // épée du koala : arcs de lame (planche 2 x 2 lue dans l'ordre en 0,17 s), dans un plan devant le porteur
+        GameObject Taille(string nom, Quaternion rot)
+        {
+            var g = Racine(nom, 1.1f);
+            var a = PS(g.transform, new P { nom = "Arc", mat = arc, tuiles = 2, boucle = false, duree = 0.2f, rafale = 1, vie = new Vector2(0.17f, 0.17f), vitesse = Vector2.zero, taille = new Vector2(1.35f, 1.35f), rayon = 0.001f, rotation = false, flipAleatoire = false, feuilleLineaire = true, max = 2, dissout = 0.35f, local = true, monde = false });
+            a.transform.localPosition = new Vector3(0, -0.28f, 0.9f);
+            a.transform.localRotation = rot;
+            g.GetComponent<VfxPeint>().detruireALaFin = true;
+            return g;
+        }
+        Sauve(Taille("VFX_Epee_Taille_H", Quaternion.Euler(55f, 0f, 0f)));
+        Sauve(Taille("VFX_Epee_Taille_D", Quaternion.AngleAxis(-35f, Vector3.forward) * Quaternion.Euler(55f, 0f, 0f)));
+        go = Racine("VFX_Epee_Estoc", 1.1f);
+        var traits = PS(go.transform, new P { nom = "Traits", mat = estoc, boucle = false, duree = 0.2f, rafale = 12, vie = new Vector2(0.09f, 0.13f), vitesse = new Vector2(16f, 22f), taille = new Vector2(0.025f, 0.04f), forme = ParticleSystemShapeType.Cone, angle = 2f, rayon = 0.12f, etire = true, etirement = 0.09f, max = 14, dissout = 0.5f });
+        traits.transform.localPosition = new Vector3(0, -0.25f, 0.5f);
+        var pointe = PS(go.transform, new P { nom = "Pointe", mat = impVA, boucle = false, duree = 0.25f, rafale = 1, vie = new Vector2(0.16f, 0.16f), vitesse = Vector2.zero, taille = new Vector2(0.6f, 0.6f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.2f, 1, 2.2f), max = 2, dissout = 0.9f, local = true, monde = false });
+        pointe.transform.localPosition = new Vector3(0, -0.2f, 1.6f);
+        go.GetComponent<VfxPeint>().detruireALaFin = true;
+        Sauve(go);
+        go = Racine("VFX_Epee_Impact", 1.2f);
+        PS(go.transform, new P { nom = "Eclat", mat = impV, tuiles = 2, boucle = false, duree = 0.15f, rafale = 1, vie = new Vector2(0.12f, 0.12f), vitesse = Vector2.zero, taille = new Vector2(0.7f, 0.7f), rayon = 0.001f, flipAleatoire = false, max = 2, dissout = 0.4f });
+        PS(go.transform, new P { nom = "Anneau", mat = impVA, boucle = false, duree = 0.25f, rafale = 1, vie = new Vector2(0.18f, 0.18f), vitesse = Vector2.zero, taille = new Vector2(0.35f, 0.35f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.3f, 1, 3f), max = 2, dissout = 0.8f });
+        PS(go.transform, new P { nom = "Etincelles", mat = estoc, boucle = false, duree = 0.3f, rafale = 8, vie = new Vector2(0.15f, 0.28f), vitesse = new Vector2(3f, 7f), taille = new Vector2(0.03f, 0.05f), forme = ParticleSystemShapeType.Sphere, rayon = 0.05f, gravite = 0.6f, etire = true, etirement = 0.04f, max = 10, dissout = 0.6f });
+        go.GetComponent<VfxPeint>().detruireALaFin = true;
+        Sauve(go);
+
+        // traînées de vitesse : sous la caméra, anneau devant elle, les traits filent vers la caméra (vers les bords)
+        go = Racine("VFX_Vitesse_Bords");
+        var tv = PS(go.transform, new P { nom = "Traits", mat = vit, debit = 0, vie = new Vector2(0.14f, 0.2f), vitesse = Vector2.zero, taille = new Vector2(0.03f, 0.05f), forme = ParticleSystemShapeType.Circle, rayon = 3.1f, etire = true, etirement = 0.08f, max = 60, dissout = 0.3f, monde = false, rotation = false, vitesseVie = new Vector3(0, 0, -30f) });
+        tv.transform.localPosition = new Vector3(0, 0, 4.5f);
+        var shv = tv.shape; shv.radiusThickness = 0.25f; shv.arc = 360f;
+        var vv2 = go.AddComponent<VitesseVfx>(); vv2.traits = tv; vv2.debitMax = 160f; vv2.etirementMax = 0.08f;
+        Sauve(go);
+
+        // impacts génériques : léger (balle, petit objet) et lourd (caisse lancée, chute d'un gros objet)
+        go = Racine("VFX_Impact_Leger");
+        PS(go.transform, new P { nom = "Eclat", mat = imp, tuiles = 2, boucle = false, duree = 0.12f, rafale = 1, vie = new Vector2(0.09f, 0.09f), vitesse = Vector2.zero, taille = new Vector2(0.3f, 0.36f), rayon = 0.001f, flipAleatoire = false, max = 2, dissout = 0.4f });
+        PS(go.transform, new P { nom = "Etincelles", mat = etin, boucle = false, duree = 0.4f, rafale = 7, vie = new Vector2(0.15f, 0.3f), vitesse = new Vector2(2.5f, 5f), taille = new Vector2(0.025f, 0.04f), forme = ParticleSystemShapeType.Hemisphere, rayon = 0.03f, gravite = 1f, etire = true, etirement = 0.04f, max = 10 });
+        PS(go.transform, new P { nom = "Poussiere", mat = pous, tuiles = 4, boucle = false, duree = 0.6f, rafale = 2, vie = new Vector2(0.4f, 0.55f), vitesse = new Vector2(0.3f, 0.6f), taille = new Vector2(0.3f, 0.42f), rayon = 0.05f, flipAleatoire = false, max = 3, dissout = 0.6f });
+        go.GetComponent<VfxPeint>().detruireALaFin = true;
+        Sauve(go);
+        go = Racine("VFX_Impact_Lourd");
+        PS(go.transform, new P { nom = "Eclat", mat = imp, tuiles = 2, boucle = false, duree = 0.15f, rafale = 1, vie = new Vector2(0.12f, 0.12f), vitesse = Vector2.zero, taille = new Vector2(0.75f, 0.85f), rayon = 0.001f, flipAleatoire = false, max = 2, dissout = 0.4f });
+        PS(go.transform, new P { nom = "Etincelles", mat = etin, boucle = false, duree = 0.5f, rafale = 12, vie = new Vector2(0.2f, 0.4f), vitesse = new Vector2(3.5f, 7f), taille = new Vector2(0.03f, 0.055f), forme = ParticleSystemShapeType.Hemisphere, rayon = 0.08f, gravite = 1.2f, etire = true, etirement = 0.04f, max = 16 });
+        var pl = PS(go.transform, new P { nom = "Poussiere", mat = pous, tuiles = 4, boucle = false, duree = 0.9f, rafale = 5, vie = new Vector2(0.55f, 0.8f), vitesse = new Vector2(1.2f, 2.4f), taille = new Vector2(0.6f, 0.95f), forme = ParticleSystemShapeType.Hemisphere, rayon = 0.2f, flipAleatoire = false, max = 6, dissout = 0.6f });
+        var lpl = pl.limitVelocityOverLifetime; lpl.enabled = true; lpl.limit = 0.5f; lpl.dampen = 0.15f;
+        PS(go.transform, new P { nom = "Gravats", mat = debris, boucle = false, duree = 0.8f, rafale = 6, vie = new Vector2(0.35f, 0.6f), vitesse = new Vector2(2.5f, 4.5f), taille = new Vector2(0.05f, 0.09f), forme = ParticleSystemShapeType.Hemisphere, rayon = 0.15f, gravite = 2f, etire = true, etirement = 0.03f, max = 8 });
+        go.GetComponent<VfxPeint>().detruireALaFin = true;
+        Sauve(go);
+
+        // poussière d'atterrissage du joueur : petit anneau de bouffées au sol (échelle humaine ; VfxPeint.echelle selon la chute)
+        go = Racine("VFX_Poussiere_Joueur");
+        var pj = PS(go.transform, new P { nom = "Bouffees", mat = pous, tuiles = 4, boucle = false, duree = 0.8f, rafale = 9, vie = new Vector2(0.45f, 0.7f), vitesse = new Vector2(1.2f, 2.2f), taille = new Vector2(0.32f, 0.55f), forme = ParticleSystemShapeType.Circle, rotationForme = new Vector3(-90, 0, 0), rayon = 0.3f, flipAleatoire = false, max = 12, dissout = 0.6f, gravite = -0.03f });
+        var lpj = pj.limitVelocityOverLifetime; lpj.enabled = true; lpj.limit = 0.4f; lpj.dampen = 0.15f;
+        PS(go.transform, new P { nom = "Graviers", mat = debris, boucle = false, duree = 0.6f, rafale = 5, vie = new Vector2(0.25f, 0.45f), vitesse = new Vector2(1.5f, 3f), taille = new Vector2(0.025f, 0.045f), forme = ParticleSystemShapeType.Hemisphere, rayon = 0.2f, gravite = 2f, etire = true, etirement = 0.03f, max = 6 });
+        go.GetComponent<VfxPeint>().detruireALaFin = true;
+        Sauve(go);
+
+        AssetDatabase.SaveAssets();
+        return "lot 2 : VFX_Traction, VFX_Repulsion, VFX_Epee_Taille_H, VFX_Epee_Taille_D, VFX_Epee_Estoc, VFX_Epee_Impact, VFX_Vitesse_Bords, VFX_Impact_Leger, VFX_Impact_Lourd, VFX_Poussiere_Joueur";
+    }
+
+    // ------------------------------------------------------------------ captures vue à la première personne (lot 2)
+    // L'effet est posé à l'origine (main ou caméra), la caméra regarde +Z depuis (0, yeux, -recul). Traction : source en bas
+    // à droite de la vue (l'orbe), cible à `distance` m devant. Vitesse : intensité donnée par `distance` (m/s).
+    public static string CaptureFps(string effet, float temps, float distance, string sortie)
+    {
+        if (!BonProjet()) return "MAUVAIS PROJET";
+        var pf = AssetDatabase.LoadAssetAtPath<GameObject>($"{PRE}/{effet}.prefab");
+        var root = new GameObject("CaptureVfx");
+        root.transform.position = new Vector3(0, -500, 0);
+        var camGo = new GameObject("Cam"); camGo.transform.SetParent(root.transform, false);
+        var cam = camGo.AddComponent<Camera>();
+        cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.05f, 0.05f, 0.07f);
+        cam.fieldOfView = 70; cam.nearClipPlane = 0.01f; cam.farClipPlane = 200;
+        bool epee = effet.Contains("Epee_Taille") || effet.Contains("Estoc");
+        camGo.transform.localPosition = Vector3.zero;
+        camGo.transform.localRotation = Quaternion.identity;
+        var go = (GameObject)PrefabUtility.InstantiatePrefab(pf, effet.Contains("Vitesse") ? camGo.transform : root.transform);
+        go.transform.localPosition = Vector3.zero; go.transform.localRotation = Quaternion.identity;
+        if (effet.Contains("Repulsion") || effet.Contains("Impact")) { go.transform.localPosition = new Vector3(0, 0, 3f); go.transform.localRotation = Quaternion.Euler(0, 180, 0); }
+        if (effet.Contains("Poussiere_Joueur")) { go.transform.localPosition = new Vector3(0, -1.1f, 2.4f); }
+        foreach (var p in go.GetComponentsInChildren<ParticleSystem>()) { p.useAutoRandomSeed = false; p.randomSeed = 1234; }
+        var fx = go.GetComponent<FluxVfx>();
+        if (fx != null) fx.Regle(root.transform.TransformPoint(new Vector3(0.28f, -0.22f, 0.55f)), root.transform.TransformPoint(new Vector3(-0.4f, 0.6f, distance)));
+        var vx = go.GetComponent<VitesseVfx>();
+        var roots = go.GetComponentsInChildren<ParticleSystem>().Where(p => p.transform.parent == go.transform).ToArray();
+        if (fx != null || vx != null)
+        {
+            // effets continus : quelques pas pour régler le débit (selon le trajet ou la vitesse), puis la simulation
+            if (vx != null) { vx.vitesse = distance; vx.lissage = 0f; }
+            foreach (var p in roots) { p.Clear(true); p.Play(true); }
+            for (float t = 0; t < temps; t += 1f / 60f)
+            {
+                if (fx != null) fx.Pose();
+                if (vx != null) vx.Met(1f / 60f);
+                foreach (var p in roots) p.Simulate(1f / 60f, true, false, false);
+                if (fx != null) fx.Pose();
+            }
+        }
+        else
+            foreach (var p in roots) p.Simulate(temps, true, true, true);
+        go.GetComponent<VfxPeint>().Applique();
+        var rt = new RenderTexture(640, 400, 24, RenderTextureFormat.ARGBHalf);
+        cam.targetTexture = rt;
+        cam.Render(); cam.Render();
+        var prev = RenderTexture.active; RenderTexture.active = rt;
+        var tex = new Texture2D(640, 400, TextureFormat.RGBAFloat, false, true);
+        tex.ReadPixels(new Rect(0, 0, 640, 400), 0, 0); tex.Apply();
+        RenderTexture.active = prev; cam.targetTexture = null;
+        var px = tex.GetPixels();
+        var o = new Texture2D(640, 400, TextureFormat.RGB24, false);
+        o.SetPixels(px.Select(c => new Color(S(c.r), S(c.g), S(c.b))).ToArray()); o.Apply();
+        string ps2 = Path.Combine(Directory.GetCurrentDirectory(), sortie);
+        Directory.CreateDirectory(Path.GetDirectoryName(ps2));
+        File.WriteAllBytes(ps2, o.EncodeToPNG());
+        Object.DestroyImmediate(tex); Object.DestroyImmediate(o); rt.Release(); Object.DestroyImmediate(rt); Object.DestroyImmediate(root);
+        return sortie;
     }
 
     // ------------------------------------------------------------------ coût
