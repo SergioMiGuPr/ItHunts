@@ -3,6 +3,19 @@
 Diagnostic : `docs/art/rendus/Traqueur/Traqueur_Diagnostic.jpg`. La partie A (maillage, gréement, clips bornés) est faite
 d'abord ; ces vidéos servent ensuite à caler le rythme et les poses clés de chaque clip (partie C).
 
+## Références (mise à jour du 2026-11-21, traqueur v4)
+
+- **Autorité d'apparence : le modèle Tripo de l'utilisateur** (corps + tête, les 2 GLB ci-dessous), décision de
+  l'utilisateur du 2026-11-21 (soir) : aucune déformation, une seule échelle uniforme pour 14 m, la tête mise à l'échelle une
+  fois pour que son cou ait la largeur du cou du corps (× 1.05). **Les vidéos** (`docs/art/references-anim/`, 19 vidéos :
+  repos, marche, course enragée, bonds, chaînes, escalade, porte étroite, passage bas, prises…) sont **la référence des
+  mouvements** (poses, angles, rythme, démarche, poids) ; la silhouette peut différer.
+- Aides : `docs/art/fiches/traqueur/fiche_traqueur_corps_v01.png`, `fiche_traqueur_tete_v01.png`,
+  `traqueur_ambiance_rampe_v01.png`.
+- Modèles sources (Tripo H3.1 multivue, detailed, PBR) : `Assets/Art/Source~/Ennemis/Traqueur_v4/traqueur_v4_corps_source.glb`,
+  `traqueur_v4_tete_source.glb`. Version jeu : `Assets/Art/Models/Ennemis/SK_Traqueur_v4.fbx` ; notes, planche et empreinte
+  du modèle verrouillé : `docs/art/rendus/Traqueur/v4/` (`NOTES.md`, `planche_v4b.png`, `EMPREINTE.md`).
+
 ## Règles communes (pour que je puisse relever les poses image par image)
 
 - **Une action par vidéo**, du début à la fin, sans coupe ni changement de plan.
