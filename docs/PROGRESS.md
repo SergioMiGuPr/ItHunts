@@ -33,6 +33,13 @@
   coffre qui ouvre son choix, `OfferOrb.MenuOnly`. HUD : plus d'anneaux ni de jauges de traction et de répulsion, plus de recharge
   de tir. Vérifié en Play Mode (Test_Arena) : achat, refus (prix rouge), offres renouvelées, coffre, fermeture et commandes rendues.
   Captures : `docs/design/features/interface-jeu/captures/`. Icônes des améliorations : à fournir par la DA (masquées).
+- **PR #23 (`art-armes`), #24 (`art-eau`) :** vérifiées, fusionnées dans `main`, poussées, `main` dans `animations`.
+- **7. Eau de la DA.** `WaterSetup` (éditeur) : `M_Eau_Toon` (ItHunts/EauToon) sur toutes les surfaces d'eau (Level_01 et
+  Level_01_Base : 7 canaux ; générateur aléatoire : matériau et éclaboussure du `RandomLevel`), constructeurs branchés ;
+  `WaterSplash` (Runtime) : éclaboussure peinte à la surface quand un joueur, un ennemi ou un objet tombe dans l'eau (canal,
+  fosse), taille 1.2 par mètre (0.4 à 8). Profondeur et texture opaque déjà actives dans `PC_RPAsset`. Capture :
+  `docs/design/features/eau/canal_level01.jpg`. Remarque DA : `M_Campement_Assis_2.mat` est modifié sur disque pendant le
+  Play Mode du menu (contraste, luminosité) : remis tel quel, à voir côté `CampementApercu`.
 
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;

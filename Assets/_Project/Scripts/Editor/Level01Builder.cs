@@ -62,7 +62,7 @@ namespace ItHunts.EditorTools
             _canalDepth = P.canalDepth;
             _waterDamage = P.waterDamage;
             _chestCount = _canalCount = _parkourCount = 0;
-            _water = UnlitMat("Level_Water", "Universal Render Pipeline/Unlit", new Color(0.12f, 0.42f, 0.5f));   // lisible au fond des vides (animations, point 6)
+            _water = WaterSetup.Water();                                   // eau de la DA (PR #24), sinon greybox
             var zoneSettings = LoadOrCreate<ZoneSettings>(Level01ZonePath);
 
             DefineLevel01(out List<RoomDef> rooms, out HashSet<int> chestHalls, out HashSet<int> parkourHalls);
@@ -591,6 +591,7 @@ namespace ItHunts.EditorTools
             box.isTrigger = true;
             box.size = new Vector3(2f * hx, top - bottom, w);
             water.AddComponent<DeepWater>().Configure(_waterDamage, w / 2f + 1.5f, y + 0.1f - water.transform.position.y);
+            WaterSplash.Add(water, WaterSetup.Splash(), y - 1.2f);
             water.AddComponent<NotWalkable>();
 
             // Ponts au niveau du sol : le grand dans l'axe du couloir nord (le traqueur passe), un petit sur le côté.

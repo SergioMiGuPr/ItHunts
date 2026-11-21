@@ -1405,6 +1405,7 @@ GameObject:
   - component: {fileID: 6654810}
   - component: {fileID: 6654809}
   - component: {fileID: 6654808}
+  - component: {fileID: 6654811}
   m_Layer: 0
   m_Name: 'B1 : eau profonde (vide)'
   m_TagString: Untagged
@@ -1475,6 +1476,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 56, y: 3.1999998, z: 6}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6654811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6654806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8583f6c62ad11c542a8184819bc11e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.WaterSplash
+  prefab: {fileID: 7679130886985727842, guid: 80a328373a6da86478891c4a3dbec489, type: 3}
+  surfaceY: NaN
+  interval: 0.15
 --- !u!1001 &7168521
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15892,7 +15908,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 60719638}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -15909,7 +15925,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbfd9da3bafb14e43a6e093205406fa9, type: 2}
+  - {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -63105,7 +63121,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 239899231}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -63122,7 +63138,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbfd9da3bafb14e43a6e093205406fa9, type: 2}
+  - {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -128913,6 +128929,7 @@ GameObject:
   - component: {fileID: 481208719}
   - component: {fileID: 481208718}
   - component: {fileID: 481208717}
+  - component: {fileID: 481208720}
   m_Layer: 0
   m_Name: 'F6 : eau profonde (vide)'
   m_TagString: Untagged
@@ -128983,6 +129000,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 56, y: 3.2, z: 6}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &481208720
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 481208715}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8583f6c62ad11c542a8184819bc11e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.WaterSplash
+  prefab: {fileID: 7679130886985727842, guid: 80a328373a6da86478891c4a3dbec489, type: 3}
+  surfaceY: NaN
+  interval: 0.15
 --- !u!1001 &481423349
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -174251,6 +174283,7 @@ GameObject:
   - component: {fileID: 635285106}
   - component: {fileID: 635285105}
   - component: {fileID: 635285104}
+  - component: {fileID: 635285107}
   m_Layer: 0
   m_Name: 'G4 : eau profonde (vide)'
   m_TagString: Untagged
@@ -174321,6 +174354,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 56, y: 3.2, z: 6}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &635285107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635285102}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8583f6c62ad11c542a8184819bc11e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.WaterSplash
+  prefab: {fileID: 7679130886985727842, guid: 80a328373a6da86478891c4a3dbec489, type: 3}
+  surfaceY: NaN
+  interval: 0.15
 --- !u!1 &636129262
 GameObject:
   m_ObjectHideFlags: 0
@@ -242881,7 +242929,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 892886725}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -242898,7 +242946,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbfd9da3bafb14e43a6e093205406fa9, type: 2}
+  - {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -297590,7 +297638,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1104429738}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -297607,7 +297655,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbfd9da3bafb14e43a6e093205406fa9, type: 2}
+  - {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -302576,7 +302624,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1124421838}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -302593,7 +302641,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbfd9da3bafb14e43a6e093205406fa9, type: 2}
+  - {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -353691,6 +353739,7 @@ GameObject:
   - component: {fileID: 1314795189}
   - component: {fileID: 1314795188}
   - component: {fileID: 1314795187}
+  - component: {fileID: 1314795190}
   m_Layer: 0
   m_Name: 'B5 : eau profonde (vide)'
   m_TagString: Untagged
@@ -353761,6 +353810,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 56, y: 3.2, z: 6}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1314795190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1314795185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8583f6c62ad11c542a8184819bc11e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.WaterSplash
+  prefab: {fileID: 7679130886985727842, guid: 80a328373a6da86478891c4a3dbec489, type: 3}
+  surfaceY: NaN
+  interval: 0.15
 --- !u!1001 &1315059248
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -407297,7 +407361,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1506329971}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -407314,7 +407378,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbfd9da3bafb14e43a6e093205406fa9, type: 2}
+  - {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -450311,6 +450375,7 @@ GameObject:
   - component: {fileID: 1659880043}
   - component: {fileID: 1659880042}
   - component: {fileID: 1659880041}
+  - component: {fileID: 1659880044}
   m_Layer: 0
   m_Name: 'C1 : eau profonde (vide)'
   m_TagString: Untagged
@@ -450381,6 +450446,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 56, y: 3.2, z: 6}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1659880044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659880039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8583f6c62ad11c542a8184819bc11e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.WaterSplash
+  prefab: {fileID: 7679130886985727842, guid: 80a328373a6da86478891c4a3dbec489, type: 3}
+  surfaceY: NaN
+  interval: 0.15
 --- !u!1 &1660518710
 GameObject:
   m_ObjectHideFlags: 0
@@ -477884,6 +477964,7 @@ GameObject:
   - component: {fileID: 1750974812}
   - component: {fileID: 1750974811}
   - component: {fileID: 1750974810}
+  - component: {fileID: 1750974813}
   m_Layer: 0
   m_Name: 'E5 : eau profonde (vide)'
   m_TagString: Untagged
@@ -477954,6 +478035,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 56, y: 3.1999998, z: 6}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1750974813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1750974808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8583f6c62ad11c542a8184819bc11e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.WaterSplash
+  prefab: {fileID: 7679130886985727842, guid: 80a328373a6da86478891c4a3dbec489, type: 3}
+  surfaceY: NaN
+  interval: 0.15
 --- !u!1 &1751220104
 GameObject:
   m_ObjectHideFlags: 0
@@ -536660,7 +536756,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1968025342}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -536677,7 +536773,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dbfd9da3bafb14e43a6e093205406fa9, type: 2}
+  - {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -547896,6 +547992,7 @@ GameObject:
   - component: {fileID: 2010916870}
   - component: {fileID: 2010916869}
   - component: {fileID: 2010916868}
+  - component: {fileID: 2010916871}
   m_Layer: 0
   m_Name: 'F1 : eau profonde (vide)'
   m_TagString: Untagged
@@ -547966,6 +548063,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 56, y: 3.2, z: 6}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2010916871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2010916866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8583f6c62ad11c542a8184819bc11e5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.WaterSplash
+  prefab: {fileID: 7679130886985727842, guid: 80a328373a6da86478891c4a3dbec489, type: 3}
+  surfaceY: NaN
+  interval: 0.15
 --- !u!1 &2010948629
 GameObject:
   m_ObjectHideFlags: 0

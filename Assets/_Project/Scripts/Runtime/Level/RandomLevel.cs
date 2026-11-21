@@ -37,6 +37,11 @@ namespace ItHunts.Level
         [SerializeField] private GameObject annex;
         [SerializeField] private GameObject lockedAnnex;
         [SerializeField] private Material water;
+        [Tooltip("Éclaboussure de la DA (VFX_Eau_Eclaboussure, PR #24).")]
+        [SerializeField] private GameObject waterSplash;
+
+        /// <summary>Éclaboussure posée sur les eaux construites (canal, fosse).</summary>
+        public static GameObject Splash { get; set; }
         [Tooltip("Matériau des surfaces non magnétiques (galeries de parcours, passages en hauteur).")]
         [SerializeField] private Material nonMagnetic;
         [Tooltip("Réglages de mouvement du joueur : les écarts des parcours sont calculés depuis ses capacités (sans traction).")]
@@ -283,6 +288,7 @@ namespace ItHunts.Level
             RoomModule mod = r.Module >= 0 ? _modules[r.Module] : null;
 
             // Sol (canal, fosse, bloc plein pour le niveau haut, dalle), plafond.
+            Splash = waterSplash;
             BuildFloor(parent, r, mod, settings, kit, water);
             KitBuild.Box(parent, "Plafond", new Vector3(c.x, top + 0.5f, c.z), new Vector3(2f * hx + 2f * T, 1f, 2f * hz + 2f * T), KitBuild.Kind.Sol, kit, walkable: false);
 
@@ -423,6 +429,7 @@ namespace ItHunts.Level
             box.isTrigger = true;
             box.size = new Vector3(2f * hx, topW - bottom, w);
             wet.AddComponent<DeepWater>().Configure(settings.waterDamage, w * 0.5f + 1.5f, y + 0.1f - wet.transform.position.y);
+            WaterSplash.Add(wet, Splash, y - 1.2f);
             wet.AddComponent<NotWalkable>();
             KitBuild.Box(parent, "Pont du canal (grand)", new Vector3(c.x, y - 0.5f, c.z + zc), new Vector3(settings.corridorWidth, 1f, w + 2f), KitBuild.Kind.Sol, null);
             KitBuild.Box(parent, "Pont du canal (petit)", new Vector3(c.x + hx * 0.65f, y - 0.5f, c.z + zc), new Vector3(4f, 1f, w + 2f), KitBuild.Kind.Sol, null);
@@ -491,6 +498,7 @@ namespace ItHunts.Level
             }
 
             trig.AddComponent<FallVoid>().Configure(settings.waterDamage, respawns.ToArray());
+            WaterSplash.Add(trig, Splash, bottom + pool);
             trig.AddComponent<NotWalkable>();
         }
 

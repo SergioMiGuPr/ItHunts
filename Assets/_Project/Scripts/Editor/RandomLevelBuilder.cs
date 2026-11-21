@@ -269,7 +269,7 @@ namespace ItHunts.EditorTools
             GameObject annex = AnnexPrefab(kit, false);
             GameObject locked = AnnexPrefab(kit, true);
             KitBuild.Spawner = (prefab, parent) => Object.Instantiate(prefab, parent, false);
-            var water = UnlitMat("Level_Water", "Universal Render Pipeline/Unlit", new Color(0.12f, 0.42f, 0.5f));   // lisible au fond des vides (animations, point 6)
+            var water = WaterSetup.Water();                                // eau de la DA (PR #24), sinon greybox
             var zoneSettings = LoadOrCreate<ZoneSettings>(Level01ZonePath);
 
             // Gestion de la zone (comme FinishScene, sans la carte : elle est tirée au chargement).
@@ -342,6 +342,7 @@ namespace ItHunts.EditorTools
             SetRef(gen, "annex", annex);
             SetRef(gen, "lockedAnnex", locked);
             SetRef(gen, "water", water);
+            SetRef(gen, "waterSplash", WaterSetup.Splash());
             SetRef(gen, "nonMagnetic", NonMagneticMat());
             SetRef(gen, "movement", AssetDatabase.LoadAssetAtPath<ItHunts.Settings.MovementSettings>(SettingsDir + "/Movement_Default.asset"));   // écarts des parcours
             SetRef(gen, "zoneNav", nav);
