@@ -249,5 +249,33 @@ namespace ItHunts.Tests
             var hud = UnityEditor.AssetDatabase.LoadAssetAtPath<ItHunts.Settings.HudSettings>("Assets/_Project/Settings/Hud_Default.asset");
             Assert.That(hud.showAmmoRow, Is.False, "recharge de tir retirée du HUD");
         }
+
+        [Test]
+        public void SonsDuJeu_DeLaDA_TousBranches()
+        {
+            var s = ItHunts.Audio.GameAudio.Settings;
+            Assert.That(s, Is.Not.Null, "Resources/GameAudio_Default");
+            foreach (var f in typeof(ItHunts.Settings.GameAudioSettings).GetFields())
+            {
+                object v = f.GetValue(s);
+                if (f.FieldType == typeof(AudioClip))
+                    Assert.That(v, Is.Not.Null, f.Name);
+                else if (f.FieldType == typeof(AudioClip[]))
+                    Assert.That(((AudioClip[])v).Length >= 2 && System.Array.TrueForAll((AudioClip[])v, c => c != null), Is.True, f.Name + " : 2 variantes");
+            }
+
+            float effects = GameSettings.EffectsVolume, music = GameSettings.MusicVolume;
+            try
+            {
+                GameSettings.EffectsVolume = 0.5f;
+                GameSettings.MusicVolume = 0.8f;
+                Assert.That(GameSettings.MusicGain, Is.EqualTo(1.6f).Within(1e-3f), "la musique suit son réglage, pas celui des effets");
+            }
+            finally
+            {
+                GameSettings.EffectsVolume = effects;
+                GameSettings.MusicVolume = music;
+            }
+        }
     }
 }

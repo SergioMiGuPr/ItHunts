@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e6471d34466dce40ba727e6ef4528dd, type: 3}
+  m_Name: GameAudio_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.GameAudioSettings
+  stalkerSteps: {fileID: 8300000, guid: cc0ea23c0757f784aad2d690a5d2e9cb, type: 3}
+  stalkerBreath: {fileID: 8300000, guid: 76e6ff87879698f48ae66def8dd5f334, type: 3}
+  stalkerGrowl: {fileID: 8300000, guid: fb7285b402ddc344f8be9c47222524e7, type: 3}
+  stalkerEnragedCries:
+  - {fileID: 8300000, guid: fce4ccaeddeca4144ad75af4a1a1630d, type: 3}
+  - {fileID: 8300000, guid: 7c206ff2b20cd974585ec7b8e0609946, type: 3}
+  stalkerGrabCry: {fileID: 8300000, guid: 002b2c005b1ee3e4e8f15372602114a6, type: 3}
+  stalkerStepsVolume: 0.9
+  stalkerCryVolume: 1
+  ghoulAlert: {fileID: 8300000, guid: fe6f563a085c99a469f1c2e07e2ff0e3, type: 3}
+  ghoulAttacks:
+  - {fileID: 8300000, guid: f0e2ba36993e8d84898b7a1fb5491bdb, type: 3}
+  - {fileID: 8300000, guid: 4e93e08c42791d543a76ffcc30ae15cf, type: 3}
+  ghoulDeath: {fileID: 8300000, guid: 4d4ae6157330d4a489026834bfe1b769, type: 3}
+  ghoulVolume: 0.85
+  flyerCry: {fileID: 8300000, guid: 31a500231deba2746b255c0f58d50b4f, type: 3}
+  flyerWings: {fileID: 8300000, guid: 07d6c5fba41e08e41bbfd60e81ee5a2a, type: 3}
+  flyerDeath: {fileID: 8300000, guid: b39f4a03f62437b4588a28342b393fd2, type: 3}
+  flyerVolume: 0.8
+  flyerWingsVolume: 0.45
+  barrelShots:
+  - {fileID: 8300000, guid: 8ef364951d4ea2d4494103cd9910854c, type: 3}
+  - {fileID: 8300000, guid: ad5a6d33b1a96e442873a8f9ea918778, type: 3}
+  barrelReload: {fileID: 8300000, guid: 72c7542c9bceab34eaa40276ffd209d4, type: 3}
+  lanternJetStart: {fileID: 8300000, guid: ca4c1bad84b93634299a6b8826a886d9, type: 3}
+  lanternJetLoop: {fileID: 8300000, guid: 6b6d692c7473f7e49a1914abe6a1381c, type: 3}
+  lanternLoopFade: 0.15
+  musicExploration: {fileID: 8300000, guid: 7e994400e0f3bbb4fadf34ff13277c9e, type: 3}
+  musicEnraged: {fileID: 8300000, guid: d7d43d87a5b951e4c9d0df7a8fb3a954, type: 3}
+  musicVolume: 0.5
+  musicCrossfade: 2.5
+  pitchVariation: 0.06
+  creatureRange: 40

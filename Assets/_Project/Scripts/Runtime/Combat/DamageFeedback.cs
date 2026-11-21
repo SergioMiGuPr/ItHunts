@@ -365,7 +365,13 @@ namespace ItHunts.Combat
             Play(_hit, e.Point, settings.hitVolume * Mathf.Lerp(0.5f, 1f, Mathf.InverseLerp(0f, 60f, e.Damage)),
                 Mathf.Lerp(settings.hitPitchLight, settings.hitPitchHeavy, heavy));
             if (e.Killed)
+            {
+                // Mort d'une goule : son de la DA (PR #20) en plus du coup final ; le volant joue le sien en éclatant.
+                var art = GameAudio.Settings;
+                if (art != null && art.ghoulDeath != null && e.Target != null && e.Target.GetComponent<ItHunts.Enemies.Ghoul>() != null)
+                    GameAudio.PlayAt(art.ghoulDeath, e.Point, art.ghoulVolume);
                 Play(_kill, e.Point, settings.killVolume, 1f);
+            }
         }
 
         private void UpdateRings()

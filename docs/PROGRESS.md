@@ -40,6 +40,12 @@
   fosse), taille 1.2 par mètre (0.4 à 8). Profondeur et texture opaque déjà actives dans `PC_RPAsset`. Capture :
   `docs/design/features/eau/canal_level01.jpg`. Remarque DA : `M_Campement_Assis_2.mat` est modifié sur disque pendant le
   Play Mode du menu (contraste, luminosité) : remis tel quel, à voir côté `CampementApercu`.
+- **6. Sons de la DA (PR #20).** `GameAudioSettings` (`Resources/GameAudio_Default`, 20 sons), `GameAudio` (variante au hasard,
+  hauteur ±6 %, son 3D ponctuel ; repli `ProceduralSfx` si un son manque). Traqueur : pas (boucle selon la vitesse, tremblement à
+  chaque pas comme avant), souffle, grognement, cri d'enragé au hasard, cri à la prise ; goule : alerte, 2 attaques au hasard,
+  mort ; volant : cri, ailes en boucle 3D, mort ; barillet : 2 tirs en alternance, recharge ; lanterne : début puis boucle
+  pendant le jet (fondu de fin). Musique en jeu : exploration en boucle, fondu croisé (2.5 s) vers la musique Enragé, retour.
+  Volumes : l'écouteur porte volume général × effets ; les musiques (menu, jeu) multiplient par `GameSettings.MusicGain`.
 
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;

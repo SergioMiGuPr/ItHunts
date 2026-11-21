@@ -532,13 +532,13 @@ namespace ItHunts.Level
         {
             if (_music == null)
                 return;
-            _music.volume = (skin != null ? skin.musicVolume : 0.3f) * GameSettings.MusicVolume;
+            _music.volume = (skin != null ? skin.musicVolume : 0.3f) * GameSettings.MusicGain;   // l'écouteur porte les effets
             if (_fire == null)
                 return;
             // Le feu monte quand le campement apparaît sous la brume, et redescend vers le titre.
             float target = _showCamp ? 1f : skin.fireOnTitle;
             _fireLevel = Mathf.MoveTowards(_fireLevel, target, Time.unscaledDeltaTime / Mathf.Max(0.05f, skin.fireFadeSeconds));
-            _fire.volume = skin.fireVolume * GameSettings.EffectsVolume * _fireLevel;
+            _fire.volume = skin.fireVolume * _fireLevel;                                      // effets : sur l'écouteur
             var gain = _fire.GetComponent<ItHunts.Audio.AudioGain>();
             if (gain != null)
                 gain.gainDb = skin.fireGainDb;

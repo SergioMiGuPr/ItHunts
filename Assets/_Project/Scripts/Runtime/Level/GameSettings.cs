@@ -48,10 +48,16 @@ namespace ItHunts.Level
             Apply();
         }
 
-        /// <summary>Volume général sur l'écouteur ; prévient les sources (musique, feu).</summary>
+        /// <summary>
+        /// Gain des musiques : l'écouteur porte le volume général × les effets (tous les sons du jeu) ; une musique multiplie son
+        /// volume par ce gain pour suivre le réglage « Musique » au lieu des effets (plafonné par le volume 1 de la source).
+        /// </summary>
+        public static float MusicGain => MusicVolume / Mathf.Max(0.05f, EffectsVolume);
+
+        /// <summary>Volume général × effets sur l'écouteur ; prévient les sources (musique, feu).</summary>
         public static void Apply()
         {
-            AudioListener.volume = MasterVolume;
+            AudioListener.volume = MasterVolume * EffectsVolume;
             Changed?.Invoke();
         }
 

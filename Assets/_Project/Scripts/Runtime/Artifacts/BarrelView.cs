@@ -65,7 +65,7 @@ namespace ItHunts.Artifacts
                 _view.PreviewRecoil();
             BarrelSettings cfg = _holder != null ? _holder.BarrelSettings : null;
             if (cfg != null)
-                _audio.PlayOneShot(_shot, cfg.shotVolume);
+                PlayShot(cfg.shotVolume);
         }
 
         /// <summary>Mesures : angle affiché du barillet (Z local, degrés) et nombre de chambres allumées.</summary>
@@ -201,13 +201,13 @@ namespace ItHunts.Artifacts
                     impact.enabled = shot.Kind != BarrelHitKind.Rien;
                 }
 
-                _audio.PlayOneShot(_shot, cfg.shotVolume);
+                PlayShot(cfg.shotVolume);
             }
 
             if (b.Reloading && b.ReloadStartTick != _seenReloadStart)
             {
                 _seenReloadStart = b.ReloadStartTick;
-                _audio.PlayOneShot(_reloadStart, cfg.reloadVolume);
+                ItHunts.Audio.GameAudio.PlayOn(_audio, ItHunts.Audio.GameAudio.Settings != null ? ItHunts.Audio.GameAudio.Settings.barrelReload : null, _reloadStart, cfg.reloadVolume);
             }
 
             if (b.LastReloadDoneTick != MovementState.NeverTick && b.LastReloadDoneTick != _seenReloadDone)
@@ -258,6 +258,17 @@ namespace ItHunts.Artifacts
             float progress = Barrel.ReloadProgress(b, tick, cfg, Time.fixedDeltaTime);
             int lit = BarrelModel.Lit(b.Rounds, b.Reloading, progress);
             ShownLit = ApplyModel(cylinder, chambers, _chamberBlock, ShownAngle, b.ShotCount + _previewShots, _previewShots > 0 ? BarrelModel.Chambers : lit, b.Inactive, cfg);
+        }
+
+        private int _shotVariant;
+
+        /// <summary>Tir : les deux variantes de la DA en alternance (PR #20), hauteur variée ; sinon le tir provisoire.</summary>
+        private void PlayShot(float volume)
+        {
+            var art = ItHunts.Audio.GameAudio.Settings;
+            AudioClip clip = art != null && art.barrelShots != null && art.barrelShots.Length > 0
+                ? art.barrelShots[_shotVariant++ % art.barrelShots.Length] : null;
+            ItHunts.Audio.GameAudio.PlayOn(_audio, clip, _shot, volume);
         }
     }
 }

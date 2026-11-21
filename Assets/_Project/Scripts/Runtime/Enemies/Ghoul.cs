@@ -674,8 +674,8 @@ namespace ItHunts.Enemies
                 WallLeaps++;
             _wallLeap = fromWall;
             _assault = false;
-            if (_hiss != null)
-                _audio.PlayOneShot(_hiss, 0.8f);
+            var art = ItHunts.Audio.GameAudio.Settings;                 // alerte de la DA (PR #20), sinon sifflement provisoire
+            ItHunts.Audio.GameAudio.PlayOn(_audio, art != null ? art.ghoulAlert : null, _hiss, art != null && art.ghoulAlert != null ? art.ghoulVolume : 0.8f);
             return true;
         }
 
@@ -787,6 +787,7 @@ namespace ItHunts.Enemies
                         continue;
                     _leapHit = true;
                     LeapHits++;
+                    AttackSound();
                     if (ItHunts.Player.PlayerParry.TryParry(p, this, now, p.Center))
                     {
                         Parried++;                                     // paré (D-075) : ni dégâts ni poussée, elle est étourdie
@@ -1244,11 +1245,20 @@ namespace ItHunts.Enemies
                 _strikeAt = now;
                 _strikeTarget = p;
                 Strikes++;
+                AttackSound();
                 _nextContact = now + settings.contactInterval;
                 if (settings.contactImpactDelay <= 0f)
                     ContactDamage(now);
                 break;
             }
+        }
+
+        /// <summary>Coup ou bond qui touche : une variante d'attaque de la DA au hasard (PR #20).</summary>
+        private void AttackSound()
+        {
+            var art = ItHunts.Audio.GameAudio.Settings;
+            if (art != null && _audio != null)
+                ItHunts.Audio.GameAudio.PlayOn(_audio, ItHunts.Audio.GameAudio.Pick(art.ghoulAttacks), null, art.ghoulVolume);
         }
 
         private float Gap(PlayerHealth p)

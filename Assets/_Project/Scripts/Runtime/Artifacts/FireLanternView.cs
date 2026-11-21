@@ -59,6 +59,7 @@ namespace ItHunts.Artifacts
         private MaterialPropertyBlock _block, _glassBlock;
         private AudioSource _audio;
         private AudioClip _jet, _relight;
+        private AudioSource _loop;
         private float _jetClipFor = -1f;
         private int _seenJet;
         private bool _wasReady = true;
@@ -168,7 +169,34 @@ namespace ItHunts.Artifacts
                 }
 
                 if (s.Jetting)
-                    _audio.PlayOneShot(_jet, cfg.jetVolume);
+                {
+                    var art = ItHunts.Audio.GameAudio.Settings;          // début puis boucle de la DA (PR #20), sinon le jet provisoire
+                    ItHunts.Audio.GameAudio.PlayOn(_audio, art != null ? art.lanternJetStart : null, _jet, cfg.jetVolume);
+                    if (art != null && art.lanternJetLoop != null)
+                    {
+                        if (_loop == null)
+                        {
+                            _loop = gameObject.AddComponent<AudioSource>();
+                            _loop.playOnAwake = false;
+                            _loop.spatialBlend = 0f;
+                            _loop.loop = true;
+                        }
+
+                        _loop.clip = art.lanternJetLoop;
+                        _loop.volume = cfg.jetVolume;
+                        if (!_loop.isPlaying)
+                            _loop.Play();
+                    }
+                }
+            }
+
+            // Boucle du jet : tant que le jet dure, puis fondu court.
+            if (_loop != null && _loop.isPlaying && !s.Jetting)
+            {
+                var a = ItHunts.Audio.GameAudio.Settings;
+                _loop.volume = Mathf.MoveTowards(_loop.volume, 0f, cfg.jetVolume * Time.deltaTime / Mathf.Max(0.01f, a != null ? a.lanternLoopFade : 0.15f));
+                if (_loop.volume <= 0.001f)
+                    _loop.Stop();
             }
 
             if (ready && !_wasReady && s.JetCount > 0)
