@@ -810,6 +810,29 @@ effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retir
 Les valeurs du § 0 (capsule Ø 7 × 14 m, épaule à 12 m, portée de main 15 m) décrivent l'ancien traqueur étiré par le code ;
 avec la v4 sans étirement, la portée réelle de la main est celle du tableau ci-dessus (à reporter dans `Stalker_Default` par `main`).
 
+## Clips du traqueur v4 (PR `art-traqueur-anim-*`, 2026-11-21)
+
+FBX : `Assets/Art/Animations/Traqueur_v4/<clip>.fbx`, une armature seule par fichier, en rig **générique**.
+- L'avatar est copié de `SK_Traqueur_v4`, et le nœud du root motion est `Traqueur/Racine` (il est réglé sur le modèle et sur chaque clip).
+- 30 i/s, une clé par image, sans compression.
+- Le clip prend le nom `Traqueur_<Action>`.
+- Avancée vers +Z du modèle.
+
+Les clés ne portent que sur les rotations, plus la position de `Racine` et de `Bassin` : aucune échelle d'os n'est modifiée.
+
+Contrôles, vidéos côte à côte et planches : `docs/art/rendus/Traqueur/v4/anim/` (`ANIMATIONS.md`).
+
+| Clip | Durée | Boucle | Root motion | Instants clés | Vitesse réelle du cycle |
+|---|---|---|---|---|---|
+| `Traqueur_Repos` | 3.2 s | oui | non | inspiration au plus haut à 1.8 s | 0 |
+| `Traqueur_Marche_A` | 5.5 s | oui | **oui** (7.0 m par cycle) | appuis : main D 0.55 s, pied G 2.42 s, main G 3.36 s, pied D 5.0 s | **1.27 m/s** |
+| `Traqueur_Marche_B` | 5.5 s | oui | **oui** (7.0 m par cycle) | appuis : main G 0.55 s, pied D 2.42 s, main D 3.36 s, pied G 5.0 s | **1.27 m/s** |
+| `Traqueur_CourseEnragee_A` | 2.6 s | oui | **oui** | appuis main D 0 / 1.3 s, pied G 0.2 / 1.5 s, main G 0.65 / 1.95 s, pied D 0.85 / 2.15 s ; **frappes au mur** (murs à 7 m de l'axe) : main G 0.25 s, main D 0.9 s et 2.2 s | **11 m/s** |
+| `Traqueur_CourseEnragee_B` | 3.9 s | oui | **oui**, avec un écart latéral de 2.2 m qui revient à 0 | mêmes appuis que A ; main D plaquée au mur droit 0.9 s, frappe droite 2.2 s, main G au mur gauche 2.9 s | **11 m/s** |
+| `Traqueur_CourseEnragee_C` | 2.0 s | oui | **oui** | sur deux jambes : pied G 0 / 1.0 s, pied D 0.5 / 1.5 s ; frappes : main D 0.6 s, main G 1.6 s | **9 m/s** |
+
+Pour jouer la marche à une autre vitesse sans glissement, il faut multiplier la vitesse de lecture par (vitesse voulue / 1.27). Sinon, utiliser le root motion.
+
 ## Traqueur v4 dans le jeu (main, matin du 2026-11-21, D-080, D-081)
 
 | Élément | Valeur | Remarque |
