@@ -1,0 +1,164 @@
+{
+ "reglages": [
+  {
+   "perso": "Renard",
+   "place": 1,
+   "lum": 0.687,
+   "sat": 0.3389,
+   "douceur": 0.5,
+   "lanterneLum": 1.2041,
+   "lanterneSat": 1.3091,
+   "detail": 1.0
+  },
+  {
+   "perso": "Renard",
+   "place": 2,
+   "lum": 0.9847,
+   "sat": 0.4689,
+   "douceur": 0.5,
+   "lanterneLum": 0.7412,
+   "lanterneSat": 0.5946,
+   "detail": 1.0
+  },
+  {
+   "perso": "Renard",
+   "place": 3,
+   "lum": 2.1805,
+   "sat": 0.7319,
+   "douceur": 0.5,
+   "lanterneLum": 0.6166,
+   "lanterneSat": 0.8559,
+   "detail": 1.0
+  },
+  {
+   "perso": "Renard",
+   "place": 4,
+   "lum": 1.5006,
+   "sat": 0.6631,
+   "douceur": 0.5,
+   "lanterneLum": 0.4343,
+   "lanterneSat": 0.6408,
+   "detail": 1.0
+  },
+  {
+   "perso": "Koala",
+   "place": 1,
+   "lum": 0.5619,
+   "sat": 0.6034,
+   "douceur": 0.5,
+   "lanterneLum": 1.2485,
+   "lanterneSat": 2.0,
+   "detail": 1.0
+  },
+  {
+   "perso": "Koala",
+   "place": 2,
+   "lum": 0.806,
+   "sat": 0.7732,
+   "douceur": 0.5,
+   "lanterneLum": 0.8605,
+   "lanterneSat": 1.2969,
+   "detail": 1.0
+  },
+  {
+   "perso": "Koala",
+   "place": 3,
+   "lum": 1.0308,
+   "sat": 1.0404,
+   "douceur": 0.5,
+   "lanterneLum": 0.2,
+   "lanterneSat": 2.0,
+   "detail": 1.0
+  },
+  {
+   "perso": "Koala",
+   "place": 4,
+   "lum": 0.8838,
+   "sat": 1.0007,
+   "douceur": 0.5,
+   "lanterneLum": 0.4674,
+   "lanterneSat": 0.9074,
+   "detail": 1.0
+  },
+  {
+   "perso": "Cameleon",
+   "place": 1,
+   "lum": 0.4107,
+   "sat": 0.3883,
+   "douceur": 0.5,
+   "lanterneLum": 1.0454,
+   "lanterneSat": 1.4591,
+   "detail": 1.0
+  },
+  {
+   "perso": "Cameleon",
+   "place": 2,
+   "lum": 0.6771,
+   "sat": 0.5599,
+   "douceur": 0.5,
+   "lanterneLum": 0.6619,
+   "lanterneSat": 0.7588,
+   "detail": 1.0
+  },
+  {
+   "perso": "Cameleon",
+   "place": 3,
+   "lum": 1.2761,
+   "sat": 0.7397,
+   "douceur": 0.5,
+   "lanterneLum": 0.5476,
+   "lanterneSat": 0.924,
+   "detail": 1.0
+  },
+  {
+   "perso": "Cameleon",
+   "place": 4,
+   "lum": 0.8797,
+   "sat": 0.6827,
+   "douceur": 0.5,
+   "lanterneLum": 0.3863,
+   "lanterneSat": 0.6979,
+   "detail": 1.0
+  },
+  {
+   "perso": "Hibou",
+   "place": 1,
+   "lum": 0.9246,
+   "sat": 0.5317,
+   "douceur": 0.5,
+   "lanterneLum": 0.9552,
+   "lanterneSat": 2.0,
+   "detail": 1.0
+  },
+  {
+   "perso": "Hibou",
+   "place": 2,
+   "lum": 1.4506,
+   "sat": 0.704,
+   "douceur": 0.5,
+   "lanterneLum": 0.7491,
+   "lanterneSat": 1.0361,
+   "detail": 1.0
+  },
+  {
+   "perso": "Hibou",
+   "place": 3,
+   "lum": 1.7693,
+   "sat": 1.016,
+   "douceur": 0.5,
+   "lanterneLum": 0.62,
+   "lanterneSat": 1.3935,
+   "detail": 1.0
+  },
+  {
+   "perso": "Hibou",
+   "place": 4,
+   "lum": 1.5647,
+   "sat": 0.9547,
+   "douceur": 0.5,
+   "lanterneLum": 0.3606,
+   "lanterneSat": 0.8349,
+   "detail": 1.0
+  }
+ ]
+}

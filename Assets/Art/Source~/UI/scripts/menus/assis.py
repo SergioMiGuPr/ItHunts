@@ -10,6 +10,7 @@ import json, os, sys
 import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import reg
+from reg import blur, erode, fill_holes, keep_large, smoothstep
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../../.."))
 UI = os.path.join(ROOT, "docs/art/ui")
@@ -165,33 +166,158 @@ def grade(F, a, st, scale_px):
     fire = np.array([1.0, 0.55, 0.22]); moon = np.array([0.55, 0.65, 1.0])
     # le liseré du feu est maintenant dans le shader (côté du feu selon la place, palpite avec le feu) : seul le liseré
     # froid de la lune reste peint
-    Fg = Fg + rr[..., None] * fire * 0.0 + tt[..., None] * moon * 0.10
+    Fg = Fg + rr[..., None] * fire * 0.0 + tt[..., None] * moon * 0.0   # plus de liseré peint (2026-11-22)
     return np.clip(Fg, 0, 1)
 
 
-def detoure(rgba, erosion=1):
-    """Détourage propre d'un sprite réduit (alpha droit) : la couleur des bords est remplacée par celle de l'intérieur
-    (plus de liseré clair du fond gris), puis l'alpha est rongé de `erosion` px (minimum 3 x 3) et légèrement resserré."""
+def detoure(rgba, erosion=0):
+    """Détourage propre d'un sprite réduit (alpha droit), lot du 2026-11-22 :
+    - taches isolées et petits trous retirés ;
+    - contour lissé puis anticrénelé : alpha = seuil doux (1 px) du masque flouté, ce qui arrondit les marches d'escalier
+      (découpe droite de la caisse, bas de la cape) sans ronger les mèches ;
+    - couleurs du bord décontaminées : tout pixel du bord (alpha < 1 ou à 1 px du contour) prend la couleur de l'intérieur
+      voisin (plus aucun liseré clair ni orange venu du fond gris de l'image source) ; l'encre intérieure reste."""
     a = rgba[..., 3]
     rgb = rgba[..., :3].copy()
-    inner = reg.erode((a > 0.97).astype(np.float32), 2) > 0.5
+    m = a > 0.5
+    m = keep_large(m, 400)
+    trous = fill_holes(m) & ~m
+    m = m | (trous & ~keep_large(trous, 40))
+    for _ in range(int(erosion)):
+        m = erode(m.astype(np.float32), 1) > 0.5
+    # contour : flou puis seuil doux, transition d'environ 1 px
+    b = blur(m.astype(np.float32), 0.9)
+    an = smoothstep(0.32, 0.68, b)
+    # intérieur sûr : opaque dans la source et à plus de 1 px du contour
+    inner = (erode(m.astype(np.float32), 1) > 0.5) & (a > 0.97)
     w = inner.astype(np.float32)
     acc = rgb * w[..., None]
     known = w.copy()
-    # propagation des couleurs intérieures vers le bord (moyenne des voisins connus, 6 pas)
     for _ in range(6):
-        s = reg.blur(acc, 1.0); n = reg.blur(known, 1.0)
+        s = blur(acc, 1.0); n = blur(known, 1.0)
         fill = (known < 0.5) & (n > 1e-3)
         acc[fill] = s[fill] / n[fill, None]
         known = np.where(fill, 1.0, known)
-    prop = np.where(known[..., None] > 0.5, acc, rgb)
-    # seuls les bords plus clairs que l'intérieur voisin sont du fond gris : l'encre (sombre) reste
-    bord = (1 - w) * reg.smoothstep(0.0, 0.06, reg.gray(rgb) - reg.gray(prop))
-    rgb = rgb * (1 - bord[..., None]) + prop * bord[..., None]
-    for _ in range(int(erosion)):
-        a = reg.erode(a, 1)
-    a = np.clip((a - 0.2) / 0.8, 0, 1)
-    return np.concatenate([rgb, a[..., None]], -1)
+    rgb = np.where(inner[..., None], rgb, acc)
+    return np.concatenate([np.clip(rgb, 0, 1), an[..., None]], -1)
+
+
+def composantes(m):
+    """Étiquetage 4-connexe d'un masque binaire : (étiquettes, nombre)."""
+    lab = np.zeros(m.shape, np.int32)
+    H, W = m.shape
+    cur = 0
+    ys, xs = np.nonzero(m)
+    for y0, x0 in zip(ys, xs):
+        if lab[y0, x0]:
+            continue
+        cur += 1
+        stack = [(y0, x0)]; lab[y0, x0] = cur
+        while stack:
+            y, x = stack.pop()
+            for yy, xx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+                if 0 <= yy < H and 0 <= xx < W and m[yy, xx] and not lab[yy, xx]:
+                    lab[yy, xx] = cur; stack.append((yy, xx))
+    return lab, cur
+
+
+def extrait_lanterne(I, rect, marge=40):
+    """Lanterne seule (2026-11-22), délimitée par son contour encré : encre (sombre) -> trous bouchés -> les régions
+    intérieures peu saturées (caisse, sol, intérieur de l'anneau) redeviennent du fond, le verre teinté reste ; ouverture
+    morphologique pour couper les traits fins du décor qui touchent la lanterne (bords de la caisse), puis reconstruction
+    du contour près du corps de la lanterne. Rend l'alpha pleine image (doux, 1 px) et le rect (x0, y0, x1, y1)."""
+    H, W = I.shape[:2]
+    x0, y0, x1, y1 = rect
+    X0, Y0, X1, Y1 = max(x0 - marge, 0), max(y0 - marge, 0), min(x1 + marge, W), min(y1 + marge // 2, H)
+    X = I[Y0:Y1, X0:X1]
+    L = reg.gray(X)
+    S, V = reg.sat(X)
+    ink = reg.blur(L, 0.8) < 0.30
+    # fermeture : bouche les coupures du contour (reflets, lueur) avant de remplir
+    ink = reg.erode(reg.dilate(ink.astype(np.float32), 4), 4) > 0.5
+    solid = fill_holes(ink)
+    lab, n = composantes(solid & ~ink)
+    fond = ~solid
+    fond0 = fond.copy()
+    for k in range(1, n + 1):
+        c = lab == k
+        if S[c].mean() < 0.16:
+            fond |= c
+            continue
+        # trou de la couleur du fond voisin (intérieur de l'anneau éclairé par la lueur) : fond aussi
+        ys, xs = np.nonzero(c)
+        if len(ys) < 3000:
+            yy0, yy1, xx0, xx1 = max(ys.min() - 40, 0), ys.max() + 40, max(xs.min() - 40, 0), xs.max() + 40
+            voisin = fond0[yy0:yy1, xx0:xx1]
+            if voisin.sum() > 50:
+                d = np.abs(X[c].mean(0) - X[yy0:yy1, xx0:xx1][voisin].mean(0)).max()
+                if d < 0.12:
+                    fond |= c
+    m = ~fond
+    o = reg.dilate(reg.erode(m.astype(np.float32), 5), 5) > 0.5
+    lab2, n2 = composantes(o)
+    if n2:
+        tailles = np.bincount(lab2.ravel())[1:]
+        o = lab2 == (1 + int(np.argmax(tailles)))
+    m = m & (reg.dilate(o.astype(np.float32), 6) > 0.5)
+    # traits fins du décor encore accrochés (bord de la caisse) : ouverture fine
+    m = reg.dilate(reg.erode(m.astype(np.float32), 2), 2) > 0.5
+    # bornes : enveloppe convexe du corps de la lanterne (ouverture large : sans anneau ni traits), plus une colonne
+    # au-dessus pour l'anneau
+    big = reg.dilate(reg.erode(m.astype(np.float32), 9), 9) > 0.5
+    lab3, n3 = composantes(big)
+    if n3:
+        big = lab3 == (1 + int(np.argmax(np.bincount(lab3.ravel())[1:])))
+        ys, xs = np.nonzero(big)
+        hull = reg.convex_hull(np.stack([xs, ys], -1).astype(np.float64))
+        env = reg.poly_mask(m.shape[0], m.shape[1], hull, aa=0.0) > 0.5
+        env = reg.dilate(env.astype(np.float32), 5) > 0.5
+        cx, lw = (xs.min() + xs.max()) / 2.0, (xs.max() - xs.min())
+        col = np.zeros_like(env)
+        col[:ys.min() + 5, int(cx - 0.3 * lw):int(cx + 0.3 * lw) + 1] = True
+        m = m & (env | col)
+    a = np.zeros((H, W), np.float32)
+    a[Y0:Y1, X0:X1] = smoothstep(0.3, 0.7, reg.blur(m.astype(np.float32), 1.2))
+    ys, xs = np.nonzero(a > 0.02)
+    return a, (int(xs.min()) - 6, int(ys.min()) - 6, int(xs.max()) + 7, int(ys.max()) + 7)
+
+
+def _ouvre_vertical(m, r):
+    """Ouverture par un segment vertical de 2r+1 px : retire ce qui est plus mince que lui en hauteur."""
+    out = m.copy()
+    for d in range(1, r + 1):
+        out &= np.roll(m, d, 0) & np.roll(m, -d, 0)
+    res = out.copy()
+    for d in range(1, r + 1):
+        res |= np.roll(out, d, 0) | np.roll(out, -d, 0)
+    return res
+
+
+def retire_bandes_caisse(a, caisse, I, r=16):
+    """Restes de la caisse source (2026-11-22) : le dessus de la caisse laissait une fine bande claire horizontale de chaque
+    côté du personnage, à hauteur d'assise (lue comme une planche pâle sur la bûche). Dans le polygone de la caisse
+    (élargi) : les zones claires et peu saturées qui touchent l'extérieur et sont plus minces que 2r+1 px en hauteur
+    (pleine définition, ~9 px du sprite) sont retirées, puis les traits fins qui restent (encre des arêtes de la caisse).
+    Les parties claires cernées d'encre (spirale de la queue du caméléon) ne touchent pas l'extérieur : gardées."""
+    H, W = a.shape
+    P = reg.poly_mask(H, W, np.array(caisse, np.float64), aa=1.0) > 0.5
+    P = reg.dilate(P[::4, ::4].astype(np.float32), 5) > 0.5
+    P = np.repeat(np.repeat(P, 4, 0), 4, 1)[:H, :W]
+    m = a > 0.5
+    S, V = reg.sat(I)
+    clair = m & P & (V > 0.5) & (S < 0.3)
+    exterieur = reg.dilate((~m)[::2, ::2].astype(np.float32), 2) > 0.5
+    exterieur = np.repeat(np.repeat(exterieur, 2, 0), 2, 1)[:H, :W]
+    lab, n = composantes(clair[::2, ::2])
+    touche = np.unique(lab[exterieur[::2, ::2] & (lab > 0)])
+    clair_ext = np.isin(lab, touche[touche > 0])
+    clair_ext = np.repeat(np.repeat(clair_ext, 2, 0), 2, 1)[:H, :W] & clair
+    mince = clair_ext & ~_ouvre_vertical(clair_ext, r)
+    m2 = m & ~mince
+    # traits fins restants dans la caisse (arêtes encrées) : ouverture verticale courte
+    reste = m2 & P & ~_ouvre_vertical(m2, 9)
+    m2 &= ~reste
+    return np.where(m & ~m2, 0.0, a).astype(np.float32)
 
 
 def main():
@@ -225,10 +351,10 @@ def main():
         # la lanterne : séparée (posée au pied du personnage, à l'emplacement de la place)
         lx0, ly0, lx1, ly1 = p["lanterne"]
         lm = np.zeros((H, W), np.float32); lm[ly0:ly1, lx0:lx1] = 1
-        a_l = a * lm
-        big = reg.keep_large((a_l[::4, ::4] > 0.5), 300)
-        a_l = a_l * (reg.dilate(up(up(big, (H // 2 + 1, W // 2 + 1)), (H, W)).astype(np.float32), 3) > 0.5)
-        a_c = a * (1 - lm)
+        # lanterne délimitée par son contour encré (2026-11-22 : plus de morceaux de caisse ni de personnage, anneau gardé)
+        a_l, _ = extrait_lanterne(Ifull, p["lanterne"])
+        a_c = a * (1 - lm) * (1 - a_l)
+        a_c = retire_bandes_caisse(a_c, p["caisse"], Ifull)
         # couleur démêlée du gris
         F = reg.unmix(Ifull, Bf, a)
         # échelle (mi-définition pour la mesure)
@@ -252,7 +378,7 @@ def main():
             pre = np.concatenate([rgb[y0:y1, x0:x1] * alpha[y0:y1, x0:x1, None], alpha[y0:y1, x0:x1, None]], -1)
             small = reg.resize(pre, tw, th)
             rgba = np.concatenate([small[..., :3] / np.maximum(small[..., 3:], 1e-4), small[..., 3:]], -1)
-            rgba = detoure(rgba, erosion=0)
+            rgba = detoure(rgba)
             reg.save(os.path.join(OUT, "Campement_Assis_%s%s.png" % (name, suffix)), np.clip(rgba, 0, 1), "RGBA")
             info[part] = {"rect_image": [x0, y0, x1 - x0, y1 - y0], "taille_sprite": [tw, th]}
         info["capuche_image"] = p["capuche"]
