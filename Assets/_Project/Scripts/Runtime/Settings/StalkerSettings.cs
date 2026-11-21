@@ -52,6 +52,12 @@ namespace ItHunts.Settings
         [Tooltip("Coop : il change de cible (le joueur le plus proche par le chemin) au plus une fois par intervalle (s).")]
         [Min(0f)] public float retargetInterval = 5f;
 
+        [Header("Chaînes d'os à ressort (traqueur v4 : prévu, pas activé, D-070 inchangé)")]
+        [Tooltip("Active les chaînes d'os (cheveux, chaînes, lambeaux) du modèle v4 quand il sera validé.")]
+        public bool boneChainsEnabled;
+        [Tooltip("Réglages des chaînes d'os du modèle v4 (raideur, amortissement, gravité, inertie, rayon de collision).")]
+        public BoneSpringSettings boneChains = BoneSpringSettings.Default;
+
         [Header("Se baisser (D-035)")]
         [Tooltip("Hauteur minimale de passage (m) : sous un pont, une poutre ou un passage plus bas que lui, il se baisse ; " +
                  "plus bas que ça, il ne passe pas.")]
