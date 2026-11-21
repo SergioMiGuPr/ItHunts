@@ -9,11 +9,17 @@
       "Bash(rm -fr *)",
       "Bash(git push --force*)",
       "Bash(git reset --hard*)",
-      "Bash(git clean -f*)",
       "Read(**/.env*)",
       "Edit(**/.env*)",
       "Edit(Library/**)",
-      "Edit(Temp/**)"
+      "Edit(Temp/**)",
+      "Bash(git clean*)",
+      "Bash(git checkout -- .*)",
+      "Bash(git checkout -- .)",
+      "Bash(* git reset --hard*)",
+      "Bash(* git clean*)",
+      "Bash(* git checkout -- .*)",
+      "Bash(git restore .*)"
     ]
   }
 }
