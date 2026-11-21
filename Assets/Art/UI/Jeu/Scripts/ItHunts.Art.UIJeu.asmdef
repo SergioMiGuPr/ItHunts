@@ -1,0 +1,18 @@
+{
+    "name": "ItHunts.Art.UIJeu",
+    "rootNamespace": "ItHunts.Art.UIJeu",
+    "references": [
+        "ItHunts.Art.Menus",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
