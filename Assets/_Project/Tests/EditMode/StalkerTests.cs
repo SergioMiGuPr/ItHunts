@@ -116,12 +116,16 @@ namespace ItHunts.Tests
         [Test]
         public void Clips_VitesseDeLecture_PiedsSansGlisser()
         {
-            // PR #13 : Traqueur_Marche avance de 3.71 m/s à la vitesse 1, Traqueur_PassageBas de 2.29 m/s.
+            // Clips v4 (DA, PR #28 et #29) : marche à quatre pattes 1.27 m/s à la vitesse 1, courses A et B 11 m/s, C 9 m/s.
             var cfg = ScriptableObject.CreateInstance<StalkerSettings>();
             _objects.Add(cfg);
-            Assert.That(Stalker.ClipPlayback(cfg.chaseSpeed, cfg.walkClipSpeed, cfg) * 3.71f, Is.EqualTo(cfg.chaseSpeed).Within(0.01f));
-            Assert.That(Stalker.ClipPlayback(4.58f, cfg.crouchClipSpeed, cfg), Is.EqualTo(2f).Within(0.01f));
-            Assert.That(Stalker.ClipPlayback(cfg.enragedBurstSpeed, cfg.walkClipSpeed, cfg) * cfg.walkClipSpeed,
+            Assert.That(cfg.walkClipSpeed, Is.EqualTo(1.27f));
+            Assert.That(new[] { cfg.runClipSpeedA, cfg.runClipSpeedB, cfg.runClipSpeedC }, Is.EqualTo(new[] { 11f, 11f, 9f }));
+            Assert.That(Stalker.ClipPlayback(cfg.roamSpeed, cfg.walkClipSpeed, cfg) * cfg.walkClipSpeed, Is.EqualTo(cfg.roamSpeed).Within(0.01f), "Rôde : marche");
+            Assert.That(cfg.roamSpeed, Is.LessThan(cfg.runThreshold), "il marche en rôdant");
+            Assert.That(cfg.chaseSpeed, Is.GreaterThan(cfg.runThreshold), "il court en chasse");
+            Assert.That(Stalker.ClipPlayback(cfg.chaseSpeed, cfg.runClipSpeedC, cfg), Is.EqualTo(1f).Within(0.01f), "Chasse : course C à sa vitesse");
+            Assert.That(Stalker.ClipPlayback(cfg.enragedBurstSpeed, cfg.runClipSpeedA, cfg) * cfg.runClipSpeedA,
                 Is.EqualTo(cfg.enragedBurstSpeed).Within(0.01f), "même la ruée enragée ne glisse pas");
             Assert.That(Stalker.ClipPlayback(0.1f, cfg.walkClipSpeed, cfg), Is.EqualTo(cfg.clipPlaybackRange.x), "borne basse");
         }

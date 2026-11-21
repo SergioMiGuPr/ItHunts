@@ -157,10 +157,14 @@ namespace ItHunts.Settings
         [Tooltip("Vitesse de passage d'une intensité à l'autre (1/s).")]
         [Min(0.1f)] public float clawGlowRate = 8f;
 
-        [Header("Clips (SK_Traqueur v3, PR #13)")]
+        [Header("Clips du traqueur v4 (DA, PR #28 et #29 : vitesses réelles des cycles)")]
         [Tooltip("Vitesse au sol du clip Traqueur_Marche lu à la vitesse 1 (m/s, mesurée par la DA) : vitesse de lecture = vitesse ÷ cette valeur, " +
                  "pour que les pieds ne glissent pas.")]
-        [Min(0.1f)] public float walkClipSpeed = 3.71f;
+        [Min(0.1f)] public float walkClipSpeed = 1.27f;
+        [Tooltip("Vitesse au sol des courses enragées A et B (quatre pattes) et C (deux jambes) à la vitesse 1 (m/s, DA).")]
+        [Min(0.1f)] public float runClipSpeedA = 11f, runClipSpeedB = 11f, runClipSpeedC = 9f;
+        [Tooltip("Au-dessus de cette vitesse (m/s), il court (courses enragées) ; en dessous, il marche à quatre pattes (Rôde).")]
+        [Min(0.5f)] public float runThreshold = 4.5f;
         [Tooltip("Vitesse au sol du clip Traqueur_PassageBas à la vitesse 1 (m/s).")]
         [Min(0.1f)] public float crouchClipSpeed = 2.29f;
         [Tooltip("Vitesse de lecture des clips de déplacement : bornes (évite un clip figé ou frénétique).")]

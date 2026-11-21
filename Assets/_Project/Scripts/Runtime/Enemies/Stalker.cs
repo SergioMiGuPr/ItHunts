@@ -271,7 +271,13 @@ namespace ItHunts.Enemies
             if (_anim != null)
             {
                 if (ClipMissing && _pose != null)
+                {
+                    if (_racine != null)
+                        _racine.localPosition = _racineRest;
                     _pose.Apply(_clip, _clip == "Traqueur_Marche" ? settings.chaseSpeed : 0f, _crouch, settings, Time.deltaTime);
+                }
+                else
+                    PinRoot();
                 ApplyArmIK(Time.deltaTime);
             }
         }
@@ -290,7 +296,7 @@ namespace ItHunts.Enemies
             {
                 string clip = pose switch
                 {
-                    ShowcasePose.MarcheVoutee => "Traqueur_Marche",
+                    ShowcasePose.MarcheVoutee => HasClip("Traqueur_Marche_A") ? "Traqueur_Marche_A" : "Traqueur_Marche",
                     ShowcasePose.Prise => "Traqueur_Prise",
                     ShowcasePose.MainPlantee => "Traqueur_MainPlantee",
                     ShowcasePose.MainsLevees => "Traqueur_MainsLevees",
@@ -392,9 +398,37 @@ namespace ItHunts.Enemies
                 return;
             Animate();
             if (ClipMissing && _pose != null)
+            {
+                if (_racine != null)
+                    _racine.localPosition = _racineRest;                  // Animator coupé : la racine revient au repos
                 _pose.Apply(_clip, CurrentGroundSpeed(), _crouch, settings, Time.deltaTime);
+            }
+            else
+                PinRoot();
             ApplyArmIK(Time.deltaTime);
         }
+
+        private Transform _racine;
+        private Vector3 _racineRest;
+
+        /// <summary>
+        /// Root motion des clips (avancée de Racine vers l'avant) : c'est le code qui déplace le traqueur (NavMesh, vitesse réglée),
+        /// l'os reste donc sur place vers l'avant ; l'écart latéral (course B : 2.2 m vers les murs) et la hauteur sont gardés.
+        /// Position d'os seulement (permise par la DA sur Racine et Bassin) : rien n'est mis à l'échelle.
+        /// </summary>
+        private void PinRoot()
+        {
+            if (_racine == null || _racine.parent == null)
+                return;
+            Vector3 world = _racine.parent.TransformVector(_racine.localPosition - _racineRest);
+            Vector3 local = transform.InverseTransformVector(world);
+            local.z = 0f;
+            _racine.localPosition = _racineRest + _racine.parent.InverseTransformVector(transform.TransformVector(local));
+        }
+
+        /// <summary>Avancée de Racine vers l'avant après correction (m) : tests (doit rester nulle).</summary>
+        public float RootDrift => _racine == null ? 0f
+            : Mathf.Abs(transform.InverseTransformVector(_racine.parent.TransformVector(_racine.localPosition - _racineRest)).z);
 
         private float CurrentGroundSpeed() =>
             Mathf.Max(_rb != null ? new Vector2(_rb.linearVelocity.x, _rb.linearVelocity.z).magnitude : 0f, WantedSpeed);
@@ -443,6 +477,9 @@ namespace ItHunts.Enemies
             ItHunts.Level.ReachCheck.Configure(settings);
             // Mouvement provisoire tant qu'un clip manque (C5) ; cheveux à ressort (D-081). Le modèle n'est jamais mis à l'échelle.
             _pose = new StalkerProceduralPose(_anim.transform, transform);
+            _racine = System.Array.Find(all, t => t.name == "Racine");
+            if (_racine != null)
+                _racineRest = _racine.localPosition;
             SetupHair(all);
             // Bras et mains en boîtes : zones qui tuent, invisibles (le modèle gréé les dessine). forceRenderingOff et pas enabled :
             // Damageable rallume ses rendus (enabled) quand il se remet en vie, ce qui affichait les anciennes mains en double.
@@ -533,7 +570,9 @@ namespace ItHunts.Enemies
             _selfLight.transform.localPosition = settings.selfLightOffset;
         }
 
-        private void Play(string clip, float fade = 0.15f, float speed = 1f)
+        private void Play(string clip, float fade = 0.15f, float speed = 1f) => Play(clip, fade, speed, 0f);
+
+        private void Play(string clip, float fade, float speed, float offset)
         {
             if (_anim == null)
                 return;
@@ -552,7 +591,71 @@ namespace ItHunts.Enemies
             if (!has)
                 return;
             _anim.speed = speed;
-            _anim.CrossFadeInFixedTime(clip, fade, 0);
+            _anim.CrossFadeInFixedTime(clip, fade, 0, offset);
+        }
+
+        private bool HasClip(string clip) =>
+            _anim != null && _anim.runtimeAnimatorController != null && _anim.HasState(0, Animator.StringToHash(clip));
+
+        /// <summary>Durée du clip (s), 0 s'il n'est pas livré.</summary>
+        public float ClipLength(string clip)
+        {
+            if (_anim == null || _anim.runtimeAnimatorController == null)
+                return 0f;
+            foreach (AnimationClip c in _anim.runtimeAnimatorController.animationClips)
+                if (c != null && (c.name == clip || c.name.EndsWith("|" + clip)))
+                    return c.length;
+            return 0f;
+        }
+
+        private static readonly string[] WalkVariants = { "Traqueur_Marche_A", "Traqueur_Marche_B" };
+        private static readonly string[] RunVariants = { "Traqueur_CourseEnragee_A", "Traqueur_CourseEnragee_B", "Traqueur_CourseEnragee_C" };
+        private string _family, _variant;
+
+        /// <summary>Variante de marche ou de course en cours (tests, vitrine).</summary>
+        public string Variant => _variant;
+
+        /// <summary>
+        /// Marche (Rôde) ou course enragée (Chasse, Enragé) : une variante au hasard à chaque entrée dans la famille, avec un décalage
+        /// de cycle au hasard ; vitesse de lecture = vitesse au sol ÷ vitesse réelle du cycle (pieds sans glisser). Chasse : les
+        /// trois courses ; Enragé : les deux courses à quatre pattes (A, B).
+        /// </summary>
+        private void PlayLocomotion(bool run, float v)
+        {
+            string family = run ? (Mode == StalkerMode.Enrage ? "enrage" : "course") : "marche";
+            if (family != _family || _variant == null)
+            {
+                _family = family;
+                string[] pool = run ? (Mode == StalkerMode.Enrage ? new[] { RunVariants[0], RunVariants[1] } : RunVariants) : WalkVariants;
+                var have = System.Array.FindAll(pool, HasClip);
+                _variant = have.Length > 0 ? have[Random.Range(0, have.Length)] : run ? "Traqueur_Course" : "Traqueur_Marche";
+                _clip = null;                                                // rejoue avec le décalage
+                Play(_variant, 0.3f, 1f, Random.value * ClipLength(_variant));
+            }
+
+            float clipSpeed = _variant.EndsWith("_A") && run ? settings.runClipSpeedA : _variant.EndsWith("_B") && run ? settings.runClipSpeedB
+                : _variant.EndsWith("_C") ? settings.runClipSpeedC : settings.walkClipSpeed;
+            Play(_variant, 0.3f, ClipPlayback(v, clipSpeed, settings));
+        }
+
+        /// <summary>Clip d'un passage (un par type de lien) ; le premier nom livré par la DA.</summary>
+        public static string[] TraversalClips(StalkerLinkKind k, bool caughtSomeone) => k switch
+        {
+            StalkerLinkKind.Bond => caughtSomeone ? new[] { "Traqueur_BondPrise", "Traqueur_Bond" } : new[] { "Traqueur_Bond" },
+            StalkerLinkKind.EscaladeRebord => new[] { "Traqueur_EscaladeRebord", "Traqueur_Escalade" },
+            StalkerLinkKind.MurGrimpe => new[] { "Traqueur_MurGrimpe", "Traqueur_Mur", "Traqueur_Escalade" },
+            StalkerLinkKind.ChaineGrimpe => new[] { "Traqueur_ChaineGrimpe" },
+            StalkerLinkKind.ChaineSaut => new[] { "Traqueur_ChaineSaut" },
+            StalkerLinkKind.PorteEtroite => new[] { "Traqueur_PorteEtroite" },
+            _ => new[] { "Traqueur_Bond" },
+        };
+
+        private string FirstClip(string[] names)
+        {
+            foreach (string n in names)
+                if (HasClip(n))
+                    return n;
+            return names[0];
         }
 
         /// <summary>Le clip voulu n'est pas livré : mouvement provisoire (C5).</summary>
@@ -579,12 +682,30 @@ namespace ItHunts.Enemies
                 Play("Traqueur_MainPlantee", 0.06f);
             else if (_grab == GrabPhase.Annonce)
                 Play("Traqueur_Prise", 0.05f, 0.5f / Mathf.Max(0.05f, settings.grabTelegraph));
+            else if (_trav.Active)
+            {
+                _family = null;
+                Play(FirstClip(TraversalClips(_trav.Kind, _trav.Caught)), 0.12f);
+            }
+            else if (Time.time < _trav.RecoverUntil)
+            {
+                _family = null;
+                Play("Traqueur_Reception", 0.08f);
+            }
             else if (Crouching)
+            {
+                _family = null;
                 Play("Traqueur_PassageBas", 0.25f, ClipPlayback(v, settings.crouchClipSpeed, settings));
+            }
+            else if (v > settings.runThreshold)
+                PlayLocomotion(true, v);
             else if (v > 0.5f)
-                Play("Traqueur_Marche", 0.25f, ClipPlayback(v, settings.walkClipSpeed, settings));
+                PlayLocomotion(false, v);
             else
+            {
+                _family = null;
                 Play("Traqueur_Repos", 0.3f);
+            }
         }
 
         /// <summary>
@@ -1945,6 +2066,10 @@ namespace ItHunts.Enemies
                             Telegraph = leap ? settings.leapTelegraph : settings.climbStartPause,
                             Duration = StalkerPassageMath.Duration(p.kind, pos, to, settings),
                         };
+                        // Clip livré pour ce type de lien : la traversée dure le clip (télégraphe compris), C2.
+                        float len = ClipLength(FirstClip(TraversalClips(p.kind, false)));
+                        if (len > 0.3f)
+                            _trav.Duration = Mathf.Max(0.3f, len - _trav.Telegraph);
                         if (leap)
                             LastRoarTime = now;                          // cri du télégraphe (StalkerAudio)
                         Vector3 face = to - pos;

@@ -49,6 +49,14 @@ d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
   5.5 m dedans. Hauteur baissée 8.5 m. **Mouvement provisoire** (`StalkerProceduralPose`, C5) calé sur la pose voûtée de la DA :
   épaule mesurée en jeu à 10.50 m, 0.96 m devant (DA : 10.5 / 0.9). **Cheveux** : 7 `BoneSpringChain` (obstacles sur les os,
   bornés à la pose de repos). Captures : vitrine (repos de face et de profil, marche voûtée).
+- **PR #28 (`art-traqueur-anim-1`), #29 (`art-traqueur-anim-2`) :** périmètre, GUID, compilation, 476 tests sur `main` après chacune ;
+  fusionnées (9809696, 0472d08), poussées ; `main` dans `animations` (conflit d'ART-HANDOFF : les deux sections gardées).
+- **C1/C2 (lots 1 et 2). Animator du v4** : 6 états (Repos, Marche_A/B, CourseEnragee_A/B/C), avatar et nœud de root motion de la DA.
+  Repos à l'arrêt ; Rôde (sous 4.5 m/s) : marche A ou B au hasard, décalage de cycle au hasard, lecture = vitesse ÷ 1.27 ;
+  Chasse : course A, B ou C ; Enragé : A ou B (quatre pattes) ; lecture = vitesse ÷ vitesse du cycle (11 / 11 / 9 m/s). Fondus de
+  0.3 s. **Root motion** : l'avancée de `Racine` est retirée après l'Animator (le code déplace le traqueur) ; écart latéral et
+  hauteur gardés ; dérive mesurée en poursuite : 0.00 m. Clip absent (prise, passages, baissé) : mouvement provisoire, Animator
+  coupé, racine remise au repos. Passages : la traversée dure le clip quand il est livré (un clip par type de lien).
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`
