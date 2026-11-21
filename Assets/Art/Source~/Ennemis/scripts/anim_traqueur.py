@@ -38,8 +38,15 @@ def remise_a_zero(a=None):
         pb.scale = V((1, 1, 1))
 
 
-def viser(pb, d):
-    """Oriente l'os pb (axe Y de l'os) selon la direction monde d (pivot minimal depuis l'orientation héritée)."""
+def axe_x_repos(n, a=None):
+    """Axe X (latéral) de l'os n dans la pose de repos, en monde."""
+    a = a or arm()
+    return (a.matrix_world.to_3x3() @ a.data.bones[n].matrix_local.to_3x3()).col[0].normalized()
+
+
+def viser(pb, d, ref_x=None):
+    """Oriente l'os pb (axe Y de l'os) selon la direction monde d. Sans ref_x : pivot minimal depuis l'orientation héritée.
+    Avec ref_x : orientation complète, l'axe X de l'os aussi proche que possible de ref_x (pas de torsion parasite)."""
     a = pb.id_data
     bone = pb.bone
     if pb.parent:
@@ -47,9 +54,18 @@ def viser(pb, d):
     else:
         base = bone.matrix_local.copy()
     base_rot = (a.matrix_world.to_3x3() @ base.to_3x3()).normalized()
-    loc_d = base_rot.inverted() @ V(d).normalized()
     pb.rotation_mode = "QUATERNION"
-    pb.rotation_quaternion = V((0, 1, 0)).rotation_difference(loc_d)
+    if ref_x is None:
+        loc_d = base_rot.inverted() @ V(d).normalized()
+        pb.rotation_quaternion = V((0, 1, 0)).rotation_difference(loc_d)
+    else:
+        y = V(d).normalized()
+        x = V(ref_x) - y * V(ref_x).dot(y)
+        if x.length < 1e-6:
+            x = y.orthogonal()
+        x.normalize(); z = x.cross(y).normalized()
+        M = Matrix((x, y, z)).transposed()
+        pb.rotation_quaternion = (base_rot.inverted() @ M).to_quaternion()
     bpy.context.view_layer.update()
 
 
@@ -178,3 +194,244 @@ def cheveux_gravite(a=None, poids=1.0, vent=V((0, 0, 0))):
             d = (V((0, 0, -1)) + lat + vent).normalized()
             rd = (a.matrix_world.to_3x3() @ (pb.tail - pb.head)).normalized()
             viser(pb, rd.lerp(d, poids).normalized())
+
+
+# ------------------------------------------------------------------ IK analytique à deux os (positions exactes, pas de glissement)
+def _ik2(n1, n2, cible, pole, a=None):
+    """Oriente n1 puis n2 pour que le bout de n2 touche `cible` (monde), genou ou coude du côté de `pole` (direction monde)."""
+    a = a or arm()
+    p1 = a.pose.bones[n1]
+    H = a.matrix_world @ p1.head
+    l1 = (a.data.bones[n1].tail_local - a.data.bones[n1].head_local).length
+    l2 = (a.data.bones[n2].tail_local - a.data.bones[n2].head_local).length
+    D = V(cible) - H
+    d = min(max(D.length, abs(l1 - l2) + 1e-4), l1 + l2 - 1e-4)
+    u = D.normalized()
+    pv = V(pole) - u * V(pole).dot(u)
+    if pv.length < 1e-6:
+        pv = V((0, -1, 0)) - u * V((0, -1, 0)).dot(u)
+    v = pv.normalized()
+    ca = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d)
+    sa = math.sqrt(max(0.0, 1 - ca * ca))
+    K = H + u * (l1 * ca) + v * (l1 * sa)
+    viser(p1, K - H)
+    viser(a.pose.bones[n2], (H + u * d) - K)
+    return K
+
+
+def ik_jambe(s, cheville, pole=V((0, -1, 0.2)), pied=None, orteils=None, a=None):
+    a = a or arm()
+    _ik2("Cuisse_" + s, "Jambe_" + s, cheville, pole, a)
+    if pied is not None:
+        viser(a.pose.bones["Pied_" + s], pied, axe_x_repos("Pied_" + s, a))
+    if orteils is not None:
+        viser(a.pose.bones["Orteils_" + s], orteils, axe_x_repos("Orteils_" + s, a))
+
+
+def ik_bras(s, poignet, pole=V((0, 1, 0)), main=None, doigts=None, a=None):
+    a = a or arm()
+    _ik2("Bras_" + s, "AvantBras_" + s, poignet, pole, a)
+    if main is not None:
+        viser(a.pose.bones["Main_" + s], main, axe_x_repos("Main_" + s, a))
+    if doigts is not None:
+        viser(a.pose.bones["Doigts_" + s], doigts, axe_x_repos("Doigts_" + s, a))
+
+
+def direction(n, a=None):
+    a = a or arm()
+    pb = a.pose.bones[n]
+    return (a.matrix_world.to_3x3() @ (pb.tail - pb.head)).normalized()
+
+
+# ------------------------------------------------------------------ actions et clés
+def nouvelle_action(nom, fin, a=None, fps=30):
+    a = a or arm()
+    sc = bpy.context.scene
+    sc.render.fps = fps; sc.render.fps_base = 1.0
+    sc.frame_start = 0; sc.frame_end = fin
+    old = bpy.data.actions.get(nom)
+    if old:
+        bpy.data.actions.remove(old)
+    act = bpy.data.actions.new(nom)
+    act.use_fake_user = True
+    if a.animation_data is None:
+        a.animation_data_create()
+    a.animation_data.action = act
+    try:
+        if act.slots:
+            a.animation_data.action_slot = act.slots[0]
+    except AttributeError:
+        pass
+    return act
+
+
+def cle(frame, a=None, os_noms=None, interp=None):
+    """Clé de rotation sur les os (tous les os déformants et non déformants hors cibles IK), position de Racine et Bassin."""
+    a = a or arm()
+    noms = os_noms or [b.name for b in a.pose.bones if not b.name.startswith(("IK_", "Pole_", "Contact_"))]
+    for n in noms:
+        pb = a.pose.bones[n]
+        pb.rotation_mode = "QUATERNION"
+        pb.keyframe_insert("rotation_quaternion", frame=frame, group=n)
+    for n in ("Racine", "Bassin"):
+        a.pose.bones[n].keyframe_insert("location", frame=frame, group=n)
+
+
+def lisser_quaternions(act):
+    """Rend les quaternions continus (pas de saut de signe d'une clé à l'autre)."""
+    a = arm()
+    par_os = {}
+    for fc in _fcurves(act):
+        if fc.data_path.endswith("rotation_quaternion"):
+            par_os.setdefault(fc.data_path, {})[fc.array_index] = fc
+    for dp, fcs in par_os.items():
+        if len(fcs) < 4:
+            continue
+        n = len(fcs[0].keyframe_points)
+        prev = None
+        for i in range(n):
+            q = Quaternion([fcs[k].keyframe_points[i].co[1] for k in range(4)])
+            if prev is not None and q.dot(prev) < 0:
+                for k in range(4):
+                    fcs[k].keyframe_points[i].co[1] *= -1
+                q = -q
+            prev = q
+        for k in range(4):
+            fcs[k].update()
+
+
+def interpolation(act, mode="BEZIER", poignee="AUTO_CLAMPED"):
+    for fc in _fcurves(act):
+        for k in fc.keyframe_points:
+            k.interpolation = mode
+            k.handle_left_type = poignee; k.handle_right_type = poignee
+        fc.update()
+
+
+def mesure_glissement(debut, fin, cotes=("G", "D"), seuil=0.08, a=None, os_contact="Contact_Pied_", bout="head"):
+    """Pour chaque côté : glissement horizontal maximal (m) pendant les appuis (point de contact à moins de `seuil` du sol)."""
+    a = a or arm()
+    sc = bpy.context.scene
+    res = {}
+    for s in cotes:
+        pos = []
+        for f in range(debut, fin + 1):
+            sc.frame_set(f)
+            pb = a.pose.bones[os_contact + s]
+            pos.append(a.matrix_world @ (pb.head if bout == "head" else pb.tail))
+        pire = 0.0; ancre = None
+        for p in pos:
+            if p.z < seuil:
+                if ancre is None:
+                    ancre = p
+                pire = max(pire, (V((p.x, p.y, 0)) - V((ancre.x, ancre.y, 0))).length)
+            else:
+                ancre = None
+        res[s] = round(pire, 4)
+    return res
+
+
+# ------------------------------------------------------------------ rendus de contrôle (même cadrage que la vidéo)
+def camera_video(cote="profil_droite", largeur_m=21.5, u0=200.0, v0=237.0, W=427, H=240, nom="Cam_Video"):
+    """Caméra orthographique calée sur une vidéo : le point monde (0, 0, 0) tombe au pixel (u0, v0) d'une image W x H ;
+    largeur_m = largeur de l'image en mètres. profil_droite : la créature regarde vers la droite de l'image (caméra en -X)."""
+    sc = bpy.context.scene
+    cam = bpy.data.objects.get(nom) or bpy.data.objects.new(nom, bpy.data.cameras.new(nom))
+    if cam.name not in sc.objects:
+        sc.collection.objects.link(cam)
+    cam.data.type = "ORTHO"; cam.data.ortho_scale = largeur_m; cam.data.clip_end = 500
+    k = largeur_m / W
+    if cote == "profil_droite":         # écran droite = -Y (avant)
+        yc = (u0 - W / 2) * k; zc = (v0 - H / 2) * k
+        cam.location = (-60, yc, zc); cam.rotation_euler = (math.radians(90), 0, math.radians(-90))
+    elif cote == "profil_gauche":       # caméra en +X, écran droite = +Y
+        yc = -(u0 - W / 2) * k; zc = (v0 - H / 2) * k
+        cam.location = (60, yc, zc); cam.rotation_euler = (math.radians(90), 0, math.radians(90))
+    elif cote == "face":                # caméra devant (-Y), écran droite = -X
+        xc = -(u0 - W / 2) * k; zc = (v0 - H / 2) * k
+        cam.location = (xc, -60, zc); cam.rotation_euler = (math.radians(90), 0, 0)
+    sc.camera = cam
+    sc.render.resolution_x = W; sc.render.resolution_y = H; sc.render.resolution_percentage = 100
+    return cam
+
+
+def rendre_images(dossier, f0, f1, pas=1, moteur="BLENDER_WORKBENCH"):
+    import os
+    sc = bpy.context.scene
+    os.makedirs(dossier, exist_ok=True)
+    sc.render.engine = moteur
+    if moteur == "BLENDER_WORKBENCH":
+        sh = sc.display.shading
+        sh.light = "STUDIO"; sh.color_type = "TEXTURE"; sh.show_shadows = False; sh.show_cavity = False
+        sc.display.shading.background_type = "WORLD" if hasattr(sh, "background_type") else None
+    sc.render.film_transparent = False
+    sc.render.image_settings.file_format = "PNG"
+    for f in range(f0, f1 + 1, pas):
+        sc.frame_set(f)
+        sc.render.filepath = os.path.join(dossier, "%04d.png" % f)
+        bpy.ops.render.render(write_still=True)
+
+
+def fluidite(debut, fin, boucle=False, a=None):
+    """À-coups : pour chaque os, vitesse angulaire (°/image) et variation de vitesse d'une image à l'autre (°/image²).
+    Renvoie (os le plus rapide, vitesse max), (os au plus fort à-coup, variation max). Sur une boucle, la dernière image
+    est comparée à la première (raccord)."""
+    a = a or arm()
+    sc = bpy.context.scene
+    noms = [b.name for b in a.pose.bones if b.bone.use_deform]
+    mats = []
+    for f in range(debut, fin + 1):
+        sc.frame_set(f)
+        mats.append({n: (a.matrix_world @ a.pose.bones[n].matrix).to_quaternion() for n in noms})
+    if boucle:
+        mats.append(mats[1])         # image fin+1 = image debut+1 (fin == debut en pose)
+    vmax = (None, 0.0); jmax = (None, 0.0)
+    for n in noms:
+        vit = []
+        for i in range(1, len(mats)):
+            q0, q1 = mats[i - 1][n], mats[i][n]
+            ang = q0.rotation_difference(q1).angle
+            vit.append(math.degrees(min(ang, 2 * math.pi - ang)))
+        for i, v in enumerate(vit):
+            if v > vmax[1]:
+                vmax = (n, round(v, 2))
+            if i > 0 and abs(v - vit[i - 1]) > jmax[1]:
+                jmax = (n + "@%d" % (debut + i), round(abs(v - vit[i - 1]), 2))
+    return vmax, jmax
+
+
+def boucler(act):
+    """Boucle sans raccord : modificateur Cycles sur chaque courbe (tangentes auto calculées à travers la jonction)."""
+    for fc in _fcurves(act):
+        if not any(m.type == "CYCLES" for m in fc.modifiers):
+            fc.modifiers.new("CYCLES")
+        fc.update()
+
+
+def exporter_clip(nom, debut, fin, dossier=r"C:/Users/PC/ItHunts/ItHunts-art/Assets/Art/Animations/Traqueur_v4"):
+    """Exporte l'action `nom` (armature seule, une image par clé, sans simplification) dans dossier/nom.fbx."""
+    import os
+    os.makedirs(dossier, exist_ok=True)
+    a = arm()
+    act = bpy.data.actions[nom]
+    fautes = verifier_action(act)
+    if fautes:
+        raise RuntimeError("clip refusé (verrou du modèle) : %s" % fautes)
+    a.animation_data.action = act
+    try:
+        if act.slots:
+            a.animation_data.action_slot = act.slots[0]
+    except AttributeError:
+        pass
+    sc = bpy.context.scene
+    sc.frame_start, sc.frame_end = debut, fin
+    for o in bpy.context.view_layer.objects:
+        o.select_set(False)
+    a.select_set(True); bpy.context.view_layer.objects.active = a
+    p = os.path.join(dossier, nom + ".fbx")
+    bpy.ops.export_scene.fbx(filepath=p, use_selection=True, object_types={"ARMATURE"}, apply_unit_scale=True,
+                             apply_scale_options="FBX_SCALE_ALL", axis_forward="-Z", axis_up="Y", add_leaf_bones=False,
+                             use_armature_deform_only=False, bake_anim=True, bake_anim_use_all_bones=True,
+                             bake_anim_use_nla_strips=False, bake_anim_use_all_actions=False, bake_anim_force_startend_keying=True,
+                             bake_anim_step=1.0, bake_anim_simplify_factor=0.0)
+    return p
