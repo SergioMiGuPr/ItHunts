@@ -131,6 +131,21 @@ namespace ItHunts.Menus
         /// </summary>
         private void OwnCampMaterials()
         {
+            if (_camp != null)
+            {
+                // Tous les matériaux propres du campement (lanternes, ombres portées, éclairage : PR #34) ont leur copie : le script de la
+                // DA les règle aussi hors du jeu (tests EditMode) et écrivait alors dans les assets partagés (A1).
+                foreach (Graphic g in _camp.GetComponentsInChildren<Graphic>(true))
+                {
+                    Material shared = g.material;
+                    if (shared == null || shared == g.defaultMaterial || _ownedMaterials.Contains(shared))
+                        continue;
+                    var copy = new Material(shared) { name = shared.name + " (jeu)", hideFlags = HideFlags.DontSave };
+                    g.material = copy;
+                    _ownedMaterials.Add(copy);
+                }
+            }
+
             if (_campView == null || _campView.places == null)
                 return;
             foreach (CampementApercu.Place pl in _campView.places)
@@ -138,6 +153,12 @@ namespace ItHunts.Menus
                 if (pl?.corps == null || pl.corps.material == null || pl.matJeu != null)
                     continue;
                 Material m = pl.corps.material;
+                if (_ownedMaterials.Contains(m))
+                {
+                    pl.matJeu = m;                                      // déjà copié ci-dessus
+                    continue;
+                }
+
                 pl.matJeu = new Material(m) { name = m.name + " (jeu)", hideFlags = HideFlags.DontSave };
                 pl.corps.material = pl.matJeu;
                 _ownedMaterials.Add(pl.matJeu);

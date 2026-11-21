@@ -158,6 +158,10 @@ namespace ItHunts.Tests
                 view.Sync();
                 Assert.That(string.Join(";", shared.Select(m => $"{m.GetFloat("_Contraste")},{m.GetFloat("_Luminosite")},{m.GetVector("_FeuUV")}")), Is.EqualTo(before),
                     "matériaux de la DA intacts (copie par place, A1)");
+                // Tous les matériaux propres du campement (lanternes, ombres portées, éclairage, PR #34) sont des copies du jeu.
+                foreach (Graphic g in camp.GetComponentsInChildren<Graphic>(true))
+                    if (g.material != null && g.material != g.defaultMaterial)
+                        Assert.That(AssetDatabase.Contains(g.material), Is.False, $"{g.name} : matériau de la DA modifiable ({g.material.name})");
                 Assert.That(camp.transform.Find("Place_2/Corps").gameObject.activeSelf, Is.True, "J2 assis à la place 2");
                 Assert.That(menu.ReadyBlocked, Is.True, "doublon : Prêt grisé");
                 Assert.That(camp.transform.Find("Interface/Pret").GetComponent<Image>().canvasRenderer.GetColor(), Is.EqualTo(MenuArtKit.Disabled));
