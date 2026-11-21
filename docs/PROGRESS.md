@@ -4,7 +4,11 @@
 
 ## Étape en cours
 
-**Nuit du 2026-11-21 (`animations`, en autonomie) :** un commit par point ; PR d'art intégrées au fil de l'eau.
+**Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
+fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`
+(357 Mo, lancé 35 s sans exception). Tests EditMode : 476 + 1 non concluant attendu. Réglages modifiés par le build remis (non
+commités). **À valider par l'utilisateur :** dash manette déplacé sur L3 (LB = parade) et E partagé (interagir / parer), D-075 ;
+traqueur v4 non touché (D-070).
 - **1a. Course 7.5 → 8.5 m/s (D-072).** `Movement_Default.runSpeed`, `ParkourCaps.Default`, ART-HANDOFF. Vitesses des ennemis
   inchangées. Écarts (ennemi − joueur à 8.5) : goule 10 (+1.5, bond 14 : +5.5) ; traqueur Chasse 9 (+0.5), pointe 16 (+7.5) ;
   Enragé 11 → 18 par paliers (+2.5 → +9.5), pointe enragée 18 (+9.5) ; plafond du traqueur 18 m/s.
