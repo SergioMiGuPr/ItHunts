@@ -127,11 +127,12 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 | Recharge d'une charge au sol / en l'air | 2.0 / 4.0 | s | +1 s le 2026-11-13 (avant : 1.0 / 3.0) : dash moins spammable ; ralentit aussi le saut en l'air (même réserve) |
 | Distance d'un dash (à l'arrêt) | 6.5 | m | |
 | Durée d'un dash | 0.3 | s (18 ticks) | sans friction ni gravité |
-| Profil du dash | progressif | — | à l'arrêt : pic 30.3 m/s, baisse d'≈ 1 m/s par tick jusqu'à 12 |
-| Gain d'un dash au sol | +1 | m/s | plafonné ; en l'air : aucun gain |
+| Profil du dash | progressif | — | à l'arrêt : pic ≈ 27 m/s, baisse régulière jusqu'à la sortie (16.3) |
+| Gain d'un dash | +1 | m/s | plafonné ; au sol comme en l'air (D-084) |
+| Part de la vitesse du dash gardée à la sortie | 0.75 | — | D-084 : 16.3 m/s depuis l'arrêt, plafond 20 ; gardée comme l'élan |
 | Fenêtre du dash-jump (après la fin du dash) | 0.15 | s (9 ticks) | timing ressenti ? |
-| Gain d'un dash-jump | +3 | m/s | plafonné |
-| Vitesse de sortie du dash (minimum) | 12 | m/s | |
+| Gain d'un dash-jump | +3 | m/s | sur la vitesse de sortie (D-084), plafonné |
+| Vitesse de sortie du dash (minimum) | 12 | m/s | plancher, sous la part gardée |
 | Délai entre deux débuts de dash | 0.3 | s | jamais avant la fin du dash précédent |
 | Mémorisation de l'appui de dash | 0.3 | s | enchaînements |
 | Sans friction au sol après un dash | 0.2 | s | pas de chute brutale à 7.5 m/s |
@@ -203,6 +204,7 @@ Toutes dans un ScriptableObject `MovementSettings`, modifiables en Play Mode. Va
 
 ## History
 
+- 2026-11-21 : dash, la vitesse de sortie est gardée comme l'élan (D-084) : 75 % de la vitesse du dash (16.3 m/s depuis l'arrêt), au sol comme en l'air, plafond 20 ; dash-jump +3 sur la sortie ; 3 dashs : 16.3 → 18.3 m/s.
 - 2026-11-13 : recharge d'une charge de mouvement +1 s (sol 1 → 2 s, air 3 → 4 s, réglable : `Movement_Default`) ; dash et saut
   en l'air partagent la réserve, les deux sont ralentis.
 - 2026-11-11 : designed.
