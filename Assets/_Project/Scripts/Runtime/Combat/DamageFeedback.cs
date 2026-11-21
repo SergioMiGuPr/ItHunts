@@ -145,6 +145,8 @@ namespace ItHunts.Combat
         /// </summary>
         private void OnConeWave(ConeWaveEvent e)
         {
+            if (settings != null && !settings.repelConeRings)
+                return;                                                  // animation de répulsion très réduite (point 8)
             if (e.Continuous && Time.time - _lastHoldRing < holdRingInterval)
                 return;
             if (e.Continuous)

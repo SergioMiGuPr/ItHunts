@@ -10,6 +10,31 @@ namespace ItHunts.Settings
     [CreateAssetMenu(fileName = "MagnetismFeedback_Default", menuName = "ItHunts/Réglages/Retour du magnétisme")]
     public sealed class MagnetismFeedbackSettings : ScriptableObject
     {
+        [Header("Visuels remplacés (playtest du 2026-11-21, point 8)")]
+        [Tooltip("Ancien rayon de traction, éclat et marque au point d'ancrage : coupés, remplacés par le flot vers le point visé.")]
+        public bool showTractionLine;
+        public bool showTractionMarks;
+        [Tooltip("Ancien petit point de visée de la répulsion (disque orange sur la surface) et éclat qui grandit à l'impact : coupés ; " +
+                 "le réticule de la DA reste la seule visée.")]
+        public bool showRepelAimMarker;
+        public bool showRepelImpactFlash;
+
+        [Header("Traction : flot vers le point visé (effet d'art)")]
+        [Tooltip("Effet de la DA pour la traction (PR d'effets) ; vide : flot de fumée peinte (matériau de la DA) de l'orbe au point.")]
+        public GameObject tractionVfx;
+        [Tooltip("Flot : matériau de la DA, vitesse (m/s), particules par seconde, taille (m), teinte (bloc de propriétés).")]
+        public Material tractionStreamMaterial;
+        [Min(1f)] public float tractionStreamSpeed = 32f;
+        [Min(1f)] public float tractionStreamRate = 70f;
+        public Vector2 tractionStreamSize = new Vector2(0.12f, 0.35f);
+        [ColorUsage(false, true)] public Color tractionStreamTone = new Color(0.35f, 0.65f, 1.4f, 1f);
+
+        [Header("Répulsion : effet bref (effet d'art)")]
+        [Tooltip("Effet de la DA pour la répulsion (PR d'effets) ; vide : étincelles de la DA (VFX_Etincelles) devant l'orbe, réduites.")]
+        public GameObject repelVfx;
+        [Min(0.05f)] public float repelVfxScale = 0.5f;
+        [Min(0.05f)] public float repelVfxLife = 0.6f;
+
         [Header("Couleurs")]
         public Color attractColor = new Color(0.2f, 0.55f, 1f);
         public Color repelColor = new Color(1f, 0.5f, 0.1f);

@@ -9,6 +9,9 @@ namespace ItHunts.Settings
     [CreateAssetMenu(fileName = "DamageFeedback_Default", menuName = "ItHunts/Réglages/Retour des dégâts")]
     public sealed class DamageFeedbackSettings : ScriptableObject
     {
+        [Tooltip("Anneaux du cône de la répulsion (ancien visuel, très présent) : coupés depuis le playtest du 2026-11-21 (point 8).")]
+        public bool repelConeRings;
+
         [Header("Couleurs par palier (petit, moyen, gros) et mort")]
         public Color smallColor = new Color(1f, 1f, 1f);
         public Color mediumColor = new Color(1f, 0.85f, 0.2f);
