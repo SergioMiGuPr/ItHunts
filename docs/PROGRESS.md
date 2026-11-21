@@ -77,6 +77,14 @@ d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
   la montée main sur main (1.1 → 2.9 s, +2.4 m par cycle de 0.9 s) boucle autant que la chaîne l'exige (11 m : 3 cycles de plus),
   temps du clip piloté par le code ; `Traqueur_Reception` après un saut sans clip propre (saut depuis une chaîne), sortie dès 1.1 s.
   Test : cycles de la chaîne. Contrôleur : 13 états.
+- **A5. Menu des touches (D-083).** `RebindStore` (Runtime/Input : lignes par onglet, conflit, échange, réinitialisation, JSON par
+  joueur dans `persistentDataPath`, chargement dans `PlayerInputReader.Awake`, invites `Prompt`), `KeyBindingsPanel` (Runtime/Hud :
+  vue uGUI avec le panneau, la marque de focus, le cartouche `Menus_Cartouche_M` et les polices des menus de la DA ; navigation
+  complète manette et clavier, souris). Page Paramètres de la DA : 7e ligne « Touches » (copie d'une ligne, Retour descendu d'un
+  cran) ; menu pause : ligne ajoutée. Invite d'interaction du HUD = touche actuelle. 5 tests (`KeyBindingsTests` : lignes,
+  sauvegarde et rechargement, conflit oui / non, réinitialisation, 2 joueurs). Capture :
+  `docs/design/features/interface-jeu/captures/menu_touches.png`. **Pour la DA (provisoire) :** icônes des touches (clavier,
+  souris, manette), onglets Clavier / Manette, bouton Réinitialiser.
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`

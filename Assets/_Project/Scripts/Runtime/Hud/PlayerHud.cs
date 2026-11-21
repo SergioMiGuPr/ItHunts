@@ -609,7 +609,7 @@ namespace ItHunts.Hud
             if (_interactor == null)
                 _interactor = GetComponent<ItHunts.Economy.PlayerInteractor>();
             var reader = GetComponent<ItHunts.Input.PlayerInputReader>();
-            string key = reader != null && reader.UsingGamepad ? "Y" : "E";
+            string key = reader != null ? ItHunts.Input.RebindStore.Prompt(reader.InteractAction, reader.UsingGamepad) : "E";   // touche actuelle (A5)
             var focus = _interactor != null ? _interactor.Focus : null;
             _promptText.text = focus != null ? $"{key} : {focus.Prompt(_health)}" : string.Empty;
             _promptText.color = refused > 0f ? Color.Lerp(Color.white, new Color(1f, 0.25f, 0.2f), refused) : Color.white;

@@ -110,6 +110,9 @@ namespace ItHunts.Level
                 return;
             }
 
+            if (ItHunts.Hud.KeyBindingsPanel.IsOpen)
+                return;                                                  // le menu des touches a la main
+
             foreach (PlayerInput pi in PlayerInput.all.ToList())
             {
                 if (IsOpenFor(pi))
@@ -182,7 +185,8 @@ namespace ItHunts.Level
             var o = new Open { Player = pi, Menu = new GreyboxMenu { Owner = OwnerOf(pi) }, Settings = new GreyboxMenu { Owner = OwnerOf(pi) }, Frame = Time.frameCount };
             o.Menu.Add("Reprendre", () => Close(o, true));
             o.Menu.Add("Paramètres", () => { o.InSettings = true; o.Settings.FocusFirst(); });
-            GameSettings.Fill(o.Settings);
+            GameSettings.Fill(o.Settings, () => ItHunts.Hud.KeyBindingsPanel.Open(o.Player.actions, o.Player.playerIndex, false, o.Menu.Owner,
+                SkinOf(o.Player), null));
             o.Settings.Add("Retour", () => { o.InSettings = false; o.Menu.SetFocus(1); });
             int index = IndexOf(pi);
             if (index > 0 && PlayerInput.all.Count > 1 && SplitScreen.Current != null)

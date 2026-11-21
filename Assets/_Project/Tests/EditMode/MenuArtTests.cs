@@ -234,7 +234,12 @@ namespace ItHunts.Tests
                     Assert.That(row.Find("Libelle").GetComponent<Text>().text, Is.EqualTo(GameSettings.Labels[i]));
                     Assert.That(row.Find("Valeur").GetComponent<Text>().text, Is.EqualTo("‹  " + GameSettings.Value((GameSettings.Line)i) + "  ›"));
                 }
-                Assert.That(menu.SettingsMenu.Items.Count, Is.EqualTo(7), "6 lignes et Retour");
+                Assert.That(menu.SettingsMenu.Items.Count, Is.EqualTo(8), "6 lignes, Touches et Retour");
+                // A5 : 7e ligne « Touches » (copie d'une ligne de la DA), Retour descendu d'un cran, toujours dans le cadre.
+                Transform keys = view.SettingsScreen.transform.Find("Option_" + GameSettings.Labels.Length);
+                Assert.That(keys.Find("Libelle").GetComponent<Text>().text, Is.EqualTo(GameSettings.KeysLabel));
+                var back = (RectTransform)view.SettingsScreen.transform.Find("Retour");
+                Assert.That(back.anchoredPosition.y, Is.LessThan(((RectTransform)keys).anchoredPosition.y - 40f), "Retour sous Touches");
             }
             finally
             {

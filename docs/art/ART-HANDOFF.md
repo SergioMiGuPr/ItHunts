@@ -853,3 +853,10 @@ Pour jouer la marche à une autre vitesse sans glissement, il faut multiplier la
 | Cheveux | ressort maison, os `Cheveux_N_2` à `_4`, obstacles conseillés (NOTES.md) | réglages `Stalker_Default` > boneChains |
 | Clip manquant | mouvement provisoire procédural (dos voûté, bras ballants, cycle de marche) | remplacé par chaque clip `Traqueur_<Action>` livré |
 
+## Menu des touches (main, matin du 2026-11-21, A5, D-083)
+
+Paramètres > Touches : panneau des menus (`Carte_Legende_Cadre`), marque de focus (`Carte_Rose`), cartouche de ligne
+(`Menus_Cartouche_M`), polices des menus. **Provisoire, à fournir :** icônes des touches (clavier, souris, boutons de manette
+Xbox / PlayStation), onglets « Clavier / souris » et « Manette » (état choisi et non choisi), bouton « Réinitialiser » ; la page
+Paramètres a une 7e ligne « Touches » (copie d'une ligne existante) et « Retour » descend d'un cran.
+

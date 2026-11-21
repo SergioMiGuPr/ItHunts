@@ -34,6 +34,9 @@ namespace ItHunts.Settings
         public Sprite panel;
         [Tooltip("Repère du bouton qui a le focus (étoile de l'emblème).")]
         public Sprite focusMark;
+        [Tooltip("Menu des touches (A5) : cartouche d'une ligne (sprite commun des menus de la DA) et actions du jeu (copie au menu principal).")]
+        public Sprite keyRow;
+        public UnityEngine.InputSystem.InputActionAsset controls;
         [Tooltip("Matériau additif de l'interface (ItHunts/UIAdditif).")]
         public Material additive;
 

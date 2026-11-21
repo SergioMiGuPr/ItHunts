@@ -25,6 +25,8 @@ MonoBehaviour:
   textItalic: {fileID: 12800000, guid: 829b5eb3831bb4944957da7ae4082a5c, type: 3}
   panel: {fileID: 21300000, guid: f31ba3294eba4964baae8d26b7c3f425, type: 3}
   focusMark: {fileID: 21300000, guid: 39db84b571535514d964fdc472895e8b, type: 3}
+  keyRow: {fileID: 21300000, guid: 4634cf1aae53ca643b15453f431f3617, type: 3}
+  controls: {fileID: -944628639613478452, guid: b89f041094a7e4744ab141b92b50aab5, type: 3}
   additive: {fileID: 2100000, guid: 3bf54dc1f744f494296e7544850236ff, type: 2}
   fogRiseSeconds: 0.8
   fogClearSeconds: 0.8

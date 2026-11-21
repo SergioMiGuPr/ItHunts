@@ -68,12 +68,15 @@ namespace ItHunts.Input
         public string ControlScheme => _playerInput != null ? _playerInput.currentControlScheme : null;
         public bool UsingGamepad => ControlScheme == GamepadScheme;
         public int PlayerIndex => _playerInput != null ? _playerInput.playerIndex : 0;
+        /// <summary>Action « Interagir » de ce joueur (invites à l'écran : sa touche actuelle).</summary>
+        public InputAction InteractAction => _interact;
 
         private void Awake()
         {
             _playerInput = GetComponent<PlayerInput>();
             _motor = GetComponent<PlayerMotor>();
             InputActionAsset actions = _playerInput.actions;
+            RebindStore.Load(actions, _playerInput.playerIndex);              // touches choisies par ce joueur (A5)
             _move = actions.FindAction("Player/Move", throwIfNotFound: true);
             _look = actions.FindAction("Player/Look", throwIfNotFound: true);
             _lookGamepad = actions.FindAction("Player/LookGamepad", throwIfNotFound: true);
