@@ -455,6 +455,7 @@ def sequence(nom, cles, fps=30, vent=V((0, 0.15, 0))):
         return ts, vs
     noms_dirs = sorted({n for c in cles for n in c.get("dirs", {})})
     B = a.data.bones
+    dernier = {}                                         # coude et genou de l'image précédente (continuité, pas de bascule)
     L = lambda n: (B[n].tail_local - B[n].head_local).length
     for f in range(0, fin + 1):
         t = f / fps
@@ -473,14 +474,18 @@ def sequence(nom, cles, fps=30, vent=V((0, 0.15, 0))):
             if ts:
                 ch = _interp_vec(ts, [v[0] for v in vs], t); dp = _interp_vec(ts, [v[1] for v in vs], t, True)
                 do = _interp_vec(ts, [v[2] for v in vs], t, True); po = _interp_vec(ts, [v[3] for v in vs], t, True)
-                A.ik_jambe(s, ch, po, dp, do, a)
+                if ("g", s) in dernier:
+                    po = (dernier[("g", s)] - A.point("Cuisse_" + s, "head")).normalized().lerp(po, 0.25)
+                dernier[("g", s)] = A.ik_jambe(s, ch, po, dp, do, a)
             ts, vs = serie(lambda c, s=s: c.get("mains", {}).get(s))
             if ts:
                 P = _interp_vec(ts, [v[0] for v in vs], t); dm = _interp_vec(ts, [v[1] for v in vs], t, True)
                 dd = _interp_vec(ts, [v[2] for v in vs], t, True)
                 pole = _interp_vec(ts, [v[3] if len(v) > 3 else V((0.8 * k, 0.7, 0.6)) for v in vs], t, True)
                 poignet = P - dd * L("Doigts_" + s) - dm * L("Main_" + s)
-                A.ik_bras(s, poignet, pole, dm, dd, a)
+                if ("c", s) in dernier:
+                    pole = (dernier[("c", s)] - A.point("Bras_" + s, "head")).normalized().lerp(pole, 0.25)
+                dernier[("c", s)] = A.ik_bras(s, poignet, pole, dm, dd, a, mode_main="repos")
         ts, vs = serie(lambda c: c.get("machoire"))
         if ts:
             a.pose.bones["Machoire"].rotation_quaternion = Quaternion(V((1, 0, 0)), math.radians(_pchip(ts, vs, t)))
@@ -737,3 +742,125 @@ def prise_rebord(bord_y=-2.5, haut=6.0):
         {"t": 6.0, "racine": R0 + V((0, 0.25, 0.05)), "dirs": D0, "mains": {"G": mains0["G"], "D": poitrine}, "pieds": pieds0, "machoire": 5},
     ]
     return sequence("Traqueur_PriseRebord", cles)
+
+
+ACCROUPI_BAS = {"Bassin": W(1, 0.55), "Colonne_1": W(1, 0.2), "Colonne_2": W(1, 0.0), "Colonne_3": W(1, -0.15),
+                "Colonne_4": W(1, -0.3), "Cou_1": W(1, -0.1), "Cou_2": W(1, -0.3), "Tete": W(1, -0.45),
+                "Clavicule_G": W(0.6, 0.15, 1, 1), "Clavicule_D": W(0.6, 0.15, 1, -1)}
+
+
+def reception():
+    """Traqueur_Reception (vidéo traqueur_ref_reception, 0.2 → 5.2 s) : arrive en chute en diagonale, corps penché vers
+    l'avant, bras tendus vers le sol ; mains au sol à 0.35 s, pieds à 0.5 s, il s'écrase dans un accroupi très bas (le plus bas
+    à 0.85 s), se stabilise à 1.1 s, reste tapi en respirant jusqu'à 5.0 s (sortie possible dès 1.1 s, vers une course)."""
+    DF = {"Bassin": W(1, -0.35), "Colonne_1": W(1, -0.3), "Colonne_2": W(1, -0.35), "Colonne_3": W(1, -0.4), "Colonne_4": W(1, -0.45),
+          "Cou_1": W(1, -0.2), "Cou_2": W(1, -0.2), "Tete": W(1, -0.1), "Clavicule_G": W(0.8, 0.1, 1, 1), "Clavicule_D": W(0.8, 0.1, 1, -1)}
+    DL = ACCROUPI_BAS
+    DD = _avec(ACCROUPI_BAS, Colonne_3=W(1, -0.3), Colonne_4=W(1, -0.5), Cou_2=W(1, -0.5), Tete=W(1, -0.65))
+    mains = {"G": main_au_sol("G", 2.0, -5.6), "D": main_au_sol("D", -2.0, -5.4)}
+    pieds = {s: pied_a_plat(s, k * 1.3, 0.9) for s, k in (("G", 1), ("D", -1))}
+    def respire(t, base):
+        return base + V((0, 0, 0.12 * math.sin(TAU * (t - 1.1) / 1.6)))
+    RB = V((0, 0.8, -4.9))
+    cles = [
+        {"t": 0.0, "racine": V((0, 7.0, 3.6)), "dirs": DF, "machoire": 10, "vent": V((0, 0.5, 0.5)),
+         "mains": {s: _main_vol(s, V((0, 7.0, 3.6)), (k * 1.9, -6.2, 0.6)) for s, k in (("G", 1), ("D", -1))},
+         "pieds": {s: _pied_vol(s, V((0, 7.0, 3.6)), (k * 1.1, 5.5, 6.0)) for s, k in (("G", 1), ("D", -1))}},
+        {"t": 0.25, "mains": {s: (mains[s][0] + V((0, 0.4, 0.6)),) + mains[s][1:] for s in "GD"}},
+        {"t": 0.35, "racine": V((0, 1.6, -1.6)), "dirs": DF, "mains": mains,
+         "pieds": {s: _pied_vol(s, V((0, 0, 0)), (k * 1.2, 3.0, 2.6)) for s, k in (("G", 1), ("D", -1))}},
+        {"t": 0.44, "pieds": {s: (pieds[s][0] + V((0, 0.2, 0.35)),) + pieds[s][1:] for s in "GD"}},
+        {"t": 0.5, "racine": V((0, 1.0, -3.9)), "dirs": DL, "mains": mains, "pieds": pieds, "machoire": 16, "vent": V((0, 0.0, -0.3))},
+        {"t": 0.85, "racine": V((0, 0.9, -5.4)), "dirs": DD, "mains": mains, "pieds": pieds, "machoire": 8},
+        {"t": 1.1, "racine": RB, "dirs": DL, "mains": mains, "pieds": pieds, "vent": V((0, 0.1, 0))},
+    ]
+    for t in (1.9, 2.7, 3.5, 4.3, 5.0):
+        cles.append({"t": t, "racine": respire(t, RB), "dirs": _avec(DL, Tete=W(1, -0.45, 0.06 * math.sin(t * 1.7), 1)),
+                     "mains": mains, "pieds": pieds, "machoire": 5 + 2 * math.sin(t * 2)})
+    return sequence("Traqueur_Reception", cles)
+
+
+def escalade(face_y=-3.0, haut=7.5):
+    """Traqueur_Escalade (vidéo traqueur_ref_escalade, 2.5 → 7.0 s) : arrive à quatre pattes contre un bloc de 7.5 m ; la main
+    droite agrippe le haut à 0.25 s, la gauche à 0.6 s ; il se redresse contre le bloc (1.0 → 2.2 s), fléchit (2.3 s), se
+    hisse d'une détente à 2.5 s, genoux ramenés (2.75 s), pieds sur le bloc à 3.25 s, accroupi en haut jusqu'à 4.5 s."""
+    z = haut
+    D0 = ACCROUPI_4
+    DU = {"Bassin": W(0.15, 1), "Colonne_1": W(0.25, 1), "Colonne_2": W(0.35, 1), "Colonne_3": W(0.5, 1), "Colonne_4": W(0.7, 1),
+          "Cou_1": W(1, 0.5), "Cou_2": W(1, 0.1), "Tete": W(1, -0.1), "Clavicule_G": W(0.4, 0.5, 1, 1), "Clavicule_D": W(0.4, 0.5, 1, -1)}
+    DP = _avec(DU, Bassin=W(0.6, 1), Colonne_1=W(0.8, 1), Colonne_2=W(1, 0.6), Colonne_3=W(1, 0.2), Colonne_4=W(1, -0.1))
+    DT = ACCROUPI_4
+    m0 = {"G": main_au_sol("G", 1.8, face_y + 1.6), "D": main_au_sol("D", -1.8, face_y + 2.4)}
+    p0 = {s: pied_a_plat(s, k * 1.2, face_y + 7.0) for s, k in (("G", 1), ("D", -1))}
+    haut_m = {"G": (V((1.8, face_y - 3.4, z + 0.18)), W(1, -0.25, 0.1, 1), W(1, -0.1, 0.05, 1)),
+              "D": (V((-1.8, face_y - 3.2, z + 0.18)), W(1, -0.25, 0.1, -1), W(1, -0.1, 0.05, -1))}   # mains à plat, doigts devant
+    loin_m = {"G": main_au_sol("G", 1.9, face_y - 7.0, z), "D": main_au_sol("D", -1.9, face_y - 6.8, z)}
+    p1 = {s: pied_a_plat(s, k * 1.2, face_y + 2.2) for s, k in (("G", 1), ("D", -1))}
+    pH = {s: pied_a_plat(s, k * 1.2, face_y - 1.0, z) for s, k in (("G", 1), ("D", -1))}
+    cles = [
+        {"t": 0.0, "racine": V((0, face_y + 5.2, -2.6)), "dirs": D0, "mains": m0, "pieds": p0, "machoire": 6},
+        {"t": 0.16, "mains": {"D": (V((-4.8, face_y - 0.8, 7.2)), W(1, 0.3, 0.3, -1), W(1, 0.2, 0.2, -1))}},
+        {"t": 0.25, "racine": V((0, face_y + 4.6, -2.0)), "mains": {"D": haut_m["D"]}},
+        {"t": 0.42, "mains": {"G": (V((4.8, face_y - 0.8, 7.4)), W(1, 0.3, 0.3, 1), W(1, 0.2, 0.2, 1))}},
+        {"t": 0.6, "racine": V((0, face_y + 4.0, -1.4)), "dirs": DU, "mains": haut_m, "pieds": p0},
+        {"t": 0.85, "pieds": {s: (p0[s][0].lerp(p1[s][0], 0.5) + V((0, 0, 1.2)),) + p1[s][1:] for s in "GD"}},
+        {"t": 1.0, "racine": V((0, face_y + 3.2, -1.0)), "dirs": DU, "mains": haut_m, "pieds": p1},
+        {"t": 2.2, "racine": V((0, face_y + 3.0, -1.1)), "dirs": DU, "mains": haut_m, "pieds": p1, "machoire": 8},
+        {"t": 2.35, "racine": V((0, face_y + 3.1, -2.3)), "dirs": DP, "mains": haut_m, "pieds": p1, "machoire": 14},
+        {"t": 2.55, "racine": V((0, face_y + 1.0, 1.4)), "dirs": DP, "mains": haut_m,
+         "pieds": {s: _pied_vol(s, V((0, 0, 0)), (k * 1.2, face_y + 2.0, 3.0)) for s, k in (("G", 1), ("D", -1))}, "vent": V((0, 0.2, -0.6))},
+        {"t": 2.62, "mains": haut_m},
+        {"t": 2.75, "mains": {s: (loin_m[s][0].lerp(haut_m[s][0], 0.5) + V((0, 0, 1.6)),) + loin_m[s][1:] for s in "GD"}},
+        {"t": 2.9, "racine": V((0, face_y - 0.5, 3.2)), "dirs": DT, "mains": loin_m,
+         "pieds": {s: _pied_vol(s, V((0, 0, 0)), (k * 1.2, face_y + 0.4, z + 1.6)) for s, k in (("G", 1), ("D", -1))}},
+        {"t": 3.15, "pieds": {s: (pH[s][0] + V((0, 0.2, 0.35)),) + pH[s][1:] for s in "GD"}},
+        {"t": 3.25, "racine": V((0, face_y - 1.3, z - 4.3)), "dirs": DT, "mains": loin_m, "pieds": pH, "vent": V((0, 0.1, 0))},
+        {"t": 3.6, "racine": V((0, face_y - 1.2, z - 4.6)), "dirs": _avec(DT, Colonne_4=W(1, -0.6)), "mains": loin_m, "pieds": pH},
+        {"t": 4.5, "racine": V((0, face_y - 1.1, z - 4.2)), "dirs": DT, "mains": loin_m, "pieds": pH, "machoire": 5},
+    ]
+    return sequence("Traqueur_Escalade", cles)
+
+
+def chaine_grimpe(cy=-3.5):
+    """Traqueur_ChaineGrimpe (vidéo traqueur_ref_chaine_grimpe, 2.0 → 7.0 s) : accroupi devant une chaîne pendante ; saut à
+    0.35 s, les deux mains attrapent la chaîne haut (0.55 s) ; les jambes se replient et serrent la chaîne (0.9 s) ; montée main
+    sur main : 2 cycles de 0.9 s (1.1 → 2.9 s), +2.4 m par cycle (la partie 1.1 → 2.9 s boucle) ; tenu replié jusqu'à 5.0 s."""
+    D0 = ACCROUPI_4
+    DH = {"Bassin": W(0.2, 1), "Colonne_1": W(0.15, 1), "Colonne_2": W(0.1, 1), "Colonne_3": W(0.1, 1), "Colonne_4": W(0.2, 1),
+          "Cou_1": W(0.4, 1), "Cou_2": W(0.6, 1), "Tete": W(0.5, 1), "Clavicule_G": W(0.3, 0.8, 1, 1), "Clavicule_D": W(0.3, 0.8, 1, -1)}
+    m0 = {"G": main_au_sol("G", 1.9, cy - 1.6), "D": main_au_sol("D", -1.9, cy - 1.3)}
+    p0 = {s: pied_a_plat(s, k * 1.2, cy + 6.0) for s, k in (("G", 1), ("D", -1))}
+    def main_ch(s, zm):
+        k = 1 if s == "G" else -1
+        return (V((0.15 * k, cy - 0.2, zm)), W(0.1, 1, 0.3, k), W(0.8, 0.2, 0.0, k), V((0.9 * k, 0.6, -0.2)))
+    def pied_ch(s, zp):
+        k = 1 if s == "G" else -1
+        return (V((0.45 * k, cy + 0.35, zp)), W(-0.3, -1, -0.5, k), W(0.6, -0.4, -0.6, k), V((0.4 * k, -1, 0.6)))
+    hz0 = 14.6
+    cles = [
+        {"t": 0.0, "racine": V((0, cy + 5.0, -4.1)), "dirs": D0, "mains": m0, "pieds": p0, "machoire": 5},
+        {"t": 0.3, "racine": V((0, cy + 4.6, -4.8)), "dirs": _avec(D0, Colonne_4=W(1, -0.6)), "mains": m0, "pieds": p0},
+        {"t": 0.36, "pieds": p0},
+        {"t": 0.42, "pieds": {s: (p0[s][0] + V((0, 0.2, 1.1)),) + p0[s][1:] for s in "GD"},
+         "mains": {s: (V((k * 2.4, cy - 6.0, 5.5)), W(1, 0.15, 0.2, k), W(1, 0.2, 0.1, k)) for s, k in (("G", 1), ("D", -1))}},
+        {"t": 0.48, "mains": {s: (V((k * 1.4, cy - 3.6, 12.0)), W(0.7, 1, 0.2, k), W(1, 0.6, 0.1, k)) for s, k in (("G", 1), ("D", -1))}},
+        {"t": 0.55, "racine": V((0, cy + 1.0, -3.3)), "dirs": DH, "mains": {"G": main_ch("G", hz0), "D": main_ch("D", hz0 - 1.2)},
+         "pieds": {s: _pied_vol(s, V((0, 0, 0)), (k * 1.0, cy + 2.5, 1.6)) for s, k in (("G", 1), ("D", -1))}, "machoire": 14,
+         "vent": V((0, 0.2, -0.6))},
+        {"t": 0.9, "racine": V((0, cy + 0.9, -3.9)), "dirs": DH, "pieds": {s: pied_ch(s, 2.4) for s in "GD"}, "vent": V((0, 0.1, 0))},
+    ]
+    z = -3.9; t0 = 1.1; hd = hz0 - 1.2; hg = hz0; pz = 2.4
+    cles.append({"t": t0, "racine": V((0, cy + 0.9, z)), "mains": {"G": main_ch("G", hg), "D": main_ch("D", hd)},
+                 "pieds": {s: pied_ch(s, pz) for s in "GD"}})
+    for c in range(2):
+        b = t0 + 0.9 * c
+        cles.append({"t": b + 0.27, "racine": V((0, cy + 0.9, z + 0.9)), "mains": {"D": main_ch("D", hd + 2.4)}, "pieds": {s: pied_ch(s, pz) for s in "GD"}})
+        cles.append({"t": b + 0.45, "racine": V((0, cy + 0.85, z + 1.4)), "pieds": {s: pied_ch(s, pz + 2.4) for s in "GD"}})
+        cles.append({"t": b + 0.72, "racine": V((0, cy + 0.9, z + 2.1)), "mains": {"G": main_ch("G", hg + 2.4)}})
+        z += 2.4; hd += 2.4; hg += 2.4; pz += 2.4
+        cles.append({"t": b + 0.9, "racine": V((0, cy + 0.9, z)), "mains": {"G": main_ch("G", hg), "D": main_ch("D", hd)},
+                     "pieds": {s: pied_ch(s, pz) for s in "GD"}})
+    for t in (3.6, 4.3, 5.0):
+        cles.append({"t": t, "racine": V((0, cy + 0.8 + 0.05 * math.sin(t * 2), z - 0.1)), "dirs": _avec(DH, Tete=W(0.7, 1, 0.05 * math.sin(t * 1.5), 1)),
+                     "mains": {"G": main_ch("G", hg), "D": main_ch("D", hd)}, "pieds": {s: pied_ch(s, pz) for s in "GD"}, "machoire": 6})
+    return sequence("Traqueur_ChaineGrimpe", cles)

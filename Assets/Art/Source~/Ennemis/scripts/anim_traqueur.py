@@ -55,6 +55,14 @@ def viser(pb, d, ref_x=None):
         base = bone.matrix_local.copy()
     base_rot = (a.matrix_world.to_3x3() @ base.to_3x3()).normalized()
     pb.rotation_mode = "QUATERNION"
+    if isinstance(ref_x, str) and ref_x == "repos":
+        # orientation de repos de l'os (en monde), pivotée au plus court vers d : jamais indéterminée (sauf d opposé au repos)
+        rest = (a.matrix_world.to_3x3() @ bone.matrix_local.to_3x3()).normalized()
+        R = rest.col[1].normalized().rotation_difference(V(d).normalized()).to_matrix()
+        M = R @ rest
+        pb.rotation_quaternion = (base_rot.inverted() @ M).to_quaternion()
+        bpy.context.view_layer.update()
+        return
     if ref_x is None:
         loc_d = base_rot.inverted() @ V(d).normalized()
         pb.rotation_quaternion = V((0, 1, 0)).rotation_difference(loc_d)
@@ -191,7 +199,10 @@ def cheveux_gravite(a=None, poids=1.0, vent=V((0, 0, 0))):
             h = a.matrix_world @ pb.head
             tete = a.matrix_world @ a.pose.bones["Tete"].head
             lat = V((h.x - tete.x, h.y - tete.y, 0)) * 0.15
-            d = (V((0, 0, -1)) + lat + vent).normalized()
+            d = V((0, 0, -1)) + lat + vent
+            if d.z > -0.45:                       # les mèches ne remontent jamais au-dessus de l'horizontale (pas de bascule)
+                d.z = -0.45
+            d.normalize()
             rd = (a.matrix_world.to_3x3() @ (pb.tail - pb.head)).normalized()
             viser(pb, rd.lerp(d, poids).normalized())
 
@@ -221,20 +232,23 @@ def _ik2(n1, n2, cible, pole, a=None):
 
 def ik_jambe(s, cheville, pole=V((0, -1, 0.2)), pied=None, orteils=None, a=None):
     a = a or arm()
-    _ik2("Cuisse_" + s, "Jambe_" + s, cheville, pole, a)
+    genou = _ik2("Cuisse_" + s, "Jambe_" + s, cheville, pole, a)
     if pied is not None:
         viser(a.pose.bones["Pied_" + s], pied, axe_x_repos("Pied_" + s, a))
     if orteils is not None:
         viser(a.pose.bones["Orteils_" + s], orteils, axe_x_repos("Orteils_" + s, a))
+    return genou
 
 
-def ik_bras(s, poignet, pole=V((0, 1, 0)), main=None, doigts=None, a=None):
+def ik_bras(s, poignet, pole=V((0, 1, 0)), main=None, doigts=None, a=None, mode_main="axe"):
     a = a or arm()
-    _ik2("Bras_" + s, "AvantBras_" + s, poignet, pole, a)
+    coude = _ik2("Bras_" + s, "AvantBras_" + s, poignet, pole, a)
+    ref = "repos" if mode_main == "repos" else None
     if main is not None:
-        viser(a.pose.bones["Main_" + s], main, axe_x_repos("Main_" + s, a))
+        viser(a.pose.bones["Main_" + s], main, ref if ref else axe_x_repos("Main_" + s, a))
     if doigts is not None:
-        viser(a.pose.bones["Doigts_" + s], doigts, axe_x_repos("Doigts_" + s, a))
+        viser(a.pose.bones["Doigts_" + s], doigts, ref if ref else axe_x_repos("Doigts_" + s, a))
+    return coude
 
 
 def direction(n, a=None):
@@ -442,3 +456,17 @@ def exporter_clip(nom, debut, fin, dossier=r"C:/Users/PC/ItHunts/ItHunts-art/Ass
                              bake_anim_use_nla_strips=False, bake_anim_use_all_actions=False, bake_anim_force_startend_keying=True,
                              bake_anim_step=1.0, bake_anim_simplify_factor=0.0)
     return p
+
+
+def sous_le_sol(debut, fin, a=None):
+    """Point le plus bas des pieds et des griffes (z, image) : négatif = le membre passe sous le sol."""
+    a = a or arm()
+    sc = bpy.context.scene
+    pire = (99.0, debut)
+    for f in range(debut, fin + 1):
+        sc.frame_set(f)
+        z = min([point("Orteils_" + s).z for s in "GD"] + [point("Contact_Pied_" + s, "head").z for s in "GD"]
+                + [point("Doigts_" + s).z - 0.15 for s in "GD"])
+        if z < pire[0]:
+            pire = (round(z, 3), f)
+    return pire
