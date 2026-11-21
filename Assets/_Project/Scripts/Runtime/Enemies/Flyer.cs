@@ -594,6 +594,8 @@ namespace ItHunts.Enemies
             float r = settings.burstRadius, total = 0f;
             AreaEvents.RaiseArea(new AreaImpactEvent { Point = point, Radius = r, ImpactDamage = settings.burstDamage });
             AreaEvents.RaiseBroken(new BreakEvent { Point = point, Size = Vector3.one * 0.6f, Color = new Color(0.25f, 0.2f, 0.18f) });
+            if (ItHunts.Combat.GameVfx.Settings != null)
+                ItHunts.Combat.GameVfx.Spawn(ItHunts.Combat.GameVfx.Settings.flyerDeath, point, Quaternion.identity, 1f, null, 3f);
             var deathArt = ItHunts.Audio.GameAudio.Settings;
             if (deathArt != null && deathArt.flyerDeath != null)
                 ItHunts.Audio.GameAudio.PlayAt(deathArt.flyerDeath, point, deathArt.flyerVolume);

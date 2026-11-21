@@ -202,6 +202,7 @@ namespace ItHunts.Artifacts
                 }
 
                 PlayShot(cfg.shotVolume);
+                PaintedShot(shot.Kind != BarrelHitKind.Rien ? shot.Point : (Vector3?)null, shot.Normal);
             }
 
             if (b.Reloading && b.ReloadStartTick != _seenReloadStart)
@@ -217,7 +218,9 @@ namespace ItHunts.Artifacts
             }
 
             float age = Time.time - _shotTime;
-            if (tracer != null)
+            if (tracer != null && _trace != null)
+                tracer.enabled = false;                                  // trace peinte de la DA à la place
+            else if (tracer != null)
             {
                 bool on = age < cfg.tracerDuration;
                 tracer.enabled = on;
@@ -269,6 +272,36 @@ namespace ItHunts.Artifacts
             AudioClip clip = art != null && art.barrelShots != null && art.barrelShots.Length > 0
                 ? art.barrelShots[_shotVariant++ % art.barrelShots.Length] : null;
             ItHunts.Audio.GameAudio.PlayOn(_audio, clip, _shot, volume);
+        }
+
+        private ItHunts.Art.VFX.TraceVfx _trace;
+
+        /// <summary>Tir : éclat de bouche peint (VFX_Barillet_Tir), trace peinte jusqu'à l'impact (VFX_Barillet_Trace), étincelles
+        /// sur un mur (VFX_Etincelles) ; effets de la DA (PR #22).</summary>
+        private void PaintedShot(Vector3? impactPoint, Vector3 normal)
+        {
+            var vfx = ItHunts.Combat.GameVfx.Settings;
+            if (vfx == null)
+                return;
+            Transform cam = _view != null && _view.ViewRoot != null ? _view.ViewRoot : transform;
+            ItHunts.Combat.GameVfx.Spawn(vfx.barrelMuzzle, _tracerFrom, Quaternion.LookRotation(cam.forward), 1f, null, 1.5f);
+            if (vfx.barrelTrace != null)
+            {
+                if (_trace == null)
+                {
+                    GameObject go = ItHunts.Combat.GameVfx.Spawn(vfx.barrelTrace, Vector3.zero, Quaternion.identity, 1f, null, 0f);
+                    _trace = go != null ? go.GetComponent<ItHunts.Art.VFX.TraceVfx>() : null;
+                }
+
+                if (_trace != null)
+                {
+                    _trace.detruire = false;
+                    _trace.Tire(_tracerFrom, _tracerTo);
+                }
+            }
+
+            if (impactPoint.HasValue)
+                ItHunts.Combat.GameVfx.Spawn(vfx.sparks, impactPoint.Value + normal * 0.03f, Quaternion.LookRotation(normal.sqrMagnitude > 0.01f ? normal : Vector3.up), 1f, null, 2f);
         }
     }
 }

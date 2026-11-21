@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8380a95c8bb13947922ef57fc6dacc0, type: 3}
+  m_Name: GameVfx_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.GameVfxSettings
+  torchFire: {fileID: 779921084376520598, guid: ccd5a80d88fddc64888000761e9a9f8f, type: 3}
+  lanternJet: {fileID: 5550569578326760208, guid: c49e8648c8b286545a7448a289b9e5b6, type: 3}
+  sparks: {fileID: 4263980784227264712, guid: 929726fc464905e458c05aded122f8c9, type: 3}
+  barrelMuzzle: {fileID: 8968936371294857350, guid: ad8d439c552314a45b613a7d198aae62, type: 3}
+  barrelTrace: {fileID: 1979318710834082337, guid: b471875402285404f82f3700c04aed5f, type: 3}
+  soul: {fileID: 6689154778440204861, guid: 2882b6f41c09e6d43ae06a052370c4bf, type: 3}
+  ghoulDeath: {fileID: 9166995586508000190, guid: 30516ca7cd3c85b40938c0af0a97a59a, type: 3}
+  flyerDeath: {fileID: 5832133764752367922, guid: 0bdfec9da0b198043913f65617b2e48a, type: 3}
+  stun: {fileID: 557825561448543831, guid: c641330b83d94cf4785095073ed5f9a4, type: 3}
+  parry: {fileID: 3393202520873386219, guid: d1dacd8954b348b4caab22b1789505c7, type: 3}
+  drainLink: {fileID: 3139304292574925328, guid: 3d2cdeda04449e04188bcd54aaefa14e, type: 3}
+  healLink: {fileID: 7262695549033814883, guid: 2d3dbd8eb66359c4a84926ae2f8c356f, type: 3}
+  stalkerLandingDust: {fileID: 3385680016945947326, guid: 7a08aed827816854982f735f6b423f5a, type: 3}
+  soulVfxCap: 32
+  burningScale: 0.6

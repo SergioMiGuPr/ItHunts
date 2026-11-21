@@ -46,6 +46,15 @@
   mort ; volant : cri, ailes en boucle 3D, mort ; barillet : 2 tirs en alternance, recharge ; lanterne : début puis boucle
   pendant le jet (fondu de fin). Musique en jeu : exploration en boucle, fondu croisé (2.5 s) vers la musique Enragé, retour.
   Volumes : l'écouteur porte volume général × effets ; les musiques (menu, jeu) multiplient par `GameSettings.MusicGain`.
+- **PR #25 (`art-kit-modules`), #26 (`art-outils`, `NUIT-FIN.md`) :** vérifiées, fusionnées, poussées, `main` dans `animations`.
+  Toutes les PR de la nuit sont intégrées (#19 à #26) ; pas de PR du traqueur v4 (consigne).
+- **8. Effets peints de la DA (PR #22).** `GameVfxSettings` (`Resources/GameVfx_Default`, 13 effets), `GameVfx.Spawn` ; Runtime
+  référence `ItHunts.Art.VFX`. Torches (`Prop_Torche` : `VFX_Torche_Feu` à la place de la flamme), jet de la lanterne (à la place
+  des bouffées), barillet (éclat de bouche, trace peinte, étincelles à l'impact), âmes (`VFX_Ame` sur les 32 plus proches, réserve
+  réutilisée), morts de goule et de volant, étoiles d'étourdissement, éclair de parade, brûlure (flamme à 0.6). Liens du hibou :
+  point 5 ; poussière d'atterrissage du traqueur : point 9. **Coût mesuré** (Play Mode, Level_01_Aleatoire, 235 torches,
+  470 systèmes, ~1 700 particules) : `ParticleSystem.Update` 0.77 ms par image, fil principal 15.1 → 13.2 ms torches éteintes
+  (éditeur). À surveiller en build ; leviers : `debit` des flammes, une torche sur deux (`RandomLevel.ThinTorches`).
 
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;
