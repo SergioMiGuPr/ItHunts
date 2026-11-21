@@ -19,6 +19,26 @@ quais, pente peu profonde, piliers et caisse dans l'eau, trois torches). Constru
 `Mobile_RPAsset`** : sur ce profil, pas d'écume ni de transparence). L'eau est un `Quad` ou un plan à la hauteur de la surface,
 sans collider (la physique reste celle de `DeepWater`).
 
+## Mouvement (2026-11-22, retour « l'eau paraît fixe en jeu »)
+
+Le shader bougeait déjà, mais trop peu pour se voir : entre deux images à 0,5 s, l'écart moyen sur l'eau était de
+**3,4/255** (12 % des pixels changent nettement). Il passe à **8,5/255** (26 %) dans l'éditeur, au même instant et sur la même
+zone, et à **6,7/255** (18 %) dans un **build Windows** (Direct3D 12, temps réel ; la zone fixe ne bouge pas : 0,0). Planche :
+`docs/art/rendus/Eau/Planche_Eau_Mouvement.jpg`.
+
+| Ajout | Réglage (matériau `M_Eau_Toon`) |
+|---|---|
+| Vitesse globale de tout le mouvement | `_Mouvement` (1,5 ; 0 = eau figée) |
+| Ondulation plus forte et plus rapide | `_Ondulation.x` 0,04 → 0,09 ; `_Courant.z` 0,12 → 0,3 |
+| **Vaguelettes** : tirets clairs en aplat sur les crêtes de deux bruits qui dérivent (le long du courant et en travers), largeur constante en mètres | `_Vaguelettes` (force 0,45, échelle 1,6 par m, vitesse 0,6, demi-largeur 1,4 cm), `_VagueCouleur` |
+| **Reflets qui ondulent** : la pente des vaguelettes entre dans la normale des reflets des torches | `_RefletsOndule` (1,2) |
+| **Écume qui avance et recule** | `_EcumePulse` (35 % de la largeur, 0,7 cycle/s) |
+
+Contrôle en jeu et dans un build : composant `EauControleMouvement` (assemblée `ItHunts.Art.Eau`) à poser dans une scène ; il
+mesure l'écart entre deux captures d'écran (zone d'eau et zone fixe) et l'écrit dans `controle_eau.txt` ; un build lancé avec
+`-eauControle <dossier>` quitte une fois la mesure faite. Captures à temps imposé dans l'éditeur : `EauBuilder.CaptureTemps`
+(global `_ItHuntsEauTemps`, toujours 0 en jeu).
+
 ## Éclaboussure
 
 - `Assets/Art/Eau/Prefabs/VFX_Eau_Eclaboussure.prefab` : couronne d'eau peinte (planche 4 × 4, 0.7 s, trait d'encre) + onde

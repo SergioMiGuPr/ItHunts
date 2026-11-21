@@ -131,4 +131,28 @@ public static class EauBuilder
         Object.DestroyImmediate(tex); rt.Release();
         return sortie;
     }
+    // contrôle du mouvement (2026-11-22) : capture au temps imposé t (global _ItHuntsEauTemps), réglages « avant » (eau du
+    // lot F : ondulation 0,04, vitesse 0,12, sans vaguelettes, reflets fixes, écume fixe, _Mouvement 1) ou actuels
+    public static string CaptureTemps(float t, bool avant, string sortie)
+    {
+        if (!BonProjet()) return "MAUVAIS PROJET";
+        var m = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Eau/Materiaux/M_Eau_Toon.mat");
+        var sauve = new Material(m);
+        if (avant)
+        {
+            var o = m.GetVector("_Ondulation"); o.x = 0.04f; m.SetVector("_Ondulation", o);
+            var c = m.GetVector("_Courant"); c.z = 0.12f; m.SetVector("_Courant", c);
+            m.SetFloat("_Mouvement", 1f); m.SetFloat("_RefletsOndule", 0f);
+            var v = m.GetVector("_Vaguelettes"); v.x = 0f; m.SetVector("_Vaguelettes", v);
+            var e = m.GetVector("_EcumePulse"); e.x = 0f; m.SetVector("_EcumePulse", e);
+        }
+        Shader.SetGlobalFloat("_ItHuntsEauTemps", t);
+        try { return Capture(0.3f, sortie); }
+        finally
+        {
+            Shader.SetGlobalFloat("_ItHuntsEauTemps", 0f);
+            m.CopyPropertiesFromMaterial(sauve);
+            Object.DestroyImmediate(sauve);
+        }
+    }
 }

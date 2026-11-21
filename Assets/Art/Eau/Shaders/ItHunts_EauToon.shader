@@ -4,6 +4,10 @@
 // trait d'encre cerne l'écume ; le fond se voit à travers l'eau peu profonde (texture opaque déformée par les vagues) ;
 // les torches (lumières ponctuelles) se reflètent en taches nettes allongées. Requiert la texture de profondeur et la
 // texture opaque de l'URP (activées dans PC_RPAsset ; sans elles : pas d'écume ni de transparence, l'eau reste opaque).
+// Mouvement (2026-11-22, l'eau paraissait fixe en jeu) : _Mouvement multiplie toutes les vitesses ; vaguelettes encrées qui
+// dérivent avec le courant (traits clairs qui se forment et se défont), normale des vaguelettes dans les reflets (les taches
+// des torches ondulent et scintillent), écume qui avance et recule (_EcumePulse). Tout est animé par _Time : rien ne dépend
+// de l'éditeur (vérifié en jeu et dans un build : docs/art/EAU.md).
 Shader "ItHunts/EauToon"
 {
     Properties
@@ -11,7 +15,13 @@ Shader "ItHunts/EauToon"
         _BaseMap ("Texture d'eau peinte (tuile)", 2D) = "white" {}
         _Tuile ("Taille de la tuile (m)", Float) = 6
         _Courant ("Courant : direction xz (m/s) et vitesse de l'ondulation", Vector) = (0.35, 0.1, 0.12, 0)
-        _Ondulation ("Ondulation : force des vagues sur la texture, échelle", Vector) = (0.04, 0.45, 0, 0)
+        _Ondulation ("Ondulation : force des vagues sur la texture, échelle", Vector) = (0.09, 0.45, 0, 0)
+        _Mouvement ("Mouvement : multiplie toutes les vitesses (0 = eau figée)", Range(0, 4)) = 1.5
+        [Header(Vaguelettes)]
+        _Vaguelettes ("Vaguelettes : force, échelle (par m), vitesse de déformation, demi-largeur du trait (m)", Vector) = (0.45, 1.6, 0.6, 0.014)
+        _VagueCouleur ("Vaguelettes : couleur ajoutée", Color) = (0.16, 0.26, 0.2, 1)
+        _RefletsOndule ("Reflets : ondulation par les vaguelettes", Range(0, 3)) = 1.2
+        _EcumePulse ("Écume : avance et recul (part de la largeur, cycles par seconde)", Vector) = (0.35, 0.7, 0, 0)
         [Header(Profondeur)]
         _PeuProfond ("Peu profond", Color) = (0.2, 0.32, 0.22, 1)
         _Moyen ("Moyen", Color) = (0.07, 0.15, 0.11, 1)
@@ -55,10 +65,13 @@ Shader "ItHunts/EauToon"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareOpaqueTexture.hlsl"
 
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
+            float _ItHuntsEauTemps;   // captures de contrôle seulement : temps imposé (> 0) ; 0 en jeu (temps réel)
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST;
                 float _Tuile;
-                float4 _Courant, _Ondulation, _Paliers;
+                float4 _Courant, _Ondulation, _Paliers, _Vaguelettes, _EcumePulse;
+                half4 _VagueCouleur;
+                float _Mouvement, _RefletsOndule;
                 half4 _PeuProfond, _Moyen, _Profond, _Ecume, _Encre, _Ciel;
                 half _Texture, _Transparence, _Refraction, _EcumeLargeur, _EcumeBruit, _EncreLargeur, _Reflets, _RefletsTaille, _RefletsSeuil;
             CBUFFER_END
@@ -90,9 +103,20 @@ Shader "ItHunts/EauToon"
                 return o;
             }
 
+            // champ des vaguelettes : deux bruits qui dérivent dans des directions différentes (le long du courant et en
+            // travers) ; les crêtes sont les lignes où le champ passe par 0,5
+            float Vagues(float2 w, float t)
+            {
+                float2 c = _Courant.xy;
+                float2 dv = normalize(float2(c.x, c.y) + 1e-4);
+                float a = Bruit(w * _Vaguelettes.y + t * c * 0.9 * _Vaguelettes.y + float2(0, t * _Vaguelettes.z));
+                float b = Bruit(w * _Vaguelettes.y * 1.7 + float2(-dv.y, dv.x) * t * 0.35 + 13.7 - float2(t * _Vaguelettes.z * 0.7, 0));
+                return a * 0.6 + b * 0.4;
+            }
+
             half4 Frag(Varyings i) : SV_Target
             {
-                float t = _Time.y;
+                float t = (_ItHuntsEauTemps > 0 ? _ItHuntsEauTemps : _Time.y) * _Mouvement;
                 float2 w = i.positionWS.xz;
                 // vagues : décalage lent qui déforme les uv (ondulation), deux couches qui défilent avec le courant
                 float2 ond = float2(Bruit(w * _Ondulation.y + t * _Courant.z), Bruit(w * _Ondulation.y + 7.3 - t * _Courant.z)) - 0.5;
@@ -111,6 +135,16 @@ Shader "ItHunts/EauToon"
                 half3 c = prof < _Paliers.x ? _PeuProfond.rgb : (prof < _Paliers.y ? _Moyen.rgb : _Profond.rgb);
                 half texL = dot(tex, half3(0.3, 0.59, 0.11));
                 c = lerp(c, c * 0.6 + tex * 0.8, _Texture);
+                // vaguelettes : traits clairs en aplat sur les crêtes, de largeur constante (finesse = demi-largeur en m :
+                // distance à la crête = écart du champ divisé par sa pente)
+                float vg = Vagues(w, t);
+                float ex = 0.06;
+                float gx = Vagues(w + float2(ex, 0), t) - vg, gz = Vagues(w + float2(0, ex), t) - vg;
+                float pente = max(length(float2(gx, gz)) / ex, 1e-3);
+                half crete = step(abs(vg - 0.5) / pente, _Vaguelettes.w);
+                // traits coupés en tirets qui suivent le courant (pas de longues lignes continues)
+                crete *= step(0.52, Bruit(w * _Vaguelettes.y * 2.6 + t * _Courant.xy * 1.4 + 3.1));
+                c = lerp(c, c * 1.25 + _VagueCouleur.rgb, crete * _Vaguelettes.x);
                 // fond vu à travers l'eau peu profonde
                 half3 fond = SampleSceneColor(suvR);
                 half voit = (1.0 - saturate(prof / max(_Paliers.y, 0.01))) * _Transparence;
@@ -118,14 +152,16 @@ Shader "ItHunts/EauToon"
                 c = lerp(c, fond * c * 3.0, voit);
                 // écume au bord et autour des objets, découpée par le bruit ; trait d'encre derrière
                 float bruitE = Bruit(w * 3.0 + t * _Courant.xy * 2.0) * _EcumeBruit;
-                float e = prof + bruitE * _EcumeLargeur;
+                float pulse = sin(t * _EcumePulse.y * 6.2832 + (w.x + w.y) * 0.8) * _EcumePulse.x * _EcumeLargeur;
+                float e = prof + bruitE * _EcumeLargeur - pulse;
                 half ecume = step(e, _EcumeLargeur);
                 half encre = step(e, _EcumeLargeur + _EncreLargeur) * (1 - ecume);
                 c = lerp(c, _Ecume.rgb, ecume);
                 c = lerp(c, _Encre.rgb, encre);
                 // reflets des torches : taches nettes (paliers), allongées vers la caméra par les vagues
                 float3 V = normalize(GetWorldSpaceViewDir(i.positionWS));
-                float3 N = normalize(float3(ond.x * 0.9 + (texL - 0.3) * 0.6, 1.0, ond.y * 0.9));
+                // normale : ondulation lente + pente des vaguelettes (différences finies) : les reflets ondulent
+                float3 N = normalize(float3(ond.x * 0.9 + (texL - 0.3) * 0.6 - gx / ex * 0.25 * _RefletsOndule, 1.0, ond.y * 0.9 - gz / ex * 0.25 * _RefletsOndule));
                 half3 refl = 0;
                 #if defined(_ADDITIONAL_LIGHTS) || USE_CLUSTER_LIGHT_LOOP
                 uint n = GetAdditionalLightsCount();

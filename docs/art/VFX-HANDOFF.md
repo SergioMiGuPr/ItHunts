@@ -68,3 +68,65 @@ Lecture : **une passe de rendu par système ou ligne** (pas de regroupement entr
 de 100 Kio). Surcouche (overdraw) : les flammes et la poussière sont les plus grandes à l'écran ; la couverture est nette (pas
 de bords semi-transparents larges), ce qui limite le coût du mélange. Si les torches sont nombreuses : baisser `debit` des
 flammes (7/s) ou ne garder qu'une torche sur deux (déjà fait par `RandomLevel.ThinTorches`).
+
+
+# Lot 2 des retours (2026-11-22, branche `art-effets-2`)
+
+Même style que le lot D : formes peintes en aplats et encre, dissolution par morceaux, shader `ItHunts/VFX/Peint`. Planche :
+`docs/art/rendus/VFX/Planche_VFX_Lot2.jpg` (captures Unity en vue à la première personne, sans bloom). Constructeur :
+`VfxBuilder.ConstruitLot2` (ne reconstruit pas les 13 prefabs du lot D) ; captures `VfxBuilder.CaptureFps`. Nouvelle texture
+`T_VFX_Arc_2x2` (arc de lame qui se déploie puis se défait, `vfx_textures.py`, sans IA).
+
+## Prefabs et où les brancher sur `main`
+
+| Prefab | Effet | Type | Se branche sur |
+|---|---|---|---|
+| `VFX_Traction` | fumée et éclats bleus qui **filent de l'orbe au point visé** pendant toute la traction (spirale légère, petits près de l'orbe) | `FluxVfx` : `source` = transform de l'orbe, `Regle(point)` à chaque image, `Ouvre()` au début de la traction, `Ferme()` à la fin (les particules parties finissent leur course) | **remplace le trait** `MagnetismOrbView.line` (désactiver le `LineRenderer`) ; l'ancre et l'éclat bleus restent possibles |
+| `VFX_Repulsion` | onde courte orange (0,2 s, ~1 m) dans le plan de la surface + 6 éclats | ponctuel ; poser au point visé, rotation `LookRotation(normale)` (+Z = normale) | `MagnetismOrbView` à la répulsion (à la place ou en plus de `impactMarker`) |
+| `VFX_Epee_Taille_H` | coup 1 : taille horizontale, arc dessiné qui se déploie en 0,17 s | ponctuel ; poser à la caméra (position et rotation), l'arc est à 0,9 m devant, 0,28 m sous le regard | `BoneSword`, coup d'index 0 |
+| `VFX_Epee_Taille_D` | coup 2 : taille diagonale (même arc, incliné de 35°) | idem | coup d'index 1 |
+| `VFX_Epee_Estoc` | coup 3 et fente : faisceau de traits vers l'avant + anneau à 1,6 m | idem | coup d'index 2 et fente (dash, glissade) |
+| `VFX_Epee_Impact` | éclat d'impact **vert** + anneau + étincelles | ponctuel, au point touché | coup qui touche (`BoneSword`, chaque ennemi touché) |
+| `VFX_Vitesse_Bords` | traits pâles qui filent vers les bords de l'écran | continu ; **enfant de la caméra** (position et rotation nulles) ; `VitesseVfx.Regle(vitesseHorizontale)` à chaque image | `PlayerMotor` (vitesse horizontale) ; rien sous `seuilBas` (9 m/s), maximum à `seuilHaut` (18 m/s) ; `force` pour l'accessibilité (0 = coupé) |
+| `VFX_Impact_Leger` | éclat clair + 7 étincelles + 2 bouffées | ponctuel | balle du barillet sur un mur, petit objet lancé |
+| `VFX_Impact_Lourd` | grand éclat + 12 étincelles + 5 bouffées + gravats | ponctuel | caisse lancée qui touche (`ImpactDamage`), chute d'un gros objet |
+| `VFX_Poussiere_Joueur` | anneau de 9 bouffées au sol (rayon 0,3 m) + graviers | ponctuel, aux pieds | atterrissage du joueur ; `VfxPeint.echelle` selon la vitesse de chute (0,6 petit saut, 1 chute normale, 1,5 grande chute) |
+
+Réglages exposés : `VfxPeint` (teinte, intensité, échelle, vitesse, destruction à la fin) sur chaque prefab ; `FluxVfx` (vitesse
+16 m/s, densité 9 particules par mètre, spirale, taille près de l'orbe, débit maximal) ; `VitesseVfx` (seuils, débit,
+étirement, lissage, force). Les systèmes de particules restent réglables dans les prefabs.
+
+**Réseau** : tout est cosmétique et local ; la traction d'un autre joueur se dessine avec sa propre orbe et son point visé
+(déjà répliqués pour le mouvement).
+
+## Coût mesuré (tous les effets, `VfxBuilder.Mesure`)
+
+Même méthode que le lot D (chaque effet seul, 60 images/s, processeur de l'éditeur, indicatif). `VFX_Traction` : 68
+particules au plus pour un trajet de 8 m (débit proportionnel à la longueur, plafonné à 300/s par système). `VFX_Vitesse_Bords`
+n'émet rien à l'arrêt (0 particule mesurée) : au maximum ~30 traits.
+
+| Effet | Systèmes / lignes | Matériaux | Particules max | Durée simulée (s) | Simulation (µs par image, moyenne) | Textures (Kio) |
+|---|---|---|---|---|---|---|
+| `VFX_Ame` | 2 / 0 | 1 | 8 | 2,2 | 14,5 | 683 |
+| `VFX_Barillet_Tir` | 2 / 0 | 2 | 6 | 2,0 | 3,9 | 183 |
+| `VFX_Barillet_Trace` | 0 / 1 | 1 | ligne (≤ 64 points) | 0,0 | 0,0 | 22 |
+| `VFX_Epee_Estoc` | 2 / 0 | 2 | 13 | 2,0 | 2,3 | 55 |
+| `VFX_Epee_Impact` | 3 / 0 | 3 | 10 | 2,0 | 2,7 | 226 |
+| `VFX_Epee_Taille_D` | 1 / 0 | 1 | 1 | 2,0 | 1,1 | 683 |
+| `VFX_Epee_Taille_H` | 1 / 0 | 1 | 1 | 2,0 | 1,2 | 683 |
+| `VFX_Etincelles` | 1 / 0 | 1 | 12 | 2,0 | 2,5 | 11 |
+| `VFX_Etourdissement` | 1 / 0 | 1 | 4 | 2,0 | 3,6 | 43 |
+| `VFX_Impact_Leger` | 3 / 0 | 3 | 10 | 2,0 | 2,8 | 866 |
+| `VFX_Impact_Lourd` | 4 / 0 | 4 | 24 | 2,0 | 9,9 | 866 |
+| `VFX_Lanterne_Jet` | 2 / 0 | 2 | 27 | 2,0 | 5,3 | 695 |
+| `VFX_Lien_Drain` | 0 / 1 | 1 | ligne (≤ 64 points) | 0,0 | 0,0 | 43 |
+| `VFX_Lien_Soin` | 0 / 1 | 1 | ligne (≤ 64 points) | 0,0 | 0,0 | 43 |
+| `VFX_Mort_Goule` | 2 / 0 | 2 | 14 | 2,0 | 3,7 | 695 |
+| `VFX_Mort_Volant` | 2 / 0 | 1 | 11 | 2,1 | 2,1 | 683 |
+| `VFX_Parade_Eclair` | 3 / 0 | 2 | 12 | 2,0 | 2,8 | 215 |
+| `VFX_Poussiere_Atterrissage` | 2 / 0 | 2 | 22 | 2,7 | 2,4 | 695 |
+| `VFX_Poussiere_Joueur` | 2 / 0 | 2 | 14 | 2,0 | 2,3 | 695 |
+| `VFX_Repulsion` | 2 / 0 | 2 | 7 | 2,0 | 2,3 | 55 |
+| `VFX_Torche_Feu` | 2 / 0 | 2 | 8 | 2,1 | 3,8 | 695 |
+| `VFX_Traction` | 2 / 0 | 2 | 68 | 2,0 | 7,1 | 695 |
+| `VFX_Vitesse_Bords` | 1 / 0 | 1 | 0 | 2,0 | 1,0 | 11 |
