@@ -355,9 +355,13 @@ def camera_video(cote="profil_droite", largeur_m=21.5, u0=200.0, v0=237.0, W=427
     return cam
 
 
-def rendre_images(dossier, f0, f1, pas=1, moteur="BLENDER_WORKBENCH"):
+def rendre_images(dossier, f0, f1, pas=1, moteur="BLENDER_WORKBENCH", suivre=False):
+    """suivre : la caméra garde sa distance à Racine le long de l'axe de déplacement (Y), comme une caméra qui accompagne."""
     import os
     sc = bpy.context.scene
+    cam = sc.camera
+    c0 = cam.location.copy()
+    sc.frame_set(f0); y0 = point("Racine", "head").y
     os.makedirs(dossier, exist_ok=True)
     sc.render.engine = moteur
     if moteur == "BLENDER_WORKBENCH":
@@ -368,8 +372,11 @@ def rendre_images(dossier, f0, f1, pas=1, moteur="BLENDER_WORKBENCH"):
     sc.render.image_settings.file_format = "PNG"
     for f in range(f0, f1 + 1, pas):
         sc.frame_set(f)
+        if suivre:
+            cam.location.y = c0.y + (point("Racine", "head").y - y0)
         sc.render.filepath = os.path.join(dossier, "%04d.png" % f)
         bpy.ops.render.render(write_still=True)
+    cam.location = c0
 
 
 def fluidite(debut, fin, boucle=False, a=None):

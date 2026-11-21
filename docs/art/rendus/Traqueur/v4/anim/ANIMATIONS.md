@@ -79,3 +79,61 @@ Contrôles :
 
 ### Traqueur_Marche_B
 La même marche, en miroir : c'est la main gauche qui ouvre le cycle, comme dans la seconde moitié de la vidéo. Le balancement du buste et de la tête est inversé, la tête un peu plus haute. Mêmes mesures que Marche_A.
+
+## Lot 2 (PR `art-traqueur-anim-2`) : courses enragées
+
+Les trois vidéos sont filmées **de face** : la caméra recule avec la créature, dans un couloir. Le rythme a été relevé image par image sur la silhouette, après retrait du fond (médiane temporelle) : largeur (un bras écarté vers un mur), bas (une main qui se pose), centre (le corps qui va vers un mur).
+
+Les murs sont placés à **7 m de l'axe** : c'est un couloir de 14 m, comme ceux du jeu. Les vitesses reprennent celles du jeu, car la caméra qui suit ne permet pas de mesurer la vitesse réelle : 11 m/s en enragé, 9 m/s en chasse. La cadence, elle, est celle de la vidéo.
+
+Les rendus de contrôle sont faits de face, avec une caméra qui suit la créature.
+
+### Traqueur_CourseEnragee_A
+Vidéo de référence : `traqueur_ref_course_enragee`.
+
+| Réglage | Valeur |
+|---|---|
+| Durée | boucle de 2 cycles, **2.6 s** |
+| Root motion | **11 m/s**, foulée de 14.3 m |
+| Allure | course à quatre pattes ; une main se pose toutes les **0.65 s** (cycle de 1.3 s, relevé sur le bas de la silhouette) |
+| Moments de pose (s) | main droite 0, 1.3 ; pied gauche 0.2, 1.5 ; main gauche 0.65, 1.95 ; pied droit 0.85, 2.15 |
+| Frappes au mur | main gauche à 0.25 s, main droite à 0.9 s, une pose sans frappe à 1.5 s, main droite à 2.2 s |
+
+Pendant une frappe, le bras part frapper le mur au milieu de son vol, en passant par l'extérieur ; il touche le mur 0.1 s, puis revient se poser.
+
+Posture : dos bas, tête relevée (le visage visible comme dans la vidéo), mâchoire ouverte.
+
+Contrôles :
+- glissement : pieds 1 à 3 cm, mains 0 à 4 cm (déroulé) ;
+- verrou : OK ;
+- vitesse angulaire maximale : 40°/image (doigts, pendant la frappe) ; le geste vers le mur dure environ 0.25 s, comme le flou de la vidéo.
+
+### Traqueur_CourseEnragee_B
+Vidéo de référence : `traqueur_ref_course_enragee_profil` (filmée de face elle aussi).
+
+| Réglage | Valeur |
+|---|---|
+| Durée | boucle de 3 cycles, **3.9 s** |
+| Root motion | **11 m/s** vers l'avant, plus un **décalage latéral** de 2.2 m vers le mur, qui revient au centre à chaque boucle |
+| Déroulé | élan vers le mur droit (0.2 à 1.5 s : main droite plaquée au mur à 0.9 s, buste penché vers le mur), frappe droite à 2.2 s, élan vers le mur gauche (1.7 à 2.8 s, main gauche au mur à 2.9 s), puis bonds au centre |
+
+Contrôles :
+- glissement : pieds 1 à 3 cm, mains 1 cm ;
+- verrou : OK ;
+- vitesse angulaire maximale : 67°/image (avant-bras, pendant le balayage vers le mur : environ 10 m en 0.25 s). C'est le geste le plus brusque du lot, et il reste continu.
+
+### Traqueur_CourseEnragee_C
+Vidéo de référence : `traqueur_ref_course_subjective`. Malgré son nom, elle est filmée de face : la créature y court sur deux jambes.
+
+| Réglage | Valeur |
+|---|---|
+| Durée | boucle de 2 cycles, **2 s** |
+| Root motion | **9 m/s** |
+| Allure | course voûtée sur les deux jambes ; pas toutes les 0.5 s (pied gauche à 0 et 1 s, pied droit à 0.5 et 1.5 s) |
+| Bras | libres : ils pendent devant, se balancent à l'opposé des jambes, puis partent frapper les murs |
+| Frappes au mur | main droite à **0.6 s**, main gauche à **1.6 s**, mêmes instants que la vidéo ; le buste roule vers le mur frappé |
+
+Contrôles :
+- glissement : 3 mm ;
+- verrou : OK ;
+- vitesse angulaire maximale : 37°/image (doigts).
