@@ -783,6 +783,6 @@ effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retir
 | Bond | 22 m au plus, 6 m de dénivelé | arc de 5 m au-dessus de la ligne |
 | Rebord / mur grimpable / chaîne | 8 / 16 / 16 m de haut au plus | |
 | Saut depuis une chaîne | 18 m au plus | |
-| Garde-corps | sans collision | une collision cachait le joueur à la main du traqueur |
+| Garde-corps, cordes, échelles, chaînes | collision pour les joueurs, traversée par la main et le regard du traqueur (A2, matin du 2026-11-21) | une collision pleine cachait le joueur à la main du traqueur |
 | Cages suspendues du puits | dessus à 16 m au plus | au-dessus, cachette |
 

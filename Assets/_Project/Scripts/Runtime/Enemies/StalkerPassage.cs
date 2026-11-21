@@ -87,16 +87,20 @@ namespace ItHunts.Enemies
             k == StalkerLinkKind.EscaladeRebord || k == StalkerLinkKind.MurGrimpe || k == StalkerLinkKind.ChaineGrimpe;
 
         /// <summary>Distance horizontale et dénivelé permis pour ce type (Stalker_Default).</summary>
+        public const float ClimbMaxFlat = 16f;
+
         public static bool Allowed(StalkerLinkKind k, Vector3 a, Vector3 b, StalkerSettings cfg)
         {
             float flat = new Vector2(b.x - a.x, b.z - a.z).magnitude, rise = Mathf.Abs(b.y - a.y);
             return k switch
             {
                 StalkerLinkKind.Bond => flat <= cfg.leapMaxDistance && rise <= cfg.leapMaxRise,
-                StalkerLinkKind.ChaineSaut => flat <= cfg.chainJumpMaxDistance && rise <= cfg.leapMaxRise + 4f,
-                StalkerLinkKind.EscaladeRebord => rise <= cfg.ledgeMaxHeight && flat <= 12f,
-                StalkerLinkKind.MurGrimpe => rise <= cfg.wallMaxHeight && flat <= 12f,
-                StalkerLinkKind.ChaineGrimpe => rise <= cfg.chainMaxHeight && flat <= 12f,
+                // Saut depuis une chaîne : il se laisse tomber de la hauteur où il s'accroche (jusqu'à la hauteur de chaîne).
+                StalkerLinkKind.ChaineSaut => flat <= cfg.chainJumpMaxDistance && rise <= Mathf.Max(cfg.leapMaxRise + 4f, cfg.chainMaxHeight),
+                // Escalades : 16 m à plat au plus (pied du mur et bord d'arrivée recalés sur son NavMesh, 4 m chacun).
+                StalkerLinkKind.EscaladeRebord => rise <= cfg.ledgeMaxHeight && flat <= ClimbMaxFlat,
+                StalkerLinkKind.MurGrimpe => rise <= cfg.wallMaxHeight && flat <= ClimbMaxFlat,
+                StalkerLinkKind.ChaineGrimpe => rise <= cfg.chainMaxHeight && flat <= ClimbMaxFlat,
                 _ => true,
             };
         }

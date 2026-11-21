@@ -218,7 +218,9 @@ namespace ItHunts.Level
             agentType = s.agentTypeID;
             var sources = new List<NavMeshBuildSource>();
             NavMeshBuilder.CollectSources(root, ~0, NavMeshCollectGeometry.PhysicsColliders, 0, new List<NavMeshBuildMarkup>(), sources);
-            sources.RemoveAll(src => src.component is Collider c && (c.isTrigger || c.attachedRigidbody != null));
+            // Comme ZoneNavMesh : ce que le traqueur traverse (arcs, garde-corps, piliers d'arche) n'est pas un obstacle pour lui.
+            sources.RemoveAll(src => src.component is Collider c && (c.isTrigger || c.attachedRigidbody != null
+                                                                     || c.GetComponentInParent<ItHunts.Enemies.StalkerPassesThrough>() != null));
             for (int i = 0; i < sources.Count; i++)
                 if (sources[i].component != null && sources[i].component.GetComponentInParent<NotWalkable>() != null)
                 {
