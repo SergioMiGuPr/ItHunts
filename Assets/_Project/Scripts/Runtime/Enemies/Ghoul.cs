@@ -1207,6 +1207,8 @@ namespace ItHunts.Enemies
 
         private PlayerHealth _strikeTarget;
         private bool _holdingAttack;
+        private PlayerHealth _pendingHit;
+        private float _pendingImpact;
 
         /// <summary>Coups portés au contact (mesures).</summary>
         public int Strikes { get; private set; }
@@ -1219,6 +1221,26 @@ namespace ItHunts.Enemies
         /// </summary>
         private void ContactDamage(float now)
         {
+            // Coup tombé mais en attente (tolérance après l'impact de la parade) : paré par un appui juste après, sinon les dégâts.
+            if (_pendingHit != null)
+            {
+                PlayerHealth p = _pendingHit;
+                if (p.Dead)
+                    _pendingHit = null;
+                else if (ItHunts.Player.PlayerParry.TryLateParry(p, this, _pendingImpact, now, p.Center))
+                {
+                    Parried++;
+                    _pendingHit = null;
+                }
+                else if (now - _pendingImpact >= ItHunts.Player.PlayerParry.LateWindowOf(p))
+                {
+                    _pendingHit = null;
+                    p.TakeEnemyDamage(settings.contactDamage, p.Center, now);
+                }
+
+                return;
+            }
+
             if (_strikeTarget != null)
             {
                 if (now - _strikeAt < settings.contactImpactDelay)
@@ -1229,6 +1251,11 @@ namespace ItHunts.Enemies
                 {
                     if (ItHunts.Player.PlayerParry.TryParry(target, this, now, target.Center))
                         Parried++;                                    // paré (D-075) : aucun dégât, elle est étourdie
+                    else if (ItHunts.Player.PlayerParry.LateWindowOf(target) > 0f)
+                    {
+                        _pendingHit = target;                         // tolérance après l'impact : les dégâts attendent un peu
+                        _pendingImpact = now;
+                    }
                     else
                         target.TakeEnemyDamage(settings.contactDamage, target.Center, now);
                 }
