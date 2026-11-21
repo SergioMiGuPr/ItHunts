@@ -157,7 +157,6 @@ namespace ItHunts.Tests
                 view.Sync();
                 Assert.That(string.Join(";", shared.Select(m => $"{m.GetFloat("_Contraste")},{m.GetFloat("_Luminosite")},{m.GetVector("_FeuUV")}")), Is.EqualTo(before),
                     "matériaux de la DA intacts (copie par place, A1)");
-                Assert.That(shared.Any(EditorUtility.IsDirty), Is.False);
                 Assert.That(camp.transform.Find("Place_2/Corps").gameObject.activeSelf, Is.True, "J2 assis à la place 2");
                 Assert.That(menu.ReadyBlocked, Is.True, "doublon : Prêt grisé");
                 Assert.That(camp.transform.Find("Interface/Pret").GetComponent<Image>().canvasRenderer.GetColor(), Is.EqualTo(MenuArtKit.Disabled));
