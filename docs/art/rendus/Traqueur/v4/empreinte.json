@@ -1,0 +1,130 @@
+{
+ "maillages": {
+  "SK_Traqueur_v4_Corps": {
+   "sommets": 23500,
+   "triangles": 37999,
+   "min": [
+    -5.7046,
+    -1.343,
+    0.0
+   ],
+   "max": [
+    5.7077,
+    1.347,
+    11.915
+   ],
+   "somme_poids": 23500.0,
+   "formes": []
+  },
+  "SK_Traqueur_v4_Tete": {
+   "sommets": 10049,
+   "triangles": 15827,
+   "min": [
+    -0.5516,
+    -0.6991,
+    11.5472
+   ],
+   "max": [
+    0.8148,
+    0.8671,
+    14.0
+   ],
+   "somme_poids": 10049.0,
+   "formes": [
+    "Base",
+    "Cri",
+    "MachoirePendante",
+    "LevresRetroussees",
+    "YeuxPlisses",
+    "YeuxEcarquilles",
+    "Clignement"
+   ]
+  },
+  "SK_Traqueur_v4_Cheveux": {
+   "sommets": 3240,
+   "triangles": 4152,
+   "min": [
+    -1.2785,
+    -0.8539,
+    8.1964
+   ],
+   "max": [
+    1.5241,
+    1.5209,
+    14.1946
+   ],
+   "somme_poids": 3416.107,
+   "formes": []
+  }
+ },
+ "os": {
+  "Racine": 0.8,
+  "Bassin": 0.8459,
+  "Colonne_1": 0.8499,
+  "Colonne_2": 0.7403,
+  "Colonne_3": 0.7412,
+  "Colonne_4": 0.7427,
+  "Cou_1": 0.6878,
+  "Cou_2": 0.5777,
+  "Tete": 1.4222,
+  "Machoire": 1.1559,
+  "Cheveux_1_1": 0.9277,
+  "Cheveux_1_2": 0.9326,
+  "Cheveux_1_3": 0.9321,
+  "Cheveux_1_4": 0.9255,
+  "Cheveux_2_1": 1.0306,
+  "Cheveux_2_2": 1.0342,
+  "Cheveux_2_3": 1.0064,
+  "Cheveux_2_4": 1.0289,
+  "Cheveux_5_1": 1.0516,
+  "Cheveux_5_2": 1.0559,
+  "Cheveux_5_3": 1.0544,
+  "Cheveux_5_4": 1.0528,
+  "Cheveux_7_1": 1.0962,
+  "Cheveux_7_2": 1.1074,
+  "Cheveux_7_3": 1.1038,
+  "Cheveux_7_4": 1.1047,
+  "Cheveux_3_1": 0.9249,
+  "Cheveux_3_2": 0.9315,
+  "Cheveux_3_3": 0.933,
+  "Cheveux_3_4": 0.9266,
+  "Cheveux_4_1": 1.025,
+  "Cheveux_4_2": 1.0266,
+  "Cheveux_4_3": 1.0027,
+  "Cheveux_4_4": 1.0267,
+  "Cheveux_6_1": 1.0567,
+  "Cheveux_6_2": 1.0611,
+  "Cheveux_6_3": 1.06,
+  "Cheveux_6_4": 1.0593,
+  "Clavicule_G": 1.1224,
+  "Bras_G": 3.3486,
+  "AvantBras_G": 2.7285,
+  "Main_G": 1.2519,
+  "Doigts_G": 0.9499,
+  "Contact_Main_G": 0.3171,
+  "Clavicule_D": 1.1224,
+  "Bras_D": 3.3486,
+  "AvantBras_D": 2.7285,
+  "Main_D": 1.2519,
+  "Doigts_D": 0.9499,
+  "Contact_Main_D": 0.3171,
+  "Cuisse_G": 3.6038,
+  "Jambe_G": 3.4264,
+  "Pied_G": 0.9415,
+  "Orteils_G": 0.5302,
+  "Contact_Pied_G": 0.3,
+  "Cuisse_D": 3.6038,
+  "Jambe_D": 3.4264,
+  "Pied_D": 0.9415,
+  "Orteils_D": 0.5302,
+  "Contact_Pied_D": 0.3,
+  "IK_Main_G": 0.74,
+  "IK_Pied_G": 0.74,
+  "Pole_Coude_G": 0.5285,
+  "Pole_Genou_G": 0.5285,
+  "IK_Main_D": 0.74,
+  "IK_Pied_D": 0.74,
+  "Pole_Coude_D": 0.5285,
+  "Pole_Genou_D": 0.5285
+ }
+}
