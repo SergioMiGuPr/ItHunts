@@ -89,6 +89,50 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Atterrissage_PlongeonSelonLaChute_DescenteRapideRemonteeDouce()
+        {
+            PlayerFeel.LandingCurve(_s, 0.02f, 0f, out Vector3 none, out _);
+            Assert.That(none, Is.EqualTo(Vector3.zero), "chute douce : rien");
+            float low = 0f, lowT = 0f;
+            for (float t = 0f; t < _s.landDipTime; t += 0.005f)
+            {
+                PlayerFeel.LandingCurve(_s, t, 1f, out Vector3 o, out _);
+                if (o.y < low)
+                {
+                    low = o.y;
+                    lowT = t;
+                }
+            }
+
+            Assert.That(low, Is.EqualTo(-_s.landDipDepth).Within(0.005f));
+            Assert.That(lowT, Is.LessThan(_s.landDipTime * 0.35f), "descente rapide");
+            PlayerFeel.LandingCurve(_s, _s.landDipTime * 0.5f, 0.5f, out Vector3 half, out _);
+            PlayerFeel.LandingCurve(_s, _s.landDipTime * 0.5f, 1f, out Vector3 full, out _);
+            Assert.That(half.y, Is.EqualTo(full.y * 0.5f).Within(1e-4f), "proportionnel à la chute");
+            Assert.That(GameFeel.Ramp(_s.landDipSpeedMin, _s.landDipSpeedMin, _s.landDipSpeedFull), Is.EqualTo(0f));
+            Assert.That(GameFeel.Ramp(_s.landDipSpeedFull + 5f, _s.landDipSpeedMin, _s.landDipSpeedFull), Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void ArretSurImage_DureeSelonLIntensite_Plafonnee()
+        {
+            Assert.That(HitStop.Duration(_s.parryHitStop, 1f, _s.maxHitStop), Is.EqualTo(0.08f).Within(1e-4f), "parade : 80 ms");
+            Assert.That(HitStop.Duration(0.08f, 0.5f, _s.maxHitStop), Is.EqualTo(0.04f).Within(1e-4f), "intensité 50 %");
+            Assert.That(HitStop.Duration(0.08f, 0f, _s.maxHitStop), Is.EqualTo(0f), "intensité 0 : aucun arrêt");
+            Assert.That(HitStop.Duration(1f, 1f, _s.maxHitStop), Is.EqualTo(_s.maxHitStop), "plafond");
+            Assert.That(_s.throwHitStop, Is.LessThan(_s.parryHitStop), "les impacts d'objets plus courts que la parade");
+        }
+
+        [Test]
+        public void Reglages_TraineesAuDelaDe14_MateriauDeLaDA_FlouLeger()
+        {
+            Assert.That(_s.trailSpeedMin, Is.EqualTo(14f), "traînées au-delà de 14 m/s");
+            Assert.IsNotNull(_s.trailMaterial, "matériau de la DA");
+            Assert.That(_s.blurMaxIntensity, Is.LessThanOrEqualTo(0.3f), "flou léger");
+            Assert.That(_s.dashFovPunch, Is.GreaterThan(0f), "FOV qui s'ouvre au dash");
+        }
+
+        [Test]
         public void Joueur_PlayerFeelBrancheSurSesReglages()
         {
             var player = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Player.prefab");

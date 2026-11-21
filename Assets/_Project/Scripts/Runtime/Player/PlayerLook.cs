@@ -43,6 +43,9 @@ namespace ItHunts.Player
         /// <summary>Rig de vue (détaché du joueur au démarrage) : caméra, caméra virtuelle, mains.</summary>
         public Transform ViewRig => viewRig;
 
+        /// <summary>FOV ajouté pour cette image (°) : coup de FOV du dash (PlayerFeel).</summary>
+        public float FovPunch { get; set; }
+
         /// <summary>Facteur de FOV posé par l'écran partagé selon la découpe (1 en solo).</summary>
         public float FovScale { get; set; } = 1f;
 
@@ -165,13 +168,13 @@ namespace ItHunts.Player
             float t = settings.fovSpeedMax > settings.fovSpeedMin
                 ? Mathf.InverseLerp(settings.fovSpeedMin, settings.fovSpeedMax, speed)
                 : 0f;
-            float target = settings.baseFov + settings.fovBonusAtMaxSpeed * t;
+            float target = settings.baseFov + settings.fovBonusAtMaxSpeed * t * GameFeel.Intensity;   // intensité des effets (point 9)
             _fov = Mathf.Lerp(_fov, target, 1f - Mathf.Exp(-settings.fovLerpSpeed * dt));
 
             if (virtualCamera != null)
             {
                 LensSettings lens = virtualCamera.Lens;
-                lens.FieldOfView = Mathf.Clamp(_fov * FovScale, 20f, 150f);
+                lens.FieldOfView = Mathf.Clamp((_fov + FovPunch) * FovScale, 20f, 150f);
                 virtualCamera.Lens = lens;
             }
         }
