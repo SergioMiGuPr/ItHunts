@@ -23,7 +23,7 @@ DESC = {
     "Campement_Fond": ("fond du campement : maquette, zones qui changent remplies par le campement vide", "campement.py", "`ui_campement_v01` (maquette), `ui_campement_vide_sans_lanternes_v01`, `ui_campement_braises_v01`"),
     "Campement_Flammes": ("flammes du feu de camp (lumière ajoutée)", "campement.py", "`ui_campement_passe1_v01` − `ui_campement_braises_v01`"),
     "Campement_Effets_Masques": ("masques des lumières du campement : fenêtres, lanterne de la tente, lueur du feu (données)", "campement.py", "`ui_campement_v01`"),
-    "Campement_Lanterne_Banc": ("lanterne éteinte de la place 3", "campement.py", "`ui_campement_braises_v01` − `ui_campement_vide_sans_lanternes_v01`"),
+    "Campement_Lanterne_Banc": ("lanterne éteinte des places 2 et 3", "campement.py", "`ui_campement_braises_v01` − `ui_campement_vide_sans_lanternes_v01`"),
     "Campement_Lanterne_Rocher": ("lanterne éteinte de la place 4", "campement.py", "`ui_campement_braises_v01` − `ui_campement_vide_sans_lanternes_v01`"),
     "Campement_Cartouche_Nom": ("cartouche de nom vidé de son texte peint", "campement.py", "`ui_campement_v01` (cartouche du hibou)"),
     "Campement_Coche": ("coche « prêt »", "campement.py", "`ui_campement_v01`"),

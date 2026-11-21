@@ -67,12 +67,12 @@ def main():
         heat = np.clip(e / 64.0, 0, 1)
         hm = np.stack([heat, heat * 0.6, heat * 0.2], -1) * 1.0 + reg.gray(T)[..., None] * 0.15
         tiles = [tile(T), tile(C), tile(T * 0.5 + C * 0.5), tile(hm)]
-        board = Image.new("RGB", (tw * 2 + 30, th * 2 + 150), (18, 16, 20))
+        board = Image.new("RGB", (tw * 2 + 30, th * 2 + 182), (18, 16, 20))
         dr = ImageDraw.Draw(board)
         f1, f2 = font(22), font(17)
         labels = ["Maquette (%s)" % maq, "Capture Unity à l'arrêt (effets gelés)", "Superposition 50 %", "Écart |maquette - capture| (x4), zones exclues hachurées"]
         for i, (t, lab) in enumerate(zip(tiles, labels)):
-            x = 10 + (i % 2) * (tw + 10); y = 40 + (i // 2) * (th + 36)
+            x = 10 + (i % 2) * (tw + 10); y = 72 + (i // 2) * (th + 36)
             if i == 3:
                 for z in excl:
                     hatch(t, tuple(v // 2 for v in z[:4]))
@@ -80,7 +80,7 @@ def main():
             dr.text((x, y - 26), lab, font=f2, fill=(230, 220, 210))
         g, k = res[ecran]["global"], res[ecran]["hors_texte_et_personnages"]
         dr.text((10, 6), "%s : contrôle avant PR" % ecran, font=f1, fill=(255, 235, 200))
-        dr.text((10, th * 2 + 90), "Écart (0-255) global : moyen %.2f, médian %.2f, 95e centile %.2f   |   hors texte variable et personnages redessinés : "
+        dr.text((10, th * 2 + 122), "Écart (0-255) global : moyen %.2f, médian %.2f, 95e centile %.2f   |   hors texte variable et personnages redessinés : "
                 "moyen %.2f, médian %.2f, 95e centile %.2f, pixels identiques (<1) %.1f %%, écart > 16 : %.2f %%" % (
                     g["moy"], g["med"], g["p95"], k["moy"], k["med"], k["p95"], k["pixels_egaux_pct"], k["pixels_ecart_sup_16_pct"]),
                 font=f2, fill=(230, 220, 210))
