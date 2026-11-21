@@ -4,6 +4,14 @@
 
 ## Étape en cours
 
+**Matin du 2026-11-21 (en cours, branche `animations`) :** corrections A1 à A6, traqueur v4 (modèle B, animations C) dès les PR
+d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
+- **A1. Matériaux d'art jamais modifiés.** Cause : `CampementApercu.Eclaire` (DA) ne copie le matériau qu'en Play Mode ; en mode
+  édition (test `Campement_PlacesSuiventLeSalon`), il écrivait dans `M_Campement_Assis_N.mat`, sauvegardé ensuite.
+  `MainMenuArt.OwnCampMaterials` donne une copie à chaque place dès la construction (édition et jeu). Autres scripts vérifiés :
+  eau, effets (`VfxPeint` : MaterialPropertyBlock ; `LienVfx` : instance), HUD, marchand : instances. Test : matériaux de la DA
+  intacts et non sales. Vérifié : `git status` propre après 30 s de Play Mode du menu et `SaveAssets`.
+
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`
 (357 Mo, lancé 35 s sans exception). Tests EditMode : 476 + 1 non concluant attendu. Réglages modifiés par le build remis (non

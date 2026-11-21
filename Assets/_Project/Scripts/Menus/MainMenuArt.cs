@@ -123,10 +123,40 @@ namespace ItHunts.Menus
             _titleView = _title.GetComponentInChildren<TitreApercu>(true);
         }
 
+        private readonly System.Collections.Generic.List<Material> _ownedMaterials = new System.Collections.Generic.List<Material>();
+
+        /// <summary>
+        /// Chaque place reçoit sa copie du matériau d'éclairage (A1, matin du 2026-11-21) : CampementApercu ne copie qu'en Play
+        /// Mode ; en mode édition (tests, aperçu) il écrivait dans le matériau partagé de la DA (M_Campement_Assis_N.mat).
+        /// </summary>
+        private void OwnCampMaterials()
+        {
+            if (_campView == null || _campView.places == null)
+                return;
+            foreach (CampementApercu.Place pl in _campView.places)
+            {
+                if (pl?.corps == null || pl.corps.material == null || pl.matJeu != null)
+                    continue;
+                Material m = pl.corps.material;
+                pl.matJeu = new Material(m) { name = m.name + " (jeu)", hideFlags = HideFlags.DontSave };
+                pl.corps.material = pl.matJeu;
+                _ownedMaterials.Add(pl.matJeu);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            foreach (Material m in _ownedMaterials)
+                if (m != null)
+                    DestroyImmediate(m);
+            _ownedMaterials.Clear();
+        }
+
         private void BuildCamp()
         {
             _camp = MenuArtKit.Spawn(_skin.campScreen, Page("Campement"), "Menu_Campement");
             _campView = _camp.GetComponent<CampementApercu>();
+            OwnCampMaterials();
             _modify = MenuArtKit.Find<Selectable>(_camp, "Interface/Modifier");
             _ready = MenuArtKit.Find<Selectable>(_camp, "Interface/Pret");
             _settingsButton = MenuArtKit.Find<Selectable>(_camp, "Interface/Parametres");
