@@ -1,0 +1,292 @@
+{
+ "Sfx_Traqueur_Cri_Enrage_01": {
+  "source": "docs/art/audio/jeu/sfx_traqueur_cri_enrage_01.mp3",
+  "duree_source_s": 4.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Traqueur/Sfx_Traqueur_Cri_Enrage_01.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 4.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -13.0
+ },
+ "Sfx_Traqueur_Cri_Enrage_02": {
+  "source": "docs/art/audio/jeu/sfx_traqueur_cri_enrage_02.mp3",
+  "duree_source_s": 4.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Traqueur/Sfx_Traqueur_Cri_Enrage_02.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 4.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -15.6
+ },
+ "Sfx_Traqueur_Cri_Prise": {
+  "source": "docs/art/audio/jeu/sfx_traqueur_cri_prise.mp3",
+  "duree_source_s": 2.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Traqueur/Sfx_Traqueur_Cri_Prise.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 2.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -13.9
+ },
+ "Sfx_Traqueur_Grognement": {
+  "source": "docs/art/audio/jeu/sfx_traqueur_grognement.mp3",
+  "duree_source_s": 3.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Traqueur/Sfx_Traqueur_Grognement.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 3.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -8.3
+ },
+ "Sfx_Traqueur_Souffle_Boucle": {
+  "source": "docs/art/audio/jeu/sfx_traqueur_souffle_boucle.mp3",
+  "duree_source_s": 8.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fondu_raccord_s": 1.0,
+  "saut_raccord": 0.02401,
+  "fichier": "Assets/Art/Audio/Traqueur/Sfx_Traqueur_Souffle_Boucle.wav",
+  "type": "boucle",
+  "canaux": 1,
+  "duree_s": 7.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -21.7
+ },
+ "Sfx_Traqueur_Pas": {
+  "source": "docs/art/audio/jeu/sfx_traqueur_pas.mp3",
+  "duree_source_s": 4.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Traqueur/Sfx_Traqueur_Pas.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 4.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -15.1
+ },
+ "Sfx_Goule_Alerte": {
+  "source": "docs/art/audio/jeu/sfx_goule_alerte.mp3",
+  "duree_source_s": 2.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Goule/Sfx_Goule_Alerte.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 2.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -11.8
+ },
+ "Sfx_Goule_Attaque_01": {
+  "source": "docs/art/audio/jeu/sfx_goule_attaque_01.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Goule/Sfx_Goule_Attaque_01.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -12.3
+ },
+ "Sfx_Goule_Attaque_02": {
+  "source": "docs/art/audio/jeu/sfx_goule_attaque_02.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Goule/Sfx_Goule_Attaque_02.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -15.3
+ },
+ "Sfx_Goule_Mort": {
+  "source": "docs/art/audio/jeu/sfx_goule_mort.mp3",
+  "duree_source_s": 2.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Goule/Sfx_Goule_Mort.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 2.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -15.4
+ },
+ "Sfx_Volant_Cri": {
+  "source": "docs/art/audio/jeu/sfx_volant_cri.mp3",
+  "duree_source_s": 2.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Volant/Sfx_Volant_Cri.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 2.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -13.0
+ },
+ "Sfx_Volant_Ailes_Boucle": {
+  "source": "docs/art/audio/jeu/sfx_volant_ailes_boucle.mp3",
+  "duree_source_s": 4.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fondu_raccord_s": 0.6,
+  "saut_raccord": 0.00824,
+  "fichier": "Assets/Art/Audio/Volant/Sfx_Volant_Ailes_Boucle.wav",
+  "type": "boucle",
+  "canaux": 1,
+  "duree_s": 3.4,
+  "crete_dbfs": -1.0,
+  "rms_db": -13.9
+ },
+ "Sfx_Volant_Mort": {
+  "source": "docs/art/audio/jeu/sfx_volant_mort.mp3",
+  "duree_source_s": 2.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Volant/Sfx_Volant_Mort.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 2.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -16.4
+ },
+ "Sfx_Barillet_Tir_01": {
+  "source": "docs/art/audio/jeu/sfx_barillet_tir_01.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Armes/Sfx_Barillet_Tir_01.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -23.4
+ },
+ "Sfx_Barillet_Tir_02": {
+  "source": "docs/art/audio/jeu/sfx_barillet_tir_02.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.007,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Armes/Sfx_Barillet_Tir_02.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.993,
+  "crete_dbfs": -1.0,
+  "rms_db": -26.0
+ },
+ "Sfx_Barillet_Recharge": {
+  "source": "docs/art/audio/jeu/sfx_barillet_recharge.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Armes/Sfx_Barillet_Recharge.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -34.4
+ },
+ "Sfx_Lanterne_Jet_Debut": {
+  "source": "docs/art/audio/jeu/sfx_lanterne_jet_debut.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Armes/Sfx_Lanterne_Jet_Debut.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -16.0
+ },
+ "Sfx_Lanterne_Jet_Boucle": {
+  "source": "docs/art/audio/jeu/sfx_lanterne_jet_boucle.mp3",
+  "duree_source_s": 4.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fondu_raccord_s": 0.6,
+  "saut_raccord": 0.00031,
+  "fichier": "Assets/Art/Audio/Armes/Sfx_Lanterne_Jet_Boucle.wav",
+  "type": "boucle",
+  "canaux": 1,
+  "duree_s": 3.4,
+  "crete_dbfs": -1.0,
+  "rms_db": -13.8
+ },
+ "Musique_Jeu_Exploration_Boucle": {
+  "source": "docs/art/audio/jeu/musique_jeu_exploration.mp3",
+  "duree_source_s": 150.047,
+  "silence_retire_s": [
+   0.015,
+   2.031
+  ],
+  "fondu_raccord_s": 2.5,
+  "saut_raccord": 0.0003,
+  "fichier": "Assets/Art/Audio/Musique/Musique_Jeu_Exploration_Boucle.wav",
+  "type": "musique",
+  "canaux": 2,
+  "duree_s": 145.501,
+  "crete_dbfs": -1.15,
+  "rms_db": -14.3
+ },
+ "Musique_Jeu_Enrage_Boucle": {
+  "source": "docs/art/audio/jeu/musique_jeu_enrage.mp3",
+  "duree_source_s": 90.044,
+  "silence_retire_s": [
+   0.0,
+   0.002
+  ],
+  "fondu_raccord_s": 2.5,
+  "saut_raccord": 0.0408,
+  "fichier": "Assets/Art/Audio/Musique/Musique_Jeu_Enrage_Boucle.wav",
+  "type": "musique",
+  "canaux": 2,
+  "duree_s": 87.542,
+  "crete_dbfs": -1.53,
+  "rms_db": -14.2
+ }
+}
