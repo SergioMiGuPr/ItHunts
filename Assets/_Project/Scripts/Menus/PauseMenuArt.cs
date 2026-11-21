@@ -32,6 +32,7 @@ namespace ItHunts.Menus
         private PauseMenu _pause;
         private Canvas _canvas;
         private readonly Dictionary<PauseMenu.Open, View> _views = new Dictionary<PauseMenu.Open, View>();
+        private readonly List<PauseMenu.Open> _snapshot = new List<PauseMenu.Open>();
 
         public void Attach(PauseMenu pause)
         {
@@ -55,9 +56,13 @@ namespace ItHunts.Menus
                     _views.Remove(o);
                 }
 
-            foreach (PauseMenu.Open o in _pause.Opened)
+            // Copie : un clic dans Sync (Reprendre, Quitter, Paramètres…) ouvre ou ferme un menu et modifie Opened pendant le parcours
+            // (« Collection was modified », journal du build du 2026-11-21).
+            _snapshot.Clear();
+            _snapshot.AddRange(_pause.Opened);
+            foreach (PauseMenu.Open o in _snapshot)
             {
-                if (o.Player == null)
+                if (o.Player == null || !_pause.Opened.Contains(o))
                     continue;
                 if (!_views.TryGetValue(o, out View v))
                 {

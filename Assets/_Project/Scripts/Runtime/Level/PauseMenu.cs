@@ -177,6 +177,14 @@ namespace ItHunts.Level
                 Close(o, true);
         }
 
+        /// <summary>Referme le menu de ce joueur s'il est ouvert (comme Reprendre).</summary>
+        public void CloseFor(PlayerInput player)
+        {
+            Open o = _open.FirstOrDefault(x => x.Player == player);
+            if (o != null)
+                Close(o, true);
+        }
+
         /// <summary>Ouvre le menu pause de ce joueur.</summary>
         public void OpenFor(PlayerInput pi)
         {
