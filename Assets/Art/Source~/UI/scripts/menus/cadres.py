@@ -77,6 +77,12 @@ def main():
     k = (ins * strips)[..., None]
     out[..., :3] = out[..., :3] * (1 - k) + tile * k
     out[C:C + RAIL, C:C + RAIL, 3] = 1
+    # bord droit : les coins droits de la maquette débordent de ~17 px sur le ciel de lune (bleu clair, assez lumineux
+    # pour passer le seuil du métal) ; le métal est chaud ou violet, donc on retire les pixels bleus des 30 colonnes de
+    # droite, puis tout ce qui n'est plus relié au métal (un fond de lune isolé)
+    bord = out[:, S - 30:]
+    bleu = reg.smoothstep(0.015, 0.05, bord[..., 2] - bord[..., 0])
+    bord[..., 3] *= 1 - bleu
     reg.save(os.path.join(OUT, "Menus_Cadre.png"), out, "RGBA")
     lay = {"Menus_Cadre": {"taille": [S, S], "bordures_glbh": [C, C, C, C], "source": "ui_choix_perso_v01",
                             "coins": COINS, "rails": RAILS, "centre": CENTRE}}

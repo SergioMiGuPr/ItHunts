@@ -50,17 +50,17 @@
   "maquette": "ui_campement_v01",
   "capture": "Campement_fige.png",
   "global": {
-   "moy": 5.47,
+   "moy": 5.27,
    "med": 0.0,
-   "p95": 35.95,
-   "pixels_egaux_pct": 77.8,
-   "pixels_ecart_sup_16_pct": 9.45
+   "p95": 33.6,
+   "pixels_egaux_pct": 77.7,
+   "pixels_ecart_sup_16_pct": 9.1
   },
   "hors_texte_et_personnages": {
    "moy": 1.32,
    "med": 0.0,
-   "p95": 6.48,
-   "pixels_egaux_pct": 87.1,
+   "p95": 6.58,
+   "pixels_egaux_pct": 87.0,
    "pixels_ecart_sup_16_pct": 2.58
   },
   "zones_exclues": [
