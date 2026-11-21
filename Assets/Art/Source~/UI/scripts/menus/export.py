@@ -2,7 +2,7 @@
 """Rassemble les rects des découpes (Layout.json de chaque écran), les placements des personnages assis et les textes
 mesurés en un fichier simple lu par le constructeur Unity (MenusBuilder.cs) : construction.txt, une ligne par donnée :
   piece <Ecran> <Nom> x y w h            (pixels de la maquette, coin haut gauche)
-  place <perso> <place> cx cy cw ch lx ly lw lh   (corps et lanterne d'un personnage assis)
+  place <perso> <place> cx cy cw ch lx ly lw lh px0 px1   (corps, lanterne et étendue des pieds d'un personnage assis)
   texte <Ecran> <Nom> x0 x1 haut base r g b
   valeur <clé> <valeurs...>
 """
@@ -50,6 +50,11 @@ def main():
                 pied_sprite = float(np.nonzero((al > 128).sum(1) > 3)[0].max() + 1)
                 rx, ry, rw, rh = a["corps"]["rect_image"]
                 pied_img = ry + pied_sprite * rh / th           # bas des pieds, en pixels de l'image d'origine
+                # étendue des pieds (bas 7 % de la silhouette), fraction de la largeur du sprite : ombre de contact
+                haut_sprite = float(np.nonzero((al > 128).sum(1) > 3)[0].min())
+                bas = al[int(pied_sprite - 0.07 * (pied_sprite - haut_sprite)):int(pied_sprite)] > 128
+                cols = np.nonzero(bas.sum(0) > 0)[0]
+                pied_u0, pied_u1 = cols.min() / tw, (cols.max() + 1) / tw
                 for place, c in CIBLES.items():
                     s_epaules = pl1["echelle"] * c["f"]
                     s_sol = (c["sol"] - c["capuche"]) / (pied_img - a["capuche_image"])
@@ -59,8 +64,9 @@ def main():
                     y = c["capuche"] - (a["capuche_image"] - ry) * s
                     lx, ly, lw, lh = a["lanterne"]["rect_image"]
                     print("  %s place %d : échelle %.3f (épaules %.3f), pieds à y %.0f" % (name, place, s, s_epaules, c["capuche"] - (a["capuche_image"] - ry) * s + (pied_img - ry) * s))
-                    L.append("place %s %d %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f" % (
-                        name, place, x, y, rw * s, rh * s, c["lanterne"][0] - lw * s / 2, c["lanterne"][1] - lh * s, lw * s, lh * s))
+                    L.append("place %s %d %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f" % (
+                        name, place, x, y, rw * s, rh * s, c["lanterne"][0] - lw * s / 2, c["lanterne"][1] - lh * s, lw * s, lh * s,
+                        x + pied_u0 * rw * s, x + pied_u1 * rw * s))
             for place, r in CARTOUCHES.items():
                 L.append("valeur Campement_cartouche_%d %.1f %.1f %.1f %.1f" % (place, *r))
         if ecran == "Choix":

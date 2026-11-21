@@ -551,6 +551,7 @@ public static class MenusBuilder
         float[] td = _textes["Choix/Desc1a"];
         Txt(chat, "Invite", Police("Italic"), FontStyle.Normal, 16, C3(td, 4), TextAnchor.MiddleLeft, R(40, -1, 340, 64), "Appuie sur Entrée pour écrire…");
         places_ui.Clear();
+        CompleteCampement(e.gameObject, ca);
         for (int i = 0; i < 4; i++)
         {
             int dep = i < ca.departOccupants.Length ? ca.departOccupants[i] : -1;
@@ -558,6 +559,104 @@ public static class MenusBuilder
             ca.Pret(i, i < ca.departPrets.Length && ca.departPrets[i]);
         }
         return e.gameObject;
+    }
+
+    // ------------------------------------------------------------------ campement : retouches (lot A, 2026-11-21)
+    // Valeur et saturation par personnage (mesurées : personnages de la maquette), éclairage de scène des corps, ombre de
+    // contact, place 2 (la pierre) vide = bouton + et lanterne éteinte comme les places 3 et 4. Idempotent (trouve par nom).
+    // mesuré (mesure de la capture gelée contre la maquette : luminance p10/p50/p90 et saturation médiane du personnage ;
+    // renard et hibou visés sur ceux de la maquette, koala et caméléon sur leur moyenne)
+    static readonly Dictionary<string, (float lum, float sat, float contraste)> VALEURS_ASSIS = new Dictionary<string, (float, float, float)>
+    {
+        { "Renard", (1.15f, 0.78f, 1.3f) }, { "Koala", (1.05f, 0.8f, 1.1f) }, { "Cameleon", (1.35f, 0.72f, 1.25f) }, { "Hibou", (1.3f, 0.5f, 1.3f) },
+    };
+
+    static void ReglesEclairage(Material m)
+    {
+        m.SetFloat("_Eclairage", 1);
+        m.SetFloat("_OmbreForce", 0.5f); m.SetFloat("_OmbreSeuil", 0.12f); m.SetColor("_OmbreCouleur", new Color(0.34f, 0.33f, 0.62f));
+        m.SetColor("_ChaudCouleur", new Color(1.25f, 1.02f, 0.82f)); m.SetColor("_FroidCouleur", new Color(0.62f, 0.66f, 0.86f));
+        m.SetFloat("_Transition", 0.7f); m.SetColor("_LisereCouleur", new Color(1f, 0.48f, 0.16f)); m.SetFloat("_LisereForce", 0.6f);
+        m.SetFloat("_LisereLargeur", 1.3f); m.SetFloat("_Palpite", 0.35f); m.SetFloat("_PalpiteVitesse", 1.1f); m.SetFloat("_LanterneForce", 0.8f);
+    }
+
+    static void CompleteCampement(GameObject e, CampementApercu ca)
+    {
+        foreach (var p in ca.persos)
+            if (VALEURS_ASSIS.TryGetValue(p.id, out var v)) { p.luminosite = v.lum; p.saturation = v.sat; p.contraste = v.contraste; }
+        float[] foyer = _valeurs["Campement_foyer"];
+        ca.foyer = new Vector2(foyer[0], foyer[1] - 72f);   // centre des flammes, au-dessus de la base du foyer
+        foreach (var pc in ca.placements)
+        {
+            var src = _places.FirstOrDefault(x => x.perso == pc.perso && x.place == pc.place);
+            if (src.v == null) continue;
+            pc.corps = new Rect(src.v[0], src.v[1], src.v[2], src.v[3]); pc.lanterne = new Rect(src.v[4], src.v[5], src.v[6], src.v[7]);
+            if (src.v.Length >= 10) pc.pieds = new Vector2(src.v[8], src.v[9]);
+        }
+        var mBase = AssetDatabase.LoadAssetAtPath<Material>($"{MAT}/M_Campement_Assis.mat");
+        if (mBase != null) { ReglesEclairage(mBase); EditorUtility.SetDirty(mBase); }
+        var ui = e.transform.Find("Interface");
+        for (int i = 0; i < 4; i++)
+        {
+            var pl = ca.places[i];
+            var racine = pl.racine;
+            if (pl.corps != null && pl.corps.material != null) { ReglesEclairage(pl.corps.material); EditorUtility.SetDirty(pl.corps.material); }
+            // ombre de contact : sous la lueur et le corps
+            var om = racine.Find("Ombre");
+            if (om == null)
+            {
+                var im = Img(racine, "Ombre", Spr("Commun", "Menus_Lueur"), R(0, 0, 10, 10));
+                im.color = new Color(0, 0, 0, 0.62f);
+                om = im.transform;
+            }
+            om.SetSiblingIndex(0);
+            pl.ombre = om.GetComponent<Image>();
+            if (i != 1) continue;
+            // place 2 (pierre) : lanterne éteinte (celle du banc, pied au pied de la lanterne de la place 2) et bouton +
+            if (pl.lanterneEteinte == null)
+            {
+                float[] lb = _pieces["Campement_Lanterne_Banc"];
+                float sc = 0.95f, w = lb[2] * sc, h = lb[3] * sc;
+                var le = Img(e.transform, "Lanterne_Eteinte_2", Spr("Campement", "Campement_Lanterne_Banc"), R(918f - w / 2f, 596f - h, w, h));
+                le.transform.SetSiblingIndex(racine.GetSiblingIndex());
+                pl.lanterneEteinte = le.gameObject;
+            }
+            if (pl.plus == null && ui != null)
+            {
+                float[] p3 = _pieces["Campement_Plus_3"];
+                float[] c2 = _valeurs["Campement_cartouche_2"], c3 = _valeurs["Campement_cartouche_3"];
+                float dx = (c2[0] + c2[2] / 2f) - (c3[0] + c3[2] / 2f);
+                var pi = Img(ui, "Plus_2", Spr("Campement", "Campement_Plus_3"), R(p3[0] + dx, p3[1], p3[2], p3[3]));
+                Bouton(pi);
+                var p3go = ui.Find("Plus_3");
+                if (p3go != null) pi.transform.SetSiblingIndex(p3go.GetSiblingIndex());
+                pl.plus = pi.gameObject;
+            }
+        }
+    }
+
+    /// <summary>Retouche le seul prefab Menu_Campement (aucun autre prefab ni la scène ne sont reconstruits).</summary>
+    public static string RetoucheCampement()
+    {
+        if (!BonProjet()) return "MAUVAIS PROJET";
+        Lit();
+        string P = PRE + "/Menu_Campement.prefab";
+        var root = PrefabUtility.LoadPrefabContents(P);
+        try
+        {
+            var ca = root.GetComponent<CampementApercu>();
+            CompleteCampement(root, ca);
+            for (int i = 0; i < 4; i++)
+            {
+                int d = ca.departOccupants[i];
+                if (d >= 0) ca.Occupe(i, d, ca.nomsApercu[i], false); else ca.Libere(i);
+                ca.Pret(i, ca.departPrets[i]);
+            }
+            PrefabUtility.SaveAsPrefabAsset(root, P);
+            AssetDatabase.SaveAssets();
+            return "Menu_Campement retouché";
+        }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
     }
 
     static readonly List<(int, CampementApercu.Place)> places_ui = new List<(int, CampementApercu.Place)>();
