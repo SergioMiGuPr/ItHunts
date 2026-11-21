@@ -224,3 +224,73 @@ Déroulé :
 | 4.4 → 5.2 s | il remonte le poing contre la poitrine |
 
 Contrôles : appuis fixes, verrou OK.
+
+## Lot 4 (PR `art-traqueur-anim-4`) : réception, escalade, chaîne (grimper)
+
+Le moteur pose à pose a été amélioré :
+- l'orientation des mains reprend leur orientation de repos, simplement pivotée vers la direction voulue : elle n'est plus jamais indéterminée ;
+- le coude et le genou restent du même côté d'une image à l'autre ;
+- les mains ne traversent plus les épaules pendant les transitions.
+
+Ces trois corrections ont supprimé les bascules du coude.
+
+### Traqueur_Reception
+Vidéo de référence : `traqueur_ref_reception`, de 0.2 à 5.2 s. Durée **5.0 s**, sans boucle.
+
+Déroulé :
+
+| Temps | Ce qui se passe |
+|---|---|
+| départ | chute en diagonale, corps penché vers l'avant, bras tendus vers le sol |
+| **0.35 s** | les mains se posent |
+| **0.5 s** | les pieds se posent |
+| **0.85 s** | écrasé au plus bas |
+| **1.1 s** | stable : **sortie possible vers une course dès ce moment** |
+| 1.1 → 5.0 s | tapi, il respire |
+
+Root motion : la racine avance de 6 m et descend de 8.5 m pendant la chute.
+
+Contrôles : glissement nul, verrou OK.
+
+### Traqueur_Escalade
+Vidéo de référence : `traqueur_ref_escalade`, de 2.5 à 7.0 s. Durée **4.5 s**, sans boucle.
+
+Départ : il arrive à quatre pattes contre un **bloc de 7.5 m** (la hauteur est mesurée sur la vidéo).
+
+Déroulé :
+
+| Temps | Ce qui se passe |
+|---|---|
+| **0.25 s** | la main droite agrippe le haut du bloc, en passant par le côté |
+| **0.6 s** | la main gauche agrippe le haut |
+| 1.0 → 2.2 s | debout contre le bloc |
+| 2.35 s | il fléchit |
+| **2.55 s** | il se hisse d'une détente ; les mains se replacent plus loin sur le bloc pendant la poussée, pour que le corps ne passe pas au-dessus d'elles |
+| **3.25 s** | les pieds se posent sur le bloc |
+| jusqu'à 4.5 s | accroupi en haut |
+
+Root motion : il avance de 9.5 m et monte de 7.5 m.
+
+Contrôles : glissement de 6 mm, verrou OK ; vitesse maximale de 53°/image, pendant la détente.
+
+### Traqueur_ChaineGrimpe
+Vidéo de référence : `traqueur_ref_chaine_grimpe`, de 2.0 à 7.0 s. Durée **5.0 s**, sans boucle.
+
+Départ : accroupi devant une chaîne pendante.
+
+Déroulé :
+
+| Temps | Ce qui se passe |
+|---|---|
+| **0.35 s** | il saute ; les bras passent tendus par l'avant |
+| **0.55 s** | les mains attrapent la chaîne en haut |
+| 0.9 s | le corps pend sous les mains, jambes repliées serrées contre la chaîne |
+| 1.1 → 2.9 s | montée main sur main : **2 cycles de 0.9 s, +2.4 m par cycle** (main droite, pieds, main gauche). **Cette partie boucle** pour une chaîne plus longue (le module `ChaineGrimpe_12m` demande environ 3 cycles de plus) |
+| jusqu'à 5.0 s | tenu replié |
+
+Contrôles :
+- mains et pieds fixes sur la chaîne pendant chaque prise ;
+- verrou : OK ;
+- le geste le plus rapide est le saut vers la chaîne (60°/image sur 0.2 s, comme dans la vidéo).
+
+**Écart** : dans la vidéo, la chaîne se balance. La chaîne du jeu est un objet du décor ; le clip la suppose droite.
