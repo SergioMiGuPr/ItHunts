@@ -730,6 +730,13 @@ namespace ItHunts.Enemies
             {
                 _family = null;
                 Play(_trav.Clip, 0.12f);                                     // le clip du lien, de l'appel à la fin de la réception
+                if (_chainExtra > 0 && _trav.Active && _anim.enabled)
+                {
+                    // Chaîne : le temps du clip est piloté (partie main sur main en boucle).
+                    float len = ClipLength(_trav.Clip);
+                    _anim.speed = 0f;
+                    _anim.Play(_trav.Clip, 0, EnemyMath.ChainClipTime(Time.time - _trav.Start, _chainExtra, settings) / Mathf.Max(0.01f, len));
+                }
             }
             else if (_trav.Active)
             {
@@ -1497,8 +1504,11 @@ namespace ItHunts.Enemies
         /// Passage : clip du type de lien. Bond : l'appel dure jusqu'au décollage du clip, le vol jusqu'à la pose des mains, la
         /// réception jusqu'à la fin du clip ; bond-prise si un joueur est près de l'arrivée. Autres liens : la traversée dure le clip.
         /// </summary>
+        private int _chainExtra;
+
         private void StartTraversalClip(StalkerLinkKind kind, Vector3 to)
         {
+            _chainExtra = 0;
             _trav.Clip = null;
             _trav.ClipRecovery = 0f;
             bool hunt = kind == StalkerLinkKind.Bond && Target != null && Vector3.Distance(Target.transform.position, to) <= 10f
@@ -1516,6 +1526,12 @@ namespace ItHunts.Enemies
                 _trav.Telegraph = takeoff;
                 _trav.Duration = Mathf.Max(0.3f, land - takeoff);
                 _trav.ClipRecovery = Mathf.Max(0f, len - land);
+            }
+            else if (kind == StalkerLinkKind.ChaineGrimpe && clip == "Traqueur_ChaineGrimpe")
+            {
+                // Chaîne plus longue que le clip : la montée main sur main boucle (cycles de la DA).
+                _chainExtra = EnemyMath.ChainExtraCycles(to.y - _rb.position.y, settings);
+                _trav.Duration = Mathf.Max(0.3f, len + _chainExtra * settings.clipChainCycle - _trav.Telegraph);
             }
             else
                 _trav.Duration = Mathf.Max(0.3f, len - _trav.Telegraph);
@@ -2220,6 +2236,8 @@ namespace ItHunts.Enemies
             if (u >= 1f)
             {
                 bool missed = StalkerPassageMath.Land(ref _trav, now, settings);
+                if (leap && _trav.Clip == null && HasClip("Traqueur_Reception"))
+                    _trav.RecoverUntil = Mathf.Max(_trav.RecoverUntil, now + settings.clipReceptionExit);   // réception de la DA
                 PassagesUsed++;
                 _move.Clear();
                 _move.Speed = 0f;

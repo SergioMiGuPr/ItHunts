@@ -234,6 +234,24 @@ namespace ItHunts.Enemies
         public static float LungeDistance(float need, float room, StalkerSettings s) =>
             Mathf.Clamp(need, 0f, Mathf.Min(s.grabLunge, Mathf.Max(0f, room - 0.5f)));
 
+        /// <summary>Cycles « main sur main » à ajouter au clip de la chaîne pour une montée donnée (m).</summary>
+        public static int ChainExtraCycles(float rise, StalkerSettings s) =>
+            Mathf.Max(0, Mathf.CeilToInt((rise - s.clipChainBaseRise) / Mathf.Max(0.1f, s.clipChainRisePerCycle)));
+
+        /// <summary>
+        /// Temps à montrer dans le clip de la chaîne après <paramref name="elapsed"/> s de passage : début, partie qui boucle
+        /// <paramref name="extra"/> fois de plus, puis la fin du clip.
+        /// </summary>
+        public static float ChainClipTime(float elapsed, int extra, StalkerSettings s)
+        {
+            float loopEnd = s.clipChainLoopStart + extra * s.clipChainCycle;
+            if (elapsed <= s.clipChainLoopStart)
+                return elapsed;
+            if (elapsed < loopEnd)
+                return s.clipChainLoopStart + Mathf.Repeat(elapsed - s.clipChainLoopStart, s.clipChainCycle);
+            return elapsed - extra * s.clipChainCycle;
+        }
+
         /// <summary>Départ dans le clip (s) pour que son instant d'impact tombe après <paramref name="untilImpact"/> s (jamais négatif).</summary>
         public static float ClipOffsetForImpact(float clipImpact, float untilImpact) => Mathf.Max(0f, clipImpact - untilImpact);
 

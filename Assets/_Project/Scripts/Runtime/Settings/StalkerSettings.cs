@@ -198,6 +198,10 @@ namespace ItHunts.Settings
                  "et pose des mains du bond et du bond-prise. La mort du joueur tombe à l'instant d'impact du clip.")]
         [Min(0f)] public float clipPriseImpact = 2.37f, clipPriseRebordImpact = 3.25f, clipBondPriseImpact = 2.55f;
         [Min(0f)] public float clipBondTakeoff = 2.05f, clipBondLand = 4.6f, clipBondPriseTakeoff = 1.05f, clipBondPriseLand = 3.0f;
+        [Tooltip("Chaîne (Traqueur_ChaineGrimpe) : partie qui boucle (début, durée d'un cycle, s) et montée par cycle (m) ; montée " +
+                 "couverte par le clip sans boucle supplémentaire (m). Réception : sortie possible (s).")]
+        [Min(0f)] public float clipChainLoopStart = 1.1f, clipChainCycle = 0.9f, clipChainRisePerCycle = 2.4f, clipChainBaseRise = 4.8f;
+        [Min(0f)] public float clipReceptionExit = 1.1f;
         [Tooltip("Prise depuis un rebord (clip Traqueur_PriseRebord) : la cible est au moins à cette hauteur sous ses pieds (m).")]
         [Min(0f)] public float ledgeGrabDrop = 4f;
         [Tooltip("Au-dessus de cette vitesse (m/s), il court (courses enragées) ; en dessous, il marche à quatre pattes (Rôde).")]

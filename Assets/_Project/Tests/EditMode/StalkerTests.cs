@@ -114,6 +114,18 @@ namespace ItHunts.Tests
         }
 
         [Test]
+        public void Chaine_MontéeMainSurMain_BouclePourUneChaineLongue()
+        {
+            var cfg = ScriptableObject.CreateInstance<StalkerSettings>();
+            _objects.Add(cfg);
+            Assert.That(EnemyMath.ChainExtraCycles(4f, cfg), Is.EqualTo(0), "chaîne courte : le clip suffit");
+            Assert.That(EnemyMath.ChainExtraCycles(11f, cfg), Is.EqualTo(3), "11 m : 3 cycles de 2.4 m de plus");
+            Assert.That(EnemyMath.ChainClipTime(0.5f, 3, cfg), Is.EqualTo(0.5f), "saut vers la chaîne");
+            Assert.That(EnemyMath.ChainClipTime(1.1f + 0.9f * 2f + 0.3f, 3, cfg), Is.EqualTo(1.4f).Within(1e-4f), "en boucle");
+            Assert.That(EnemyMath.ChainClipTime(1.1f + 2.7f + 1f, 3, cfg), Is.EqualTo(2.1f).Within(1e-4f), "puis la fin du clip");
+        }
+
+        [Test]
         public void Visage_CriEtGrognement_Enveloppe()
         {
             Assert.That(StalkerFace.Envelope(-0.1f, 1.4f), Is.EqualTo(0f));

@@ -72,6 +72,11 @@ d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
   proximité, yeux, clignements, bave. Réglages « IK des membres » et « Visage » de `Stalker_Default`. **Coût** (éditeur, 240
   images de poursuite) : cheveux 0.082 ms (pic 0.52), visage 0.020 ms, IK 0.037 ms (un pic à 3.6 ms à l'entrée). Animation
   Rigging non installé (voir D-082). 2 tests (IK : cible atteinte sans changer les longueurs ; enveloppe du cri).
+- **PR #31 (`art-traqueur-anim-4`) :** vérifiée, 476 tests sur `main`, fusionnée (0be81e2), poussée, `main` dans `animations`.
+- **C2 (lot 4).** `Traqueur_Escalade` sur les murs grimpables et les rebords (la traversée dure le clip) ; `Traqueur_ChaineGrimpe` :
+  la montée main sur main (1.1 → 2.9 s, +2.4 m par cycle de 0.9 s) boucle autant que la chaîne l'exige (11 m : 3 cycles de plus),
+  temps du clip piloté par le code ; `Traqueur_Reception` après un saut sans clip propre (saut depuis une chaîne), sortie dès 1.1 s.
+  Test : cycles de la chaîne. Contrôleur : 13 états.
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`
