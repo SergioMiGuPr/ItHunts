@@ -53,10 +53,12 @@ namespace ItHunts.Orbs
         private int _seenTractionTick = MovementState.NeverTick;
         private ParticleSystem _stream;
         private GameObject _tractionArt;
+        private ItHunts.Art.VFX.FluxVfx _flux;
+        private bool _fluxOpen;
         private float _streamCarry;
 
         /// <summary>Flot de traction actif (tests, debug).</summary>
-        public bool StreamActive => (_stream != null && _stream.particleCount > 0) || (_tractionArt != null && _tractionArt.activeSelf);
+        public bool StreamActive => (_stream != null && _stream.particleCount > 0) || _fluxOpen;
 
         private void Awake()
         {
@@ -206,7 +208,7 @@ namespace ItHunts.Orbs
                 _seenRepelTick = m.LastRepelTick;
                 if (settings.showRepelImpactFlash)
                     Trigger(_repelFlash, m.LastRepelPoint, m.LastRepelNormal);
-                RepelBurst(m.LastRepelPoint);
+                RepelBurst(m.LastRepelPoint, m.LastRepelNormal);
             }
 
             Animate(_repelFlash, settings.repelColor, settings.repelFlashDuration, settings.repelFlashGrowth);
@@ -225,13 +227,28 @@ namespace ItHunts.Orbs
             Vector3 from = StreamStart;
             if (settings.tractionVfx != null)
             {
+                // VFX_Traction (PR #35) : FluxVfx, de la main de l'orbe au point visé ; Ferme laisse finir les particules parties.
                 if (_tractionArt == null && tracting)
-                    _tractionArt = Instantiate(settings.tractionVfx);
-                if (_tractionArt != null)
                 {
-                    _tractionArt.SetActive(tracting);
-                    if (tracting && (point - from).sqrMagnitude > 1e-4f)
-                        _tractionArt.transform.SetPositionAndRotation(from, Quaternion.LookRotation(point - from));
+                    _tractionArt = Instantiate(settings.tractionVfx, from, Quaternion.identity);
+                    _flux = _tractionArt.GetComponent<ItHunts.Art.VFX.FluxVfx>();
+                }
+
+                if (_flux != null)
+                {
+                    if (tracting)
+                    {
+                        _tractionArt.transform.position = from;
+                        _flux.Regle(from, point);
+                        if (!_fluxOpen)
+                            _flux.Ouvre();
+                        _fluxOpen = true;
+                    }
+                    else if (_fluxOpen)
+                    {
+                        _flux.Ferme();
+                        _fluxOpen = false;
+                    }
                 }
 
                 return;
@@ -303,12 +320,20 @@ namespace ItHunts.Orbs
         }
 
         /// <summary>Répulsion (point 8) : effet bref de la DA devant l'orbe, réduit ; la secousse vient des sensations de jeu.</summary>
-        private void RepelBurst(Vector3 point)
+        private void RepelBurst(Vector3 point, Vector3 normal)
         {
+            if (settings.repelVfx != null && ItHunts.Player.GameFeel.Intensity > 0.01f)
+            {
+                // VFX_Repulsion (PR #35) : onde courte au point visé, +Z = normale de la surface.
+                ItHunts.Combat.GameVfx.Spawn(settings.repelVfx, point + normal * 0.03f,
+                    Quaternion.LookRotation(normal.sqrMagnitude > 0.01f ? normal : Vector3.up), settings.repelVfxScale, null, settings.repelVfxLife);
+                return;
+            }
+
             Vector3 from = StreamStart;
             Vector3 dir = point - from;
             Quaternion rot = dir.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(dir) : Quaternion.identity;
-            GameObject prefab = settings.repelVfx;
+            GameObject prefab = null;
             if (prefab == null)
             {
                 GameVfxSettings vfx = ItHunts.Combat.GameVfx.Settings;

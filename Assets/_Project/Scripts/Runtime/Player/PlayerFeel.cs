@@ -31,6 +31,7 @@ namespace ItHunts.Player
         private float _landT = -1f, _landK;
         private float _fovPunch;
         private ParticleSystem _trails;
+        private ItHunts.Art.VFX.VitesseVfx _edges;
 
         private static Volume _blurVolume;
         private static MotionBlur _blur;
@@ -86,6 +87,8 @@ namespace ItHunts.Player
         {
             if (_trails != null)
                 Destroy(_trails.gameObject);
+            if (_edges != null)
+                Destroy(_edges.gameObject);
         }
 
         // ---------- Courbes (pures, testables) ----------
@@ -193,6 +196,11 @@ namespace ItHunts.Player
 
                 if (_shake != null)
                     _shake.AddTrauma(settings.hardLandingTrauma * GameFeel.Ramp(fall, settings.hardLandingSpeedMin, settings.hardLandingSpeedFull));
+                // Poussière de la DA aux pieds (PR #35) : 0.6 petit saut, 1 chute normale, 1.5 grande chute.
+                GameVfxSettings fx = ItHunts.Combat.GameVfx.Settings;
+                if (fx != null && fx.playerDust != null && fall >= settings.landDipSpeedMin && GameFeel.Intensity > 0.01f)
+                    ItHunts.Combat.GameVfx.Spawn(fx.playerDust, transform.position + Vector3.up * 0.05f, Quaternion.identity,
+                        Mathf.Lerp(0.6f, 1.5f, GameFeel.Ramp(fall, settings.landDipSpeedMin, settings.hardLandingSpeedFull)), null, 2.5f);
             }
 
             if (_landT >= 0f)
@@ -240,6 +248,28 @@ namespace ItHunts.Player
         {
             float k = settings.speedTrails ? GameFeel.Ramp(speed, settings.trailSpeedMin, settings.trailSpeedFull) * GameFeel.Intensity : 0f;
             TrailRate = settings.trailRate * k;
+            // Traits de bord d'écran de la DA (PR #35), à la place des lignes provisoires : mêmes seuils, force = intensité.
+            GameVfxSettings fx = ItHunts.Combat.GameVfx.Settings;
+            if (fx != null && fx.speedEdges != null && _look != null && _look.ViewRig != null)
+            {
+                if (_edges == null)
+                {
+                    GameObject go = Instantiate(fx.speedEdges, _look.ViewRig, false);
+                    go.transform.localPosition = Vector3.zero;
+                    go.transform.localRotation = Quaternion.identity;
+                    _edges = go.GetComponent<ItHunts.Art.VFX.VitesseVfx>();
+                }
+
+                if (_edges != null)
+                {
+                    _edges.seuilBas = settings.trailSpeedMin;
+                    _edges.seuilHaut = settings.trailSpeedFull;
+                    _edges.force = settings.speedTrails ? GameFeel.Intensity : 0f;
+                    _edges.Regle(speed);
+                    return;
+                }
+            }
+
             if (_trails == null)
             {
                 if (k <= 0f || _look == null || _look.ViewRig == null)

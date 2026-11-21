@@ -301,7 +301,7 @@ namespace ItHunts.Artifacts
             }
 
             if (impactPoint.HasValue)
-                ItHunts.Combat.GameVfx.Spawn(vfx.sparks, impactPoint.Value + normal * 0.03f, Quaternion.LookRotation(normal.sqrMagnitude > 0.01f ? normal : Vector3.up), 1f, null, 2f);
+                ItHunts.Combat.GameVfx.Spawn(vfx.impactLight != null ? vfx.impactLight : vfx.sparks, impactPoint.Value + normal * 0.03f, Quaternion.LookRotation(normal.sqrMagnitude > 0.01f ? normal : Vector3.up), 1f, null, 2f);
         }
     }
 }

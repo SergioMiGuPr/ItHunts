@@ -5,8 +5,11 @@
 ## Étape en cours
 
 **Après-midi du 2026-11-21 : retours de playtest, points 1 à 11 (fusionnés dans `main`).** Un commit par point sur `animations`,
-décisions D-084 à D-090, PR d'art #34 (art-menus-3) intégrée ; **art-effets-2 pas encore arrivée** (ses effets de traction et de
-répulsion se branchent dans `MagnetismFeedback_Default.tractionVfx` / `repelVfx`). Build : `Builds/Matin_2026-11-21/ItHunts.exe`.
+décisions D-084 à D-090, PR d'art #34 (art-menus-3) et **#35 (art-effets-2)** intégrées. Effets du lot 2 branchés : traction
+(`VFX_Traction`, FluxVfx, à la place de la fumée provisoire), répulsion (`VFX_Repulsion` au point visé), traînées des 3 coups d'épée
+et impact vert, traits de vitesse de bord d'écran (seuils 14 et 22 m/s, force = intensité des effets), éclats d'impact léger / lourd
+(balles comprises), poussière d'atterrissage du joueur ; eau plus vivante (shader de la DA, `_Mouvement`). Mes effets provisoires
+restent en repli si un prefab manque. Build : `Builds/Matin_2026-11-21/ItHunts.exe`.
 - **1. « Collection was modified »** : `PauseMenuArt.LateUpdate` parcourait les menus ouverts pendant qu'un clic (Reprendre,
   Paramètres…) en ouvrait ou fermait un (journal du build : PauseMenuArt.cs:58). Parcours d'une copie. Test PlayMode
   `ConsoleCleanTests` (30 s de menu en survolant, puis 30 s de niveau aléatoire où le menu pause s'ouvre et se ferme à la souris) :
