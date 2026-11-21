@@ -78,7 +78,9 @@ Contrôles :
 **Écarts connus.** Dans la vidéo, les bras sont 1.4 fois plus longs que les jambes. Sur le modèle, les bras paraissent donc plus pliés au milieu de l'appui, et la créature paraît plus trapue.
 
 ### Traqueur_Marche_B
-La même marche, en miroir : c'est la main gauche qui ouvre le cycle, comme dans la seconde moitié de la vidéo. Le balancement du buste et de la tête est inversé, la tête un peu plus haute. Mêmes mesures que Marche_A.
+La même marche, en miroir : c'est la main gauche qui ouvre le cycle.
+
+**Correction (lot 3)** : de profil, avec la créature tournée vers la droite de l'image, on voit son côté **droit**. Dans la vidéo, la première main posée est donc la gauche (la main éloignée). **C'est `Traqueur_Marche_B` qui suit exactement les côtés de la vidéo** ; `_A` en est le miroir. Le balancement du buste et de la tête est inversé, la tête un peu plus haute. Mêmes mesures que Marche_A.
 
 ## Lot 2 (PR `art-traqueur-anim-2`) : courses enragées
 
@@ -137,3 +139,88 @@ Contrôles :
 - glissement : 3 mm ;
 - verrou : OK ;
 - vitesse angulaire maximale : 37°/image (doigts).
+
+## Lot 3 (PR `art-traqueur-anim-3`) : prise, bond, bond-prise, prise depuis un rebord
+
+Ces clips d'action utilisent le **moteur pose à pose** :
+- des poses clés aux instants relevés sur la vidéo ;
+- des courbes monotones entre les clés, pour qu'il n'y ait ni dépassement, ni arrêt figé, ni pied qui dérive ;
+- des appuis tenus par IK sur des points fixes.
+
+Les rendus de contrôle sont faits de profil, à l'échelle de la vidéo. Le bloc de la vidéo est ajouté pour le contrôle, mais il n'est pas exporté.
+
+**Côté vu dans les vidéos de profil** : la créature est tournée vers la droite, on voit donc son **côté droit**. Le bras qui saisit est le **bras droit**.
+
+### Traqueur_Prise
+Vidéo de référence : `traqueur_ref_prise`, de 0.8 à 4.3 s. Durée **3.5 s**, sans boucle.
+
+Déroulé :
+
+| Temps | Ce qui se passe |
+|---|---|
+| départ | à genoux, tibias au sol, mains au sol, dos voûté, tête à hauteur d'épaule |
+| 0.45 s | le bras droit part droit devant, à hauteur d'épaule, doigts ouverts en griffe |
+| **0.70 s** | bras tendu ; l'épaule avance avec la clavicule |
+| jusqu'à 2.37 s | bras tenu, tendu |
+| **2.37 → 2.6 s** | les doigts se referment en **poing** : c'est la prise |
+| jusqu'à 3.5 s | poing tenu |
+
+Contrôles :
+- genoux et main gauche fixes au sol (glissement de 1.6 cm, à la pose des genoux) ;
+- verrou : OK ;
+- superposition très proche de la vidéo.
+
+**Limite** : le modèle n'a qu'un os pour tous les doigts (`Doigts`). Le poing se lit donc comme un crochet de griffes.
+
+### Traqueur_Bond
+Vidéo de référence : `traqueur_ref_bond`, de 0 à 6 s. Durée **6.0 s**, sans boucle.
+
+Mesures sur la vidéo, à l'échelle du modèle :
+- bond de **19 m** sur un **bloc de 5.4 m** ;
+- les hanches montent jusqu'à environ 11.9 m.
+
+Déroulé :
+
+| Temps | Ce qui se passe |
+|---|---|
+| 0 → 1.0 s | accroupi à quatre pattes |
+| 1.0 → 1.75 s | il se ramasse |
+| **2.05 s** | détente et décollage ; les pieds quittent le sol verticalement, sans glisser |
+| 2.05 → 4.6 s | vol de 2.55 s : montée rapide, plané haut, corps tendu, bras devant griffes ouvertes, jambes traînées puis ramenées sous le corps |
+| **4.6 s** | les mains se posent sur le bloc |
+| **4.85 s** | les pieds se posent ; il reste accroupi sur le bloc |
+
+Root motion : 19.4 m vers l'avant et 5.4 m vers le haut.
+
+Contrôles : glissement nul, verrou OK.
+
+### Traqueur_BondPrise
+Vidéo de référence : `traqueur_ref_bond_prise`, de 0 à 5 s. Durée **5.0 s**, sans boucle.
+
+Déroulé :
+
+| Temps | Ce qui se passe |
+|---|---|
+| 0 → 0.9 s | accroupi |
+| **1.05 s** | détente : bond rasant de 8 m, bras droit tendu devant |
+| **2.55 → 2.72 s** | **poing**, prise en l'air |
+| **3.0 s** | réception des mains |
+| **3.15 s** | réception des pieds ; le poing est ramené contre la poitrine et tenu |
+
+Contrôles : glissement de 1 cm (pose des pieds), verrou OK.
+
+### Traqueur_PriseRebord
+Vidéo de référence : `traqueur_ref_prise_rebord`, de 0 à 6 s. Durée **6.0 s**, sans boucle.
+
+Départ : accroupi au bord d'un **rebord de 6 m** (le clip est à jouer au sommet du rebord ; la racine reste à 6 m).
+
+Déroulé :
+
+| Temps | Ce qui se passe |
+|---|---|
+| 1.25 s | le bras droit part vers l'avant et le bas |
+| **1.75 → 3.1 s** | bras tendu, griffes ouvertes à 6.3 m devant l'épaule, à mi-hauteur du rebord |
+| **3.25 s** | **poing** |
+| 4.4 → 5.2 s | il remonte le poing contre la poitrine |
+
+Contrôles : appuis fixes, verrou OK.
