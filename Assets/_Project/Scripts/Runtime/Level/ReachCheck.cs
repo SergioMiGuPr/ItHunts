@@ -27,7 +27,7 @@ namespace ItHunts.Level
         /// <summary>Épaule droite du traqueur (repère du traqueur tourné vers la cible) : lue sur l'os Bras.R de SK_Traqueur (Stalker).</summary>
         public static float ShoulderHeight = 10.5f, ShoulderSide = 1.37f, ShoulderForward = 0.9f;   // v4 voûté (DA, D-080)
         /// <summary>Portée de la prise (bras + fente) et portée par une ouverture de pièce (m), depuis StalkerSettings.</summary>
-        public static float GrabReach = 12.8f, RoomReach = 8.3f;
+        public static float GrabReach = 14.8f, RoomReach = 10.3f;
 
         /// <summary>Épaule et portées du traqueur (Stalker au démarrage, validation des modules).</summary>
         public static void Configure(ItHunts.Settings.StalkerSettings s)

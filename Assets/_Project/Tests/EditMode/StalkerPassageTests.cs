@@ -93,6 +93,13 @@ namespace ItHunts.Tests
                 Assert.That(go.GetComponentsInChildren<StalkerPassage>().Length, Is.GreaterThan(0), n + " : passages du traqueur");
                 var spots = go.GetComponentsInChildren<ItHunts.Level.ChestSpot>();
                 Assert.That(System.Array.Exists(spots, s => s.difficulty == 2), Is.True, n + " : une ancre difficile");
+                // B3 : aucune porte étroite plus petite que sa plus petite porte (DA : 4 × 5.2 m) : il la franchit en se faufilant.
+                var stalkerCfg = UnityEditor.AssetDatabase.LoadAssetAtPath<StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
+                Assert.That(stalkerCfg.narrowDoorWidth, Is.EqualTo(4f));
+                Assert.That(stalkerCfg.narrowDoorHeight, Is.EqualTo(5.2f));
+                foreach (StalkerPassage door in go.GetComponentsInChildren<StalkerPassage>(true))
+                    if (door.kind == StalkerLinkKind.PorteEtroite)
+                        Assert.That(StalkerPassageMath.DoorPassable(door.doorHalfSize, stalkerCfg), Is.True, $"{n} : {door.name}");
                 // A2 : chaque pièce du kit de la DA a sa collision ; garde-corps, cordes et chaînes laissent passer la main du traqueur.
                 foreach (Transform t in go.GetComponentsInChildren<Transform>())
                     if (t.name.StartsWith("Kit (DA)"))

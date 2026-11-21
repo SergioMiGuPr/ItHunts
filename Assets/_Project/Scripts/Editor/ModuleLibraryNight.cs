@@ -268,7 +268,11 @@ namespace ItHunts.EditorTools
 
                 // Escalier du sol à la 1re coursive (contre la coursive, côté sud), échelle vers la 2e (côté nord).
                 Stairs($"Escalier {sx}", new Vector3(sx * (h - 15.6f), 0f, -(h - 2f)), new Vector3(0f, 0f, 1f), 5.5f);
-                P("Echafaudage", sx * (h - 6f), h - 4f, 90f, 5.5f);
+                // Échafaudage vers la 2e coursive : solide pour les joueurs, le traqueur le traverse (sinon le coin de la 1re
+                // coursive, déjà coupé par le pont, n'a plus de NavMesh pour lui : cachette sur la 2e coursive, seed 22).
+                GameObject scaffold = P("Echafaudage", sx * (h - 6f), h - 4f, 90f, 5.5f);
+                if (scaffold != null)
+                    scaffold.AddComponent<StalkerPassesThrough>();
                 ArtPiece("SM_Mod_Echelle_6m", sx * (h - 4.3f), h - 8f, 5.5f, sx > 0 ? -90f : 90f);
 
                 // Passages du traqueur : mur grimpable (rez → 1re), chaîne (1re → 2e), bond depuis le sol.

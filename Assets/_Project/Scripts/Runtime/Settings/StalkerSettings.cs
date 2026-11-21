@@ -79,8 +79,9 @@ namespace ItHunts.Settings
         [Min(0f)] public float climbStartPause = 0.2f;
         [Tooltip("Porte étroite : part de sa vitesse quand il se faufile.")]
         [Range(0.1f, 1f)] public float narrowDoorSlowFactor = 0.45f;
-        [Tooltip("Plus petite porte qu'il franchit en se faufilant (m, DA : NOTES.md du v4, ≈ 4 × 6 m) ; plus petite : seul son bras passe.")]
-        [Min(1f)] public float narrowDoorHeight = 6f;
+        [Tooltip("Plus petite porte qu'il franchit en se faufilant (m) : mesurée par la DA sur Traqueur_PorteEtroite (PR #32) : 4 × 5.2 m ; " +
+                 "plus petite : seul son bras passe.")]
+        [Min(1f)] public float narrowDoorHeight = 5.2f;
         [Min(1f)] public float narrowDoorWidth = 4f;
 
         [Header("Mouvement provisoire (clips de la DA absents, C5)")]
@@ -202,6 +203,8 @@ namespace ItHunts.Settings
                  "couverte par le clip sans boucle supplémentaire (m). Réception : sortie possible (s).")]
         [Min(0f)] public float clipChainLoopStart = 1.1f, clipChainCycle = 0.9f, clipChainRisePerCycle = 2.4f, clipChainBaseRise = 4.8f;
         [Min(0f)] public float clipReceptionExit = 1.1f;
+        [Tooltip("Saut depuis une chaîne (Traqueur_ChaineSaut) : lâcher et pose des mains (s) ; prise depuis la chaîne : poing (s).")]
+        [Min(0f)] public float clipChainJumpRelease = 3.4f, clipChainJumpLand = 4.2f, clipChainGrabImpact = 3.75f;
         [Tooltip("Prise depuis un rebord (clip Traqueur_PriseRebord) : la cible est au moins à cette hauteur sous ses pieds (m).")]
         [Min(0f)] public float ledgeGrabDrop = 4f;
         [Tooltip("Au-dessus de cette vitesse (m/s), il court (courses enragées) ; en dessous, il marche à quatre pattes (Rôde).")]

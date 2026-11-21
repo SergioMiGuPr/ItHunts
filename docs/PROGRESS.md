@@ -85,6 +85,15 @@ d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
   sauvegarde et rechargement, conflit oui / non, réinitialisation, 2 joueurs). Capture :
   `docs/design/features/interface-jeu/captures/menu_touches.png`. **Pour la DA (provisoire) :** icônes des touches (clavier,
   souris, manette), onglets Clavier / Manette, bouton Réinitialiser.
+- **PR #32 (`art-traqueur-anim-5`, dernier lot) :** vérifiée, 476 tests sur `main`, fusionnée (a6af686), poussée, `main` dans
+  `animations`. Clips non faits faute de vidéo (DA) : `Traqueur_MurGrimpe` (remplacé par `Traqueur_Escalade`), clips du visage
+  (remplacés par les formes pilotées par le code, C4).
+- **C2 (lot 5) et B3.** `Traqueur_ChaineSaut` (lâcher 3.4 s, mains 4.2 s, réception jusqu'à la fin), `Traqueur_ChainePrise` (poing
+  3.75 s, s'il attrape pendant une montée de chaîne), `Traqueur_PorteEtroite` (7 s). **Seuil des portes étroites : 4 × 5.2 m**
+  (mesuré par la DA sur le clip, au lieu de l'estimation 4 × 6) ; il se baisse à 5.2 m dans la porte. Les 4 modules : toutes les
+  portes étroites franchissables (test), 0 cachette (validés). **5 seeds** (portée configurée, 14.8 m) : liens du traqueur 69 / 72 /
+  46 / 62 / 48 (1 rejeté sur la seed 22), 0 porte trop petite, **0 cachette dans les nouveaux modules** après correction (seed 22 :
+  2 points sur la 2e coursive de la prison, l'échafaudage est maintenant traversé par le traqueur). Contrôleur : 16 états.
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`

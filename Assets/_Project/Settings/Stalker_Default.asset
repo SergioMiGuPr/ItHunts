@@ -74,13 +74,30 @@ MonoBehaviour:
   climbSpeed: 6
   climbStartPause: 0.2
   narrowDoorSlowFactor: 0.45
-  narrowDoorHeight: 6
+  narrowDoorHeight: 5.2
   narrowDoorWidth: 4
   provisionalStride: 9
   provisionalHunch: 62
   provisionalKneeDrop: 0.3
   provisionalLegSwing: 24
   provisionalArmSwing: 20
+  faceLookYaw: 70
+  faceLookPitch: 45
+  faceLookSpeed: 3
+  faceJawHang: 22
+  faceJawSway: 14
+  faceCryDuration: 1.4
+  faceGrowlRange: 15
+  faceGrowlDuration: 1.6
+  faceGrowlCooldown: 7
+  faceBlinkInterval: {x: 2.5, y: 6}
+  faceDroolRate: 3
+  limbIkEnabled: 1
+  limbIkBlend: 0.15
+  limbIkPlantHeight: 0.5
+  limbIkMaxReach: 2
+  limbIkWallSpread: 2
+  limbIkWallReach: 9
   boneChainsEnabled: 1
   boneChains:
     stiffness: 0.08
@@ -121,6 +138,22 @@ MonoBehaviour:
   runClipSpeedA: 11
   runClipSpeedB: 11
   runClipSpeedC: 9
+  clipPriseImpact: 2.37
+  clipPriseRebordImpact: 3.25
+  clipBondPriseImpact: 2.55
+  clipBondTakeoff: 2.05
+  clipBondLand: 4.6
+  clipBondPriseTakeoff: 1.05
+  clipBondPriseLand: 3
+  clipChainLoopStart: 1.1
+  clipChainCycle: 0.9
+  clipChainRisePerCycle: 2.4
+  clipChainBaseRise: 4.8
+  clipReceptionExit: 1.1
+  clipChainJumpRelease: 3.4
+  clipChainJumpLand: 4.2
+  clipChainGrabImpact: 3.75
+  ledgeGrabDrop: 4
   runThreshold: 4.5
   crouchClipSpeed: 2.29
   clipPlaybackRange: {x: 0.3, y: 5.5}

@@ -1364,7 +1364,7 @@ namespace ItHunts.Enemies
             float full = settings.height;
             float clear = Mathf.Min(Clearance(pos), Clearance(pos + _move.Heading * (Radius + 3f)));
             // Porte étroite (D-080) : il se faufile jusqu'à la hauteur de sa plus petite porte ; ailleurs, baissé à crouchMinHeight au plus.
-            float lowest = _trav.Active && _trav.Kind == StalkerLinkKind.PorteEtroite ? settings.narrowDoorHeight - 0.5f : settings.crouchMinHeight;
+            float lowest = _trav.Active && _trav.Kind == StalkerLinkKind.PorteEtroite ? settings.narrowDoorHeight : settings.crouchMinHeight;
             float wanted = Mathf.Clamp(clear - 0.4f, lowest, full) / full;
             _crouch = Mathf.MoveTowards(_crouch, wanted, dt * 1.5f);
             if (Crouching)
@@ -1490,12 +1490,13 @@ namespace ItHunts.Enemies
         private void StartGrabClip(Vector3 aim)
         {
             _grabClip = null;
-            bool ledge = _rb.position.y - aim.y >= settings.ledgeGrabDrop && HasClip("Traqueur_PriseRebord");
-            string clip = ledge ? "Traqueur_PriseRebord" : "Traqueur_Prise";
+            bool onChain = _trav.Active && _trav.Kind == StalkerLinkKind.ChaineGrimpe && HasClip("Traqueur_ChainePrise");
+            bool ledge = !onChain && _rb.position.y - aim.y >= settings.ledgeGrabDrop && HasClip("Traqueur_PriseRebord");
+            string clip = onChain ? "Traqueur_ChainePrise" : ledge ? "Traqueur_PriseRebord" : "Traqueur_Prise";
             if (!HasClip(clip))
                 return;
             _grabClip = clip;
-            float impact = ledge ? settings.clipPriseRebordImpact : settings.clipPriseImpact;
+            float impact = onChain ? settings.clipChainGrabImpact : ledge ? settings.clipPriseRebordImpact : settings.clipPriseImpact;
             _clip = null;
             Play(clip, 0.1f, 1f, EnemyMath.ClipOffsetForImpact(impact, settings.grabTelegraph + settings.grabSlam));
         }
@@ -1519,10 +1520,11 @@ namespace ItHunts.Enemies
                 return;
             _trav.Clip = clip;
             _clip = null;
-            if (StalkerPassageMath.IsLeap(kind) && (clip == "Traqueur_Bond" || clip == "Traqueur_BondPrise"))
+            if (StalkerPassageMath.IsLeap(kind) && (clip == "Traqueur_Bond" || clip == "Traqueur_BondPrise" || clip == "Traqueur_ChaineSaut"))
             {
-                float takeoff = hunt ? settings.clipBondPriseTakeoff : settings.clipBondTakeoff;
-                float land = hunt ? settings.clipBondPriseLand : settings.clipBondLand;
+                bool chain = clip == "Traqueur_ChaineSaut";
+                float takeoff = chain ? settings.clipChainJumpRelease : hunt ? settings.clipBondPriseTakeoff : settings.clipBondTakeoff;
+                float land = chain ? settings.clipChainJumpLand : hunt ? settings.clipBondPriseLand : settings.clipBondLand;
                 _trav.Telegraph = takeoff;
                 _trav.Duration = Mathf.Max(0.3f, land - takeoff);
                 _trav.ClipRecovery = Mathf.Max(0f, len - land);
