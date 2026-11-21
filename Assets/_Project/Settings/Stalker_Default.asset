@@ -84,8 +84,11 @@ MonoBehaviour:
   faceLookYaw: 70
   faceLookPitch: 45
   faceLookSpeed: 3
-  faceJawHang: 22
-  faceJawSway: 14
+  faceJawHang: 35
+  faceJawSway: 22
+  faceJawCryAngle: 34
+  faceJawHangAngle: 7
+  faceJawSwayAngle: 5
   faceCryDuration: 1.4
   faceGrowlRange: 15
   faceGrowlDuration: 1.6
@@ -98,6 +101,10 @@ MonoBehaviour:
   limbIkMaxReach: 2
   limbIkWallSpread: 2
   limbIkWallReach: 9
+  limbIkReachMargin: 0.95
+  limbIkDebug: 0
+  grabFaceRate: 260
+  grabIkWeight: 0.85
   boneChainsEnabled: 1
   boneChains:
     stiffness: 0.08
@@ -153,6 +160,11 @@ MonoBehaviour:
   clipChainJumpRelease: 3.4
   clipChainJumpLand: 4.2
   clipChainGrabImpact: 3.75
+  clipBondLength: 6
+  clipChainJumpLength: 6
+  clipClimbLength: 4.5
+  clipChainClimbLength: 5
+  clipDoorLength: 7
   ledgeGrabDrop: 4
   runThreshold: 4.5
   crouchClipSpeed: 2.29

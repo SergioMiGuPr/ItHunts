@@ -100,8 +100,13 @@ namespace ItHunts.Settings
         [Range(0f, 90f)] public float faceLookPitch = 45f;
         [Min(0.1f)] public float faceLookSpeed = 3f;
         [Tooltip("Mâchoire qui pend (poids de MachoirePendante, 0 à 100) et son oscillation.")]
-        [Range(0f, 100f)] public float faceJawHang = 22f;
-        [Range(0f, 50f)] public float faceJawSway = 14f;
+        [Range(0f, 100f)] public float faceJawHang = 35f;
+        [Range(0f, 50f)] public float faceJawSway = 22f;
+        [Tooltip("Os de la mâchoire (Machoire), en plus des formes (2026-11-21) : ouverture au cri (°), pendante au repos (°) et " +
+                 "oscillation (°, en continu). Rotation seule : aucune échelle, aucune déformation du modèle.")]
+        [Range(0f, 60f)] public float faceJawCryAngle = 34f;
+        [Range(0f, 30f)] public float faceJawHangAngle = 7f;
+        [Range(0f, 20f)] public float faceJawSwayAngle = 5f;
         [Tooltip("Durée du cri (forme Cri) au passage en Enragé et juste avant une prise (s), avec cri_enrage ou cri_prise.")]
         [Min(0.2f)] public float faceCryDuration = 1.4f;
         [Tooltip("Grognement à proximité : distance (m), durée de la forme (s), temps entre deux grognements (s).")]
@@ -124,6 +129,17 @@ namespace ItHunts.Settings
         [Tooltip("Course : une main écartée de plus de cette distance de l'axe (m) va se plaquer sur un mur à portée (m).")]
         [Min(0f)] public float limbIkWallSpread = 2f;
         [Min(1f)] public float limbIkWallReach = 9f;
+        [Tooltip("Main sur un mur : seulement si le point touché est à portée RÉELLE du bras (épaule → griffes × cette part) ; " +
+                 "sinon aucune IK (2026-11-21 : il posait les mains dans le vide).")]
+        [Range(0.5f, 1f)] public float limbIkReachMargin = 0.95f;
+        [Tooltip("Debug visuel des contacts de l'IK : vert = main ou pied posé, rouge = mur trouvé mais hors de portée (refusé).")]
+        public bool limbIkDebug;
+
+        [Header("Prise : alignée sur le joueur (2026-11-21)")]
+        [Tooltip("Pendant l'annonce et la descente de la prise, il pivote vers la position réelle du joueur (°/s).")]
+        [Min(0f)] public float grabFaceRate = 260f;
+        [Tooltip("Pendant la fente (clip de prise), la main de prise est tirée vers le joueur par l'IK (poids max, 0 : aucune).")]
+        [Range(0f, 1f)] public float grabIkWeight = 0.85f;
 
         [Header("Cheveux : chaînes d'os à ressort (v4, D-081)")]
         [Tooltip("Active le ressort des cheveux (os Cheveux_N_2 à _4) du modèle v4.")]

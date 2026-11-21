@@ -20,7 +20,12 @@ namespace ItHunts.Enemies
     /// </summary>
     public sealed class StalkerFace
     {
-        private readonly Transform _self, _head, _neck;
+        private readonly Transform _self, _head, _neck, _jawBone;
+        private readonly Vector3 _jawAxisLocal;
+        private readonly float _jawSign = 1f;
+        private Quaternion _jawBase, _jawWritten;
+        private bool _jawHasBase;
+        private float _jawAngle;
         private readonly SkinnedMeshRenderer _skin;
         private readonly int _cri, _jaw, _lips, _squint, _wide, _blink;
         private readonly Vector3 _faceLocal;
@@ -35,14 +40,17 @@ namespace ItHunts.Enemies
         public float Lips => _wLips;
         public bool Blinking => _blinkUntil > _t;
         public float LookWeight => _look;
+        /// <summary>Ouverture de l'os de la mâchoire (°) : tests et debug.</summary>
+        public float JawAngle => _jawAngle;
+        public Transform JawBone => _jawBone;
         public ParticleSystem Drool => _drool;
 
         public StalkerFace(Transform[] bones, Transform stalker, SkinnedMeshRenderer head, StalkerSettings s)
         {
             _self = stalker;
             _skin = head;
-            _head = System.Array.Find(bones, t => t.name == "Tete");
-            _neck = System.Array.Find(bones, t => t.name == "Cou_2");
+            _head = StalkerRig.Find(bones, StalkerRig.Role.Tete);               // rôles : prêt pour un avatar Humanoid
+            _neck = StalkerRig.Find(bones, StalkerRig.Role.Cou);
             if (_skin == null || _skin.sharedMesh == null || _head == null)
                 return;
             Mesh m = _skin.sharedMesh;
@@ -53,6 +61,19 @@ namespace ItHunts.Enemies
             _wide = m.GetBlendShapeIndex("YeuxEcarquilles");
             _blink = m.GetBlendShapeIndex("Clignement");
             _faceLocal = _head.InverseTransformDirection(stalker.forward);    // modèle tourné vers +Z au repos
+            _jawBone = StalkerRig.Find(bones, StalkerRig.Role.Machoire);
+            if (_jawBone != null)
+            {
+                // Charnière : l'axe latéral du traqueur, vu depuis l'os ; sens : celui qui fait descendre le menton.
+                _jawAxisLocal = _jawBone.InverseTransformDirection(stalker.right);
+                Vector3 chinLocal = _jawBone.InverseTransformPoint(_jawBone.position + stalker.forward * 0.6f - stalker.up * 0.2f);
+                Quaternion keep = _jawBone.localRotation;
+                float y0 = _jawBone.TransformPoint(chinLocal).y;
+                _jawBone.localRotation = keep * Quaternion.AngleAxis(10f, _jawAxisLocal);
+                float y1 = _jawBone.TransformPoint(chinLocal).y;
+                _jawBone.localRotation = keep;
+                _jawSign = y1 < y0 ? 1f : -1f;
+            }
             _nextBlink = Random.Range(s.faceBlinkInterval.x, s.faceBlinkInterval.y);
             if (s.faceDroolRate > 0f)
                 _drool = CreateDrool(System.Array.Find(bones, t => t.name == "Machoire") ?? _head, s);
@@ -134,6 +155,21 @@ namespace ItHunts.Enemies
             {
                 _blinkUntil = i.Now + 0.14f;
                 _nextBlink = i.Now + Random.Range(s.faceBlinkInterval.x, s.faceBlinkInterval.y);
+            }
+
+            // Os de la mâchoire (2026-11-21) : grande ouverture au cri, pendante et qui oscille en continu. Rotation posée sur la pose
+            // de l'image (Animator) ; sans Animator (mouvement provisoire), sur la pose d'avant notre rotation.
+            if (_jawBone != null)
+            {
+                float swing = Mathf.Sin(i.Now * 2.1f) * 0.7f + Mathf.Sin(i.Now * 4.3f + 0.7f) * 0.3f;
+                float hang = s.faceJawHangAngle + s.faceJawSwayAngle * swing + (i.Moving ? 2f : 0f);
+                _jawAngle = Mathf.Lerp(Mathf.Max(0f, hang), s.faceJawCryAngle, cry);
+                Quaternion now = _jawBone.localRotation;
+                if (!_jawHasBase || now != _jawWritten)
+                    _jawBase = now;                                       // l'Animator a reposé l'os cette image
+                _jawHasBase = true;
+                _jawWritten = _jawBase * Quaternion.AngleAxis(_jawAngle * _jawSign, _jawAxisLocal);
+                _jawBone.localRotation = _jawWritten;
             }
 
             Set(_cri, _wCri);

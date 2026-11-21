@@ -777,16 +777,19 @@ namespace ItHunts.Enemies
             _ikL = Mathf.MoveTowards(_ikL, _wantIkL ? 1f : 0f, rate);
             Restore(_boneR, _restR);
             Restore(_boneL, _restL);
+            GrabReachIk = GrabReachWeight(Time.time);
             if (_limbIk != null)
             {
                 bool climbing = _trav.Active && (_trav.Kind == StalkerLinkKind.MurGrimpe || _trav.Kind == StalkerLinkKind.EscaladeRebord);
                 Vector3? chain = _trav.Active && _trav.Kind == StalkerLinkKind.ChaineGrimpe ? _trav.From : (Vector3?)null;
                 bool running = _family == "course" || _family == "enrage";
-                _limbIk.Apply(settings, dt, _ikR > 0.001f, _ikL > 0.001f, running, chain, climbing);
+                _limbIk.Apply(settings, dt, _ikR > 0.001f || GrabReachIk > 0.001f, _ikL > 0.001f, running, chain, climbing);
             }
 
             if (_ikR > 0.001f && hand != null)
                 SolveArm(_boneR, hand.position, _ikR, 1f);
+            else if (GrabReachIk > 0.001f && _boneR != null && _boneR[2] != null)
+                SolveArm(_boneR, Target.Center, GrabReachIk, 1f);             // fente : la main de prise va vers le joueur
             if (_ikL > 0.001f && leftHand != null && _boneL[2] != null)
                 SolveArm(_boneL, leftHand.position, _ikL, -1f);
         }
@@ -1076,7 +1079,9 @@ namespace ItHunts.Enemies
             WantedSpeed *= EnemyMath.GrabMoveFactor(_grab != GrabPhase.Aucune, Planted, settings);   // main plantée : il continue (piste b)
             if (_hasDest && Flat(_dest - pos) < 1f)
                 WantedSpeed = 0f;
-            MoveTo(Lunge(Locomote(pos, WantedSpeed, settings.turnRate * (Planted ? settings.plantedTurnFactor : 1f), dt, now), now));
+            Vector3 nextPos = Lunge(Locomote(pos, WantedSpeed, settings.turnRate * (Planted ? settings.plantedTurnFactor : 1f), dt, now), now);
+            FaceGrabTarget(dt);
+            MoveTo(nextPos);
             CountUTurns(enraged);
             UpdateGrab(now);
             UpdateOverhead(now, dt);
@@ -1585,6 +1590,32 @@ namespace ItHunts.Enemies
             float need = (aim + Vector3.up - ShoulderFrom(pos, aim)).magnitude - settings.armLength;
             _lungeTotal = opening != null ? 0f : EnemyMath.LungeDistance(need, Flat(aim - pos) - Radius, settings);
         }
+
+        /// <summary>
+        /// Prise alignée sur le joueur (2026-11-21) : pendant l'annonce et la descente, il pivote vers la position RÉELLE du joueur
+        /// (grabFaceRate), pour que la main parte vers lui.
+        /// </summary>
+        private void FaceGrabTarget(float dt)
+        {
+            if ((_grab != GrabPhase.Annonce && _grab != GrabPhase.Descente) || Target == null || settings.grabFaceRate <= 0f)
+                return;
+            Vector3 to = Target.transform.position - _rb.position;
+            to.y = 0f;
+            if (to.sqrMagnitude > 0.01f)
+                _move.Heading = Vector3.RotateTowards(_move.Heading, to.normalized, settings.grabFaceRate * Mathf.Deg2Rad * dt, 0f).normalized;
+        }
+
+        /// <summary>Poids de l'IK de la main de prise vers le joueur pendant la fente (clip de prise), 0 hors de la fente.</summary>
+        private float GrabReachWeight(float now)
+        {
+            if (_grab != GrabPhase.Annonce || _grabClip == null || Target == null || settings.grabIkWeight <= 0f)
+                return 0f;
+            float k = EnemyMath.LungeProgress(now, _lungeImpactAt, Mathf.Max(0.1f, settings.grabLungeTime));
+            return settings.grabIkWeight * Mathf.SmoothStep(0f, 1f, k);
+        }
+
+        /// <summary>Main de prise tirée vers le joueur à cette image (tests, debug).</summary>
+        public float GrabReachIk { get; private set; }
 
         private Vector3 Lunge(Vector3 next, float now)
         {
