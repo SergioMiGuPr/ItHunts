@@ -24,6 +24,15 @@
   (`DamageFeedback`, `ProceduralSfx.Parry`), icône provisoire du HUD. Touches : E (interagir sur un objet, sinon parer), LB ;
   **dash manette déplacé sur L3** (à confirmer). Vérifié en Play Mode (Test_Arena) : appui, impact tardif refusé, réussi,
   goule étourdie 1.5 s, recharge, traqueur insensible. 6 tests (`ParryTests`).
+- **PR #20 (`art-audio`), #21 (`art-ui-jeu`), #22 (`art-vfx`) :** périmètre, GUID, compilation, 397 tests sur `main` ; conflits du
+  manifeste (lignes ajoutées des deux côtés, toutes gardées) ; fusionnées, poussées, `main` dans `animations`. **Leçon :** après un
+  changement de branche, forcer `AssetDatabase.Refresh(ForceSynchronousImport)` + recompilation, sinon Unity teste l'ancien code.
+- **4. Interface en jeu (D-076).** Assembly `ItHunts.HudArt` : `PlayerHudArt` (réticule, charges, parade de la DA, canevas
+  1920 × 1080 sur la caméra du HUD), `ShopPanelArt` (Panneau_Marchand / Panneau_Coffre dans la vue du joueur), `HudArtInstall`
+  (`PlayerHud.Built`, `ShopMenu.Opened`). Logique : `ShopMenu` (Runtime/Economy), `ArtifactMerchant` et `Merchant` interactifs,
+  coffre qui ouvre son choix, `OfferOrb.MenuOnly`. HUD : plus d'anneaux ni de jauges de traction et de répulsion, plus de recharge
+  de tir. Vérifié en Play Mode (Test_Arena) : achat, refus (prix rouge), offres renouvelées, coffre, fermeture et commandes rendues.
+  Captures : `docs/design/features/interface-jeu/captures/`. Icônes des améliorations : à fournir par la DA (masquées).
 
 **Retours du 2026-11-18, second lot (`animations`, pas fusionnée dans `main`) :** un commit par point.
 - **Règles de l'utilisateur :** plus aucune correction des mains FPS ni des animations avant ses photos et vidéos de référence ;

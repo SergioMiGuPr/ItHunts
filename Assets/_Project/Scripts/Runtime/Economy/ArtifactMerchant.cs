@@ -13,7 +13,7 @@ namespace ItHunts.Economy
     /// Les coffres donnent les améliorations de stats ; le marchand placé au hasard (D-043) n'est plus utilisé. 4e offre fixe :
     /// le soin (+40 PV, 35 âmes).
     /// </summary>
-    public sealed class ArtifactMerchant : MonoBehaviour
+    public sealed class ArtifactMerchant : MonoBehaviour, IInteractable
     {
         [SerializeField] private EconomySettings settings;
         [Tooltip("Améliorations de l'artefact proposées (pool du barillet).")]
@@ -50,6 +50,22 @@ namespace ItHunts.Economy
                 top = Mathf.Max(top, OfferOffset(i, count).y);
             top += 0.95f + 3f * 0.28f * 0.5f + 0.12f;                   // texte au-dessus de l'orbe (3 lignes de 0.28 m) + flottement
             return new Vector3((minX + maxX) * 0.5f, top + 1.6f + signHeight * 0.5f, 1.6f);
+        }
+
+        private void OnEnable() => Interactables.All.Add(this);
+        private void OnDisable() => Interactables.All.Remove(this);
+
+        // Interagir ouvre le menu de ses offres dans la DA (point 4, 2026-11-21) ; les orbes restent la vitrine.
+        public Vector3 Point => transform.position + Vector3.up * 1.4f;
+        public float Range => settings != null ? settings.orbInteractRange : 8f;
+        public bool AcceptsGrab => false;
+        public bool Available(PlayerHealth p) => p != null && !p.Dead && ShopMenu.Of(p) == null && OffersFor(p.PlayerId).Count > 0;
+        public string Prompt(PlayerHealth p) => "voir les offres du marchand";
+
+        public void Interact(PlayerHealth p)
+        {
+            int id = p.PlayerId;
+            ShopMenu.Show(p, ShopMenu.Kind.Marchand, "Marchand", () => OffersFor(id));
         }
 
         private void Start()
@@ -123,6 +139,7 @@ namespace ItHunts.Economy
                 Vector3 at = transform.TransformPoint(OfferOffset(i, idx.Length));
                 OfferOrb orb = OfferOrb.Create(transform, at, u, u.merchantPrice, 0f, playerId, range, orbMaterial);
                 orb.Pricing = settings;
+                orb.MenuOnly = true;
                 orb.TakenBy += (o, p) =>
                 {
                     Purchases++;
@@ -138,6 +155,7 @@ namespace ItHunts.Economy
                 OfferOrb heal = OfferOrb.Create(transform, hat, null, settings != null ? settings.healPrice : 35,
                     settings != null ? settings.healAmount : 40f, playerId, range, orbMaterial);
                 heal.Pricing = settings;
+                heal.MenuOnly = true;
                 heal.TakenBy += (o, p) =>
                 {
                     Purchases++;

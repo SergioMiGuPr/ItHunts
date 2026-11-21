@@ -102,9 +102,22 @@ namespace ItHunts.Economy
                     r.enabled = true;
         }
 
-        public bool Available(PlayerHealth p) => p != null && !p.Dead && !OpenedFor(p.PlayerId);
-        public string Prompt(PlayerHealth p) => PriceFor(p) > 0 ? $"ouvrir le coffre ({PriceFor(p)} âmes)" : "ouvrir le coffre";
-        public void Interact(PlayerHealth p) => TryOpen(p);
+        public bool Available(PlayerHealth p) => p != null && !p.Dead && (!OpenedFor(p.PlayerId) || Pending(p) != null) && ShopMenu.Of(p) == null;
+        public string Prompt(PlayerHealth p) => Pending(p) != null ? "choisir une amélioration"
+            : PriceFor(p) > 0 ? $"ouvrir le coffre ({PriceFor(p)} âmes)" : "ouvrir le coffre";
+
+        public void Interact(PlayerHealth p)
+        {
+            Opening pending = Pending(p);
+            if (pending != null)
+                ShopMenu.Show(p, ShopMenu.Kind.Coffre, rare ? "Coffre rare" : "Coffre", pending.Choices);   // menu refermé sans choisir
+            else
+                TryOpen(p);
+        }
+
+        /// <summary>Ouverture de ce joueur dont le choix n'est pas encore fait (menu fermé sans choisir), sinon null.</summary>
+        private Opening Pending(PlayerHealth p) =>
+            p != null && _openings.TryGetValue(p.PlayerId, out Opening o) && !o.Chosen && o.Choices.Count > 0 ? o : null;
 
         /// <summary>Ouvre le coffre pour ce joueur s'il paie (refus en rouge sinon) et s'il ne l'a pas déjà ouvert.</summary>
         public bool TryOpen(PlayerHealth p)
@@ -134,9 +147,11 @@ namespace ItHunts.Economy
                 Vector3 at = transform.position + transform.right * x + Vector3.up * (2.2f + (i % 2 == 1 ? 0.6f : 0f));
                 OfferOrb orb = OfferOrb.Create(transform, at, drawn[i], 0, 0f, p.PlayerId, settings != null ? settings.orbInteractRange : 8f, orbMaterial);
                 orb.TakenBy += (chosen, by) => OnChosen(opening, chosen);
+                orb.MenuOnly = true;                                   // choix dans le menu du coffre (point 4, 2026-11-21)
                 opening.Choices.Add(orb);
             }
 
+            ShopMenu.Show(p, ShopMenu.Kind.Coffre, rare ? "Coffre rare" : "Coffre", opening.Choices);
             return true;
         }
 

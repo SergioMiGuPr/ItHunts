@@ -10,6 +10,12 @@ namespace ItHunts.Settings
     [CreateAssetMenu(fileName = "HudSkin_Default", menuName = "ItHunts/Réglages/Habillage du HUD")]
     public sealed class HudSkinSettings : ScriptableObject
     {
+        [Header("Interface en jeu de la DA (PR #21, UI-HANDOFF § 7)")]
+        public GameObject reticlePrefab;
+        public GameObject chargesPrefab;
+        public GameObject parryPrefab;
+        public GameObject merchantPanelPrefab;
+        public GameObject chestPanelPrefab;
         [Header("Polices (OFL)")]
         [Tooltip("Texte et nombres : EB Garamond SemiBold.")]
         public Font textFont;

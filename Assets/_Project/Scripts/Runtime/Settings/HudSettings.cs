@@ -10,6 +10,8 @@ namespace ItHunts.Settings
     [CreateAssetMenu(fileName = "Hud_Default", menuName = "ItHunts/Réglages/HUD")]
     public sealed class HudSettings : ScriptableObject
     {
+        [Tooltip("Rangée des munitions et de la recharge de l'artefact sous le viseur (retirée le 2026-11-21 ; le barillet montre ses balles).")]
+        public bool showAmmoRow;
         [Header("Habillage de la DA (PR #10) : barre de vie, âmes, mini-carte ronde, polices ; vide : HUD greybox")]
         public HudSkinSettings skin;
 

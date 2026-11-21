@@ -310,7 +310,7 @@ namespace ItHunts.Level
         }
 
         /// <summary>Appareil du joueur : sa manette s'il joue à la manette, sinon le clavier.</summary>
-        private static InputDevice OwnerOf(PlayerInput pi)
+        internal static InputDevice OwnerOf(PlayerInput pi)
         {
             if (pi.currentControlScheme == "Gamepad")
             {
@@ -322,7 +322,7 @@ namespace ItHunts.Level
             return Keyboard.current;
         }
 
-        private static bool BackPressed(InputDevice owner)
+        internal static bool BackPressed(InputDevice owner)
         {
             if (owner is Gamepad g)
                 return g.startButton.wasPressedThisFrame || g.buttonEast.wasPressedThisFrame;

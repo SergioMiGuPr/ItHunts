@@ -115,7 +115,36 @@ namespace ItHunts.Hud
             if (settings == null || _motor == null)
                 return;
             Build();
+            Built?.Invoke(this);
         }
+
+        /// <summary>HUD construit : la vue de la DA (ItHunts.HudArt) y pose le réticule, les charges et la parade.</summary>
+        public static event System.Action<PlayerHud> Built;
+
+        /// <summary>Habillage du HUD (prefabs de la DA, polices).</summary>
+        public HudSkinSettings HudSkin => settings != null ? settings.skin : null;
+
+        /// <summary>Canevas du HUD (caméra, calque) : la vue de la DA y aligne le sien.</summary>
+        public Canvas HudCanvas => _canvas;
+
+        /// <summary>Réticule, charges et parade de la DA posés : le point, l'anneau de la télékinésie, les segments des charges et
+        /// l'icône provisoire de la parade sont masqués.</summary>
+        public bool ArtGauges { get; private set; }
+
+        public void UseArtGauges()
+        {
+            ArtGauges = true;
+            if (_dot != null)
+                _dot.gameObject.SetActive(false);
+            if (_tkRing != null)
+                _tkRing.gameObject.SetActive(false);
+            if (_moveGroup != null)
+                _moveGroup.gameObject.SetActive(false);
+            if (_parryGroup != null)
+                _parryGroup.gameObject.SetActive(false);
+        }
+
+        private Image _dot;
 
         private void OnEnable()
         {
@@ -159,9 +188,9 @@ namespace ItHunts.Hud
             _center = center;
             Image dot = NewImage("Point", center, Vector2.zero, Vector2.one * settings.crosshairSize, settings.crosshairColor);
             dot.raycastTarget = false;
+            _dot = dot;
             float thickness = feedback != null ? feedback.ringThickness : 2f;
-            _attractRing = Ring("Anneau traction", center, feedback != null ? feedback.attractRingRadius : 8f, thickness);
-            _repelRing = Ring("Anneau répulsion", center, feedback != null ? feedback.repelRingRadius : 13f, thickness);
+            // Traction et répulsion : plus d'anneaux ni de jauges, elles sont sur les tablettes de l'orbe (2026-11-21).
             _tkRing = Ring("Anneau télékinésie", center, tkFeedback != null ? tkFeedback.grabRingRadius : 18f, thickness);
 
             // Rangée 1 : charges de mouvement.
@@ -184,9 +213,9 @@ namespace ItHunts.Hud
                 _parryFill.fillMethod = Image.FillMethod.Vertical;
             }
 
-            // Rangée 2 : charges d'attraction puis répulsion.
+            // Rangée 2 (charges d'attraction, répulsion) retirée le 2026-11-21 : sur les tablettes de l'orbe.
             y -= settings.segmentHeight + settings.rowGap;
-            MagnetismOrbSettings mc = _motor.MagnetismSettings;
+            MagnetismOrbSettings mc = null;
             if (mc != null)
             {
                 int attract = mc.attractCharges;
@@ -437,7 +466,7 @@ namespace ItHunts.Hud
                 settings.idleDelay, settings.fadeSpeed, settings.returnBlinkDuration);
             FillSegments(_moveSegments, moveCharges, settings.movementColor, settings.emptyColor, _moveFade.Blinking(now));
 
-            if (_parryFill != null && _parry.Settings != null)
+            if (_parryFill != null && _parry.Settings != null && !ArtGauges)
             {
                 float fill = _parry.Fill;
                 _parryFill.fillAmount = fill;
@@ -589,6 +618,8 @@ namespace ItHunts.Hud
         /// <summary>Munitions du barillet : un segment par munition ; en rechargement, ils se remplissent ; grisés si inactif.</summary>
         private void UpdateAmmo(int tick, float now, float dt, float fixedDt)
         {
+            if (!settings.showAmmoRow)
+                return;                                                  // recharge de tir retirée du HUD (2026-11-21)
             ItHunts.Settings.BarrelSettings cfg = _artifact != null ? _artifact.BarrelSettings : null;
             ItHunts.Settings.FireLanternSettings lantern = _artifact != null ? _artifact.LanternSettings : null;
             int rounds = cfg != null ? cfg.rounds : lantern != null ? 1 : 0;   // lanterne (D-065) : un seul segment, sa recharge
@@ -697,6 +728,8 @@ namespace ItHunts.Hud
 
         private static void SetRing(Image ring, bool on, Color color)
         {
+            if (ring == null)
+                return;
             ring.enabled = on;
             if (on)
                 ring.color = color;

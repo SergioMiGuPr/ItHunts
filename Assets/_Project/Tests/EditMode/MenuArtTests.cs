@@ -235,5 +235,19 @@ namespace ItHunts.Tests
                 Object.DestroyImmediate(go);
             }
         }
+
+        [Test]
+        public void InterfaceEnJeu_PrefabsDeLaDA_DansLHabillageDuHud()
+        {
+            var skin = UnityEditor.AssetDatabase.LoadAssetAtPath<ItHunts.Settings.HudSkinSettings>("Assets/_Project/Settings/HudSkin_Default.asset");
+            Assert.That(skin, Is.Not.Null);
+            Assert.That(skin.reticlePrefab, Is.Not.Null, "réticule");
+            Assert.That(skin.chargesPrefab, Is.Not.Null, "charges");
+            Assert.That(skin.parryPrefab, Is.Not.Null, "parade");
+            Assert.That(skin.merchantPanelPrefab, Is.Not.Null, "marchand");
+            Assert.That(skin.chestPanelPrefab, Is.Not.Null, "coffre");
+            var hud = UnityEditor.AssetDatabase.LoadAssetAtPath<ItHunts.Settings.HudSettings>("Assets/_Project/Settings/Hud_Default.asset");
+            Assert.That(hud.showAmmoRow, Is.False, "recharge de tir retirée du HUD");
+        }
     }
 }

@@ -12,6 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efda86e1ac07b314487ef2c367ff786a, type: 3}
   m_Name: HudSkin_Default
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.HudSkinSettings
+  reticlePrefab: {fileID: 6756685931368298154, guid: 22be1251b33c564468f592955660bcdc, type: 3}
+  chargesPrefab: {fileID: 3869966530489792348, guid: a7391d45611e01841955499acdb8f614, type: 3}
+  parryPrefab: {fileID: 4931113643270371725, guid: c640d872c8136594e8726cb2856f4990, type: 3}
+  merchantPanelPrefab: {fileID: 1216014644797923048, guid: f8fb4c62b651b1e48972659cd01bf820, type: 3}
+  chestPanelPrefab: {fileID: 6814563504188980487, guid: 7ab43712011a70746bd267e0f0c4a0a2, type: 3}
   textFont: {fileID: 12800000, guid: 9c0d1388ac19db84387d4c02dd031f52, type: 3}
   titleFont: {fileID: 12800000, guid: beb1fe48b368ab24e8f157905953e401, type: 3}
   numberOutline: {r: 0.04, g: 0.02, b: 0.04, a: 0.9}

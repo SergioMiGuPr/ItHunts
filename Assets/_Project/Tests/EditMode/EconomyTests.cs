@@ -47,6 +47,7 @@ namespace ItHunts.Tests
         [TearDown]
         public void TearDown()
         {
+            ShopMenu.CloseAll();
             foreach (Object o in _made)
             {
                 if (o is GameObject go)
@@ -329,6 +330,14 @@ namespace ItHunts.Tests
             OfferOrb take = chest.ChoicesFor(a.PlayerId)[1];
             UpgradeDefinition up = take.Upgrade;
             take.Interact(a);
+            Assert.That(chest.ChosenBy(a.PlayerId), Is.False, "plus de prise directe : le choix se fait dans le menu du coffre");
+            ShopMenu menu = ShopMenu.Of(a);
+            Assert.That(menu, Is.Not.Null, "ouvrir le coffre ouvre le menu de a");
+            Assert.That(menu.Type, Is.EqualTo(ShopMenu.Kind.Coffre));
+            Assert.That(menu.Offers.Count, Is.EqualTo(3));
+            Assert.That(menu.Price(1), Is.EqualTo(0), "choix gratuit");
+            Assert.That(menu.Buy(1), Is.True);
+            Assert.That(ShopMenu.Of(a), Is.Null, "un seul choix : le menu se ferme");
             Assert.That(chest.ChosenBy(a.PlayerId), Is.True);
             Assert.That(chest.ChoicesFor(a.PlayerId).Count, Is.EqualTo(0), "les deux autres de a disparaissent");
             Assert.That(chest.ChoicesFor(b.PlayerId).Count, Is.EqualTo(3), "celles de b restent");
