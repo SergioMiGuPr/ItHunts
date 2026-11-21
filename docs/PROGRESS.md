@@ -4,8 +4,9 @@
 
 ## Étape en cours
 
-**Matin du 2026-11-21 (en cours, branche `animations`) :** corrections A1 à A6, traqueur v4 (modèle B, animations C) dès les PR
-d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
+**Matin du 2026-11-21 (fusionné dans `main`) :** corrections A1 à A6, traqueur v4 en jeu (modèle B, animations C), PR d'art #27 à
+#33 intégrées au fil de l'eau (aucune bloquée). Build de développement : `Builds/Matin_2026-11-21/ItHunts.exe`. **À valider en
+playtest :** fente de la prise (6.5 m), durée des passages avec les clips (bond 6 s), pièces annexes 12 × 8 m, menu des touches.
 - **A1. Matériaux d'art jamais modifiés.** Cause : `CampementApercu.Eclaire` (DA) ne copie le matériau qu'en Play Mode ; en mode
   édition (test `Campement_PlacesSuiventLeSalon`), il écrivait dans `M_Campement_Assis_N.mat`, sauvegardé ensuite.
   `MainMenuArt.OwnCampMaterials` donne une copie à chaque place dès la construction (édition et jeu). Autres scripts vérifiés :
