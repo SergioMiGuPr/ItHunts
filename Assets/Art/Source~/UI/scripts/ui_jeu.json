@@ -1,0 +1,18 @@
+{
+ "Reticule_Etoile": {
+  "taille": 136,
+  "source": "MiniCarte_Cadre (pointe nord)"
+ },
+ "Charge_Pleine": {
+  "taille": 59,
+  "source": "ui_icones_minicarte_v01 (ligne 2, colonne 1)"
+ },
+ "Charge_Vide": {
+  "taille": 68,
+  "source": "ui_icones_minicarte_v01 (ligne 2, colonne 2)"
+ },
+ "Parade_Icone": {
+  "taille": 132,
+  "source": "ui_icones_minicarte_v01 (ligne 2, colonne 4)"
+ }
+}

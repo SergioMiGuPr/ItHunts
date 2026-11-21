@@ -737,3 +737,34 @@ Retours à la DA :
 - Pause : la maquette a 4 boutons ; le jeu en a jusqu'à 6 (Quitter l'écran partagé, outils de développement) : le 4e cartouche est
   reproduit au même pas et le cadre allongé (9 tranches). Si un autre pas est voulu, le donner.
 - Manifeste : les 5 prefabs et les 4 shaders `ItHunts/UI/*` n'ont pas de ligne.
+## Sons du jeu (lot B, 2026-11-21, branche `art-audio`)
+
+20 sons générés par l'utilisateur sur Higgsfield (effets : Mirelo ; musiques : ElevenLabs Music v2.5), sources MP3 dans
+`docs/art/audio/jeu/`, préparés par `Assets/Art/Source~/Audio/scripts/sons_jeu.py` (silences retirés, effets à −1 dBFS de
+crête, boucles et musiques raccordées par fondu enchaîné, musiques au niveau RMS de la musique du menu). Ils remplacent les
+sons synthétisés provisoires (`ProceduralSfx`) ; **le branchement se fait sur `main`** (les noms de méthode ci-dessous sont
+ceux de `ProceduralSfx` et des vues qui les jouent).
+
+| Son (`Assets/Art/Audio/…`) | Moment du jeu | Remplace | Import |
+|---|---|---|---|
+| `Traqueur/Sfx_Traqueur_Pas` | chaque pas du traqueur (`StalkerAudio`, cadence selon sa vitesse, hauteur 0,9 à 1,05) ; le fichier contient une suite de pas : jouer un extrait par pas ou à vitesse lente | `StalkerStep` | mono, décompressé |
+| `Traqueur/Sfx_Traqueur_Souffle_Boucle` | souffle continu (volume plus fort en Chasse et Enragé) | `StalkerBreath` | mono, boucle, compressé en mémoire |
+| `Traqueur/Sfx_Traqueur_Grognement` | grondement (`LastRoarTime`), passage en Alerte ou Recherche | `StalkerRoar` | mono, décompressé |
+| `Traqueur/Sfx_Traqueur_Cri_Enrage_01`, `_02` | passage en mode Enragé (fin du timer), une variante au hasard | (nouveau) | mono, décompressé |
+| `Traqueur/Sfx_Traqueur_Cri_Prise` | le traqueur attrape un joueur (mort en un coup) | (nouveau) | mono, décompressé |
+| `Goule/Sfx_Goule_Alerte` | la goule annonce son bond (`GhoulMode.Annonce`) | `GhoulHiss` | mono, décompressé |
+| `Goule/Sfx_Goule_Attaque_01`, `_02` | coup ou bond d'une goule, une variante au hasard | (nouveau) | mono, décompressé |
+| `Goule/Sfx_Goule_Mort` | mort d'une goule | `Kill` (goule) | mono, décompressé |
+| `Volant/Sfx_Volant_Cri` | le volant annonce son piqué (`FlyerMode.Annonce`) | `FlyerScreech` | mono, décompressé |
+| `Volant/Sfx_Volant_Ailes_Boucle` | vol du volant (boucle 3D, volume selon la distance) | (nouveau) | mono, boucle, compressé en mémoire |
+| `Volant/Sfx_Volant_Mort` | mort (éclatement) d'un volant | `Break` (volant) | mono, décompressé |
+| `Armes/Sfx_Barillet_Tir_01`, `_02` | tir du barillet, une variante au hasard (alterner) | `BarrelShot` | mono, décompressé |
+| `Armes/Sfx_Barillet_Recharge` | rechargement du barillet (début ; le clic de fin peut rester procédural) | `BarrelReloadStart` | mono, décompressé |
+| `Armes/Sfx_Lanterne_Jet_Debut` | début du jet de feu de la lanterne | `LanternJet` (attaque) | mono, décompressé |
+| `Armes/Sfx_Lanterne_Jet_Boucle` | jet de feu maintenu (boucle tant que le jet dure, s'arrête avec un fondu court) | `LanternJet` (corps) | mono, boucle, compressé en mémoire |
+| `Musique/Musique_Jeu_Exploration_Boucle` (145,5 s) | exploration du niveau, hors chasse | `TensionDrone` (Alerte, Recherche) | stéréo, streaming |
+| `Musique/Musique_Jeu_Enrage_Boucle` (87,5 s) | traqueur en Chasse puis Enragé : fondu croisé depuis l'exploration | `TensionDrone` (Chasse, Enragé) | stéréo, streaming |
+
+Réglages d'import : effets courts **Decompress On Load** (aucune latence au tir), boucles d'effets **Compressed In Memory**,
+musiques **Streaming** (chargement en arrière-plan) ; Vorbis 0,7, fréquence d'origine (44,1 kHz) ; mono forcé pour tous les
+effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retirés et raccords : `sons_jeu.json`.

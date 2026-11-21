@@ -295,3 +295,49 @@ Grenze Gotisch dans la bande du haut. Écran partagé : un canvas par joueur, le
 - **La base de chaque écran est la maquette** ; les images retouchées ne remplissent que les zones qui changent, par masque.
 - Lot T et reconstruction en calques générés abandonnés (PR #17 fermée).
 - Plus aucune correction des mains FPS ni d'aucune animation (mains, traqueur, goule) avant les photos et vidéos de référence.
+
+## 7. Interface en jeu : réticule, charges, parade, marchand, coffre (fait, 2026-11-21, branche `art-ui-jeu`)
+
+Tout est **découpé ou recomposé** dans les maquettes de l'utilisateur (aucun nouveau dessin) ; textes en EB Garamond.
+Scène d'aperçu : `Assets/Art/Scenes/Test_UI_Jeu.unity` (1, 2, 3 : réticule ; espace : dépense une charge ; P : parade ;
+O : contre réussi ; M : marchand ; K : coffre ; Échap : fermer). Planche : `docs/art/rendus/UI/Jeu/Planche_UI_Jeu.jpg`.
+Constructeur : `Assets/Art/Source~/UI/scripts/UIJeuBuilder.cs` ; découpe : `ui_jeu.py`. Scripts (assemblée
+`ItHunts.Art.UIJeu`) : `Assets/Art/UI/Jeu/Scripts/`. Tailles en unités du canvas 1920 × 1080 (*match height*).
+
+### 7.1 Pièces (`Assets/Art/UI/Jeu/`, PPU 100, non compressées)
+
+| Sprite | Pixels | Source |
+|---|---|---|
+| `Reticule_Etoile` | 136 × 136 | étoile à 4 pointes du cadre de la mini-carte (pointe nord de `MiniCarte_Cadre`, trait d'encre compris), isolée par un losange |
+| `Charge_Pleine` | 59 × 59 | orbe bleue de `ui_icones_minicarte_v01` (trait d'encre 4 px) |
+| `Charge_Vide` | 68 × 68 | orbe fêlée grise de `ui_icones_minicarte_v01` |
+| `Parade_Icone` | 132 × 132 | losange cerclé de `ui_icones_minicarte_v01` |
+
+Repris tels quels : `Menus_Cadre` et `Menus_Cartouche_*` (menus), `Ames_Cadre`, `Ames_Fond`, `Ames_Flamme` (HUD),
+`Menus_Lueur` (lueurs), icônes de la mini-carte (aperçu des cartes seulement).
+
+### 7.2 Prefabs (`Assets/Art/UI/Jeu/Prefabs/`) et API
+
+| Prefab | Ancrage, position, taille | États | API (composant) |
+|---|---|---|---|
+| `HUD_Reticule` | centre de l'écran ; étoile **30 px**, lueur 48 px | **Neutre** : étoile blanc argent, lueur à peine visible ; **Attrapable** : lueur violette (télékinésie), étoile × 1,22 ; **Ennemi** : lueur rouge, étoile × 1,12 **tournée de 45°** (lisible sans la couleur) ; transition lissée (14/s), lueur qui pulse (±18 %, 1,6 Hz) | `ReticuleJeu.SetEtat(EtatReticule)` |
+| `HUD_Charges` | bas centre, **132 px** au-dessus du bord ; 3 orbes de 24 px espacées de 34 px | **pleine** : orbe bleue + lueur bleue 35 % ; **vide** : orbe fêlée ; **en recharge** : orbe fêlée, l'orbe bleue monte du bas (remplissage vertical) à 55 % ; une charge qui revient brille (0,35 s) | `ChargesJeu.Regle(i, 0..1)` ou `RegleTout(pleines, recharge01)` |
+| `HUD_Parade` | bas centre, à droite des charges (x +96, y 152) ; 36 px | **prête** : icône pleine (brille une fois en revenant) ; **en recharge** : icône à 45 %, voile sombre radial qui recule ; **contre réussi** : éclat blanc-bleu (0,6 s) | `ParadeJeu.Regle(0..1)`, `ParadeJeu.Contre()` |
+| `Panneau_Marchand` | centre ; cadre 9 tranches **760 × 720**, voile noir 55 % plein écran | titre (Regular 44, `#F7E1B3`), solde d'âmes (haut droit, flamme + SemiBold 26), **4 cartes** de 600 × 82 (x 80, y 128 + 94 × i depuis le haut), zone de description (Italic 22), bouton **Fermer** (cartouche long 220 × 56, y 612) | `PanneauBoutique.Remplit(offres, âmes)`, évènements `Achat(int)` et `Ferme` |
+| `Panneau_Coffre` | idem, **3 cartes**, prix 0 (choix gratuit : flamme et prix masqués) | idem | idem |
+
+**Carte** (`CarteAmelioration`) : cartouche des âmes en 9 tranches (`Ames_Fond` puis `Ames_Cadre`, échelle 82/204) ; icône dans
+le rond (centre à 116, 102 px du sprite × échelle, 86 % du diamètre intérieur) ; nom en Regular 27 à partir de 182 px du sprite ;
+prix en SemiBold 27 aligné à droite, flamme des âmes à 112 px du bord droit. **Survol ou sélection (manette)** : lueur bleu
+pâle derrière la carte, la carte grandit de 2,5 %, la description s'affiche dans le panneau. **Indisponible** (prix > âmes) :
+cadre, fond, icône et flamme assombris (`#6B6670`), nom gris, **prix en rouge**, l'achat est refusé (l'évènement `Achat`
+n'est pas émis) ; la carte reste sélectionnable pour lire sa description. Bouton Fermer : 4 états (`TeinteGroupe`, 2.1).
+
+### 7.3 Ce que `main` doit faire
+
+- Remplacer le point du viseur et les segments des charges de `PlayerHud` par ces prefabs (ou leurs pièces), et brancher
+  `SetEtat` (cible attrapable ou ennemi sous le viseur) et `Regle` (charges, parade) ; garder le cercle libre de 48 px
+  autour du viseur (ART-HANDOFF § 5 bis : l'étoile et sa lueur y tiennent).
+- Ouvrir les panneaux depuis le marchand et le coffre (`Remplit` avec les offres tirées et les âmes du joueur), écouter
+  `Achat` et `Ferme` ; les icônes des améliorations restent à fournir (l'aperçu prend des icônes de la mini-carte).
+- En écran partagé (960 × 1080), les tailles en unités du canvas restent lisibles (*match height*).
