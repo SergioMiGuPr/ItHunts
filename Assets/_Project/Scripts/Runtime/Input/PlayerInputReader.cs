@@ -57,7 +57,7 @@ namespace ItHunts.Input
         public bool ThrowHeld { get; private set; }
         public int ReloadPressedTick { get; private set; } = MovementState.NeverTick;
         public bool ToggleDebugPressed { get; private set; }
-        /// <summary>Parer (E / LB, D-075) cette image ; E sur un objet utilisable reste l'interaction.</summary>
+        /// <summary>Parer (Alt gauche / R3 par défaut, D-079) cette image.</summary>
         public bool ParryPressed { get; private set; }
         /// <summary>E / Y maintenu (réanimation d'un allié, étape 9).</summary>
         public bool InteractHeld => _interact != null && _interact.IsPressed();
@@ -132,9 +132,8 @@ namespace ItHunts.Input
             ThrowHeld = _throw.IsPressed() && aimReady;
             if (_reload.WasPressedThisFrame() && aimReady && !(UsingGamepad && focus))
                 ReloadPressedTick = next;                     // R / Y : recharger l'artefact (Y visant un objet : il l'utilise)
-            // E sert aussi à interagir (même touche, D-075) : sur un objet utilisable, c'est l'interaction, pas la parade.
-            bool interacting = focus && _interact != null && _interact.WasPressedThisFrame();
-            ParryPressed = _parry != null && _parry.WasPressedThisFrame() && !interacting;
+            // Parade sur sa propre touche (Alt gauche / R3, D-079) : E ne sert plus qu'à interagir.
+            ParryPressed = _parry != null && _parry.WasPressedThisFrame();
             ToggleDebugPressed = _toggleDebug.WasPressedThisFrame();
             PausePressed = _pause.WasPressedThisFrame();
         }

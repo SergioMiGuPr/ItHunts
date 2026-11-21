@@ -431,11 +431,11 @@ namespace ItHunts.Tests
             // porte, orbe) passe avant la recharge (PlayerInputReader). Aucune autre touche n'est partagée.
             Assert.That(Paths("Interact"), Is.EqualTo("<Gamepad>/buttonNorth <Keyboard>/e"));
             var all = map.bindings.Where(b => !b.isComposite).GroupBy(b => b.path).Where(g => g.Select(b => b.action).Distinct().Count() > 1);
-            Assert.That(all.Select(g => g.Key), Is.EquivalentTo(new[] { "<Gamepad>/buttonNorth", "<Keyboard>/e" }),
-                "Y : recharger ou interagir ; E : interagir ou parer (D-075), selon le contexte");
-            // Parade (D-075) : E / LB ; le dash manette passe sur L3.
-            Assert.That(Paths("Parry"), Is.EqualTo("<Gamepad>/leftShoulder <Keyboard>/e"));
-            Assert.That(Paths("Dash"), Is.EqualTo("<Gamepad>/leftStickPress <Keyboard>/leftShift"));
+            Assert.That(all.Select(g => g.Key), Is.EquivalentTo(new[] { "<Gamepad>/buttonNorth" }),
+                "Y : recharger ou interagir selon le contexte ; E ne sert plus qu'à interagir (D-079)");
+            // Parade (D-079) : Alt gauche / R3 ; le dash manette revient sur LB.
+            Assert.That(Paths("Parry"), Is.EqualTo("<Gamepad>/rightStickPress <Keyboard>/leftAlt"));
+            Assert.That(Paths("Dash"), Is.EqualTo("<Gamepad>/leftShoulder <Keyboard>/leftShift"));
         }
 
         // ---------- Aide à la visée : cône ----------

@@ -11,6 +11,10 @@ d'art `art-traqueur-v4`, `art-traqueur-anim-N`, `art-fin-2`.
   `MainMenuArt.OwnCampMaterials` donne une copie à chaque place dès la construction (édition et jeu). Autres scripts vérifiés :
   eau, effets (`VfxPeint` : MaterialPropertyBlock ; `LienVfx` : instance), HUD, marchand : instances. Test : matériaux de la DA
   intacts et non sales. Vérifié : `git status` propre après 30 s de Play Mode du menu et `SaveAssets`.
+- **A6. Garde-fous** : `.claude/settings.json` refuse `git reset --hard`, `git clean`, `git checkout -- .` (aussi en fin de
+  commande composée) et `git restore .`.
+- **A4. Parade sur sa touche (D-079).** Alt gauche / R3 ; E = interagir seulement ; dash manette revenu sur LB. Plus de partage
+  E dans `PlayerInputReader`. Test des touches mis à jour (seul Y reste partagé : recharger ou interagir).
 
 **Nuit du 2026-11-21 (fusionnée dans `main`, 4cf017f) :** un commit par point sur `animations`, PR d'art #19 à #26 intégrées au
 fil de l'eau, puis `animations` fusionnée dans `main` et poussée. Build de développement : `Builds/Nuit_2026-11-21/ItHunts.exe`
