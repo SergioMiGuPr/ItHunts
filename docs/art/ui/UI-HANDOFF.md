@@ -352,3 +352,38 @@ n'est pas émis) ; la carte reste sélectionnable pour lire sa description. Bout
 - Ouvrir les panneaux depuis le marchand et le coffre (`Remplit` avec les offres tirées et les âmes du joueur), écouter
   `Achat` et `Ferme` ; les icônes des améliorations restent à fournir (l'aperçu prend des icônes de la mini-carte).
 - En écran partagé (960 × 1080), les tailles en unités du canvas restent lisibles (*match height*).
+
+
+## 8. Fin de run, porte, choix de l'acte, admin, barre du boss, critique (fait, nuit du 2026-11-22, branche `art-ui-3`)
+
+**Famille des maquettes :** tous les éléments réutilisent les pièces existantes, sans nouveau dessin :
+- le cadre des menus (9 tranches) et les cartouches-boutons ;
+- la barre de vie et la flamme des âmes du HUD ;
+- l'étoile du réticule, les orbes de charge, le losange de la parade, les lueurs.
+
+Textes en EB Garamond, titres en Grenze Gotisch.
+
+**Fichiers :**
+- planche `docs/art/rendus/UI/Jeu3/Planche_UI_Jeu3.jpg`, une capture par état sur un fond de jeu ;
+- scène d'aperçu `Assets/Art/Scenes/Test_UI_Jeu3.unity` ;
+- constructeur `Assets/Art/Source~/UI/scripts/UIJeu3Builder.cs` ;
+- scripts dans `Assets/Art/UI/Jeu/Scripts/` (assemblée `ItHunts.Art.UIJeu`) ;
+- prefabs dans `Assets/Art/UI/Jeu/Prefabs/`.
+
+Toutes les tailles sont en unités du canvas 1920 × 1080 (*match height*).
+
+| Prefab | Placement | Contenu et états | API |
+|---|---|---|---|
+| `Panneau_FinDeRun` | centre ; cadre de 900 × 800 ; voile sombre à 72 % | Titre Grenze Gotisch Bold 92 : **« Tu es mort »** en rouge `#DB383F`, ou **« Victoire »** en or `#F7DB8C`, avec une lueur de la même couleur. Sous-titre en italique (cause, acte). 7 lignes de statistiques (libellé à gauche, valeur à droite, une bande sombre sur deux). Boutons Recommencer et Campement. | `FinDeRun.Remplit(victoire, sousTitre, Stat[])`, événements `Recommencer` et `Campement` |
+| `Panneau_Porte` | au-dessus du centre (y +150) ; cadre de 520 × 190 | Nom de la porte (Grenze Gotisch), prix en âmes (flamme + nombre), touche dans une orbe et invite. **Payable** : prix clair et « Ouvrir ». **Trop cher** : prix rouge, flamme éteinte, « Âmes insuffisantes », pas d'événement. Prix 0 : la flamme et le prix sont masqués. Fondu d'entrée et de sortie. | `PanneauPorte.Montre(nom, prix, âmes)`, `Cache()`, `Valide()`, événement `Ouvrir` |
+| `Panneau_ChoixActe` | centre ; cadre de 1040 × 820 | Vignette 16:9 de l'acte (captures des salles d'exemple, `Assets/Art/UI/Jeu/Actes/Acte_I…III.png`), nom gothique (« Acte I »), sous-titre, compteur, **flèches gauche et droite** (pointe de l'étoile dans une orbe), bouton Lancer. | `ChoixActe.Va(±1)`, `Affiche()`, événement `Lance(index)` |
+| `Panneau_Admin` | haut gauche (28, −28) ; 470 × 600 | Panneau de playtest compact. Bascules avec pastille allumée (bleue) ou éteinte : invincible, traqueur actif, vitesse × 0.5, debug du mouvement. Actions avec puce : +100 âmes, tuer les ennemis, ouvrir les portes, aller au boss. | `PanneauAdmin.Etat(i, on)`, événement `Commande(i)` ; libellés modifiables |
+| `HUD_BarreVieBoss` | haut centre, à 24 px du bord ; 1100 px de long | Barre de vie du joueur agrandie de 15 % : emblème, canal, remplissage rouge sang et traînée claire qui rattrape la valeur en 0.6/s. **Crans de phase** à 66 % et 33 % : un cran passé s'éteint et la barre tremble. Nom du boss en Grenze Gotisch Bold 44 au-dessus. Fondu d'apparition. | `BarreVieBoss.Montre(nom)`, `Regle(0..1)`, `Phase(i)`, `Cache()` |
+| `HUD_Critique` | centre, autour du réticule (160 px) | Pour le headshot : quatre éclats or en croix (l'étoile du réticule étirée) qui jaillissent et s'écartent de 18 à 42 px, un anneau qui s'élargit, une lueur orange et « Critique » sous le viseur. Dure 0.45 s, sans masquer le centre. | `MarqueurCritique.Affiche()` à chaque tir critique |
+
+**Ce que `main` doit faire :**
+- ouvrir l'écran de fin à la mort ou à la victoire, avec les statistiques de la run ;
+- afficher `Panneau_Porte` quand on vise une porte payante ou verrouillée (prix du module) ;
+- remplacer le choix d'acte du playtest et le panneau admin actuels par ces prefabs, en branchant les événements ;
+- afficher la barre du boss à l'entrée de l'arène, appeler `Phase(i)` aux changements de phase ;
+- appeler `MarqueurCritique.Affiche()` à chaque headshot, en même temps que `Sfx_Headshot_Critique` (lot 6) et `VFX_Critique` (lot 8).
