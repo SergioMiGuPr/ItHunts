@@ -1,0 +1,348 @@
+{
+ "SM_Jardin_ArbreMort_Grand": {
+  "doc": "Gros arbre mort de 18 m, tronc Ø 2.6 m (wall jump d'un tronc à l'autre), racines, branches noueuses.",
+  "taille": [
+   8.61,
+   12.48,
+   26.72
+  ],
+  "bas": -0.62,
+  "triangles": 2029,
+  "materiaux": [
+   "M_Bib_Ecorce"
+  ]
+ },
+ "SM_Jardin_ArbreMort_Penche": {
+  "doc": "Arbre mort penché de 14 m (Ø 2.2 m) : le tronc incliné sert de rampe de course et de mur de wall jump.",
+  "taille": [
+   12.91,
+   12.75,
+   20.44
+  ],
+  "bas": -0.6,
+  "triangles": 1729,
+  "materiaux": [
+   "M_Bib_Ecorce"
+  ]
+ },
+ "SM_Jardin_ArbreMort_Tordu": {
+  "doc": "Arbre mort tordu de 11 m (Ø 2 m), couronne de branches basses (silhouette sur la lune).",
+  "taille": [
+   9.68,
+   10.45,
+   15.51
+  ],
+  "bas": -0.59,
+  "triangles": 2153,
+  "materiaux": [
+   "M_Bib_Ecorce"
+  ]
+ },
+ "SM_Jardin_Haie_6m": {
+  "doc": "Haie taillée devenue sauvage : 6 × 1.4 m, 2.6 m de haut, bosses irrégulières, trous (à poser le long d'une allée).",
+  "taille": [
+   6.9,
+   1.95,
+   2.97
+  ],
+  "bas": 0.0,
+  "triangles": 572,
+  "materiaux": [
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_Massif": {
+  "doc": "Massif d'arbustes morts (Ø 3 m) au coin d'une parcelle : boules de feuillage sombre et tiges sèches.",
+  "taille": [
+   3.05,
+   2.91,
+   2.29
+  ],
+  "bas": 0.47,
+  "triangles": 504,
+  "materiaux": [
+   "M_Kit_Feuillage",
+   "M_Bib_Ecorce"
+  ]
+ },
+ "SM_Jardin_Foret_Lisiere_20m": {
+  "doc": "Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés et masses sombres jusqu'à 20 m. Limite",
+  "taille": [
+   23.18,
+   10.37,
+   22.42
+  ],
+  "bas": -0.53,
+  "triangles": 1580,
+  "materiaux": [
+   "M_Bib_Ecorce",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_Palissade_4m": {
+  "doc": "Palissade de jardin en planches pointues, 4 m × 1.6 m, deux planches manquantes, une penchée (le long d'une allée",
+  "taille": [
+   4.04,
+   0.21,
+   1.91
+  ],
+  "bas": -0.1,
+  "triangles": 230,
+  "materiaux": [
+   "M_Bib_BoisPourri"
+  ]
+ },
+ "SM_Jardin_Grille_4m": {
+  "doc": "Grille d'enceinte en fer forgé, 4 m × 3.5 m, barreaux à pointes de lance, volutes, entre deux piliers de pierre.",
+  "taille": [
+   5.24,
+   0.84,
+   4.3
+  ],
+  "bas": 0.0,
+  "triangles": 559,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Jardin_Portail": {
+  "doc": "Portail de fer à deux vantaux (4 m) entre deux grands piliers à vases, un vantail entrouvert : entrée d'allée.",
+  "taille": [
+   6.1,
+   1.66,
+   5.4
+  ],
+  "bas": 0.0,
+  "triangles": 432,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Jardin_Muret_4m": {
+  "doc": "Muret de pierre de 4 m × 0.6 m, 1 m de haut, chaperon arrondi, pierres manquantes (couvert bas, rebord de parcelle).",
+  "taille": [
+   4.0,
+   0.72,
+   1.04
+  ],
+  "bas": 0.0,
+  "triangles": 84,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint"
+  ]
+ },
+ "SM_Jardin_MurEnceinte_8m": {
+  "doc": "Mur d'enceinte du domaine : 8 m de long, 9 m de haut, contreforts, chaperon : limite évidente (on ne grimpe pas :",
+  "taille": [
+   8.2,
+   2.4,
+   9.3
+  ],
+  "bas": 0.0,
+  "triangles": 48,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint"
+  ]
+ },
+ "SM_Jardin_Falaise_16m": {
+  "doc": "Falaise de 16 m de front, 24 m de haut, herbe sèche au sommet : limite naturelle (arène en contrebas, bord du jardin).",
+  "taille": [
+   16.67,
+   6.38,
+   24.8
+  ],
+  "bas": 0.0,
+  "triangles": 616,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint",
+   "M_Bib_HerbeSeche"
+  ]
+ },
+ "SM_Jardin_Chemin_8m": {
+  "doc": "Allée de gravier de 8 × 3 m, bordures de pierre, herbe qui gagne les bords (pivot au centre, dessus à 0.05).",
+  "taille": [
+   8.0,
+   3.3,
+   0.22
+  ],
+  "bas": -0.05,
+  "triangles": 204,
+  "materiaux": [
+   "M_Bib_Gravier_Herbe",
+   "M_Bib_PierreTaillee_Peint"
+  ]
+ },
+ "SM_Jardin_Statue_Pleureuse": {
+  "doc": "Statue de 5.4 m (figure voilée qui se cache le visage) sur piédestal : repère du jardin, point de traction.",
+  "taille": [
+   1.6,
+   1.6,
+   4.96
+  ],
+  "bas": 0.0,
+  "triangles": 404,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Mortier"
+  ]
+ },
+ "SM_Jardin_Statue_Geante": {
+  "doc": "Statue géante de 12 m dans l'arène : couvert, point de traction haut (`Accroche_Traction`).",
+  "taille": [
+   3.26,
+   3.17,
+   10.79
+  ],
+  "bas": 0.0,
+  "triangles": 404,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Mortier"
+  ]
+ },
+ "SM_Jardin_Fontaine": {
+  "doc": "Fontaine (Ø 8 m) : bassin octogonal avec eau croupie, vasque à 2.5 m sur colonne, vasque haute, statuette.",
+  "taille": [
+   8.0,
+   8.0,
+   5.77
+  ],
+  "bas": -0.4,
+  "triangles": 414,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Eau_Toon",
+   "M_Bib_Mortier"
+  ]
+ },
+ "SM_Jardin_Tombe_Stele": {
+  "doc": "Stèle penchée (0.9 × 1.6 m) sur un tertre, fleurs mortes : à aligner en rangées tordues dans le cimetière.",
+  "taille": [
+   1.14,
+   2.24,
+   2.15
+  ],
+  "bas": -0.2,
+  "triangles": 122,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Terre_Racines"
+  ]
+ },
+ "SM_Jardin_Tombe_Croix": {
+  "doc": "Croix de pierre (2.2 m) ébréchée sur socle, tertre.",
+  "taille": [
+   1.0,
+   2.22,
+   2.4
+  ],
+  "bas": -0.2,
+  "triangles": 116,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Terre_Racines"
+  ]
+ },
+ "SM_Jardin_Caveau": {
+  "doc": "Caveau familial (5 × 6 × 5 m) : fronton, porte de fer entrouverte sur le noir, colonnes ; couvert, toit escaladable.",
+  "taille": [
+   5.6,
+   6.67,
+   5.6
+  ],
+  "bas": 0.0,
+  "triangles": 158,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Fond_Noir",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Jardin_Serre_Ruine": {
+  "doc": "Serre en ruine (10 × 6 m, 5 m) : soubassement de briques, ossature de fer, vitres brisées (quelques carreaux",
+  "taille": [
+   10.4,
+   6.4,
+   5.26
+  ],
+  "bas": 0.0,
+  "triangles": 508,
+  "materiaux": [
+   "M_Bib_Briques_Peint",
+   "M_Bib_FerRouille",
+   "M_Kit_Vitrail"
+  ]
+ },
+ "SM_Jardin_Kiosque": {
+  "doc": "Kiosque octogonal (Ø 8 m) : plancher surélevé de 1 m, 8 colonnes de fer, toit en pavillon percé, rambarde",
+  "taille": [
+   9.2,
+   9.9,
+   9.2
+  ],
+  "bas": 0.0,
+  "triangles": 350,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Arene_EscalierDescente": {
+  "doc": "Grand escalier de descente vers l'arène : 12 m de large, descend de 8 m (32 marches), murs d'échiffre en ruine.",
+  "taille": [
+   13.6,
+   16.0,
+   10.0
+  ],
+  "bas": -8.5,
+  "triangles": 576,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Moellons_Peint"
+  ]
+ },
+ "SM_Arene_PilierBrise": {
+  "doc": "Pilier brisé de 10 m (Ø 2 m), sommet cassé en biais, tambours tombés : point d'accroche de traction de l'arène.",
+  "taille": [
+   5.2,
+   5.4,
+   9.9
+  ],
+  "bas": 0.0,
+  "triangles": 146,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint"
+  ]
+ },
+ "SM_Arene_Couvert": {
+  "doc": "Pan de mur effondré (6 × 1.2 m, 3.5 m) : couvert contre les attaques du boss (pas contre le traqueur).",
+  "taille": [
+   6.53,
+   3.39,
+   3.44
+  ],
+  "bas": 0.0,
+  "triangles": 312,
+  "materiaux": [
+   "M_Bib_Moellons_Peint"
+  ]
+ },
+ "SM_Arene_Butte": {
+  "doc": "Butte de terre et de roche (14 × 10 m, 3 m de haut) : relief de l'arène, pentes de glissade, vue dégagée.",
+  "taille": [
+   13.96,
+   10.08,
+   6.26
+  ],
+  "bas": -2.2,
+  "triangles": 464,
+  "materiaux": [
+   "M_Bib_Terre_Racines",
+   "M_Bib_RocheCave_Peint"
+  ]
+ }
+}

@@ -147,6 +147,7 @@ public static class KitBuilder
             sb.Append(nom.Replace("SM_", "")).Append(' ');
         }
         if (kit == "KitChateau") sb.Append(RayonLune());
+        if (kit == "KitJardin") sb.Append(CielEtBrume());
         AssetDatabase.SaveAssets();
         return "ok " + sb;
     }
@@ -219,6 +220,95 @@ public static class KitBuilder
         r.sharedMaterial = Lumiere("M_Kit_Poussiere", new Color(0.85f, 0.85f, 0.82f), 1.2f, false, Point());
         r.shadowCastingMode = ShadowCastingMode.Off; r.receiveShadows = false;
         return ps;
+    }
+
+    // Tache de brume : disque doux en paliers, bord bruité (128 px)
+    static Texture2D Nuage()
+    {
+        Dossier("Assets/Art/Textures/Kits");
+        const string p = "Assets/Art/Textures/Kits/T_Kit_Brume.png";
+        if (!File.Exists(p))
+        {
+            var t = new Texture2D(128, 128, TextureFormat.RGBA32, false);
+            for (int y = 0; y < 128; y++)
+                for (int x = 0; x < 128; x++)
+                {
+                    float dx = (x - 63.5f) / 64f, dy = (y - 63.5f) / 64f;
+                    float ang = Mathf.Atan2(dy, dx);
+                    float r = Mathf.Sqrt(dx * dx + dy * dy) * (1f + 0.18f * Mathf.Sin(ang * 5f) + 0.1f * Mathf.Sin(ang * 11f + 1.3f));
+                    float a = Mathf.Clamp01(1f - r);
+                    a = Mathf.Floor(a * a * 4f) / 4f;   // trois aplats
+                    t.SetPixel(x, y, new Color(1, 1, 1, a));
+                }
+            File.WriteAllBytes(p, t.EncodeToPNG());
+            Object.DestroyImmediate(t);
+            AssetDatabase.ImportAsset(p);
+            var ti = (TextureImporter)AssetImporter.GetAtPath(p);
+            ti.alphaIsTransparency = true; ti.wrapMode = TextureWrapMode.Clamp; ti.mipmapEnabled = true;
+            ti.SaveAndReimport();
+        }
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(p);
+    }
+
+    // Brume au sol : nappes basses qui dérivent (boîte de 40 × 40 m, sous 1.6 m), additif très faible gris-bleu.
+    public static GameObject Brume(Transform parent, Vector3 taille, int nombre)
+    {
+        var go = new GameObject("Brume_Sol");
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = new Vector3(0, taille.y * 0.5f, 0);
+        var ps = go.AddComponent<ParticleSystem>();
+        var main = ps.main;
+        main.loop = true; main.prewarm = true; main.startLifetime = new ParticleSystem.MinMaxCurve(18f, 28f);
+        main.startSpeed = 0f; main.startSize = new ParticleSystem.MinMaxCurve(6f, 12f);
+        main.startRotation = new ParticleSystem.MinMaxCurve(0, Mathf.PI * 2);
+        main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.6f, 0.66f, 0.78f, 1f), new Color(0.45f, 0.5f, 0.6f, 1f));
+        main.maxParticles = nombre; main.simulationSpace = ParticleSystemSimulationSpace.World;
+        var em = ps.emission; em.rateOverTime = nombre / 22f;
+        var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = taille;
+        var vel = ps.velocityOverLifetime; vel.enabled = true; vel.space = ParticleSystemSimulationSpace.World;
+        vel.x = new ParticleSystem.MinMaxCurve(0.15f, 0.35f); vel.y = new ParticleSystem.MinMaxCurve(0f, 0f); vel.z = new ParticleSystem.MinMaxCurve(-0.1f, 0.1f);
+        var rot = ps.rotationOverLifetime; rot.enabled = true; rot.z = new ParticleSystem.MinMaxCurve(-0.05f, 0.05f);
+        var col = ps.colorOverLifetime; col.enabled = true;
+        var g = new Gradient();
+        g.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) },
+                  new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.25f), new GradientAlphaKey(1, 0.75f), new GradientAlphaKey(0, 1) });
+        col.color = g;
+        var r = go.GetComponent<ParticleSystemRenderer>();
+        r.renderMode = ParticleSystemRenderMode.HorizontalBillboard;
+        var m = Lumiere("M_Kit_Brume", new Color(0.5f, 0.55f, 0.66f), 0.09f, false, Nuage());
+        r.sharedMaterial = m;
+        r.shadowCastingMode = ShadowCastingMode.Off; r.receiveShadows = false;
+        return go;
+    }
+
+    static string CielEtBrume()
+    {
+        // ciel : sphère de 900 m vue de l'intérieur, lune dans la direction _LuneDir ; lumière de lune qui en vient
+        var path = $"{MATKIT}/M_Kit_Ciel.mat";
+        var mc = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (mc == null) { mc = new Material(Shader.Find("ItHunts/Ciel")); AssetDatabase.CreateAsset(mc, path); }
+        mc.shader = Shader.Find("ItHunts/Ciel");
+        var luneDir = new Vector3(-0.35f, 0.42f, 0.84f).normalized;
+        mc.SetVector("_LuneDir", luneDir);
+        EditorUtility.SetDirty(mc);
+        var go = new GameObject("Jardin_Ciel");
+        var sph = new GameObject("Voute_Celeste");
+        sph.transform.SetParent(go.transform, false);
+        sph.transform.localScale = Vector3.one * 900f;
+        sph.AddComponent<MeshFilter>().sharedMesh = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx");
+        var mr = sph.AddComponent<MeshRenderer>(); mr.sharedMaterial = mc;
+        mr.shadowCastingMode = ShadowCastingMode.Off; mr.receiveShadows = false;
+        var l = new GameObject("Lune").AddComponent<Light>();
+        l.transform.SetParent(go.transform, false);
+        l.transform.rotation = Quaternion.LookRotation(-luneDir);
+        l.type = LightType.Directional; l.color = new Color(0.6f, 0.7f, 1f); l.intensity = 0.6f; l.shadows = LightShadows.Soft;
+        PrefabUtility.SaveAsPrefabAsset(go, "Assets/Art/Prefabs/KitJardin/Jardin_Ciel.prefab");
+        Object.DestroyImmediate(go);
+        var b = new GameObject("Jardin_Brume");
+        Brume(b.transform, new Vector3(40, 1.2f, 40), 90);
+        PrefabUtility.SaveAsPrefabAsset(b, "Assets/Art/Prefabs/KitJardin/Jardin_Brume.prefab");
+        Object.DestroyImmediate(b);
+        return "Jardin_Ciel Jardin_Brume ";
     }
 
     // Rayon de lune : volume en tronc de pyramide de la fenêtre (origine) vers le sol, projecteur de lune, poussière.
@@ -324,6 +414,12 @@ public static class KitBuilder
         var sol = AssetDatabase.LoadAssetAtPath<Material>($"{MATBIB}/{solMat}.mat");
         foreach (var (pf, b) in items)
         {
+            if (pf.name.Contains("Ciel") || pf.name.Contains("Brume"))
+            {   // ciel et brume : posés au centre de la vitrine, hors de la grille
+                var c = (GameObject)PrefabUtility.InstantiatePrefab(pf, root);
+                c.transform.position = new Vector3(maxW / 2, 0, -30);
+                continue;
+            }
             float w = Mathf.Max(b.size.x, 1.5f) + 3f;
             if (x + w > maxW) { x = 0; z -= rowDepth + 6f; rowDepth = 0; }
             var g = (GameObject)PrefabUtility.InstantiatePrefab(pf, root);
@@ -385,9 +481,13 @@ public static class KitBuilder
         froid.type = LightType.Point; froid.color = new Color(0.75f, 0.82f, 1f); froid.intensity = 0.8f; froid.shadows = LightShadows.None;
         // les feux (particules) ne tournent pas hors Play Mode : on les simule avant chaque image
         foreach (var ps in root.GetComponentsInChildren<ParticleSystem>()) { ps.Simulate(1.5f, true, true); }
+        if (kit == "KitJardin")
+        {   // dehors : la lune éclaire (lumière froide de capture), pas une torche
+            lum.color = new Color(0.62f, 0.7f, 1f); lum.intensity = 1.1f;
+        }
         foreach (Transform t in root)
         {
-            if (t.name == "Sol" || t.name == "Torche") continue;
+            if (t.name == "Sol" || t.name == "Torche" || t.name.Contains("Ciel") || t.name.Contains("Brume")) continue;
             var mrs = t.GetComponentsInChildren<MeshRenderer>();
             if (mrs.Length == 0) continue;
             var b = mrs[0].bounds;

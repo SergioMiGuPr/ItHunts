@@ -385,3 +385,31 @@ def bounds(ob):
     ys = [v.co.y for v in ob.data.vertices]
     zs = [v.co.z for v in ob.data.vertices]
     return (min(xs), max(xs)), (min(ys), max(ys)), (min(zs), max(zs))
+
+
+# ------------------------------------------------------------------ tubes (troncs, branches, racines)
+def tube(k, pts, radii, m, sides=10, rough=0.0, seed=0, cap=True):
+    """Tube le long d'une polyligne 3D `pts` avec un rayon par point ; `rough` : bosses (écorce noueuse)."""
+    pts = [Vector(p) for p in pts]
+    n = len(pts)
+    frames = []
+    up = Vector((0, 0, 1))
+    for i in range(n):
+        d = (pts[min(i + 1, n - 1)] - pts[max(i - 1, 0)]).normalized()
+        a = up if abs(d.dot(up)) < 0.9 else Vector((1, 0, 0))
+        x = d.cross(a).normalized()
+        y = d.cross(x).normalized()
+        frames.append((x, y))
+    off = Vector((seed * 3.1, seed * 1.7, seed * 2.3))
+    def P(j, i):
+        x, y = frames[i]
+        t = 2 * math.pi * j / sides
+        r = radii[i]
+        if rough:
+            q = pts[i] + (x * math.cos(t) + y * math.sin(t)) * r
+            r *= 1 + rough * noise.noise((q + off) * 1.3)
+        return pts[i] + (x * math.cos(t) + y * math.sin(t)) * r
+    V = k.grid(P, sides, n - 1, m, closed_u=True)
+    if cap:
+        f = k.bm.faces.new([V[j][n - 1] for j in range(sides)])
+        f.material_index = k.mi(m)
