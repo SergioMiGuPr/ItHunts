@@ -883,7 +883,7 @@ niveau 35 %. Le playtest la trouve pourtant « fixe, comme une texture ». **Dem
 
 ## Sons de la nuit du 2026-11-22 (lot 6, branche `art-sons-2`)
 
-52 sons générés sur Higgsfield (effets et ambiances : Mirelo ; musiques : ElevenLabs Music v2.5), pour 57.6 crédits sur
+51 sons générés sur Higgsfield (effets et ambiances : Mirelo ; musiques : ElevenLabs Music v2.5 ; 52 générations, une refaite), pour 57.6 crédits sur
 le plafond de 60 ; sources MP3 dans `docs/art/audio/nuit3/`, préparés par `Assets/Art/Source~/Audio/scripts/sons_nuit3.py`
 (silences retirés, queues de bruit coupées à −40 dB sous la crête, effets à −1 dBFS, sons d'interface de 0.45 s au plus,
 boucles raccordées par fondu enchaîné, battement de cœur calé sur trois battements exacts de 0.838 s, ambiances à −26 dB
