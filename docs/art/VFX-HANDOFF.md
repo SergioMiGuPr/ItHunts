@@ -130,3 +130,38 @@ n'émet rien à l'arrêt (0 particule mesurée) : au maximum ~30 traits.
 | `VFX_Torche_Feu` | 2 / 0 | 2 | 8 | 2,1 | 3,8 | 695 |
 | `VFX_Traction` | 2 / 0 | 2 | 68 | 2,0 | 7,1 | 695 |
 | `VFX_Vitesse_Bords` | 1 / 0 | 1 | 0 | 2,0 | 1,0 | 11 |
+
+
+# Lot 8 de la nuit du 2026-11-22 (branche `art-vfx-3`)
+
+Même style que les lots D et 2 : formes peintes en aplats et à l'encre, shader `ItHunts/VFX/Peint`, dissolution par
+morceaux.
+
+**Fichiers :**
+- planche `docs/art/rendus/VFX/Planche_VFX_Lot3.jpg`, une capture par effet dans `docs/art/rendus/VFX/Lot3/` (captures Unity sans bloom) ;
+- constructeur `VfxBuilder.ConstruitLot3` ;
+- nouvelles textures (`vfx3_textures.py`, sans IA) : `T_VFX_Eclair_2x2` (quatre éclairs ramifiés) et `T_VFX_Fissure` (étoile de fissures au sol) ;
+- nouveau script `LumiereFlash` : flash ou pulsation d'une lumière ponctuelle, purement cosmétique.
+
+| Prefab | Effet | Type | Se branche sur |
+|---|---|---|---|
+| `VFX_Critique` | Éclat or et rouge, anneau, 16 étincelles, flash or (4 / 6 m, 0.18 s). | ponctuel, au point touché | tir critique à la tête, avec `HUD_Critique` (lot 7) et `Sfx_Headshot_Critique` (lot 6) |
+| `VFX_Balle_Paralysante` | Six éclairs cyan qui jaillissent, anneau, étincelles, flash cyan. | ponctuel, au point touché | impact de la balle paralysante |
+| `VFX_Paralysie` | Boucle autour d'une cible figée : arcs électriques sur une capsule de 0.9 × 1.8 m, grains, lumière cyan qui pulse (3.5 Hz). | continu ; enfant de l'ennemi, à mettre à l'échelle de sa taille ; détruire à la fin de la paralysie | état paralysé |
+| `VFX_Explosion_Kill` | Explosion de zone d'environ 4 m : éclat cramoisi de 3.2 m, onde au sol jusqu'à 8.5 m, étoile de fissures, fumée, débris, flash orange (6 / 12 m). | ponctuel, au sol | explosion de zone sur un kill |
+| `VFX_Parade_Eclair_Lisible` | **Remplace `VFX_Parade_Eclair`** : étoile blanche de 1.5 m qui gonfle puis se rétracte, 5 éclairs, double anneau, étincelles, flash blanc bleuté (5 / 8 m). | ponctuel, au point de contact | parade réussie |
+| `VFX_Poussiere_Lune` | Poussière blanc-gris en suspension, 260 grains, volume de 4 × 12 × 4 m. | continu, à poser dans un rayon de lune | identique à celle de `Chateau_RayonLune` (lot 3), pour d'autres puits de lumière |
+| `VFX_Brume_Sol` | Brume au sol : nappes de 6 à 12 m qui dérivent sur 30 × 30 m, sous 1.2 m. | continu | jardin et arène (même matériau que `Jardin_Brume`, lot 4) |
+| `VFX_Boss_Griffe` | Trois lacérations rouges de 5.5 m, débris. | ponctuel ; tourner dans le plan du coup | attaque de griffe du boss, avec `Sfx_Boss_Attaque_Griffe` |
+| `VFX_Boss_Morsure` | Deux mâchoires qui se referment, éclat sombre. | ponctuel, devant la gueule | morsure, avec `Sfx_Boss_Attaque_Morsure` |
+| `VFX_Boss_Impact_Sol` | Fissures de 9 m, onde, poussière, gravats. | ponctuel, au sol | coup au sol, atterrissage d'un bond du boss |
+| `VFX_Boss_Blessure` | Sang noir qui gicle (gerbe en cône), gouttes qui retombent, fumée. | ponctuel ; +Z dans le sens de la blessure | boss blessé, avec `Sfx_Boss_Blessure` |
+| `VFX_Boss_PointFaible` | **Boucle** : cœur ambré qui pulse (étoile de 1.7 m), anneau qui s'en échappe, braises, lumière orange qui pulse (2.6 / 7 m, 1.25 Hz). | continu ; enfant de l'os du point faible | point faible exposé ; le couper quand il est fermé |
+
+**Coût :**
+- les effets ponctuels utilisent au plus une trentaine de particules ;
+- la paralysie et le point faible en gardent moins de 40 ;
+- poussière et brume : 260 et 160 particules au plus, sans collision ni ombre ;
+- les lumières des flashs sont sans ombre.
+
+**Réseau :** tout est cosmétique et local.

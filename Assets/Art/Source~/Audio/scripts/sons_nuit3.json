@@ -1,0 +1,735 @@
+{
+ "Musique_Chateau_Boucle": {
+  "source": "docs/art/audio/nuit3/musique_chateau_boucle.mp3",
+  "duree_source_s": 60.029,
+  "silence_retire_s": [
+   0.014,
+   0.0
+  ],
+  "fondu_raccord_s": 2.5,
+  "saut_raccord": 0.0269,
+  "fichier": "Assets/Art/Audio/Musique/Musique_Chateau_Boucle.wav",
+  "type": "musique",
+  "canaux": 2,
+  "duree_s": 57.515,
+  "crete_dbfs": -1.16,
+  "rms_db": -14.2
+ },
+ "Musique_Jardin_Boucle": {
+  "source": "docs/art/audio/nuit3/musique_jardin_boucle.mp3",
+  "duree_source_s": 60.029,
+  "silence_retire_s": [
+   0.029,
+   0.0
+  ],
+  "fondu_raccord_s": 2.5,
+  "saut_raccord": 0.01642,
+  "fichier": "Assets/Art/Audio/Musique/Musique_Jardin_Boucle.wav",
+  "type": "musique",
+  "canaux": 2,
+  "duree_s": 57.5,
+  "crete_dbfs": -2.16,
+  "rms_db": -14.2
+ },
+ "Musique_Boss_Boucle": {
+  "source": "docs/art/audio/nuit3/musique_boss_boucle.mp3",
+  "duree_source_s": 60.029,
+  "silence_retire_s": [
+   0.0,
+   0.167
+  ],
+  "fondu_raccord_s": 2.5,
+  "saut_raccord": 0.03571,
+  "fichier": "Assets/Art/Audio/Musique/Musique_Boss_Boucle.wav",
+  "type": "musique",
+  "canaux": 2,
+  "duree_s": 57.362,
+  "crete_dbfs": -1.55,
+  "rms_db": -14.2
+ },
+ "Amb_Cave_Boucle": {
+  "source": "docs/art/audio/nuit3/amb_cave_boucle.mp3",
+  "duree_source_s": 20.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fondu_raccord_s": 2.0,
+  "saut_raccord": 0.00812,
+  "fichier": "Assets/Art/Audio/Ambiance/Amb_Cave_Boucle.wav",
+  "type": "ambiance",
+  "canaux": 2,
+  "duree_s": 18.0,
+  "crete_dbfs": -6.5,
+  "rms_db": -26.0
+ },
+ "Amb_Chateau_Boucle": {
+  "source": "docs/art/audio/nuit3/amb_chateau_boucle.mp3",
+  "duree_source_s": 20.0,
+  "silence_retire_s": [
+   0.006,
+   0.0
+  ],
+  "fondu_raccord_s": 2.0,
+  "saut_raccord": 0.00654,
+  "fichier": "Assets/Art/Audio/Ambiance/Amb_Chateau_Boucle.wav",
+  "type": "ambiance",
+  "canaux": 2,
+  "duree_s": 17.994,
+  "crete_dbfs": -4.92,
+  "rms_db": -26.0
+ },
+ "Amb_Jardin_Boucle": {
+  "source": "docs/art/audio/nuit3/amb_jardin_boucle.mp3",
+  "duree_source_s": 20.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fondu_raccord_s": 2.0,
+  "saut_raccord": 0.06406,
+  "fichier": "Assets/Art/Audio/Ambiance/Amb_Jardin_Boucle.wav",
+  "type": "ambiance",
+  "canaux": 2,
+  "duree_s": 18.0,
+  "crete_dbfs": -2.46,
+  "rms_db": -26.0
+ },
+ "Sfx_Porte_Ouverture": {
+  "source": "docs/art/audio/nuit3/sfx_porte_ouverture.mp3",
+  "duree_source_s": 2.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Monde/Sfx_Porte_Ouverture.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 2.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -19.8
+ },
+ "Sfx_Porte_Verrouillee": {
+  "source": "docs/art/audio/nuit3/sfx_porte_verrouillee.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Monde/Sfx_Porte_Verrouillee.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -25.8
+ },
+ "Sfx_Menu_Interaction": {
+  "source": "docs/art/audio/nuit3/sfx_menu_interaction.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Interface/Sfx_Menu_Interaction.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.45,
+  "crete_dbfs": -1.0,
+  "rms_db": -16.7
+ },
+ "Sfx_Achat": {
+  "source": "docs/art/audio/nuit3/sfx_achat.mp3",
+  "duree_source_s": 1.2,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Interface/Sfx_Achat.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.2,
+  "crete_dbfs": -1.0,
+  "rms_db": -17.1
+ },
+ "Sfx_Ame_Collectee": {
+  "source": "docs/art/audio/nuit3/sfx_ame_collectee.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Orbe/Sfx_Ame_Collectee.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -12.5
+ },
+ "Sfx_Attraper": {
+  "source": "docs/art/audio/nuit3/sfx_attraper.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Orbe/Sfx_Attraper.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -17.1
+ },
+ "Sfx_Relacher": {
+  "source": "docs/art/audio/nuit3/sfx_relacher.mp3",
+  "duree_source_s": 0.8,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Orbe/Sfx_Relacher.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.8,
+  "crete_dbfs": -1.0,
+  "rms_db": -12.3
+ },
+ "Sfx_Lancer": {
+  "source": "docs/art/audio/nuit3/sfx_lancer.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Orbe/Sfx_Lancer.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -10.0
+ },
+ "Sfx_Impact_Leger": {
+  "source": "docs/art/audio/nuit3/sfx_impact_leger.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.01,
+   0.365
+  ],
+  "fichier": "Assets/Art/Audio/Impacts/Sfx_Impact_Leger.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.282,
+  "crete_dbfs": -1.0,
+  "rms_db": -22.4
+ },
+ "Sfx_Impact_Lourd": {
+  "source": "docs/art/audio/nuit3/sfx_impact_lourd.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Impacts/Sfx_Impact_Lourd.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -24.6
+ },
+ "Sfx_Dash": {
+  "source": "docs/art/audio/nuit3/sfx_dash.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Joueur/Sfx_Dash.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -13.0
+ },
+ "Sfx_Saut": {
+  "source": "docs/art/audio/nuit3/sfx_saut.mp3",
+  "duree_source_s": 0.6,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Joueur/Sfx_Saut.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.6,
+  "crete_dbfs": -1.0,
+  "rms_db": -25.2
+ },
+ "Sfx_Atterrissage": {
+  "source": "docs/art/audio/nuit3/sfx_atterrissage.mp3",
+  "duree_source_s": 0.8,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Joueur/Sfx_Atterrissage.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.8,
+  "crete_dbfs": -1.0,
+  "rms_db": -24.6
+ },
+ "Sfx_Glissade_Boucle": {
+  "source": "docs/art/audio/nuit3/sfx_glissade_boucle.mp3",
+  "duree_source_s": 2.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fondu_raccord_s": 0.3,
+  "saut_raccord": 0.00036,
+  "fichier": "Assets/Art/Audio/Joueur/Sfx_Glissade_Boucle.wav",
+  "type": "boucle",
+  "canaux": 1,
+  "duree_s": 1.7,
+  "crete_dbfs": -1.0,
+  "rms_db": -22.4
+ },
+ "Sfx_WallJump": {
+  "source": "docs/art/audio/nuit3/sfx_walljump.mp3",
+  "duree_source_s": 0.8,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Joueur/Sfx_WallJump.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.8,
+  "crete_dbfs": -1.0,
+  "rms_db": -17.6
+ },
+ "Sfx_Hissage": {
+  "source": "docs/art/audio/nuit3/sfx_hissage.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Joueur/Sfx_Hissage.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -23.2
+ },
+ "Sfx_Parade_Reussie": {
+  "source": "docs/art/audio/nuit3/sfx_parade_reussie.mp3",
+  "duree_source_s": 1.2,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Combat/Sfx_Parade_Reussie.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.997,
+  "crete_dbfs": -1.0,
+  "rms_db": -26.1
+ },
+ "Sfx_Parade_Ratee": {
+  "source": "docs/art/audio/nuit3/sfx_parade_ratee.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Combat/Sfx_Parade_Ratee.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.99,
+  "crete_dbfs": -1.0,
+  "rms_db": -22.0
+ },
+ "Sfx_Etourdissement": {
+  "source": "docs/art/audio/nuit3/sfx_etourdissement.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Combat/Sfx_Etourdissement.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -20.8
+ },
+ "Sfx_Headshot_Critique": {
+  "source": "docs/art/audio/nuit3/sfx_headshot_critique.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.001,
+   0.426
+  ],
+  "fichier": "Assets/Art/Audio/Combat/Sfx_Headshot_Critique.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.573,
+  "crete_dbfs": -1.0,
+  "rms_db": -27.5
+ },
+ "Sfx_Balle_Paralysante": {
+  "source": "docs/art/audio/nuit3/sfx_balle_paralysante.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.01,
+   0.571
+  ],
+  "fichier": "Assets/Art/Audio/Combat/Sfx_Balle_Paralysante.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.779,
+  "crete_dbfs": -1.0,
+  "rms_db": -25.1
+ },
+ "Sfx_Explosion_Kill": {
+  "source": "docs/art/audio/nuit3/sfx_explosion_kill.mp3",
+  "duree_source_s": 1.8,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Combat/Sfx_Explosion_Kill.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.8,
+  "crete_dbfs": -1.0,
+  "rms_db": -17.1
+ },
+ "Sfx_Chute_Vide": {
+  "source": "docs/art/audio/nuit3/sfx_chute_vide.mp3",
+  "duree_source_s": 2.5,
+  "silence_retire_s": [
+   0.002,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Joueur/Sfx_Chute_Vide.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 2.498,
+  "crete_dbfs": -1.0,
+  "rms_db": -14.1
+ },
+ "Sfx_Plongeon_Eau": {
+  "source": "docs/art/audio/nuit3/sfx_plongeon_eau.mp3",
+  "duree_source_s": 1.8,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Joueur/Sfx_Plongeon_Eau.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.8,
+  "crete_dbfs": -1.0,
+  "rms_db": -20.7
+ },
+ "Sfx_Coeur_Boucle": {
+  "source": "docs/art/audio/nuit3/sfx_coeur_boucle.mp3",
+  "duree_source_s": 3.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "periode_battement_s": 0.838,
+  "fondu_raccord_s": 0.02,
+  "saut_raccord": 0.00146,
+  "fichier": "Assets/Art/Audio/Traqueur/Sfx_Coeur_Boucle.wav",
+  "type": "boucle",
+  "canaux": 1,
+  "duree_s": 2.514,
+  "crete_dbfs": -1.0,
+  "rms_db": -20.3
+ },
+ "Sfx_Traqueur_Arrivee_Porte": {
+  "source": "docs/art/audio/nuit3/sfx_traqueur_arrivee_porte.mp3",
+  "duree_source_s": 3.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Traqueur/Sfx_Traqueur_Arrivee_Porte.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 3.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -9.0
+ },
+ "Sfx_Boss_Cri_Phase": {
+  "source": "docs/art/audio/nuit3/sfx_boss_cri_phase.mp3",
+  "duree_source_s": 3.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Boss/Sfx_Boss_Cri_Phase.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 3.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -11.3
+ },
+ "Sfx_Boss_Attaque_Griffe": {
+  "source": "docs/art/audio/nuit3/sfx_boss_attaque_griffe.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Boss/Sfx_Boss_Attaque_Griffe.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -11.1
+ },
+ "Sfx_Boss_Attaque_Morsure": {
+  "source": "docs/art/audio/nuit3/sfx_boss_attaque_morsure.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Boss/Sfx_Boss_Attaque_Morsure.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -13.2
+ },
+ "Sfx_Boss_Blessure": {
+  "source": "docs/art/audio/nuit3/sfx_boss_blessure.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Boss/Sfx_Boss_Blessure.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -12.6
+ },
+ "Sfx_Boss_Mort": {
+  "source": "docs/art/audio/nuit3/sfx_boss_mort.mp3",
+  "duree_source_s": 4.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Boss/Sfx_Boss_Mort.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 4.0,
+  "crete_dbfs": -1.0,
+  "rms_db": -10.0
+ },
+ "Sfx_UI_Survol": {
+  "source": "docs/art/audio/nuit3/sfx_ui_survol.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Interface/Sfx_UI_Survol.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.45,
+  "crete_dbfs": -1.0,
+  "rms_db": -13.0
+ },
+ "Sfx_UI_Clic": {
+  "source": "docs/art/audio/nuit3/sfx_ui_clic.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Interface/Sfx_UI_Clic.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.45,
+  "crete_dbfs": -1.0,
+  "rms_db": -26.8
+ },
+ "Sfx_UI_Retour": {
+  "source": "docs/art/audio/nuit3/sfx_ui_retour.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Interface/Sfx_UI_Retour.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.45,
+  "crete_dbfs": -1.0,
+  "rms_db": -9.2
+ },
+ "Sfx_Goule_Mort_Organique": {
+  "source": "docs/art/audio/nuit3/sfx_goule_mort_organique.mp3",
+  "duree_source_s": 0.8,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Goule/Sfx_Goule_Mort_Organique.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.8,
+  "crete_dbfs": -1.0,
+  "rms_db": -15.5
+ },
+ "Sfx_Traction_Debut": {
+  "source": "docs/art/audio/nuit3/sfx_traction_debut.mp3",
+  "duree_source_s": 1.0,
+  "silence_retire_s": [
+   0.001,
+   0.008
+  ],
+  "fichier": "Assets/Art/Audio/Orbe/Sfx_Traction_Debut.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.991,
+  "crete_dbfs": -1.0,
+  "rms_db": -23.3
+ },
+ "Sfx_Traction_Boucle": {
+  "source": "docs/art/audio/nuit3/sfx_traction_boucle.mp3",
+  "duree_source_s": 2.0,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fondu_raccord_s": 0.3,
+  "saut_raccord": 0.16736,
+  "fichier": "Assets/Art/Audio/Orbe/Sfx_Traction_Boucle.wav",
+  "type": "boucle",
+  "canaux": 1,
+  "duree_s": 1.7,
+  "crete_dbfs": -1.0,
+  "rms_db": -13.9
+ },
+ "Sfx_Traction_Fin": {
+  "source": "docs/art/audio/nuit3/sfx_traction_fin.mp3",
+  "duree_source_s": 0.8,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Orbe/Sfx_Traction_Fin.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.8,
+  "crete_dbfs": -1.0,
+  "rms_db": -19.6
+ },
+ "Sfx_Repulsion": {
+  "source": "docs/art/audio/nuit3/sfx_repulsion.mp3",
+  "duree_source_s": 1.2,
+  "silence_retire_s": [
+   0.005,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Orbe/Sfx_Repulsion.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.195,
+  "crete_dbfs": -1.0,
+  "rms_db": -14.7
+ },
+ "Sfx_Refus": {
+  "source": "docs/art/audio/nuit3/sfx_refus.mp3",
+  "duree_source_s": 0.6,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Interface/Sfx_Refus.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.45,
+  "crete_dbfs": -1.0,
+  "rms_db": -15.4
+ },
+ "Sfx_Pret": {
+  "source": "docs/art/audio/nuit3/sfx_pret.mp3",
+  "duree_source_s": 0.8,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Interface/Sfx_Pret.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.45,
+  "crete_dbfs": -1.0,
+  "rms_db": -16.2
+ },
+ "Sfx_Caisse_Brisee": {
+  "source": "docs/art/audio/nuit3/sfx_caisse_brisee.mp3",
+  "duree_source_s": 1.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Impacts/Sfx_Caisse_Brisee.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -16.4
+ },
+ "Sfx_Lanterne_Rallumage": {
+  "source": "docs/art/audio/nuit3/sfx_lanterne_rallumage.mp3",
+  "duree_source_s": 1.2,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Armes/Sfx_Lanterne_Rallumage.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 1.2,
+  "crete_dbfs": -1.0,
+  "rms_db": -17.2
+ },
+ "Sfx_Barillet_Recharge_Fin": {
+  "source": "docs/art/audio/nuit3/sfx_barillet_recharge_fin.mp3",
+  "duree_source_s": 0.8,
+  "silence_retire_s": [
+   0.008,
+   0.526
+  ],
+  "fichier": "Assets/Art/Audio/Armes/Sfx_Barillet_Recharge_Fin.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 0.266,
+  "crete_dbfs": -1.0,
+  "rms_db": -34.2
+ },
+ "Sfx_Vague_Cor": {
+  "source": "docs/art/audio/nuit3/sfx_vague_cor.mp3",
+  "duree_source_s": 2.5,
+  "silence_retire_s": [
+   0.0,
+   0.0
+  ],
+  "fichier": "Assets/Art/Audio/Monde/Sfx_Vague_Cor.wav",
+  "type": "un",
+  "canaux": 1,
+  "duree_s": 2.5,
+  "crete_dbfs": -1.0,
+  "rms_db": -11.5
+ }
+}
