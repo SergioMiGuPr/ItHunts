@@ -410,6 +410,11 @@ namespace ItHunts.Player
                     break;
             }
 
+            // Parade (nuit 3, point 7) : les deux mains se croisent en garde devant la poitrine (0.3 s), puis repoussent si elle réussit.
+            ParryGuard(out Vector3 guardRight, out Vector3 guardRightEuler, out Vector3 guardLeft, out Vector3 guardLeftEuler);
+            gesture += guardRight;
+            baseEuler += guardRightEuler;
+
             // Les gestes répondent sans lissage ; la pose de fond est lissée.
             _rightOffset = Vector3.Lerp(_rightOffset, baseOffset, kp);
             _rightEuler = Vector3.Lerp(_rightEuler, baseEuler, kp);
@@ -466,6 +471,8 @@ namespace ItHunts.Player
                 leftEuler += new Vector3(15f, 0f, 0f) * _inactive;
             }
 
+            leftOffset += guardLeft;
+            leftEuler += guardLeftEuler;
             _leftCurl = Mathf.Lerp(_leftCurl, leftCurl, kp);
             if (leftHand != null)
             {
@@ -476,6 +483,38 @@ namespace ItHunts.Player
             if (leftFingers != null)
                 leftFingers.localRotation = Quaternion.Euler(_leftCurl, 0f, 0f);
         }
+
+        private PlayerParry _parry;
+
+        /// <summary>Durée du geste de garde (s) et de la poussée d'une parade réussie (s).</summary>
+        public const float ParryGuardDuration = 0.32f, ParryPushDuration = 0.22f;
+
+        /// <summary>
+        /// Geste de parade (nuit 3, point 7 ; exception autorisée aux mains gelées : mouvement simple des mains actuelles, sans changer
+        /// leur modèle). Appui : les deux mains montent et se croisent devant la poitrine, paumes vers l'avant ; réussite : elles
+        /// repoussent d'un coup sec. Aucune incidence sur le mouvement.
+        /// </summary>
+        public void ParryGuard(out Vector3 right, out Vector3 rightEuler, out Vector3 left, out Vector3 leftEuler)
+        {
+            right = rightEuler = left = leftEuler = Vector3.zero;
+            if (_parry == null)
+                _parry = GetComponent<PlayerParry>();
+            if (_parry == null)
+                return;
+            float now = Time.time;
+            float g = (now - _parry.State.LastPress) / ParryGuardDuration;
+            float k = g >= 0f && g < 1f ? Mathf.Sin(Mathf.PI * Mathf.Pow(g, 0.6f)) : 0f;
+            float p = (now - _parry.State.LastSuccess) / ParryPushDuration;
+            float push = p >= 0f && p < 1f ? ViewmodelMotion.Punch(p) : 0f;
+            right = new Vector3(-0.11f, 0.08f, 0.04f) * k + new Vector3(0f, 0f, 0.12f) * push;
+            rightEuler = new Vector3(-45f, -20f, 35f) * k + new Vector3(-20f, 0f, 0f) * push;
+            left = new Vector3(0.11f, 0.08f, 0.04f) * k + new Vector3(0f, 0f, 0.12f) * push;
+            leftEuler = new Vector3(-45f, 20f, -35f) * k + new Vector3(-20f, 0f, 0f) * push;
+            ParryGuardAmount = k;
+        }
+
+        /// <summary>Ampleur du geste de garde en cours (0 à 1 ; tests, captures).</summary>
+        public float ParryGuardAmount { get; private set; }
 
         private void StartGesture(HandGesture gesture, int tick)
         {

@@ -92,6 +92,8 @@ namespace ItHunts.Enemies
         public int LeapHits { get; private set; }
         /// <summary>Attaques parées par un joueur (D-075).</summary>
         public int Parried { get; private set; }
+        /// <summary>Délai entre le début du geste et l'impact du coup au contact (s ; mesures).</summary>
+        public float ImpactDelay => settings != null ? settings.contactImpactDelay : 0f;
         public int WallLeaps { get; private set; }
         public int Climbs { get; private set; }
         public Vector3 LastLeapStart { get; private set; }
@@ -210,8 +212,8 @@ namespace ItHunts.Enemies
                 Play("Goule_Escalade", 0.1f);
             else if (now - _landedAt < 0.33f)
                 Play("Goule_Reception", 0.04f);
-            else if (now - _strikeAt < 0.47f)
-                Play("Goule_Coup", 0.06f);
+            else if (now - _strikeAt < 0.47f / StrikeClipSpeed)
+                Play("Goule_Coup", 0.06f, StrikeClipSpeed);
             else if (speed > 0.5f)
                 Play("Goule_Course", 0.15f, Mathf.Clamp(speed / Mathf.Max(0.1f, settings.runSpeed), 0.3f, 2f));
             else
@@ -345,6 +347,10 @@ namespace ItHunts.Enemies
                 ClearSignals();                                           // morte pendant l'annonce : yeux, gueule, corps et disque éteints
                 return;
             }
+            // Coup au contact en cours : résolu à chaque pas fixe, quoi qu'il arrive ensuite (nuit 3, point 7). Avant, il ne l'était
+            // que si la goule passait par ContactDamage : l'impact tombait à un instant variable (ou jamais), la parade semblait
+            // ne pas marcher.
+            ResolveStrike(Time.time);
             if (ZoneState.Asleep && !_body.Busy)
             {
                 _move.Speed = 0f;                                          // salle de départ pas encore quittée (D-048)
@@ -1205,6 +1211,10 @@ namespace ItHunts.Enemies
             return seen;
         }
 
+        /// <summary>Vitesse de lecture de Goule_Coup : son impact (contactClipImpact) tombe à contactImpactDelay.</summary>
+        private float StrikeClipSpeed => settings == null || settings.contactImpactDelay <= 0.01f ? 1f
+            : Mathf.Clamp(settings.contactClipImpact / settings.contactImpactDelay, 0.2f, 1f);
+
         private PlayerHealth _strikeTarget;
         private bool _holdingAttack;
         private PlayerHealth _pendingHit;
@@ -1219,7 +1229,31 @@ namespace ItHunts.Enemies
         /// Coup au contact (Goule_Coup) : au contact, elle arme son coup ; les dégâts tombent à l'impact du clip (contactImpactDelay,
         /// 0.24 s) si le joueur est encore à portée (un peu de marge), au plus une fois par contactInterval.
         /// </summary>
+        /// <summary>
+        /// Impact du coup au contact (début du geste + contactImpactDelay) et tolérance après l'impact (lateWindow) : paré, ou les
+        /// dégâts. Étourdie, tenue ou repoussée avant l'impact : le coup est annulé.
+        /// </summary>
+        private void ResolveStrike(float now)
+        {
+            if (_strikeTarget != null && _body != null && _body.Busy)
+            {
+                _strikeTarget = null;                                     // interrompue (étourdie, tenue, repoussée) : pas de coup
+                return;
+            }
+
+            if (_pendingHit == null && (_strikeTarget == null || now - _strikeAt < settings.contactImpactDelay))
+                return;
+            StrikeImpact(now);
+        }
+
         private void ContactDamage(float now)
+        {
+            if (_pendingHit != null || _strikeTarget != null)
+                return;                                                   // coup en cours : ResolveStrike s'en occupe
+            StrikeImpact(now);
+        }
+
+        private void StrikeImpact(float now)
         {
             // Coup tombé mais en attente (tolérance après l'impact de la parade) : paré par un appui juste après, sinon les dégâts.
             if (_pendingHit != null)
@@ -1273,7 +1307,10 @@ namespace ItHunts.Enemies
                 _strikeTarget = p;
                 Strikes++;
                 AttackSound();
-                _nextContact = now + settings.contactInterval;
+                // Télégraphe (nuit 3, point 7) : un éclat chaud sur la goule au début du geste, puis l'impact 0.55 s plus tard.
+                if (_damageable != null && settings.strikeTelegraphFlash > 0f)
+                    _damageable.Flash(new Color(2.4f, 1.1f, 0.35f), settings.strikeTelegraphFlash);
+                _nextContact = now + Mathf.Max(settings.contactInterval, settings.contactImpactDelay + 0.35f);
                 if (settings.contactImpactDelay <= 0f)
                     ContactDamage(now);
                 break;

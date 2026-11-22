@@ -582,6 +582,17 @@
                 },
                 {
                     "name": "",
+                    "id": "c3153dad-9af6-4e80-aa90-a58d558b094c",
+                    "path": "<Keyboard>/v",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "Parry",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "c68730a3-aaa7-434e-b729-adc4d807e179",
                     "path": "<Gamepad>/rightStickPress",
                     "interactions": "",

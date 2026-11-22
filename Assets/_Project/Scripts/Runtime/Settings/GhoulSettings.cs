@@ -24,7 +24,12 @@ namespace ItHunts.Settings
 
         [Header("Animations (SK_Goule, PR #6) et passages bas")]
         [Tooltip("Coup au contact : délai entre le début du geste (Goule_Coup) et les dégâts (impact du clip à 0.24 s).")]
-        [Min(0f)] public float contactImpactDelay = 0.24f;
+        [Min(0f)] public float contactImpactDelay = 0.55f;
+        [Tooltip("Impact du clip Goule_Coup à vitesse normale (s) : le clip est ralenti pour que son impact tombe à contactImpactDelay " +
+                 "(nuit 3, point 7 : un coup annoncé, qu'on peut lire et parer).")]
+        [Min(0.01f)] public float contactClipImpact = 0.24f;
+        [Tooltip("Télégraphe du coup : éclat sur la goule au début du geste (s, 0 : aucun).")]
+        [Min(0f)] public float strikeTelegraphFlash = 0.16f;
         [Tooltip("Distance d'arrêt (écart entre les capsules, m) : à portée, elle s'arrête et frappe au lieu d'avancer contre le joueur " +
                  "(elle le poussait). Elle repart quand l'écart dépasse contactRange.")]
         [Min(0f)] public float attackStopGap = 0.2f;

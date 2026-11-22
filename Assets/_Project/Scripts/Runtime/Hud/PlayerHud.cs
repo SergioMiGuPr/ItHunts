@@ -596,6 +596,8 @@ namespace ItHunts.Hud
         }
 
         /// <summary>Âmes (rouge un instant si un achat est refusé, plus clair à chaque gain) et aide d'interaction.</summary>
+        private ItHunts.Player.PlayerParry _parryDebug;
+
         private void UpdateSouls(float now)
         {
             if (_soulsText == null || _health == null)
@@ -617,6 +619,17 @@ namespace ItHunts.Hud
             Color promptColor = _skin != null ? new Color(0.95f, 0.88f, 0.74f) : Color.white;
             _promptText.color = refused > 0f ? Color.Lerp(promptColor, new Color(1f, 0.25f, 0.2f), refused) : promptColor;
             SyncPromptFrame();
+            // Debug de la parade (nuit 3, point 7) : « réussie / ratée de X ms » sous le viseur 2 s, en partie de test seulement.
+            if (_promptText.text.Length == 0 && (ItHunts.Level.RunSession.AdminMode || Application.isEditor))
+            {
+                _parryDebug ??= GetComponent<ItHunts.Player.PlayerParry>();
+                if (_parryDebug != null && now - _parryDebug.State.ResultTime < 2f)
+                {
+                    _promptText.text = _parryDebug.DebugLine;
+                    _promptText.color = _parryDebug.State.LastResult == ItHunts.Combat.ParryResult.Reussie
+                        ? new Color(1f, 0.85f, 0.45f) : new Color(0.9f, 0.6f, 0.55f);
+                }
+            }
         }
 
         /// <summary>Munitions du barillet : un segment par munition ; en rechargement, ils se remplissent ; grisés si inactif.</summary>

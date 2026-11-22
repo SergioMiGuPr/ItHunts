@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bfdd148f39ffb641bf76bc048df985c, type: 3}
   m_Name: Parry_Default
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.ParrySettings
-  window: 0.18
+  window: 0.25
   stunDuration: 1.5
-  cooldown: 4
-  cooldownAfterSuccess: 1
+  cooldown: 0.7
+  cooldownAfterSuccess: 0
   flashColor: {r: 3, g: 2.6, b: 1.4, a: 1}
   flashSize: 0.7
   volume: 0.8

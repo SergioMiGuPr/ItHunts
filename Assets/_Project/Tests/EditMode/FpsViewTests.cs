@@ -511,7 +511,7 @@ namespace ItHunts.Tests
             Assert.That(anim.runtimeAnimatorController, Is.Not.Null);
             Assert.That(anim.runtimeAnimatorController.animationClips.Length, Is.EqualTo(9));
             Assert.That(prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length, Is.EqualTo(3), "trois LOD qui suivent le squelette");
-            Assert.That(ghoul.contactImpactDelay, Is.EqualTo(0.24f).Within(1e-4f), "dégâts à l'impact du clip Goule_Coup");
+            Assert.That(ghoul.contactClipImpact, Is.EqualTo(0.24f).Within(1e-4f), "impact du clip Goule_Coup (joué ralenti, nuit 3)");
             foreach (string scene in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
             {
                 string text = System.IO.File.ReadAllText(scene);

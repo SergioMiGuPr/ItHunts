@@ -51,8 +51,11 @@ namespace ItHunts.Tests
                     }
                 }
 
-                Assert.That(ghoul.contactImpactDelay, Is.EqualTo(bestT).Within(0.02f),
-                    $"dégâts du coup ({ghoul.contactImpactDelay:0.00} s) à l'instant où la main frappe ({bestT:0.00} s)");
+                // Nuit 3, point 7 : l'impact du clip à vitesse normale (contactClipImpact) est celui de la main ; le clip est ralenti pour
+                // que cet impact tombe à contactImpactDelay (coup annoncé de 0.55 s) : les dégâts tombent toujours quand la main frappe.
+                Assert.That(ghoul.contactClipImpact, Is.EqualTo(bestT).Within(0.02f),
+                    $"impact du clip ({ghoul.contactClipImpact:0.00} s) à l'instant où la main frappe ({bestT:0.00} s)");
+                Assert.That(ghoul.contactImpactDelay, Is.EqualTo(0.55f).Within(1e-3f), "coup lisible (temps de réaction humain)");
             }
             finally
             {
@@ -75,14 +78,15 @@ namespace ItHunts.Tests
         {
             ParryState s = ParryState.Create();
             ParryMath.Press(ref s, 10f, _cfg);
-            Assert.IsFalse(ParryMath.TryParry(ref s, 10.25f, _cfg, true));
+            Assert.IsFalse(ParryMath.TryParry(ref s, 10.32f, _cfg, true));
             Assert.That(s.LastResult, Is.EqualTo(ParryResult.TropTot));
-            Assert.That(ParryMath.Describe(s, _cfg), Is.EqualTo("Parade ratée : appui 250 ms avant l'impact, trop tôt de 70 ms"));
+            Assert.That(ParryMath.Describe(s, _cfg), Is.EqualTo("Parade ratée : appui 320 ms avant l'impact, trop tôt de 70 ms"));
         }
 
         [Test]
         public void Debug_RateeTropTard_AppuiJusteApres()
         {
+            _cfg.lateWindow = 0f;                                        // sans tolérance après l'impact
             ParryState s = ParryState.Create();
             Assert.IsFalse(ParryMath.TryParry(ref s, 10f, _cfg, true), "coup sans appui");
             ParryMath.Press(ref s, 10.04f, _cfg);
@@ -93,7 +97,8 @@ namespace ItHunts.Tests
         [Test]
         public void ToleranceApresLImpact_Reglable_ZeroParDefaut()
         {
-            Assert.That(_cfg.lateWindow, Is.EqualTo(0f), "défaut inchangé (proposition dans PROGRESS)");
+            Assert.That(_cfg.lateWindow, Is.EqualTo(0.08f), "nuit 3 : 80 ms de tolérance après l'impact");
+            _cfg.lateWindow = 0f;
             ParryState s = ParryState.Create();
             Assert.IsFalse(ParryMath.TryParry(ref s, 10f, _cfg, true));
             ParryMath.Press(ref s, 10.04f, _cfg);
