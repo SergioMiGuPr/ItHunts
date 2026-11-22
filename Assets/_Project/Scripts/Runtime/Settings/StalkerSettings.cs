@@ -12,6 +12,8 @@ namespace ItHunts.Settings
     public sealed class StalkerSettings : EnemySettings
     {
         [Header("Vitesses (m/s) — course du joueur 8.5, plafond des gains 20, bunny hop 18 à 26, traction 30")]
+        [Tooltip("Nuit 3, point 5 : ajouté à sa vitesse dans tous les états (rôde, alerte, recherche, chasse, pointe, enragé), plafond compris.")]
+        [Range(-3f, 3f)] public float speedBonus = 0.5f;
         [Min(0f)] public float roamSpeed = 3f;
         [Tooltip("Alerte : il va voir le dernier bruit ou la dernière position aperçue.")]
         [Min(0f)] public float alertSpeed = 6f;

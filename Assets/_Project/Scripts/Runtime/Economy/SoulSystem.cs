@@ -63,7 +63,7 @@ namespace ItHunts.Economy
                 Destroy(go);
             else
                 DestroyImmediate(go);
-            _pickup = ItHunts.Audio.ProceduralSfx.ToClip("Âme ramassée", ItHunts.Audio.ProceduralSfx.SoulPickup());
+            _pickup = ItHunts.Audio.GameAudio.Or(s => s.soulPickup, ItHunts.Audio.ProceduralSfx.ToClip("Âme ramassée", ItHunts.Audio.ProceduralSfx.SoulPickup()));
         }
 
         private void OnEnable()

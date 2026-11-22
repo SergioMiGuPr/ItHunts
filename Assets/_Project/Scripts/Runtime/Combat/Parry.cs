@@ -52,7 +52,7 @@ namespace ItHunts.Combat
                 return false;
             s.LastPress = now;
             s.ReadyAt = now + cfg.cooldown;
-            if (s.AwaitLate && now - s.LastImpact <= MissReport)
+            if (s.AwaitLate && now - s.LastImpact <= MissReport && now - s.LastImpact > cfg.lateWindow)
                 Report(ref s, ParryResult.TropTard, now - s.LastImpact, now);
             s.AwaitLate = false;
             return true;

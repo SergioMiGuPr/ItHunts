@@ -25,7 +25,7 @@ MonoBehaviour:
   ghoulAttacks:
   - {fileID: 8300000, guid: f0e2ba36993e8d84898b7a1fb5491bdb, type: 3}
   - {fileID: 8300000, guid: 4e93e08c42791d543a76ffcc30ae15cf, type: 3}
-  ghoulDeath: {fileID: 8300000, guid: 4d4ae6157330d4a489026834bfe1b769, type: 3}
+  ghoulDeath: {fileID: 8300000, guid: 03492205efaa7a44d86bf303ff991548, type: 3}
   ghoulVolume: 0.85
   flyerCry: {fileID: 8300000, guid: 31a500231deba2746b255c0f58d50b4f, type: 3}
   flyerWings: {fileID: 8300000, guid: 07d6c5fba41e08e41bbfd60e81ee5a2a, type: 3}
@@ -39,6 +39,63 @@ MonoBehaviour:
   lanternJetStart: {fileID: 8300000, guid: ca4c1bad84b93634299a6b8826a886d9, type: 3}
   lanternJetLoop: {fileID: 8300000, guid: 6b6d692c7473f7e49a1914abe6a1381c, type: 3}
   lanternLoopFade: 0.15
+  tractionStart: {fileID: 8300000, guid: 89e30e305cdf3e943a2c1a2f9685ec09, type: 3}
+  tractionHum: {fileID: 8300000, guid: ad39067e73a725d4d9598f5093219c18, type: 3}
+  tractionEnd: {fileID: 8300000, guid: d289f18b77ee6384996e00a6036eaf32, type: 3}
+  repulsion: {fileID: 8300000, guid: fd4b0f52d7f51f74ca83f038c6096e04, type: 3}
+  refusal: {fileID: 8300000, guid: 2bda8adc0aa32b14b82dafe15952a084, type: 3}
+  chargeReady: {fileID: 8300000, guid: c9dbfec3da9380e47bd3f0d89aa10b00, type: 3}
+  impactHit: {fileID: 8300000, guid: 81f628849f25aa442b383b0ad6adeb41, type: 3}
+  impactHeavy: {fileID: 8300000, guid: 9d4b8c1453d00804eb473814823fb6fc, type: 3}
+  enemyKill: {fileID: 8300000, guid: 03492205efaa7a44d86bf303ff991548, type: 3}
+  objectBreak: {fileID: 8300000, guid: b65e69fdcc822d845a79e73ddf47b835, type: 3}
+  stun: {fileID: 8300000, guid: 5b4ac90ace0efbd44b05cf56fb701968, type: 3}
+  parrySuccess: {fileID: 8300000, guid: 4f1d2315c6c1e10498ce378b473ad17b, type: 3}
+  parryMiss: {fileID: 8300000, guid: 153826bd8ce307b42b608b13c80e2a1b, type: 3}
+  headshot: {fileID: 8300000, guid: fb6a75f80bd4d0e4e94b55c810a441e0, type: 3}
+  barrelReloadDone: {fileID: 8300000, guid: 0a5a0255f24090c43880839fd263e385, type: 3}
+  lanternRelight: {fileID: 8300000, guid: b94538394c784e341877d4d68389c2c8, type: 3}
+  ghoulHiss: {fileID: 8300000, guid: fe6f563a085c99a469f1c2e07e2ff0e3, type: 3}
+  flyerScreech: {fileID: 8300000, guid: 31a500231deba2746b255c0f58d50b4f, type: 3}
+  soulPickup: {fileID: 8300000, guid: 8e32de317b4a4564dbce8bc9c98b40fa, type: 3}
+  wavePeak: {fileID: 8300000, guid: 1d492668d240c5a4898f7cfcfe59354b, type: 3}
+  doorOpen: {fileID: 8300000, guid: f63f4671449e2a34c8f377ae7c8820d5, type: 3}
+  gateRise: {fileID: 8300000, guid: ef7047c9eea6c874f9bc0d0c9a2150cb, type: 3}
+  fallVoid: {fileID: 8300000, guid: 224721a72ce76a14f8a8a0157fb3703e, type: 3}
+  bossHit: {fileID: 8300000, guid: a0cd6efc8e4666b48a22da6f2cbe086d, type: 3}
+  bossWeakPoint: {fileID: 8300000, guid: a0cd6efc8e4666b48a22da6f2cbe086d, type: 3}
+  bossPhase: {fileID: 8300000, guid: 3e72a08b1077e57499d9ebe3025cb835, type: 3}
+  bossSlam: {fileID: 8300000, guid: 40ca630637216db4cb58f4aaeaef9e7c, type: 3}
+  bossBite: {fileID: 8300000, guid: 9963ff677a86ba9448a3d7f412af9b36, type: 3}
+  bossDeath: {fileID: 8300000, guid: 2e0868a292d78d549a8cab584d661cab, type: 3}
+  musicChateau: {fileID: 8300000, guid: 685121fdb8bcc984690396b8cc6acf2f, type: 3}
+  musicJardin: {fileID: 8300000, guid: 92b6f2981c8d14d4dae4499d7b9970bb, type: 3}
+  musicBoss: {fileID: 8300000, guid: 69c8949b262b5e84b943449ca605caa7, type: 3}
+  ambienceCave: {fileID: 8300000, guid: 9a8a7ca50b5194c49b89bfd7a3b07cf7, type: 3}
+  ambienceChateau: {fileID: 8300000, guid: 9acad22d2d2c2944eae997599aa283d3, type: 3}
+  ambienceJardin: {fileID: 8300000, guid: 3452622798d2c63478bc0f74b5f8c23a, type: 3}
+  ambienceVolume: 0.6
+  heartbeat: {fileID: 8300000, guid: b3261f6524d2d3948986d386e6336718, type: 3}
+  stalkerArrival: {fileID: 8300000, guid: ef7047c9eea6c874f9bc0d0c9a2150cb, type: 3}
+  lockedDoor: {fileID: 8300000, guid: 5fb5a6ea13cc57b49b1b7c02b5cb4ed5, type: 3}
+  menuInteraction: {fileID: 8300000, guid: 04a4b9791cc50224a825c94b0ab045f7, type: 3}
+  purchase: {fileID: 8300000, guid: 42a67258186a6d84bac813b535527fab, type: 3}
+  grab: {fileID: 8300000, guid: 05ab50bca9210cb4c8faf0fc00797973, type: 3}
+  release: {fileID: 8300000, guid: 587a3d3a06a560e4f8c35df85e169973, type: 3}
+  throwObject: {fileID: 8300000, guid: 873c1bd42a9823b49b20dce36caabef9, type: 3}
+  dash: {fileID: 8300000, guid: b65e170edfe3de843bd4eae0c4f13b48, type: 3}
+  jump: {fileID: 8300000, guid: 0a8c97c392fcb314f9209788592d356b, type: 3}
+  land: {fileID: 8300000, guid: 3a0e1b45155545a42b400caf4f0351f8, type: 3}
+  slideLoop: {fileID: 8300000, guid: f5b385285059e5c4cbb4c6cf4328e661, type: 3}
+  wallJump: {fileID: 8300000, guid: 44c9de7bd8378a14fb427157012fc30f, type: 3}
+  mantle: {fileID: 8300000, guid: e6da161b6f8c04a4195f3116880af8a8, type: 3}
+  waterDive: {fileID: 8300000, guid: 317058c6b428d4c4c858e0ace450df72, type: 3}
+  paralysis: {fileID: 8300000, guid: c18e6cf7753bec043887e0247a24bc7a, type: 3}
+  explosionKill: {fileID: 8300000, guid: 5d32faa3009752647ac400dc0152dfdf, type: 3}
+  crateBreak: {fileID: 8300000, guid: b65e69fdcc822d845a79e73ddf47b835, type: 3}
+  uiHover: {fileID: 8300000, guid: d900620bfb295524aa65cad4888297cf, type: 3}
+  uiClick: {fileID: 8300000, guid: 31a42ecf70a095949be72f8310b7cb36, type: 3}
+  uiBack: {fileID: 8300000, guid: 5361d982fee83cf45b03e86a122ac720, type: 3}
   musicExploration: {fileID: 8300000, guid: 7e994400e0f3bbb4fadf34ff13277c9e, type: 3}
   musicEnraged: {fileID: 8300000, guid: d7d43d87a5b951e4c9d0df7a8fb3a954, type: 3}
   musicVolume: 0.5

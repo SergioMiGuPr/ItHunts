@@ -438,7 +438,7 @@ namespace ItHunts.Tests
             Assert.That(System.Enum.GetValues(typeof(ItHunts.Level.VitrineFlyerState)).Length, Is.EqualTo(5));
             Assert.That(ItHunts.Level.MainMenu.VitrineScene, Is.EqualTo("Test_Vitrine"));
             string menu = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/MainMenu.cs");
-            Assert.That(menu.Contains("\"Playtest : vitrine\""), Is.True);
+            Assert.That(menu.Contains("VitrineLabel = \"Vitrine\""), Is.True);
             // Retours du 2026-11-18 : lien « Vitrine (test) » sur l'écran titre (développement seulement) et F2 qui lance la vitrine.
             Assert.That(menu.Contains("\"Vitrine (test) (F2)\""), Is.True, "lien de l'écran titre");
             Assert.That(menu.Contains("f2Key.wasPressedThisFrame)\n                OpenVitrine();") || menu.Contains("f2Key.wasPressedThisFrame)\r\n                OpenVitrine();"), Is.True, "F2 lance la vitrine");
@@ -511,7 +511,7 @@ namespace ItHunts.Tests
             Assert.That(anim.runtimeAnimatorController, Is.Not.Null);
             Assert.That(anim.runtimeAnimatorController.animationClips.Length, Is.EqualTo(9));
             Assert.That(prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true).Length, Is.EqualTo(3), "trois LOD qui suivent le squelette");
-            Assert.That(ghoul.contactImpactDelay, Is.EqualTo(0.24f).Within(1e-4f), "dégâts à l'impact du clip Goule_Coup");
+            Assert.That(ghoul.contactClipImpact, Is.EqualTo(0.24f).Within(1e-4f), "impact du clip Goule_Coup (joué ralenti, nuit 3)");
             foreach (string scene in new[] { "Assets/Scenes/Test_Arena.unity", "Assets/Scenes/Level_01_Aleatoire.unity" })
             {
                 string text = System.IO.File.ReadAllText(scene);

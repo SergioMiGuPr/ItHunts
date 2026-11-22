@@ -41,6 +41,14 @@ namespace ItHunts.Audio
             return 1f + Random.Range(-v, v);
         }
 
+        /// <summary>Son de la DA (art-sons-2) s'il existe, sinon le repli (aujourd'hui du silence : ProceduralSfx coupé).</summary>
+        public static AudioClip Or(System.Func<GameAudioSettings, AudioClip> pick, AudioClip fallback)
+        {
+            GameAudioSettings s = Settings;
+            AudioClip c = s != null ? pick(s) : null;
+            return c != null ? c : fallback;
+        }
+
         /// <summary>Son 3D ponctuel à cette position (source temporaire, portée des créatures, hauteur variée).</summary>
         public static void PlayAt(AudioClip clip, Vector3 position, float volume, float range = -1f)
         {

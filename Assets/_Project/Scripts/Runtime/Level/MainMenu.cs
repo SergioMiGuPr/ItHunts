@@ -143,27 +143,11 @@ namespace ItHunts.Level
             _settings.FocusFirst();
 
             _menu.Items.Clear();
-            _menu.Add("Lancer la run (niveau 1)", Launch);
-            // Niveau aléatoire d'une seed choisie (◄ ►), et salle de test de chaque module avec le traqueur (point 2 du 2026-11-21).
-            GreyboxMenu.Item seedItem = _menu.Add(SeedLabel, () => LaunchRandom(_playSeed, null));
-            seedItem.Value = () => _playSeed.ToString();
-            seedItem.Change = d => _playSeed = Mathf.Max(1, _playSeed + d);
-            GreyboxMenu.Item moduleItem = _menu.Add(ModuleTestLabel, () => LaunchRandom(_playSeed, TestModuleName));
-            moduleItem.Value = () => TestModuleName ?? "aucun module";
-            moduleItem.Change = d => _testModule = TestModules.Count == 0 ? 0 : ((_testModule + d) % TestModules.Count + TestModules.Count) % TestModules.Count;
-            // Modules faits dans l'atelier (◄ ► choisit) : le joueur part dans la salle du module, traqueur et goules compris.
-            GreyboxMenu.Item atelierItem = _menu.Add(AtelierLabel, LaunchAtelier);
-            atelierItem.Value = () => AtelierModule != null ? AtelierModule.displayName : "aucun module de l'atelier";
-            atelierItem.Change = d =>
-            {
-                int n = AtelierModules().Count;
-                _atelierIndex = n == 0 ? 0 : ((_atelierIndex + d) % n + n) % n;
-            };
-            _menu.Add("Playtest : combat de boss", LaunchBossFight);
-            _menu.Add("Playtest : vitrine", () => Direct(VitrineScene));
-            _menu.Add("Test_Movement (banc d'essai)", () => Direct(movementScene));
-            _menu.Add("Test_Arena (labyrinthe)", () => Direct(arenaScene));
-            _menu.Add("Level_01 (carte fixe de référence)", () => Direct(fixedLevelScene));
+            // Playtest (nuit 3, point 2) : la vitrine, et « Choisir l'acte » (◄ ►) qui lance la run à cet acte avec le panneau admin (F1).
+            GreyboxMenu.Item actItem = _menu.Add(ChooseActLabel, () => LaunchAct(_playtestAct));
+            actItem.Value = () => PlaytestActName(_playtestAct);
+            actItem.Change = d => _playtestAct = (_playtestAct + d + PlaytestActs) % PlaytestActs;
+            _menu.Add(VitrineLabel, () => Direct(VitrineScene));
             _menu.Add("Retour", () => _page = _back);
             _menu.FocusFirst();
         }
@@ -299,6 +283,7 @@ namespace ItHunts.Level
 
             ApplyLobby();
             string scene = RunSession.Begin(run, easy);
+            RunSession.AdminMode = false;                                   // partie normale : jamais de panneau admin
             _launching = true;
             if (!RunSession.Load(scene))
             {
@@ -352,6 +337,39 @@ namespace ItHunts.Level
             }
         }
         private int _playSeed = 1;
+
+        public const string ChooseActLabel = "Choisir l'acte", VitrineLabel = "Vitrine";
+        public const int PlaytestActs = 4;
+        private int _playtestAct;
+        public int PlaytestAct { get => _playtestAct; set => _playtestAct = ((value % PlaytestActs) + PlaytestActs) % PlaytestActs; }
+
+        public static string PlaytestActName(int act) => act switch { 0 => "Acte I", 1 => "Acte II", 2 => "Acte III", _ => "Boss final" };
+
+        /// <summary>
+        /// Playtest « Choisir l'acte » : la run démarre à cet acte (Facile), personnages du campement, stuff vide ; partie de test, donc
+        /// panneau admin permis (F1). Jamais depuis « Jouer ».
+        /// </summary>
+        public void LaunchAct(int act)
+        {
+            int easy = run != null ? run.difficulties.FindIndex(d => d.playable) : -1;
+            ApplyLobby();
+            string scene = easy >= 0 ? RunSession.BeginAt(run, easy, act) : null;
+            if (scene == null)
+            {
+                RunSession.End();
+                Say($"{PlaytestActName(act)} : scène pas encore prête");
+                return;
+            }
+
+            RunSession.AdminMode = true;
+            _launching = true;
+            if (!RunSession.Load(scene))
+            {
+                _launching = false;
+                RunSession.End();
+                Say($"Scène « {scene} » absente du build");
+            }
+        }
         private int _testModule;
 
         /// <summary>Modules jouables du niveau aléatoire (noms), dans l'ordre du catalogue.</summary>
@@ -695,7 +713,7 @@ namespace ItHunts.Level
 
         private void OnGUI()
         {
-            if (_lobby == null || (Skinned && _page != Page.Playtest))
+            if (_lobby == null || Skinned)
                 return;
             if (Pick != null)
             {

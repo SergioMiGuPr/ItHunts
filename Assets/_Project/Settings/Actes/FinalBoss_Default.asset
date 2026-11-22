@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e7960d57fa400b49aba4cf408b617cd, type: 3}
+  m_Name: FinalBoss_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.FinalBossSettings
+  maxHealth: 2400
+  phase2At: 0.66
+  phase3At: 0.33
+  weakPointMultiplier: 2.5
+  weakPointBreak: 260
+  weakPointRegrow: 18
+  staggerTime: 3.5
+  bodyThrowShare: 0.3
+  speedByPhase: {x: 6.5, y: 8, z: 10}
+  turnRate: 110
+  cooldownByPhase: {x: 2.2, y: 1.6, z: 1.1}
+  grabTelegraph: 0.9
+  sweepTelegraph: 0.85
+  chargeTelegraph: 1.1
+  leapTelegraph: 1.2
+  cryTelegraph: 0.8
+  debrisTelegraph: 1
+  eruptionTelegraph: 1.1
+  summonTelegraph: 1.2
+  phase3TelegraphFactor: 0.8
+  minTelegraph: 0.45
+  grabDamage: 45
+  sweepDamage: 35
+  chargeDamage: 40
+  leapDamage: 35
+  debrisDamage: 22
+  eruptionDamage: 30
+  grabRange: 13
+  sweepRange: 15
+  chargeSpeed: 26
+  chargeDistance: 40
+  leapRadius: 9
+  cryRadius: 20
+  cryPush: 24
+  eruptionRadius: 3.8
+  eruptions: 5
+  debrisCount: 3
+  summonCount: 4
+  debrisSpeed: 24

@@ -1,0 +1,222 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09f2a097a499a104d937929e4ffc3e40, type: 3}
+  m_Name: Act_3
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.Acts.ActLayoutSettings
+  theme: 2
+  displayName: 'Acte III : le jardin'
+  cell: 2
+  gridSize: 220
+  rooms: 16
+  roomArea: {x: 1200, y: 3400}
+  minWidth: 12
+  mainPathShare: 0.4
+  loopChance: 0.55
+  minStartExit: 6
+  doorWidth: 12
+  doorHeight: 9
+  ceiling: {x: 0, y: 0}
+  floorStep: 3
+  floorChangeChance: 0.3
+  minFloor: -6
+  maxFloor: 6
+  rampSlope: 22
+  openInnerWall: 8
+  openOuterWall: 55
+  outerMagneticTop: 12
+  waterShare: 0.3
+  voidShare: 0.2
+  voidDamage: 20
+  waterDepth: 3
+  terraceShare: 0.5
+  terraceHeight: {x: 3.5, y: 5.5}
+  wallJumpGap: 3.6
+  sconceSpacing: 16
+  torchColor: {r: 1, g: 0.55, b: 0.25, a: 1}
+  torchIntensity: 3.2
+  torchRange: 16
+  chandeliersPer1000: 0
+  moonWindowSpacing: 0
+  moonColor: {r: 0.55, g: 0.65, b: 1, a: 1}
+  moonlight: 0.55
+  ambientScale: 1.2
+  ghoulsPer100: 0.2
+  minGhoulsPerRoom: 2
+  maxGhoulsPerRoom: 9
+  flyersPerTallRoom: 1
+  spawnPointsPerRoom: 3
+  chests: 10
+  lockedRooms: 1
+  merchants: 1
+  stalkerFromArrival: 1
+  wallMaterial: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
+  floorMaterial: {fileID: 2100000, guid: 2bc863603ee0fcb4bafa7f1db4d7fb13, type: 2}
+  ceilingMaterial: {fileID: 2100000, guid: 24d2f953c14f63c42a2cdd6ff670fa92, type: 2}
+  trimMaterial: {fileID: 2100000, guid: 797758874c625cb40aa550976e754ea6, type: 2}
+  waterMaterial: {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
+  propMaterial: {fileID: 2100000, guid: 906f34049ab58bc408820a06944a0900, type: 2}
+  foliageMaterial: {fileID: 2100000, guid: 39e3025ada4b71b4699825363eff9719, type: 2}
+  windowMaterial: {fileID: 2100000, guid: 449bccfbe3227a7409f7ddef9a55b4cd, type: 2}
+  art:
+    outerWalls:
+    - {fileID: 3920566569623370175, guid: 5a594b2912052a74f828fab128643e79, type: 3}
+    - {fileID: 5218615516673697455, guid: fcd6d2ec57f7880439ec4caf40fcc702, type: 3}
+    - {fileID: 3920566569623370175, guid: 5a594b2912052a74f828fab128643e79, type: 3}
+    wallPieceWidth: 19
+    wallPieceHeight: 23
+    wallFrontDepth: 3
+    wallAccent: {fileID: 8165744873422352537, guid: b1c4fcd0f580be8468dc2c49db79cdf7, type: 3}
+    wallAccentEvery: 5
+    innerWall: {fileID: 4429177915505376449, guid: 1f962f0d6e68df24ab16f6402eb8f0b3, type: 3}
+    innerWallWidth: 6.9
+    innerWallHeight: 3
+    window: {fileID: 0}
+    moonRay: {fileID: 0}
+    windowCenterHeight: 9.5
+    rayOffset: 0.6
+    torch: {fileID: 0}
+    candles: {fileID: 610996790895295533, guid: 7664bdeea9e4f4946aaee11f9a0066cd, type: 3}
+    chandelier: {fileID: 0}
+    exitDoor: {fileID: 0}
+    exitDoorOpening: 10
+    exitHallPiece: {fileID: 8675142870439261422, guid: f5ba6dda125e8b442be1b819a5e1557d, type: 3}
+    startLandmark: {fileID: 5764694367055568525, guid: 2c821de3d59f07c4baefb88cfaf53e66, type: 3}
+    hallPillar: {fileID: 0}
+    sky: {fileID: 3178682065596024140, guid: 9b3b4575ac3ecd24b987a4711220b933, type: 3}
+    mist: {fileID: 8305703692698496349, guid: 05968251bea88f74cafb81be94e98f6e, type: 3}
+    functionMaterials:
+    - function: Roseraie
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 2bc863603ee0fcb4bafa7f1db4d7fb13, type: 2}
+      ceiling: {fileID: 0}
+    - function: Grand bassin
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
+      ceiling: {fileID: 0}
+    - function: Labyrinthe de haies
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 27920256e61748248a898801543e8b16, type: 2}
+      ceiling: {fileID: 0}
+    - function: Verger
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 4d983f941a48d2d45a33a0340a584891, type: 2}
+      ceiling: {fileID: 0}
+    - function: "Cimeti\xE8re"
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 4d983f941a48d2d45a33a0340a584891, type: 2}
+      ceiling: {fileID: 0}
+    - function: Serre en ruine
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 31a41cf9336d4304ca687ef33e5f56a6, type: 2}
+      ceiling: {fileID: 0}
+    - function: "All\xE9e des statues"
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 31a41cf9336d4304ca687ef33e5f56a6, type: 2}
+      ceiling: {fileID: 0}
+    - function: Kiosque
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 2bc863603ee0fcb4bafa7f1db4d7fb13, type: 2}
+      ceiling: {fileID: 0}
+    - function: Ravin
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 38f40780281207348a1133a1108734e4, type: 2}
+      ceiling: {fileID: 0}
+    - function: Potager
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 38f40780281207348a1133a1108734e4, type: 2}
+      ceiling: {fileID: 0}
+    - function: Bosquet
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 27920256e61748248a898801543e8b16, type: 2}
+      ceiling: {fileID: 0}
+    - function: Fontaine
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
+      ceiling: {fileID: 0}
+    - function: "Terrasse du ch\xE2teau"
+      wall: {fileID: 0}
+      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
+      ceiling: {fileID: 0}
+    swaps:
+    - prop: Prop_Statue
+      piece: {fileID: 5764694367055568525, guid: 2c821de3d59f07c4baefb88cfaf53e66, type: 3}
+    - prop: Prop_Banc
+      piece: {fileID: 7898632400468675762, guid: 6851be83f94d46c48abd075dd81bdb64, type: 3}
+    - prop: Prop_Gravats
+      piece: {fileID: 5201401356479348262, guid: c0cfb4420d012884da614e893251eb57, type: 3}
+    - prop: Prop_ColonneBrisee
+      piece: {fileID: 7705583041758371005, guid: e15e5bb056c3047438b81be01eed45e5, type: 3}
+    - prop: Prop_Table
+      piece: {fileID: 1685382688449208469, guid: ff491cae428337245a75ef11442af4da, type: 3}
+    pieces:
+    - {fileID: 538597699705832730, guid: 93e782d71ff6067468a9eaab6ac95ba1, type: 3}
+    - {fileID: 2461714934450536805, guid: 52ed815762218cc42bf1600e103f29d6, type: 3}
+    - {fileID: 8675142870439261422, guid: f5ba6dda125e8b442be1b819a5e1557d, type: 3}
+    - {fileID: 7705583041758371005, guid: e15e5bb056c3047438b81be01eed45e5, type: 3}
+    - {fileID: 5699563258194182005, guid: 62a1fd7249188cf43898efd75839bc4c, type: 3}
+    - {fileID: 1618407310947792226, guid: acedf3f15f74be1419188a5d04b5f29b, type: 3}
+    - {fileID: 7823475103650389747, guid: f65533a48436d7d4b9a76269e3040951, type: 3}
+    - {fileID: 8305703692698496349, guid: 05968251bea88f74cafb81be94e98f6e, type: 3}
+    - {fileID: 4404679354736356375, guid: 981dff9963e027241be8a2e0d59ce27b, type: 3}
+    - {fileID: 5988310844182558405, guid: b0f1f9c40a389c14eaa976e5c47df7b6, type: 3}
+    - {fileID: 3178682065596024140, guid: 9b3b4575ac3ecd24b987a4711220b933, type: 3}
+    - {fileID: 5218615516673697455, guid: fcd6d2ec57f7880439ec4caf40fcc702, type: 3}
+    - {fileID: 3770599237551698750, guid: 9edeba66e2d1ef240808bd187f392bfe, type: 3}
+    - {fileID: 3920566569623370175, guid: 5a594b2912052a74f828fab128643e79, type: 3}
+    - {fileID: 4759201467142002389, guid: b47fae47460ac474bba8aff3f0728696, type: 3}
+    - {fileID: 4429177915505376449, guid: 1f962f0d6e68df24ab16f6402eb8f0b3, type: 3}
+    - {fileID: 2345862004349794994, guid: 813073c236ddca94cbb5012779e61ee4, type: 3}
+    - {fileID: 2647010846832572588, guid: dcf1aa8693c9b2341b5eba6b3d08d808, type: 3}
+    - {fileID: 8165744873422352537, guid: b1c4fcd0f580be8468dc2c49db79cdf7, type: 3}
+    - {fileID: 7276893971100156157, guid: ddb07d08d1f4a2b4aa027708a5468e52, type: 3}
+    - {fileID: 1545053550004778583, guid: d5994d831b6430043ac30eedfba16e7f, type: 3}
+    - {fileID: 1357174320683587141, guid: 8ec1afdbd4afd0b42ab16886c5d4ecae, type: 3}
+    - {fileID: 2245974885445286127, guid: 3cf85e85e3f8d194882453cc03b179e3, type: 3}
+    - {fileID: 6559682034307381649, guid: ab23e1420b30285428ec7810aaf002e6, type: 3}
+    - {fileID: 5764694367055568525, guid: 2c821de3d59f07c4baefb88cfaf53e66, type: 3}
+    - {fileID: 4992762743750780688, guid: d3d233703c3889c438972ab2443c6b88, type: 3}
+    - {fileID: 5128067003154143325, guid: e129df4a64037c342b4d5fc538f71257, type: 3}
+  kitPieces: 0
+  kit: {fileID: 11400000, guid: d59dd140110cb564c9e056a3146e0e87, type: 2}
+  props:
+  - {fileID: 2266145217199223985, guid: 054a56560582e3840ae110c725fb5c47, type: 3}
+  - {fileID: 5245124186634984464, guid: 957ca04daca620b4dad6381959e7a57d, type: 3}
+  - {fileID: 2279769124752265653, guid: 532f9646254a4d14593690561bb1d7b6, type: 3}
+  - {fileID: 2492659631373168093, guid: 168e7cd3311a9344a9f67dc7b12b5b6a, type: 3}
+  - {fileID: 6100030903250793704, guid: b6d29cafafbc3d140b5fa7e45ea6f174, type: 3}
+  - {fileID: 8749307201970961062, guid: 563189661c08af948afdc2f5937f4702, type: 3}
+  - {fileID: 213045468102434258, guid: 72a39876a58c5474fa632764e2700fe4, type: 3}
+  - {fileID: 360637837982167296, guid: e024ccd72899f7741961704fa3964414, type: 3}
+  - {fileID: 3813001517955789683, guid: 56866937d50ac234dbea2e2d851cbdf4, type: 3}
+  - {fileID: 2620508497845661246, guid: 1da34507bd6c39b4c82e3dde9eb10230, type: 3}
+  - {fileID: 5949773717891227757, guid: 5de6bd14d145bba428dfbbf3004167ba, type: 3}
+  - {fileID: 985839051966591373, guid: e4642f87c5d9e424f900e76950c2fc8e, type: 3}
+  - {fileID: 1147682012428152361, guid: cb62157c8a7276743890e6df61d40648, type: 3}
+  - {fileID: 5516195046920221761, guid: 5a23bba772326c34aafbc9343c300072, type: 3}
+  - {fileID: 4703177751193145818, guid: 06eb409eb181b754f8ceb7de1ee2af8e, type: 3}
+  - {fileID: 7082617076153206427, guid: 7d93f1b5142e6f34f88929d72c7b94c1, type: 3}
+  - {fileID: 4597351789901462138, guid: cd54371aec37dd444b35cfd1bf960e62, type: 3}
+  - {fileID: 2063783432782027168, guid: ae76b693ec1f2644a8f5aa27d4cc43cd, type: 3}
+  - {fileID: 1751316579874683729, guid: 8a4607fd8b14c284381d63f18c66b4e8, type: 3}
+  - {fileID: 5147795367191849921, guid: e17cb6b73baf2b846840353241aaef59, type: 3}
+  - {fileID: 885924839239642118, guid: e648f30779a9017439178db7e230f681, type: 3}
+  - {fileID: 1487579915112606290, guid: 70da387b33a1a774e97c2e85e14f011e, type: 3}
+  - {fileID: 143547163943979903, guid: 95a2898b730817c4bbe964715f35fafa, type: 3}
+  - {fileID: 4425252698671734236, guid: a9ac52317641a314197bef8112ee308c, type: 3}
+  - {fileID: 5099802929737956919, guid: 75a057c313f251d48b71cffbe2d59a1e, type: 3}
+  - {fileID: 565738641825802601, guid: e68b3fbcd43a51a42b1aa28feb97ac1c, type: 3}
+  - {fileID: 6107456086479619699, guid: dda2417304e3c4c47a7d4f342312871f, type: 3}
+  - {fileID: 2073839847960823517, guid: a2e4f83f63bdbbc4892f93ba9e677029, type: 3}
+  - {fileID: 4033543537200455753, guid: 16a037b652e65624788c19922adee590, type: 3}
+  - {fileID: 8079578767649395306, guid: 02e333798c771e8408bc98f23211ba8c, type: 3}
+  - {fileID: 8478383355748453547, guid: c1787a16475e24644a6be3a00a75a67c, type: 3}
+  - {fileID: 428725902356805870, guid: 57c14bd456f066b49a87dfe5b96b9908, type: 3}

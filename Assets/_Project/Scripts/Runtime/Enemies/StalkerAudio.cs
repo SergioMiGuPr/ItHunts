@@ -83,6 +83,12 @@ namespace ItHunts.Enemies
             _explore.loop = _enraged.loop = true;
             _explore.volume = _enraged.volume = 0f;
             _explore.clip = art != null && art.musicExploration != null ? art.musicExploration : ProceduralSfx.ToClip("Tension", ProceduralSfx.TensionDrone());
+            // Musique de l'acte (PR #41) : château (acte II), jardin (acte III), boss (arène).
+            string scene = gameObject.scene.name;
+            AudioClip actMusic = art == null ? null : scene.Contains("Boss") ? art.musicBoss : scene.Contains("Chateau") ? art.musicChateau
+                : scene.Contains("Jardin") ? art.musicJardin : null;
+            if (actMusic != null)
+                _explore.clip = actMusic;
             _enraged.clip = art != null && art.musicEnraged != null ? art.musicEnraged : _explore.clip;
             _explore.Play();
             _enraged.Play();

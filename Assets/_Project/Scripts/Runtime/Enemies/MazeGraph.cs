@@ -18,6 +18,25 @@ namespace ItHunts.Enemies
         [Tooltip("Couloirs : paires d'indices d'intersections.")]
         [SerializeField] private Vector2Int[] edges = new Vector2Int[0];
 
+        [Header("Salles organiques (actes, D-092)")]
+        [Tooltip("Carte des cases (salle de chaque case de la grille de tracé) : la salle d'un point se lit ici au lieu des boîtes.")]
+        [SerializeField] private Vector3 cellOrigin;
+        [SerializeField] private float cellSize;
+        [SerializeField] private int cellColumns;
+        [SerializeField] private int[] cellOwner = new int[0];
+        [Tooltip("Point de passage de chaque lien (la porte entre deux salles voisines) ; vide : milieu des deux centres.")]
+        [SerializeField] private Vector3[] edgePoints = new Vector3[0];
+
+        /// <summary>Salles organiques : salle de chaque case (−1 : aucune) et porte de chaque lien.</summary>
+        public void ConfigureCells(Vector3 origin, float cell, int columns, int[] owner, Vector3[] doors)
+        {
+            cellOrigin = origin;
+            cellSize = cell;
+            cellColumns = columns;
+            cellOwner = owner;
+            edgePoints = doors;
+        }
+
         private float[,] _dist;
         private List<int>[] _neighbors;
 
@@ -83,6 +102,16 @@ namespace ItHunts.Enemies
         /// <summary>Intersection qui contient le point (−1 : dans un couloir).</summary>
         public int NodeAt(Vector3 p)
         {
+            if (cellOwner != null && cellOwner.Length > 0 && cellSize > 0f && cellColumns > 0)
+            {
+                int x = Mathf.FloorToInt((p.x - cellOrigin.x) / cellSize), z = Mathf.FloorToInt((p.z - cellOrigin.z) / cellSize);
+                int rows = cellOwner.Length / cellColumns;
+                if (x < 0 || z < 0 || x >= cellColumns || z >= rows)
+                    return -1;
+                int o = cellOwner[z * cellColumns + x];
+                return o >= 0 && o < centers.Length && p.y >= centers[o].y - 6f && p.y <= centers[o].y + 2f * halfExtents[o].y + 4f ? o : -1;
+            }
+
             for (int i = 0; i < centers.Length; i++)
             {
                 Vector3 c = centers[i], h = halfExtents[i];
@@ -249,6 +278,15 @@ namespace ItHunts.Enemies
         public Vector3 Entry(int node, int edge)
         {
             Prepare();
+            if (edgePoints != null && edge < edgePoints.Length)
+            {
+                // Porte entre deux salles voisines : 4 m à l'intérieur de la salle, depuis la porte.
+                Vector3 door = edgePoints[edge];
+                Vector3 inward = centers[node] - door;
+                inward.y = 0f;
+                return inward.sqrMagnitude < 1e-4f ? door : door + inward.normalized * Mathf.Min(4f, inward.magnitude);
+            }
+
             Vector3 mid = (centers[edges[edge].x] + centers[edges[edge].y]) * 0.5f;
             Vector3 dir = mid - centers[node];
             dir.y = 0f;

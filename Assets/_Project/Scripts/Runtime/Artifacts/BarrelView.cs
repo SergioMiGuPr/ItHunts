@@ -83,7 +83,7 @@ namespace ItHunts.Artifacts
             _audio.spatialBlend = 0f;
             _shot = ProceduralSfx.ToClip("Tir du barillet", ProceduralSfx.BarrelShot());
             _reloadStart = ProceduralSfx.ToClip("Rechargement", ProceduralSfx.BarrelReloadStart());
-            _reloadDone = ProceduralSfx.ToClip("Rechargé", ProceduralSfx.BarrelReloadDone());
+            _reloadDone = ItHunts.Audio.GameAudio.Or(s => s.barrelReloadDone, ProceduralSfx.ToClip("Rechargé", ProceduralSfx.BarrelReloadDone()));
             if (tracer != null)
                 tracer.enabled = false;
             if (impact != null)

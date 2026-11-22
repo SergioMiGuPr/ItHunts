@@ -15,7 +15,7 @@ namespace ItHunts.Level
     {
         [Tooltip("Matériau quand elle est payable (lueur orange) ; verrouillée, elle garde son matériau d'origine (rouge).")]
         [SerializeField] private Material unlockedMaterial;
-        [SerializeField] private float interactRange = 6f;
+        [SerializeField] private float interactRange = 9f;
 
         private ZoneState _zone;
         private WorldLabel[] _labels;
@@ -26,7 +26,7 @@ namespace ItHunts.Level
         public bool Open { get; private set; }
         public bool Unlocked => Zone != null && Zone.ExitUnlocked;
         public int Price => Zone != null && Zone.Settings != null ? Zone.Settings.exitPrice : 200;
-        public Vector3 Point => transform.position;
+        public Vector3 Point => transform.position + Vector3.up * 1.8f;   // à hauteur des yeux (porte posée au sol)
         public float Range => interactRange;
         public bool AcceptsGrab => false;
 
@@ -34,14 +34,10 @@ namespace ItHunts.Level
 
         private void Awake()
         {
+            // Nuit 3, point 1 : porte classique, plus de texte en 3D ni de lueur rouge ou orange ; l'invite d'interaction de la DA
+            // donne l'état (verrouillée et compte à rebours, ou prix en âmes).
             _renderers = GetComponentsInChildren<Renderer>(true);
-            _lockedMaterials = new Material[_renderers.Length];
-            for (int i = 0; i < _renderers.Length; i++)
-                _lockedMaterials[i] = _renderers[i].sharedMaterial;
-            // Un texte devant chaque face de la porte : la porte cache celui de l'autre face (règle des textes en monde).
-            _labels = WorldLabel.CreateOnFaces(transform, "Sortie", new Color(1f, 0.5f, 0.3f), 0.5f);
-            foreach (WorldLabel l in _labels)
-                l.TextFor = _ => LabelText();
+            _labels = new WorldLabel[0];
         }
 
         private void OnEnable() => Interactables.All.Add(this);
@@ -49,13 +45,6 @@ namespace ItHunts.Level
 
         private void Update()
         {
-            bool u = Unlocked;
-            if (u == _shownUnlocked || Open)
-                return;
-            _shownUnlocked = u;
-            for (int i = 0; i < _renderers.Length; i++)
-                if (_renderers[i] != null && _renderers[i].GetComponent<TextMesh>() == null)
-                    _renderers[i].sharedMaterial = u && unlockedMaterial != null ? unlockedMaterial : _lockedMaterials[i];
         }
 
         private string LabelText()
@@ -73,19 +62,91 @@ namespace ItHunts.Level
             return $"Sortie\n{Price} âmes";
         }
 
-        public bool Available(PlayerHealth p) => !Open && Unlocked && p != null && !p.Dead;
-        public string Prompt(PlayerHealth p) => $"ouvrir la sortie ({Price} âmes)";
+        public bool Available(PlayerHealth p) => !Open && p != null && !p.Dead && Zone != null && Zone.Started;
+        public string Prompt(PlayerHealth p)
+        {
+            if (!Unlocked)
+            {
+                int s = Mathf.CeilToInt(Zone != null ? Zone.ExitUnlockLeft : 0f);
+                return $"Sortie verrouillée — {s / 60}:{s % 60:00}";
+            }
+
+            return $"Ouvrir la sortie — {Price} âmes";
+        }
 
         public void Interact(PlayerHealth p)
         {
             RunState run = RunState.Current;
-            if (Open || !Unlocked || run == null || p == null || !run.TrySpend(p.PlayerId, Price))
+            if (Open || run == null || p == null)
                 return;
+            if (!Unlocked)
+            {
+                ItHunts.Artifacts.RunState.RaiseRefused(p.PlayerId);
+                return;
+            }
+
+            if (!run.TrySpend(p.PlayerId, Price))
+                return;
+            ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings?.doorOpen, transform.position, 1f);
             SetOpen(true);
+        }
+
+        private Transform _leftLeaf, _rightLeaf;
+        private float _openedAt = float.NegativeInfinity;
+        private bool _swinging;
+
+        /// <summary>Porte du kit (battants Battant_G / Battant_D) : ils pivotent à leurs gonds au lieu de disparaître.</summary>
+        private bool FindLeaves()
+        {
+            if (_leftLeaf == null)
+                _leftLeaf = transform.Find("Battant_G");
+            if (_rightLeaf == null)
+                _rightLeaf = transform.Find("Battant_D");
+            return _leftLeaf != null && _rightLeaf != null;
+        }
+
+        private Quaternion _leftClosed, _rightClosed;
+        private bool _closedKnown;
+
+        private void LateUpdate()
+        {
+            if (!_swinging || !FindLeaves())
+                return;
+            float u = Mathf.Clamp01((Time.time - _openedAt) / 1.4f);
+            float k = Open ? u * u * (3f - 2f * u) : 0f;
+            _leftLeaf.localRotation = _leftClosed * Quaternion.Euler(0f, -105f * k, 0f);
+            _rightLeaf.localRotation = _rightClosed * Quaternion.Euler(0f, 105f * k, 0f);
+            if (u >= 1f || !Open)
+                _swinging = Open && u < 1f;
         }
 
         public void SetOpen(bool open)
         {
+            if (FindLeaves())
+            {
+                if (!_closedKnown)
+                {
+                    _leftClosed = _leftLeaf.localRotation;
+                    _rightClosed = _rightLeaf.localRotation;
+                    _closedKnown = true;
+                }
+
+                Open = open;
+                _openedAt = Time.time;
+                _swinging = true;
+                if (!open)
+                {
+                    _leftLeaf.localRotation = _leftClosed;
+                    _rightLeaf.localRotation = _rightClosed;
+                }
+
+                foreach (Collider c in _leftLeaf.GetComponentsInChildren<Collider>(true))
+                    c.enabled = !open;
+                foreach (Collider c in _rightLeaf.GetComponentsInChildren<Collider>(true))
+                    c.enabled = !open;
+                return;
+            }
+
             Open = open;
             foreach (Collider c in GetComponentsInChildren<Collider>(true))
                 c.enabled = !open;

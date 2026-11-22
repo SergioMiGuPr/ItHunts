@@ -25,8 +25,11 @@ namespace ItHunts.Tests
         [Test]
         public void Partie_LeNiveau1EstLaCarteAleatoireDuCatalogue()
         {
+            // Nuit 3 : la run enchaîne les 3 actes organiques (ActLevel) ; la carte aléatoire des modules reste jouable (atelier).
             var run = AssetDatabase.LoadAssetAtPath<RunDefinition>("Assets/_Project/Settings/Run_Default.asset");
-            Assert.AreEqual("Level_01_Aleatoire", run.levels[0].sceneName);
+            Assert.AreEqual("Acte_1_Caves", run.levels[0].sceneName);
+            Assert.AreEqual("Acte_2_Chateau", run.levels[1].sceneName);
+            Assert.AreEqual("Acte_3_Jardin", run.levels[2].sceneName);
             string scene = System.IO.File.ReadAllText("Assets/Scenes/Level_01_Aleatoire.unity");
             Assert.IsTrue(scene.Contains(AssetDatabase.AssetPathToGUID(CatalogPath)), "la scène tire ses modules du catalogue du niveau 1");
             var usable = AssetDatabase.LoadAssetAtPath<ModuleCatalog>(CatalogPath).Usable().Select(m => m.displayName).ToList();

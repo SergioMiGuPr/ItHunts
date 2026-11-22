@@ -14,6 +14,8 @@ namespace ItHunts.Settings
         public BarrelSettings() => viewScale = 0.5f;
 
         [Header("Tir")]
+        [Tooltip("Headshots et améliorations avancées (nuit 3, point 6).")]
+        public BarrelModsSettings mods;
         [Tooltip("Munitions dans le barillet.")]
         [Min(1)] public int rounds = 6;
         [Tooltip("Dégâts d'une balle.")]

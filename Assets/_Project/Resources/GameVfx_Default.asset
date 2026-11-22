@@ -21,7 +21,7 @@ MonoBehaviour:
   ghoulDeath: {fileID: 9166995586508000190, guid: 30516ca7cd3c85b40938c0af0a97a59a, type: 3}
   flyerDeath: {fileID: 5832133764752367922, guid: 0bdfec9da0b198043913f65617b2e48a, type: 3}
   stun: {fileID: 557825561448543831, guid: c641330b83d94cf4785095073ed5f9a4, type: 3}
-  parry: {fileID: 3393202520873386219, guid: d1dacd8954b348b4caab22b1789505c7, type: 3}
+  parry: {fileID: 8864426436041450732, guid: e6f5a70d544e95c45962d321321e2f3d, type: 3}
   drainLink: {fileID: 3139304292574925328, guid: 3d2cdeda04449e04188bcd54aaefa14e, type: 3}
   healLink: {fileID: 7262695549033814883, guid: 2d3dbd8eb66359c4a84926ae2f8c356f, type: 3}
   stalkerLandingDust: {fileID: 3385680016945947326, guid: 7a08aed827816854982f735f6b423f5a, type: 3}
@@ -32,6 +32,15 @@ MonoBehaviour:
   speedEdges: {fileID: 8666032164564227931, guid: 63016c3f3bf591649b110a4eaf864cbb, type: 3}
   impactLight: {fileID: 2101835133945676235, guid: 5d2c5c9f2ff1f4749a4b57b26880841d, type: 3}
   impactHeavy: {fileID: 359814193686703971, guid: 7c693bf02ddde9747a706c619d78674c, type: 3}
+  critical: {fileID: 6081129691416525239, guid: 3bbc205f34e28064ea786a82770d2f36, type: 3}
+  paralysis: {fileID: 4445206582893228440, guid: e61d2bc5f7336e544825377c1620ccf2, type: 3}
+  explosionKill: {fileID: 2442715918481091129, guid: a29fcc461133b2c499eb647f26a1b147, type: 3}
+  parryReadable: {fileID: 8864426436041450732, guid: e6f5a70d544e95c45962d321321e2f3d, type: 3}
+  bossClaw: {fileID: 9966631823892817, guid: 03881d82c43acdf4f87d599ea0793935, type: 3}
+  bossBite: {fileID: 6567106115965120657, guid: df54985cff42c394cbe7d5cef5341d6a, type: 3}
+  bossGroundImpact: {fileID: 5472716443956420707, guid: f8bb21a08f980cb4a8040226f3795555, type: 3}
+  bossWound: {fileID: 6855287281718509693, guid: 9fb2a71d66a6a6b4c823b9d992f7fb27, type: 3}
+  bossWeakPoint: {fileID: 632548221300013328, guid: 19ad3238d380f414ea4261b90b8f751a, type: 3}
   playerDust: {fileID: 4618616091355184599, guid: 79c7ec55fbc14d5498a4d8e2761675b6, type: 3}
   soulVfxCap: 32
   burningScale: 0.6

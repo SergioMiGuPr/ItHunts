@@ -1,5 +1,6 @@
 using ItHunts.Art.UIJeu;
 using ItHunts.Combat;
+using ItHunts.Economy;
 using ItHunts.Hud;
 using ItHunts.Menus;
 using ItHunts.Orbs;
@@ -66,6 +67,8 @@ namespace ItHunts.HudArt
             if (_parade != null && _parry == null)
                 _parade.gameObject.SetActive(false);
             ParryEvents.Parried += OnParried;
+            DamageEvents.Hit += OnHit;
+            BuildMarker();
             hud.UseArtGauges();
             return true;
         }
@@ -83,7 +86,114 @@ namespace ItHunts.HudArt
             return go.GetComponent<T>();
         }
 
-        private void OnDestroy() => ParryEvents.Parried -= OnParried;
+        private void OnDestroy()
+        {
+            ParryEvents.Parried -= OnParried;
+            DamageEvents.Hit -= OnHit;
+        }
+
+        // ---------- Marqueur de touche (nuit 3, point 6) ----------
+
+        private Image _marker;
+        private float _markerAt = float.NegativeInfinity;
+        private bool _markerCrit, _markerKill;
+        /// <summary>Dernier marqueur montré (tests, captures) : critique ou non.</summary>
+        public bool LastMarkerCritical => _markerCrit;
+        public float LastMarkerTime => _markerAt;
+
+        /// <summary>
+        /// Marqueur de touche : l'étoile encrée du réticule de la DA, tournée de 45° (un X), blanche pour une touche, dorée et plus grande
+        /// pour un critique (headshot), rouge sang au kill. Il éclate puis s'efface en 0.3 s.
+        /// </summary>
+        private MarqueurCritique _crit;
+        private PanneauPorte _door;
+
+        private void BuildMarker()
+        {
+            HudSkinSettings skin = _hud != null ? _hud.HudSkin : null;
+            if (skin != null && skin.critPrefab != null)
+                _crit = Spawn<MarqueurCritique>(skin.critPrefab, "Critique (DA)");
+            if (_crit != null)
+                _crit.Pose(1f);                                          // masqué jusqu'au premier critique
+            if (skin != null && skin.doorPanelPrefab != null)
+            {
+                _door = Spawn<PanneauPorte>(skin.doorPanelPrefab, "Porte (DA)");
+                if (_door != null)
+                    _door.gameObject.SetActive(false);
+            }
+
+            if (_reticle == null || _reticle.etoile == null)
+                return;
+            var go = new GameObject("Marqueur de touche", typeof(RectTransform));
+            go.layer = _canvas.gameObject.layer;
+            go.transform.SetParent(_canvas.transform, false);
+            _marker = go.AddComponent<Image>();
+            _marker.sprite = _reticle.etoile.sprite;
+            _marker.preserveAspect = true;
+            _marker.raycastTarget = false;
+            var r = (RectTransform)go.transform;
+            r.anchorMin = r.anchorMax = new Vector2(0.5f, 0.5f);
+            r.sizeDelta = ((RectTransform)_reticle.etoile.transform).rect.size * 1.6f;
+            r.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            _marker.enabled = false;
+        }
+
+        private void OnHit(DamageEvent e)
+        {
+            var hp = GetComponent<PlayerHealth>();
+            if (_marker == null || hp == null || e.AttackerId != hp.PlayerId || (!e.Bullet && !e.Melee))
+                return;
+            _markerAt = Time.time;
+            _markerCrit = e.Critical;
+            _markerKill = e.Killed;
+            if (e.Critical && _crit != null)
+                _crit.Affiche();                                         // marqueur de critique de la DA
+        }
+
+        /// <summary>Menu d'interaction des portes payantes (Panneau_Porte) : nom, prix en âmes, payable ou non.</summary>
+        private void UpdateDoorPanel()
+        {
+            if (_door == null)
+                return;
+            var interactor = GetComponent<PlayerInteractor>();
+            var hp = GetComponent<PlayerHealth>();
+            IInteractable f = interactor != null ? interactor.Focus : null;
+            var run = ItHunts.Artifacts.RunState.Current;
+            int souls = run != null && hp != null ? run.Souls(hp.PlayerId) : 0;
+            if (f is ItHunts.Level.ExitDoor exit && !exit.Open)
+            {
+                _door.Montre(exit.Unlocked ? "Porte de sortie" : "Sortie verrouillée", exit.Unlocked ? exit.Price : 0, souls);
+                PlayerHud.DoorPanelShown = true;
+            }
+            else if (f is LockedDoor locked && !locked.Open)
+            {
+                _door.Montre("Salle verrouillée", locked.PriceFor(hp), souls);
+                PlayerHud.DoorPanelShown = true;
+            }
+            else
+            {
+                if (_door.gameObject.activeSelf)
+                    _door.Cache();
+                PlayerHud.DoorPanelShown = false;
+            }
+        }
+
+        private void UpdateMarker()
+        {
+            if (_marker == null)
+                return;
+            float u = (Time.time - _markerAt) / 0.3f;
+            bool on = u >= 0f && u < 1f;
+            _marker.enabled = on;
+            if (!on)
+                return;
+            float pop = 1f + (_markerCrit ? 0.6f : 0.25f) * Mathf.Sin(Mathf.Min(1f, u * 3f) * Mathf.PI);
+            float scale = (_markerCrit ? 1.5f : 1f) * pop;
+            _marker.rectTransform.localScale = Vector3.one * scale;
+            Color c = _markerKill ? new Color(0.95f, 0.22f, 0.15f) : _markerCrit ? new Color(1f, 0.82f, 0.25f) : new Color(1f, 0.97f, 0.92f);
+            c.a = 1f - u * u;
+            _marker.color = c;
+        }
 
         private void OnParried(ParryEvent e)
         {
@@ -104,6 +214,8 @@ namespace ItHunts.HudArt
 
             if (_parade != null && _parry != null)
                 _parade.Regle(_parry.Fill);
+            UpdateMarker();
+            UpdateDoorPanel();
 
             if (_reticle != null)
             {

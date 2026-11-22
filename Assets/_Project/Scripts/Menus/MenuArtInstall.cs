@@ -17,11 +17,27 @@ namespace ItHunts.Menus
             MainMenu.Created += AttachMain;
             PauseMenu.Created -= AttachPause;
             PauseMenu.Created += AttachPause;
+            AdminPanel.Created -= AttachAdmin;
+            AdminPanel.Created += AttachAdmin;
+            RunEndScreen.Created -= AttachEnd;
+            RunEndScreen.Created += AttachEnd;
         }
 
         private static void AttachMain(MainMenu menu) => Attach(menu);
 
         private static void AttachPause(PauseMenu pause) => Attach(pause);
+
+        private static void AttachEnd(RunEndScreen end)
+        {
+            if (end != null && end.GetComponent<RunEndScreenArt>() == null)
+                end.gameObject.AddComponent<RunEndScreenArt>().Attach(end);
+        }
+
+        private static void AttachAdmin(AdminPanel panel)
+        {
+            if (panel != null && panel.GetComponent<AdminPanelArt>() == null)
+                panel.gameObject.AddComponent<AdminPanelArt>().Attach(panel);
+        }
 
         /// <summary>Vue de la DA sur ce menu (null : pas d'écrans de la DA, repli greybox). Public pour les tests.</summary>
         public static MainMenuArt Attach(MainMenu menu)

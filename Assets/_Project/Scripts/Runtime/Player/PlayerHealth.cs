@@ -49,6 +49,10 @@ namespace ItHunts.Player
 
         /// <summary>Mesures seulement (scripts de l'éditeur) : aucun dégât ; les coups qui auraient tué sont comptés.</summary>
         public static bool DebugInvulnerable { get; set; }
+        /// <summary>Cause du dernier coup reçu (écran de fin : « cause de la mort »).</summary>
+        public string LastCause { get; private set; } = "";
+        /// <summary>Invulnérable jusqu'à ce temps (parade réussie, nuit 3 point 7) : les coups des ennemis ne passent pas.</summary>
+        public float InvulnerableUntil { get; set; } = float.NegativeInfinity;
         public static int DebugBlockedKills { get; set; }
         public static int DebugBlockedHits { get; set; }
 
@@ -132,10 +136,14 @@ namespace ItHunts.Player
         }
 
         /// <summary>Coup d'un ennemi (goule, volant) : pas de tir ami, il blesse toujours. Vrai si des PV ont été retirés.</summary>
-        public bool TakeEnemyDamage(float damage, Vector3 point, float time)
+        public bool TakeEnemyDamage(float damage, Vector3 point, float time, string cause = null)
         {
             if (damage <= 0f || _health.Dead)
                 return false;
+            if (Time.time < InvulnerableUntil)
+                return false;
+            if (!string.IsNullOrEmpty(cause))
+                LastCause = cause;
             if (DebugInvulnerable)
             {
                 DebugBlockedHits++;
@@ -150,10 +158,12 @@ namespace ItHunts.Player
         }
 
         /// <summary>Dégâts du décor (chute dans un canal, D-052) : pas de multiplicateur de difficulté. Vrai si des PV ont été retirés.</summary>
-        public bool TakeEnvironmentDamage(float damage, Vector3 point, float time)
+        public bool TakeEnvironmentDamage(float damage, Vector3 point, float time, string cause = null)
         {
             if (damage <= 0f || _health.Dead)
                 return false;
+            if (!string.IsNullOrEmpty(cause))
+                LastCause = cause;
             float taken = HealthState.Apply(ref _health, damage, time, out bool killed);
             if (taken <= 0f)
                 return false;
@@ -162,8 +172,10 @@ namespace ItHunts.Player
         }
 
         /// <summary>Tué net, quels que soient ses PV (coup du traqueur). Vrai s'il était vivant.</summary>
-        public bool Kill(Vector3 point, float time)
+        public bool Kill(Vector3 point, float time, string cause = null)
         {
+            if (!string.IsNullOrEmpty(cause) && !_health.Dead && !DebugInvulnerable)
+                LastCause = cause;
             if (DebugInvulnerable && !_health.Dead)
             {
                 DebugBlockedKills++;                                    // mesures : le coup aurait tué

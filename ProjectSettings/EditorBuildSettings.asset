@@ -26,6 +26,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Test_Vitrine.unity
     guid: 6c04b06eb2c23cb4a9fa19902ed32e59
+  - enabled: 1
+    path: Assets/Scenes/Acte_1_Caves.unity
+    guid: f0b9a0bd64c2c5548958a592d768b4f5
+  - enabled: 1
+    path: Assets/Scenes/Acte_2_Chateau.unity
+    guid: afbdc0f726d5a18418c20b7688baf0c5
+  - enabled: 1
+    path: Assets/Scenes/Acte_3_Jardin.unity
+    guid: ed45cbe3e971aad4ebddf78305165354
+  - enabled: 1
+    path: Assets/Scenes/Acte_4_Boss.unity
+    guid: 74804e5443510ec45906562512ba5076
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

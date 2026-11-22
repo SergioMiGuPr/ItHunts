@@ -18,20 +18,24 @@ namespace ItHunts.Economy
         private WorldLabel[] _labels;
 
         public bool Open { get; private set; }
+
+        /// <summary>Réglages (porte posée à l'exécution par le générateur d'un acte).</summary>
+        public void Configure(EconomySettings economy) => settings = economy;
         public int Price => settings != null ? settings.lockedDoorPrice : 50;
         public int PriceFor(PlayerHealth p) => Prices.For(settings, p, PriceKind.Porte, Price);
-        public Vector3 Point => transform.position;
-        public float Range => settings != null ? settings.interactRange : 4f;
+        public Vector3 Point => transform.position + Vector3.up * 1.8f;   // à hauteur des yeux (porte posée au sol)
+        public float Range => Mathf.Max(settings != null ? settings.interactRange : 4f, 8f);   // portes de 12 m (nuit 3)
         public bool AcceptsGrab => false;
 
         // Un texte devant chaque face de la porte : la porte cache celui de l'autre face (règle des textes en monde).
-        private void Awake() => _labels = WorldLabel.CreateOnFaces(transform, $"Salle verrouillée\n{Price} âmes", new Color(1f, 0.7f, 0.3f));
+        // Nuit 3, point 1 : plus de texte en 3D ; l'invite d'interaction de la DA donne le prix.
+        private void Awake() => _labels = new WorldLabel[0];
 
         private void OnEnable() => Interactables.All.Add(this);
         private void OnDisable() => Interactables.All.Remove(this);
 
         public bool Available(PlayerHealth p) => !Open && p != null && !p.Dead;
-        public string Prompt(PlayerHealth p) => $"ouvrir la salle verrouillée ({PriceFor(p)} âmes)";
+        public string Prompt(PlayerHealth p) => $"Ouvrir la salle verrouillée — {PriceFor(p)} âmes";
 
         public void Interact(PlayerHealth p)
         {

@@ -13,6 +13,42 @@ namespace ItHunts.Combat
     {
         private Damageable _owner;
 
+        /// <summary>Zone de tête (nuit 3, point 6) : une balle qui la touche est un headshot (dégâts × headshotMultiplier).</summary>
+        public bool Head;
+
+        /// <summary>Rayons des zones de tête (m), réglés par BarrelModsSettings.</summary>
+        public static float GhoulHeadRadius = 0.3f, FlyerHeadRadius = 0.32f;
+
+        /// <summary>
+        /// Pose une zone de tête (sphère de touche, déclencheur) sur cet os : elle suit l'animation. Rayon en mètres (monde).
+        /// </summary>
+        public static Hitbox AddHead(Transform bone, Vector3 localCenter, float worldRadius)
+        {
+            if (bone == null)
+                return null;
+            Transform existing = bone.Find("Zone de tête (headshot)");
+            if (existing != null)
+            {
+                // Taille réappliquée (le modèle a pu changer d'échelle) : rayon toujours en mètres monde.
+                var es = existing.GetComponent<SphereCollider>();
+                float sc = Mathf.Max(1e-3f, Mathf.Max(bone.lossyScale.x, Mathf.Max(bone.lossyScale.y, bone.lossyScale.z)));
+                if (es != null)
+                    es.radius = worldRadius / sc;
+                return existing.GetComponent<Hitbox>();
+            }
+            var go = new GameObject("Zone de tête (headshot)");
+            go.layer = bone.gameObject.layer;
+            go.transform.SetParent(bone, false);
+            go.transform.localPosition = localCenter;
+            var s = go.AddComponent<SphereCollider>();
+            s.isTrigger = true;
+            float scale = Mathf.Max(1e-3f, Mathf.Max(bone.lossyScale.x, Mathf.Max(bone.lossyScale.y, bone.lossyScale.z)));
+            s.radius = worldRadius / scale;
+            var h = go.AddComponent<Hitbox>();
+            h.Head = true;
+            return h;
+        }
+
         public Damageable Owner => _owner != null ? _owner : _owner = GetComponentInParent<Damageable>();
 
         private void OnTriggerEnter(Collider other)

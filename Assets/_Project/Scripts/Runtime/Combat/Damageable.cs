@@ -98,6 +98,8 @@ namespace ItHunts.Combat
         /// <summary>Dernier joueur qui l'a blessé, lancé ou attrapé (coop, D-041 : il se retourne contre lui).</summary>
         public int LastAttackerId { get; private set; }
         public float LastAttackTime { get; private set; } = float.NegativeInfinity;
+        /// <summary>Dernière fois qu'il a perdu des PV (barre de PV affichée un instant seulement, nuit 3).</summary>
+        public float LastDamagedAt { get; private set; } = float.NegativeInfinity;
 
         public void NoteAttacker(int playerId)
         {
@@ -130,6 +132,8 @@ namespace ItHunts.Combat
             if (immuneToOrbs)
                 return 0f;                                              // le traqueur est intuable
             float taken = HealthState.Apply(ref _health, damage, time, out killed);
+            if (taken > 0f)
+                LastDamagedAt = Time.time;
             if (killed)
             {
                 SetAlive(false);

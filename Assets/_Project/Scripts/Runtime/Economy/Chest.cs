@@ -134,12 +134,12 @@ namespace ItHunts.Economy
             if (rare && settings != null)
             {
                 // Coffre rare (D-071) : table dédiée, un choix en plus, améliorations renforcées.
-                drawn = run.DrawUpgrades(count + settings.rareExtraChoices, settings.rarePool);
+                drawn = run.DrawUpgradesFor(count + settings.rareExtraChoices, settings.rarePool, p);
                 for (int i = 0; i < drawn.Length; i++)
                     drawn[i] = RareVersion(drawn[i], settings);
             }
             else
-                drawn = run.DrawUpgrades(count);
+                drawn = run.DrawUpgradesFor(count, null, p);
             for (int i = 0; i < drawn.Length; i++)
             {
                 // Espacées de 2.4 m et en quinconce : les noms (deux lignes) ne se chevauchent pas, lisibles à 10 m.

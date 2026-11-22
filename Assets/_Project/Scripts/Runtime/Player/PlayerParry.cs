@@ -57,7 +57,7 @@ namespace ItHunts.Player
                 }
 
                 if (_missClip == null)
-                    _missClip = ItHunts.Audio.ProceduralSfx.ToClip("Parade ratée", ItHunts.Audio.ProceduralSfx.BarrelReloadDone());
+                    _missClip = ItHunts.Audio.GameAudio.Or(s => s.parryMiss, ItHunts.Audio.ProceduralSfx.ToClip("Parade ratée", ItHunts.Audio.ProceduralSfx.BarrelReloadDone()));
                 ItHunts.Audio.GameAudio.PlayAt(_missClip, transform.position + Vector3.up * 1.4f, settings.missVolume);
             }
 
@@ -87,6 +87,8 @@ namespace ItHunts.Player
 
         private static void Succeed(PlayerParry parry, PlayerHealth player, Component attacker, Vector3 point)
         {
+            // Courte invulnérabilité (nuit 3, point 7) : les autres goules autour ne punissent pas une parade réussie.
+            player.InvulnerableUntil = Mathf.Max(player.InvulnerableUntil, Time.time + parry.settings.invulnerability);
             EnemyBody body = attacker.GetComponentInParent<EnemyBody>();
             if (body != null && body.StunFor(parry.settings.stunDuration))
             {

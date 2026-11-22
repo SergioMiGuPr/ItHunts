@@ -79,21 +79,23 @@ namespace ItHunts.Tests
         {
             var c = Asset<StalkerSettings>();
             Assert.That(c.followPlayerSpeedShare, Is.EqualTo(0f), "suivi désactivé par défaut (D-034)");
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 26f, c), Is.EqualTo(9f), "sans suivi : sa base");
+            float b = c.speedBonus;                                     // nuit 3 : +0.5 m/s partout
+            Assert.That(b, Is.EqualTo(0.5f));
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 26f, c), Is.EqualTo(9f + b), "sans suivi : sa base");
             c.followPlayerSpeedShare = 0.85f;
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Repaire, false, 0f, c), Is.EqualTo(0f));
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Rode, false, 20f, c), Is.EqualTo(3f));
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 0f, c), Is.EqualTo(9f), "base de chasse");
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, false, 0f, c), Is.EqualTo(11f), "base enragée");
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 7.5f, c), Is.EqualTo(9f), "joueur qui court : sa base");
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 14f, c), Is.EqualTo(11.9f).Within(1e-4f), "85 % du joueur");
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 26f, c), Is.EqualTo(16f), "plafond : sa pointe");
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, true, 0f, c), Is.EqualTo(16f), "pointe");
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, true, 0f, c), Is.EqualTo(18f), "pointe enragée");
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Repaire, false, 0f, c), Is.EqualTo(0f), "au repaire : immobile");
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Rode, false, 20f, c), Is.EqualTo(3f + b));
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 0f, c), Is.EqualTo(9f + b), "base de chasse");
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, false, 0f, c), Is.EqualTo(11f + b), "base enragée");
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 7.5f, c), Is.EqualTo(9f + b), "joueur qui court : sa base");
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 14f, c), Is.EqualTo(11.9f + b).Within(1e-4f), "85 % du joueur");
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 26f, c), Is.EqualTo(16f + b), "plafond : sa pointe");
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, true, 0f, c), Is.EqualTo(16f + b), "pointe");
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, true, 0f, c), Is.EqualTo(18f + b), "pointe enragée");
             foreach (float player in new[] { 18f, 22f, 26f })
-                Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, true, player, c), Is.LessThanOrEqualTo(18f), "jamais au-dessus du bunny hop");
+                Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, true, player, c), Is.LessThanOrEqualTo(18f + b), "jamais au-dessus du bunny hop");
             c.followPlayerSpeedShare = 0f;
-            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 26f, c), Is.EqualTo(9f), "suivi désactivé");
+            Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Chasse, false, 26f, c), Is.EqualTo(9f + b), "suivi désactivé");
         }
 
         [Test]
@@ -595,10 +597,13 @@ namespace ItHunts.Tests
                 Assert.That(Ramp(31f, out int t4), Is.EqualTo(18f).Within(1e-4f)); Assert.That(t4, Is.EqualTo(4));
                 Assert.That(Ramp(300f, out _), Is.EqualTo(18f).Within(1e-4f), "maximum");
                 // Pointe et suivi jamais au-delà de 18 m/s, même au dernier palier.
-                Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, true, 30f, c, 18f), Is.EqualTo(18f));
-                Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, false, 30f, c, 15f), Is.EqualTo(15f), "suivi désactivé : la base du palier");
+                // Nuit 3, point 5 : +0.5 m/s dans tous les états (speedBonus), plafond compris.
+                float b = c.speedBonus;
+                Assert.That(b, Is.EqualTo(0.5f));
+                Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, true, 30f, c, 18f), Is.EqualTo(18f + b));
+                Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, false, 30f, c, 15f), Is.EqualTo(15f + b), "suivi désactivé : la base du palier");
                 c.enragedBurstSpeed = 25f;
-                Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, true, 0f, c, 11f), Is.EqualTo(18f), "plafond maxSpeed");
+                Assert.That(EnemyMath.StalkerSpeed(StalkerMode.Enrage, true, 0f, c, 11f), Is.EqualTo(18f + b), "plafond maxSpeed");
             }
             finally
             {

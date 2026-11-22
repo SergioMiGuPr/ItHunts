@@ -34,6 +34,12 @@ namespace ItHunts.Settings
         [Tooltip("Éclats d'impact : léger (balle, petit objet), lourd (objet lourd lancé).")]
         public GameObject impactLight;
         public GameObject impactHeavy;
+        [Header("Nuit 3 (PR #43)")]
+        public GameObject critical;
+        public GameObject paralysis;
+        public GameObject explosionKill;
+        public GameObject parryReadable;
+        public GameObject bossClaw, bossBite, bossGroundImpact, bossWound, bossWeakPoint;
         [Tooltip("Poussière d'atterrissage du joueur, aux pieds.")]
         public GameObject playerDust;
 

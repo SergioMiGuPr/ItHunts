@@ -50,7 +50,7 @@ namespace ItHunts.Level
                 Falls++;
                 if (p.Motor != null)
                     p.Motor.Teleport(BankFor(p.transform.position));
-                p.TakeEnvironmentDamage(damage, p.transform.position, Time.time);
+                p.TakeEnvironmentDamage(damage, p.transform.position, Time.time, "Noyade");
                 return;
             }
 

@@ -23,6 +23,8 @@ namespace ItHunts.Hud
     public sealed partial class PlayerHud : MonoBehaviour
     {
         [SerializeField] private HudSettings settings;
+        /// <summary>Habillage de la DA (écran de chargement, panneaux).</summary>
+        public HudSkinSettings Skin => settings != null ? settings.skin : null;
         [Tooltip("Couleurs du magnétisme, anneaux, refus.")]
         [SerializeField] private MagnetismFeedbackSettings feedback;
         [Tooltip("Couleurs de la télékinésie (anneaux violet et vert).")]
@@ -540,7 +542,7 @@ namespace ItHunts.Hud
 
             int left = Mathf.CeilToInt(_zone.TimeLeft);
             // Le temps seul, en grand (retours du 2026-11-17 : plus de texte d'objectif dessous). Il attend la sortie de la salle de départ (D-048).
-            _timerText.text = $"{left / 60}:{left % 60:00}";
+            _timerText.text = ItHunts.Enemies.FinalBoss.Current_ != null || ItHunts.Level.Acts.BossArena.Current != null ? string.Empty : $"{left / 60}:{left % 60:00}";   // boss final : pas de timer
             _timerText.color = _zone.Enraged ? new Color(1f, 0.25f, 0.2f) : left <= 30 ? new Color(1f, 0.7f, 0.3f) : Color.white;
             _stalkerText.text = _zone.Enraged ? "TRAQUEUR ENRAGÉ" : string.Empty;
             // D-038 : plus il accélère, plus l'indication pulse fort ; éclat d'une seconde à chaque palier.
@@ -583,7 +585,7 @@ namespace ItHunts.Hud
                 return;
             _refusedAt = Time.time;
             if (_refusalClip == null)
-                _refusalClip = ItHunts.Audio.ProceduralSfx.ToClip("Refus (âmes)", ItHunts.Audio.ProceduralSfx.Refusal());
+                _refusalClip = ItHunts.Audio.GameAudio.Or(s => s.refusal, ItHunts.Audio.ProceduralSfx.ToClip("Refus (âmes)", ItHunts.Audio.ProceduralSfx.Refusal()));
             AudioSource.PlayClipAtPoint(_refusalClip, _health.transform.position + Vector3.up, 0.7f);
         }
 
@@ -594,6 +596,10 @@ namespace ItHunts.Hud
         }
 
         /// <summary>Âmes (rouge un instant si un achat est refusé, plus clair à chaque gain) et aide d'interaction.</summary>
+        private ItHunts.Player.PlayerParry _parryDebug;
+        /// <summary>Le menu de porte de la DA (Panneau_Porte) est affiché : l'invite texte s'efface (pas de doublon).</summary>
+        public static bool DoorPanelShown { get; set; }
+
         private void UpdateSouls(float now)
         {
             if (_soulsText == null || _health == null)
@@ -611,8 +617,21 @@ namespace ItHunts.Hud
             var reader = GetComponent<ItHunts.Input.PlayerInputReader>();
             string key = reader != null ? ItHunts.Input.RebindStore.Prompt(reader.InteractAction, reader.UsingGamepad) : "E";   // touche actuelle (A5)
             var focus = _interactor != null ? _interactor.Focus : null;
-            _promptText.text = focus != null ? $"{key} : {focus.Prompt(_health)}" : string.Empty;
-            _promptText.color = refused > 0f ? Color.Lerp(Color.white, new Color(1f, 0.25f, 0.2f), refused) : Color.white;
+            _promptText.text = focus != null && !DoorPanelShown ? $"{key} : {focus.Prompt(_health)}" : string.Empty;
+            Color promptColor = _skin != null ? new Color(0.95f, 0.88f, 0.74f) : Color.white;
+            _promptText.color = refused > 0f ? Color.Lerp(promptColor, new Color(1f, 0.25f, 0.2f), refused) : promptColor;
+            SyncPromptFrame();
+            // Debug de la parade (nuit 3, point 7) : « réussie / ratée de X ms » sous le viseur 2 s, en partie de test seulement.
+            if (_promptText.text.Length == 0 && (ItHunts.Level.RunSession.AdminMode || Application.isEditor))
+            {
+                _parryDebug ??= GetComponent<ItHunts.Player.PlayerParry>();
+                if (_parryDebug != null && now - _parryDebug.State.ResultTime < 2f)
+                {
+                    _promptText.text = _parryDebug.DebugLine;
+                    _promptText.color = _parryDebug.State.LastResult == ItHunts.Combat.ParryResult.Reussie
+                        ? new Color(1f, 0.85f, 0.45f) : new Color(0.9f, 0.6f, 0.55f);
+                }
+            }
         }
 
         /// <summary>Munitions du barillet : un segment par munition ; en rechargement, ils se remplissent ; grisés si inactif.</summary>
@@ -767,6 +786,13 @@ namespace ItHunts.Hud
                 : damageFeedback.smallColor;
             int size = Mathf.RoundToInt(Mathf.Min(settings.damageFontMax, settings.damageFontMin + damageFeedback.numberSizePerDamage * e.Damage));
             Vector3 start = e.Target != null ? Vector3.Lerp(e.Point, e.Target.Top, 0.5f) : e.Point;
+            if (e.Critical)
+            {
+                // Critique (headshot) : chiffre doré, 50 % plus gros (recherche nuit 3).
+                color = new Color(1f, 0.82f, 0.25f);
+                size = Mathf.RoundToInt(size * 1.5f);
+            }
+
             AddNumber(Mathf.CeilToInt(e.Damage).ToString(), start, color, size);
             if (e.Killed)
                 AddNumber("K.O.", start + Vector3.up * 0.5f, damageFeedback.killColor, settings.damageFontMax);
@@ -817,6 +843,9 @@ namespace ItHunts.Hud
                     break;
                 if (d == null || d.Dead || d.ImmuneToOrbs)
                     continue;                                            // le traqueur, intuable, n'a pas de barre de PV
+                // Nuit 3, point 1 : plus de barres vertes partout ; seulement un ennemi blessé, 2.5 s après le coup.
+                if (Time.time - d.LastDamagedAt > 2.5f)
+                    continue;
                 Vector3 top = d.Top + Vector3.up * 0.35f;
                 if (Vector3.Distance(cam.transform.position, top) > damageFeedback.healthBarDistance)
                     continue;
@@ -828,7 +857,7 @@ namespace ItHunts.Hud
                 HealthState h = d.Health;
                 float k = h.Max > 0f ? h.Current / h.Max : 0f;
                 fill.rectTransform.sizeDelta = new Vector2(damageFeedback.healthBarWidth * k, damageFeedback.healthBarHeight);
-                fill.color = Color.Lerp(damageFeedback.bigColor, new Color(0.3f, 1f, 0.3f), k);
+                fill.color = Color.Lerp(new Color(0.55f, 0.06f, 0.05f, 0.95f), new Color(0.85f, 0.2f, 0.12f, 0.95f), k);
                 bar++;
             }
 

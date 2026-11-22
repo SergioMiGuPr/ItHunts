@@ -81,7 +81,7 @@ namespace ItHunts.Artifacts
             _audio = gameObject.AddComponent<AudioSource>();
             _audio.playOnAwake = false;
             _audio.spatialBlend = 0f;
-            _relight = ProceduralSfx.ToClip("Lanterne rallumée", ProceduralSfx.LanternRelight());
+            _relight = ItHunts.Audio.GameAudio.Or(s => s.lanternRelight, ProceduralSfx.ToClip("Lanterne rallumée", ProceduralSfx.LanternRelight()));
             _rng = new System.Random(GetInstanceID());
             // Flamme de la DA (SM_LanterneFeu_Flamme, M_LanterneFeu_Flamme) à la place de la sphère greybox, si elle est là.
             if (lanternRoot != null)

@@ -10,7 +10,7 @@ namespace ItHunts.Enemies
     public static class StalkerStrike
     {
         public static bool Hit(PlayerHealth target, float time) =>
-            target != null && target.Kill(target.Center, time);
+            target != null && target.Kill(target.Center, time, "Le traqueur");
 
         /// <summary>
         /// Prise à la main (D-034) : si la capsule du joueur touche la main (boîte posée sur le point visé), il meurt, quels

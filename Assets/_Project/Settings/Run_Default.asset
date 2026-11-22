@@ -14,19 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.RunDefinition
   menuScene: MainMenu
   levels:
-  - displayName: "Niveau 1 : la cave du ch\xE2teau"
-    sceneName: Level_01_Aleatoire
-  - displayName: Niveau 2
-    sceneName: 
-  - displayName: Niveau 3
-    sceneName: 
-  - displayName: 'Zone finale : fuite et combat final'
-    sceneName: 
+  - displayName: 'Acte I : les caves'
+    sceneName: Acte_1_Caves
+  - displayName: "Acte II : les \xE9tages du ch\xE2teau"
+    sceneName: Acte_2_Chateau
+  - displayName: 'Acte III : le jardin'
+    sceneName: Acte_3_Jardin
+  - displayName: Boss final
+    sceneName: Acte_4_Boss
   difficulties:
   - displayName: Facile
-    description: Niveau 1, puis son combat de boss. Ennemis normaux.
+    description: "Les caves, les \xE9tages du ch\xE2teau, le jardin, puis le traqueur
+      en combat final."
     playable: 1
-    levelCount: 1
+    levelCount: 4
     enemyHealth: 1
     enemyDamage: 1
     enemySpeed: 1
@@ -34,7 +35,7 @@ MonoBehaviour:
   - displayName: Moyenne
     description: Niveaux 1 et 2, ennemis plus forts.
     playable: 0
-    levelCount: 2
+    levelCount: 4
     enemyHealth: 1.4
     enemyDamage: 1.25
     enemySpeed: 1.1

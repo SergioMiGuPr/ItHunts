@@ -207,7 +207,11 @@ namespace ItHunts.Artifacts
                     heldAtTickStart, holdingNow, cfg, dt);
                 LastStep = step;
                 if (step.Fired)
-                    LastShot = BarrelShooter.Fire(eye, aim, cfg, transform, _playerId, Time.time, tick);
+                {
+                    LastShot = BarrelShooter.Fire(eye, aim, cfg, transform, _playerId, Time.time, tick, null, GetComponent<ItHunts.Economy.PlayerUpgrades>());
+                    if (LastShot.RoundsRefill > 0)                       // rechargement sur kill (nuit 3)
+                        _barrel.Rounds = Mathf.Min(cfg.rounds, _barrel.Rounds + LastShot.RoundsRefill);
+                }
             }
             else if (Current is BoneSwordSettings sw)
             {

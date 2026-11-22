@@ -64,8 +64,10 @@ namespace ItHunts.Orbs
                 : transform.position + Vector3.up * 1.6f;
             foreach (Grabbable g in Grabbable.All)
             {
-                if (g.IsEnemy && g.Id != t.HeldId && !(t.AimHit && t.AimId == g.Id))
-                    continue;                                            // ennemi : sa lueur vient de Damageable (étourdi, coups)
+                // Ennemi (volant, goule) : jamais de surbrillance au survol de la visée (nuit 3, point 1) ; sa lueur vient de Damageable
+                // (étourdi, coups), et la couleur de prise seulement quand il est tenu.
+                if (g.IsEnemy && g.Id != t.HeldId)
+                    continue;
                 Color glow;
                 if (g.IsEnemy && g.Id == t.HeldId
                     && Time.time >= g.HeldSince + g.HoldDuration(cfg) - cfg.enemyStruggleWarning)

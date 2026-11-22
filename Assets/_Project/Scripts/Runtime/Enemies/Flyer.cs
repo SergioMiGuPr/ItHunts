@@ -99,8 +99,20 @@ namespace ItHunts.Enemies
                 EyeGlow(false);
         }
 
+
         private void Awake()
         {
+            // Zone de tête (nuit 3, point 6) : entre les deux yeux, sur le corps.
+            Transform le = null, re = null, body = null;
+            foreach (Transform t in GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == "Oeil gauche") le = t;
+                else if (t.name == "Oeil droit") re = t;
+                else if (t.name == "Corps") body = t;
+            }
+
+            if (body != null && le != null && re != null)
+                ItHunts.Combat.Hitbox.AddHead(body, body.InverseTransformPoint((le.position + re.position) * 0.5f), ItHunts.Combat.Hitbox.FlyerHeadRadius);
             _rb = GetComponent<Rigidbody>();
             _body = GetComponent<EnemyBody>();
             _grab = GetComponent<Grabbable>();
@@ -112,8 +124,8 @@ namespace ItHunts.Enemies
             _audio.maxDistance = 35f;
             _audio.rolloffMode = AudioRolloffMode.Linear;
             _audio.playOnAwake = false;
-            _screech = ItHunts.Audio.ProceduralSfx.ToClip("Volant : cri", ItHunts.Audio.ProceduralSfx.FlyerScreech());
-            _pop = ItHunts.Audio.ProceduralSfx.ToClip("Volant : éclatement", ItHunts.Audio.ProceduralSfx.Break());
+            _screech = ItHunts.Audio.GameAudio.Or(s => s.flyerScreech, ItHunts.Audio.ProceduralSfx.ToClip("Volant : cri", ItHunts.Audio.ProceduralSfx.FlyerScreech()));
+            _pop = ItHunts.Audio.GameAudio.Or(s => s.flyerDeath, ItHunts.Audio.ProceduralSfx.ToClip("Volant : éclatement", ItHunts.Audio.ProceduralSfx.Break()));
             var art = ItHunts.Audio.GameAudio.Settings;
             if (art != null && art.flyerWings != null)
             {
@@ -358,7 +370,7 @@ namespace ItHunts.Enemies
                 if (Vector3.Distance(onPlayer, c) > settings.radius + settings.contactRange)
                     continue;
                 DiveHits++;
-                p.TakeEnemyDamage(settings.diveDamage, onPlayer, now);
+                p.TakeEnemyDamage(settings.diveDamage, onPlayer, now, "Piqué d'un volant");
                 Vector3 flat = new Vector3(_velocity.x, 0f, _velocity.z);
                 if (p.Motor != null)
                     p.Motor.AddVelocity((flat.sqrMagnitude > 0.01f ? flat.normalized : Vector3.zero) * settings.divePush);

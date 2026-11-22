@@ -67,16 +67,17 @@ namespace ItHunts.Combat
         private int _nextRing;
         private readonly List<AudioSource> _voices = new List<AudioSource>();
         private MaterialPropertyBlock _block;
-        private AudioClip _hit, _kill;
+        private AudioClip _hit, _hitHeavy, _kill;
         private int _nextFlash, _nextVoice;
 
         private void Awake()
         {
             _block = new MaterialPropertyBlock();
-            _hit = ProceduralSfx.ToClip("Impact", ProceduralSfx.ImpactHit());
-            _kill = ProceduralSfx.ToClip("Ennemi tué", ProceduralSfx.Kill());
-            _break = ProceduralSfx.ToClip("Objet cassé", ProceduralSfx.Break());
-            _stun = ProceduralSfx.ToClip("Étourdi", ProceduralSfx.Stun());
+            _hit = ItHunts.Audio.GameAudio.Or(s => s.impactHit, ProceduralSfx.ToClip("Impact", ProceduralSfx.ImpactHit()));
+            _hitHeavy = ItHunts.Audio.GameAudio.Settings != null ? ItHunts.Audio.GameAudio.Settings.impactHeavy : null;
+            _kill = ItHunts.Audio.GameAudio.Or(s => s.enemyKill, ProceduralSfx.ToClip("Ennemi tué", ProceduralSfx.Kill()));
+            _break = ItHunts.Audio.GameAudio.Or(s => s.objectBreak, ProceduralSfx.ToClip("Objet cassé", ProceduralSfx.Break()));
+            _stun = ItHunts.Audio.GameAudio.Or(s => s.stun, ProceduralSfx.ToClip("Étourdi", ProceduralSfx.Stun()));
             for (int i = 0; i < 10; i++)
                 _coneRings.Add(new ConeRing { Line = NewLine($"Onde de répulsion (anneau {i})", RingPoints, true) });
             for (int i = 0; i < _coneEdges.Length; i++)
@@ -312,7 +313,7 @@ namespace ItHunts.Combat
             else if (vfx != null && vfx.parry != null)
                 GameVfx.Spawn(vfx.parry, at, Quaternion.identity, 1f, null, 1.5f);
             if (_parryClip == null)
-                _parryClip = ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry());
+                _parryClip = ItHunts.Audio.GameAudio.Or(s => s.parrySuccess, ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry()));
             if (vfx != null && vfx.parry != null)
             {
                 Play(_parryClip, at, cfg != null ? cfg.volume : 0.8f, Random.Range(0.96f, 1.04f));
@@ -326,7 +327,7 @@ namespace ItHunts.Combat
             f.Color = cfg != null ? cfg.flashColor : new Color(3f, 2.6f, 1.4f, 1f);
             f.Transform.position = at;
             if (_parryClip == null)
-                _parryClip = ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry());
+                _parryClip = ItHunts.Audio.GameAudio.Or(s => s.parrySuccess, ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry()));
             Play(_parryClip, at, cfg != null ? cfg.volume : 0.8f, Random.Range(0.96f, 1.04f));
         }
 
@@ -409,7 +410,7 @@ namespace ItHunts.Combat
 
             // Son 3D au point d'impact : plus grave pour un objet lourd, plus fort pour un gros coup.
             float heavy = Mathf.InverseLerp(5f, 40f, e.SourceMass);
-            Play(_hit, e.Point, settings.hitVolume * Mathf.Lerp(0.5f, 1f, Mathf.InverseLerp(0f, 60f, e.Damage)),
+            Play(_hitHeavy != null && e.SourceMass >= 15f ? _hitHeavy : _hit, e.Point, settings.hitVolume * Mathf.Lerp(0.5f, 1f, Mathf.InverseLerp(0f, 60f, e.Damage)),
                 Mathf.Lerp(settings.hitPitchLight, settings.hitPitchHeavy, heavy));
             if (e.Killed)
             {
