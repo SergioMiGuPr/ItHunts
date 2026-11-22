@@ -8,6 +8,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", "..", ".."))
 js, kit, pref, titre, intro = sys.argv[1:6]
 M = json.load(open(os.path.join(HERE, js), encoding="utf-8"))
+if intro.startswith("@"):
+    intro = open(os.path.join(HERE, intro[1:]), encoding="utf-8").read().strip()
 
 lignes = [f"## {titre}", "", intro, "",
           f"Modèles `Assets/Art/Models/{kit}/`, prefabs `Assets/Art/Prefabs/{kit}/` (collisions : maillage pour l'architecture, "
@@ -29,7 +31,7 @@ s = open(p, encoding="utf-8").read() if os.path.exists(p) else (
     "Modélisés par script dans Blender (aucune génération IA, aucun crédit). Architecture en **UV monde** : les matériaux\n"
     "de la bibliothèque (`M_Bib_*`, docs/art/MATERIAUX.md) s'appliquent sans dépliage ; **peinture de sommets** sur chaque pièce\n"
     "(R saleté en bas, G mousse ou salpêtre en plaques, B teinte de la pièce) lue par les matériaux `*_Peint`. Conventions : Unity\n"
-    "+Y en haut, avant de la pièce vers −Z (face visible vers −Z pour les murs et les objets muraux), pivot au sol au centre de\n"
+    "+Y en haut, face visible de la pièce vers **+Z** (dos des murs et des objets muraux vers −Z, contre le mur), pivot au sol au centre de\n"
     "l'emprise sauf mention, 1 unité = 1 m, échelle du jeu (joueur 1.8 m, traqueur 14 m, portes des modules 8 × 10 m).\n"
     "Matériaux en double face (surfaces ouvertes). Repères vides exportés : `Feu*` (flammes), `Accroche_*` (points de gameplay).\n"
     "Lumières : torches à l'ambiance intermédiaire du jeu (1.35 / 15.4 m, orangé (1, 0.6, 0.32)), bougies 0.6 / 5 m ; pour que\n"

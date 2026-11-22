@@ -50,7 +50,7 @@ public static class KitBuilder
         Plat("M_Kit_Cire", new Color(0.78f, 0.72f, 0.58f));
         Plat("M_Kit_Flamme", new Color(1f, 0.8f, 0.5f), new Color(4f, 1.6f, 0.45f), true);
         Plat("M_Kit_Toile", new Color(0.36f, 0.3f, 0.24f));
-        Plat("M_Kit_Vitrail", new Color(0.12f, 0.14f, 0.2f), new Color(0.25f, 0.3f, 0.45f), true);
+        Plat("M_Kit_Vitrail", new Color(0.05f, 0.06f, 0.09f), new Color(0.07f, 0.09f, 0.16f), true);
         Plat("M_Kit_Feuillage", new Color(0.10f, 0.13f, 0.09f), null, true);
         Plat("M_Kit_Toile_Peinte", new Color(0.16f, 0.12f, 0.12f));
         Plat("M_Kit_Lune", new Color(0.9f, 0.92f, 1f), new Color(2.2f, 2.3f, 2.6f));
@@ -135,8 +135,9 @@ public static class KitBuilder
                     l.type = LightType.Point;
                     l.color = new Color(1f, 0.6f, 0.32f);
                     // torches : ambiance intermédiaire du jeu (1.35 / 15.4 m, Ambiance_Intermediaire) ; bougies : petit halo chaud
-                    l.intensity = grand ? (nom.Contains("Brasero") ? 1.8f : 1.35f) : 0.6f;
-                    l.range = grand ? (nom.Contains("Brasero") ? 16f : 15.4f) : 5f;
+                    l.intensity = grand ? (nom.Contains("Brasero") ? 1.8f : 1.35f) : nom.Contains("Chandelier") ? 1.6f : 0.6f;
+                    l.range = grand ? (nom.Contains("Brasero") ? 16f : 15.4f) : nom.Contains("Chandelier") ? 18f : 5f;
+                    if (nom.Contains("Chandelier")) l.transform.position = go.transform.position + new Vector3(0, t.position.y - go.transform.position.y - 0.3f, 0);
                     l.shadows = grand ? LightShadows.Soft : LightShadows.None;
                     l.renderMode = LightRenderMode.Auto;
                 }
@@ -145,8 +146,129 @@ public static class KitBuilder
             Object.DestroyImmediate(go);
             sb.Append(nom.Replace("SM_", "")).Append(' ');
         }
+        if (kit == "KitChateau") sb.Append(RayonLune());
         AssetDatabase.SaveAssets();
         return "ok " + sb;
+    }
+
+    // ---------------------------------------------------------------- rayon de lune et poussière
+    static Texture2D Point()
+    {
+        Dossier("Assets/Art/Textures/Kits");
+        const string p = "Assets/Art/Textures/Kits/T_Kit_Point.png";
+        if (!File.Exists(p))
+        {
+            var t = new Texture2D(64, 64, TextureFormat.RGBA32, false);
+            for (int y = 0; y < 64; y++)
+                for (int x = 0; x < 64; x++)
+                {
+                    float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), new Vector2(32, 32)) / 32f;
+                    float a = d < 0.45f ? 1f : d < 0.8f ? 0.45f : d < 1f ? 0.12f : 0f;   // disque en trois aplats
+                    t.SetPixel(x, y, new Color(1, 1, 1, a));
+                }
+            File.WriteAllBytes(p, t.EncodeToPNG());
+            Object.DestroyImmediate(t);
+            AssetDatabase.ImportAsset(p);
+            var ti = (TextureImporter)AssetImporter.GetAtPath(p);
+            ti.alphaIsTransparency = true; ti.wrapMode = TextureWrapMode.Clamp; ti.mipmapEnabled = true;
+            ti.SaveAndReimport();
+        }
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(p);
+    }
+
+    public static Material Lumiere(string nom, Color c, float intens, bool rayon, Texture2D tex)
+    {
+        Dossier(MATKIT);
+        var path = $"{MATKIT}/{nom}.mat";
+        var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (m == null) { m = new Material(Shader.Find("ItHunts/Lumiere")); AssetDatabase.CreateAsset(m, path); }
+        m.shader = Shader.Find("ItHunts/Lumiere");
+        m.SetColor("_Color", c); m.SetFloat("_Intensity", intens); m.SetFloat("_Rayon", rayon ? 1 : 0);
+        if (tex) m.SetTexture("_MainTex", tex);
+        m.SetFloat("_Steps", rayon ? 3 : 0);
+        EditorUtility.SetDirty(m);
+        return m;
+    }
+
+    // Poussière blanc-gris en suspension dans un volume (boîte locale « taille »), qui dérive lentement.
+    public static ParticleSystem Poussiere(Transform parent, Vector3 centre, Vector3 taille, Quaternion rot, int nombre)
+    {
+        var go = new GameObject("Poussiere");
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = centre; go.transform.localRotation = rot;
+        var ps = go.AddComponent<ParticleSystem>();
+        var main = ps.main;
+        main.loop = true; main.prewarm = true; main.playOnAwake = true;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(6f, 10f);
+        main.startSpeed = 0f;
+        main.startSize = new ParticleSystem.MinMaxCurve(0.025f, 0.06f);
+        main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.82f, 0.82f, 0.8f, 0.9f), new Color(0.62f, 0.62f, 0.6f, 0.6f));
+        main.maxParticles = nombre;
+        main.simulationSpace = ParticleSystemSimulationSpace.Local;
+        var em = ps.emission; em.rateOverTime = nombre / 8f;
+        var sh = ps.shape; sh.shapeType = ParticleSystemShapeType.Box; sh.scale = taille;
+        var no = ps.noise; no.enabled = true; no.strength = 0.08f; no.frequency = 0.25f; no.scrollSpeed = 0.05f;
+        var vel = ps.velocityOverLifetime; vel.enabled = true; vel.space = ParticleSystemSimulationSpace.World;
+        vel.x = new ParticleSystem.MinMaxCurve(-0.02f, 0.02f); vel.y = new ParticleSystem.MinMaxCurve(-0.03f, 0.01f); vel.z = new ParticleSystem.MinMaxCurve(-0.02f, 0.02f);
+        var col = ps.colorOverLifetime; col.enabled = true;
+        var g = new Gradient();
+        g.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) },
+                  new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(1, 0.2f), new GradientAlphaKey(1, 0.8f), new GradientAlphaKey(0, 1) });
+        col.color = g;
+        var r = go.GetComponent<ParticleSystemRenderer>();
+        r.sharedMaterial = Lumiere("M_Kit_Poussiere", new Color(0.85f, 0.85f, 0.82f), 1.2f, false, Point());
+        r.shadowCastingMode = ShadowCastingMode.Off; r.receiveShadows = false;
+        return ps;
+    }
+
+    // Rayon de lune : volume en tronc de pyramide de la fenêtre (origine) vers le sol, projecteur de lune, poussière.
+    static string RayonLune()
+    {
+        Dossier("Assets/Art/Models/KitChateau");
+        float L = 18f;
+        var dir = new Vector3(0, -0.82f, 0.57f).normalized;
+        Vector3 bas = dir * L;
+        // tronc de cône elliptique à 20 côtés : le fondu des bords (normale vue de biais) adoucit le volume sans arête
+        float w0 = 1.5f, d0 = 0.4f, w1 = 2.8f, d1 = 2.2f;
+        var v = new List<Vector3>(); var uv = new List<Vector2>(); var tri = new List<int>(); var nr = new List<Vector3>();
+        int n = 20;
+        for (int i = 0; i <= n; i++)
+        {
+            float a = 2 * Mathf.PI * i / n, c = Mathf.Cos(a), s = Mathf.Sin(a);
+            var pt = new Vector3(c * w0, 0, s * d0);
+            var pb = bas + new Vector3(c * w1, 0, s * d1);
+            var nn = new Vector3(c / w1, 0, s / d1).normalized;
+            v.Add(pt); v.Add(pb); nr.Add(nn); nr.Add(nn);
+            uv.Add(new Vector2((float)i / n, 0)); uv.Add(new Vector2((float)i / n, 1));
+        }
+        for (int i = 0; i < n; i++)
+        {
+            int k = i * 2;
+            tri.AddRange(new[] { k, k + 2, k + 1, k + 1, k + 2, k + 3 });
+        }
+        var mesh = new Mesh { name = "SM_Chateau_RayonLune" };
+        mesh.SetVertices(v); mesh.SetUVs(0, uv); mesh.SetNormals(nr); mesh.SetTriangles(tri, 0); mesh.RecalculateBounds();
+        const string mp = "Assets/Art/Models/KitChateau/SM_Chateau_RayonLune.asset";
+        var old = AssetDatabase.LoadAssetAtPath<Mesh>(mp);
+        if (old != null) { old.Clear(); EditorUtility.CopySerialized(mesh, old); mesh = old; } else AssetDatabase.CreateAsset(mesh, mp);
+        var go = new GameObject("Chateau_RayonLune");
+        var vol = new GameObject("Rayon");
+        vol.transform.SetParent(go.transform, false);
+        vol.AddComponent<MeshFilter>().sharedMesh = mesh;
+        var mr = vol.AddComponent<MeshRenderer>();
+        var mrl = Lumiere("M_Kit_RayonLune", new Color(0.62f, 0.66f, 0.74f), 0.16f, true, null);
+        mrl.SetFloat("_Steps", 0); mrl.SetFloat("_EdgeSoft", 3f); mrl.SetFloat("_FadeLength", 0.8f);
+        mr.sharedMaterial = mrl;
+        mr.shadowCastingMode = ShadowCastingMode.Off; mr.receiveShadows = false;
+        var spot = new GameObject("Lune_Projecteur").AddComponent<Light>();
+        spot.transform.SetParent(go.transform, false);
+        spot.transform.localRotation = Quaternion.LookRotation(dir);
+        spot.type = LightType.Spot; spot.color = new Color(0.62f, 0.7f, 1f); spot.intensity = 4f; spot.range = L * 1.5f;
+        spot.spotAngle = 22f; spot.innerSpotAngle = 12f; spot.shadows = LightShadows.Soft;
+        Poussiere(go.transform, bas * 0.5f, new Vector3(3.5f, 1.6f, L * 0.9f), Quaternion.LookRotation(dir), 260);
+        PrefabUtility.SaveAsPrefabAsset(go, "Assets/Art/Prefabs/KitChateau/Chateau_RayonLune.prefab");
+        Object.DestroyImmediate(go);
+        return "Chateau_RayonLune ";
     }
 
     // ---------------------------------------------------------------- scène vitrine
@@ -181,7 +303,10 @@ public static class KitBuilder
     {
         string PRE = $"Assets/Art/Prefabs/{kit}";
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-        Eclairage(new Color(0.055f, 0.058f, 0.080f), new Color(0.012f, 0.014f, 0.024f), 10, 85, 0.25f, new Vector3(40, 30, 0));
+        // acte I : réglage intermédiaire ; acte II un peu plus éclairé (lune par les fenêtres) ; acte III dehors sous la lune
+        if (kit == "KitChateau") Eclairage(new Color(0.07f, 0.075f, 0.10f), new Color(0.016f, 0.018f, 0.03f), 14, 110, 0.35f, new Vector3(40, 30, 0));
+        else if (kit == "KitJardin") Eclairage(new Color(0.08f, 0.09f, 0.12f), new Color(0.03f, 0.035f, 0.055f), 18, 140, 0.55f, new Vector3(32, 35, 0));
+        else Eclairage(new Color(0.055f, 0.058f, 0.080f), new Color(0.012f, 0.014f, 0.024f), 10, 85, 0.25f, new Vector3(40, 30, 0));
         var root = new GameObject("Vitrine_" + kit).transform;
         var prefabs = Directory.GetFiles(PRE, "*.prefab").Select(p => AssetDatabase.LoadAssetAtPath<GameObject>(p.Replace("\\", "/"))).ToList();
         var items = new List<(GameObject pf, Bounds b)>();
@@ -270,13 +395,13 @@ public static class KitBuilder
             // pièces qui plongent sous le sol (gouffre, piles du pont) : on cadre la partie au-dessus de -4 m
             if (b.max.y - b.min.y > 14f && b.min.y < 1f && t.name.Contains("Gouffre")) { var mx = b.max; var mn = b.min; mn.y = mx.y - 12f; b.SetMinMax(mn, mx); }
             float s = Mathf.Max(b.size.x, b.size.y * 1.1f, b.size.z);
-            var dir = new Vector3(-0.55f, 0.35f, -1f).normalized;
+            var dir = new Vector3(-0.55f, 0.35f, 1f).normalized;   // les pièces regardent vers +Z (avant Blender -Y)
             cam.transform.position = b.center + dir * (s * 1.15f + 1.2f);
             cam.transform.LookAt(b.center);
             // une torche du jeu près de la pièce, côté caméra (comme une torche murale voisine)
-            lum.transform.position = b.center + new Vector3(-s * 0.5f - 1f, s * 0.35f + 1.5f, -s * 0.6f - 1f);
+            lum.transform.position = b.center + new Vector3(-s * 0.5f - 1f, s * 0.35f + 1.5f, s * 0.6f + 1f);
             lum.range = Mathf.Max(15.4f, s * 1.6f);
-            froid.transform.position = b.center + new Vector3(s * 0.7f + 1f, s * 0.6f + 2f, s * 0.9f + 2f);
+            froid.transform.position = b.center + new Vector3(s * 0.7f + 1f, s * 0.6f + 2f, -s * 0.9f - 2f);
             froid.range = Mathf.Max(14f, s * 2.2f);
             Shot(cam, Path.Combine(dossier, t.name + ".jpg"), 480, 480);
             sb.Append(t.name).Append(' ');

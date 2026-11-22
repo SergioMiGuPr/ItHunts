@@ -389,7 +389,7 @@ def _maillons(k, a, b, n, s=0.06):
 @piece
 def SM_Cave_Chaines_Mur():
     """Chaînes murales de prisonnier : plaque d'ancrage à 1.9 m, deux chaînes qui pendent en U vers des fers ouverts.
-    À poser **contre un mur de cellule** (dos de la pièce à y = 0, face vers -Y)."""
+    À poser **contre un mur de cellule** (dos de la pièce contre le mur, face vers +Z dans Unity)."""
     k = K("SM_Cave_Chaines_Mur")
     k.box((0, -0.04, 1.9), (0.5, 0.08, 0.3), FER)
     for sx in (-1, 1):
