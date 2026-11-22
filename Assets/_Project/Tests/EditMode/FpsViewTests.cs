@@ -438,7 +438,7 @@ namespace ItHunts.Tests
             Assert.That(System.Enum.GetValues(typeof(ItHunts.Level.VitrineFlyerState)).Length, Is.EqualTo(5));
             Assert.That(ItHunts.Level.MainMenu.VitrineScene, Is.EqualTo("Test_Vitrine"));
             string menu = System.IO.File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/MainMenu.cs");
-            Assert.That(menu.Contains("\"Playtest : vitrine\""), Is.True);
+            Assert.That(menu.Contains("VitrineLabel = \"Vitrine\""), Is.True);
             // Retours du 2026-11-18 : lien « Vitrine (test) » sur l'écran titre (développement seulement) et F2 qui lance la vitrine.
             Assert.That(menu.Contains("\"Vitrine (test) (F2)\""), Is.True, "lien de l'écran titre");
             Assert.That(menu.Contains("f2Key.wasPressedThisFrame)\n                OpenVitrine();") || menu.Contains("f2Key.wasPressedThisFrame)\r\n                OpenVitrine();"), Is.True, "F2 lance la vitrine");

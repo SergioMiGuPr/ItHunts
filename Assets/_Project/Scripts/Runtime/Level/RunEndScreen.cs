@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using ItHunts.Hud;
 using ItHunts.Player;
 using UnityEngine;
@@ -7,8 +9,10 @@ using UnityEngine.SceneManagement;
 namespace ItHunts.Level
 {
     /// <summary>
-    /// Écran de fin greybox (D-048) : mort du dernier joueur (solo : mort = fin de la run) ou victoire. Bilan court, puis Menu
-    /// principal (ou Rejouer). Le jeu n'est pas mis en pause. Refait à l'étape 10.
+    /// Écran de fin de run (nuit 3, point 3), sur une mort comme sur une victoire, inspiré des roguelites (Risk of Rain 2, Hades,
+    /// Dead Cells) : temps survécu, acte atteint, morts par type, âmes gagnées et dépensées, améliorations, artefact, caisses lancées,
+    /// headshots, parades, distance, vitesse maximale, cause de la mort. Puis retour au campement (ou nouvelle run tout de suite).
+    /// Logique ici ; vue de la DA : RunEndScreenArt (assembly Menus), repli greybox sinon.
     /// </summary>
     public sealed class RunEndScreen : MonoBehaviour
     {
@@ -16,7 +20,17 @@ namespace ItHunts.Level
         private string _title, _text;
 
         public static RunEndScreen Current { get; private set; }
+        public static event System.Action<RunEndScreen> Created;
         public bool Victory { get; private set; }
+        public string Title => _title;
+        public string Summary => _text;
+        public GreyboxMenu Menu => _menu;
+        /// <summary>Habillé par la DA (pas de repli greybox).</summary>
+        public bool Skinned { get; set; }
+        /// <summary>Lignes du bilan (libellé, valeur), dans l'ordre d'affichage.</summary>
+        public List<(string label, string value)> Lines { get; private set; } = new List<(string, string)>();
+        /// <summary>Phrase d'accroche (cause de la mort ou victoire).</summary>
+        public string Headline { get; private set; } = "";
 
         /// <summary>Affiche l'écran (une seule fois par scène).</summary>
         public static RunEndScreen Show(bool victory, string summary)
@@ -28,20 +42,69 @@ namespace ItHunts.Level
             s.Victory = victory;
             s._title = victory ? "Victoire" : "Mort";
             s._text = summary;
-            string scene = SceneManager.GetActiveScene().name;
-            s._menu.Add("Menu principal", () => s.ToMenu());
-            s._menu.Add("Rejouer", () => s.Replay(scene));
+            s.Fill();
+            s._menu.Add("Retour au campement", () => s.ToCamp());
+            s._menu.Add("Nouvelle run", () => s.Replay());
             s._menu.FocusFirst();
             Current = s;
             PlayerLook.MenuOpen = true;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
             foreach (PlayerInput pi in FindObjectsByType<PlayerInput>(FindObjectsSortMode.None))
                 pi.DeactivateInput();
+            Created?.Invoke(s);
             return s;
         }
 
-        private void Update() => _menu.Update();
+        public static string Clock(float seconds)
+        {
+            int s = Mathf.FloorToInt(seconds);
+            return $"{s / 60}:{s % 60:00}";
+        }
 
-        private void OnGUI() => _menu.Draw(_title, _text);
+        private void Fill()
+        {
+            string act = RunSession.Active && RunSession.Definition != null && RunSession.Act < RunSession.Definition.levels.Count
+                ? RunSession.Definition.levels[RunSession.Act].displayName : SceneManager.GetActiveScene().name;
+            Headline = Victory ? "Le traqueur est tombé. La run est gagnée." : string.IsNullOrEmpty(RunStats.DeathCause)
+                ? "Tu es mort." : $"Tué par : {RunStats.DeathCause.ToLowerInvariant()}";
+            Lines.Clear();
+            Lines.Add(("Temps survécu", Clock(RunStats.TimeSurvived)));
+            Lines.Add(("Acte atteint", act));
+            string kills = RunStats.Kills.Count == 0 ? "aucun" : string.Join(", ", RunStats.Kills.OrderByDescending(k => k.Value).Select(k => $"{k.Key} {k.Value}"));
+            Lines.Add(("Ennemis tués", $"{RunStats.TotalKills}  ({kills})"));
+            Lines.Add(("Âmes gagnées / dépensées", $"{RunStats.SoulsGained} / {RunStats.SoulsSpent}"));
+            var run = ItHunts.Artifacts.RunState.Current;
+            var owned = new List<string>();
+            if (run != null)
+                foreach (PlayerHealth p in PlayerHealth.All)
+                    if (p != null)
+                        owned.AddRange(run.UpgradesOf(p.PlayerId).Where(u => u != null).Select(u => u.displayName));
+            Lines.Add(("Améliorations", owned.Count == 0 ? "aucune" : $"{owned.Count} : {string.Join(", ", owned.GroupBy(x => x).Select(g => g.Count() > 1 ? $"{g.Key} ×{g.Count()}" : g.Key))}"));
+            Lines.Add(("Artefact", string.IsNullOrEmpty(RunStats.Artifact) ? "—" : RunStats.Artifact));
+            Lines.Add(("Caisses lancées", RunStats.CratesThrown.ToString()));
+            Lines.Add(("Headshots", RunStats.Headshots.ToString()));
+            Lines.Add(("Parades réussies", RunStats.Parries.ToString()));
+            Lines.Add(("Distance parcourue", RunStats.Distance >= 1000f ? $"{RunStats.Distance / 1000f:0.0} km" : $"{RunStats.Distance:0} m"));
+            Lines.Add(("Vitesse maximale", $"{RunStats.MaxSpeed:0.0} m/s ({RunStats.MaxSpeed * 3.6f:0} km/h)"));
+            if (RunStats.ActTimes.Count > 0)
+                Lines.Add(("Durée des actes", string.Join(" · ", RunStats.ActTimes.Select(a => $"{a.act} {Clock(a.seconds)}"))));
+            Lines.Add(("Cause de la mort", Victory ? "—" : string.IsNullOrEmpty(RunStats.DeathCause) ? "inconnue" : RunStats.DeathCause));
+        }
+
+        private void Update()
+        {
+            if (!Skinned)
+                _menu.Update();
+        }
+
+        private void OnGUI()
+        {
+            if (Skinned)
+                return;
+            string body = Headline + "\n" + string.Join("\n", Lines.Select(l => $"{l.label} : {l.value}"));
+            _menu.Draw(_title, body);
+        }
 
         private void OnDestroy()
         {
@@ -52,25 +115,33 @@ namespace ItHunts.Level
             }
         }
 
-        private void ToMenu()
+        /// <summary>Retour au campement (menu principal, page du campement) : on relance une run d'un clic.</summary>
+        public void ToCamp()
         {
             string menu = RunSession.MenuScene;
             RunSession.End();
+            MainMenu.StartAtCamp = true;
             if (!RunSession.Load(menu))
-                Replay(SceneManager.GetActiveScene().name);
+            {
+                MainMenu.StartAtCamp = false;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
         }
 
-        /// <summary>Rejouer : la run recommence au niveau 1 si elle venait du menu, sinon la scène est rechargée.</summary>
-        private void Replay(string scene)
+        /// <summary>Nouvelle run tout de suite : même difficulté, depuis l'acte I (playtest : même acte de départ).</summary>
+        public void Replay()
         {
             if (RunSession.Active)
             {
-                string first = RunSession.Begin(RunSession.Definition, RunSession.DifficultyIndex);
+                bool admin = RunSession.AdminMode;
+                int act = admin ? RunSession.StartAct : 0;
+                string first = RunSession.BeginAt(RunSession.Definition, RunSession.DifficultyIndex, act);
+                RunSession.AdminMode = admin;
                 if (RunSession.Load(first))
                     return;
             }
 
-            SceneManager.LoadScene(scene);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace ItHunts.Level
     /// ZoneNavMesh), départ des joueurs et repaire du traqueur. Tout est déterministe à partir de la seed (jeu en ligne).
     /// </summary>
     [DefaultExecutionOrder(-1000)]
-    public sealed class RandomLevel : MonoBehaviour
+    public sealed class RandomLevel : MonoBehaviour, ILevelLoading
     {
         private const float T = 1f;                       // épaisseur des murs
         /// <summary>Décalage des modèles posés sur une surface du kit (pont d'égout) : pas deux faces au même endroit.</summary>
@@ -131,6 +131,7 @@ namespace ItHunts.Level
         /// <summary>Avancement du chargement (0..1) et étape en cours (écran de chargement).</summary>
         public float Progress { get; private set; }
         public string Stage { get; private set; } = "";
+        public string Title => "Les caves du château";
         public bool Loading { get; private set; }
         /// <summary>Durée totale du chargement (de l'Awake au jeu actif, NavMesh compris), en secondes réelles.</summary>
         public float LoadSeconds { get; private set; }
@@ -153,7 +154,7 @@ namespace ItHunts.Level
             float t0 = Time.realtimeSinceStartup;
             Loading = true;
             var screen = new GameObject("Écran de chargement").AddComponent<LoadingScreen>();
-            screen.Level = this;
+            screen.Source = this;
             yield return null;
             System.Collections.IEnumerator build = Build(seed, true);
             while (build.MoveNext())

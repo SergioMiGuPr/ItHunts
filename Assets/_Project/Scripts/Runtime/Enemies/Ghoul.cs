@@ -795,7 +795,7 @@ namespace ItHunts.Enemies
                         break;
                     }
 
-                    if (p.TakeEnemyDamage(settings.leapDamage, p.Center, now))
+                    if (p.TakeEnemyDamage(settings.leapDamage, p.Center, now, "Bond d'une goule"))
                         _nextContact = now + settings.contactInterval;
                     Vector3 push = flat.sqrMagnitude > 0.01f ? flat.normalized * settings.leapPush : Vector3.zero;
                     if (p.Motor != null)
@@ -1235,7 +1235,7 @@ namespace ItHunts.Enemies
                 else if (now - _pendingImpact >= ItHunts.Player.PlayerParry.LateWindowOf(p))
                 {
                     _pendingHit = null;
-                    p.TakeEnemyDamage(settings.contactDamage, p.Center, now);
+                    p.TakeEnemyDamage(settings.contactDamage, p.Center, now, "Griffes d'une goule");
                 }
 
                 return;
@@ -1257,7 +1257,7 @@ namespace ItHunts.Enemies
                         _pendingImpact = now;
                     }
                     else
-                        target.TakeEnemyDamage(settings.contactDamage, target.Center, now);
+                        target.TakeEnemyDamage(settings.contactDamage, target.Center, now, "Griffes d'une goule");
                 }
 
                 return;

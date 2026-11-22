@@ -58,6 +58,9 @@ namespace ItHunts.Menus
         private Image _veil, _mist;
 
         public MainMenu Menu => _menu;
+        private ArtMenuScreen _playtest;
+        /// <summary>Écran Playtest de la DA (tests).</summary>
+        public GameObject PlaytestScreen => _playtest?.Root;
         public GameObject TitleScreen => _title;
         public GameObject CampScreen => _camp;
         public GameObject ChoiceScreen => _choice;
@@ -102,6 +105,8 @@ namespace ItHunts.Menus
             BuildCamp();
             BuildChoice();
             BuildSettings();
+            if (_skin.settingsScreen != null)
+                _playtest = ArtMenuScreen.Create(_skin.settingsScreen, Page("Playtest"), "Menu_Playtest", "Playtest");
             BuildTransition();
             BuildTexts();
             menu.Skinned = true;
@@ -294,6 +299,7 @@ namespace ItHunts.Menus
                 SyncCamp(page == MainMenu.Page.Campement && _menu.Pick == null);
             SyncChoice();
             SyncSettings(page == MainMenu.Page.Parametres);
+            _playtest?.Sync(_menu.PlaytestMenu, _cam, page == MainMenu.Page.Playtest);
             SyncTransition();
             bool devLinks = MainMenu.PlaytestVisible && page == MainMenu.Page.Titre;
             _vitrineLink.gameObject.SetActive(devLinks);

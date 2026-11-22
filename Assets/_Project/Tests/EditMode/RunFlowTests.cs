@@ -167,7 +167,7 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void PlaytestCombatDeBoss_EntreeDuMenu_EtCombatLanceAuChargement()
+        public void Playtest_SeulementVitrineEtChoisirLActe_QuiLanceLaRunALActeEnModeAdmin()
         {
             var go = new GameObject("Menu (test)");
             try
@@ -176,20 +176,32 @@ namespace ItHunts.Tests
                 typeof(MainMenu).GetField("run", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(menu, _def);
                 menu.Build();
                 var items = (ItHunts.Hud.GreyboxMenu)typeof(MainMenu).GetField("_menu", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(menu);
-                ItHunts.Hud.GreyboxMenu.Item boss = items.Items.Find(it => it.Label == "Playtest : combat de boss");
-                Assert.That(boss, Is.Not.Null, "entrée du menu principal");
-                Assert.That(boss.Enabled && boss.Submit != null, Is.True);
+                // Nuit 3, point 2 : toutes les entrées de playtest retirées sauf la vitrine ; « Choisir l'acte » (◄ ►) ajouté.
+                CollectionAssert.AreEqual(new[] { MainMenu.ChooseActLabel, MainMenu.VitrineLabel, "Retour" }, items.Items.ConvertAll(i => i.Label));
+                ItHunts.Hud.GreyboxMenu.Item act = items.Items[0];
+                Assert.That(act.Value(), Is.EqualTo("Acte I"));
+                act.Change(1);
+                Assert.That(act.Value(), Is.EqualTo("Acte II"));
+                act.Change(1);
+                act.Change(1);
+                Assert.That(act.Value(), Is.EqualTo("Boss final"));
+                act.Change(1);
+                Assert.That(act.Value(), Is.EqualTo("Acte I"), "les flèches bouclent sur les 4 choix");
             }
             finally
             {
                 Object.DestroyImmediate(go);
-                RunSession.BossPlaytest = false;
+                RunSession.ResetForTests();
             }
 
-            // Le niveau 1 a un combat de boss qui lit le drapeau au chargement ; la touche Page bas y mène en jeu.
-            string fight = File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/BossFight.cs");
-            Assert.That(fight.Contains("RunSession.BossPlaytest"), Is.True);
-            Assert.That(File.ReadAllText("Assets/_Project/Scripts/Runtime/Enemies/ZoneState.cs").Contains("pageDownKey"), Is.True);
+            // BeginAt : la run démarre à l'acte voulu, stuff vide ; Jouer remet le mode admin à faux.
+            Assert.That(RunSession.BeginAt(_def, 0, 0), Is.Not.Null);
+            Assert.That(RunSession.Act, Is.EqualTo(0));
+            Assert.That(RunSession.Carry, Is.Null);
+            RunSession.End();
+            Assert.That(RunSession.AdminMode, Is.False, "fin de run : plus de mode admin");
+            string mainMenu = File.ReadAllText("Assets/_Project/Scripts/Runtime/Level/MainMenu.cs");
+            Assert.That(mainMenu.Contains("RunSession.AdminMode = false;"), Is.True, "Jouer : partie normale, jamais de panneau admin");
         }
     }
 }

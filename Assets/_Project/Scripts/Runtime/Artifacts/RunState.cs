@@ -125,7 +125,65 @@ namespace ItHunts.Artifacts
             if (_started)
                 return;
             _started = true;
+            RunCarry carry = ItHunts.Level.RunSession.Active ? ItHunts.Level.RunSession.Carry : null;
+            if (carry != null)
+            {
+                Restore(carry);                                                   // acte suivant : même run, même stuff
+                return;
+            }
+
             NewRun(randomSeed ? (int?)null : seed);
+            if (ItHunts.Level.RunSession.Active)
+                ItHunts.Level.RunSession.Carry = Snapshot();                      // la seed de la run reste celle du premier acte
+        }
+
+        /// <summary>Stuff de la run à cet instant (passage d'un acte à l'autre).</summary>
+        public RunCarry Snapshot()
+        {
+            var c = new RunCarry { Seed = Seed, Draws = _draws };
+            foreach (KeyValuePair<int, int> kv in _souls)
+                c.Souls[kv.Key] = kv.Value;
+            foreach (KeyValuePair<int, List<UpgradeDefinition>> kv in _owned)
+                c.Owned[kv.Key] = new List<UpgradeDefinition>(kv.Value);
+            foreach (KeyValuePair<(int, ItHunts.Economy.PriceKind), int> kv in _purchases)
+                c.Purchases[kv.Key] = kv.Value;
+            return c;
+        }
+
+        public void Restore(RunCarry c)
+        {
+            Seed = c.Seed;
+            _draws = c.Draws;
+            _souls.Clear();
+            _owned.Clear();
+            _purchases.Clear();
+            foreach (KeyValuePair<int, int> kv in c.Souls)
+                _souls[kv.Key] = kv.Value;
+            foreach (KeyValuePair<int, List<UpgradeDefinition>> kv in c.Owned)
+                _owned[kv.Key] = new List<UpgradeDefinition>(kv.Value);
+            foreach (KeyValuePair<(int, ItHunts.Economy.PriceKind), int> kv in c.Purchases)
+                _purchases[kv.Key] = kv.Value;
+            Debug.Log($"Run : seed {Seed}, stuff repris ({_souls.Count} joueurs)");
+            _reapply = true;
+        }
+
+        private bool _reapply;
+
+        /// <summary>Acte suivant : les effets des améliorations reprises sont réappliqués aux nouveaux joueurs dès qu'ils existent.</summary>
+        private void Update()
+        {
+            if (!_reapply || ItHunts.Player.PlayerHealth.All.Count == 0)
+                return;
+            _reapply = false;
+            foreach (ItHunts.Player.PlayerHealth p in ItHunts.Player.PlayerHealth.All)
+            {
+                if (p == null || !_owned.TryGetValue(p.PlayerId, out List<UpgradeDefinition> list) || list.Count == 0)
+                    continue;
+                var up = ItHunts.Economy.PlayerUpgrades.Of(p);
+                foreach (UpgradeDefinition d in list)
+                    up.Apply(d);
+                SoulsChanged?.Invoke(p.PlayerId, Souls(p.PlayerId), 0);
+            }
         }
 
         /// <summary>Nouvelle run : seed donnée, ou tirée au hasard.</summary>
@@ -182,5 +240,14 @@ namespace ItHunts.Artifacts
             _purchases.Clear();
             _draws = 0;
         }
+    }
+
+    /// <summary>Stuff de la run gardé d'un acte à l'autre (nuit 3, point 3) : âmes, améliorations, achats (prix qui montent), tirages.</summary>
+    public sealed class RunCarry
+    {
+        public int Seed, Draws;
+        public readonly Dictionary<int, int> Souls = new Dictionary<int, int>();
+        public readonly Dictionary<int, List<UpgradeDefinition>> Owned = new Dictionary<int, List<UpgradeDefinition>>();
+        public readonly Dictionary<(int, ItHunts.Economy.PriceKind), int> Purchases = new Dictionary<(int, ItHunts.Economy.PriceKind), int>();
     }
 }

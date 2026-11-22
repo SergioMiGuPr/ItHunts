@@ -358,7 +358,7 @@ namespace ItHunts.Enemies
                 if (Vector3.Distance(onPlayer, c) > settings.radius + settings.contactRange)
                     continue;
                 DiveHits++;
-                p.TakeEnemyDamage(settings.diveDamage, onPlayer, now);
+                p.TakeEnemyDamage(settings.diveDamage, onPlayer, now, "Piqué d'un volant");
                 Vector3 flat = new Vector3(_velocity.x, 0f, _velocity.z);
                 if (p.Motor != null)
                     p.Motor.AddVelocity((flat.sqrMagnitude > 0.01f ? flat.normalized : Vector3.zero) * settings.divePush);

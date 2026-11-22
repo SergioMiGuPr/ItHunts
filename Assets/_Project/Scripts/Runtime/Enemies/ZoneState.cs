@@ -89,10 +89,16 @@ namespace ItHunts.Enemies
 
         private System.Action _pending;
 
+        /// <summary>
+        /// Raccourcis de debug (Page haut / Page bas) : seulement pour une partie de playtest (menu Playtest) ou une scène ouverte
+        /// directement dans l'éditeur, jamais dans une partie normale (nuit 3, point 2).
+        /// </summary>
+        private static bool AdminKeys => RunSession.Active ? RunSession.AdminMode : Application.isEditor;
+
         private void Update()
         {
             // Debug (éditeur et builds de dev) : Page haut avance le timer de 60 s (événements à 3, 10 et 15 min).
-            if ((Application.isEditor || Debug.isDebugBuild) && UnityEngine.InputSystem.Keyboard.current != null
+            if (AdminKeys && UnityEngine.InputSystem.Keyboard.current != null
                 && UnityEngine.InputSystem.Keyboard.current.pageUpKey.wasPressedThisFrame && !Finished)
             {
                 DebugAdvance(60f);
@@ -100,7 +106,7 @@ namespace ItHunts.Enemies
             }
 
             // Debug : Page bas emmène directement au combat de boss (playtest des étapes 8 et 9).
-            if ((Application.isEditor || Debug.isDebugBuild) && UnityEngine.InputSystem.Keyboard.current != null
+            if (AdminKeys && UnityEngine.InputSystem.Keyboard.current != null
                 && UnityEngine.InputSystem.Keyboard.current.pageDownKey.wasPressedThisFrame && !Finished)
             {
                 BossFight fight = FindFirstObjectByType<BossFight>();
@@ -171,6 +177,7 @@ namespace ItHunts.Enemies
                 FinishTime = Elapsed;
                 float d = settings != null ? settings.exitRestartDelay : 2f;
                 Show("Mort", d + 1f);
+                RunStatsTracker.CloseCurrentAct();
                 _pending = () => RunEndScreen.Show(false, Summary("Tu es mort."));
                 _resetAt = Time.time + d;
                 return;
@@ -215,9 +222,10 @@ namespace ItHunts.Enemies
             Won = true;
             Finished = true;
             FinishTime = Elapsed;
+            RunStatsTracker.CloseCurrentAct();
             string next = RunSession.NextLevelScene();
             float delay = settings != null ? settings.exitRestartDelay : 2f;
-            Show("Niveau terminé", delay + 1f);
+            Show(next != null ? "Acte terminé" : "Victoire", delay + 1f);
             if (next != null)
                 _pending = () => RunSession.Load(next);
             else

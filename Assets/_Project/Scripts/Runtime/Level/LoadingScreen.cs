@@ -9,7 +9,8 @@ namespace ItHunts.Level
     /// </summary>
     public sealed class LoadingScreen : MonoBehaviour
     {
-        public RandomLevel Level;
+        /// <summary>Niveau en construction (carte aléatoire ou acte).</summary>
+        public ILevelLoading Source;
 
         private GUIStyle _title, _text;
         private Texture2D _white;
@@ -26,7 +27,7 @@ namespace ItHunts.Level
 
         private void OnGUI()
         {
-            if (Level == null)
+            if (Source == null)
                 return;
             float s = Screen.height / 1080f;
             _title ??= new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
@@ -36,15 +37,23 @@ namespace ItHunts.Level
             _title.normal.textColor = new Color(0.85f, 0.8f, 0.7f);
             _text.normal.textColor = new Color(0.65f, 0.62f, 0.58f);
             float w = Screen.width, h = Screen.height;
-            GUI.Label(new Rect(0f, h * 0.36f, w, 70f * s), "Les caves du château", _title);
-            GUI.Label(new Rect(0f, h * 0.45f, w, 40f * s), Level.Stage, _text);
+            GUI.Label(new Rect(0f, h * 0.36f, w, 70f * s), string.IsNullOrEmpty(Source.Title) ? "Les caves du château" : Source.Title, _title);
+            GUI.Label(new Rect(0f, h * 0.45f, w, 40f * s), Source.Stage, _text);
             var bar = new Rect(w * 0.3f, h * 0.53f, w * 0.4f, 14f * s);
             GUI.color = new Color(0.15f, 0.14f, 0.16f);
             GUI.DrawTexture(bar, _white);
             GUI.color = new Color(0.9f, 0.55f, 0.25f);
-            GUI.DrawTexture(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(Level.Progress), bar.height), _white);
+            GUI.DrawTexture(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(Source.Progress), bar.height), _white);
             GUI.color = Color.white;
-            GUI.Label(new Rect(0f, h * 0.56f, w, 40f * s), $"{Mathf.RoundToInt(Level.Progress * 100f)} %", _text);
+            GUI.Label(new Rect(0f, h * 0.56f, w, 40f * s), $"{Mathf.RoundToInt(Source.Progress * 100f)} %", _text);
         }
+    }
+
+    /// <summary>Source de l'écran de chargement (carte aléatoire ou acte).</summary>
+    public interface ILevelLoading
+    {
+        float Progress { get; }
+        string Stage { get; }
+        string Title { get; }
     }
 }

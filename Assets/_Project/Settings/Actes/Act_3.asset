@@ -1,0 +1,103 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09f2a097a499a104d937929e4ffc3e40, type: 3}
+  m_Name: Act_3
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Level.Acts.ActLayoutSettings
+  theme: 2
+  displayName: 'Acte III : le jardin'
+  cell: 2
+  gridSize: 220
+  rooms: 16
+  roomArea: {x: 1200, y: 3400}
+  minWidth: 12
+  mainPathShare: 0.4
+  loopChance: 0.55
+  minStartExit: 6
+  doorWidth: 10
+  doorHeight: 9
+  ceiling: {x: 0, y: 0}
+  floorStep: 3
+  floorChangeChance: 0.3
+  minFloor: -6
+  maxFloor: 6
+  rampSlope: 22
+  openInnerWall: 8
+  openOuterWall: 55
+  outerMagneticTop: 12
+  waterShare: 0.3
+  voidShare: 0.2
+  voidDamage: 20
+  waterDepth: 3
+  terraceShare: 0.5
+  terraceHeight: {x: 3.5, y: 5.5}
+  wallJumpGap: 3.6
+  sconceSpacing: 16
+  torchColor: {r: 1, g: 0.55, b: 0.25, a: 1}
+  torchIntensity: 2.2
+  torchRange: 11
+  chandeliersPer1000: 0
+  moonWindowSpacing: 0
+  moonColor: {r: 0.55, g: 0.65, b: 1, a: 1}
+  moonlight: 0.55
+  ambientScale: 1.2
+  ghoulsPer100: 0.2
+  minGhoulsPerRoom: 2
+  maxGhoulsPerRoom: 9
+  flyersPerTallRoom: 1
+  spawnPointsPerRoom: 3
+  chests: 10
+  lockedRooms: 1
+  merchants: 1
+  stalkerFromArrival: 1
+  wallMaterial: {fileID: 2100000, guid: 25a8380710b6e5649b2570d4ea2621ef, type: 2}
+  floorMaterial: {fileID: 2100000, guid: 142f00cbadda21e45b4b9a541069d97e, type: 2}
+  ceilingMaterial: {fileID: 2100000, guid: 24d2f953c14f63c42a2cdd6ff670fa92, type: 2}
+  trimMaterial: {fileID: 2100000, guid: cdfec949ba74d31489464c357d1b7008, type: 2}
+  waterMaterial: {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
+  propMaterial: {fileID: 2100000, guid: 906f34049ab58bc408820a06944a0900, type: 2}
+  foliageMaterial: {fileID: 2100000, guid: b7f371e6767fd044dbcb032f53a0eb54, type: 2}
+  windowMaterial: {fileID: 2100000, guid: 449bccfbe3227a7409f7ddef9a55b4cd, type: 2}
+  kitPieces: 0
+  kit: {fileID: 11400000, guid: d59dd140110cb564c9e056a3146e0e87, type: 2}
+  props:
+  - {fileID: 2266145217199223985, guid: 054a56560582e3840ae110c725fb5c47, type: 3}
+  - {fileID: 5245124186634984464, guid: 957ca04daca620b4dad6381959e7a57d, type: 3}
+  - {fileID: 2279769124752265653, guid: 532f9646254a4d14593690561bb1d7b6, type: 3}
+  - {fileID: 2492659631373168093, guid: 168e7cd3311a9344a9f67dc7b12b5b6a, type: 3}
+  - {fileID: 6100030903250793704, guid: b6d29cafafbc3d140b5fa7e45ea6f174, type: 3}
+  - {fileID: 8749307201970961062, guid: 563189661c08af948afdc2f5937f4702, type: 3}
+  - {fileID: 213045468102434258, guid: 72a39876a58c5474fa632764e2700fe4, type: 3}
+  - {fileID: 360637837982167296, guid: e024ccd72899f7741961704fa3964414, type: 3}
+  - {fileID: 3813001517955789683, guid: 56866937d50ac234dbea2e2d851cbdf4, type: 3}
+  - {fileID: 2620508497845661246, guid: 1da34507bd6c39b4c82e3dde9eb10230, type: 3}
+  - {fileID: 5949773717891227757, guid: 5de6bd14d145bba428dfbbf3004167ba, type: 3}
+  - {fileID: 985839051966591373, guid: e4642f87c5d9e424f900e76950c2fc8e, type: 3}
+  - {fileID: 1147682012428152361, guid: cb62157c8a7276743890e6df61d40648, type: 3}
+  - {fileID: 5516195046920221761, guid: 5a23bba772326c34aafbc9343c300072, type: 3}
+  - {fileID: 4703177751193145818, guid: 06eb409eb181b754f8ceb7de1ee2af8e, type: 3}
+  - {fileID: 7082617076153206427, guid: 7d93f1b5142e6f34f88929d72c7b94c1, type: 3}
+  - {fileID: 4597351789901462138, guid: cd54371aec37dd444b35cfd1bf960e62, type: 3}
+  - {fileID: 2063783432782027168, guid: ae76b693ec1f2644a8f5aa27d4cc43cd, type: 3}
+  - {fileID: 1751316579874683729, guid: 8a4607fd8b14c284381d63f18c66b4e8, type: 3}
+  - {fileID: 5147795367191849921, guid: e17cb6b73baf2b846840353241aaef59, type: 3}
+  - {fileID: 885924839239642118, guid: e648f30779a9017439178db7e230f681, type: 3}
+  - {fileID: 1487579915112606290, guid: 70da387b33a1a774e97c2e85e14f011e, type: 3}
+  - {fileID: 143547163943979903, guid: 95a2898b730817c4bbe964715f35fafa, type: 3}
+  - {fileID: 4425252698671734236, guid: a9ac52317641a314197bef8112ee308c, type: 3}
+  - {fileID: 5099802929737956919, guid: 75a057c313f251d48b71cffbe2d59a1e, type: 3}
+  - {fileID: 565738641825802601, guid: e68b3fbcd43a51a42b1aa28feb97ac1c, type: 3}
+  - {fileID: 6107456086479619699, guid: dda2417304e3c4c47a7d4f342312871f, type: 3}
+  - {fileID: 2073839847960823517, guid: a2e4f83f63bdbbc4892f93ba9e677029, type: 3}
+  - {fileID: 4033543537200455753, guid: 16a037b652e65624788c19922adee590, type: 3}
+  - {fileID: 8079578767649395306, guid: 02e333798c771e8408bc98f23211ba8c, type: 3}
+  - {fileID: 8478383355748453547, guid: c1787a16475e24644a6be3a00a75a67c, type: 3}
+  - {fileID: 428725902356805870, guid: 57c14bd456f066b49a87dfe5b96b9908, type: 3}

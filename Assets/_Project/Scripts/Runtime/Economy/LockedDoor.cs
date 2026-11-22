@@ -18,6 +18,9 @@ namespace ItHunts.Economy
         private WorldLabel[] _labels;
 
         public bool Open { get; private set; }
+
+        /// <summary>Réglages (porte posée à l'exécution par le générateur d'un acte).</summary>
+        public void Configure(EconomySettings economy) => settings = economy;
         public int Price => settings != null ? settings.lockedDoorPrice : 50;
         public int PriceFor(PlayerHealth p) => Prices.For(settings, p, PriceKind.Porte, Price);
         public Vector3 Point => transform.position;
