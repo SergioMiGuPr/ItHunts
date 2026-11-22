@@ -164,6 +164,10 @@ namespace ItHunts.Artifacts
         public RunCarry Snapshot()
         {
             var c = new RunCarry { Seed = Seed, Draws = _draws };
+            // L'identifiant d'un joueur est celui de son objet : il change à chaque scène. Le stuff suit l'emplacement (joueur 1, 2…).
+            foreach (ItHunts.Player.PlayerHealth p in ItHunts.Player.PlayerHealth.All)
+                if (p != null)
+                    c.Slots[p.PlayerId] = SlotOf(p);
             foreach (KeyValuePair<int, int> kv in _souls)
                 c.Souls[kv.Key] = kv.Value;
             foreach (KeyValuePair<int, List<UpgradeDefinition>> kv in _owned)
@@ -186,8 +190,37 @@ namespace ItHunts.Artifacts
                 _owned[kv.Key] = new List<UpgradeDefinition>(kv.Value);
             foreach (KeyValuePair<(int, ItHunts.Economy.PriceKind), int> kv in c.Purchases)
                 _purchases[kv.Key] = kv.Value;
+            _carrySlots = c.Slots.Count > 0 ? new Dictionary<int, int>(c.Slots) : null;
+            RemapCarried();
             Debug.Log($"Run : seed {Seed}, stuff repris ({_souls.Count} joueurs)");
             _reapply = true;
+        }
+
+        private Dictionary<int, int> _carrySlots;
+
+        /// <summary>Emplacement d'un joueur : index de son PlayerInput (écran partagé), sinon son rang dans la liste des joueurs.</summary>
+        public static int SlotOf(ItHunts.Player.PlayerHealth p)
+        {
+            var input = p.GetComponent<UnityEngine.InputSystem.PlayerInput>();
+            if (input != null && input.playerIndex >= 0)
+                return input.playerIndex;
+            for (int i = 0; i < ItHunts.Player.PlayerHealth.All.Count; i++)
+                if (ItHunts.Player.PlayerHealth.All[i] == p)
+                    return i;
+            return 0;
+        }
+
+        /// <summary>Rattache le stuff repris (rangé sous les identifiants de l'acte précédent) aux joueurs de cet acte, par emplacement.</summary>
+        private void RemapCarried()
+        {
+            if (_carrySlots == null || ItHunts.Player.PlayerHealth.All.Count == 0)
+                return;
+            var newId = new Dictionary<int, int>();
+            foreach (ItHunts.Player.PlayerHealth p in ItHunts.Player.PlayerHealth.All)
+                if (p != null)
+                    newId[SlotOf(p)] = p.PlayerId;
+            RunCarry.Remap(_carrySlots, newId, _souls, _owned, _purchases);
+            _carrySlots = null;
         }
 
         private bool _reapply;
@@ -197,6 +230,7 @@ namespace ItHunts.Artifacts
         {
             if (!_reapply || ItHunts.Player.PlayerHealth.All.Count == 0)
                 return;
+            RemapCarried();
             _reapply = false;
             foreach (ItHunts.Player.PlayerHealth p in ItHunts.Player.PlayerHealth.All)
             {
@@ -272,5 +306,35 @@ namespace ItHunts.Artifacts
         public readonly Dictionary<int, int> Souls = new Dictionary<int, int>();
         public readonly Dictionary<int, List<UpgradeDefinition>> Owned = new Dictionary<int, List<UpgradeDefinition>>();
         public readonly Dictionary<(int, ItHunts.Economy.PriceKind), int> Purchases = new Dictionary<(int, ItHunts.Economy.PriceKind), int>();
+        /// <summary>Identifiant du joueur à la sortie → son emplacement (0, 1…) : les identifiants changent d'une scène à l'autre.</summary>
+        public readonly Dictionary<int, int> Slots = new Dictionary<int, int>();
+
+        /// <summary>
+        /// Renomme les clés : ancien identifiant → emplacement → identifiant du joueur de la nouvelle scène. Les entrées sans joueur
+        /// correspondant restent sous leur ancien identifiant.
+        /// </summary>
+        public static void Remap(Dictionary<int, int> slots, Dictionary<int, int> newIdBySlot, Dictionary<int, int> souls,
+            Dictionary<int, List<UpgradeDefinition>> owned, Dictionary<(int, ItHunts.Economy.PriceKind), int> purchases)
+        {
+            int To(int old) => slots.TryGetValue(old, out int s) && newIdBySlot.TryGetValue(s, out int id) ? id : old;
+            var s2 = new Dictionary<int, int>();
+            foreach (KeyValuePair<int, int> kv in souls)
+                s2[To(kv.Key)] = kv.Value;
+            var o2 = new Dictionary<int, List<UpgradeDefinition>>();
+            foreach (KeyValuePair<int, List<UpgradeDefinition>> kv in owned)
+                o2[To(kv.Key)] = kv.Value;
+            var p2 = new Dictionary<(int, ItHunts.Economy.PriceKind), int>();
+            foreach (KeyValuePair<(int, ItHunts.Economy.PriceKind), int> kv in purchases)
+                p2[(To(kv.Key.Item1), kv.Key.Item2)] = kv.Value;
+            souls.Clear();
+            owned.Clear();
+            purchases.Clear();
+            foreach (KeyValuePair<int, int> kv in s2)
+                souls[kv.Key] = kv.Value;
+            foreach (KeyValuePair<int, List<UpgradeDefinition>> kv in o2)
+                owned[kv.Key] = kv.Value;
+            foreach (KeyValuePair<(int, ItHunts.Economy.PriceKind), int> kv in p2)
+                purchases[kv.Key] = kv.Value;
+        }
     }
 }

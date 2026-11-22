@@ -542,7 +542,7 @@ namespace ItHunts.Hud
 
             int left = Mathf.CeilToInt(_zone.TimeLeft);
             // Le temps seul, en grand (retours du 2026-11-17 : plus de texte d'objectif dessous). Il attend la sortie de la salle de départ (D-048).
-            _timerText.text = ItHunts.Enemies.FinalBoss.Current_ != null ? string.Empty : $"{left / 60}:{left % 60:00}";   // boss final : pas de timer
+            _timerText.text = ItHunts.Enemies.FinalBoss.Current_ != null || ItHunts.Level.Acts.BossArena.Current != null ? string.Empty : $"{left / 60}:{left % 60:00}";   // boss final : pas de timer
             _timerText.color = _zone.Enraged ? new Color(1f, 0.25f, 0.2f) : left <= 30 ? new Color(1f, 0.7f, 0.3f) : Color.white;
             _stalkerText.text = _zone.Enraged ? "TRAQUEUR ENRAGÉ" : string.Empty;
             // D-038 : plus il accélère, plus l'indication pulse fort ; éclat d'une seconde à chaque palier.

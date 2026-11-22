@@ -127,6 +127,13 @@ namespace ItHunts.Tests
                 Assert.That(run2.Seed, Is.EqualTo(1234), "même seed de run");
                 Object.DestroyImmediate(go2);
                 Object.DestroyImmediate(up);
+                // Nouvelle scène : le joueur 1 a un autre identifiant (ici 777) ; le stuff le suit par son emplacement.
+                var souls = new System.Collections.Generic.Dictionary<int, int> { [1] = 150 };
+                var owned = new System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<ItHunts.Settings.UpgradeDefinition>>();
+                var bought = new System.Collections.Generic.Dictionary<(int, ItHunts.Economy.PriceKind), int>();
+                RunCarry.Remap(new System.Collections.Generic.Dictionary<int, int> { [1] = 0 }, new System.Collections.Generic.Dictionary<int, int> { [0] = 777 },
+                    souls, owned, bought);
+                Assert.That(souls.ContainsKey(777) && souls[777] == 150 && !souls.ContainsKey(1), Is.True, "âmes rattachées au nouveau joueur");
             }
             finally
             {
