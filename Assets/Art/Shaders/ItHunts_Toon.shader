@@ -51,6 +51,28 @@ Shader "ItHunts/Toon"
         [Enum(0 deg, 0, 90 deg, 1, 180 deg, 2, 270 deg, 3)] _TopRotation ("Rotation des dalles (dessus et dessous)", Float) = 0
         [Toggle] _TopRandomRotation ("Quart de tour au hasard par tuile (dessus et dessous)", Float) = 0
 
+        [Header(Decor (variation, bas des murs sale et humide, couche melangee en hauteur))]
+        // Mode décor (lot matériaux, 2026-11-22) : docs/art/MATERIAUX.md, section bibliothèque. Alpha de la texture de
+        // couleur = hauteur peinte (joints bas, pierres hautes) : la saleté remplit d'abord les joints, la couche monte
+        // par les creux.
+        [Toggle(_DECOR)] _Decor ("Mode décor", Float) = 0
+        _MacroVariation ("Variation à grande échelle : force (aplats)", Range(0, 1)) = 0.35
+        _MacroScale ("Variation : taille des taches (m)", Float) = 6
+        _MacroTint ("Variation : teinte des taches", Color) = (0.78, 0.82, 0.74, 1)
+        [Toggle] _VertexPaint ("Peinture de sommets (R saleté, G couche, B teinte par pièce)", Float) = 0
+        _GrimeColor ("Saleté : couleur multipliée", Color) = (0.42, 0.40, 0.36, 1)
+        _GrimeHeight ("Saleté : hauteur de la bande (m)", Float) = 1.8
+        _GrimeGroundY ("Saleté : hauteur du sol (m, monde ; sans peinture de sommets)", Float) = 0
+        _GrimeStrength ("Saleté : force", Range(0, 1)) = 0.75
+        _WetColor ("Humidité : teinte des coulures", Color) = (0.55, 0.62, 0.62, 1)
+        _WetStrength ("Humidité : coulures sous la bande sale", Range(0, 1)) = 0.5
+        _LayerMap ("Couche (mousse, salpêtre… ; alpha = hauteur)", 2D) = "black" {}
+        _LayerTile ("Couche : taille de la tuile (m)", Float) = 2
+        _LayerAmount ("Couche : quantité partout", Range(0, 1)) = 0
+        _LayerLow ("Couche : en bas des murs", Range(0, 1)) = 0.5
+        _LayerTop ("Couche : sur les dessus", Range(0, 1)) = 0
+        _HeightBlend ("Mélange en hauteur : largeur de la transition", Range(0.01, 0.5)) = 0.06
+
         [Header(Rendu)]
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Faces", Float) = 2
         // Translucide (verre de la lanterne) : SrcAlpha / OneMinusSrcAlpha, ZWrite Off, file 3000, et passes
@@ -82,6 +104,7 @@ Shader "ItHunts/Toon"
             #pragma shader_feature_local_fragment _EMISSION
             #pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
             #pragma shader_feature_local_fragment _WORLD_UV
+            #pragma shader_feature_local _DECOR
 
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS

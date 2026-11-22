@@ -6,6 +6,7 @@
 
 TEXTURE2D(_BaseMap);        SAMPLER(sampler_BaseMap);
 TEXTURE2D(_EmissionMap);    SAMPLER(sampler_EmissionMap);
+TEXTURE2D(_LayerMap);       SAMPLER(sampler_LayerMap);
 
 CBUFFER_START(UnityPerMaterial)
     float4 _BaseMap_ST;
@@ -45,6 +46,24 @@ CBUFFER_START(UnityPerMaterial)
     float4 _TileOffset;         // décalage de la grille en mètres (x, y, z)
     half   _TopRotation;        // rotation des dalles du dessus et du dessous : 0 à 3 quarts de tour
     half   _TopRandomRotation;  // 1 : quart de tour tiré au hasard pour chaque tuile du dessus et du dessous
+
+    // Mode décor (_DECOR) : variation, saleté en bas, couche mélangée en hauteur (MATERIAUX.md)
+    half   _MacroVariation;
+    float  _MacroScale;
+    half4  _MacroTint;
+    half   _VertexPaint;
+    half4  _GrimeColor;
+    float  _GrimeHeight;
+    float  _GrimeGroundY;
+    half   _GrimeStrength;
+    half4  _WetColor;
+    half   _WetStrength;
+    float4 _LayerMap_ST;
+    float  _LayerTile;
+    half   _LayerAmount;
+    half   _LayerLow;
+    half   _LayerTop;
+    half   _HeightBlend;
 CBUFFER_END
 
 // Projection par face, choisie selon la normale monde (comme it_common.world_uv dans Blender) : faces tournées vers ±X
