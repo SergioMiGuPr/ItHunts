@@ -44,7 +44,7 @@ Material:
     - _BandGradient: 0.45
     - _BandSoftness: 0.02
     - _BandThreshold: 0.15
-    - _Cull: 2
+    - _Cull: 0
     - _Cutoff: 0.5
     - _Decor: 1
     - _DstBlend: 0

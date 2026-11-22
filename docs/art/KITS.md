@@ -60,3 +60,61 @@ Modèles `Assets/Art/Models/KitCaves/`, prefabs `Assets/Art/Prefabs/KitCaves/` (
 | `SM_Cave_Applique` | Applique de fer à trois bougies (dos à y = 0), 0.6 m de large : flammes à « Feu_1 » … « Feu_3 ». | 0.62 × 0.36 × 0.54 | -0.25 | 240 | `M_Bib_FerRouille`, `M_Kit_Cire` |
 | `SM_Cave_Chandelles` | Groupe de chandelles fondues au sol ou sur une table (0.4 m), coulures de cire : flammes « Feu_1 » … « Feu_5 ». | 0.42 × 0.34 × 0.29 | -0.03 | 220 | `M_Kit_Cire` |
 | `SM_Cave_Candelabre` | Candélabre de fer sur pied (1.6 m), cinq bras : flammes « Feu_1 » … « Feu_5 ». | 0.66 × 0.56 × 1.71 | -0.02 | 404 | `M_Bib_FerRouille`, `M_Kit_Cire` |
+
+## Acte II : étages hauts du château (KitChateau, PR art-kit-chateau)
+
+31 pièces, avec des plafonds plus hauts et de grands volumes :
+- **murs** : 8 × 12 m et 8 × 20 m, en pierre de taille ou en plâtre sur lambris ;
+- **haute fenêtre** en lancette (baie de 3.2 × 11 m) ;
+- **pilier** fasciculé de 20 m et **colonne** de 12 m ;
+- **travée de voûte d'ogives** de 8 × 8 m et **arcade** de passage ;
+- **galerie haute** sur consoles et **balcon** ;
+- **grand escalier** : 8 m de large, monte de 8 m ;
+- **grande porte d'entrée du château**, qui mène à l'acte III : façade de 20 × 22 m, portail à voussures de 9 × 13 m, deux battants qui pivotent, perron ;
+- **mobilier et décor** : chandelier suspendu à 12 bougies, tenture déchirée, bibliothèque murale, tableau sombre, meubles renversés (chaise, table, armoire), table de banquet, fauteuil, lit à baldaquin, coffre, miroir brisé ;
+- **chapelle** : bancs, autel avec cierges, lutrin, rosace ;
+- **salle de bal** : estrade des musiciens.
+
+**Rayon de lune** (prefab `Chateau_RayonLune`) :
+- un volume de lumière en tronc de cône elliptique (shader additif `ItHunts/Lumiere`) qui s'efface vers le sol et sur les bords, avec des bandes de poussière qui descendent ;
+- un projecteur de lune (0.62, 0.7, 1) de 4 / 27 m, avec ombres ;
+- de la **poussière blanc-gris** en suspension : 260 particules, matériau `M_Kit_Poussiere`.
+
+À poser à la fenêtre, origine au milieu de la baie : le rayon descend vers +Z.
+
+L'acte II est un peu plus éclairé que les caves : ambiance (0.07, 0.075, 0.1), lune à 0.35, brouillard de 14 à 110 m. Le contrôle s'est fait dans un grand hall assemblé : `docs/art/rendus/KitChateau/Planche_GrandHall_RayonsDeLune.jpg`.
+
+Modèles `Assets/Art/Models/KitChateau/`, prefabs `Assets/Art/Prefabs/KitChateau/` (collisions : maillage pour l'architecture, boîte pour les petits objets ; sources de lumière : feu `VFX_Torche_Feu` et lumière ponctuelle sur les repères `Feu*`), scène `Assets/Art/Scenes/Vitrine_KitChateau.unity`, planche `docs/art/rendus/KitChateau/Planche_Kit_Chateau.jpg`, une capture par pièce dans `docs/art/rendus/KitChateau/captures/`. Source : `Assets/Art/Source~/Kits/scripts/` (`kitlib.py` et le script du kit, Blender en ligne de commande).
+
+| Pièce | Rôle | Emprise x × y × z (m) | Bas (m) | Triangles | Matériaux |
+|---|---|---|---|---|---|
+| `SM_Chateau_Mur_8x12` | Mur de salle 8 × 12 m (1 m d'épaisseur, face vers +Z) : pierre de taille, plinthe, corniche à 11 m. | 8.0 × 1.7 × 12.0 | 0.0 | 60 | `M_Bib_PierreTaillee_Peint` |
+| `SM_Chateau_Mur_8x20` | Mur de grand hall 8 × 20 m : pierre de taille, plinthe, corniche à 19 m. | 8.0 × 1.7 × 20.0 | 0.0 | 60 | `M_Bib_PierreTaillee_Peint` |
+| `SM_Chateau_Mur_Platre_8x12` | Mur d'appartement 8 × 12 m : plâtre fissuré au-dessus d'un lambris de pierre de 3.2 m (chambres, bibliothèque). | 8.0 × 1.7 × 12.0 | 0.0 | 72 | `M_Bib_PlatreFissure_Sale`, `M_Bib_PierreTaillee_Peint` |
+| `SM_Chateau_Fenetre_Haute` | Haute fenêtre en lancette dans un mur de 8 × 20 m : baie de 3.2 m de large, de 4 m à 15 m, remplage et vitrage | 8.0 × 1.7 × 20.0 | 0.0 | 228 | `M_Bib_PierreTaillee_Peint`, `M_Kit_Vitrail` |
+| `SM_Chateau_Pilier_20m` | Pilier gothique fasciculé de 20 m (Ø 2.2 m) : base moulurée, quatre colonnettes, chapiteau à feuillages simplifié, | 3.2 × 3.2 × 19.2 | 0.0 | 428 | `M_Bib_PierreTaillee_Peint` |
+| `SM_Chateau_Colonne_12m` | Colonne fine de 12 m (Ø 0.9 m) : galeries, arcades, chapelle. | 1.6 × 1.6 × 12.0 | 0.0 | 200 | `M_Bib_PierreTaillee_Peint` |
+| `SM_Chateau_Voute_8x8` | Travée de voûte d'ogives 8 × 8 m (posée sur les tailloirs à 19.4 m : pivot au niveau des tailloirs, au centre) : | 8.69 × 8.69 × 5.5 | -0.5 | 990 | `M_Bib_PlatreFissure_Sale`, `M_Bib_PierreTaillee_Peint` |
+| `SM_Chateau_Arcade_8x12` | Arcade de passage entre deux halls : baie en arc brisé de 6 × 10 m dans un mur de 8 × 14 m. | 8.0 × 1.94 × 14.0 | 0.0 | 440 | `M_Bib_PierreTaillee_Peint` |
+| `SM_Chateau_Galerie_8m` | Galerie haute de 8 m sur consoles (dessus à 0, profondeur 4 m, dos contre le mur en y = 0) : dallage, balustrade | 8.0 × 4.05 × 4.65 | -3.55 | 1470 | `M_Bib_Dalles_Sales`, `M_Bib_PierreTaillee_Peint` |
+| `SM_Chateau_Balcon` | Balcon de 4 × 2.4 m en encorbellement (dessus à 0, dos au mur), balustrade sur trois côtés : point de vue, cible | 4.2 × 3.4 × 3.5 | -2.4 | 1196 | `M_Bib_Dalles_Sales`, `M_Bib_PierreTaillee_Peint` |
+| `SM_Chateau_GrandEscalier` | Grand escalier droit de 8 m de large qui monte de 8 m (32 marches de 0.25 × 0.5 m), tapis rouge central, rampes | 9.3 × 20.45 × 9.39 | 0.0 | 6116 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Tapis`, `M_Bib_Dalles_Sales` |
+| `SM_Chateau_GrandeEntree` | Grande porte d'entrée du château (mène à l'acte III) : façade de 20 × 22 m, portail en arc brisé de 9 × 13 m à | 20.2 × 6.47 × 22.0 | 0.0 | 1448 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales` |
+| `SM_Chateau_Chandelier` | Chandelier suspendu : couronne de fer Ø 3 m à 12 bougies, pendu par une chaîne de 6 m (pivot au point | 3.14 × 3.14 × 6.9 | -6.9 | 1106 | `M_Bib_FerRouille`, `M_Kit_Cire` |
+| `SM_Chateau_Tenture` | Tenture lourde de 3 × 9 m sur tringle (pivot à la tringle, contre un mur), plis profonds, bas effrangé et déchiré. | 3.6 × 0.43 × 9.16 | -9.0 | 892 | `M_Bib_Tenture`, `M_Bib_FerRouille` |
+| `SM_Chateau_Bibliotheque` | Bibliothèque murale de 4 × 0.7 × 5 m (dos au mur, face vers +Z) : 7 rayons de livres serrés, quelques vides et | 4.2 × 1.0 × 5.65 | 0.0 | 3780 | `M_Bib_BoisNeuf`, `M_Bib_Tenture`, `M_Bib_BoisPourri`, `M_Kit_Toile_Peinte`, `M_Kit_Toile`, `M_Bib_Tapis` |
+| `SM_Chateau_Tableau` | Grand tableau sombre de 2 × 2.8 m dans un cadre doré éteint (accroché au mur, pivot au clou, face vers +Z). | 2.16 × 0.14 × 2.9 | -2.85 | 60 | `M_Kit_Toile_Peinte`, `M_Bib_Trim` |
+| `SM_Chateau_Chaise_Renversee` | Chaise à haut dossier couchée au sol (meuble renversé). | 0.92 × 1.6 × 0.5 | 0.02 | 72 | `M_Bib_BoisNeuf` |
+| `SM_Chateau_Chaise` |  | 0.5 × 0.5 × 1.52 | 0.0 | 72 | `M_Bib_BoisNeuf` |
+| `SM_Chateau_Table_Renversee` | Longue table de banquet (4 × 1.2 m) renversée sur le flanc : abri bas, couvert de fortune. | 4.0 × 0.82 × 1.2 | 0.0 | 72 | `M_Bib_BoisNeuf` |
+| `SM_Chateau_Armoire_Tombee` | Armoire de 2 × 0.7 × 2.6 m tombée en avant, une porte arrachée à côté (gros couvert, saut). | 3.83 × 3.99 × 0.7 | 0.0 | 72 | `M_Bib_BoisNeuf`, `M_Kit_Toile` |
+| `SM_Chateau_TableBanquet` | Table de banquet de 6 × 1.4 m (dessus à 0.85 m), nappe déchirée, chandeliers éteints, assiettes. | 6.0 × 1.5 × 1.34 | 0.0 | 784 | `M_Bib_BoisNeuf`, `M_Kit_Toile`, `M_Bib_FerRouille`, `M_Kit_Cire`, `M_Kit_Os` |
+| `SM_Chateau_Fauteuil` | Fauteuil de velours à oreilles (salon, chambre). | 1.0 × 0.88 × 1.65 | 0.0 | 72 | `M_Bib_Tenture` |
+| `SM_Chateau_LitBaldaquin` | Lit à baldaquin (2.4 × 2.2 m, ciel à 3.2 m), rideaux déchirés tombant d'un côté (chambres). | 2.5 × 2.37 × 3.31 | 0.0 | 320 | `M_Bib_BoisNeuf`, `M_Kit_Toile`, `M_Bib_Tenture` |
+| `SM_Chateau_Coffre` | Coffre de chambre en bois ferré (1.2 × 0.6 × 0.7 m), couvercle entrouvert (décor, pas le coffre du jeu). | 1.22 × 0.82 × 0.82 | -0.01 | 48 | `M_Bib_BoisNeuf`, `M_Bib_FerRouille` |
+| `SM_Chateau_MiroirBrise` | Miroir sur pied (0.9 × 2 m), verre brisé (fragments sombres), cadre de bois sculpté. | 1.0 × 1.17 × 2.15 | 0.0 | 156 | `M_Kit_Vitrail`, `M_Bib_BoisNeuf` |
+| `SM_Chateau_Banc_Eglise` | Banc d'église de 4 m (dossier, prie-Dieu) : rangées de la chapelle, couvert bas. | 4.02 × 0.83 × 1.25 | 0.0 | 60 | `M_Bib_BoisNeuf` |
+| `SM_Chateau_Autel` | Autel de pierre (3 × 1.4 × 1.1 m) sur deux marches, nappe, chandeliers ; Feu_1 et Feu_2 sur les cierges. | 5.0 × 3.0 × 2.55 | 0.0 | 224 | `M_Bib_Marbre`, `M_Bib_PierreTaillee_Peint`, `M_Kit_Toile`, `M_Bib_FerRouille`, `M_Kit_Cire` |
+| `SM_Chateau_Lutrin` | Lutrin de fer (1.4 m) avec un livre ouvert. | 0.6 × 0.48 × 1.39 | 0.0 | 88 | `M_Bib_FerRouille`, `M_Kit_Toile` |
+| `SM_Chateau_Rosace` | Rosace de chapelle Ø 7 m (au mur, face vers +Z, pivot au centre) : remplage rayonnant, vitrail sombre. | 7.0 × 0.75 × 7.0 | -3.5 | 696 | `M_Bib_PierreTaillee_Peint`, `M_Kit_Vitrail` |
+| `SM_Chateau_Estrade_Musiciens` | Estrade des musiciens de la salle de bal : 8 × 4 m, 1.2 m de haut, trois marches, pupitres renversés. | 8.0 × 5.27 × 2.47 | 0.0 | 1700 | `M_Bib_BoisNeuf`, `M_Bib_FerRouille` |
