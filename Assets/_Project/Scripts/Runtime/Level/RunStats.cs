@@ -160,7 +160,7 @@ namespace ItHunts.Level
                         RunStats.Distance += step;
                         Vector3 v = (pos - prev.pos) / Mathf.Max(1e-4f, Time.deltaTime);
                         v.y = 0f;
-                        if (Time.deltaTime > 1e-4f && v.magnitude < 60f)
+                        if (Time.deltaTime > 1e-4f && v.magnitude < 35f && step < 2f)       // pas une téléportation
                             RunStats.MaxSpeed = Mathf.Max(RunStats.MaxSpeed, v.magnitude);
                     }
 

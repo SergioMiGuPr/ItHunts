@@ -1,0 +1,689 @@
+using System.Collections.Generic;
+using ItHunts.Audio;
+using ItHunts.Combat;
+using ItHunts.Player;
+using ItHunts.Settings;
+using UnityEngine;
+
+namespace ItHunts.Enemies
+{
+    /// <summary>
+    /// Boss final (nuit 3, point 8) : le traqueur devient blessable dans l'arène en contrebas du jardin. Il ne tue plus en un coup.
+    /// Trois phases (vie à 66 % et 33 %) ; panel d'attaques, chacune annoncée (pose, son, marque au sol) : prise (main qui s'abat),
+    /// balayage (cône devant lui), charge (ligne), bond (cercle d'onde à l'atterrissage), cri (repousse tout autour), jet de débris,
+    /// éruptions au sol sous les joueurs, invocation de goules. Trois points faibles lumineux (nuque, omoplates), en hauteur et dans
+    /// son dos : on les atteint depuis les piliers et la statue (traction), ou en le contournant ; chaque point cédé le fait chanceler.
+    /// Sa vraie IA (Stalker) est coupée pendant le combat ; ses clips de la DA sont joués tels quels (modèle et animations intacts).
+    /// </summary>
+    public sealed class FinalBoss : MonoBehaviour
+    {
+        public enum Attack { Aucune, Prise, Balayage, Charge, Bond, Cri, Debris, Eruptions, Invocation }
+
+        private sealed class WeakPoint
+        {
+            public Transform Bone;
+            public Damageable Target;
+            public Transform Visual;
+            public Light Glow;
+            public float Taken, BrokenUntil = float.NegativeInfinity;
+            public string Name;
+            public bool Open(float now) => now >= BrokenUntil;
+        }
+
+        [SerializeField] private FinalBossSettings settings;
+        public FinalBossSettings Settings { get => settings; set => settings = value; }
+
+        public float Health { get; private set; }
+        public float MaxHealth => settings != null ? settings.maxHealth : 2400f;
+        public int Phase => Health > MaxHealth * settings.phase2At ? 1 : Health > MaxHealth * settings.phase3At ? 2 : 3;
+        public bool Dead { get; private set; }
+        public bool Started { get; private set; }
+        public Attack Current { get; private set; }
+        public float TelegraphLeft { get; private set; }
+        public int AttacksDone { get; private set; }
+        public readonly Dictionary<Attack, int> AttackCounts = new Dictionary<Attack, int>();
+        public static FinalBoss Current_ { get; private set; }
+        public static event System.Action<FinalBoss> Defeated;
+        public Vector3 ArenaCenter { get; set; }
+        public float ArenaRadius { get; set; } = 40f;
+        /// <summary>Goules invoquées (prefab posé par l'arène).</summary>
+        public GameObject GhoulPrefab { get; set; }
+
+        private Stalker _stalker;
+        private Animator _anim;
+        private Rigidbody _rb;
+        private readonly List<WeakPoint> _weak = new List<WeakPoint>();
+        private float _nextAttack, _phaseStart, _staggerUntil = float.NegativeInfinity, _stateStart;
+        private int _phaseShown = 1;
+        private Vector3 _chargeDir, _leapFrom, _leapTo;
+        private readonly List<Vector3> _marks = new List<Vector3>();
+        private readonly List<GameObject> _telegraphs = new List<GameObject>();
+        private Material _telegraphMat, _weakMat;
+        private enum Step { Annonce, Action, Recuperation }
+        private Step _step;
+        private string _clip;
+        private System.Random _rng = new System.Random(7);
+
+        public void Begin(FinalBossSettings s, Vector3 center, float radius)
+        {
+            settings = s;
+            ArenaCenter = center;
+            ArenaRadius = radius;
+            Health = MaxHealth;
+            Started = true;
+            _nextAttack = Time.time + 3f;
+            Current_ = this;
+            _stalker = GetComponent<Stalker>();
+            if (_stalker != null)
+                _stalker.enabled = false;                                // la poursuite de Pac-Man laisse la place au combat
+            foreach (MonoBehaviour m in GetComponents<MonoBehaviour>())
+                if (m is StalkerProceduralPose)
+                    m.enabled = false;
+            _anim = GetComponentInChildren<Animator>();
+            if (_anim != null)
+            {
+                _anim.enabled = true;
+                _anim.applyRootMotion = false;
+            }
+
+            _rb = GetComponent<Rigidbody>();
+            if (_rb != null)
+                _rb.isKinematic = true;
+            BuildMaterials();
+            BuildWeakPoints();
+            Play("Traqueur_Repos");
+            GameAudio.PlayAt(GameAudio.Pick(GameAudio.Settings?.stalkerEnragedCries), transform.position + Vector3.up * 10f, 1f, 120f);
+            DamageEvents.Hit += OnHit;
+            ItHunts.Hud.BossHealthBar.Show(this);
+        }
+
+        private void OnDestroy()
+        {
+            DamageEvents.Hit -= OnHit;
+            if (Current_ == this)
+                Current_ = null;
+        }
+
+        private void BuildMaterials()
+        {
+            Shader sh = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            _telegraphMat = new Material(sh) { name = "Annonce du boss (sol)" };
+            _telegraphMat.SetFloat("_Surface", 1f);
+            _telegraphMat.SetOverrideTag("RenderType", "Transparent");
+            _telegraphMat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            _telegraphMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            _telegraphMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One);
+            _telegraphMat.SetInt("_ZWrite", 0);
+            _telegraphMat.renderQueue = 3000;
+            _telegraphMat.SetColor("_BaseColor", new Color(1f, 0.32f, 0.12f, 0.55f));
+            _weakMat = new Material(sh) { name = "Point faible (lueur)" };
+            _weakMat.SetColor("_BaseColor", new Color(3.2f, 2.2f, 0.7f, 1f));
+        }
+
+        private void BuildWeakPoints()
+        {
+            var bones = new Dictionary<string, Transform>();
+            foreach (Transform t in GetComponentsInChildren<Transform>(true))
+                bones[t.name] = t;
+            foreach ((string bone, string name, bool head) in new[] { ("Cou_1", "nuque", true), ("Clavicule_D", "omoplate droite", false), ("Clavicule_G", "omoplate gauche", false) })
+            {
+                if (!bones.TryGetValue(bone, out Transform b))
+                    continue;
+                var go = new GameObject($"Point faible : {name}");
+                go.transform.SetParent(transform, true);
+                go.transform.position = b.position - transform.forward * 0.9f;
+                var col = go.AddComponent<SphereCollider>();
+                col.isTrigger = true;
+                col.radius = 1.1f;
+                var hb = go.AddComponent<Hitbox>();
+                hb.Head = head;
+                var d = go.AddComponent<Damageable>();
+                var vis = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Destroy(vis.GetComponent<Collider>());
+                vis.name = "Lueur";
+                vis.transform.SetParent(go.transform, false);
+                vis.transform.localScale = Vector3.one * 1.1f;
+                vis.GetComponent<MeshRenderer>().sharedMaterial = _weakMat;
+                var lgo = new GameObject("Lumière du point faible");
+                lgo.transform.SetParent(go.transform, false);
+                var l = lgo.AddComponent<Light>();
+                l.type = LightType.Point;
+                l.color = new Color(1f, 0.75f, 0.3f);
+                l.range = 6f;
+                l.intensity = 2.5f;
+                _weak.Add(new WeakPoint { Bone = b, Target = d, Visual = vis.transform, Glow = l, Name = name });
+            }
+        }
+
+        public int WeakPointsOpen
+        {
+            get
+            {
+                int n = 0;
+                foreach (WeakPoint w in _weak)
+                    if (w.Open(Time.time))
+                        n++;
+                return n;
+            }
+        }
+
+        /// <summary>Un coup sur un point faible (balle, objet lancé, épée, flamme, drain) : dégâts au boss ; ou un objet sur son corps.</summary>
+        private void OnHit(DamageEvent e)
+        {
+            if (Dead || !Started || e.Target == null)
+                return;
+            foreach (WeakPoint w in _weak)
+            {
+                if (e.Target != w.Target)
+                    continue;
+                if (w.Target.Dead)
+                    w.Target.Revive();
+                if (!w.Open(Time.time))
+                    return;
+                float dmg = e.Damage * settings.weakPointMultiplier;
+                TakeDamage(dmg);
+                w.Taken += dmg;
+                if (w.Taken >= settings.weakPointBreak)
+                {
+                    w.Taken = 0f;
+                    w.BrokenUntil = Time.time + settings.weakPointRegrow;
+                    Stagger();
+                }
+
+                return;
+            }
+        }
+
+        /// <summary>Dégâts au boss (points faibles, objets lancés sur son corps).</summary>
+        public void TakeDamage(float amount)
+        {
+            if (Dead || amount <= 0f)
+                return;
+            Health = Mathf.Max(0f, Health - amount);
+            GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.bossHit : null, transform.position + Vector3.up * 11f, 1f, 120f);
+            if (Health <= 0f)
+                Die();
+        }
+
+        private void Stagger()
+        {
+            _staggerUntil = Time.time + settings.staggerTime;
+            ClearTelegraphs();
+            Current = Attack.Aucune;
+            Play("Traqueur_Reception", 1.4f);
+            GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.bossWeakPoint : null, transform.position + Vector3.up * 11f, 1f, 120f);
+            ShakeAll(0.5f, 60f);
+        }
+
+        private void Die()
+        {
+            Dead = true;
+            ClearTelegraphs();
+            Play("Traqueur_Reception", 0.5f);
+            GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.bossDeath : null, transform.position + Vector3.up * 10f, 1f, 150f);
+            GameAudio.PlayAt(GameAudio.Settings?.stalkerGrabCry, transform.position + Vector3.up * 10f, 1f, 150f);
+            ShakeAll(1f, 120f);
+            foreach (WeakPoint w in _weak)
+                if (w.Visual != null)
+                    w.Visual.parent.gameObject.SetActive(false);
+            _deathAt = Time.time;
+            Defeated?.Invoke(this);
+        }
+
+        private float _deathAt;
+
+        private void Play(string clip, float speed = 1f)
+        {
+            if (_anim == null || !_anim.isActiveAndEnabled)
+                return;
+            _anim.speed = speed;
+            if (_clip == clip)
+                return;
+            _clip = clip;
+            _anim.CrossFadeInFixedTime(clip, 0.25f, 0);
+        }
+
+        private static PlayerHealth Target(Vector3 from)
+        {
+            PlayerHealth best = null;
+            float bd = float.PositiveInfinity;
+            foreach (PlayerHealth p in PlayerHealth.All)
+            {
+                if (p == null || p.Dead)
+                    continue;
+                float d = (p.transform.position - from).sqrMagnitude;
+                if (d < bd)
+                {
+                    bd = d;
+                    best = p;
+                }
+            }
+
+            return best;
+        }
+
+        private float Telegraph(float baseTime) =>
+            Phase >= 3 ? Mathf.Max(settings.minTelegraph, baseTime * settings.phase3TelegraphFactor) : baseTime;
+
+        private void Update()
+        {
+            if (!Started || settings == null)
+                return;
+            float now = Time.time;
+            UpdateWeakPoints(now);
+            if (Dead)
+            {
+                // Il s'effondre : il s'enfonce lentement et se couche.
+                float u = Mathf.Clamp01((now - _deathAt) / 3f);
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(transform.forward, Vector3.up) * Quaternion.Euler(-70f * u, 0f, 0f), Time.deltaTime * 2f);
+                return;
+            }
+
+            if (Phase != _phaseShown)
+            {
+                _phaseShown = Phase;
+                _phaseStart = now;
+                GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.bossPhase : null, transform.position + Vector3.up * 10f, 1f, 150f);
+                GameAudio.PlayAt(GameAudio.Pick(GameAudio.Settings?.stalkerEnragedCries), transform.position + Vector3.up * 10f, 1f, 150f);
+                ShakeAll(0.6f, 120f);
+                _nextAttack = now + 1.2f;
+            }
+
+            if (now < _staggerUntil)
+                return;
+            PlayerHealth target = Target(transform.position);
+            if (target == null)
+                return;
+            if (Current == Attack.Aucune)
+            {
+                Chase(target, now);
+                if (now >= _nextAttack)
+                    StartAttack(Choose(target), target, now);
+                return;
+            }
+
+            RunAttack(target, now);
+        }
+
+        private void UpdateWeakPoints(float now)
+        {
+            float pulse = 0.85f + 0.25f * Mathf.Sin(now * 5f);
+            foreach (WeakPoint w in _weak)
+            {
+                if (w.Bone == null)
+                    continue;
+                Transform root = w.Target.transform;
+                root.position = w.Bone.position - transform.forward * 0.9f + Vector3.up * 0.2f;
+                bool open = w.Open(now) && !Dead;
+                w.Visual.gameObject.SetActive(open);
+                w.Glow.enabled = open;
+                w.Visual.localScale = Vector3.one * 1.1f * pulse;
+                w.Target.GetComponent<Collider>().enabled = open;
+            }
+        }
+
+        private void Chase(PlayerHealth target, float now)
+        {
+            Vector3 to = target.transform.position - transform.position;
+            to.y = 0f;
+            float speed = settings.speedByPhase[Mathf.Clamp(Phase - 1, 0, 2)];
+            if (to.magnitude < settings.grabRange * 0.7f)
+                speed = 0f;
+            Face(to, settings.turnRate);
+            Move(transform.forward * speed * Time.deltaTime);
+            Play(speed > 7f ? "Traqueur_CourseEnragee_A" : speed > 0.1f ? "Traqueur_Marche_A" : "Traqueur_Repos", speed > 7f ? speed / 11f : speed > 0.1f ? speed / 1.27f * 0.25f : 1f);
+        }
+
+        private void Face(Vector3 dir, float rate)
+        {
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f)
+                return;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(dir, Vector3.up), rate * Time.deltaTime);
+        }
+
+        private void Move(Vector3 delta)
+        {
+            Vector3 p = transform.position + delta;
+            Vector3 off = p - ArenaCenter;
+            off.y = 0f;
+            if (off.magnitude > ArenaRadius - 6f)
+                p = ArenaCenter + off.normalized * (ArenaRadius - 6f) + Vector3.up * (p.y - ArenaCenter.y);
+            p.y = ArenaCenter.y;
+            transform.position = p;
+            if (_rb != null)
+                _rb.position = p;
+        }
+
+        private Attack Choose(PlayerHealth target)
+        {
+            float d = Vector3.Distance(Flat(target.transform.position), Flat(transform.position));
+            var options = new List<(Attack a, float w)>();
+            int ph = Phase;
+            if (d < settings.grabRange)
+                options.Add((Attack.Prise, 3f));
+            if (d < settings.sweepRange)
+                options.Add((Attack.Balayage, 2.5f));
+            if (d > 16f)
+                options.Add((Attack.Charge, 2.5f));
+            if (d < 12f)
+                options.Add((Attack.Cri, ph >= 3 ? 2f : 0.8f));
+            if (ph >= 2)
+            {
+                options.Add((Attack.Bond, d > 12f ? 2.5f : 1f));
+                options.Add((Attack.Debris, d > 14f ? 2.5f : 0.8f));
+                if (!AttackCounts.ContainsKey(Attack.Invocation) || AttackCounts[Attack.Invocation] < ph - 1)
+                    options.Add((Attack.Invocation, 1.5f));
+            }
+
+            if (ph >= 3)
+                options.Add((Attack.Eruptions, 2.5f));
+            if (options.Count == 0)
+                options.Add((Attack.Charge, 1f));
+            float total = 0f;
+            foreach ((Attack a, float w) o in options)
+                total += o.w;
+            double roll = _rng.NextDouble() * total;
+            foreach ((Attack a, float w) o in options)
+            {
+                roll -= o.w;
+                if (roll <= 0)
+                    return o.a;
+            }
+
+            return options[0].a;
+        }
+
+        private static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0f, v.z);
+
+        private void StartAttack(Attack a, PlayerHealth target, float now)
+        {
+            Current = a;
+            _step = Step.Annonce;
+            _stateStart = now;
+            AttackCounts[a] = AttackCounts.TryGetValue(a, out int n) ? n + 1 : 1;
+            AttacksDone++;
+            ClearTelegraphs();
+            _marks.Clear();
+            Vector3 tp = Flat(target.transform.position) + Vector3.up * ArenaCenter.y;
+            switch (a)
+            {
+                case Attack.Prise:
+                    TelegraphLeft = Telegraph(settings.grabTelegraph);
+                    _marks.Add(tp);
+                    Disc(tp, 4.5f);
+                    Play("Traqueur_Prise", 2.37f / (TelegraphLeft + 0.2f));
+                    GameAudio.PlayAt(GameAudio.Settings?.stalkerGrowl, transform.position + Vector3.up * 10f, 1f, 80f);
+                    break;
+                case Attack.Balayage:
+                    TelegraphLeft = Telegraph(settings.sweepTelegraph);
+                    Cone(transform.position, transform.forward, settings.sweepRange, 90f);
+                    Play("Traqueur_Prise", 1.6f);
+                    GameAudio.PlayAt(GameAudio.Settings?.stalkerGrowl, transform.position + Vector3.up * 10f, 1f, 80f);
+                    break;
+                case Attack.Charge:
+                    TelegraphLeft = Telegraph(settings.chargeTelegraph);
+                    _chargeDir = Flat(tp - transform.position).normalized;
+                    Lane(transform.position, _chargeDir, settings.chargeDistance, 7f);
+                    Play("Traqueur_Repos");
+                    GameAudio.PlayAt(GameAudio.Pick(GameAudio.Settings?.stalkerEnragedCries), transform.position + Vector3.up * 10f, 1f, 120f);
+                    break;
+                case Attack.Bond:
+                    TelegraphLeft = Telegraph(settings.leapTelegraph);
+                    _leapFrom = transform.position;
+                    _leapTo = tp;
+                    Disc(tp, settings.leapRadius);
+                    Play("Traqueur_Bond", 2.05f / TelegraphLeft);
+                    break;
+                case Attack.Cri:
+                    TelegraphLeft = Telegraph(settings.cryTelegraph);
+                    Disc(Flat(transform.position) + Vector3.up * ArenaCenter.y, settings.cryRadius);
+                    Play("Traqueur_Repos");
+                    break;
+                case Attack.Debris:
+                    TelegraphLeft = Telegraph(settings.debrisTelegraph);
+                    foreach (PlayerHealth p in PlayerHealth.All)
+                        if (p != null && !p.Dead)
+                            for (int k = 0; k < settings.debrisCount; k++)
+                            {
+                                Vector3 m = Flat(p.transform.position) + Vector3.up * ArenaCenter.y + new Vector3((float)_rng.NextDouble() - 0.5f, 0f, (float)_rng.NextDouble() - 0.5f) * 9f;
+                                _marks.Add(m);
+                                Disc(m, 2.6f);
+                            }
+
+                    Play("Traqueur_Prise", 1.2f);
+                    break;
+                case Attack.Eruptions:
+                    TelegraphLeft = Telegraph(settings.eruptionTelegraph);
+                    foreach (PlayerHealth p in PlayerHealth.All)
+                        if (p != null && !p.Dead)
+                            for (int k = 0; k < settings.eruptions; k++)
+                            {
+                                Vector3 m = k == 0 ? Flat(p.transform.position) + Vector3.up * ArenaCenter.y
+                                    : Flat(p.transform.position) + Vector3.up * ArenaCenter.y + Quaternion.Euler(0f, k * 360f / settings.eruptions, 0f) * Vector3.forward * 8f;
+                                _marks.Add(m);
+                                Disc(m, settings.eruptionRadius);
+                            }
+
+                    Play("Traqueur_Repos");
+                    break;
+                case Attack.Invocation:
+                    TelegraphLeft = Telegraph(settings.summonTelegraph);
+                    for (int k = 0; k < settings.summonCount; k++)
+                    {
+                        Vector3 m = ArenaCenter + Quaternion.Euler(0f, k * 360f / settings.summonCount + (float)_rng.NextDouble() * 40f, 0f) * Vector3.forward * (ArenaRadius - 10f);
+                        _marks.Add(m);
+                        Disc(m, 2f);
+                    }
+
+                    Play("Traqueur_Repos");
+                    GameAudio.PlayAt(GameAudio.Pick(GameAudio.Settings?.stalkerEnragedCries), transform.position + Vector3.up * 10f, 1f, 150f);
+                    break;
+            }
+        }
+
+        private void RunAttack(PlayerHealth target, float now)
+        {
+            float t = now - _stateStart;
+            switch (_step)
+            {
+                case Step.Annonce:
+                    TelegraphLeft = Mathf.Max(0f, TelegraphLeft - Time.deltaTime);
+                    if (Current == Attack.Prise || Current == Attack.Balayage || Current == Attack.Debris)
+                        Face(target.transform.position - transform.position, settings.turnRate * 0.6f);
+                    PulseTelegraphs(t);
+                    if (TelegraphLeft > 0f)
+                        return;
+                    _step = Step.Action;
+                    _stateStart = now;
+                    Resolve(target);
+                    return;
+                case Step.Action:
+                    if (Current == Attack.Charge)
+                    {
+                        Move(_chargeDir * settings.chargeSpeed * Time.deltaTime);
+                        Play("Traqueur_CourseEnragee_A", 2f);
+                        foreach (PlayerHealth p in PlayerHealth.All)
+                            if (p != null && !p.Dead && Vector3.Distance(Flat(p.transform.position), Flat(transform.position)) < 5f)
+                                Hurt(p, settings.chargeDamage, _chargeDir * 18f + Vector3.up * 6f, "Charge du traqueur");
+                        if (t * settings.chargeSpeed < settings.chargeDistance && Vector3.Distance(Flat(transform.position), Flat(ArenaCenter)) < ArenaRadius - 6.5f)
+                            return;
+                    }
+                    else if (Current == Attack.Bond)
+                    {
+                        float u = Mathf.Clamp01(t / 0.9f);
+                        Vector3 p = Vector3.Lerp(_leapFrom, _leapTo, u) + Vector3.up * (Mathf.Sin(u * Mathf.PI) * 12f);
+                        transform.position = p;
+                        if (u < 1f)
+                            return;
+                        transform.position = new Vector3(_leapTo.x, ArenaCenter.y, _leapTo.z);
+                        Shockwave(_leapTo, settings.leapRadius, settings.leapDamage, 14f, "Bond du traqueur");
+                        Play("Traqueur_Reception", 1.5f);
+                    }
+
+                    _step = Step.Recuperation;
+                    _stateStart = now;
+                    ClearTelegraphs();
+                    return;
+                case Step.Recuperation:
+                    if (t < (Phase >= 3 ? 0.6f : 0.9f))
+                        return;
+                    Current = Attack.Aucune;
+                    _nextAttack = now + settings.cooldownByPhase[Mathf.Clamp(Phase - 1, 0, 2)];
+                    return;
+            }
+        }
+
+        private void Resolve(PlayerHealth target)
+        {
+            switch (Current)
+            {
+                case Attack.Prise:
+                    foreach (Vector3 m in _marks)
+                        Shockwave(m, 4.5f, settings.grabDamage, 10f, "Prise du traqueur");
+                    GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.bossSlam : null, _marks.Count > 0 ? _marks[0] : transform.position, 1f, 80f);
+                    ShakeAll(0.45f, 40f);
+                    break;
+                case Attack.Balayage:
+                    foreach (PlayerHealth p in PlayerHealth.All)
+                    {
+                        if (p == null || p.Dead)
+                            continue;
+                        Vector3 to = Flat(p.transform.position - transform.position);
+                        if (to.magnitude <= settings.sweepRange && Vector3.Angle(transform.forward, to) <= 45f && p.transform.position.y < ArenaCenter.y + 7f)
+                            Hurt(p, settings.sweepDamage, Vector3.Cross(Vector3.up, transform.forward) * 16f + Vector3.up * 5f, "Balayage du traqueur");
+                    }
+
+                    ShakeAll(0.3f, 40f);
+                    break;
+                case Attack.Cri:
+                    GameAudio.PlayAt(GameAudio.Pick(GameAudio.Settings?.stalkerEnragedCries), transform.position + Vector3.up * 10f, 1f, 150f);
+                    foreach (PlayerHealth p in PlayerHealth.All)
+                    {
+                        if (p == null || p.Dead)
+                            continue;
+                        Vector3 to = Flat(p.transform.position - transform.position);
+                        if (to.magnitude > settings.cryRadius)
+                            continue;
+                        p.Motor?.AddVelocity(to.normalized * settings.cryPush + Vector3.up * 8f);
+                    }
+
+                    ShakeAll(0.7f, 60f);
+                    break;
+                case Attack.Debris:
+                    foreach (Vector3 m in _marks)
+                        Shockwave(m, 2.6f, settings.debrisDamage, 6f, "Débris du traqueur");
+                    break;
+                case Attack.Eruptions:
+                    foreach (Vector3 m in _marks)
+                        Shockwave(m, settings.eruptionRadius, settings.eruptionDamage, 12f, "Éruption sous les pieds");
+                    ShakeAll(0.4f, 80f);
+                    break;
+                case Attack.Invocation:
+                    if (GhoulPrefab != null)
+                        foreach (Vector3 m in _marks)
+                            Instantiate(GhoulPrefab, m + Vector3.up * 0.1f, Quaternion.LookRotation(Flat(ArenaCenter - m)), transform.parent).name = "Goule invoquée";
+                    break;
+            }
+        }
+
+        private void Shockwave(Vector3 at, float radius, float damage, float push, string cause)
+        {
+            var vfx = GameVfx.Settings;
+            if (vfx != null)
+                GameVfx.Spawn(vfx.stalkerLandingDust != null ? vfx.stalkerLandingDust : vfx.impactHeavy, at, Quaternion.identity, Mathf.Max(1f, radius / 4f), null, 3f);
+            foreach (PlayerHealth p in PlayerHealth.All)
+            {
+                if (p == null || p.Dead)
+                    continue;
+                Vector3 to = Flat(p.transform.position - at);
+                if (to.magnitude > radius || p.transform.position.y > at.y + 4f)
+                    continue;                                            // en hauteur (pilier, statue) : épargné
+                Hurt(p, damage, (to.sqrMagnitude > 0.01f ? to.normalized : Vector3.forward) * push + Vector3.up * 5f, cause);
+            }
+        }
+
+        private static void Hurt(PlayerHealth p, float damage, Vector3 push, string cause)
+        {
+            if (p.TakeEnemyDamage(damage, p.Center, Time.time, cause))
+                p.Motor?.AddVelocity(push);
+        }
+
+        private static void ShakeAll(float trauma, float range)
+        {
+            foreach (CameraShake s in FindObjectsByType<CameraShake>(FindObjectsSortMode.None))
+                s.AddTrauma(trauma);
+        }
+
+        // ---------- Marques au sol ----------
+
+        private GameObject Mark(string name, Vector3 at, Vector3 scale, Quaternion rot, Mesh mesh)
+        {
+            var go = new GameObject(name);
+            go.transform.SetPositionAndRotation(at + Vector3.up * 0.06f, rot);
+            go.transform.localScale = scale;
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var mr = go.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = _telegraphMat;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            _telegraphs.Add(go);
+            return go;
+        }
+
+        private static Mesh _disc;
+        private static Mesh DiscMesh
+        {
+            get
+            {
+                if (_disc != null)
+                    return _disc;
+                GameObject c = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                _disc = c.GetComponent<MeshFilter>().sharedMesh;
+                Destroy(c);
+                return _disc;
+            }
+        }
+
+        private static Mesh _quad;
+        private static Mesh QuadMesh
+        {
+            get
+            {
+                if (_quad != null)
+                    return _quad;
+                GameObject c = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                _quad = c.GetComponent<MeshFilter>().sharedMesh;
+                Destroy(c);
+                return _quad;
+            }
+        }
+
+        private void Disc(Vector3 at, float radius) => Mark("Annonce (cercle)", at, new Vector3(radius * 2f, 0.02f, radius * 2f), Quaternion.identity, DiscMesh);
+
+        private void Lane(Vector3 from, Vector3 dir, float length, float width) =>
+            Mark("Annonce (couloir)", Flat(from) + Vector3.up * ArenaCenter.y + dir * (length * 0.5f), new Vector3(width, 0.02f, length), Quaternion.LookRotation(dir), QuadMesh);
+
+        private void Cone(Vector3 from, Vector3 dir, float range, float angle)
+        {
+            for (int k = -2; k <= 2; k++)
+            {
+                Vector3 d = Quaternion.Euler(0f, k * angle / 4f, 0f) * Flat(dir).normalized;
+                Mark("Annonce (balayage)", Flat(from) + Vector3.up * ArenaCenter.y + d * (range * 0.5f), new Vector3(range * 0.32f, 0.02f, range), Quaternion.LookRotation(d), QuadMesh);
+            }
+        }
+
+        private void PulseTelegraphs(float t)
+        {
+            float a = 0.35f + 0.3f * Mathf.Abs(Mathf.Sin(t * 9f));
+            _telegraphMat.SetColor("_BaseColor", new Color(1f, 0.32f, 0.12f, a));
+        }
+
+        private void ClearTelegraphs()
+        {
+            foreach (GameObject g in _telegraphs)
+                if (g != null)
+                    Destroy(g);
+            _telegraphs.Clear();
+        }
+    }
+}

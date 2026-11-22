@@ -21,7 +21,7 @@ MonoBehaviour:
   - displayName: 'Acte III : le jardin'
     sceneName: Acte_3_Jardin
   - displayName: Boss final
-    sceneName: 
+    sceneName: Acte_4_Boss
   difficulties:
   - displayName: Facile
     description: "Les caves, les \xE9tages du ch\xE2teau, le jardin, puis le traqueur
