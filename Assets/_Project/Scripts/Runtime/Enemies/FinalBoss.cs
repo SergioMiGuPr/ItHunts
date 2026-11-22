@@ -526,6 +526,7 @@ namespace ItHunts.Enemies
                             return;
                         transform.position = new Vector3(_leapTo.x, ArenaCenter.y, _leapTo.z);
                         Shockwave(_leapTo, settings.leapRadius, settings.leapDamage, 14f, "Bond du traqueur");
+                        GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.bossBite : null, _leapTo, 1f, 80f);
                         Play("Traqueur_Reception", 1.5f);
                     }
 

@@ -46,6 +46,7 @@ MonoBehaviour:
   refusal: {fileID: 8300000, guid: 2bda8adc0aa32b14b82dafe15952a084, type: 3}
   chargeReady: {fileID: 8300000, guid: c9dbfec3da9380e47bd3f0d89aa10b00, type: 3}
   impactHit: {fileID: 8300000, guid: 81f628849f25aa442b383b0ad6adeb41, type: 3}
+  impactHeavy: {fileID: 8300000, guid: 9d4b8c1453d00804eb473814823fb6fc, type: 3}
   enemyKill: {fileID: 8300000, guid: 03492205efaa7a44d86bf303ff991548, type: 3}
   objectBreak: {fileID: 8300000, guid: b65e69fdcc822d845a79e73ddf47b835, type: 3}
   stun: {fileID: 8300000, guid: 5b4ac90ace0efbd44b05cf56fb701968, type: 3}
@@ -65,6 +66,7 @@ MonoBehaviour:
   bossWeakPoint: {fileID: 8300000, guid: a0cd6efc8e4666b48a22da6f2cbe086d, type: 3}
   bossPhase: {fileID: 8300000, guid: 3e72a08b1077e57499d9ebe3025cb835, type: 3}
   bossSlam: {fileID: 8300000, guid: 40ca630637216db4cb58f4aaeaef9e7c, type: 3}
+  bossBite: {fileID: 8300000, guid: 9963ff677a86ba9448a3d7f412af9b36, type: 3}
   bossDeath: {fileID: 8300000, guid: 2e0868a292d78d549a8cab584d661cab, type: 3}
   musicChateau: {fileID: 8300000, guid: 685121fdb8bcc984690396b8cc6acf2f, type: 3}
   musicJardin: {fileID: 8300000, guid: 92b6f2981c8d14d4dae4499d7b9970bb, type: 3}

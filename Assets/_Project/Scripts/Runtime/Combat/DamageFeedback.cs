@@ -67,13 +67,14 @@ namespace ItHunts.Combat
         private int _nextRing;
         private readonly List<AudioSource> _voices = new List<AudioSource>();
         private MaterialPropertyBlock _block;
-        private AudioClip _hit, _kill;
+        private AudioClip _hit, _hitHeavy, _kill;
         private int _nextFlash, _nextVoice;
 
         private void Awake()
         {
             _block = new MaterialPropertyBlock();
             _hit = ItHunts.Audio.GameAudio.Or(s => s.impactHit, ProceduralSfx.ToClip("Impact", ProceduralSfx.ImpactHit()));
+            _hitHeavy = ItHunts.Audio.GameAudio.Settings != null ? ItHunts.Audio.GameAudio.Settings.impactHeavy : null;
             _kill = ItHunts.Audio.GameAudio.Or(s => s.enemyKill, ProceduralSfx.ToClip("Ennemi tué", ProceduralSfx.Kill()));
             _break = ItHunts.Audio.GameAudio.Or(s => s.objectBreak, ProceduralSfx.ToClip("Objet cassé", ProceduralSfx.Break()));
             _stun = ItHunts.Audio.GameAudio.Or(s => s.stun, ProceduralSfx.ToClip("Étourdi", ProceduralSfx.Stun()));
@@ -409,7 +410,7 @@ namespace ItHunts.Combat
 
             // Son 3D au point d'impact : plus grave pour un objet lourd, plus fort pour un gros coup.
             float heavy = Mathf.InverseLerp(5f, 40f, e.SourceMass);
-            Play(_hit, e.Point, settings.hitVolume * Mathf.Lerp(0.5f, 1f, Mathf.InverseLerp(0f, 60f, e.Damage)),
+            Play(_hitHeavy != null && e.SourceMass >= 15f ? _hitHeavy : _hit, e.Point, settings.hitVolume * Mathf.Lerp(0.5f, 1f, Mathf.InverseLerp(0f, 60f, e.Damage)),
                 Mathf.Lerp(settings.hitPitchLight, settings.hitPitchHeavy, heavy));
             if (e.Killed)
             {

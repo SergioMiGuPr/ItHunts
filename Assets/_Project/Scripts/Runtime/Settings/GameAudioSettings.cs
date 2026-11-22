@@ -55,6 +55,8 @@ namespace ItHunts.Settings
 
         [Header("Combat (art-sons-2) : silence tant qu'ils manquent")]
         public AudioClip impactHit;
+        /// <summary>Objet lourd (caisse, ≥ 15 kg) qui touche : Sfx_Impact_Lourd ; sans lui, impactHit plus grave.</summary>
+        public AudioClip impactHeavy;
         public AudioClip enemyKill;
         public AudioClip objectBreak;
         public AudioClip stun;
@@ -78,6 +80,8 @@ namespace ItHunts.Settings
         public AudioClip bossWeakPoint;
         public AudioClip bossPhase;
         public AudioClip bossSlam;
+        /// <summary>Bond du boss : morsure à la réception (Sfx_Boss_Attaque_Morsure).</summary>
+        public AudioClip bossBite;
         public AudioClip bossDeath;
 
         [Header("Nuit 3 (PR #41) : musiques et ambiances par acte, peur, mouvements, interface")]
