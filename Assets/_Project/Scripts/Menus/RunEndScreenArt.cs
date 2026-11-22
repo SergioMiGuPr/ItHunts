@@ -24,6 +24,8 @@ namespace ItHunts.Menus
 
         public void Attach(RunEndScreen end)
         {
+            if (end.Skinned)
+                return;                                                   // l'écran de fin de la DA (PR #42) est déjà posé
             _end = end;
             PlayerInput pi = FindFirstObjectByType<PlayerInput>(FindObjectsInactive.Include);
             MenuSkinSettings skin = PauseMenu.SkinOf(pi);

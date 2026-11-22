@@ -94,6 +94,7 @@ namespace ItHunts.Level
                 if (p.Dead)
                     return;
                 Falls++;
+                ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings?.fallVoid, p.transform.position, 1f, 30f);
                 if (p.Motor != null)
                     p.Motor.Teleport(RespawnFor(p));
                 p.TakeEnvironmentDamage(damage, p.transform.position, Time.time, "Chute dans le vide");

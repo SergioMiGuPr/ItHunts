@@ -23,8 +23,8 @@ namespace ItHunts.Economy
         public void Configure(EconomySettings economy) => settings = economy;
         public int Price => settings != null ? settings.lockedDoorPrice : 50;
         public int PriceFor(PlayerHealth p) => Prices.For(settings, p, PriceKind.Porte, Price);
-        public Vector3 Point => transform.position;
-        public float Range => settings != null ? settings.interactRange : 4f;
+        public Vector3 Point => transform.position + Vector3.up * 1.8f;   // à hauteur des yeux (porte posée au sol)
+        public float Range => Mathf.Max(settings != null ? settings.interactRange : 4f, 8f);   // portes de 12 m (nuit 3)
         public bool AcceptsGrab => false;
 
         // Un texte devant chaque face de la porte : la porte cache celui de l'autre face (règle des textes en monde).

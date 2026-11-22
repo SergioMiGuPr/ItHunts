@@ -181,6 +181,8 @@ namespace ItHunts.Artifacts
                     Target = enemy, Damage = taken, Point = point, Killed = killed, Tier = crit ? HitTier.Moyen : HitTier.Petit, Time = time,
                     Bullet = true, Critical = crit, Headshot = head, AttackerId = shooterId,
                 });
+            if (crit && GameVfx.Settings != null && GameVfx.Settings.critical != null)
+                GameVfx.Spawn(GameVfx.Settings.critical, point, Quaternion.identity, 1f, null, 1.5f);
             if (crit)
                 ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings != null ? ItHunts.Audio.GameAudio.Settings.headshot : null, point, 1f);
             if (up == null || mods == null)
@@ -188,8 +190,13 @@ namespace ItHunts.Artifacts
             if (!killed && up.Paralysis > 0)
             {
                 var body = enemy.GetComponent<EnemyBody>();
-                if (body != null)
-                    body.StunFor(mods.paralysisPerStack * up.Paralysis);
+                if (body != null && body.StunFor(mods.paralysisPerStack * up.Paralysis))
+                {
+                    ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings?.paralysis, point, 0.9f);
+                    var pv = GameVfx.Settings;
+                    if (pv != null && pv.paralysis != null)
+                        GameVfx.Spawn(pv.paralysis, enemy.Top - Vector3.up * 0.6f, Quaternion.identity, 1f, enemy.transform, mods.paralysisPerStack * up.Paralysis + 0.3f);
+                }
             }
 
             if (!killed && up.Incendiary > 0)
@@ -209,7 +216,9 @@ namespace ItHunts.Artifacts
         {
             var vfx = GameVfx.Settings;
             if (vfx != null)
-                GameVfx.Spawn(vfx.impactHeavy != null ? vfx.impactHeavy : vfx.sparks, at, Quaternion.identity, Mathf.Max(1f, radius * 0.5f), null, 2f);
+                GameVfx.Spawn(vfx.explosionKill != null ? vfx.explosionKill : vfx.impactHeavy != null ? vfx.impactHeavy : vfx.sparks, at, Quaternion.identity,
+                    vfx.explosionKill != null ? radius / 3.5f : Mathf.Max(1f, radius * 0.5f), null, 3f);
+            ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings?.explosionKill, at, 1f);
             int n = Physics.OverlapSphereNonAlloc(at, radius, Around, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < n; i++)
             {

@@ -17,6 +17,10 @@ MonoBehaviour:
   parryPrefab: {fileID: 4931113643270371725, guid: c640d872c8136594e8726cb2856f4990, type: 3}
   merchantPanelPrefab: {fileID: 1216014644797923048, guid: f8fb4c62b651b1e48972659cd01bf820, type: 3}
   chestPanelPrefab: {fileID: 6814563504188980487, guid: 7ab43712011a70746bd267e0f0c4a0a2, type: 3}
+  endOfRunPrefab: {fileID: 7982236462196980059, guid: 36b060bf323a8254482778f809769d83, type: 3}
+  doorPanelPrefab: {fileID: 3429655861808232250, guid: bf61a56507d2e7f499d12091af073b8c, type: 3}
+  bossBarPrefab: {fileID: 4489342621281088891, guid: af0be2af4280e7b4397dcb6659a52127, type: 3}
+  critPrefab: {fileID: 6371434102891039647, guid: ba36321a3a58270409ee45df2e4b59b9, type: 3}
   textFont: {fileID: 12800000, guid: 9c0d1388ac19db84387d4c02dd031f52, type: 3}
   titleFont: {fileID: 12800000, guid: beb1fe48b368ab24e8f157905953e401, type: 3}
   numberOutline: {r: 0.04, g: 0.02, b: 0.04, a: 0.9}

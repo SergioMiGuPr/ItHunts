@@ -597,6 +597,8 @@ namespace ItHunts.Hud
 
         /// <summary>Âmes (rouge un instant si un achat est refusé, plus clair à chaque gain) et aide d'interaction.</summary>
         private ItHunts.Player.PlayerParry _parryDebug;
+        /// <summary>Le menu de porte de la DA (Panneau_Porte) est affiché : l'invite texte s'efface (pas de doublon).</summary>
+        public static bool DoorPanelShown { get; set; }
 
         private void UpdateSouls(float now)
         {
@@ -615,7 +617,7 @@ namespace ItHunts.Hud
             var reader = GetComponent<ItHunts.Input.PlayerInputReader>();
             string key = reader != null ? ItHunts.Input.RebindStore.Prompt(reader.InteractAction, reader.UsingGamepad) : "E";   // touche actuelle (A5)
             var focus = _interactor != null ? _interactor.Focus : null;
-            _promptText.text = focus != null ? $"{key} : {focus.Prompt(_health)}" : string.Empty;
+            _promptText.text = focus != null && !DoorPanelShown ? $"{key} : {focus.Prompt(_health)}" : string.Empty;
             Color promptColor = _skin != null ? new Color(0.95f, 0.88f, 0.74f) : Color.white;
             _promptText.color = refused > 0f ? Color.Lerp(promptColor, new Color(1f, 0.25f, 0.2f), refused) : promptColor;
             SyncPromptFrame();

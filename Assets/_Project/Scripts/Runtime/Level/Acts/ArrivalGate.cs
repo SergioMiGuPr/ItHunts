@@ -82,6 +82,7 @@ namespace ItHunts.Level.Acts
             if (!Opened && OpenAmount > 0.01f)
             {
                 Opened = true;
+                ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings?.stalkerArrival, transform.position, 1f, 120f);
                 ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Pick(ItHunts.Audio.GameAudio.Settings?.stalkerEnragedCries), transform.position, 1f);
             }
         }

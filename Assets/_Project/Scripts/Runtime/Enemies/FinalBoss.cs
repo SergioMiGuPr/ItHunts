@@ -44,6 +44,9 @@ namespace ItHunts.Enemies
         public readonly Dictionary<Attack, int> AttackCounts = new Dictionary<Attack, int>();
         public static FinalBoss Current_ { get; private set; }
         public static event System.Action<FinalBoss> Defeated;
+        /// <summary>Le combat commence (barre de vie de la DA) ; ArtBar : la barre de la DA est posée (pas de barre provisoire).</summary>
+        public static event System.Action<FinalBoss> FightStarted;
+        public static bool ArtBar { get; set; }
         public Vector3 ArenaCenter { get; set; }
         public float ArenaRadius { get; set; } = 40f;
         /// <summary>Goules invoquées (prefab posé par l'arène).</summary>
@@ -94,7 +97,10 @@ namespace ItHunts.Enemies
             Play("Traqueur_Repos");
             GameAudio.PlayAt(GameAudio.Pick(GameAudio.Settings?.stalkerEnragedCries), transform.position + Vector3.up * 10f, 1f, 120f);
             DamageEvents.Hit += OnHit;
-            ItHunts.Hud.BossHealthBar.Show(this);
+            ArtBar = false;
+            FightStarted?.Invoke(this);
+            if (!ArtBar)
+                ItHunts.Hud.BossHealthBar.Show(this);
         }
 
         private void OnDestroy()
@@ -182,6 +188,8 @@ namespace ItHunts.Enemies
                     return;
                 float dmg = e.Damage * settings.weakPointMultiplier;
                 TakeDamage(dmg);
+                if (GameVfx.Settings != null && GameVfx.Settings.bossWound != null)
+                    GameVfx.Spawn(GameVfx.Settings.bossWound, e.Point, Quaternion.identity, 1.5f, null, 2f);
                 w.Taken += dmg;
                 if (w.Taken >= settings.weakPointBreak)
                 {
@@ -591,7 +599,8 @@ namespace ItHunts.Enemies
         {
             var vfx = GameVfx.Settings;
             if (vfx != null)
-                GameVfx.Spawn(vfx.stalkerLandingDust != null ? vfx.stalkerLandingDust : vfx.impactHeavy, at, Quaternion.identity, Mathf.Max(1f, radius / 4f), null, 3f);
+                GameVfx.Spawn(vfx.bossGroundImpact != null ? vfx.bossGroundImpact : vfx.stalkerLandingDust != null ? vfx.stalkerLandingDust : vfx.impactHeavy, at,
+                    Quaternion.identity, Mathf.Max(1f, radius / 4f), null, 3f);
             foreach (PlayerHealth p in PlayerHealth.All)
             {
                 if (p == null || p.Dead)

@@ -16,6 +16,11 @@ namespace ItHunts.Settings
         public GameObject parryPrefab;
         public GameObject merchantPanelPrefab;
         public GameObject chestPanelPrefab;
+        [Header("Interface de la nuit 3 (PR #42)")]
+        public GameObject endOfRunPrefab;
+        public GameObject doorPanelPrefab;
+        public GameObject bossBarPrefab;
+        public GameObject critPrefab;
         [Header("Polices (OFL)")]
         [Tooltip("Texte et nombres : EB Garamond SemiBold.")]
         public Font textFont;

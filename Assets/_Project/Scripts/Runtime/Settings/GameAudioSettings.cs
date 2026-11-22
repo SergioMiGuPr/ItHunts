@@ -43,14 +43,7 @@ namespace ItHunts.Settings
         /// Emplacements qui attendent les sons de la PR art-sons-2 (nuit 3) : silence tant qu'ils sont vides (jamais un son synthétisé).
         /// Vidée à mesure que les sons arrivent.
         /// </summary>
-        public static readonly string[] AwaitingArt =
-        {
-            nameof(tractionStart), nameof(tractionHum), nameof(tractionEnd), nameof(repulsion), nameof(refusal), nameof(chargeReady),
-            nameof(impactHit), nameof(enemyKill), nameof(objectBreak), nameof(stun), nameof(parrySuccess), nameof(parryMiss), nameof(headshot),
-            nameof(barrelReloadDone), nameof(lanternRelight), nameof(ghoulHiss), nameof(flyerScreech), nameof(soulPickup), nameof(wavePeak),
-            nameof(doorOpen), nameof(gateRise), nameof(fallVoid), nameof(bossHit), nameof(bossWeakPoint), nameof(bossPhase), nameof(bossSlam),
-            nameof(bossDeath),
-        };
+        public static readonly string[] AwaitingArt = { };            // PR #41 (art-sons-2) intégrée : tous les sons sont là
 
         [Header("Orbe et mouvement (art-sons-2) : silence tant qu'ils manquent")]
         public AudioClip tractionStart;
@@ -86,6 +79,21 @@ namespace ItHunts.Settings
         public AudioClip bossPhase;
         public AudioClip bossSlam;
         public AudioClip bossDeath;
+
+        [Header("Nuit 3 (PR #41) : musiques et ambiances par acte, peur, mouvements, interface")]
+        public AudioClip musicChateau;
+        public AudioClip musicJardin;
+        public AudioClip musicBoss;
+        public AudioClip ambienceCave, ambienceChateau, ambienceJardin;
+        [Range(0f, 1f)] public float ambienceVolume = 0.6f;
+        [Tooltip("Cœur qui bat quand le traqueur est proche : paliers à 60 / 40 / 20 m (volume 0.3 / 0.6 / 1, vitesse 1 / 1.25 / 1.5).")]
+        public AudioClip heartbeat;
+        public AudioClip stalkerArrival;
+        public AudioClip lockedDoor, menuInteraction, purchase;
+        public AudioClip grab, release, throwObject;
+        public AudioClip dash, jump, land, slideLoop, wallJump, mantle, waterDive;
+        public AudioClip paralysis, explosionKill, crateBreak;
+        public AudioClip uiHover, uiClick, uiBack;
 
         [Header("Musique en jeu")]
         public AudioClip musicExploration;

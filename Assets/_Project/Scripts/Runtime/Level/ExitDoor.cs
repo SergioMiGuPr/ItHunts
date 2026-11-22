@@ -15,7 +15,7 @@ namespace ItHunts.Level
     {
         [Tooltip("Matériau quand elle est payable (lueur orange) ; verrouillée, elle garde son matériau d'origine (rouge).")]
         [SerializeField] private Material unlockedMaterial;
-        [SerializeField] private float interactRange = 6f;
+        [SerializeField] private float interactRange = 9f;
 
         private ZoneState _zone;
         private WorldLabel[] _labels;
@@ -26,7 +26,7 @@ namespace ItHunts.Level
         public bool Open { get; private set; }
         public bool Unlocked => Zone != null && Zone.ExitUnlocked;
         public int Price => Zone != null && Zone.Settings != null ? Zone.Settings.exitPrice : 200;
-        public Vector3 Point => transform.position;
+        public Vector3 Point => transform.position + Vector3.up * 1.8f;   // à hauteur des yeux (porte posée au sol)
         public float Range => interactRange;
         public bool AcceptsGrab => false;
 
