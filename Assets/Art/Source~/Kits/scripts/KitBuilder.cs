@@ -403,7 +403,11 @@ public static class KitBuilder
             lum.range = Mathf.Max(15.4f, s * 1.6f);
             froid.transform.position = b.center + new Vector3(s * 0.7f + 1f, s * 0.6f + 2f, -s * 0.9f - 2f);
             froid.range = Mathf.Max(14f, s * 2.2f);
+            // les autres pièces sont masquées (la caméra ne tombe jamais dans une pièce voisine)
+            var autres = root.Cast<Transform>().Where(o => o != t && o.name != "Sol" && o.gameObject.activeSelf).ToList();
+            foreach (var o in autres) o.gameObject.SetActive(false);
             Shot(cam, Path.Combine(dossier, t.name + ".jpg"), 480, 480);
+            foreach (var o in autres) o.gameObject.SetActive(true);
             sb.Append(t.name).Append(' ');
         }
         Object.DestroyImmediate(lum);
