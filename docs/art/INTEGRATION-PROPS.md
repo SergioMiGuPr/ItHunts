@@ -607,3 +607,117 @@ leur `Grabbable` et leur lueur ; leur modèle doit rester dans la boîte (la col
 | `Prop_Autel` | 2.6 × 1.2 × 1.3 | 4 | fixe | |
 | Lustre (salles) | 1.6 × 0.3 × 1.6, suspendu | — | **attrapable** (25 kg, tombe) | pivot au point d'accroche |
 | Lustre géant (arène) | 12 × 1.5 × 12, à 24 m | 1 | piège | |
+
+## Salles d'exemple des trois actes (lot 5, nuit du 2026-11-22, PR art-salles-exemple)
+
+Onze salles entièrement habillées et éclairées, assemblées avec les kits des lots 2 à 4, prêtes à servir de modèles. Prefabs dans `Assets/Art/Levels/Exemples/<Acte>/<Nom>.prefab` (pièces des kits avec collisions, blocs de sol et de plafond, lumières) ; scènes de contrôle `Assets/Art/Scenes/Exemples_<Acte>.unity` (éclairage de l'acte) ; captures dans `docs/art/rendus/Exemples/<Acte>/`. Les plans sont générés par `Assets/Art/Source~/Kits/scripts/salles.py` (texte lisible dans `Assets/Art/Source~/Kits/plans/`), assemblés par `SalleBuilder.cs`. **Pour `main` :** y ajouter le gameplay (points d'apparition, vagues, coffres, portes de module, NavMesh) ; les repères `Accroche_*` des pièces marquent les points de traction et les rebords. Coordonnées dans le repère du prefab (m), +Z vers le nord.
+
+### Chateau_GrandHall (Château, 32 × 24 m, voûtes à 19–24 m)
+
+- **Identité :** Grand hall de réception abandonné : nef à piliers, trois rayons de lune qui tombent des hautes fenêtres nord sur le marbre, tables renversées d'un banquet interrompu.
+- **Fonction :** Salle d'arène de l'acte II (vagues) et hub vers les galeries.
+- **Entrées et sorties :** Arcade sud-ouest (6 × 10 m, x = -12) ; galerie est à 8 m (sortie haute vers les étages).
+- **Routes de parcours :** Course sur le tapis central → saut sur la table renversée → traction sur un pilier (accroches à 12 m) → galerie est à 8 m ; ou grand escalier du bas-côté sud (monte vers l'est jusqu'à la galerie). Bunny hop dans la nef de 32 m.
+- **Points de grab et de traction :** Piliers (`Accroche_Traction` à 12 m), balustrade de la galerie, chandeliers (lustres que le jeu peut faire tomber).
+- **Moment de tension :** Les rayons de lune sont les seuls endroits éclairés : on y voit le traqueur entrer par l'arcade avant qu'il ne replonge dans le noir des bas-côtés.
+- **Captures :** `docs/art/rendus/Exemples/Chateau/Chateau_GrandHall_*.jpg`
+
+### Chateau_SalleBibliotheque (Château, 24 × 16 m, 12 m de haut, galerie à 6 m)
+
+- **Identité :** Bibliothèque silencieuse : rayonnages du sol au plafond, galerie de lecture, livres jetés au sol, un lutrin encore ouvert.
+- **Fonction :** Salle de transition verticale : on y monte vers les étages ; petite vague dans les allées.
+- **Entrées et sorties :** Porte basse sud (arcade réduite, 4 × 8.5 m) ; sortie haute par la galerie nord sous la fenêtre (6 m).
+- **Routes de parcours :** Wall jump entre deux rayonnages qui se font face (coins nord-est et nord-ouest, 5.5 m d'écart) jusqu'à la galerie ; course sur la galerie en U (48 m) ; descente en glissade sur la table.
+- **Points de grab et de traction :** Lustre (centre, 12 m), balustrades de la galerie.
+- **Moment de tension :** Allées étroites entre les rayonnages : on n'y voit pas venir ce qui tourne le coin ; le lustre grince au-dessus de la seule zone éclairée.
+- **Captures :** `docs/art/rendus/Exemples/Chateau/Chateau_SalleBibliotheque_*.jpg`
+
+### Chateau_Chapelle (Château, 22 × 30 m, 20 m sous les fenêtres)
+
+- **Identité :** Chapelle profanée : rosace au fond, deux rayons de lune croisés sur les bancs, cierges encore allumés sur l'autel.
+- **Fonction :** Salle de tension avant le boss de l'acte II, ou salle à coffre (sur l'autel).
+- **Entrées et sorties :** Arcade ouest-sud (porte de 6 × 10 m) ; sortie derrière l'autel (à percer dans le mur nord par le jeu).
+- **Routes de parcours :** Bunny hop dans l'allée centrale (24 m) ; bancs = couverts bas et marches de saut ; colonnes de 12 m en quinconce pour la traction ; rosace = repère visible depuis l'entrée.
+- **Points de grab et de traction :** Colonnes (sommet à 12 m), rebord de l'autel, tentures (décor).
+- **Moment de tension :** Bancs alignés comme des rangées de silhouettes ; seul l'autel est éclairé, on le voit de loin et on sait qu'il faut y aller.
+- **Captures :** `docs/art/rendus/Exemples/Chateau/Chateau_Chapelle_*.jpg`
+
+### Chateau_SalleDeBal (Château, 36 × 24 m, 20 m sous plafond, galeries à 8 m)
+
+- **Identité :** Salle de bal figée au milieu de la fête : piste vide en damier sous quatre rayons de lune, tables et chaises renversées tout autour, estrade des musiciens abandonnée.
+- **Fonction :** Arène principale de l'acte II (vagues) : piste centrale dégagée, bords encombrés.
+- **Entrées et sorties :** Arcade sud (x = -4) ; galeries est et ouest à 8 m (sorties hautes).
+- **Routes de parcours :** Bunny hop en rond sur la piste (cercle de 20 m) ; traction vers les lustres (pivot à 19 m, couronne à 12 m) puis lâcher vers une galerie ; estrade = tremplin.
+- **Points de grab et de traction :** Lustres (3), balustrades des galeries, estrade.
+- **Moment de tension :** Les rayons de lune découpent la piste en bandes claires : ce qui la traverse est visible une seconde, puis disparaît.
+- **Captures :** `docs/art/rendus/Exemples/Chateau/Chateau_SalleDeBal_*.jpg`
+
+### Cave_Cachots (Caves, 40 × 20 m, voûte à 9 m)
+
+- **Identité :** Cachots du château : douze cellules alignées, deux forcées, une partie de dés interrompue à la table des gardes.
+- **Fonction :** Couloir de tension : goules dans les cellules ouvertes, embuscades latérales.
+- **Entrées et sorties :** Bout ouest de la galerie (6 m de large) ; bout est par la salle des gardes.
+- **Routes de parcours :** Course droite de 40 m (bunny hop) ; saut sur la table des gardes ; les grilles servent de murs de wall jump (5 m) pour monter sur le linteau des cellules et courir dessus.
+- **Points de grab et de traction :** Linteaux de pierre des cellules (5.6 m), brasero (repère lumineux).
+- **Moment de tension :** Les deux cellules ouvertes : on passe devant le noir de chacune sans savoir si elle est vide.
+- **Captures :** `docs/art/rendus/Exemples/Caves/Cave_Cachots_*.jpg`
+
+### Cave_SalleDeGarde (Caves, 28 × 20 m, voûte à 10 m)
+
+- **Identité :** Poste de garde à moitié effondré : la roche a percé la maçonnerie, le repas des gardes est resté sur la table, la réserve est derrière le mur écroulé.
+- **Fonction :** Salle de combat courte (goules) et salle à coffre (dans la réserve).
+- **Entrées et sorties :** Arche basse sud-ouest ; brèches des murs brisés au sud (2 à 4 m de haut, on saute par-dessus).
+- **Routes de parcours :** Saut par-dessus les murs brisés (crêtes de 4 à 8 m : wall jump sur les tronçons hauts) ; table et bancs comme marches ; contournement de la réserve par le mur à moitié écroulé.
+- **Points de grab et de traction :** Crêtes des murs brisés, brasero (repère).
+- **Moment de tension :** La réserve n'est visible qu'en passant le mur écroulé : coffre ou goule, on ne le sait qu'au dernier moment.
+- **Captures :** `docs/art/rendus/Exemples/Caves/Cave_SalleDeGarde_*.jpg`
+
+### Cave_Citerne (Caves, 54 × 44 m, voûte à 19 m)
+
+- **Identité :** Ancienne citerne devenue caverne : un canal noir la coupe en deux, un pont de pierre l'enjambe, une passerelle pourrie franchit un gouffre.
+- **Fonction :** Salle de parcours de l'acte I : le sol est coupé par l'eau et le vide, il faut choisir sa route.
+- **Entrées et sorties :** Brèche sud-est (paroi manquante, 12 m) ; sortie haute à l'ouest par les rebords (8.5 m).
+- **Routes de parcours :** Pont de pierre (bunny hop par-dessus le canal) ; passerelle de bois (deux planches manquent : saut) ; plateformes de roche (dessus à 4 m et 6 m) puis rebords à 4.5 et 8.5 m contre la paroi ouest (wall jump) ; pilier de roche = traction pour couper le canal.
+- **Points de grab et de traction :** Pilier de roche (Accroche_Traction à 9 m), rebords (Accroche_Rebord), parapets du pont.
+- **Moment de tension :** Le gouffre sous la passerelle : on entend l'eau tomber, la planche manquante se voit au dernier moment.
+- **Captures :** `docs/art/rendus/Exemples/Caves/Cave_Citerne_*.jpg`
+
+### Cave_CavernePuits (Caves, Ø 44 m, voûte à 18 m)
+
+- **Identité :** Caverne ronde autour d'un vieux puits, réserve pillée dans une alcôve, et au nord la grande porte de bois qui ferme l'acte.
+- **Fonction :** Salle de fin de l'acte I (sortie) et hub des galeries.
+- **Entrées et sorties :** Arche haute sud (8 × 11 m, le traqueur passe) ; arche basse ouest (joueur seul) ; porte de sortie nord (12 × 13 m).
+- **Routes de parcours :** Tour complet de la caverne en course (140 m) ; plateforme de roche → corniche de bois (6 m) → saut vers l'arche en ruine ; le puits est un obstacle central (on le contourne en glissade).
+- **Points de grab et de traction :** Traverse du puits (3.8 m), arche en ruine, corniche de bois.
+- **Moment de tension :** La porte de sortie est en vue dès l'entrée, éclairée par deux candélabres : il faut traverser toute la caverne pour l'atteindre.
+- **Captures :** `docs/art/rendus/Exemples/Caves/Cave_CavernePuits_*.jpg`
+
+### Jardin_AlleeDesStatues (Jardin, 80 × 64 m, ciel ouvert)
+
+- **Identité :** Jardin à la française retourné à la sauvagerie : allée de statues voilées sous la lune, fontaine croupie, cimetière du domaine.
+- **Fonction :** Première salle de l'acte III : traversée ouverte, vagues d'ennemis dans les parcelles.
+- **Entrées et sorties :** Grande porte du château (sud, 9 × 13 m) ; sortie vers l'arène par la brèche de la falaise au nord (x = 0), où se raccorde l'escalier de descente de l'arène.
+- **Routes de parcours :** Course sur l'allée de gravier (60 m, bunny hop) ; wall jump entre les deux gros arbres du sud-ouest (5 à 6 m d'écart) puis traction sur une statue ; toit du kiosque par traction ; serre traversée en glissade.
+- **Points de grab et de traction :** Statues (Accroche_Traction), arbres (Accroche_Traction à mi-tronc), toit du kiosque (Accroche_Traction).
+- **Moment de tension :** La brume cache le sol et les goules qui rampent ; les statues voilées ressemblent à des silhouettes qui attendent : on ne sait pas laquelle va bouger.
+- **Captures :** `docs/art/rendus/Exemples/Jardin/Jardin_AlleeDesStatues_*.jpg`
+
+### Jardin_Labyrinthe (Jardin, 48 × 48 m, haies de 2.6 m)
+
+- **Identité :** Labyrinthe de haies devenu sauvage, kiosque au centre, statues voilées aux détours, brume jusqu'aux genoux.
+- **Fonction :** Salle de traque : le traqueur y entre aussi (les haies ne l'arrêtent pas visuellement mais le cachent) ; objectif au centre.
+- **Entrées et sorties :** Portail sud (x = -3) ; sortie nord (x = 3).
+- **Routes de parcours :** Couloirs de 6 m (le chemin le plus court fait environ 70 m) ; double saut sur une haie (2.6 m < 2.9 m) pour couper ; toit du kiosque par traction : vue sur tout le labyrinthe ; arbres morts aux angles pour remonter.
+- **Points de grab et de traction :** Kiosque (Accroche_Traction à 5.2 m), arbres des angles, statues.
+- **Moment de tension :** On n'entend que la brume et ses propres pas ; au détour d'une haie, une statue voilée, ou autre chose.
+- **Captures :** `docs/art/rendus/Exemples/Jardin/Jardin_Labyrinthe_*.jpg`
+
+### Arene_Boss (Jardin, 64 × 64 m, 8 m sous le jardin)
+
+- **Identité :** Cuvette de falaises au pied du domaine, ancien théâtre de verdure : piliers brisés, deux statues géantes, la lune juste au-dessus.
+- **Fonction :** Arène du boss : terrain dégagé avec relief, accroches de traction, couverts.
+- **Entrées et sorties :** Escalier de descente au sud (12 m de large, depuis le jardin) ; aucune autre sortie avant la mort du boss.
+- **Routes de parcours :** Boucle complète autour des buttes (bunny hop sur 60 m) ; traction de pilier en pilier (16 à 20 m d'écart) ; statues géantes (accroche à 9 m) ; glissade sur les pentes des buttes.
+- **Points de grab et de traction :** 6 piliers brisés (Accroche_Traction à 8 m), 2 statues géantes (Accroche_Traction à 9 m), l'arbre mort du coin sud-est.
+- **Moment de tension :** On descend l'escalier vers une arène vide sous la lune ; le boss entre par le haut des falaises.
+- **Captures :** `docs/art/rendus/Exemples/Jardin/Arene_Boss_*.jpg`
