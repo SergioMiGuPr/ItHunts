@@ -89,7 +89,7 @@ Material:
     - _RimColor: {r: 0.35, g: 0.45, b: 0.7, a: 1}
     - _ShadowColor: {r: 0.028, g: 0.034, b: 0.07499998, a: 1}
     - _TileOffset: {r: 0, g: 0, b: 0, a: 0}
-    - _TileSize: {r: 2, g: 4, b: 0, a: 0}
+    - _TileSize: {r: 2, g: 2, b: 0, a: 0}
     - _WetColor: {r: 0.54999995, g: 0.62, b: 0.62, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

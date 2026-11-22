@@ -1,5 +1,9 @@
 # Textures réelles qui seraient nettement meilleures
 
+**Nuit 4 (2026-11-23) : les cinq textures du tableau ci-dessous ont été fournies (Higgsfield, Nano Banana) et intégrées
+(lot 0, PR `art-textures-1`) : raccord sans couture, hauteur dans l'alpha, tuiles `T_Mat_Ecorce`, `HerbeSeche`, `Gravier`,
+`Tapis`, `Tenture`, `Marbre`. Sources : `docs/art/textures/sources/`. Le tableau reste comme historique.**
+
 Le travail de la nuit du 2026-11-22 s'est fait **sans image ni texture fournie**. Toutes les textures sont peintes par
 script : procédural, sans IA.
 
