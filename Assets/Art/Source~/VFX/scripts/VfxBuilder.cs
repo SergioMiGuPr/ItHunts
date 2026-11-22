@@ -272,6 +272,150 @@ public static class VfxBuilder
     // traction (flux bleu de l'orbe au point visé), répulsion (onde courte orange), épée du koala (3 coups + impact vert),
     // sensations (traînées de vitesse, impacts génériques, poussière d'atterrissage du joueur). Les 13 prefabs du lot D ne
     // sont pas reconstruits.
+    // ------------------------------------------------------------------ lot 8 de la nuit du 2026-11-22
+    static Light Flash(Transform parent, Color c, float intensite, float portee, float duree, float pulsation = 0f)
+    {
+        var go = new GameObject("Lumiere"); go.transform.SetParent(parent, false);
+        var l = go.AddComponent<Light>(); l.type = LightType.Point; l.color = c; l.range = portee; l.intensity = intensite; l.shadows = LightShadows.None;
+        var f = go.AddComponent<LumiereFlash>(); f.intensite = intensite; f.duree = duree; f.pulsation = pulsation;
+        return l;
+    }
+
+    public static string ConstruitLot3()
+    {
+        if (!BonProjet()) return "MAUVAIS PROJET";
+        Importe();
+        var debris = AssetDatabase.LoadAssetAtPath<Material>($"{MAT}/M_VFX_Debris.mat");
+        var pous = AssetDatabase.LoadAssetAtPath<Material>($"{MAT}/M_VFX_Poussiere.mat");
+        var fumG = AssetDatabase.LoadAssetAtPath<Material>($"{MAT}/M_VFX_Fumee_Goule.mat");
+        // critique : or et rouge sang
+        var crE = Mat("M_VFX_Critique_Eclat", "T_VFX_Eclat_2x2", ENCRE, C(0.55f, 0.12f, 0.05f), C(1f, 0.62f, 0.18f), C(1f, 0.95f, 0.7f), 3.4f);
+        var crS = Mat("M_VFX_Critique_Etincelle", "T_VFX_Etincelle", ENCRE, C(0.7f, 0.3f, 0.05f), C(1f, 0.75f, 0.3f), C(1f, 0.97f, 0.8f), 3.2f, false, 0.5f);
+        var crA = Mat("M_VFX_Critique_Anneau", "T_VFX_Anneau", ENCRE, C(0.55f, 0.15f, 0.05f), C(1f, 0.6f, 0.2f), C(1f, 0.92f, 0.7f), 2.8f, false, 0.7f);
+        // paralysie : cyan électrique
+        var elE = Mat("M_VFX_Eclair", "T_VFX_Eclair_2x2", C(0.01f, 0.03f, 0.08f), C(0.1f, 0.35f, 0.7f), C(0.45f, 0.85f, 1f), C(0.92f, 1f, 1f), 3.6f);
+        var elA = Mat("M_VFX_Paralysie_Anneau", "T_VFX_Anneau", C(0.01f, 0.03f, 0.08f), C(0.15f, 0.45f, 0.8f), C(0.5f, 0.88f, 1f), C(0.9f, 1f, 1f), 2.6f, false, 0.6f);
+        var elS = Mat("M_VFX_Paralysie_Etincelle", "T_VFX_Etincelle", C(0.01f, 0.03f, 0.08f), C(0.2f, 0.55f, 0.9f), C(0.6f, 0.92f, 1f), C(0.95f, 1f, 1f), 3f, false, 0.4f);
+        // explosion de zone : cramoisi et os
+        var exE = Mat("M_VFX_Explosion_Eclat", "T_VFX_Eclat_2x2", ENCRE, C(0.35f, 0.04f, 0.08f), C(0.85f, 0.25f, 0.2f), C(1f, 0.85f, 0.65f), 3f);
+        var exF = Mat("M_VFX_Explosion_Fumee", "T_VFX_Fumee_4x4", ENCRE, C(0.12f, 0.04f, 0.07f), C(0.32f, 0.1f, 0.14f), C(0.7f, 0.3f, 0.25f), 1.4f, false, 0.8f);
+        var exA = Mat("M_VFX_Explosion_Anneau", "T_VFX_Anneau", ENCRE, C(0.4f, 0.06f, 0.08f), C(0.95f, 0.35f, 0.2f), C(1f, 0.85f, 0.6f), 2.6f, false, 0.8f);
+        var fis = Mat("M_VFX_Fissure", "T_VFX_Fissure", ENCRE, C(0.2f, 0.05f, 0.05f), C(0.5f, 0.12f, 0.08f), C(1f, 0.5f, 0.2f), 1f, false, 1f);
+        // parade lisible : blanc bleuté
+        var paE = Mat("M_VFX_ParadeL_Etoile", "T_VFX_Etoile", C(0.02f, 0.03f, 0.08f), C(0.45f, 0.6f, 0.95f), C(0.82f, 0.9f, 1f), C(1f, 1f, 1f), 3.8f);
+        var paA = Mat("M_VFX_ParadeL_Anneau", "T_VFX_Anneau", C(0.02f, 0.03f, 0.08f), C(0.4f, 0.55f, 0.95f), C(0.8f, 0.9f, 1f), C(1f, 1f, 1f), 3f, false, 0.6f);
+        // boss : rouge sombre, sang noir
+        var bG = Mat("M_VFX_Boss_Griffe", "T_VFX_Arc_2x2", ENCRE, C(0.3f, 0.02f, 0.05f), C(0.75f, 0.1f, 0.12f), C(1f, 0.5f, 0.4f), 2.6f);
+        var bS = Mat("M_VFX_Boss_Sang", "T_VFX_Eclat_2x2", ENCRE, C(0.12f, 0.0f, 0.02f), C(0.35f, 0.02f, 0.05f), C(0.6f, 0.08f, 0.1f), 1.2f);
+        var bSG = Mat("M_VFX_Boss_Gouttes", "T_VFX_Etincelle", ENCRE, C(0.15f, 0.0f, 0.03f), C(0.4f, 0.03f, 0.06f), C(0.7f, 0.12f, 0.12f), 1.2f, false, 0.8f);
+        var pfC = Mat("M_VFX_PointFaible", "T_VFX_Etoile", ENCRE, C(0.6f, 0.15f, 0.02f), C(1f, 0.55f, 0.1f), C(1f, 0.95f, 0.7f), 4.2f);
+        var pfA = Mat("M_VFX_PointFaible_Anneau", "T_VFX_Anneau", ENCRE, C(0.6f, 0.15f, 0.02f), C(1f, 0.5f, 0.12f), C(1f, 0.9f, 0.6f), 3f, false, 0.6f);
+
+        // 1. critique (headshot) au point touché
+        var go = Racine("VFX_Critique", 1.2f);
+        PS(go.transform, new P { nom = "Eclat", mat = crE, tuiles = 2, boucle = false, duree = 0.35f, rafale = 1, vie = new Vector2(0.2f, 0.2f), vitesse = Vector2.zero, taille = new Vector2(1.1f, 1.1f), rayon = 0.001f, flipAleatoire = false, max = 2, dissout = 0.4f });
+        PS(go.transform, new P { nom = "Anneau", mat = crA, boucle = false, duree = 0.4f, rafale = 1, vie = new Vector2(0.3f, 0.3f), vitesse = Vector2.zero, taille = new Vector2(0.5f, 0.5f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.3f, 1, 3.2f), max = 2, dissout = 0.8f });
+        PS(go.transform, new P { nom = "Etincelles", mat = crS, boucle = false, duree = 0.5f, rafale = 16, vie = new Vector2(0.18f, 0.38f), vitesse = new Vector2(5f, 11f), taille = new Vector2(0.05f, 0.09f), rayon = 0.05f, etire = true, etirement = 0.05f, gravite = 0.6f, max = 18 });
+        Flash(go.transform, new Color(1f, 0.7f, 0.3f), 4f, 6f, 0.18f);
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        // 2. balle paralysante : impact (éclairs qui jaillissent) et paralysie (boucle autour de la cible figée)
+        go = Racine("VFX_Balle_Paralysante", 1.2f);
+        PS(go.transform, new P { nom = "Eclairs", mat = elE, tuiles = 2, boucle = false, duree = 0.4f, rafale = 6, vie = new Vector2(0.1f, 0.18f), vitesse = new Vector2(0f, 0.5f), taille = new Vector2(0.7f, 1.2f), rayon = 0.25f, max = 8, dissout = 0.3f });
+        PS(go.transform, new P { nom = "Anneau", mat = elA, boucle = false, duree = 0.4f, rafale = 1, vie = new Vector2(0.25f, 0.25f), vitesse = Vector2.zero, taille = new Vector2(0.4f, 0.4f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.3f, 1, 3.5f), max = 2, dissout = 0.7f });
+        PS(go.transform, new P { nom = "Etincelles", mat = elS, boucle = false, duree = 0.4f, rafale = 12, vie = new Vector2(0.12f, 0.3f), vitesse = new Vector2(4f, 9f), taille = new Vector2(0.04f, 0.07f), rayon = 0.05f, etire = true, etirement = 0.05f, max = 14 });
+        Flash(go.transform, new Color(0.5f, 0.85f, 1f), 3.5f, 6f, 0.2f);
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        go = Racine("VFX_Paralysie", 1.1f);
+        var arcs = PS(go.transform, new P { nom = "Arcs", mat = elE, tuiles = 2, debit = 34, vie = new Vector2(0.1f, 0.2f), vitesse = Vector2.zero, taille = new Vector2(0.8f, 1.4f), forme = ParticleSystemShapeType.Box, max = 14, dissout = 0.3f, monde = false });
+        var bx = arcs.shape; bx.scale = new Vector3(0.9f, 1.8f, 0.9f); bx.position = new Vector3(0, 0.9f, 0);
+        var gr = PS(go.transform, new P { nom = "Grains", mat = elS, debit = 30, vie = new Vector2(0.2f, 0.4f), vitesse = new Vector2(0.2f, 0.6f), taille = new Vector2(0.03f, 0.05f), forme = ParticleSystemShapeType.Box, max = 20, monde = false });
+        var bg = gr.shape; bg.scale = new Vector3(1f, 1.9f, 1f); bg.position = new Vector3(0, 0.95f, 0);
+        var lp = Flash(go.transform, new Color(0.5f, 0.85f, 1f), 1.6f, 4f, 0f, 3.5f); lp.transform.localPosition = new Vector3(0, 1f, 0);
+        Sauve(go);
+
+        // 3. explosion de zone sur un kill (rayon ≈ 4 m) : éclat, onde au sol, fissures, fumée, débris, flash
+        go = Racine("VFX_Explosion_Kill", 1.1f);
+        PS(go.transform, new P { nom = "Eclat", mat = exE, tuiles = 2, boucle = false, duree = 0.4f, rafale = 1, vie = new Vector2(0.26f, 0.26f), vitesse = Vector2.zero, taille = new Vector2(3.2f, 3.2f), rayon = 0.001f, flipAleatoire = false, max = 2, dissout = 0.5f });
+        PS(go.transform, new P { nom = "Onde", mat = exA, boucle = false, duree = 0.6f, rafale = 1, vie = new Vector2(0.45f, 0.45f), vitesse = Vector2.zero, taille = new Vector2(1f, 1f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.5f, 1, 8.5f), max = 2, dissout = 0.8f, local = true });
+        PS(go.transform, new P { nom = "Fissures", mat = fis, boucle = false, duree = 1.6f, rafale = 1, vie = new Vector2(1.4f, 1.4f), vitesse = Vector2.zero, taille = new Vector2(6f, 6f), rayon = 0.001f, rotation = false, max = 1, dissout = 0.6f, local = true });
+        var fu = PS(go.transform, new P { nom = "Fumee", mat = exF, tuiles = 4, boucle = false, duree = 1.4f, rafale = 10, vie = new Vector2(0.8f, 1.2f), vitesse = new Vector2(2.5f, 4.5f), taille = new Vector2(1.2f, 2.2f), forme = ParticleSystemShapeType.Circle, rotationForme = new Vector3(-90, 0, 0), rayon = 1.2f, flipAleatoire = false, max = 12, dissout = 0.6f, gravite = -0.1f });
+        var lf = fu.limitVelocityOverLifetime; lf.enabled = true; lf.limit = 1f; lf.dampen = 0.15f;
+        PS(go.transform, new P { nom = "Debris", mat = debris, boucle = false, duree = 1f, rafale = 14, vie = new Vector2(0.5f, 0.9f), vitesse = new Vector2(5f, 9f), taille = new Vector2(0.12f, 0.24f), forme = ParticleSystemShapeType.Hemisphere, rayon = 0.5f, gravite = 2.2f, etire = true, etirement = 0.03f, max = 16 });
+        Flash(go.transform, new Color(1f, 0.4f, 0.25f), 6f, 12f, 0.35f);
+        // ondes et fissures à plat sur le sol
+        foreach (var n in new[] { "Onde", "Fissures" }) go.transform.Find(n).localRotation = Quaternion.Euler(90, 0, 0);
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        // 4. éclair de parade lisible : étoile blanche, éclairs rayonnants, double anneau, flash
+        go = Racine("VFX_Parade_Eclair_Lisible", 1.3f);
+        PS(go.transform, new P { nom = "Etoile", mat = paE, boucle = false, duree = 0.35f, rafale = 1, vie = new Vector2(0.22f, 0.22f), vitesse = Vector2.zero, taille = new Vector2(1.5f, 1.5f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.6f, 0.25f, 1.15f, 1, 0.7f), max = 2, dissout = 0.5f });
+        PS(go.transform, new P { nom = "Eclairs", mat = elE, tuiles = 2, boucle = false, duree = 0.3f, rafale = 5, vie = new Vector2(0.1f, 0.16f), vitesse = new Vector2(0f, 0.3f), taille = new Vector2(0.8f, 1.2f), rayon = 0.3f, max = 6, dissout = 0.3f });
+        PS(go.transform, new P { nom = "Anneau", mat = paA, boucle = false, duree = 0.5f, rafale = 2, vie = new Vector2(0.28f, 0.4f), vitesse = Vector2.zero, taille = new Vector2(0.5f, 0.6f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.3f, 1, 4.5f), max = 3, dissout = 0.7f });
+        PS(go.transform, new P { nom = "Etincelles", mat = elS, boucle = false, duree = 0.4f, rafale = 14, vie = new Vector2(0.15f, 0.3f), vitesse = new Vector2(5f, 10f), taille = new Vector2(0.05f, 0.08f), rayon = 0.05f, etire = true, etirement = 0.05f, max = 16 });
+        Flash(go.transform, new Color(0.85f, 0.92f, 1f), 5f, 8f, 0.22f);
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        // 5. poussière blanc-gris dans les rayons de lune (volume 4 × 12 × 4 m), 6. brume au sol du jardin (30 × 30 m)
+        go = Racine("VFX_Poussiere_Lune", 1f);
+        var pl = PS(go.transform, new P { nom = "Poussiere", mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Kits/M_Kit_Poussiere.mat"), debit = 30, vie = new Vector2(6f, 10f), vitesse = Vector2.zero, taille = new Vector2(0.025f, 0.06f), forme = ParticleSystemShapeType.Box, max = 260, vitesseVie = new Vector3(0.01f, -0.02f, 0.01f) });
+        var plm = pl.main; plm.prewarm = true; var pls = pl.shape; pls.scale = new Vector3(4f, 12f, 4f); pls.position = new Vector3(0, 6f, 0);
+        var pln = pl.noise; pln.enabled = true; pln.strength = 0.08f; pln.frequency = 0.25f;
+        Sauve(go);
+        go = Racine("VFX_Brume_Sol", 1f);
+        var br = PS(go.transform, new P { nom = "Brume", mat = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Kits/M_Kit_Brume.mat"), debit = 6, vie = new Vector2(18f, 26f), vitesse = Vector2.zero, taille = new Vector2(6f, 12f), forme = ParticleSystemShapeType.Box, max = 160, vitesseVie = new Vector3(0.25f, 0f, 0f), dissout = 0.2f });
+        var brm = br.main; brm.prewarm = true; var brs = br.shape; brs.scale = new Vector3(30f, 1.2f, 30f); brs.position = new Vector3(0, 0.6f, 0);
+        br.GetComponent<ParticleSystemRenderer>().renderMode = ParticleSystemRenderMode.HorizontalBillboard;
+        Sauve(go);
+
+        // 7. attaques du boss : griffe (trois lacérations), morsure (mâchoires qui se ferment), impact au sol
+        go = Racine("VFX_Boss_Griffe", 1.2f);
+        for (int i = 0; i < 3; i++)
+        {
+            var a = PS(go.transform, new P { nom = "Lacerations_" + i, mat = bG, tuiles = 2, boucle = false, duree = 0.4f, rafale = 1, vie = new Vector2(0.28f, 0.28f), vitesse = Vector2.zero, taille = new Vector2(5.5f, 5.5f), rayon = 0.001f, rotation = false, flipAleatoire = false, feuilleLineaire = true, max = 1, local = true, dissout = 0.5f });
+            a.transform.localPosition = new Vector3(0, (i - 1) * 0.7f, 0); a.transform.localRotation = Quaternion.Euler(0, 0, -25 + i * 4);
+        }
+        PS(go.transform, new P { nom = "Debris", mat = debris, boucle = false, duree = 0.8f, rafale = 10, vie = new Vector2(0.4f, 0.8f), vitesse = new Vector2(4f, 8f), taille = new Vector2(0.15f, 0.3f), forme = ParticleSystemShapeType.Hemisphere, rayon = 1.2f, gravite = 2f, etire = true, etirement = 0.03f, max = 12 });
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        go = Racine("VFX_Boss_Morsure", 1.2f);
+        foreach (var (n, z, ry) in new[] { ("Machoire_Haut", 0.8f, 0f), ("Machoire_Bas", -0.8f, 180f) })
+        {
+            var a = PS(go.transform, new P { nom = n, mat = bG, tuiles = 2, boucle = false, duree = 0.35f, rafale = 1, vie = new Vector2(0.22f, 0.22f), vitesse = Vector2.zero, taille = new Vector2(4f, 4f), rayon = 0.001f, rotation = false, flipAleatoire = false, feuilleLineaire = true, max = 1, local = true, dissout = 0.4f });
+            a.transform.localPosition = new Vector3(0, z, 0); a.transform.localRotation = Quaternion.Euler(0, 0, ry);
+        }
+        PS(go.transform, new P { nom = "Eclat", mat = bS, tuiles = 2, boucle = false, duree = 0.3f, rafale = 1, vie = new Vector2(0.2f, 0.2f), vitesse = Vector2.zero, taille = new Vector2(2.2f, 2.2f), rayon = 0.001f, flipAleatoire = false, max = 2, dissout = 0.5f });
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        go = Racine("VFX_Boss_Impact_Sol", 1.1f);
+        PS(go.transform, new P { nom = "Fissures", mat = fis, boucle = false, duree = 2f, rafale = 1, vie = new Vector2(1.8f, 1.8f), vitesse = Vector2.zero, taille = new Vector2(9f, 9f), rayon = 0.001f, rotation = false, max = 1, dissout = 0.6f, local = true });
+        PS(go.transform, new P { nom = "Onde", mat = exA, boucle = false, duree = 0.7f, rafale = 1, vie = new Vector2(0.55f, 0.55f), vitesse = Vector2.zero, taille = new Vector2(2f, 2f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.4f, 1, 9f), max = 1, dissout = 0.8f, local = true });
+        var po = PS(go.transform, new P { nom = "Poussiere", mat = pous, tuiles = 4, boucle = false, duree = 1.6f, rafale = 16, vie = new Vector2(1f, 1.5f), vitesse = new Vector2(4f, 7f), taille = new Vector2(2.4f, 4f), forme = ParticleSystemShapeType.Circle, rotationForme = new Vector3(-90, 0, 0), rayon = 3f, flipAleatoire = false, max = 18, dissout = 0.6f, gravite = -0.05f });
+        var lpo = po.limitVelocityOverLifetime; lpo.enabled = true; lpo.limit = 1.2f; lpo.dampen = 0.12f;
+        PS(go.transform, new P { nom = "Gravats", mat = debris, boucle = false, duree = 1.2f, rafale = 18, vie = new Vector2(0.6f, 1.1f), vitesse = new Vector2(6f, 11f), taille = new Vector2(0.2f, 0.45f), forme = ParticleSystemShapeType.Hemisphere, rayon = 2f, gravite = 2.2f, etire = true, etirement = 0.03f, max = 20 });
+        foreach (var n in new[] { "Onde", "Fissures" }) go.transform.Find(n).localRotation = Quaternion.Euler(90, 0, 0);
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        // 8. blessure du boss : sang noir qui gicle, gouttes qui retombent
+        go = Racine("VFX_Boss_Blessure", 1f);
+        PS(go.transform, new P { nom = "Gerbe", mat = bS, tuiles = 2, boucle = false, duree = 0.5f, rafale = 3, vie = new Vector2(0.3f, 0.45f), vitesse = new Vector2(1f, 3f), taille = new Vector2(1.2f, 2.2f), forme = ParticleSystemShapeType.Cone, angle = 25, rayon = 0.2f, max = 4, dissout = 0.5f });
+        PS(go.transform, new P { nom = "Gouttes", mat = bSG, boucle = false, duree = 1f, rafale = 22, vie = new Vector2(0.5f, 0.9f), vitesse = new Vector2(4f, 9f), taille = new Vector2(0.1f, 0.22f), forme = ParticleSystemShapeType.Cone, angle = 35, rayon = 0.2f, gravite = 2.5f, etire = true, etirement = 0.04f, max = 24 });
+        PS(go.transform, new P { nom = "Fumee", mat = fumG, tuiles = 4, boucle = false, duree = 1f, rafale = 4, vie = new Vector2(0.6f, 0.9f), vitesse = new Vector2(0.5f, 1.2f), taille = new Vector2(0.8f, 1.4f), rayon = 0.3f, flipAleatoire = false, max = 6, dissout = 0.6f });
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        // 9. point faible du boss qui brille (boucle) : cœur ambré qui pulse, anneau qui s'en échappe, braises, lumière
+        go = Racine("VFX_Boss_PointFaible", 1.2f);
+        PS(go.transform, new P { nom = "Coeur", mat = pfC, debit = 2.5f, vie = new Vector2(0.8f, 0.8f), vitesse = Vector2.zero, taille = new Vector2(1.7f, 1.7f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.7f, 0.3f, 1.15f, 1, 0.75f), max = 4, dissout = 0.3f, monde = false });
+        PS(go.transform, new P { nom = "Anneau", mat = pfA, debit = 1.25f, vie = new Vector2(0.7f, 0.7f), vitesse = Vector2.zero, taille = new Vector2(1.0f, 1.0f), rayon = 0.001f, rotation = false, tailleVie = K(0, 0.6f, 1, 3f), max = 3, dissout = 0.8f, monde = false });
+        PS(go.transform, new P { nom = "Braises", mat = crS, debit = 24, vie = new Vector2(0.5f, 0.9f), vitesse = new Vector2(0.6f, 1.5f), taille = new Vector2(0.06f, 0.1f), rayon = 0.35f, gravite = -0.2f, max = 20 });
+        Flash(go.transform, new Color(1f, 0.5f, 0.15f), 2.6f, 7f, 0f, 1.25f);
+        Sauve(go);
+
+        AssetDatabase.SaveAssets();
+        return "ok VFX_Critique VFX_Balle_Paralysante VFX_Paralysie VFX_Explosion_Kill VFX_Parade_Eclair_Lisible VFX_Poussiere_Lune VFX_Brume_Sol VFX_Boss_Griffe VFX_Boss_Morsure VFX_Boss_Impact_Sol VFX_Boss_Blessure VFX_Boss_PointFaible";
+    }
+
     public static string ConstruitLot2()
     {
         if (!BonProjet()) return "MAUVAIS PROJET";
