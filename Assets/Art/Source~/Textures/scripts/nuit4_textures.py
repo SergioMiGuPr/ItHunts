@@ -58,12 +58,21 @@ def charge_raccord(nom):
     return np.asarray(Image.open(dst).convert("RGB")).astype(np.float32)
 
 
-def simple(nom_src, nom, flou=1.5, gamma=1.0, gain=1.0):
+def compresse_hautes(a, seuil=0.5, force=0.55):
+    """Compresse les valeurs claires (lichen blanc de l'écorce : il scintillait comme de la neige à distance)."""
+    l = lum(a)[..., None] / 255.0
+    k = np.where(l > seuil, (seuil + (l - seuil) * force) / np.maximum(l, 1e-4), 1.0)
+    return a * k
+
+
+def simple(nom_src, nom, flou=1.5, gamma=1.0, gain=1.0, compresse=False):
     a = reduit(charge_raccord(nom_src)) * gain
+    if compresse:
+        a = compresse_hautes(a)
     sortie(nom, a, hauteur(a, flou, gamma))
 
 
-def tenture(tap):
+def tenture_plis(tap):
     a = reduit(tap)
     # velours plus sombre et plus profond que le tapis (mur, pas sol)
     a = a * np.array([1.0, 0.86, 0.92])
@@ -81,6 +90,50 @@ def tenture(tap):
     sortie("Tenture", a, h)
 
 
+def tenture(tap):
+    """Tenture (velours mural) : même motif que le tapis à la période (2 × 2 rosaces, tuile de 2 m : rosace de 1 m, lisible à
+    5 m), plus sombre et plus froid ; pas de plis peints (la géométrie a les siens)."""
+    crop = tap[0:1024, 0:1024]
+    crop, _ = R.raccord(crop, 128, 32)
+    a = crop * np.array([0.78, 0.66, 0.74])
+    sortie("Tenture", a, hauteur(a, 1.0, 1.0))
+
+
+def bruit_periodique(n, graine, freqs=(1, 2, 3, 5), flou=0):
+    """Bruit lisse et périodique (somme de sinusoïdes à fréquences entières) : la tuile se raccorde."""
+    rng = np.random.default_rng(graine)
+    y, x = np.mgrid[0:n, 0:n] / n
+    v = np.zeros((n, n), np.float32)
+    for f in freqs:
+        for _ in range(3):
+            fx, fy = rng.integers(-f, f + 1, 2)
+            if fx == 0 and fy == 0:
+                continue
+            v += np.cos(2 * np.pi * (fx * x + fy * y) + rng.uniform(0, 6.28)) / f
+    return (v - v.min()) / (v.max() - v.min())
+
+
+def herbe(src):
+    """Herbe sèche : la source pousse en rangées (bandes visibles en 3 × 3). Recomposée par « texture bombing » : trois copies
+    tournées d'un quart de tour et décalées, choisies par mélange en hauteur (la touffe la plus haute gagne) sous un bruit
+    périodique : plus de bandes, la tuile se raccorde toujours."""
+    a = reduit(src)
+    h = hauteur(a, 1.0)
+    couches = [(a, h)]
+    for k, (dx, dy) in zip((1, 2, 3), ((317, 611), (733, 251), (149, 877))):
+        ak = np.roll(np.roll(np.rot90(a, k), dy, 0), dx, 1)
+        hk = np.roll(np.roll(np.rot90(h, k), dy, 0), dx, 1)
+        couches.append((ak, hk))
+    poids = [bruit_periodique(N, 10 + i) for i in range(len(couches))]
+    score = np.stack([0.55 * hk + 0.9 * w for (ak, hk), w in zip(couches, poids)])
+    # transition douce (3 px) entre couches : softmax à température basse
+    e = np.exp((score - score.max(0)) / 0.04)
+    wts = e / e.sum(0)
+    rgb = sum(wts[i][..., None] * couches[i][0] for i in range(len(couches)))
+    hh = sum(wts[i] * couches[i][1] for i in range(len(couches)))
+    sortie("HerbeSeche", rgb * 0.7, hh)   # touffes plus nombreuses que dans la source : valeur ramenée à celle de la source
+
+
 def marbre(src):
     rng = np.random.default_rng(4242)
     S = 4
@@ -88,7 +141,7 @@ def marbre(src):
     H = src.shape[0]
     out = np.zeros((N, N, 3), np.float32)
     hh = np.zeros((N, N), np.float32)
-    clair_fond = np.array([0.80, 0.80, 0.82])
+    clair_fond = np.array([0.66, 0.65, 0.64])                       # gris pierre clair, pas de blanc (château très sombre)
     for j in range(S):
         for i in range(S):
             x0, y0 = rng.integers(0, H - 512, 2)
@@ -102,7 +155,7 @@ def marbre(src):
             else:
                 l = lum(crop)[..., None] / 255.0
                 v = 1.0 - l                                               # veines claires sur fond sombre
-                c = 255 * (0.10 + 0.30 * v ** 2.2) * np.array([0.78, 0.82, 0.92])
+                c = 255 * (0.13 + 0.42 * v ** 1.5) * np.array([0.80, 0.83, 0.90])   # veines lisibles dans la pénombre
                 c = c * (0.85 + 0.15 * crop / 255.0)
             out[j * cell:(j + 1) * cell, i * cell:(i + 1) * cell] = c
             hh[j * cell:(j + 1) * cell, i * cell:(i + 1) * cell] = 0.8
@@ -121,12 +174,12 @@ def marbre(src):
 
 
 if __name__ == "__main__":
-    simple("tex_ecorce_v01", "Ecorce", 1.5, 0.9)
+    simple("tex_ecorce_v01", "Ecorce", 1.5, 0.9, compresse=True)
     simple("tex_gravier_v01", "Gravier", 1.2, 1.0)
-    simple("tex_herbe_seche_v01", "HerbeSeche", 1.0, 1.0)
+    herbe(charge_raccord("tex_herbe_seche_v01"))
     tap = charge_raccord("tex_tapis_tenture_v01")
     # tapis : la période du motif est de 1024 px (mesurée par autocorrélation) ; on garde 2 × 2 rosaces à pleine résolution
-    # (tuile de 1.5 m : rosace de 75 cm, lisible à 10 m) au lieu de 4 × 4 rosaces réduites (bruit à distance).
+    # (tuile de 2 m, 512 px/m : rosace de 1 m, lisible à 10 m) au lieu de 4 × 4 rosaces réduites (bruit à distance).
     crop = tap[512:1536, 512:1536]
     crop, _ = R.raccord(crop, 128, 32)
     sortie("Tapis", crop, hauteur(crop, 1.0, 1.0))
