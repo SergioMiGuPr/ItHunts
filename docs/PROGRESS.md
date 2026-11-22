@@ -4,6 +4,20 @@
 
 ## Étape en cours
 
+**Nuit du 2026-11-22 (nuit 3) : run en 3 actes + boss, D-092 à D-099, rapport `docs/design/nuit-3/RAPPORT.md`.** Fusionné dans
+`main`. Les 9 PR d'art (#36 à #44) sont intégrées et branchées, aucune n'est bloquée.
+- **Actes** (D-092) : générateur `ActPlan` / `ActLevel` (salles organiques, boucles, rampes, bassins, fosses, terrasses, fonctions),
+  scènes `Acte_1_Caves`, `Acte_2_Chateau`, `Acte_3_Jardin`, `Acte_4_Boss` (arène `BossArena`), réglages `Settings/Actes/`.
+  Kits de la DA posés. Audit `ActAudit` sur 5 seeds par acte : toutes les salles sont atteintes par le traqueur.
+- **Run** (D-093) : le stuff suit l'**emplacement** du joueur d'un acte à l'autre (corrigé le matin du 22 : il suivait
+  l'identifiant d'objet, qui change à chaque scène, donc rien ne passait). Sortie à 200 + 50 × acte âmes, écran de fin de la DA
+  avec 13 statistiques.
+- **Menu Playtest + admin F1** (D-094), **nettoyage hors DA et 51 sons branchés** (D-095), **parade** (D-096), **caméléon**
+  (D-097), **boss final blessable dans son arène** (D-098), **traqueur +0.5 m/s** (D-099).
+- **Reste** : rendu pas encore « page Steam » (points de vue à mettre en scène avec la DA), ressenti à valider en playtest
+  (parade, fuite, boss), animations dédiées du boss (gréement du traqueur mis de côté), mesure d'images par seconde dans le build.
+- Build : `Builds/Nuit_2026-11-22/ItHunts.exe` (développement).
+
 **Soir du 2026-11-21 : atelier des modules (D-091, guide `docs/design/level/ATELIER-MODULES.md`).** Scène `Atelier_Modules`,
 palette (ItHunts > Palette des modules), sauvegarde avec fiche et bibliothèque, vérification étendue avec repères, « Jouer ce module » et
 F3 « Modules de l'atelier », module « Exemple de l'atelier » validé et dans la génération, 4 modules de la nuit convertis (revalidés).

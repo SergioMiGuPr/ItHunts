@@ -945,3 +945,24 @@ provisoires de `ProceduralSfx`** (colonne « Remplace »). Le branchement se fai
 | `Monde/Sfx_Vague_Cor` (2.5 s) | une nouvelle vague arrive | WaveHorn | mono, décompressé |
 
 Le son de mort « aigu » des goules n'est plus utilisé : `Sfx_Goule_Mort_Organique` (court, organique) le remplace. Ambiances : une par acte, en boucle sous la musique, volume 0.6 ; musiques : fondu croisé de 2 s avec l'exploration.
+
+## Actes de la nuit 3 dans le jeu (main, 2026-11-22, D-092 à D-099)
+
+Mesures à respecter pour les prochains kits et salles d'exemple (le générateur `ActPlan` / `ActLevel` les lit dans
+`Assets/_Project/Settings/Actes/Act_1..3`) :
+
+| Élément | Mesure | Réglage | Remarques |
+|---|---|---|---|
+| Portes entre salles des actes | **12 m de large**, 9 m de haut (10 m dans l'acte II) | `doorWidth`, `doorHeight` | aucun piédroit dans l'ouverture (le traqueur fait 7 m de large) ; les piédroits du kit se posent **à l'extérieur** de l'ouverture |
+| Plafonds | acte I 16 à 22 m ; acte II 22 à 30 m (lustres) ; acte III ciel ouvert | `ceiling` | les rayons de lune de l'acte II tombent des hautes fenêtres du kit |
+| Marches entre étages | 3 m par étage, rampes lisses pour la collision, escalier du kit pour la vue | `floorStep` | |
+| Surface des salles | 700 à 2 300 m² (acte I), 800 à 2 600 m² (acte II), 1 200 à 3 400 m² (acte III) | `roomArea` | goules : 0.22 / 0.24 / 0.20 par 100 m² |
+| Allées | 10 m libres dans les salles sans bassin ni fosse, anneau de 10 m autour des bassins et des fosses | `ActPlan.PlanInterior` | ne pas poser de mobilier à collisions dans ces bandes |
+| Mobilier, battants de porte, candélabres | **enjambés par le traqueur** (`StalkerPassesThrough`) | | un objet décoratif ne doit jamais fermer un passage |
+| Porte de sortie (menu de la DA) | menu d'interaction à **9 m**, point de visée à 1.8 m du sol ; salle verrouillée : 8 m | `ExitDoor`, `LockedDoor` | plus de texte 3D ni de lueur rouge / orange : `Panneau_Porte` affiche nom et prix en âmes |
+| Prix de la sortie | 200 âmes + 50 par acte (acte II : 250) | `Zone_Acte*.exitPrice` | |
+| Arène du boss | cuvette de **46 m de rayon**, falaises de 12 m (non magnétiques au-dessus), palier en haut de l'escalier à 8.5 m, 6 piliers brisés (dessus plat à 10 m), statue (socle à 7.5 m) | `BossArena` | les points faibles du boss se visent depuis ces hauteurs |
+| Fin de run | `Panneau_FinDeRun` : **13 lignes** (le jeu reproduit la 7e ligne de la maquette et resserre le pas) | `Night3ArtUi.FitRows` | une maquette à 13 lignes éviterait la police réduite |
+
+Sons : `Sfx_Impact_Lourd` joue pour un objet de 15 kg ou plus (caisse), `Sfx_Boss_Attaque_Morsure` à la réception du bond du
+boss. Les 51 sons de la nuit sont tous branchés.
