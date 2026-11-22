@@ -283,11 +283,15 @@ namespace ItHunts.Tests
             foreach (var f in typeof(ItHunts.Settings.GameAudioSettings).GetFields())
             {
                 object v = f.GetValue(s);
-                if (f.FieldType == typeof(AudioClip))
+                if (f.FieldType == typeof(AudioClip) && System.Array.IndexOf(ItHunts.Settings.GameAudioSettings.AwaitingArt, f.Name) < 0)
                     Assert.That(v, Is.Not.Null, f.Name);
                 else if (f.FieldType == typeof(AudioClip[]))
                     Assert.That(((AudioClip[])v).Length >= 2 && System.Array.TrueForAll((AudioClip[])v, c => c != null), Is.True, f.Name + " : 2 variantes");
             }
+
+            // Nuit 3, point 1 : plus aucun son synthétisé (silence tant qu'un son de la DA manque).
+            Assert.That(ItHunts.Audio.ProceduralSfx.Enabled, Is.False, "sons synthétisés coupés");
+            Assert.That(ItHunts.Audio.ProceduralSfx.ToClip("x", new float[100]).name, Is.EqualTo("Silence"));
 
             float effects = GameSettings.EffectsVolume, music = GameSettings.MusicVolume;
             try

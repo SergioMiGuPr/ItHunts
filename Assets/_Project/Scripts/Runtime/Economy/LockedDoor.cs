@@ -28,13 +28,14 @@ namespace ItHunts.Economy
         public bool AcceptsGrab => false;
 
         // Un texte devant chaque face de la porte : la porte cache celui de l'autre face (règle des textes en monde).
-        private void Awake() => _labels = WorldLabel.CreateOnFaces(transform, $"Salle verrouillée\n{Price} âmes", new Color(1f, 0.7f, 0.3f));
+        // Nuit 3, point 1 : plus de texte en 3D ; l'invite d'interaction de la DA donne le prix.
+        private void Awake() => _labels = new WorldLabel[0];
 
         private void OnEnable() => Interactables.All.Add(this);
         private void OnDisable() => Interactables.All.Remove(this);
 
         public bool Available(PlayerHealth p) => !Open && p != null && !p.Dead;
-        public string Prompt(PlayerHealth p) => $"ouvrir la salle verrouillée ({PriceFor(p)} âmes)";
+        public string Prompt(PlayerHealth p) => $"Ouvrir la salle verrouillée — {PriceFor(p)} âmes";
 
         public void Interact(PlayerHealth p)
         {

@@ -37,12 +37,12 @@ namespace ItHunts.Audio
             _hum.playOnAwake = false;
             _hum.loop = true;
             _hum.spatialBlend = 0f;
-            _hum.clip = ProceduralSfx.ToClip("Bourdonnement de traction", ProceduralSfx.TractionHum());
-            _start = ProceduralSfx.ToClip("Début de traction", ProceduralSfx.TractionStart());
-            _end = ProceduralSfx.ToClip("Fin de traction", ProceduralSfx.TractionEnd());
-            _repel = ProceduralSfx.ToClip("Répulsion", ProceduralSfx.Repel());
-            _refusal = ProceduralSfx.ToClip("Refus", ProceduralSfx.Refusal());
-            _ready = ProceduralSfx.ToClip("Prêt", ProceduralSfx.Ready());
+            _hum.clip = ItHunts.Audio.GameAudio.Or(s => s.tractionHum, ProceduralSfx.ToClip("Bourdonnement de traction", ProceduralSfx.TractionHum()));
+            _start = ItHunts.Audio.GameAudio.Or(s => s.tractionStart, ProceduralSfx.ToClip("Début de traction", ProceduralSfx.TractionStart()));
+            _end = ItHunts.Audio.GameAudio.Or(s => s.tractionEnd, ProceduralSfx.ToClip("Fin de traction", ProceduralSfx.TractionEnd()));
+            _repel = ItHunts.Audio.GameAudio.Or(s => s.repulsion, ProceduralSfx.ToClip("Répulsion", ProceduralSfx.Repel()));
+            _refusal = ItHunts.Audio.GameAudio.Or(s => s.refusal, ProceduralSfx.ToClip("Refus", ProceduralSfx.Refusal()));
+            _ready = ItHunts.Audio.GameAudio.Or(s => s.chargeReady, ProceduralSfx.ToClip("Prêt", ProceduralSfx.Ready()));
         }
 
         private void Start()

@@ -69,7 +69,9 @@ namespace ItHunts.Level.Acts
             {
                 Vector3 m = startAt + Quaternion.Euler(0f, yaw + 35f, 0f) * Vector3.forward * 9f;
                 m.y = start.Floor;
-                Instantiate(artifactMerchant, m, Quaternion.LookRotation(startAt - m, Vector3.up), game).name = "Marchand de l'artefact (salle de départ)";
+                GameObject am = Instantiate(artifactMerchant, m, Quaternion.LookRotation(startAt - m, Vector3.up), game);
+                am.name = "Marchand de l'artefact (salle de départ)";
+                DimMerchant(am);
             }
 
             int[] depth = Plan.Depths(Plan.Start);
@@ -86,6 +88,7 @@ namespace ItHunts.Level.Acts
                 Quaternion rot = (look - at).sqrMagnitude > 1f ? Quaternion.LookRotation(look - at, Vector3.up) : Quaternion.identity;
                 GameObject mm = Instantiate(merchant, at, rot, game);
                 mm.name = $"Marchand : {r.Name}";
+                DimMerchant(mm);
                 MarkRoom(r, "Marchand");
             }
 
@@ -109,6 +112,33 @@ namespace ItHunts.Level.Acts
                 return;
             Transform parent = _residents != null ? _residents : _root;
             Instantiate(prefab, at, Quaternion.Euler(0f, _rng.Next(360), 0f), parent).name = isFlyer ? "Volant (admin)" : "Goule (admin)";
+        }
+
+        /// <summary>
+        /// Marchand dans la DA (nuit 3, point 1) : plus d'enseigne au néon violet ni de lumière violette qui teint la salle ; une lanterne
+        /// chaude à côté de lui. Son interface (offres, prix) reste telle quelle.
+        /// </summary>
+        private static void DimMerchant(GameObject m)
+        {
+            Transform sign = m.transform.Find("Enseigne");
+            if (sign != null)
+                sign.gameObject.SetActive(false);
+            foreach (Light l in m.GetComponentsInChildren<Light>(true))
+            {
+                l.color = new Color(1f, 0.66f, 0.36f);
+                l.intensity = 2.2f;
+                l.range = 9f;
+            }
+
+            // Silhouette : silhouette encapuchonnée sombre (plus de bloc violet lumineux) en attendant le modèle de la DA.
+            Transform body = m.transform.Find("Marchand (silhouette)");
+            if (body != null && body.TryGetComponent(out Renderer rb))
+            {
+                var block = new MaterialPropertyBlock();
+                block.SetColor("_BaseColor", new Color(0.06f, 0.05f, 0.07f));
+                block.SetColor("_EmissionColor", Color.black);
+                rb.SetPropertyBlock(block);
+            }
         }
 
         private readonly Dictionary<int, string> _roomTags = new Dictionary<int, string>();

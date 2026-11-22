@@ -73,10 +73,10 @@ namespace ItHunts.Combat
         private void Awake()
         {
             _block = new MaterialPropertyBlock();
-            _hit = ProceduralSfx.ToClip("Impact", ProceduralSfx.ImpactHit());
-            _kill = ProceduralSfx.ToClip("Ennemi tué", ProceduralSfx.Kill());
-            _break = ProceduralSfx.ToClip("Objet cassé", ProceduralSfx.Break());
-            _stun = ProceduralSfx.ToClip("Étourdi", ProceduralSfx.Stun());
+            _hit = ItHunts.Audio.GameAudio.Or(s => s.impactHit, ProceduralSfx.ToClip("Impact", ProceduralSfx.ImpactHit()));
+            _kill = ItHunts.Audio.GameAudio.Or(s => s.enemyKill, ProceduralSfx.ToClip("Ennemi tué", ProceduralSfx.Kill()));
+            _break = ItHunts.Audio.GameAudio.Or(s => s.objectBreak, ProceduralSfx.ToClip("Objet cassé", ProceduralSfx.Break()));
+            _stun = ItHunts.Audio.GameAudio.Or(s => s.stun, ProceduralSfx.ToClip("Étourdi", ProceduralSfx.Stun()));
             for (int i = 0; i < 10; i++)
                 _coneRings.Add(new ConeRing { Line = NewLine($"Onde de répulsion (anneau {i})", RingPoints, true) });
             for (int i = 0; i < _coneEdges.Length; i++)
@@ -312,7 +312,7 @@ namespace ItHunts.Combat
             else if (vfx != null && vfx.parry != null)
                 GameVfx.Spawn(vfx.parry, at, Quaternion.identity, 1f, null, 1.5f);
             if (_parryClip == null)
-                _parryClip = ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry());
+                _parryClip = ItHunts.Audio.GameAudio.Or(s => s.parrySuccess, ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry()));
             if (vfx != null && vfx.parry != null)
             {
                 Play(_parryClip, at, cfg != null ? cfg.volume : 0.8f, Random.Range(0.96f, 1.04f));
@@ -326,7 +326,7 @@ namespace ItHunts.Combat
             f.Color = cfg != null ? cfg.flashColor : new Color(3f, 2.6f, 1.4f, 1f);
             f.Transform.position = at;
             if (_parryClip == null)
-                _parryClip = ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry());
+                _parryClip = ItHunts.Audio.GameAudio.Or(s => s.parrySuccess, ItHunts.Audio.ProceduralSfx.ToClip("Parade", ItHunts.Audio.ProceduralSfx.Parry()));
             Play(_parryClip, at, cfg != null ? cfg.volume : 0.8f, Random.Range(0.96f, 1.04f));
         }
 

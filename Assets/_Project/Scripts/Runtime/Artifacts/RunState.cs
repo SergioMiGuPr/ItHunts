@@ -39,6 +39,9 @@ namespace ItHunts.Artifacts
         /// <summary>Achat refusé, pas assez d'âmes (identifiant) : HUD en rouge et son de refus.</summary>
         public static event Action<int> Refused;
 
+        /// <summary>Refus sans achat (porte encore verrouillée) : même retour qu'un achat refusé (HUD en rouge, son de refus).</summary>
+        public static void RaiseRefused(int playerId) => Refused?.Invoke(playerId);
+
         private static RunState _current;
         public static RunState Current => _current != null ? _current : _current = FindFirstObjectByType<RunState>();
 

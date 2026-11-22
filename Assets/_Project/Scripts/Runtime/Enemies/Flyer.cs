@@ -112,8 +112,8 @@ namespace ItHunts.Enemies
             _audio.maxDistance = 35f;
             _audio.rolloffMode = AudioRolloffMode.Linear;
             _audio.playOnAwake = false;
-            _screech = ItHunts.Audio.ProceduralSfx.ToClip("Volant : cri", ItHunts.Audio.ProceduralSfx.FlyerScreech());
-            _pop = ItHunts.Audio.ProceduralSfx.ToClip("Volant : éclatement", ItHunts.Audio.ProceduralSfx.Break());
+            _screech = ItHunts.Audio.GameAudio.Or(s => s.flyerScreech, ItHunts.Audio.ProceduralSfx.ToClip("Volant : cri", ItHunts.Audio.ProceduralSfx.FlyerScreech()));
+            _pop = ItHunts.Audio.GameAudio.Or(s => s.flyerDeath, ItHunts.Audio.ProceduralSfx.ToClip("Volant : éclatement", ItHunts.Audio.ProceduralSfx.Break()));
             var art = ItHunts.Audio.GameAudio.Settings;
             if (art != null && art.flyerWings != null)
             {

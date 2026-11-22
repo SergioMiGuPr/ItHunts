@@ -130,7 +130,7 @@ namespace ItHunts.Enemies
             _audio = gameObject.AddComponent<AudioSource>();
             _audio.spatialBlend = 0f;
             _audio.playOnAwake = false;
-            _horn = ItHunts.Audio.ProceduralSfx.ToClip("Vagues : pic", ItHunts.Audio.ProceduralSfx.WaveHorn());
+            _horn = ItHunts.Audio.GameAudio.Or(s => s.wavePeak, ItHunts.Audio.ProceduralSfx.ToClip("Vagues : pic", ItHunts.Audio.ProceduralSfx.WaveHorn()));
         }
 
         private void OnDisable()

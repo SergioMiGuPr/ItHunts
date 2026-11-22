@@ -34,14 +34,10 @@ namespace ItHunts.Level
 
         private void Awake()
         {
+            // Nuit 3, point 1 : porte classique, plus de texte en 3D ni de lueur rouge ou orange ; l'invite d'interaction de la DA
+            // donne l'état (verrouillée et compte à rebours, ou prix en âmes).
             _renderers = GetComponentsInChildren<Renderer>(true);
-            _lockedMaterials = new Material[_renderers.Length];
-            for (int i = 0; i < _renderers.Length; i++)
-                _lockedMaterials[i] = _renderers[i].sharedMaterial;
-            // Un texte devant chaque face de la porte : la porte cache celui de l'autre face (règle des textes en monde).
-            _labels = WorldLabel.CreateOnFaces(transform, "Sortie", new Color(1f, 0.5f, 0.3f), 0.5f);
-            foreach (WorldLabel l in _labels)
-                l.TextFor = _ => LabelText();
+            _labels = new WorldLabel[0];
         }
 
         private void OnEnable() => Interactables.All.Add(this);
@@ -49,13 +45,6 @@ namespace ItHunts.Level
 
         private void Update()
         {
-            bool u = Unlocked;
-            if (u == _shownUnlocked || Open)
-                return;
-            _shownUnlocked = u;
-            for (int i = 0; i < _renderers.Length; i++)
-                if (_renderers[i] != null && _renderers[i].GetComponent<TextMesh>() == null)
-                    _renderers[i].sharedMaterial = u && unlockedMaterial != null ? unlockedMaterial : _lockedMaterials[i];
         }
 
         private string LabelText()
@@ -73,14 +62,32 @@ namespace ItHunts.Level
             return $"Sortie\n{Price} âmes";
         }
 
-        public bool Available(PlayerHealth p) => !Open && Unlocked && p != null && !p.Dead;
-        public string Prompt(PlayerHealth p) => $"ouvrir la sortie ({Price} âmes)";
+        public bool Available(PlayerHealth p) => !Open && p != null && !p.Dead && Zone != null && Zone.Started;
+        public string Prompt(PlayerHealth p)
+        {
+            if (!Unlocked)
+            {
+                int s = Mathf.CeilToInt(Zone != null ? Zone.ExitUnlockLeft : 0f);
+                return $"Sortie verrouillée — {s / 60}:{s % 60:00}";
+            }
+
+            return $"Ouvrir la sortie — {Price} âmes";
+        }
 
         public void Interact(PlayerHealth p)
         {
             RunState run = RunState.Current;
-            if (Open || !Unlocked || run == null || p == null || !run.TrySpend(p.PlayerId, Price))
+            if (Open || run == null || p == null)
                 return;
+            if (!Unlocked)
+            {
+                ItHunts.Artifacts.RunState.RaiseRefused(p.PlayerId);
+                return;
+            }
+
+            if (!run.TrySpend(p.PlayerId, Price))
+                return;
+            ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings?.doorOpen, transform.position, 1f);
             SetOpen(true);
         }
 

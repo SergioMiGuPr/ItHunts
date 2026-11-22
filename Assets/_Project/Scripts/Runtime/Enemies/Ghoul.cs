@@ -129,7 +129,7 @@ namespace ItHunts.Enemies
             _audio.maxDistance = 30f;
             _audio.rolloffMode = AudioRolloffMode.Linear;
             _audio.playOnAwake = false;
-            _hiss = ItHunts.Audio.ProceduralSfx.ToClip("Goule : sifflement", ItHunts.Audio.ProceduralSfx.GhoulHiss());
+            _hiss = ItHunts.Audio.GameAudio.Or(s => s.ghoulHiss, ItHunts.Audio.ProceduralSfx.ToClip("Goule : sifflement", ItHunts.Audio.ProceduralSfx.GhoulHiss()));
             if (telegraph != null)
                 telegraph.enabled = false;
             ApplySize();

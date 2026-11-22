@@ -409,8 +409,33 @@ namespace ItHunts.Audio
             return Normalize(s, 0.6f);
         }
 
+        /// <summary>
+        /// Sons synthétisés (provisoires) coupés (nuit 3, point 1) : hors DA. Tant qu'un son de la DA manque, le jeu joue du silence
+        /// (clip muet), jamais un son synthétisé. Remettre vrai seulement pour comparer en développement.
+        /// </summary>
+        public static bool Enabled;
+
+        private static AudioClip _silence;
+
+        /// <summary>Clip muet (0.05 s) : remplace tout son synthétisé quand ils sont coupés.</summary>
+        public static AudioClip Silence
+        {
+            get
+            {
+                if (_silence == null)
+                {
+                    _silence = AudioClip.Create("Silence", 1200, 1, SampleRate, false);
+                    _silence.SetData(new float[1200], 0);
+                }
+
+                return _silence;
+            }
+        }
+
         public static AudioClip ToClip(string name, float[] samples)
         {
+            if (!Enabled)
+                return Silence;
             var clip = AudioClip.Create(name, samples.Length, 1, SampleRate, false);
             clip.SetData(samples, 0);
             return clip;

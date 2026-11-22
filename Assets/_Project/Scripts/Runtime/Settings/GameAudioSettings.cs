@@ -39,6 +39,54 @@ namespace ItHunts.Settings
         [Tooltip("Fondu de fin de la boucle du jet (s).")]
         [Min(0.01f)] public float lanternLoopFade = 0.15f;
 
+        /// <summary>
+        /// Emplacements qui attendent les sons de la PR art-sons-2 (nuit 3) : silence tant qu'ils sont vides (jamais un son synthétisé).
+        /// Vidée à mesure que les sons arrivent.
+        /// </summary>
+        public static readonly string[] AwaitingArt =
+        {
+            nameof(tractionStart), nameof(tractionHum), nameof(tractionEnd), nameof(repulsion), nameof(refusal), nameof(chargeReady),
+            nameof(impactHit), nameof(enemyKill), nameof(objectBreak), nameof(stun), nameof(parrySuccess), nameof(parryMiss), nameof(headshot),
+            nameof(barrelReloadDone), nameof(lanternRelight), nameof(ghoulHiss), nameof(flyerScreech), nameof(soulPickup), nameof(wavePeak),
+            nameof(doorOpen), nameof(gateRise), nameof(fallVoid), nameof(bossHit), nameof(bossWeakPoint), nameof(bossPhase), nameof(bossSlam),
+            nameof(bossDeath),
+        };
+
+        [Header("Orbe et mouvement (art-sons-2) : silence tant qu'ils manquent")]
+        public AudioClip tractionStart;
+        public AudioClip tractionHum;
+        public AudioClip tractionEnd;
+        public AudioClip repulsion;
+        public AudioClip refusal;
+        public AudioClip chargeReady;
+
+        [Header("Combat (art-sons-2) : silence tant qu'ils manquent")]
+        public AudioClip impactHit;
+        public AudioClip enemyKill;
+        public AudioClip objectBreak;
+        public AudioClip stun;
+        public AudioClip parrySuccess;
+        public AudioClip parryMiss;
+        public AudioClip headshot;
+        public AudioClip barrelReloadDone;
+        public AudioClip lanternRelight;
+        public AudioClip ghoulHiss;
+        public AudioClip flyerScreech;
+
+        [Header("Monde (art-sons-2) : silence tant qu'ils manquent")]
+        public AudioClip soulPickup;
+        public AudioClip wavePeak;
+        public AudioClip doorOpen;
+        public AudioClip gateRise;
+        public AudioClip fallVoid;
+
+        [Header("Boss final (art-sons-2) : silence tant qu'ils manquent")]
+        public AudioClip bossHit;
+        public AudioClip bossWeakPoint;
+        public AudioClip bossPhase;
+        public AudioClip bossSlam;
+        public AudioClip bossDeath;
+
         [Header("Musique en jeu")]
         public AudioClip musicExploration;
         public AudioClip musicEnraged;

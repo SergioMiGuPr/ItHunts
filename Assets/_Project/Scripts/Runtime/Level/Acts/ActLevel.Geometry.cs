@@ -236,8 +236,7 @@ namespace ItHunts.Level.Acts
             go.transform.rotation = Quaternion.LookRotation(facing, Vector3.up);
             Visual(go.transform, "Anneau", CylinderMesh, settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial,
                 at, go.transform.rotation * Quaternion.Euler(90f, 0f, 0f), new Vector3(0.9f, 0.08f, 0.9f));
-            Light l = PointLight(go.transform, at + facing * 0.6f, new Color(0.35f, 0.6f, 1f), 1.2f, 4f);
-            l.name = "Lueur de l'anneau";
+            // Pas de petite lumière bleue (nuit 3, point 1) : l'anneau de fer se voit à la lumière des appliques.
         }
 
         // ---------- Murs ----------

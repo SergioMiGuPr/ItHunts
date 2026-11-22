@@ -48,6 +48,7 @@ namespace ItHunts.Hud
                 _healthBack.transform.parent.gameObject.SetActive(false);    // barre greybox remplacée
             BuildHealthBar();
             BuildSoulsBadge();
+            BuildPromptFrame();
             BuildMinimap();
             BuildFullMap();
             // Le timer et le traqueur enragé passent sous la mini-carte (même coin).
@@ -56,6 +57,58 @@ namespace ItHunts.Hud
                 TimerCorner.anchoredPosition += new Vector2(0f, -down);
             if (StalkerCorner != null)
                 StalkerCorner.anchoredPosition += new Vector2(0f, -down);
+        }
+
+        private Image _promptFrame, _promptSoul;
+
+        /// <summary>
+        /// Invite d'interaction dans la DA (nuit 3, point 1) : cadre peint de la légende de la carte, police de la DA, icône d'âme à côté
+        /// d'un prix. Sert de « menu d'interaction » des portes (prix en âmes, sortie verrouillée et son compte à rebours).
+        /// </summary>
+        private void BuildPromptFrame()
+        {
+            if (_promptText == null || _skin.mapLegendFrame == null)
+                return;
+            if (_skin.textFont != null)
+                _promptText.font = _skin.textFont;
+            _promptText.fontSize = 26;
+            RectTransform r = Rect("Cadre de l'aide d'interaction", _promptText.rectTransform.parent as RectTransform, Vector2.one * 0.5f,
+                _promptText.rectTransform.anchoredPosition, new Vector2(420f, 64f));
+            r.SetSiblingIndex(_promptText.rectTransform.GetSiblingIndex());
+            _promptFrame = r.gameObject.AddComponent<Image>();
+            _promptFrame.sprite = _skin.mapLegendFrame;
+            _promptFrame.type = _skin.mapLegendFrame.border.sqrMagnitude > 0f ? Image.Type.Sliced : Image.Type.Simple;
+            _promptFrame.pixelsPerUnitMultiplier = 2f;
+            _promptFrame.raycastTarget = false;
+            _promptFrame.color = new Color(1f, 1f, 1f, 0.92f);
+            if (_skin.iconSouls != null)
+            {
+                RectTransform s = Rect("Âme (prix)", r, new Vector2(1f, 0.5f), new Vector2(-26f, 0f), new Vector2(30f, 30f));
+                _promptSoul = s.gameObject.AddComponent<Image>();
+                _promptSoul.sprite = _skin.iconSouls;
+                _promptSoul.preserveAspect = true;
+                _promptSoul.raycastTarget = false;
+            }
+
+            r.gameObject.SetActive(false);
+        }
+
+        /// <summary>Taille le cadre de l'invite sur son texte (appelé à chaque image avec le texte).</summary>
+        private void SyncPromptFrame()
+        {
+            if (_promptFrame == null)
+                return;
+            bool on = !string.IsNullOrEmpty(_promptText.text);
+            if (_promptFrame.gameObject.activeSelf != on)
+                _promptFrame.gameObject.SetActive(on);
+            if (!on)
+                return;
+            bool price = _promptText.text.Contains("âmes");
+            if (_promptSoul != null)
+                _promptSoul.gameObject.SetActive(price);
+            float w = _promptText.preferredWidth + 70f + (price ? 36f : 0f);
+            _promptFrame.rectTransform.sizeDelta = new Vector2(w, 64f);
+            _promptText.rectTransform.anchoredPosition = _promptFrame.rectTransform.anchoredPosition + new Vector2(price ? -18f : 0f, 0f);
         }
 
         private Image Layer(string name, RectTransform parent, Sprite sprite, float k, Image.Type type = Image.Type.Sliced)

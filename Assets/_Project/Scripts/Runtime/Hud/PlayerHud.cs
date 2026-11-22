@@ -23,6 +23,8 @@ namespace ItHunts.Hud
     public sealed partial class PlayerHud : MonoBehaviour
     {
         [SerializeField] private HudSettings settings;
+        /// <summary>Habillage de la DA (écran de chargement, panneaux).</summary>
+        public HudSkinSettings Skin => settings != null ? settings.skin : null;
         [Tooltip("Couleurs du magnétisme, anneaux, refus.")]
         [SerializeField] private MagnetismFeedbackSettings feedback;
         [Tooltip("Couleurs de la télékinésie (anneaux violet et vert).")]
@@ -583,7 +585,7 @@ namespace ItHunts.Hud
                 return;
             _refusedAt = Time.time;
             if (_refusalClip == null)
-                _refusalClip = ItHunts.Audio.ProceduralSfx.ToClip("Refus (âmes)", ItHunts.Audio.ProceduralSfx.Refusal());
+                _refusalClip = ItHunts.Audio.GameAudio.Or(s => s.refusal, ItHunts.Audio.ProceduralSfx.ToClip("Refus (âmes)", ItHunts.Audio.ProceduralSfx.Refusal()));
             AudioSource.PlayClipAtPoint(_refusalClip, _health.transform.position + Vector3.up, 0.7f);
         }
 
@@ -612,7 +614,9 @@ namespace ItHunts.Hud
             string key = reader != null ? ItHunts.Input.RebindStore.Prompt(reader.InteractAction, reader.UsingGamepad) : "E";   // touche actuelle (A5)
             var focus = _interactor != null ? _interactor.Focus : null;
             _promptText.text = focus != null ? $"{key} : {focus.Prompt(_health)}" : string.Empty;
-            _promptText.color = refused > 0f ? Color.Lerp(Color.white, new Color(1f, 0.25f, 0.2f), refused) : Color.white;
+            Color promptColor = _skin != null ? new Color(0.95f, 0.88f, 0.74f) : Color.white;
+            _promptText.color = refused > 0f ? Color.Lerp(promptColor, new Color(1f, 0.25f, 0.2f), refused) : promptColor;
+            SyncPromptFrame();
         }
 
         /// <summary>Munitions du barillet : un segment par munition ; en rechargement, ils se remplissent ; grisés si inactif.</summary>
@@ -817,6 +821,9 @@ namespace ItHunts.Hud
                     break;
                 if (d == null || d.Dead || d.ImmuneToOrbs)
                     continue;                                            // le traqueur, intuable, n'a pas de barre de PV
+                // Nuit 3, point 1 : plus de barres vertes partout ; seulement un ennemi blessé, 2.5 s après le coup.
+                if (Time.time - d.LastDamagedAt > 2.5f)
+                    continue;
                 Vector3 top = d.Top + Vector3.up * 0.35f;
                 if (Vector3.Distance(cam.transform.position, top) > damageFeedback.healthBarDistance)
                     continue;
@@ -828,7 +835,7 @@ namespace ItHunts.Hud
                 HealthState h = d.Health;
                 float k = h.Max > 0f ? h.Current / h.Max : 0f;
                 fill.rectTransform.sizeDelta = new Vector2(damageFeedback.healthBarWidth * k, damageFeedback.healthBarHeight);
-                fill.color = Color.Lerp(damageFeedback.bigColor, new Color(0.3f, 1f, 0.3f), k);
+                fill.color = Color.Lerp(new Color(0.55f, 0.06f, 0.05f, 0.95f), new Color(0.85f, 0.2f, 0.12f, 0.95f), k);
                 bar++;
             }
 
