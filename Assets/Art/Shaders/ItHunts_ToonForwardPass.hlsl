@@ -15,6 +15,7 @@ struct Attributes
     float4 positionOS : POSITION;
     float3 normalOS   : NORMAL;
     float2 uv         : TEXCOORD0;
+    half4  color      : COLOR;
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
@@ -25,9 +26,96 @@ struct Varyings
     float3 positionWS : TEXCOORD1;
     float3 normalWS   : TEXCOORD2;
     half   fogFactor  : TEXCOORD3;
+    half4  color      : TEXCOORD4;
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
 };
+
+// ---------------------------------------------------------------- mode décor (_DECOR, 2026-11-22)
+// Bruit de valeur 3D (hachage), lisse ; deux octaves. Sert à la variation à grande échelle et au bord de la bande sale.
+float DecorHash(float3 p)
+{
+    // hachage sans motif sur une grille entière (pas de bandes diagonales sur les murs plans)
+    p = frac(p * float3(0.1031, 0.1030, 0.0973));
+    p += dot(p, p.yxz + 33.33);
+    return frac((p.x + p.y) * p.z);
+}
+float DecorNoise(float3 x)
+{
+    float3 i = floor(x);
+    float3 f = frac(x);
+    f = f * f * (3.0 - 2.0 * f);
+    return lerp(lerp(lerp(DecorHash(i + float3(0, 0, 0)), DecorHash(i + float3(1, 0, 0)), f.x),
+                     lerp(DecorHash(i + float3(0, 1, 0)), DecorHash(i + float3(1, 1, 0)), f.x), f.y),
+                lerp(lerp(DecorHash(i + float3(0, 0, 1)), DecorHash(i + float3(1, 0, 1)), f.x),
+                     lerp(DecorHash(i + float3(0, 1, 1)), DecorHash(i + float3(1, 1, 1)), f.x), f.y), f.z);
+}
+float DecorFbm(float3 x)
+{
+    return DecorNoise(x) * 0.65 + DecorNoise(x * 2.03 + 17.1) * 0.35;
+}
+// Projection monde simple (axe dominant) pour la couche : même logique que ToonWorldUV, tuile carrée.
+float2 DecorLayerUV(float3 p, float3 n, float tile)
+{
+    float3 a = abs(n);
+    float2 t = (a.y >= a.x && a.y >= a.z) ? p.xz : ((a.x >= a.z) ? float2(p.z * sign(n.x), p.y) : float2(-p.x * sign(n.z), p.y));
+    return t / max(tile, 1e-3);
+}
+// Mélange en hauteur : `amount` 0..1 pousse la couche ; hb = largeur de la transition. 0 = base, 1 = couche.
+half DecorHeightBlend(half baseH, half layerH, half amount, half hb)
+{
+    half s = amount * 2.0h - 1.0h + (layerH - baseH);
+    return smoothstep(-hb, hb, s);
+}
+// Applique variation, saleté, humidité et couche sur la couleur de base. `albedo.a` = hauteur peinte de la base.
+half3 DecorApply(half4 albedo, float3 positionWS, half3 normalWS, half4 vcol)
+{
+    half3 c = albedo.rgb;
+    half baseH = albedo.a;
+    // 1) variation à grande échelle, en aplats (3 paliers) ; la peinture de sommets B décale la teinte par pièce
+    float m = DecorFbm(positionWS / max(_MacroScale, 0.1));
+    half pv = _VertexPaint > 0.5h ? vcol.b : 0.5h;
+    m = saturate(m + (pv - 0.5h) * 0.8h);
+    half step3 = floor(m * 3.0) / 2.0;
+    half3 tinted = c * lerp(half3(1, 1, 1), _MacroTint.rgb, step3);
+    half lum = 0.92h + 0.16h * (floor(DecorNoise(positionWS / max(_MacroScale * 0.6, 0.1) + 31.7) * 3.0) / 2.0);
+    c = lerp(c, tinted * lum, _MacroVariation);
+    // 2) bande sale en bas : hauteur au-dessus du sol (peinture de sommets R ou hauteur monde), bord bruité
+    half grime;
+    if (_VertexPaint > 0.5h)
+        grime = vcol.r;
+    else
+    {
+        float hgt = positionWS.y - _GrimeGroundY;
+        // bord irrégulier : grandes avancées (1 à 3 m) et dents fines
+        float wob = (DecorFbm(positionWS * float3(0.55, 0.25, 0.55)) - 0.5) * 0.9 * _GrimeHeight
+                  + (DecorNoise(positionWS * float3(3.1, 1.2, 3.1)) - 0.5) * 0.35 * _GrimeHeight;
+        grime = saturate(1.0 - (hgt + wob) / max(_GrimeHeight, 0.01));
+    }
+    grime *= saturate(1.0h - normalWS.y * 0.6h);     // les sols restent lisibles
+    half g = DecorHeightBlend(1.0h - baseH, 1.0h, grime, 0.18h);      // les joints se salissent d'abord
+    g = floor(g * 3.0h + 0.25h) / 3.0h;                                // aplats
+    c = lerp(c, c * _GrimeColor.rgb, g * _GrimeStrength);
+    // coulures d'humidité : traînées verticales au-dessus de la bande sale
+    // (dans la bande sale seulement : les longues coulures passent par la couche Humidite et les décalcomanies)
+    float dr = DecorNoise(float3(positionWS.x * 2.3 + positionWS.z * 2.3, positionWS.y * 0.5, 0.0));
+    half wet = smoothstep(0.62h, 0.7h, dr) * saturate(1.0h - abs(normalWS.y) * 2.0h) * step(0.55h, grime);
+    c = lerp(c, c * _WetColor.rgb, wet * _WetStrength);
+    // 3) couche (mousse, salpêtre) mélangée en hauteur : en bas, sur les dessus, partout, ou peinte (G)
+    half amount = _LayerAmount + _LayerLow * grime + _LayerTop * saturate(normalWS.y * 1.5h - 0.5h);
+    if (_VertexPaint > 0.5h) amount += vcol.g;
+    // plaques : la couche se regroupe en taches de 2 à 4 m, jamais en bande régulière
+    float plaques = DecorFbm(positionWS * 0.45 + 5.3);
+    amount = saturate(amount * smoothstep(0.42, 0.7, plaques) * 1.8 + (DecorNoise(positionWS * 1.7) - 0.5) * 0.25 * step(0.001h, amount));
+    UNITY_BRANCH if (amount > 0.001h)
+    {
+        half4 layer = SAMPLE_TEXTURE2D(_LayerMap, sampler_LayerMap, DecorLayerUV(positionWS, normalWS, _LayerTile));
+        half lb = DecorHeightBlend(baseH, layer.a, amount, _HeightBlend);
+        c = lerp(c, layer.rgb, lb);
+    }
+    return c;
+}
+
 
 // Somme de marches : 0, 1/n, 2/n … 1. La marche k tombe à x = (k - 1 + seuil) / n ; softness : demi-largeur de chaque
 // transition (grande : marches fondues en dégradé).
@@ -99,6 +187,7 @@ Varyings ToonVert(Attributes input)
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
     output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
     output.fogFactor = ComputeFogFactor(pos.positionCS.z);
+    output.color = input.color;
     return output;
 }
 
@@ -118,6 +207,9 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
 #endif
 #if defined(_ALPHATEST_ON)
     clip(albedo.a - _Cutoff);
+#endif
+#if defined(_DECOR)
+    albedo.rgb = DecorApply(albedo, input.positionWS, normalize(input.normalWS), input.color);
 #endif
 
     float3 positionWS = input.positionWS;

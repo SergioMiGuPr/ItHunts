@@ -337,3 +337,131 @@ matériaux définitifs, réglage intermédiaire, contours clairs dans le noir. P
    translucide plus haut).
 8. **`ART-HANDOFF.md` § 0 quater et § 5 bis** : remplacer la couleur de l'orbe par action (D-024) par la couleur du
    personnage, et la sphère de 0.08 m par les mesures de `SM_Orbe`.
+
+
+## Bibliothèque de matériaux peints (lot « matériaux », 2026-11-22, branche `art-materiaux`)
+
+**But :** en finir avec le rendu répétitif. La bibliothèque contient :
+- 22 tuiles peintes ;
+- une trim sheet ;
+- 16 décalcomanies ;
+- un **mode « décor »** du shader `ItHunts/Toon`, qui fait varier chaque mur :
+  - grandes taches de variation de teinte ;
+  - bas des murs sale et humide ;
+  - mousse ou salpêtre mélangés **en hauteur** ;
+  - peinture de sommets.
+
+**Fabrication :** tout est procédural, sans photo ni IA. Les scripts Python tournent dans Blender ou dans un Python seul. Les
+bruits sont périodiques, donc chaque tuile se raccorde. Le style suit le guide : aplats posterisés, encre sur les joints et
+les fissures, arête haute éclairée, coups de pinceau.
+
+**Planches** (`docs/art/rendus/Materiaux/`) :
+- `Planche_Tuiles.jpg` : les tuiles en 2 × 2 ;
+- `Planche_Materiaux_Jeu.jpg` : chaque tuile sur un mur de 10 × 8 m, dans l'éclairage du jeu ;
+- `Planche_Variantes_Hauteur.jpg` ;
+- `Planche_Voisins_Decals_Trim.jpg`.
+
+**Scène :** `Assets/Art/Scenes/Vitrine_Materiaux.unity`. Éclairage : réglage « intermédiaire » de RENDU.md, torches de
+1.8 / 11 m fixées aux murs à 4 m, lune à 0.25, bloom du jeu.
+
+**Sources** (`Assets/Art/Source~/Textures/scripts/`) : `peint.py`, `materiaux.py`, `trims_decals.py`,
+`MateriauxBuilder.cs`.
+
+### Tuiles (`Assets/Art/Textures/Materiaux/T_Mat_<Nom>_BaseColor.png`)
+
+Chaque tuile fait 1024 px. **L'alpha contient la hauteur peinte.**
+
+| Tuile | Usage | Taille de la tuile (m) |
+|---|---|---|
+| `Moellons` | murs de cave, soutènements | 4 × 4 |
+| `PierreTaillee` | murs du château | 4 × 3 |
+| `Dalles` | sols | 4 × 4 |
+| `RocheCave` | parois organiques, gouffres | 6 × 6 |
+| `Briques` | voûtes, puits | 2 × 2 |
+| `Mortier` | joints épais, enduits | 2 × 2 |
+| `Mousse` | couche | 2 × 2 |
+| `Salpetre` | couche | 2 × 2 |
+| `Humidite` | couche (coulures) | 2 × 4 |
+| `BoisNeuf` | planchers, échafaudages, meubles | 1 × 1 |
+| `BoisPourri` | ponts de bois de l'acte I, cellules | 1 × 1 |
+| `BoisMouille` | pontons, bois près de l'eau | 1 × 1 |
+| `FerRouille` | grilles, barreaux, ferrures | 1 × 1 |
+| `PlatreFissure` | murs intérieurs du château | 3 × 3 |
+| `Marbre` | chapelle, salle de bal | 2 × 2 |
+| `Tapis` | salons, chambres, galeries | 2 × 2 |
+| `Tenture` | salons, chambres, galeries | 2 × 4 |
+| `Terre` | sols du jardin et des caves | 3 × 3 |
+| `HerbeSeche` | sols du jardin et des caves | 3 × 3 |
+| `Gravier` | sols du jardin et des caves | 2 × 2 |
+| `Racines` | sols du jardin et des caves | 2 × 2 |
+| `Ecorce` | troncs d'arbres morts | 1 × 2 |
+
+**Réglages d'import :**
+- sRGB et alpha d'origine ;
+- Repeat ;
+- mipmaps trilinéaires, anisotropie 4 ;
+- compression **BC7**, qui garde la hauteur de l'alpha propre.
+
+### Matériaux (`Assets/Art/Materials/Bibliotheque/M_Bib_*.mat`)
+
+Tous utilisent `ItHunts/Toon` avec UV monde et mode décor.
+
+- **22 tuiles simples** (`M_Bib_<Nom>`) : variation 0.3 ; saleté 0.55 sur 1.8 m au-dessus de `_GrimeGroundY`.
+- **10 variantes prêtes à poser** :
+  - `Moellons_Moussus`, `Moellons_Salpetre` ;
+  - `PierreTaillee_Sale`, `PierreTaillee_Salpetre` ;
+  - `RocheCave_Humide`, `Dalles_Sales`, `Briques_Salpetre`, `PlatreFissure_Sale` ;
+  - `Terre_Racines`, `Gravier_Herbe`.
+- **4 variantes à peinture de sommets** (`*_Peint` : moellons, roche, pierre taillée, briques), pour les kits des lots 2 à 4.
+- `M_Bib_Trim`, qui utilise les UV du modèle.
+- `M_Bib_Decals` : translucide, file 2460, sans ombre ni profondeur.
+
+### Mode « décor » du shader toon (`_DECOR`)
+
+| Réglage | Effet |
+|---|---|
+| `_MacroVariation`, `_MacroScale`, `_MacroTint` | Taches de teinte et de valeur de 3 à 6 m, **en 3 aplats** (pas de dégradé) : un même mur change d'un bout à l'autre. |
+| `_GrimeHeight`, `_GrimeGroundY`, `_GrimeColor`, `_GrimeStrength` | Bande sale en bas des murs, au bord irrégulier. Grâce au mélange en hauteur avec l'alpha, la saleté **remplit d'abord les joints**. Les sols restent lisibles. |
+| `_WetColor`, `_WetStrength` | Humidité dans la bande sale. |
+| `_LayerMap`, `_LayerTile`, `_LayerLow`, `_LayerTop`, `_LayerAmount`, `_HeightBlend` | Couche (mousse, salpêtre, terre…) **mélangée en hauteur**, à bord franc : elle monte par les creux. Elle se place en bas des murs, sur les dessus ou partout, regroupée en plaques de 2 à 4 m. |
+| `_VertexPaint` | **Peinture de sommets** : R = saleté (remplace la hauteur monde), G = couche, B = teinte de la pièce. Elle survit au batching statique. |
+
+La saleté ne se calcule pas depuis le pivot de l'objet, parce que le batching statique ne conserve pas ce pivot. C'est la
+raison d'être de la peinture de sommets et de `_GrimeGroundY`.
+
+**Coût :** un bruit 3D de 2 octaves, plus une lecture de texture là où la couche apparaît. Les matériaux existants sans
+`_DECOR` ne changent pas.
+
+### Trim sheet (`T_Mat_Trim_BaseColor`)
+
+La texture fait 1024 px pour 2 m de large. Les bandes sont repérées en pixels depuis le haut.
+
+| Bande | v (px) | Hauteur réelle |
+|---|---|---|
+| Corniche moulurée | 0–176 | 34 cm |
+| Bandeau (une assise) | 176–336 | 31 cm |
+| Plinthe sale et humide | 336–464 | 25 cm |
+| Poutre de bois fendue | 464–592 | 25 cm |
+| Bande de fer cloutée | 592–688 | 19 cm |
+| Frise de briques | 688–784 | 19 cm |
+| Nez de marche | 784–896 | 22 cm |
+| Galon de tenture | 896–960 | 12 cm |
+| Corde | 960–1024 | 12 cm |
+
+### Décalcomanies (`T_Mat_Decals`, prefabs `Assets/Art/Prefabs/Decals/Decal_<Nom>`)
+
+L'atlas compte 4 × 4 cases. Chaque prefab est un quad de 1 × 1 m :
+- tourné vers −Z : il se pose contre un mur, normale vers la pièce ;
+- décalé de 1 cm ;
+- sans ombre.
+
+Les 16 décalcomanies :
+- fissures : `FissureLongue`, `FissureEtoile`, `FissuresFines`, `EclatAngle` ;
+- taches : `TacheHumidite`, `TacheSuie`, `TacheSang`, `AureoleSalpetre` ;
+- végétation et débris : `MoussePlaque`, `MousseJoint`, `LichenPale`, `Gravats` ;
+- coulures et toile : `CoulureLongue`, `CouluresMultiples`, `CoulureRouille`, `ToileAraignee`.
+
+**Pour `main` :** rien à brancher. Pour habiller les salles du jeu :
+- remplacer `M_Pierre_Monde` et `M_Dalles_Monde` par `M_Bib_PierreTaillee_Sale`, `M_Bib_Moellons_Moussus`,
+  `M_Bib_Dalles_Sales`… ;
+- régler `_GrimeGroundY` à la hauteur du sol de la salle, ou utiliser les variantes `*_Peint` sur des maillages peints.
