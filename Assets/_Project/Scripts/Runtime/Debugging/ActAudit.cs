@@ -69,6 +69,12 @@ namespace ItHunts.Debugging
             // Cachettes : points où un joueur tient debout, hors de portée de la main du traqueur.
             Bounds area = LevelBounds(p);
             ReachCheck.Result reach = ReachCheck.Run(Physics.defaultPhysicsScene, area, 3f, stalkerFilter);
+            // Seuls comptent les points dans une salle, sous son plafond (le dessus des toits n'est pas accessible aux joueurs).
+            reach.Hidden.RemoveAll(h =>
+            {
+                int ri = p.RoomAt(h);
+                return ri < 0 || (p.Rooms[ri].Ceiling > 0f && h.y > p.Rooms[ri].Floor + p.Rooms[ri].Ceiling - 1f);
+            });
             sb.Append($"\n  cachettes : {reach.Hidden.Count} sur {reach.Points} points");
             if (reach.Hidden.Count > 0)
                 sb.Append(" (" + string.Join(" ; ", reach.Hidden.Take(6).Select(h => $"{RoomName(p, h)} {h.y:0.0} m")) + ")");

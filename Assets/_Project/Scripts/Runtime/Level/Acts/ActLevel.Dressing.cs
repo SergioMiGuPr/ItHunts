@@ -306,7 +306,8 @@ namespace ItHunts.Level.Acts
                     {
                         if (k % 2 == 1 || Occupied(c))
                             continue;                                   // au jardin, une source sur deux : la lune éclaire déjà
-                        KitPiece(Art.candles, root, new Vector3(p.x, ground, p.z) + inward * 2.2f, inward, Vector3.one * 1.3f, true);
+                        KitPiece(Art.candles, root, new Vector3(p.x, ground, p.z) + inward * 2.2f, inward, Vector3.one * 1.3f, true)
+                            .AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
                         _occupied.Add(c);
                         continue;
                     }
