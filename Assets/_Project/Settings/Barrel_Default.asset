@@ -20,6 +20,7 @@ MonoBehaviour:
   viewOffset: {x: 0, y: 0.12, z: 0.06}
   viewEuler: {x: 0, y: 0, z: 0}
   viewScale: 0.5
+  mods: {fileID: 11400000, guid: 5ae61771b12705646b6edf898b08d755, type: 2}
   rounds: 6
   damage: 12
   fireInterval: 0.25

@@ -65,7 +65,7 @@ namespace ItHunts.Economy
 
             _placedForSeed = seed;
             int count = settings != null ? settings.merchantOffers : 3;
-            UpgradeDefinition[] drawn = run != null ? run.DrawUpgrades(count) : new UpgradeDefinition[0];
+            UpgradeDefinition[] drawn = run != null ? run.DrawUpgradesFor(count, null, PlayerHealth.All.Count > 0 ? PlayerHealth.All[0] : null) : new UpgradeDefinition[0];
             float range = settings != null ? settings.orbInteractRange : 8f;
             int n = drawn.Length + 1;
             for (int i = 0; i < n; i++)

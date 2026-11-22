@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13751ab4c54953244ba700b393ce1ce6, type: 3}
+  m_Name: BarrelMods_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.BarrelModsSettings
+  headshotMultiplier: 2
+  ghoulHeadRadius: 0.3
+  flyerHeadRadius: 0.32
+  paralysisPerStack: 0.35
+  explosionRadius: 3.5
+  explosionRadiusPerStack: 1
+  explosionDamage: 16
+  explosionDamagePerStack: 8
+  explosionChainMax: 2
+  piercePerStack: 1
+  pierceDamageKept: 0.75
+  ricochetsPerStack: 1
+  ricochetRange: 14
+  ricochetDamage: 0.6
+  roundsPerKillPerStack: 2
+  chainBonusPerStack: 0.5
+  chainWindow: 2.5
+  chainMax: 4
+  critChanceK: 0.12
+  burnDpsPerStack: 5
+  burnDuration: 3

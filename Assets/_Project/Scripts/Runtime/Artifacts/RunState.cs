@@ -91,19 +91,39 @@ namespace ItHunts.Artifacts
         /// <summary>Tirage de count améliorations différentes (coffre, marchand) : seed de la run + numéro de tirage.</summary>
         public UpgradeDefinition[] DrawUpgrades(int count) => DrawUpgrades(count, upgrades);
 
+        /// <summary>Tirage pour ce joueur : sans les améliorations réservées à un autre artefact que le sien.</summary>
+        public UpgradeDefinition[] DrawUpgradesFor(int count, UpgradePool pool, ItHunts.Player.PlayerHealth player)
+        {
+            ArtifactDefinition art = null;
+            if (player != null && player.TryGetComponent(out ArtifactHolder h))
+                art = h.Current;
+            return DrawUpgrades(count, pool, art);
+        }
+
         /// <summary>Tirage dans une table donnée (coffre rare : sa table dédiée, D-071), même suite aléatoire que la run.</summary>
-        public UpgradeDefinition[] DrawUpgrades(int count, UpgradePool pool)
+        public UpgradeDefinition[] DrawUpgrades(int count, UpgradePool pool, ArtifactDefinition forArtifact = null)
         {
             if (pool == null || pool.upgrades.Count == 0)
                 pool = upgrades;
             if (pool == null || pool.upgrades.Count == 0)
                 return new UpgradeDefinition[0];
-            int[] idx = ItHunts.Economy.SoulMath.Draw(Seed, _draws++, pool.upgrades.Count, Mathf.Min(count, pool.upgrades.Count));
+            // Améliorations réservées à un artefact (caméléon, nuit 3) : proposées seulement à son porteur.
+            var usable = new List<UpgradeDefinition>();
+            foreach (UpgradeDefinition u in pool.upgrades)
+                if (u != null && (u.forArtifact == null || forArtifact == null || SameArtifact(u.forArtifact, forArtifact)))
+                    usable.Add(u);
+            if (usable.Count == 0)
+                return new UpgradeDefinition[0];
+            int[] idx = ItHunts.Economy.SoulMath.Draw(Seed, _draws++, usable.Count, Mathf.Min(count, usable.Count));
             var r = new UpgradeDefinition[idx.Length];
             for (int i = 0; i < idx.Length; i++)
-                r[i] = pool.upgrades[idx[i]];
+                r[i] = usable[idx[i]];
             return r;
         }
+
+        /// <summary>Même artefact (l'asset ou sa copie par joueur faite par les améliorations).</summary>
+        private static bool SameArtifact(ArtifactDefinition a, ArtifactDefinition b) =>
+            a == b || (a != null && b != null && (b.name == a.name || b.name.StartsWith(a.name + " ")) && a.GetType() == b.GetType());
 
         public IReadOnlyList<UpgradeDefinition> UpgradesOf(int playerId) =>
             _owned.TryGetValue(playerId, out List<UpgradeDefinition> l) ? l : (IReadOnlyList<UpgradeDefinition>)Array.Empty<UpgradeDefinition>();

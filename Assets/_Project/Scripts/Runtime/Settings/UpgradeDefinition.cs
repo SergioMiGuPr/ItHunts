@@ -24,6 +24,15 @@ namespace ItHunts.Settings
         ConeLanterne,           // ouverture du cône + amount °
         RechargeLanterne,       // recharge entre deux jets − amount s
         DureeBrulureLanterne,   // brûlure de la lanterne : + amount s de durée (correctifs-rendu point 8 ; avant : + PV/s)
+        // Caméléon (barillet), nuit 3 point 6 : améliorations avancées, réglées dans BarrelModsSettings (une pile par prise).
+        BallesParalysantes,     // chaque touche paralyse
+        ExplosionSurKill,       // la balle qui tue fait exploser l'ennemi
+        Perforation,            // la balle traverse des ennemis
+        Ricochet,               // la balle rebondit vers l'ennemi le plus proche
+        RechargementSurKill,    // un kill remet des balles
+        CritiquesEnChaine,      // chaque critique augmente le suivant
+        ChanceCritique,         // chance de critique sur tout le corps
+        BallesIncendiaires,     // la touche enflamme
     }
 
     /// <summary>
@@ -41,6 +50,10 @@ namespace ItHunts.Settings
         [ColorUsage(false, true)] public Color color = new Color(1f, 0.8f, 0.3f);
         public UpgradeKind kind;
         public float amount = 1f;
+        [Tooltip("Réservée à cet artefact (coffres et marchand ne la proposent qu'à son porteur) ; vide : pour tous.")]
+        public ArtifactDefinition forArtifact;
+        [Tooltip("Rareté (0 commune, 1 rare, 2 légendaire) : les tirages pondèrent 80 / 19 / 1 (recherche nuit 3).")]
+        [Range(0, 2)] public int rarity;
         [Tooltip("Prix chez le marchand (âmes).")]
         [Min(0)] public int merchantPrice = 60;
     }

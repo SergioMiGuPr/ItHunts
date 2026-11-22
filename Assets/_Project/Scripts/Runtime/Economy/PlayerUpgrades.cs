@@ -28,6 +28,15 @@ namespace ItHunts.Economy
         public float LanternConeBonus { get; private set; }
         public float LanternCooldownCut { get; private set; }
         public float LanternBurnDuration { get; private set; }
+        /// <summary>Piles des améliorations avancées du caméléon (nuit 3, point 6).</summary>
+        public int Paralysis { get; private set; }
+        public int ExplodeOnKill { get; private set; }
+        public int Pierce { get; private set; }
+        public int Ricochets { get; private set; }
+        public int ReloadOnKill { get; private set; }
+        public int ChainCrit { get; private set; }
+        public int CritChance { get; private set; }
+        public int Incendiary { get; private set; }
 
         private MovementSettings _moveOrig, _moveCopy;
         private MagnetismOrbSettings _magOrig, _magCopy;
@@ -85,6 +94,14 @@ namespace ItHunts.Economy
                 case UpgradeKind.ConeLanterne: LanternConeBonus += d.amount; break;
                 case UpgradeKind.RechargeLanterne: LanternCooldownCut += d.amount; break;
                 case UpgradeKind.DureeBrulureLanterne: LanternBurnDuration += d.amount; break;
+                case UpgradeKind.BallesParalysantes: Paralysis += Mathf.Max(1, Mathf.RoundToInt(d.amount)); break;
+                case UpgradeKind.ExplosionSurKill: ExplodeOnKill += Mathf.Max(1, Mathf.RoundToInt(d.amount)); break;
+                case UpgradeKind.Perforation: Pierce += Mathf.Max(1, Mathf.RoundToInt(d.amount)); break;
+                case UpgradeKind.Ricochet: Ricochets += Mathf.Max(1, Mathf.RoundToInt(d.amount)); break;
+                case UpgradeKind.RechargementSurKill: ReloadOnKill += Mathf.Max(1, Mathf.RoundToInt(d.amount)); break;
+                case UpgradeKind.CritiquesEnChaine: ChainCrit += Mathf.Max(1, Mathf.RoundToInt(d.amount)); break;
+                case UpgradeKind.ChanceCritique: CritChance += Mathf.Max(1, Mathf.RoundToInt(d.amount)); break;
+                case UpgradeKind.BallesIncendiaires: Incendiary += Mathf.Max(1, Mathf.RoundToInt(d.amount)); break;
             }
 
             Refresh(d.kind);

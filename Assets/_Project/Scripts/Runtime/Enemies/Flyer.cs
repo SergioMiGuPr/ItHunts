@@ -99,8 +99,20 @@ namespace ItHunts.Enemies
                 EyeGlow(false);
         }
 
+
         private void Awake()
         {
+            // Zone de tête (nuit 3, point 6) : entre les deux yeux, sur le corps.
+            Transform le = null, re = null, body = null;
+            foreach (Transform t in GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == "Oeil gauche") le = t;
+                else if (t.name == "Oeil droit") re = t;
+                else if (t.name == "Corps") body = t;
+            }
+
+            if (body != null && le != null && re != null)
+                ItHunts.Combat.Hitbox.AddHead(body, body.InverseTransformPoint((le.position + re.position) * 0.5f), ItHunts.Combat.Hitbox.FlyerHeadRadius);
             _rb = GetComponent<Rigidbody>();
             _body = GetComponent<EnemyBody>();
             _grab = GetComponent<Grabbable>();

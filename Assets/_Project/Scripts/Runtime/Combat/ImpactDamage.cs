@@ -127,6 +127,13 @@ namespace ItHunts.Combat
 
         /// <summary>Coup d'épée (corps à corps) : ses sensations (arrêt sur image, secousse) sont données par l'épée.</summary>
         public bool Melee;
+
+        /// <summary>Critique (headshot ou chance de critique, nuit 3) : marqueur doré, chiffre plus gros, son dédié.</summary>
+        public bool Critical;
+        /// <summary>Balle dans la tête (statistiques).</summary>
+        public bool Headshot;
+        /// <summary>Joueur qui a porté le coup (0 : aucun) : chacun ne voit que son marqueur.</summary>
+        public int AttackerId;
     }
 
     /// <summary>Canal des coups portés dans le monde. Chaque joueur affiche les chiffres pour sa propre caméra.</summary>

@@ -784,6 +784,13 @@ namespace ItHunts.Hud
                 : damageFeedback.smallColor;
             int size = Mathf.RoundToInt(Mathf.Min(settings.damageFontMax, settings.damageFontMin + damageFeedback.numberSizePerDamage * e.Damage));
             Vector3 start = e.Target != null ? Vector3.Lerp(e.Point, e.Target.Top, 0.5f) : e.Point;
+            if (e.Critical)
+            {
+                // Critique (headshot) : chiffre doré, 50 % plus gros (recherche nuit 3).
+                color = new Color(1f, 0.82f, 0.25f);
+                size = Mathf.RoundToInt(size * 1.5f);
+            }
+
             AddNumber(Mathf.CeilToInt(e.Damage).ToString(), start, color, size);
             if (e.Killed)
                 AddNumber("K.O.", start + Vector3.up * 0.5f, damageFeedback.killColor, settings.damageFontMax);

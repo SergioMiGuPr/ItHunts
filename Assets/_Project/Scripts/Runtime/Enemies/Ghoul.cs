@@ -92,6 +92,7 @@ namespace ItHunts.Enemies
         public int LeapHits { get; private set; }
         /// <summary>Attaques parées par un joueur (D-075).</summary>
         public int Parried { get; private set; }
+
         /// <summary>Délai entre le début du geste et l'impact du coup au contact (s ; mesures).</summary>
         public float ImpactDelay => settings != null ? settings.contactImpactDelay : 0f;
         public int WallLeaps { get; private set; }
@@ -116,6 +117,14 @@ namespace ItHunts.Enemies
 
         private void Awake()
         {
+            // Zone de tête (nuit 3, point 6) : sur l'os Tete du modèle animé, elle suit ses mouvements.
+            foreach (Transform t in GetComponentsInChildren<Transform>(true))
+                if (t.name == "Tete")
+                {
+                    ItHunts.Combat.Hitbox.AddHead(t, Vector3.up * 0.06f, ItHunts.Combat.Hitbox.GhoulHeadRadius);
+                    break;
+                }
+
             _body = GetComponent<EnemyBody>();
             _damageable = GetComponent<Damageable>();
             _rb = GetComponent<Rigidbody>();
@@ -269,6 +278,12 @@ namespace ItHunts.Enemies
             if (visual != null)
                 foreach (Transform child in visual)
                     child.localScale = Vector3.one * s;
+            foreach (Transform t in GetComponentsInChildren<Transform>(true))
+                if (t.name == "Tete")
+                {
+                    ItHunts.Combat.Hitbox.AddHead(t, Vector3.up * 0.06f, ItHunts.Combat.Hitbox.GhoulHeadRadius);   // rayon remis à l'échelle
+                    break;
+                }
             // Seuils de LOD réglables (la DA les règle à l'import pour 1.1 m ; le .meta de son modèle ne se touche pas sur main).
             foreach (LODGroup group in GetComponentsInChildren<LODGroup>(true))
             {
