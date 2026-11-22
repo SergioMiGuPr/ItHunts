@@ -118,3 +118,68 @@ Modèles `Assets/Art/Models/KitChateau/`, prefabs `Assets/Art/Prefabs/KitChateau
 | `SM_Chateau_Lutrin` | Lutrin de fer (1.4 m) avec un livre ouvert. | 0.6 × 0.48 × 1.39 | 0.0 | 88 | `M_Bib_FerRouille`, `M_Kit_Toile` |
 | `SM_Chateau_Rosace` | Rosace de chapelle Ø 7 m (au mur, face vers +Z, pivot au centre) : remplage rayonnant, vitrail sombre. | 7.0 × 0.75 × 7.0 | -3.5 | 696 | `M_Bib_PierreTaillee_Peint`, `M_Kit_Vitrail` |
 | `SM_Chateau_Estrade_Musiciens` | Estrade des musiciens de la salle de bal : 8 × 4 m, 1.2 m de haut, trois marches, pupitres renversés. | 8.0 × 5.27 × 2.47 | 0.0 | 1700 | `M_Bib_BoisNeuf`, `M_Bib_FerRouille` |
+
+## Acte III : jardin et arène du boss (KitJardin, PR art-kit-jardin)
+
+25 pièces, plus le ciel et la brume. Le jardin, à l'abandon devant le château, est plus ouvert et un peu plus lumineux, sous la lune.
+
+**Arbres et végétation :**
+- **gros arbres morts** : grand (18 m, tronc de Ø 2.6 m), penché (rampe et mur de wall jump) et tordu. Racines, branches noueuses, `Accroche_Traction` à mi-tronc ;
+- haies de 6 m et massifs ;
+- **lisière de forêt dense** de 20 m : limite naturelle.
+
+**Clôtures et murs** :
+- palissade de jardin, grille d'enceinte en fer forgé et portail, à poser **le long des allées et des parcelles** ;
+- muret ;
+- **mur d'enceinte** de 9 m et **falaise** de 24 m : limites évidentes, jamais de mur invisible ;
+- allée de gravier bordée de pierre.
+
+**Statues, tombes, fabriques :**
+- statue voilée de 5 m et statue géante de 11 m (points de traction) ;
+- fontaine à vasques avec eau croupie ;
+- tombes (stèle penchée, croix) et caveau ;
+- serre en ruine (ossature de fer, carreaux brisés) ;
+- kiosque octogonal (toit atteignable par traction).
+
+**Arène du boss en contrebas :** escalier de descente de 12 m de large (8 m de dénivelé), piliers brisés (`Accroche_Traction`), pans de mur pour se couvrir, buttes de relief.
+
+**Ciel nocturne** (prefab `Jardin_Ciel`, shader `ItHunts/Ciel`) :
+- dégradé en aplats, étoiles qui scintillent ;
+- **lune** avec ses mers et un halo en paliers, et une lumière de lune qui vient de sa direction ;
+- nuages peints qui dérivent et passent devant elle.
+
+**Brume au sol** (prefab `Jardin_Brume`) : nappes basses de 6 à 12 m qui dérivent, sur une zone de 40 × 40 m.
+
+Éclairage de l'acte III : ambiance (0.08, 0.09, 0.12), lune à 0.6, brouillard de 18 à 140 m.
+
+Contrôle : deux salles assemblées, l'allée des statues et l'arène du boss (`docs/art/rendus/KitJardin/Planche_Jardin_Arene_Ciel.jpg`).
+
+Modèles `Assets/Art/Models/KitJardin/`, prefabs `Assets/Art/Prefabs/KitJardin/` (collisions : maillage pour l'architecture, boîte pour les petits objets ; sources de lumière : feu `VFX_Torche_Feu` et lumière ponctuelle sur les repères `Feu*`), scène `Assets/Art/Scenes/Vitrine_KitJardin.unity`, planche `docs/art/rendus/KitJardin/Planche_Kit_Jardin.jpg`, une capture par pièce dans `docs/art/rendus/KitJardin/captures/`. Source : `Assets/Art/Source~/Kits/scripts/` (`kitlib.py` et le script du kit, Blender en ligne de commande).
+
+| Pièce | Rôle | Emprise x × y × z (m) | Bas (m) | Triangles | Matériaux |
+|---|---|---|---|---|---|
+| `SM_Jardin_ArbreMort_Grand` | Gros arbre mort de 18 m, tronc Ø 2.6 m (wall jump d'un tronc à l'autre), racines, branches noueuses. | 8.61 × 12.48 × 26.72 | -0.62 | 2029 | `M_Bib_Ecorce` |
+| `SM_Jardin_ArbreMort_Penche` | Arbre mort penché de 14 m (Ø 2.2 m) : le tronc incliné sert de rampe de course et de mur de wall jump. | 12.91 × 12.75 × 20.44 | -0.6 | 1729 | `M_Bib_Ecorce` |
+| `SM_Jardin_ArbreMort_Tordu` | Arbre mort tordu de 11 m (Ø 2 m), couronne de branches basses (silhouette sur la lune). | 9.68 × 10.45 × 15.51 | -0.59 | 2153 | `M_Bib_Ecorce` |
+| `SM_Jardin_Haie_6m` | Haie taillée devenue sauvage : 6 × 1.4 m, 2.6 m de haut, bosses irrégulières, trous (à poser le long d'une allée). | 6.9 × 1.95 × 2.97 | 0.0 | 572 | `M_Kit_Feuillage` |
+| `SM_Jardin_Massif` | Massif d'arbustes morts (Ø 3 m) au coin d'une parcelle : boules de feuillage sombre et tiges sèches. | 3.05 × 2.91 × 2.29 | 0.47 | 504 | `M_Kit_Feuillage`, `M_Bib_Ecorce` |
+| `SM_Jardin_Foret_Lisiere_20m` | Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés et masses sombres jusqu'à 20 m. Limite | 23.18 × 10.37 × 22.42 | -0.53 | 1580 | `M_Bib_Ecorce`, `M_Kit_Feuillage` |
+| `SM_Jardin_Palissade_4m` | Palissade de jardin en planches pointues, 4 m × 1.6 m, deux planches manquantes, une penchée (le long d'une allée | 4.04 × 0.21 × 1.91 | -0.1 | 230 | `M_Bib_BoisPourri` |
+| `SM_Jardin_Grille_4m` | Grille d'enceinte en fer forgé, 4 m × 3.5 m, barreaux à pointes de lance, volutes, entre deux piliers de pierre. | 5.24 × 0.84 × 4.3 | 0.0 | 559 | `M_Bib_PierreTaillee_Peint`, `M_Bib_FerRouille` |
+| `SM_Jardin_Portail` | Portail de fer à deux vantaux (4 m) entre deux grands piliers à vases, un vantail entrouvert : entrée d'allée. | 6.1 × 1.66 × 5.4 | 0.0 | 432 | `M_Bib_PierreTaillee_Peint`, `M_Bib_FerRouille` |
+| `SM_Jardin_Muret_4m` | Muret de pierre de 4 m × 0.6 m, 1 m de haut, chaperon arrondi, pierres manquantes (couvert bas, rebord de parcelle). | 4.0 × 0.72 × 1.04 | 0.0 | 84 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint` |
+| `SM_Jardin_MurEnceinte_8m` | Mur d'enceinte du domaine : 8 m de long, 9 m de haut, contreforts, chaperon : limite évidente (on ne grimpe pas : | 8.2 × 2.4 × 9.3 | 0.0 | 48 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint` |
+| `SM_Jardin_Falaise_16m` | Falaise de 16 m de front, 24 m de haut, herbe sèche au sommet : limite naturelle (arène en contrebas, bord du jardin). | 16.67 × 6.38 × 24.8 | 0.0 | 616 | `M_Bib_RocheCave_Peint`, `M_Bib_HerbeSeche` |
+| `SM_Jardin_Chemin_8m` | Allée de gravier de 8 × 3 m, bordures de pierre, herbe qui gagne les bords (pivot au centre, dessus à 0.05). | 8.0 × 3.3 × 0.22 | -0.05 | 204 | `M_Bib_Gravier_Herbe`, `M_Bib_PierreTaillee_Peint` |
+| `SM_Jardin_Statue_Pleureuse` | Statue de 5.4 m (figure voilée qui se cache le visage) sur piédestal : repère du jardin, point de traction. | 1.6 × 1.6 × 4.96 | 0.0 | 404 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Mortier` |
+| `SM_Jardin_Statue_Geante` | Statue géante de 12 m dans l'arène : couvert, point de traction haut (`Accroche_Traction`). | 3.26 × 3.17 × 10.79 | 0.0 | 404 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Mortier` |
+| `SM_Jardin_Fontaine` | Fontaine (Ø 8 m) : bassin octogonal avec eau croupie, vasque à 2.5 m sur colonne, vasque haute, statuette. | 8.0 × 8.0 × 5.77 | -0.4 | 414 | `M_Bib_PierreTaillee_Peint`, `M_Eau_Toon`, `M_Bib_Mortier` |
+| `SM_Jardin_Tombe_Stele` | Stèle penchée (0.9 × 1.6 m) sur un tertre, fleurs mortes : à aligner en rangées tordues dans le cimetière. | 1.14 × 2.24 × 2.15 | -0.2 | 122 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Terre_Racines` |
+| `SM_Jardin_Tombe_Croix` | Croix de pierre (2.2 m) ébréchée sur socle, tertre. | 1.0 × 2.22 × 2.4 | -0.2 | 116 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Terre_Racines` |
+| `SM_Jardin_Caveau` | Caveau familial (5 × 6 × 5 m) : fronton, porte de fer entrouverte sur le noir, colonnes ; couvert, toit escaladable. | 5.6 × 6.67 × 5.6 | 0.0 | 158 | `M_Bib_PierreTaillee_Peint`, `M_Fond_Noir`, `M_Bib_FerRouille` |
+| `SM_Jardin_Serre_Ruine` | Serre en ruine (10 × 6 m, 5 m) : soubassement de briques, ossature de fer, vitres brisées (quelques carreaux | 10.4 × 6.4 × 5.26 | 0.0 | 508 | `M_Bib_Briques_Peint`, `M_Bib_FerRouille`, `M_Kit_Vitrail` |
+| `SM_Jardin_Kiosque` | Kiosque octogonal (Ø 8 m) : plancher surélevé de 1 m, 8 colonnes de fer, toit en pavillon percé, rambarde | 9.2 × 9.9 × 9.2 | 0.0 | 350 | `M_Bib_PierreTaillee_Peint`, `M_Bib_FerRouille` |
+| `SM_Arene_EscalierDescente` | Grand escalier de descente vers l'arène : 12 m de large, descend de 8 m (32 marches), murs d'échiffre en ruine. | 13.6 × 16.0 × 10.0 | -8.5 | 576 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Moellons_Peint` |
+| `SM_Arene_PilierBrise` | Pilier brisé de 10 m (Ø 2 m), sommet cassé en biais, tambours tombés : point d'accroche de traction de l'arène. | 5.2 × 5.4 × 9.9 | 0.0 | 146 | `M_Bib_PierreTaillee_Peint` |
+| `SM_Arene_Couvert` | Pan de mur effondré (6 × 1.2 m, 3.5 m) : couvert contre les attaques du boss (pas contre le traqueur). | 6.53 × 3.39 × 3.44 | 0.0 | 312 | `M_Bib_Moellons_Peint` |
+| `SM_Arene_Butte` | Butte de terre et de roche (14 × 10 m, 3 m de haut) : relief de l'arène, pentes de glissade, vue dégagée. | 13.96 × 10.08 × 6.26 | -2.2 | 464 | `M_Bib_Terre_Racines`, `M_Bib_RocheCave_Peint` |
