@@ -43,8 +43,8 @@ namespace ItHunts.Level.Acts
         [Tooltip("Salles au moins entre le départ et la sortie.")]
         [Range(2, 20)] public int minStartExit = 6;
 
-        [Header("Portes (D-080 : traqueur 4 × 5.2 m baissé)")]
-        [Range(4f, 16f)] public float doorWidth = 8f;
+        [Header("Portes : le traqueur (7 m de large, 8.5 m baissé) passe sans passage spécial (nuit 3)")]
+        [Range(4f, 20f)] public float doorWidth = 12f;
         [Range(5.2f, 16f)] public float doorHeight = 9f;
 
         [Header("Hauteurs")]

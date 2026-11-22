@@ -22,7 +22,7 @@ MonoBehaviour:
   mainPathShare: 0.4
   loopChance: 0.55
   minStartExit: 6
-  doorWidth: 10
+  doorWidth: 12
   doorHeight: 9
   ceiling: {x: 0, y: 0}
   floorStep: 3

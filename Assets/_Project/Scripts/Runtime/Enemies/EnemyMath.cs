@@ -73,7 +73,10 @@ namespace ItHunts.Enemies
         /// </summary>
         public static float StalkerSpeed(StalkerMode mode, bool burst, float playerSpeed, StalkerSettings cfg, float enragedBase)
         {
-            return Mathf.Min(cfg.maxSpeed, StalkerSpeedUncapped(mode, burst, playerSpeed, cfg, enragedBase));
+            float v = StalkerSpeedUncapped(mode, burst, playerSpeed, cfg, enragedBase);
+            if (v <= 0f)
+                return 0f;                                               // au repaire : immobile
+            return Mathf.Min(cfg.maxSpeed + cfg.speedBonus, v + cfg.speedBonus);   // +0.5 m/s partout (nuit 3)
         }
 
         /// <summary>

@@ -220,7 +220,7 @@ namespace ItHunts.Level.Acts
             int[] depth = Depths(Start);
             foreach (int r in Enumerable.Range(0, Rooms.Count).Where(i => i != Start).OrderByDescending(i => depth[i]))
             {
-                bool[,] hall = Rect(Cells(12f), Cells(16f));
+                bool[,] hall = Rect(Cells(18f), Cells(16f));
                 int h = TryAttach(hall, r, RoomRole.HallDeSortie, null, exitDoor: true);
                 if (h < 0)
                     continue;
@@ -253,7 +253,7 @@ namespace ItHunts.Level.Acts
             {
                 if (locked >= s.lockedRooms)
                     break;
-                if (TryAttach(Rect(Cells(12f), Cells(14f)), r, RoomRole.Verrouillee, null, locked: true) >= 0)
+                if (TryAttach(Rect(Cells(18f), Cells(16f)), r, RoomRole.Verrouillee, null, locked: true) >= 0)
                     locked++;
             }
 
@@ -1302,7 +1302,7 @@ namespace ItHunts.Level.Acts
                 int hollow = 0;
                 foreach (Vector2Int cell in r.Cells)
                 {
-                    if (!edge.TryGetValue(cell, out int e) || e < 3 || r.Use[cell] != CellUse.Sol)
+                    if (!edge.TryGetValue(cell, out int e) || e < 5 || r.Use[cell] != CellUse.Sol)
                         continue;
                     float u = (cell.x - c.x) / Mathf.Max(1f, rx), v = (cell.y - c.y) / Mathf.Max(1f, ry);
                     if (u * u + v * v <= 1f)

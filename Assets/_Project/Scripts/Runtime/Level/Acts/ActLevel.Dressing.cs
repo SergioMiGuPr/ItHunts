@@ -156,6 +156,9 @@ namespace ItHunts.Level.Acts
                 return null;
             GameObject go = Instantiate(prefab, at, Quaternion.Euler(0f, yaw, 0f), root);
             go.name = name;
+            // Le traqueur (14 m) enjambe le mobilier : il ne découpe pas son NavMesh (sinon des îlots hors de sa portée, D-080).
+            if (go.GetComponent<ItHunts.Enemies.StalkerPassesThrough>() == null)
+                go.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
             return go;
         }
 
@@ -446,7 +449,7 @@ namespace ItHunts.Level.Acts
             Vector3 mid = (a + b) * 0.5f + Vector3.up * 1.2f;
             float yaw = d.x != 0 ? 90f : 0f;
             Solid(root, "Haie", mid, new Vector3(1.4f, 2.4f, (len - 1) * Plan.Cell + 1.4f), yaw, KitBuild.Kind.Bloc,
-                settings.foliageMaterial != null ? settings.foliageMaterial : settings.wallMaterial);
+                settings.foliageMaterial != null ? settings.foliageMaterial : settings.wallMaterial).AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
         }
 
         private void Tomb(ActRoom r, Transform root)
@@ -455,7 +458,8 @@ namespace ItHunts.Level.Acts
                 return;
             Vector3 at = Plan.CellCenter(c, r.Floor);
             float yaw = _rng.Next(-8, 9);
-            Solid(root, "Tombe", at + Vector3.up * 0.7f, new Vector3(0.9f, 1.4f, 0.25f), yaw, KitBuild.Kind.Bloc, settings.trimMaterial);
+            Solid(root, "Tombe", at + Vector3.up * 0.7f, new Vector3(0.9f, 1.4f, 0.25f), yaw, KitBuild.Kind.Bloc, settings.trimMaterial)
+                .AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
             Visual(root, "Dalle", CubeMesh, settings.floorMaterial != null ? settings.floorMaterial : settings.wallMaterial, at + new Vector3(0f, 0.05f, 1.1f),
                 Quaternion.Euler(0f, yaw, 0f), new Vector3(1f, 0.1f, 2f));
         }
@@ -466,7 +470,8 @@ namespace ItHunts.Level.Acts
                 return;
             Vector3 at = Plan.CellCenter(c, r.Floor);
             float yaw = _rng.Next(2) * 90f;
-            Solid(root, "Jardinière", at + Vector3.up * 0.4f, new Vector3(3.2f, 0.8f, 1.2f), yaw, KitBuild.Kind.Bloc, settings.trimMaterial);
+            Solid(root, "Jardinière", at + Vector3.up * 0.4f, new Vector3(3.2f, 0.8f, 1.2f), yaw, KitBuild.Kind.Bloc, settings.trimMaterial)
+                .AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
             for (int k = -1; k <= 1; k++)
                 Visual(root, "Massif", SphereMesh, settings.foliageMaterial != null ? settings.foliageMaterial : settings.wallMaterial,
                     at + Quaternion.Euler(0f, yaw, 0f) * new Vector3(k * 1f, 1.1f, 0f), Quaternion.identity, new Vector3(1.1f, 0.8f, 1.1f));

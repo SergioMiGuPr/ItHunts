@@ -351,8 +351,9 @@ namespace ItHunts.Level.Acts
             // Encadrement (lisibilité : une porte se voit de loin) : piédroits et linteau en pierre de taille.
             Vector3 lat = new Vector3(-n.z, 0f, n.x);
             Material trim = settings.trimMaterial;
+            // Piédroits hors de l'ouverture (elle garde toute sa largeur pour le NavMesh du traqueur).
             foreach (float side in new[] { -1f, 1f })
-                Solid(root, "Piédroit", c + lat * side * (w * 0.5f + 0.35f) + Vector3.up * ((openTop - sill) * 0.5f), new Vector3(0.9f, openTop - sill, T + 0.5f), yaw,
+                Solid(root, "Piédroit", c + lat * side * (w * 0.5f + 0.55f) + Vector3.up * ((openTop - sill) * 0.5f), new Vector3(0.9f, openTop - sill, T + 0.5f), yaw,
                     KitBuild.Kind.Mur, trim, walkable: false);
             Solid(root, "Arc de la porte", c + Vector3.up * (openTop - sill + 0.4f), new Vector3(w + 1.6f, 0.8f, T + 0.5f), yaw, KitBuild.Kind.Mur, trim, walkable: false);
             Encapsulate(c + Vector3.up * top);
