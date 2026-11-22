@@ -880,3 +880,68 @@ niveau 35 %. Le playtest la trouve pourtant « fixe, comme une texture ». **Dem
 2. **Animation trop lente pour un niveau sombre** : courant `_Courant` 0.35 m/s sur une tuile de 6 m, ondulation `_Ondulation` 0.04 ;
    à distance et dans le noir, le mouvement ne se lit pas (`eau_bassin_5s_ecart.png`). Proposition : courant ≈ 0.8 m/s, ondulation
    ≈ 0.08, écume qui bouge plus (`_EcumeBruit`), reflets des torches plus présents ; à valider sur `Test_Eau` puis en jeu.
+
+## Sons de la nuit du 2026-11-22 (lot 6, branche `art-sons-2`)
+
+52 sons générés sur Higgsfield (effets et ambiances : Mirelo ; musiques : ElevenLabs Music v2.5), pour 57.6 crédits sur
+le plafond de 60 ; sources MP3 dans `docs/art/audio/nuit3/`, préparés par `Assets/Art/Source~/Audio/scripts/sons_nuit3.py`
+(silences retirés, queues de bruit coupées à −40 dB sous la crête, effets à −1 dBFS, sons d'interface de 0.45 s au plus,
+boucles raccordées par fondu enchaîné, battement de cœur calé sur trois battements exacts de 0.838 s, ambiances à −26 dB
+RMS sous la musique, musiques au niveau de la musique du menu). Avec le lot B, **ils remplacent tous les sons synthétisés
+provisoires de `ProceduralSfx`** (colonne « Remplace »). Le branchement se fait sur `main`.
+
+| Son (`Assets/Art/Audio/…`) | Moment du jeu | Remplace | Import |
+|---|---|---|---|
+| `Musique/Musique_Chateau_Boucle` (57.515 s) | exploration de l'acte II (étages du château) | TensionDrone (Alerte, Recherche) dans l'acte II | stéréo, streaming |
+| `Musique/Musique_Jardin_Boucle` (57.5 s) | exploration de l'acte III (jardin) | TensionDrone dans l'acte III | stéréo, streaming |
+| `Musique/Musique_Boss_Boucle` (57.362 s) | combat contre le boss (arène de l'acte III) | (nouveau) | stéréo, streaming |
+| `Ambiance/Amb_Cave_Boucle` (18.0 s) | ambiance de fond de l'acte I (gouttes, vent dans les galeries), sous la musique | (nouveau) | stéréo, streaming, boucle |
+| `Ambiance/Amb_Chateau_Boucle` (17.994 s) | ambiance de fond de l'acte II (vent dans les fenêtres, craquements) | (nouveau) | stéréo, streaming, boucle |
+| `Ambiance/Amb_Jardin_Boucle` (18.0 s) | ambiance de fond de l'acte III (vent dans les arbres, corbeaux lointains) | (nouveau) | stéréo, streaming, boucle |
+| `Monde/Sfx_Porte_Ouverture` (2.5 s) | une porte s'ouvre (porte de module, de pièce, de sortie) | (nouveau) | mono, décompressé |
+| `Monde/Sfx_Porte_Verrouillee` (1.5 s) | le joueur essaie une porte verrouillée | Refusal (porte) | mono, décompressé |
+| `Interface/Sfx_Menu_Interaction` (0.45 s) | ouverture d'un menu d'interaction (porte à prix, marchand, coffre) | (nouveau) | mono, décompressé |
+| `Interface/Sfx_Achat` (1.2 s) | achat confirmé (âmes dépensées) | (nouveau) | mono, décompressé |
+| `Orbe/Sfx_Ame_Collectee` (1.0 s) | une âme est aspirée par l'orbe (une variante de hauteur 0.9 à 1.1 par âme) | SoulPickup | mono, décompressé |
+| `Orbe/Sfx_Attraper` (1.0 s) | télékinésie : objet attrapé | (nouveau) | mono, décompressé |
+| `Orbe/Sfx_Relacher` (0.8 s) | télékinésie : objet relâché | (nouveau) | mono, décompressé |
+| `Orbe/Sfx_Lancer` (1.0 s) | télékinésie : objet lancé | (nouveau) | mono, décompressé |
+| `Impacts/Sfx_Impact_Leger` (0.282 s) | petit objet lancé ou balle qui touche un mur | ImpactHit (léger) | mono, décompressé |
+| `Impacts/Sfx_Impact_Lourd` (1.5 s) | caisse lancée qui touche (ImpactDamage), chute d'un gros objet | ImpactHit (lourd) | mono, décompressé |
+| `Joueur/Sfx_Dash` (1.0 s) | dash | (nouveau) | mono, décompressé |
+| `Joueur/Sfx_Saut` (0.6 s) | saut (et double saut, hauteur 1.1) | (nouveau) | mono, décompressé |
+| `Joueur/Sfx_Atterrissage` (0.8 s) | atterrissage (volume selon la vitesse de chute) | (nouveau) | mono, décompressé |
+| `Joueur/Sfx_Glissade_Boucle` (1.7 s) | glissade (boucle tant qu'elle dure) | (nouveau) | mono, boucle, compressé en mémoire |
+| `Joueur/Sfx_WallJump` (0.8 s) | wall jump | (nouveau) | mono, décompressé |
+| `Joueur/Sfx_Hissage` (1.0 s) | hissage automatique sur un rebord | (nouveau) | mono, décompressé |
+| `Combat/Sfx_Parade_Reussie` (0.997 s) | parade réussie | Parry | mono, décompressé |
+| `Combat/Sfx_Parade_Ratee` (0.99 s) | parade ratée | (nouveau) | mono, décompressé |
+| `Combat/Sfx_Etourdissement` (1.5 s) | ennemi étourdi | Stun | mono, décompressé |
+| `Combat/Sfx_Headshot_Critique` (0.573 s) | tir critique à la tête | (nouveau) | mono, décompressé |
+| `Combat/Sfx_Balle_Paralysante` (0.779 s) | balle paralysante qui touche (cible figée) | (nouveau) | mono, décompressé |
+| `Combat/Sfx_Explosion_Kill` (1.8 s) | explosion de zone sur un kill | Kill (explosion) | mono, décompressé |
+| `Joueur/Sfx_Chute_Vide` (2.498 s) | chute dans le vide | (nouveau) | mono, décompressé |
+| `Joueur/Sfx_Plongeon_Eau` (1.8 s) | plongeon dans l'eau | (nouveau) | mono, décompressé |
+| `Traqueur/Sfx_Coeur_Boucle` (2.514 s) | cœur qui bat quand le traqueur est proche : 3 paliers (volume 0.3 / 0.6 / 1 et vitesse 1 / 1.25 / 1.5 à 60 / 40 / 20 m) | (nouveau) | mono, boucle, compressé en mémoire |
+| `Traqueur/Sfx_Traqueur_Arrivee_Porte` (3.0 s) | le traqueur arrive par une porte (enfonce l'ouverture) | (nouveau) | mono, décompressé, 3D |
+| `Boss/Sfx_Boss_Cri_Phase` (3.0 s) | boss : changement de phase | (nouveau) | mono, décompressé, 3D |
+| `Boss/Sfx_Boss_Attaque_Griffe` (1.5 s) | boss : attaque de griffe | (nouveau) | mono, décompressé, 3D |
+| `Boss/Sfx_Boss_Attaque_Morsure` (1.5 s) | boss : attaque de morsure (bond) | (nouveau) | mono, décompressé, 3D |
+| `Boss/Sfx_Boss_Blessure` (1.5 s) | boss : blessure (point faible touché) | (nouveau) | mono, décompressé, 3D |
+| `Boss/Sfx_Boss_Mort` (4.0 s) | boss : mort | (nouveau) | mono, décompressé, 3D |
+| `Interface/Sfx_UI_Survol` (0.45 s) | interface : survol d'un bouton | (nouveau) | mono, décompressé |
+| `Interface/Sfx_UI_Clic` (0.45 s) | interface : clic, validation | (nouveau) | mono, décompressé |
+| `Interface/Sfx_UI_Retour` (0.45 s) | interface : retour, fermeture | (nouveau) | mono, décompressé |
+| `Goule/Sfx_Goule_Mort_Organique` (0.8 s) | mort d'une goule (son organique court, **à la place de l'ancien son de mort**) | Kill (goule) et Sfx_Goule_Mort | mono, décompressé, 3D |
+| `Orbe/Sfx_Traction_Debut` (0.991 s) | magnétisme : la traction s'accroche | TractionStart | mono, décompressé |
+| `Orbe/Sfx_Traction_Boucle` (1.7 s) | magnétisme : traction maintenue (boucle, hauteur selon la vitesse) | TractionHum | mono, boucle, compressé en mémoire |
+| `Orbe/Sfx_Traction_Fin` (0.8 s) | magnétisme : fin de la traction | TractionEnd | mono, décompressé |
+| `Orbe/Sfx_Repulsion` (1.195 s) | magnétisme : répulsion | Repel | mono, décompressé |
+| `Interface/Sfx_Refus` (0.45 s) | action refusée (pas de charge, recharge en cours) | Refusal | mono, décompressé |
+| `Interface/Sfx_Pret` (0.45 s) | charge ou recharge à nouveau prête | Ready | mono, décompressé |
+| `Impacts/Sfx_Caisse_Brisee` (1.5 s) | une caisse se brise | Break (caisse) | mono, décompressé |
+| `Armes/Sfx_Lanterne_Rallumage` (1.2 s) | la lanterne se rallume | LanternRelight | mono, décompressé |
+| `Armes/Sfx_Barillet_Recharge_Fin` (0.266 s) | fin du rechargement du barillet (clic) | BarrelReloadDone | mono, décompressé |
+| `Monde/Sfx_Vague_Cor` (2.5 s) | une nouvelle vague arrive | WaveHorn | mono, décompressé |
+
+Le son de mort « aigu » des goules n'est plus utilisé : `Sfx_Goule_Mort_Organique` (court, organique) le remplace. Ambiances : une par acte, en boucle sous la musique, volume 0.6 ; musiques : fondu croisé de 2 s avec l'exploration.
