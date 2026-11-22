@@ -1,0 +1,257 @@
+{
+"0": [
+"Musique/Musique_Chateau_Boucle",
+"musique",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043630_c7f16702-c966-48a2-8026-54f72f9a8ac8.mp3"
+],
+"1": [
+"Musique/Musique_Jardin_Boucle",
+"musique",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043630_6b9d21c6-6cd0-4297-8ce8-6dbfdf63375f.mp3"
+],
+"2": [
+"Musique/Musique_Boss_Boucle",
+"musique",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043631_d54d17aa-38e9-42ff-9793-2edb0c1d46e1.mp3"
+],
+"3": [
+"Ambiance/Amb_Cave_Boucle",
+"ambiance",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043630_0c61084a-21ee-4338-b6ab-49182afd7351.mp3"
+],
+"4": [
+"Ambiance/Amb_Chateau_Boucle",
+"ambiance",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043630_4fb1a8ab-da08-423a-aaeb-13e278f129e0.mp3"
+],
+"5": [
+"Ambiance/Amb_Jardin_Boucle",
+"ambiance",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043630_244d610d-9980-4bf4-a965-4566d515de77.mp3"
+],
+"10": [
+"Monde/Sfx_Porte_Ouverture",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043643_942c8bec-b27e-4f0e-8953-2e058f7bc318.mp3"
+],
+"11": [
+"Monde/Sfx_Porte_Verrouillee",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043736_65779cba-592f-41fe-8e7f-a8109d27cb8e.mp3"
+],
+"12": [
+"Interface/Sfx_Menu_Interaction",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043643_069d13ae-f888-496a-a01e-d751ab3fc62f.mp3"
+],
+"13": [
+"Interface/Sfx_Achat",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043643_ee2310e1-2cda-46f0-b142-d259034f8536.mp3"
+],
+"14": [
+"Orbe/Sfx_Ame_Collectee",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043736_859f3e19-ab99-4c00-bc05-6294eef32d46.mp3"
+],
+"15": [
+"Orbe/Sfx_Attraper",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043643_4fffa36b-4435-4e20-97c4-14ee7a87fae5.mp3"
+],
+"16": [
+"Orbe/Sfx_Relacher",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043643_9ae65f37-fefc-4dd4-9b0b-2f002f0271ea.mp3"
+],
+"17": [
+"Orbe/Sfx_Lancer",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043736_a57337c6-c4c0-46fe-a2ec-44aa59e073ea.mp3"
+],
+"18": [
+"Impacts/Sfx_Impact_Leger",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043736_d42cb301-e40e-412e-9138-61c4c0f657cd.mp3"
+],
+"19": [
+"Impacts/Sfx_Impact_Lourd",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043643_a27b6b0a-ad93-4f3e-8626-645a0b03a7dd.mp3"
+],
+"20": [
+"Joueur/Sfx_Dash",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043643_4e15ca79-ca41-4d09-8941-8a37750373bd.mp3"
+],
+"21": [
+"Joueur/Sfx_Saut",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043643_df88b1d0-26d3-4126-8b87-97b00a0206f0.mp3"
+],
+"22": [
+"Joueur/Sfx_Atterrissage",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043652_a83fd1fd-72d6-4423-80f9-8db7a8d0d51a.mp3"
+],
+"23": [
+"Joueur/Sfx_Glissade_Boucle",
+"boucle",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043652_370b9016-2d7c-4463-8a38-31a1f8bb53dd.mp3"
+],
+"24": [
+"Joueur/Sfx_WallJump",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043652_0bc43f1c-cc27-414e-af67-8b499c29d50f.mp3"
+],
+"25": [
+"Joueur/Sfx_Hissage",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043653_4c0a8053-cae2-496f-a770-9c94e0e182f2.mp3"
+],
+"26": [
+"Combat/Sfx_Parade_Reussie",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043652_528e6cff-5ff3-4ba5-a01d-4b14f98e05b7.mp3"
+],
+"27": [
+"Combat/Sfx_Parade_Ratee",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043652_47fac330-0002-4adc-8263-523d885694f0.mp3"
+],
+"28": [
+"Combat/Sfx_Etourdissement",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043736_2726d8e2-bc4e-4e96-b41a-6cd527617965.mp3"
+],
+"29": [
+"Combat/Sfx_Headshot_Critique",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043736_2caa9259-b139-486b-b50b-278530b32d83.mp3"
+],
+"30": [
+"Combat/Sfx_Balle_Paralysante",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043652_f9bf2c3b-6ebe-4d11-982a-b9d5487fe87e.mp3"
+],
+"31": [
+"Combat/Sfx_Explosion_Kill",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043652_64ebbe88-6952-432b-8d00-8a553b898e47.mp3"
+],
+"32": [
+"Joueur/Sfx_Chute_Vide",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043652_94adea39-3190-43a7-8890-59f7c279d190.mp3"
+],
+"33": [
+"Joueur/Sfx_Plongeon_Eau",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043653_9af3199d-681d-4798-8270-693d4c30016d.mp3"
+],
+"34": [
+"Traqueur/Sfx_Coeur_Boucle",
+"boucle",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043752_bbcb8022-c763-441d-ae42-cff1496c2c0b.mp3"
+],
+"35": [
+"Traqueur/Sfx_Traqueur_Arrivee_Porte",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043700_a710168c-659a-41c2-8201-7ff8ab4c601b.mp3"
+],
+"36": [
+"Boss/Sfx_Boss_Cri_Phase",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043752_3d519360-3c72-441f-ab82-4cd1732e4202.mp3"
+],
+"37": [
+"Boss/Sfx_Boss_Attaque_Griffe",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043700_745c2f42-d59e-498d-904d-c70c3cd5cb91.mp3"
+],
+"38": [
+"Boss/Sfx_Boss_Attaque_Morsure",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043700_11702d5a-a3e6-4d25-a369-ad073083c5a5.mp3"
+],
+"39": [
+"Boss/Sfx_Boss_Blessure",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043700_8b8dd3cb-40ab-42c0-b786-a7bf3a3e3375.mp3"
+],
+"40": [
+"Boss/Sfx_Boss_Mort",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043700_a6d02551-2d75-4348-96bd-61227bdc31b8.mp3"
+],
+"41": [
+"Interface/Sfx_UI_Survol",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043700_71262b89-2d3a-46ca-b2c0-d694b395918a.mp3"
+],
+"42": [
+"Interface/Sfx_UI_Clic",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043700_029847b4-e5ae-4dfa-9b9a-4f3aaf4d1009.mp3"
+],
+"43": [
+"Interface/Sfx_UI_Retour",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043700_130b59e6-633e-4fad-82e1-d202b053c93e.mp3"
+],
+"44": [
+"Goule/Sfx_Goule_Mort_Organique",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_043700_e4fc8ace-2015-4d81-bae1-68c4bef33903.mp3"
+],
+"50": [
+"Orbe/Sfx_Traction_Debut",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_044126_a4cd42bf-b52a-41d9-b307-f380a6307d89.mp3"
+],
+"51": [
+"Orbe/Sfx_Traction_Boucle",
+"boucle",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_044126_27913be6-43e8-4a69-9caa-9bda4fdf1ee2.mp3"
+],
+"52": [
+"Orbe/Sfx_Traction_Fin",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_044126_53a89ff5-98f2-4e94-bf2f-3babe0d65db7.mp3"
+],
+"53": [
+"Orbe/Sfx_Repulsion",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_044126_3e6f5d5a-338a-4820-b8ce-602a9dd82c4b.mp3"
+],
+"54": [
+"Interface/Sfx_Refus",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_044126_7855a1ba-51fe-403d-a422-5e5ff451e895.mp3"
+],
+"55": [
+"Interface/Sfx_Pret",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_044242_0408c7dd-0cbd-43f3-956a-42fc4674d3ec.mp3"
+],
+"56": [
+"Impacts/Sfx_Caisse_Brisee",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_044142_10999989-30c9-48db-ac76-43e72fc9d020.mp3"
+],
+"57": [
+"Armes/Sfx_Lanterne_Rallumage",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_044142_0f3a2e50-08ea-4f64-bcbf-0bcc99e3dd48.mp3"
+],
+"58": [
+"Armes/Sfx_Barillet_Recharge_Fin",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_044142_3df1d623-73d0-44fc-9a4e-2c31fd2c2d78.mp3"
+],
+"59": [
+"Monde/Sfx_Vague_Cor",
+"un",
+"https://d8j0ntlcm91z4.cloudfront.net/user_3LyyQfts6kaqrHWLz5qbGRh0gFy/hf_20261122_044142_56a5930f-2081-44ce-b83f-dc5cf9676581.mp3"
+]
+}
