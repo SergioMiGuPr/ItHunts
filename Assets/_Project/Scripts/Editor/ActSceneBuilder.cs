@@ -196,6 +196,7 @@ namespace ItHunts.EditorTools
             s.windowMaterial = ActMat("Acte_Vitrail", "M_Fond_Noir", new Color(0.2f, 0.25f, 0.4f), null, new Color(0.45f, 0.6f, 1.4f));
             if (iron != null && s.theme == ActTheme.Chateau)
                 s.trimMaterial = s.trimMaterial != null ? s.trimMaterial : iron;
+            ActKitSetup.Apply(s);                                       // kits d'art de l'acte (PR #36 à #39)
             s.props = AssetDatabase.FindAssets("t:Prefab Prop_", new[] { "Assets/_Project/Prefabs/Props" })
                 .Select(g => AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(g))).Where(p => p != null).ToList();
             EditorUtility.SetDirty(s);

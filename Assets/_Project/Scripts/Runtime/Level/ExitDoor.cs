@@ -91,8 +91,62 @@ namespace ItHunts.Level
             SetOpen(true);
         }
 
+        private Transform _leftLeaf, _rightLeaf;
+        private float _openedAt = float.NegativeInfinity;
+        private bool _swinging;
+
+        /// <summary>Porte du kit (battants Battant_G / Battant_D) : ils pivotent à leurs gonds au lieu de disparaître.</summary>
+        private bool FindLeaves()
+        {
+            if (_leftLeaf == null)
+                _leftLeaf = transform.Find("Battant_G");
+            if (_rightLeaf == null)
+                _rightLeaf = transform.Find("Battant_D");
+            return _leftLeaf != null && _rightLeaf != null;
+        }
+
+        private Quaternion _leftClosed, _rightClosed;
+        private bool _closedKnown;
+
+        private void LateUpdate()
+        {
+            if (!_swinging || !FindLeaves())
+                return;
+            float u = Mathf.Clamp01((Time.time - _openedAt) / 1.4f);
+            float k = Open ? u * u * (3f - 2f * u) : 0f;
+            _leftLeaf.localRotation = _leftClosed * Quaternion.Euler(0f, -105f * k, 0f);
+            _rightLeaf.localRotation = _rightClosed * Quaternion.Euler(0f, 105f * k, 0f);
+            if (u >= 1f || !Open)
+                _swinging = Open && u < 1f;
+        }
+
         public void SetOpen(bool open)
         {
+            if (FindLeaves())
+            {
+                if (!_closedKnown)
+                {
+                    _leftClosed = _leftLeaf.localRotation;
+                    _rightClosed = _rightLeaf.localRotation;
+                    _closedKnown = true;
+                }
+
+                Open = open;
+                _openedAt = Time.time;
+                _swinging = true;
+                if (!open)
+                {
+                    _leftLeaf.localRotation = _leftClosed;
+                    _rightLeaf.localRotation = _rightClosed;
+                }
+
+                foreach (Collider c in _leftLeaf.GetComponentsInChildren<Collider>(true))
+                    c.enabled = !open;
+                foreach (Collider c in _rightLeaf.GetComponentsInChildren<Collider>(true))
+                    c.enabled = !open;
+                return;
+            }
+
             Open = open;
             foreach (Collider c in GetComponentsInChildren<Collider>(true))
                 c.enabled = !open;

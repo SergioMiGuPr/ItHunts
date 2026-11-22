@@ -867,6 +867,14 @@ namespace ItHunts.EditorTools
             pool.upgrades.Add(Upgrade("Upgrade_Repulsion", "Onde blessante", "La répulsion blesse les ennemis touchés (10 PV).", "10", new Color(3.2f, 1.3f, 0.3f), UpgradeKind.DegatsRepulsion, 10f, 60));
             pool.upgrades.Add(Upgrade("Upgrade_PV", "Cœur solide", "+25 PV max (et 25 PV tout de suite).", "PV+", new Color(3.2f, 0.4f, 0.4f), UpgradeKind.PvMax, 25f, 50));
             pool.upgrades.Add(Upgrade("Upgrade_Aspiration", "Aspiration", "Les âmes viennent à l'orbe 50 % plus vite.", ">>", new Color(1.2f, 2.6f, 3.2f), UpgradeKind.AspirationAmes, 0.5f, 40));
+            // Caméléon (nuit 3, point 6) : ses 8 améliorations avancées, réservées au barillet, restent dans la table.
+            foreach (string g in AssetDatabase.FindAssets("Upgrade_Cameleon_ t:UpgradeDefinition", new[] { UpgradesDir }))
+            {
+                var u = AssetDatabase.LoadAssetAtPath<UpgradeDefinition>(AssetDatabase.GUIDToAssetPath(g));
+                if (u != null && !pool.upgrades.Contains(u))
+                    pool.upgrades.Add(u);
+            }
+
             EditorUtility.SetDirty(pool);
             return pool;
         }
@@ -883,6 +891,14 @@ namespace ItHunts.EditorTools
             pool.upgrades.Add(Upgrade("Upgrade_Barillet_Cadence", "Gâchette vive", "Tir du barillet 25 % plus rapide.", ">>>", new Color(3f, 1.8f, 0.3f), UpgradeKind.CadenceBarillet, 0.25f, 55));
             pool.upgrades.Add(Upgrade("Upgrade_Barillet_Rechargement", "Rechargement éclair", "Rechargement du barillet 35 % plus court.", "R", new Color(2.6f, 2.6f, 0.6f), UpgradeKind.RechargementBarillet, 0.35f, 45));
             pool.upgrades.Add(Upgrade("Upgrade_Barillet_Portee", "Long canon", "Portée du barillet +25 m.", "+25", new Color(2.2f, 2.8f, 0.8f), UpgradeKind.PorteeBarillet, 25f, 40));
+            // Caméléon (nuit 3, point 6) : ses 8 améliorations avancées, réservées au barillet, restent dans la table.
+            foreach (string g in AssetDatabase.FindAssets("Upgrade_Cameleon_ t:UpgradeDefinition", new[] { UpgradesDir }))
+            {
+                var u = AssetDatabase.LoadAssetAtPath<UpgradeDefinition>(AssetDatabase.GUIDToAssetPath(g));
+                if (u != null && !pool.upgrades.Contains(u))
+                    pool.upgrades.Add(u);
+            }
+
             EditorUtility.SetDirty(pool);
             return pool;
         }

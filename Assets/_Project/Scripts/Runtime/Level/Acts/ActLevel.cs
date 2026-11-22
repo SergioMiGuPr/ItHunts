@@ -179,6 +179,7 @@ namespace ItHunts.Level.Acts
 
             for (int d = 0; d < Plan.Doors.Count; d++)
                 BuildDoor(d);
+            DressSky();
             Stage = "Les torches s'allument";
             Progress = 0.65f;
             if (async)
@@ -250,8 +251,12 @@ namespace ItHunts.Level.Acts
                 vis.transform.SetParent(go.transform, false);
                 vis.transform.localScale = size;
                 vis.AddComponent<MeshFilter>().sharedMesh = CubeMesh;
-                Material m = mat != null ? mat : kind == KitBuild.Kind.Mur ? settings.wallMaterial
-                    : kind == KitBuild.Kind.Sol && !walkable ? settings.ceilingMaterial : kind == KitBuild.Kind.Pont ? settings.trimMaterial : settings.floorMaterial;
+                FunctionMaterials fm = _roomMaterials;
+                Material wallM = fm != null && fm.wall != null ? fm.wall : settings.wallMaterial;
+                Material floorM = fm != null && fm.floor != null ? fm.floor : settings.floorMaterial;
+                Material ceilM = fm != null && fm.ceiling != null ? fm.ceiling : settings.ceilingMaterial;
+                Material m = mat != null ? mat : kind == KitBuild.Kind.Mur ? wallM
+                    : kind == KitBuild.Kind.Sol && !walkable ? ceilM : kind == KitBuild.Kind.Pont ? settings.trimMaterial : floorM;
                 vis.AddComponent<MeshRenderer>().sharedMaterial = m != null ? m : settings.wallMaterial;
             }
 

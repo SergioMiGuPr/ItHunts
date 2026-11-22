@@ -123,6 +123,9 @@ namespace ItHunts.Level.Acts
         public Material foliageMaterial;
         public Material windowMaterial;
 
+        [Header("Kits d'art de l'acte (PR #36 à #39)")]
+        public ActKit art = new ActKit();
+
         [Tooltip("Paver murs et sols avec les pièces du kit (sinon : volumes simples aux matériaux en coordonnées monde de la DA).")]
         public bool kitPieces;
         [Tooltip("Kit d'art de l'acte (torches, marches des rampes ; pièces si kitPieces) ; vide : formes simples.")]

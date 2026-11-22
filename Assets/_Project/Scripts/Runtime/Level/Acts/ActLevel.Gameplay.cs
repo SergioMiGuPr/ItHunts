@@ -64,6 +64,7 @@ namespace ItHunts.Level.Acts
             foreach (Player.PlayerHealth p in FindObjectsByType<Player.PlayerHealth>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 p.transform.SetPositionAndRotation(startAt, Quaternion.Euler(0f, yaw, 0f));
 
+            StartLandmark(game, start, startAt);
             // Marchand de l'artefact : salle de départ, face au joueur.
             if (artifactMerchant != null)
             {
@@ -339,6 +340,9 @@ namespace ItHunts.Level.Acts
             root.SetParent(parent, false);
             root.position = new Vector3(c.x, sill, c.z);
             root.rotation = Quaternion.LookRotation(n, Vector3.up);
+            // Le NavMesh (construit au départ, portes fermées) ignore les battants : une fois la porte payée, traqueur et goules
+            // suivent le joueur dans la salle (sinon une cachette).
+            root.gameObject.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
             float h = openTop - sill;
             Material wood = settings.propMaterial != null ? settings.propMaterial : settings.wallMaterial;
             Material iron = settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial;
@@ -361,7 +365,20 @@ namespace ItHunts.Level.Acts
         {
             // Normale vers le hall de sortie.
             Vector3 toHall = Plan.Rooms[d.B].Role == RoomRole.HallDeSortie ? n : -n;
-            Transform door = DoorLeaves(parent, "Porte de sortie", c, toHall, w, sill, openTop);
+            Transform door;
+            if (Art != null && Art.exitDoor != null)
+            {
+                // Porte de sortie du kit : encadrement et battants qui pivotent à leurs gonds (sans lumière colorée).
+                GameObject kd = KitPiece(Art.exitDoor, parent, new Vector3(c.x, sill, c.z) - toHall * 0.55f, -toHall, Vector3.one, true);
+                kd.name = "Porte de sortie";
+                foreach (Collider col in kd.GetComponentsInChildren<Collider>(true))
+                    if (col.transform == kd.transform)
+                        Destroy(col);                                     // l'encadrement : les murs portent déjà la collision
+                kd.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
+                door = kd.transform;
+            }
+            else
+                door = DoorLeaves(parent, "Porte de sortie", c, toHall, w, sill, openTop);
             ExitDoorObject = door.gameObject.AddComponent<ExitDoor>();
             ExitPoint = new Vector3(c.x, sill, c.z) - toHall * 3f;
             // Hall : déclencheur de fin d'acte au fond.
@@ -376,7 +393,10 @@ namespace ItHunts.Level.Acts
             // Au-delà de la porte : une lueur froide (on devine la suite), pas une lampe de couleur vive.
             PointLight(_roomRoots[hall.Id], Plan.CellCenter(hall.CenterCell, hall.Floor + 6f), settings.theme == ActTheme.Jardin ? new Color(0.5f, 0.6f, 0.9f)
                 : new Color(0.75f, 0.7f, 0.9f), 2.5f, 18f);
-            if (settings.theme == ActTheme.Jardin)
+            if (Art != null && Art.exitHallPiece != null)
+                KitPiece(Art.exitHallPiece, _roomRoots[hall.Id], Plan.CellCenter(hall.CenterCell, hall.Floor) - toHall * 6f, toHall, Vector3.one, true)
+                    .name = "Descente vers l'arène";
+            else if (settings.theme == ActTheme.Jardin)
                 ExitDescent(hall, toHall);
         }
 

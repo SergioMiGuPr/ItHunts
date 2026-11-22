@@ -1265,13 +1265,15 @@ namespace ItHunts.Level.Acts
                 }
             }
 
+            // 8-voisinage : l'anneau autour d'un creux garde sa largeur en diagonale aussi (le traqueur fait 7 m de large).
             while (q.Count > 0)
             {
                 Vector2Int c = q.Dequeue();
-                foreach (Vector2Int d in Dirs)
+                for (int dx = -1; dx <= 1; dx++)
+                for (int dy = -1; dy <= 1; dy++)
                 {
-                    Vector2Int n = c + d;
-                    if (OwnerAt(n) != r.Id || dist.ContainsKey(n))
+                    Vector2Int n = c + new Vector2Int(dx, dy);
+                    if ((dx == 0 && dy == 0) || OwnerAt(n) != r.Id || dist.ContainsKey(n))
                         continue;
                     dist[n] = dist[c] + 1;
                     q.Enqueue(n);
@@ -1290,7 +1292,8 @@ namespace ItHunts.Level.Acts
             var doorPoints = r.Doors.Select(di => DoorCellInside(Doors[di], r.Id)).ToList();
             for (int i = 0; i < doorPoints.Count; i++)
             for (int j = i + 1; j < doorPoints.Count; j++)
-                MarkLine(r, doorPoints[i], doorPoints[j], r.Feature != RoomFeature.Aucun ? CellUse.Pont : CellUse.Passage, 1);
+                MarkLine(r, doorPoints[i], doorPoints[j], r.Feature != RoomFeature.Aucun ? CellUse.Pont : CellUse.Passage,
+                    r.Feature != RoomFeature.Aucun ? 1 : 2);                    // voie de 10 m entre les portes : le traqueur fait 7 m
             if (r.Role == RoomRole.Depart || r.Role == RoomRole.Sortie)
                 MarkDisk(r, Vector2Int.RoundToInt(r.CenterCell), 4, CellUse.Passage);
 
@@ -1348,9 +1351,11 @@ namespace ItHunts.Level.Acts
             }
 
             // Terrasse : bande de 3 à 4 cases le long du bord, loin des portes, d'un seul tenant.
+            if (r.TerraceHeight > 0f && r.Feature != RoomFeature.Aucun)
+                r.TerraceHeight = 0f;                                   // pas de terrasse qui rétrécit l'anneau autour d'un creux
             if (r.TerraceHeight > 0f)
             {
-                int depth = 3 + _rng.Next(2);
+                int depth = 3;
                 var candidates = r.Cells.Where(x => edge.TryGetValue(x, out int e) && e < depth && r.Use[x] == CellUse.Sol).ToList();
                 if (candidates.Count < 20)
                     r.TerraceHeight = 0f;

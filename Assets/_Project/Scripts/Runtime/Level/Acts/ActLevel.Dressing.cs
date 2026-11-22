@@ -35,9 +35,9 @@ namespace ItHunts.Level.Acts
         private static readonly Dictionary<string, Recipe> Recipes = new Dictionary<string, Recipe>
         {
             // Acte I : caves
-            ["Cachot"] = new Recipe { Wall = new[] { "Prop_Cage", "Prop_Grille", "Prop_Paille" }, WallStep = 5f, Cluster = new[] { "Prop_Chaine", "Prop_Paille" }, Clusters = 3, Focal = "Prop_Chaudron", Hang = new[] { "Prop_Chaine" } },
-            ["Salle des gardes"] = new Recipe { Wall = new[] { "Prop_Ratelier", "Prop_Tonneau", "Prop_Armoire" }, Cluster = new[] { "Prop_Table", "Prop_Chaise_Attrapable", "Prop_Chaise_Attrapable" }, Clusters = 3, Focal = "Prop_Ratelier" },
-            ["Réserve"] = new Recipe { Wall = new[] { "Prop_Etagere", "Prop_PileDeCaisses", "Prop_Tonneau" }, WallStep = 4.5f, Cluster = new[] { "Prop_PileDeCaisses", "Prop_Caisse_Attrapable", "Prop_Caisse_Attrapable", "Prop_Tonneau_Attrapable" }, Clusters = 5 },
+            ["Cachot"] = new Recipe { Wall = new[] { "Prop_Grille", "Cave_Chaines_Mur", "Prop_Grille", "Cave_Lit" }, WallStep = 6.8f, Cluster = new[] { "Prop_Paille", "Cave_Seau" }, Clusters = 3, Focal = "Cave_Brasero" },
+            ["Salle des gardes"] = new Recipe { Wall = new[] { "Prop_Ratelier", "Prop_Tonneau", "Cave_Brasero" }, Cluster = new[] { "Prop_Table", "Cave_Tabouret", "Prop_Chaise_Attrapable" }, Clusters = 3, Focal = "Cave_Brasero" },
+            ["Réserve"] = new Recipe { Wall = new[] { "Prop_Etagere", "Prop_PileDeCaisses", "Cave_Sacs" }, WallStep = 4.5f, Cluster = new[] { "Prop_PileDeCaisses", "Prop_Caisse_Attrapable", "Prop_Caisse_Attrapable", "Prop_Tonneau_Attrapable" }, Clusters = 5 },
             ["Ossuaire"] = new Recipe { Wall = new[] { "Prop_Sarcophage", "Prop_Gravats" }, WallStep = 5f, Focal = "Prop_Statue", FocalSides = new[] { "Prop_Sarcophage" }, Candles = true },
             ["Citerne"] = new Recipe { Wall = new[] { "Prop_Tuyau", "Prop_Tonneau" }, WallStep = 9f, Cluster = new[] { "Prop_Tonneau_Attrapable", "Prop_Caisse_Attrapable" }, Clusters = 2 },
             ["Gouffre"] = new Recipe { Wall = new[] { "Prop_Gravats", "Prop_MurEffondre", "Prop_Poutre" }, WallStep = 8f, Cluster = new[] { "Prop_Gravats" }, Clusters = 2 },
@@ -49,12 +49,12 @@ namespace ItHunts.Level.Acts
             ["Crypte"] = new Recipe { Row = "Prop_Sarcophage", Rows = 3, Wall = new[] { "Prop_Statue", "Prop_Tapisserie" }, WallStep = 8f, Focal = "Prop_Autel", Candles = true },
             ["Salle du puits"] = new Recipe { Wall = new[] { "Prop_Tonneau", "Prop_Caisse" }, WallStep = 10f, Cluster = new[] { "Prop_Caisse_Attrapable", "Prop_Tonneau_Attrapable" }, Clusters = 2 },
             // Acte II : château
-            ["Salle de bal"] = new Recipe { Wall = new[] { "Prop_Statue", "Prop_Banc", "Prop_Tapisserie" }, WallStep = 7f },
+            ["Salle de bal"] = new Recipe { Focal = "Chateau_Estrade_Musiciens", Wall = new[] { "Prop_Statue", "Chateau_Fauteuil", "Prop_Tapisserie" }, WallStep = 7f },
             ["Bibliothèque"] = new Recipe { Wall = new[] { "Prop_Etagere" }, WallStep = 2.8f, WallChance = 0.95f, Row = "Prop_Etagere", Rows = 3, Cluster = new[] { "Prop_Table", "Prop_Chaise_Attrapable" }, Clusters = 2 },
-            ["Chapelle"] = new Recipe { Row = "Prop_Banc", Rows = 5, Focal = "Prop_Autel", FocalSides = new[] { "Prop_Statue", "Prop_Statue" }, Candles = true, Wall = new[] { "Prop_Tapisserie" }, WallStep = 8f },
+            ["Chapelle"] = new Recipe { Row = "Prop_Banc", Rows = 5, Focal = "Prop_Autel", FocalSides = new[] { "Chateau_Lutrin", "Prop_Statue" }, Candles = true, Wall = new[] { "Prop_Tapisserie" }, WallStep = 8f },
             ["Salle à manger"] = new Recipe { Row = "Prop_Table", Rows = 2, Wall = new[] { "Prop_Armoire", "Prop_Tapisserie" }, WallStep = 7f, Cluster = new[] { "Prop_Chaise_Attrapable", "Prop_Chaise_Attrapable" }, Clusters = 4, Focal = "Prop_CoffreDeco" },
             ["Galerie des portraits"] = new Recipe { Wall = new[] { "Prop_Tapisserie", "Prop_Statue" }, WallStep = 4.5f, WallChance = 0.95f },
-            ["Chambre"] = new Recipe { Focal = "Prop_Lit", FocalSides = new[] { "Prop_Armoire", "Prop_CoffreDeco" }, Wall = new[] { "Prop_Tapisserie", "Prop_Armoire" }, WallStep = 8f, Cluster = new[] { "Prop_Chaise_Attrapable" }, Clusters = 2 },
+            ["Chambre"] = new Recipe { Focal = "Prop_Lit", FocalSides = new[] { "Chateau_MiroirBrise", "Prop_CoffreDeco" }, Wall = new[] { "Prop_Tapisserie", "Chateau_Fauteuil" }, WallStep = 8f, Cluster = new[] { "Prop_Chaise_Attrapable" }, Clusters = 2 },
             ["Armurerie"] = new Recipe { Wall = new[] { "Prop_Ratelier" }, WallStep = 3.5f, Cluster = new[] { "Prop_Table", "Prop_Caisse_Attrapable" }, Clusters = 3 },
             ["Salle du trône"] = new Recipe { Focal = "Prop_Autel", FocalSides = new[] { "Prop_Statue", "Prop_Statue" }, Wall = new[] { "Prop_Tapisserie", "Prop_Colonne" }, WallStep = 6f, WallChance = 1f, Candles = true },
             ["Bains"] = new Recipe { Wall = new[] { "Prop_Statue", "Prop_Tonneau" }, WallStep = 8f, Cluster = new[] { "Prop_Banc" }, Clusters = 2 },
@@ -67,14 +67,14 @@ namespace ItHunts.Level.Acts
             ["Grand bassin"] = new Recipe { Focal = "Prop_Statue", Trees = 4, Wall = new[] { "Prop_Banc" }, WallStep = 12f },
             ["Labyrinthe de haies"] = new Recipe { Hedges = 9 },
             ["Verger"] = new Recipe { Trees = 14 },
-            ["Cimetière"] = new Recipe { Tombs = 18, Trees = 3, Focal = "Prop_Statue", Candles = true },
-            ["Serre en ruine"] = new Recipe { Planters = 4, Wall = new[] { "Prop_ColonneBrisee", "Prop_Table" }, WallStep = 6f, Cluster = new[] { "Prop_Tonneau_Attrapable", "Prop_Caisse_Attrapable" }, Clusters = 2 },
+            ["Cimetière"] = new Recipe { Tombs = 18, Trees = 3, Focal = "Jardin_Caveau", Candles = true },
+            ["Serre en ruine"] = new Recipe { Focal = "Jardin_Serre_Ruine", Planters = 4, Wall = new[] { "Prop_ColonneBrisee", "Prop_Table" }, WallStep = 6f, Cluster = new[] { "Prop_Tonneau_Attrapable", "Prop_Caisse_Attrapable" }, Clusters = 2 },
             ["Allée des statues"] = new Recipe { Row = "Prop_Statue", Rows = 2, Trees = 4 },
-            ["Kiosque"] = new Recipe { Focal = "Prop_Banc", Trees = 4, Hedges = 2 },
+            ["Kiosque"] = new Recipe { Focal = "Jardin_Kiosque", Trees = 4, Hedges = 2 },
             ["Ravin"] = new Recipe { Trees = 5, Cluster = new[] { "Prop_Gravats" }, Clusters = 2 },
             ["Potager"] = new Recipe { Planters = 9, Cluster = new[] { "Prop_Tonneau_Attrapable", "Prop_Caisse_Attrapable" }, Clusters = 2 },
             ["Bosquet"] = new Recipe { Trees = 10, Hedges = 1 },
-            ["Fontaine"] = new Recipe { Focal = "Prop_Statue", Hedges = 4, Wall = new[] { "Prop_Banc" }, WallStep = 9f },
+            ["Fontaine"] = new Recipe { Focal = "Jardin_Fontaine", Hedges = 4, Wall = new[] { "Prop_Banc" }, WallStep = 9f },
             ["Terrasse du château"] = new Recipe { Wall = new[] { "Prop_Statue", "Prop_Banc" }, WallStep = 10f, Trees = 2 },
             ["Arène"] = new Recipe(),
         };
@@ -104,6 +104,7 @@ namespace ItHunts.Level.Acts
                 }
             }
 
+            HallPillars(r, root);
             if (focalWall.HasValue && !string.IsNullOrEmpty(rec.Focal))
                 FocalProps(r, root, focalWall.Value, rec);
             if (rec.Rows > 0 && !string.IsNullOrEmpty(rec.Row) && focalWall.HasValue)
@@ -151,7 +152,10 @@ namespace ItHunts.Level.Acts
 
         private GameObject Prop(Transform root, string name, Vector3 at, float yaw)
         {
-            GameObject prefab = settings.Prop(name);
+            // Pièce du kit de l'acte à la place du prop greybox (table de remplacement), ou pièce du kit appelée par son nom.
+            GameObject prefab = Art != null ? Art.Swap(name) ?? Art.Piece(name) : null;
+            if (prefab == null)
+                prefab = settings.Prop(name);
             if (prefab == null)
                 return null;
             GameObject go = Instantiate(prefab, at, Quaternion.Euler(0f, yaw, 0f), root);
@@ -276,7 +280,8 @@ namespace ItHunts.Level.Acts
         /// <summary>Appliques régulières (beaucoup de sources faibles) sur les murs droits, à 3.4 m, hors des portes.</summary>
         private void Sconces(ActRoom r, Transform root)
         {
-            if (settings.kit == null || settings.kit.torche == null)
+            GameObject torchPrefab = Art != null && Art.torch != null ? Art.torch : settings.kit != null ? settings.kit.torche : null;
+            if (torchPrefab == null)
                 return;
             float spacing = settings.sconceSpacing * (r.Special ? 1.6f : 1f);
             int i = 0;
@@ -297,8 +302,18 @@ namespace ItHunts.Level.Acts
                         continue;
                     float ground = GroundAt(r, c);
                     float yaw = Mathf.Atan2(inward.x, inward.z) * Mathf.Rad2Deg;
+                    if (settings.theme == ActTheme.Jardin && Art != null && Art.candles != null)
+                    {
+                        if (k % 2 == 1 || Occupied(c))
+                            continue;                                   // au jardin, une source sur deux : la lune éclaire déjà
+                        KitPiece(Art.candles, root, new Vector3(p.x, ground, p.z) + inward * 2.2f, inward, Vector3.one * 1.3f, true);
+                        _occupied.Add(c);
+                        continue;
+                    }
                     Vector3 at = p + inward * (T * 0.5f + 0.05f) + Vector3.up * (ground + 3.4f);
-                    GameObject torch = KitBuild.Piece(settings.kit.torche, root, at, yaw);
+                    GameObject torch = Art != null && Art.torch != null
+                        ? KitPiece(Art.torch, root, at - inward * 0.05f, inward, Vector3.one, true)
+                        : KitBuild.Piece(torchPrefab, root, at, yaw);
                     torch.transform.position = at;
                     foreach (Light l in torch.GetComponentsInChildren<Light>())
                     {
@@ -327,6 +342,8 @@ namespace ItHunts.Level.Acts
         /// <summary>Lustre (acte II) : couronne de fer, bougies, chaîne jusqu'au plafond, une lumière chaude.</summary>
         private void Chandelier(Transform root, Vector3 floor, float ceiling)
         {
+            if (KitChandelier(root, floor, ceiling))
+                return;
             float y = floor.y + Mathf.Max(8f, ceiling - 7f);
             var go = new GameObject("Lustre");
             go.transform.SetParent(root, false);
@@ -362,6 +379,8 @@ namespace ItHunts.Level.Acts
                 {
                     Vector3 p = Vector3.Lerp(a, b, (k + 0.5f) / n);
                     Vector3 face = p - outward * (T * 0.5f + 0.06f);
+                    if (KitWindow(root, face, -outward, r.Floor))
+                        continue;
                     float centerY = r.Floor + (r.Ceiling > 0f ? r.Ceiling * 0.62f : 9f);
                     Quaternion rot = Quaternion.LookRotation(-outward, Vector3.up);
                     Visual(root, "Vitrail", CubeMesh, settings.windowMaterial != null ? settings.windowMaterial : settings.wallMaterial,
@@ -399,6 +418,19 @@ namespace ItHunts.Level.Acts
             if (!FreeCell(r, out Vector2Int c, clearance: 1))
                 return;
             Vector3 at = Plan.CellCenter(c, r.Floor);
+            string[] kitTrees = { "Jardin_ArbreMort_Grand", "Jardin_ArbreMort_Penche", "Jardin_ArbreMort_Tordu" };
+            GameObject kitTree = Art != null ? Art.Piece(kitTrees[_rng.Next(kitTrees.Length)]) : null;
+            if (kitTree != null)
+            {
+                // Gros arbre mort du kit : son tronc sert au wall jump (collision gardée), le traqueur l'enjambe (NavMesh).
+                GameObject t = KitPiece(kitTree, root, at, Quaternion.Euler(0f, _rng.Next(360), 0f) * Vector3.forward, Vector3.one * scale, true);
+                t.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
+                for (int dx = -1; dx <= 1; dx++)
+                for (int dy = -1; dy <= 1; dy++)
+                    _occupied.Add(c + new Vector2Int(dx, dy));
+                return;
+            }
+
             float h = Mathf.Lerp(9f, 15f, (float)_rng.NextDouble()) * scale;
             float trunk = Mathf.Lerp(1.4f, 2.4f, (float)_rng.NextDouble());
             var go = new GameObject("Arbre");
@@ -448,8 +480,18 @@ namespace ItHunts.Level.Acts
             Vector3 a = Plan.CellCenter(c, r.Floor), b = Plan.CellCenter(c + d * (len - 1), r.Floor);
             Vector3 mid = (a + b) * 0.5f + Vector3.up * 1.2f;
             float yaw = d.x != 0 ? 90f : 0f;
-            Solid(root, "Haie", mid, new Vector3(1.4f, 2.4f, (len - 1) * Plan.Cell + 1.4f), yaw, KitBuild.Kind.Bloc,
-                settings.foliageMaterial != null ? settings.foliageMaterial : settings.wallMaterial).AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
+            GameObject hedge = Solid(root, "Haie", mid, new Vector3(1.4f, 2.4f, (len - 1) * Plan.Cell + 1.4f), yaw, KitBuild.Kind.Bloc,
+                settings.foliageMaterial != null ? settings.foliageMaterial : settings.wallMaterial);
+            hedge.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
+            if (Art != null && Art.innerWall != null)
+            {
+                foreach (MeshRenderer mr in hedge.GetComponentsInChildren<MeshRenderer>())
+                    mr.enabled = false;
+                Vector3 axis = d.x != 0 ? Vector3.right : Vector3.forward;
+                float hl = (len - 1) * Plan.Cell + 1.4f;
+                KitPiece(Art.innerWall, root, new Vector3(mid.x, r.Floor, mid.z), new Vector3(-axis.z, 0f, axis.x),
+                    new Vector3(hl / Art.innerWallWidth, 2.4f / Art.innerWallHeight, 0.8f));
+            }
         }
 
         private void Tomb(ActRoom r, Transform root)
@@ -458,6 +500,13 @@ namespace ItHunts.Level.Acts
                 return;
             Vector3 at = Plan.CellCenter(c, r.Floor);
             float yaw = _rng.Next(-8, 9);
+            GameObject kitTomb = Art != null ? Art.Piece(_rng.Next(3) == 0 ? "Jardin_Tombe_Croix" : "Jardin_Tombe_Stele") : null;
+            if (kitTomb != null)
+            {
+                KitPiece(kitTomb, root, at, Quaternion.Euler(0f, yaw, 0f) * Vector3.forward, Vector3.one, true).AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
+                return;
+            }
+
             Solid(root, "Tombe", at + Vector3.up * 0.7f, new Vector3(0.9f, 1.4f, 0.25f), yaw, KitBuild.Kind.Bloc, settings.trimMaterial)
                 .AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
             Visual(root, "Dalle", CubeMesh, settings.floorMaterial != null ? settings.floorMaterial : settings.wallMaterial, at + new Vector3(0f, 0.05f, 1.1f),
@@ -470,6 +519,13 @@ namespace ItHunts.Level.Acts
                 return;
             Vector3 at = Plan.CellCenter(c, r.Floor);
             float yaw = _rng.Next(2) * 90f;
+            GameObject massif = Art != null ? Art.Piece("Jardin_Massif") : null;
+            if (massif != null)
+            {
+                KitPiece(massif, root, at, Quaternion.Euler(0f, yaw, 0f) * Vector3.forward, Vector3.one, true).AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
+                return;
+            }
+
             Solid(root, "Jardinière", at + Vector3.up * 0.4f, new Vector3(3.2f, 0.8f, 1.2f), yaw, KitBuild.Kind.Bloc, settings.trimMaterial)
                 .AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
             for (int k = -1; k <= 1; k++)

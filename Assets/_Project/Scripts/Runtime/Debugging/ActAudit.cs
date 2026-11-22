@@ -50,14 +50,17 @@ namespace ItHunts.Debugging
             {
                 if (r.Role == RoomRole.Verrouillee)
                     continue;                                           // fermée tant qu'on ne l'a pas payée
-                Vector3 at = RoomPoint(p, r);
-                if (!PathOk(stalkerFrom, at, stalkerFilter, path))
+                // Plusieurs points de sol répartis dans la salle : atteinte si l'un d'eux l'est (un point peut tomber sur un îlot local).
+                var samples = r.Cells.Where(c => r.Use[c] == CellUse.Sol || r.Use[c] == CellUse.Passage).Where((c, i) => i % Mathf.Max(1, r.Cells.Count / 14) == 0)
+                    .Select(c => p.CellCenter(c, r.Floor)).ToList();
+                samples.Insert(0, RoomPoint(p, r));
+                if (!samples.Any(at => PathOk(stalkerFrom, at, stalkerFilter, path)))
                 {
                     stalkerBlocked++;
                     blockedNames.Add(r.Name);
                 }
 
-                if (!PathOk(startAt, at, ghoulFilter, path))
+                if (!samples.Any(at => PathOk(startAt, at, ghoulFilter, path)))
                     ghoulBlocked++;
             }
 

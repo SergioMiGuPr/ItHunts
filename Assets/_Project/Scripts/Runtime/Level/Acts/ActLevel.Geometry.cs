@@ -21,6 +21,7 @@ namespace ItHunts.Level.Acts
         {
             Transform root = Group($"Salle : {r.Name}");
             _roomRoots[r.Id] = root;
+            _roomMaterials = Art != null ? Art.MaterialsFor(r.Function) : null;
             BuildFloors(r, root);
             BuildWalls(r, root);
             if (r.Ceiling > 0f)
@@ -319,14 +320,22 @@ namespace ItHunts.Level.Acts
             {
                 float split = r.Floor + settings.outerMagneticTop;
                 Solid(root, "Mur", new Vector3(mid.x, (bottom + split) * 0.5f, mid.z), new Vector3(t, split - bottom, len + t), yaw, KitBuild.Kind.Mur, null, walkable: false);
+                if (!diagonal)
+                    DressOuterWall(root, pa, pb, -new Vector3(outN.x, 0f, outN.y).normalized, r.Floor, r.Floor + 22f);
                 GameObject high = Solid(root, "Falaise", new Vector3(mid.x, (split + top) * 0.5f, mid.z), new Vector3(t, top - split, len + t), yaw, KitBuild.Kind.Mur,
                     null, walkable: false);
                 high.AddComponent<NonMagneticSurface>();
                 return;
             }
 
-            Solid(root, outer ? "Mur" : "Mur mitoyen", new Vector3(mid.x, (bottom + top) * 0.5f, mid.z), new Vector3(t, h, len + t), yaw, KitBuild.Kind.Mur, null,
-                walkable: false);
+            GameObject wall = Solid(root, outer ? "Mur" : "Mur mitoyen", new Vector3(mid.x, (bottom + top) * 0.5f, mid.z), new Vector3(t, h, len + t), yaw,
+                KitBuild.Kind.Mur, null, walkable: false);
+            Vector3 inward = -new Vector3(outN.x, 0f, outN.y).normalized;
+            if (outer && !diagonal)
+                DressOuterWall(root, pa + inward * 0f, pb, inward, r.Floor, top);
+            else if (!outer && r.Ceiling <= 0f && DressInnerWall(root, pa, pb, Mathf.Max(r.Floor, bottom + 4f), top))
+                foreach (MeshRenderer mr in wall.GetComponentsInChildren<MeshRenderer>())
+                    mr.enabled = false;                                   // haie du kit à la place du volume
         }
 
         // ---------- Portes ----------
@@ -340,7 +349,8 @@ namespace ItHunts.Level.Acts
             Vector3 n = Plan.DoorNormal(d);
             float w = Plan.DoorWidth(d);
             float sill = Mathf.Max(a.Floor, b.Floor);
-            float openTop = sill + (d.Gate ? Mathf.Max(settings.doorHeight, 11f) : settings.doorHeight);
+            float openTop = sill + (d.Gate ? Mathf.Max(settings.doorHeight, 11f)
+                : d.Exit && Art != null && Art.exitDoor != null ? Mathf.Max(settings.doorHeight, Art.exitDoorOpening) : settings.doorHeight);
             float bottom = Mathf.Min(Bottom(a), Bottom(b));
             float top = Mathf.Max(WallTop(a), WallTop(b));
             float yaw = Mathf.Atan2(n.x, n.z) * Mathf.Rad2Deg;
@@ -352,10 +362,12 @@ namespace ItHunts.Level.Acts
             Vector3 lat = new Vector3(-n.z, 0f, n.x);
             Material trim = settings.trimMaterial;
             // Piédroits hors de l'ouverture (elle garde toute sa largeur pour le NavMesh du traqueur).
+            if (!(d.Exit && Art != null && Art.exitDoor != null))
             foreach (float side in new[] { -1f, 1f })
                 Solid(root, "Piédroit", c + lat * side * (w * 0.5f + 0.55f) + Vector3.up * ((openTop - sill) * 0.5f), new Vector3(0.9f, openTop - sill, T + 0.5f), yaw,
                     KitBuild.Kind.Mur, trim, walkable: false);
-            Solid(root, "Arc de la porte", c + Vector3.up * (openTop - sill + 0.4f), new Vector3(w + 1.6f, 0.8f, T + 0.5f), yaw, KitBuild.Kind.Mur, trim, walkable: false);
+            if (!(d.Exit && Art != null && Art.exitDoor != null))
+                Solid(root, "Arc de la porte", c + Vector3.up * (openTop - sill + 0.4f), new Vector3(w + 1.6f, 0.8f, T + 0.5f), yaw, KitBuild.Kind.Mur, trim, walkable: false);
             Encapsulate(c + Vector3.up * top);
 
             // Rampe entre deux étages.

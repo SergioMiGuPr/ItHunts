@@ -40,10 +40,10 @@ MonoBehaviour:
   terraceShare: 0.55
   terraceHeight: {x: 3.5, y: 5.5}
   wallJumpGap: 3.6
-  sconceSpacing: 10
+  sconceSpacing: 8
   torchColor: {r: 1, g: 0.55, b: 0.25, a: 1}
-  torchIntensity: 2.2
-  torchRange: 11
+  torchIntensity: 3.2
+  torchRange: 16
   chandeliersPer1000: 0
   moonWindowSpacing: 0
   moonColor: {r: 0.55, g: 0.65, b: 1, a: 1}
@@ -58,14 +58,168 @@ MonoBehaviour:
   lockedRooms: 2
   merchants: 1
   stalkerFromArrival: 0
-  wallMaterial: {fileID: 2100000, guid: ccf09f65368d2ef4aad255539c06d64d, type: 2}
-  floorMaterial: {fileID: 2100000, guid: 8f92ea1cb272ac647b6a29c62c1bb76b, type: 2}
-  ceilingMaterial: {fileID: 2100000, guid: db7b9e3d67415b64a9e11abf9953a1b8, type: 2}
-  trimMaterial: {fileID: 2100000, guid: 0ebc22938902c664492cfe99fd46835a, type: 2}
+  wallMaterial: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
+  floorMaterial: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
+  ceilingMaterial: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
+  trimMaterial: {fileID: 2100000, guid: 797758874c625cb40aa550976e754ea6, type: 2}
   waterMaterial: {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   propMaterial: {fileID: 2100000, guid: 906f34049ab58bc408820a06944a0900, type: 2}
   foliageMaterial: {fileID: 2100000, guid: b7f371e6767fd044dbcb032f53a0eb54, type: 2}
   windowMaterial: {fileID: 2100000, guid: 449bccfbe3227a7409f7ddef9a55b4cd, type: 2}
+  art:
+    outerWalls:
+    - {fileID: 9055057259645040851, guid: d95b9596d0a4a5d4cb6f0582de97389e, type: 3}
+    - {fileID: 5147718692016292971, guid: 0c3d947e0e31c9641a181230ab80e6e4, type: 3}
+    wallPieceWidth: 12.5
+    wallPieceHeight: 18.8
+    wallFrontDepth: 2.1
+    wallAccent: {fileID: 5836056944706822219, guid: 3e3c88d1176283e49af84b8527a0b7cf, type: 3}
+    wallAccentEvery: 4
+    innerWall: {fileID: 0}
+    innerWallWidth: 6
+    innerWallHeight: 3
+    window: {fileID: 0}
+    moonRay: {fileID: 0}
+    windowCenterHeight: 9.5
+    rayOffset: 0.6
+    torch: {fileID: 726387151835936529, guid: 0db684c2215a79044a2e8d058cb43094, type: 3}
+    candles: {fileID: 610996790895295533, guid: 7664bdeea9e4f4946aaee11f9a0066cd, type: 3}
+    chandelier: {fileID: 0}
+    exitDoor: {fileID: 7679477395042816359, guid: 9965d3e6878994843981dcf27a16b86c, type: 3}
+    exitDoorOpening: 10.2
+    exitHallPiece: {fileID: 0}
+    startLandmark: {fileID: 648298957485018526, guid: b6b5005158bef2b45973dae781752dcb, type: 3}
+    hallPillar: {fileID: 7543768220901914052, guid: 0e90ad83c9b9973418a8f913b47cf89f, type: 3}
+    sky: {fileID: 0}
+    mist: {fileID: 0}
+    functionMaterials:
+    - function: Cachot
+      wall: {fileID: 2100000, guid: 701efb10de09498418a7d16eec8958b5, type: 2}
+      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
+      ceiling: {fileID: 2100000, guid: 48dd3e1849a3ad841ae6344e7e36ec50, type: 2}
+    - function: Salle des gardes
+      wall: {fileID: 2100000, guid: 48dd3e1849a3ad841ae6344e7e36ec50, type: 2}
+      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
+      ceiling: {fileID: 2100000, guid: 48dd3e1849a3ad841ae6344e7e36ec50, type: 2}
+    - function: "R\xE9serve"
+      wall: {fileID: 2100000, guid: be9fc540b3f30a1419e99e558df23510, type: 2}
+      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
+      ceiling: {fileID: 2100000, guid: 2ffa318514f9dd344a7ba7ec8be893eb, type: 2}
+    - function: Ossuaire
+      wall: {fileID: 2100000, guid: 85763a081d2313a4bb32c1ea64c2efce, type: 2}
+      floor: {fileID: 2100000, guid: 38f40780281207348a1133a1108734e4, type: 2}
+      ceiling: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
+    - function: Citerne
+      wall: {fileID: 2100000, guid: 932fefbe58b4bd6429914e0e20d7e2db, type: 2}
+      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
+      ceiling: {fileID: 2100000, guid: 932fefbe58b4bd6429914e0e20d7e2db, type: 2}
+    - function: Gouffre
+      wall: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
+      floor: {fileID: 2100000, guid: 4d983f941a48d2d45a33a0340a584891, type: 2}
+      ceiling: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
+    - function: Chapelle souterraine
+      wall: {fileID: 2100000, guid: 8e0dbaf0807bff542815432ae128f151, type: 2}
+      floor: {fileID: 2100000, guid: 988f0b4a58cfef64a8e1c5c28f34044a, type: 2}
+      ceiling: {fileID: 2100000, guid: 937129f1375498d418acdad77aecd316, type: 2}
+    - function: Galerie de mine
+      wall: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
+      floor: {fileID: 2100000, guid: 38f40780281207348a1133a1108734e4, type: 2}
+      ceiling: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
+    - function: "Grotte inond\xE9e"
+      wall: {fileID: 2100000, guid: 85763a081d2313a4bb32c1ea64c2efce, type: 2}
+      floor: {fileID: 2100000, guid: 4d983f941a48d2d45a33a0340a584891, type: 2}
+      ceiling: {fileID: 2100000, guid: 85763a081d2313a4bb32c1ea64c2efce, type: 2}
+    - function: Salle de torture
+      wall: {fileID: 2100000, guid: 2ffa318514f9dd344a7ba7ec8be893eb, type: 2}
+      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
+      ceiling: {fileID: 2100000, guid: be9fc540b3f30a1419e99e558df23510, type: 2}
+    - function: "Cave \xE0 vin"
+      wall: {fileID: 2100000, guid: be9fc540b3f30a1419e99e558df23510, type: 2}
+      floor: {fileID: 2100000, guid: 38f40780281207348a1133a1108734e4, type: 2}
+      ceiling: {fileID: 2100000, guid: 2ffa318514f9dd344a7ba7ec8be893eb, type: 2}
+    - function: Crypte
+      wall: {fileID: 2100000, guid: 937129f1375498d418acdad77aecd316, type: 2}
+      floor: {fileID: 2100000, guid: 988f0b4a58cfef64a8e1c5c28f34044a, type: 2}
+      ceiling: {fileID: 2100000, guid: 8e0dbaf0807bff542815432ae128f151, type: 2}
+    - function: Salle du puits
+      wall: {fileID: 2100000, guid: 932fefbe58b4bd6429914e0e20d7e2db, type: 2}
+      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
+      ceiling: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
+    swaps:
+    - prop: Prop_Cage
+      piece: {fileID: 1962957818696069804, guid: e0b788049f65b7142ae3cceb067b8b61, type: 3}
+    - prop: Prop_Grille
+      piece: {fileID: 1962957818696069804, guid: e0b788049f65b7142ae3cceb067b8b61, type: 3}
+    - prop: Prop_Paille
+      piece: {fileID: 8782208924209853072, guid: 62a478fde34203b45956b71bb54d8179, type: 3}
+    - prop: Prop_Chaine
+      piece: {fileID: 6766234395753169366, guid: bfd575f5681987940817838a04150cf4, type: 3}
+    - prop: Prop_Table
+      piece: {fileID: 1685382688449208469, guid: ff491cae428337245a75ef11442af4da, type: 3}
+    - prop: Prop_Banc
+      piece: {fileID: 7898632400468675762, guid: 6851be83f94d46c48abd075dd81bdb64, type: 3}
+    - prop: Prop_Chaudron
+      piece: {fileID: 6921904512153867351, guid: 4fa2b3a6ba359f54ea1490268357ec1a, type: 3}
+    - prop: Prop_PileDeCaisses
+      piece: {fileID: 4064243497970099818, guid: bd2dcc292ba7a854ead65a6d5d5cd24b, type: 3}
+    - prop: Prop_Etagere
+      piece: {fileID: 8551153336128190228, guid: 2e750dfc293160343a3e4e9d6f395084, type: 3}
+    - prop: Prop_Tonneau
+      piece: {fileID: 7966203455276453950, guid: dd890ddde1063fe439761131c73410d0, type: 3}
+    - prop: Prop_Lit
+      piece: {fileID: 1120341697416662925, guid: 11bfe9b9d050b564f848df03f1d971b7, type: 3}
+    - prop: Prop_Gravats
+      piece: {fileID: 5201401356479348262, guid: c0cfb4420d012884da614e893251eb57, type: 3}
+    - prop: Prop_MurEffondre
+      piece: {fileID: 8444904998940761583, guid: a9fdd03c4dafd784ca744cb9c7c018a6, type: 3}
+    - prop: Prop_Lanterne
+      piece: {fileID: 610996790895295533, guid: 7664bdeea9e4f4946aaee11f9a0066cd, type: 3}
+    - prop: Prop_Caisse
+      piece: {fileID: 6725224955492687367, guid: cea886982b5ea4a409ad696951e13125, type: 3}
+    pieces:
+    - {fileID: 2852016144248016681, guid: 9677656cea4a41c43a1d6a144260c4c2, type: 3}
+    - {fileID: 6771310782514071890, guid: 37fe7db710d74b94dbc4e95eddc7d802, type: 3}
+    - {fileID: 5894115095465448980, guid: d838d3bda6290aa45b87fe240c1c3fc5, type: 3}
+    - {fileID: 4466447585671550373, guid: 9dbef9caf260e644ab92cd5acf28ef81, type: 3}
+    - {fileID: 7898632400468675762, guid: 6851be83f94d46c48abd075dd81bdb64, type: 3}
+    - {fileID: 159249246928074146, guid: 881af727636dda24fa7afb0a0f00258f, type: 3}
+    - {fileID: 6921904512153867351, guid: 4fa2b3a6ba359f54ea1490268357ec1a, type: 3}
+    - {fileID: 4064243497970099818, guid: bd2dcc292ba7a854ead65a6d5d5cd24b, type: 3}
+    - {fileID: 5408697479503574056, guid: 005fbca9b47daa148bfd7bf4445670e5, type: 3}
+    - {fileID: 610996790895295533, guid: 7664bdeea9e4f4946aaee11f9a0066cd, type: 3}
+    - {fileID: 1962957818696069804, guid: e0b788049f65b7142ae3cceb067b8b61, type: 3}
+    - {fileID: 1841347789878871986, guid: 0303179fbd2c60b4f835b3ffbf9fa4eb, type: 3}
+    - {fileID: 6766234395753169366, guid: bfd575f5681987940817838a04150cf4, type: 3}
+    - {fileID: 1696066052700766610, guid: 95ca79ca76337884d8d7e6322e0ea021, type: 3}
+    - {fileID: 8922801270402809786, guid: 6b29b71eeef0d66478d22ef8ef3a27a6, type: 3}
+    - {fileID: 236454971393131645, guid: c3ffad42a2d6b874f911256cc83b1764, type: 3}
+    - {fileID: 5201401356479348262, guid: c0cfb4420d012884da614e893251eb57, type: 3}
+    - {fileID: 8551153336128190228, guid: 2e750dfc293160343a3e4e9d6f395084, type: 3}
+    - {fileID: 967687590761049551, guid: 33ab4882582ec7348ad1f7c6344f92c7, type: 3}
+    - {fileID: 1120341697416662925, guid: 11bfe9b9d050b564f848df03f1d971b7, type: 3}
+    - {fileID: 8444904998940761583, guid: a9fdd03c4dafd784ca744cb9c7c018a6, type: 3}
+    - {fileID: 1189777827449236518, guid: fe4fd811e73bc104dbdda4b9602bac29, type: 3}
+    - {fileID: 8782208924209853072, guid: 62a478fde34203b45956b71bb54d8179, type: 3}
+    - {fileID: 5019202589666892272, guid: 64a8b48ebb0d2274e9eee203e8509eee, type: 3}
+    - {fileID: 1816246594438960611, guid: fad1739d111f3174896707cd3c5eb5d1, type: 3}
+    - {fileID: 332295918906655854, guid: 646f82578a3317c41ba79fa9a3fdf0f8, type: 3}
+    - {fileID: 9044288284251623995, guid: aa959f81584bdad40ba0fc2cd89d571c, type: 3}
+    - {fileID: 5147718692016292971, guid: 0c3d947e0e31c9641a181230ab80e6e4, type: 3}
+    - {fileID: 9055057259645040851, guid: d95b9596d0a4a5d4cb6f0582de97389e, type: 3}
+    - {fileID: 5836056944706822219, guid: 3e3c88d1176283e49af84b8527a0b7cf, type: 3}
+    - {fileID: 7543768220901914052, guid: 0e90ad83c9b9973418a8f913b47cf89f, type: 3}
+    - {fileID: 8043904545637831888, guid: 676dbcfba8fad2f4c902d89514072c64, type: 3}
+    - {fileID: 7747331021904084707, guid: 27d98c6af25014e439baf6d719921103, type: 3}
+    - {fileID: 828161888247549185, guid: 772aa52948ba8954887b01f7e0fa33c4, type: 3}
+    - {fileID: 7679477395042816359, guid: 9965d3e6878994843981dcf27a16b86c, type: 3}
+    - {fileID: 648298957485018526, guid: b6b5005158bef2b45973dae781752dcb, type: 3}
+    - {fileID: 6825874488746431375, guid: bf1e8a2c539f6294995c9701c377af3f, type: 3}
+    - {fileID: 6725224955492687367, guid: cea886982b5ea4a409ad696951e13125, type: 3}
+    - {fileID: 7050657113463048463, guid: f687452a16d7e4948ac2dfb8dd9d10a3, type: 3}
+    - {fileID: 1685382688449208469, guid: ff491cae428337245a75ef11442af4da, type: 3}
+    - {fileID: 8867133059748651746, guid: 8bbb7c82d3ecc4a4082d4d3d22e82a35, type: 3}
+    - {fileID: 7966203455276453950, guid: dd890ddde1063fe439761131c73410d0, type: 3}
+    - {fileID: 726387151835936529, guid: 0db684c2215a79044a2e8d058cb43094, type: 3}
   kitPieces: 0
   kit: {fileID: 11400000, guid: d59dd140110cb564c9e056a3146e0e87, type: 2}
   props:
