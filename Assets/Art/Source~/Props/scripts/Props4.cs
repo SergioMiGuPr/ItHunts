@@ -64,12 +64,16 @@ public static class Props4
                 inter.SetColor("_BaseColor", new Color(0.035f, 0.028f, 0.024f));
                 if (inter.HasProperty("_WorldUV")) inter.SetFloat("_WorldUV", 0f);
             }
-            if (n.StartsWith("Coffre"))
+            if (n == "Coffre" || n == "CoffreVerrou")
             {
-                // lueur dorée discrète (« tout ce qui est interactif brille ») : rim chaud du shader toon, visible dans le noir
-                mat.SetFloat("_Rim", 1f); mat.EnableKeyword("_RIM_ON");
-                mat.SetColor("_RimColor", new Color(1.0f, 0.62f, 0.25f) * 1.6f);
-                mat.SetFloat("_RimWidth", 0.22f); mat.SetFloat("_RimSoftness", 0.2f); mat.SetFloat("_RimIntensity", 0.65f); mat.SetFloat("_RimLitOnly", 0f);
+                // lueur dorée (« tout ce qui est interactif brille », ART-HANDOFF § 5) : émission chaude modulée par la texture
+                // peinte (le laiton et le bois clair brillent plus que les fers), lisible à 15-20 m sans lumière de salle ; plus
+                // de rim (il donnait des reflets blancs froids)
+                mat.SetFloat("_Rim", 0f); mat.DisableKeyword("_RIM_ON");
+                mat.SetFloat("_Emission", 1f); mat.EnableKeyword("_EMISSION");
+                mat.SetTexture("_EmissionMap", AssetDatabase.LoadAssetAtPath<Texture2D>(tp));
+                mat.SetColor("_EmissionColor", new Color(1.0f, 0.58f, 0.18f) * (n == "Coffre" ? 1.1f : 0.9f));
+                if (mat.HasProperty("_EmissionThroughFog")) mat.SetFloat("_EmissionThroughFog", 0.6f);
             }
             EditorUtility.SetDirty(mat);
 
@@ -98,8 +102,90 @@ public static class Props4
             int tri = fbx.GetComponentsInChildren<MeshFilter>(true).Sum(f => f.sharedMesh.triangles.Length / 3);
             log.Add($"{n} : taille {b.size.ToString("F2")} pivot→bas {b.min.y:F2} tri {tri} intérieur {aInterieur} sous-maillages {string.Join(",", fbx.GetComponentsInChildren<Renderer>(true).SelectMany(r => r.sharedMaterials).Select(m => m ? m.name : "null"))}");
         }
+        Variantes(log);
         AssetDatabase.SaveAssets();
         return string.Join("\n", log);
+    }
+
+    // Variantes assemblées à partir des modèles (aucune génération) pour les greybox de main qui ont d'autres formes :
+    // tonneaux couchés en rang (3,1 × 0,95 × 1,2), table de banquet (6 m), banc d'église (4 m).
+    static void Variantes(List<string> log)
+    {
+        GameObject Pf(string n) => AssetDatabase.LoadAssetAtPath<GameObject>(Prefabs + "P_Prop_" + n + ".prefab");
+        void Sauve(GameObject go, string nom)
+        {
+            var bb = new Bounds(go.transform.position, Vector3.zero); bool init = false;
+            foreach (var r in go.GetComponentsInChildren<Renderer>()) { if (!init) { bb = r.bounds; init = true; } else bb.Encapsulate(r.bounds); }
+            foreach (var c in go.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(c);
+            var bc = go.AddComponent<BoxCollider>(); bc.center = bb.center - go.transform.position; bc.size = bb.size;
+            PrefabUtility.SaveAsPrefabAsset(go, Prefabs + "P_Prop_" + nom + ".prefab");
+            log.Add($"{nom} (variante assemblée) : {bb.size.ToString("F2")}");
+            Object.DestroyImmediate(go);
+        }
+        {   // quatre tonneaux couchés en rang sur deux chantiers (cales), × 1,05
+            var go = new GameObject("P_Prop_Tonneaux_Couches");
+            for (int k = 0; k < 4; k++)
+            {
+                var t = (GameObject)PrefabUtility.InstantiatePrefab(Pf("Tonneau"), go.transform);
+                t.transform.localPosition = new Vector3(-1.155f + k * 0.77f, 0.315f, -0.47f);
+                t.transform.localRotation = Quaternion.Euler(90f, 0f, k * 37f);
+                t.transform.localScale = Vector3.one * 1.05f;
+            }
+            Sauve(go, "Tonneaux_Couches");
+        }
+        {   // table de banquet : deux tables bout à bout, × 1,15 (6 m)
+            var go = new GameObject("P_Prop_Table_Banquet");
+            for (int k = 0; k < 2; k++)
+            {
+                var t = (GameObject)PrefabUtility.InstantiatePrefab(Pf("Table"), go.transform);
+                t.transform.localPosition = new Vector3((k - 0.5f) * 2.6f * 1.15f, 0f, 0f);
+                t.transform.localScale = Vector3.one * 1.15f;
+            }
+            Sauve(go, "Table_Banquet");
+        }
+        {   // banc d'église : deux bancs bout à bout, × 0,81 (4 m)
+            var go = new GameObject("P_Prop_Banc_Eglise");
+            for (int k = 0; k < 2; k++)
+            {
+                var t = (GameObject)PrefabUtility.InstantiatePrefab(Pf("Banc"), go.transform);
+                t.transform.localPosition = new Vector3((k - 0.5f) * 2.48f * 0.81f, 0f, 0f);
+                t.transform.localScale = Vector3.one * 0.81f;
+            }
+            Sauve(go, "Banc_Eglise");
+        }
+    }
+
+    static readonly Dictionary<string, string[]> Candidats = new Dictionary<string, string[]>
+    {
+        { "Tonneau", new[] { "Tonneau", "Tonneaux_Couches" } },
+        { "Table", new[] { "Table", "Table_Banquet" } },
+        { "Banc", new[] { "Banc", "Banc_Eglise" } },
+    };
+
+    /// <summary>Meilleur modèle pour une greybox : variante, rotation de 90° si l'axe long diffère, échelle uniforme (moyenne
+    /// géométrique des rapports d'axes) et écart de forme (somme des |log| des rapports restants).</summary>
+    static (string nom, float rotY, float ech, float ecart) Ajuste(string nomBase, Bounds gb, Quaternion rotGreybox)
+    {
+        var res = (nom: nomBase, rotY: 0f, ech: 1f, ecart: 99f);
+        foreach (var nom in Candidats.TryGetValue(nomBase, out var c) ? c : new[] { nomBase })
+        {
+            var pf = AssetDatabase.LoadAssetAtPath<GameObject>(Prefabs + "P_Prop_" + nom + ".prefab");
+            if (pf == null) continue;
+            var rs = pf.GetComponentsInChildren<Renderer>(); if (rs.Length == 0) continue;
+            var mb = rs[0].bounds; foreach (var r in rs) mb.Encapsulate(r.bounds);
+            // dimensions de la greybox dans son propre repère (approximation : boîte monde, rotation multiple de 90°)
+            float gx = gb.size.x, gz = gb.size.z, gy = gb.size.y;
+            foreach (float rot in new[] { 0f, 90f })
+            {
+                Vector3 m = rotGreybox * Quaternion.Euler(0, rot, 0) * mb.size;
+                float mx = Mathf.Abs(m.x), mz = Mathf.Abs(m.z), my = mb.size.y;
+                float lx = Mathf.Log(gx / mx), ly = Mathf.Log(gy / my), lz = Mathf.Log(gz / mz);
+                float le = (lx + ly + lz) / 3f;
+                float e = Mathf.Abs(lx - le) + Mathf.Abs(ly - le) + Mathf.Abs(lz - le);
+                if (e < res.ecart) res = (nom, rot, Mathf.Exp(le), e);
+            }
+        }
+        return res;
     }
 
     // un seul LODGroup sur la racine : renderers *_LOD0 (corps et couvercle) puis *_LOD1 ; ceux que l'import a pu créer
@@ -241,16 +327,10 @@ public static class Props4
             var rs = t.GetComponentsInChildren<Renderer>().Where(r => r.enabled && r.gameObject.activeInHierarchy && !(r is ParticleSystemRenderer)).ToArray();
             if (rs.Length == 0) continue;
             var gb = rs[0].bounds; foreach (var r in rs) gb.Encapsulate(r.bounds);
-            // greybox d'une autre forme que le modèle (groupe de tonneaux, petit support) : écartée, on prend une autre instance
-            var pfA = AssetDatabase.LoadAssetAtPath<GameObject>(Prefabs + "P_Prop_" + regle.nom + ".prefab");
-            if (pfA != null)
-            {
-                var rsA = pfA.GetComponentsInChildren<Renderer>(); var mb = rsA[0].bounds; foreach (var r in rsA) mb.Encapsulate(r.bounds);
-                float[] dg = { gb.size.x, gb.size.y, gb.size.z }, dm = { mb.size.x * regle.ech.x, mb.size.y * regle.ech.y, mb.size.z * regle.ech.z };
-                System.Array.Sort(dg); System.Array.Sort(dm);
-                bool forme = true; for (int k = 0; k < 3; k++) if (dg[k] > dm[k] * 1.6f + 0.15f || dm[k] > dg[k] * 1.6f + 0.15f) forme = false;
-                if (!forme) { log.Add($"{type} : instance {t.name} écartée (greybox {gb.size.ToString("F2")}, modèle {mb.size.ToString("F2")})"); continue; }
-            }
+            // modèle ajusté à l'instance (variante, orientation, échelle uniforme) ; formes trop différentes : écartées
+            var lacet = Quaternion.Euler(0, Mathf.Round(t.eulerAngles.y / 90f) * 90f, 0);   // face de la greybox (multiple de 90°)
+            var aj = Ajuste(regle.nom, gb, lacet);
+            if (aj.ecart > 0.9f) { log.Add($"{type} : instance {t.name} écartée (greybox {gb.size.ToString("F2")}, écart de forme {aj.ecart:F2} avec {aj.nom})"); continue; }
             // point de vue : du côté le plus dégagé, à 2.2 m + taille (près) et 7 m (jeu), œil 1.7 m
             Vector3 centre = gb.center; float sol = gb.min.y;
             Vector3 best = Vector3.zero; float bd = -1;
@@ -270,8 +350,9 @@ public static class Props4
             }
             if (bd < 0) continue;
             deja.Add(type);
-            float pres = 1.8f + Mathf.Max(gb.extents.x, gb.extents.z) * 1.6f, loin = Mathf.Clamp(bd - 0.4f, pres + 1f, 7f);
-            var vues = new[] { ("pres", pres), ("jeu", loin) };
+            float pres = 1.8f + Mathf.Max(gb.extents.x, gb.extents.z) * 1.6f, loin = Mathf.Clamp(bd - 0.4f, pres + 1f, 9f);
+            float tresLoin = Mathf.Max(loin, Mathf.Min(18f, bd - 0.4f));
+            var vues = new[] { ("pres", pres), ("jeu", loin), ("loin", tresLoin) };
             // avant
             foreach (var (nv, dist) in vues)
             {
@@ -286,10 +367,13 @@ public static class Props4
             if (type.StartsWith("Coffre"))       // couvercle et lueur de la greybox du coffre (objets voisins)
                 foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
                     if (r.sharedMaterial != null && r.sharedMaterial.name.StartsWith("Economy_Chest") && Vector3.Distance(r.bounds.center, gb.center) < 2.5f) { r.enabled = false; if (r.transform != t) r.gameObject.SetActive(false); }
-            var pf = AssetDatabase.LoadAssetAtPath<GameObject>(Prefabs + "P_Prop_" + regle.nom + ".prefab");
+            var pf = AssetDatabase.LoadAssetAtPath<GameObject>(Prefabs + "P_Prop_" + aj.nom + ".prefab");
             var inst = (GameObject)Object.Instantiate(pf);
-            inst.transform.SetPositionAndRotation(new Vector3(t.position.x, sol, t.position.z), t.rotation * Quaternion.Euler(regle.rot));
-            inst.transform.localScale = regle.ech;
+            inst.transform.SetPositionAndRotation(new Vector3(gb.center.x, sol, gb.center.z), lacet * Quaternion.Euler(0, aj.rotY, 0));
+            inst.transform.localScale = Vector3.one * aj.ech;
+            // attrapables : la lueur de main (EmissionGlow, couleur de prise à portée) posée sur le modèle, comme en jeu
+            if (type.Contains("Attrapable"))
+                foreach (var r in inst.GetComponentsInChildren<Renderer>()) ItHunts.Combat.EmissionGlow.Set(r, new Color(0.6f, 0.25f, 1f) * 0.35f, true);
             foreach (var c in inst.GetComponentsInChildren<Collider>()) c.enabled = false;
             await Task.Delay(120);
             foreach (var (nv, dist) in vues)
@@ -301,7 +385,7 @@ public static class Props4
                 Snap(Path.Combine(dossier, $"{acte}_{type}_{nv}_apres.jpg"));
             }
             var ib = inst.GetComponentsInChildren<Renderer>()[0].bounds; foreach (var r in inst.GetComponentsInChildren<Renderer>()) ib.Encapsulate(r.bounds);
-            log.Add($"{type} ({t.name}) greybox {gb.size.ToString("F2")} -> modèle {ib.size.ToString("F2")} ; vue {best.ToString("F2")} près {pres:F1} m, jeu {loin:F1} m");
+            log.Add($"{type} ({t.name}) -> {aj.nom} × {aj.ech:F2} rot {aj.rotY:0} écart {aj.ecart:F2} ; greybox {gb.size.ToString("F2")} -> modèle {ib.size.ToString("F2")} ; vue {best.ToString("F2")} près {pres:F1} m, jeu {loin:F1} m");
         }
         Time.timeScale = 1f;
         Object.Destroy(go); Object.Destroy(_rt); Object.Destroy(_tex);

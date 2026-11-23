@@ -705,13 +705,43 @@ les FBX de la première passe ont changé de hiérarchie (`SM_Prop_<Nom>` est de
 `P_Prop_*` sont reconstruits au même chemin (mêmes GUID) et les neuf nouveaux sont créés. `Chest.lid` se branche sur le
 vide `Couvercle`. Unity crée les `.meta` des nouveaux FBX et textures à l'import.
 
-### Intégration Unity, deuxième passe (lot 4, relecture)
+### Intégration Unity, deuxième passe (lot 4, relecture) — **ce tableau et ces règles font foi**
 
-- `Props4.Construit` reconstruit les 17 prefabs `P_Prop_*` (mêmes chemins, mêmes GUID pour les 8 premiers) : matériaux toon, **LODGroup** (LOD0 jusqu'à 25 % de l'écran, LOD1 jusqu'à 1,5 %, puis masqué), colliders simples (aucun pour la lanterne et la paille), lumière chaude sur le vide `Feu` de la lanterne (1,5 ; 6 m ; sans ombre) et vitres émissives (masque `T_Prop_Lanterne_Emission`).
-- **Échelles uniformes seulement** (remplacent les échelles non uniformes du premier tableau) : tonneau fixe × 1,22 ; sarcophage × 1,15 (rotation (0, 90, 0)) ; râtelier × 1,17 ; statue × 1,385 ; coffres × 1,5 ; tous les autres × 1.
-- **Variantes de greybox à signaler à main** (relevées en jeu, seed 4242, voir `Jeu/points_Acte*.txt`) : certains `Prop_Tonneau` sont des groupes de tonneaux couchés (3,1 × 0,95 × 1,2 m) ; certains `Prop_Ratelier` sont de petits supports (0,6 × 1,4 × 0,5 m) ; certains `Prop_Etagere` mesurent 4,2 × 5,65 × 1 m ; certains `Prop_Armoire` sont des plaques de 3,9 × 0,7 × 3,9 m (armoire couchée ou autre objet). Ces instances ne doivent **pas** recevoir le modèle tel quel : à remplacer par plusieurs modèles (groupe de 3 tonneaux, étagères côte à côte) ou par une autre pièce. Les captures les écartent automatiquement.
-- **Captures en jeu** (actes I, II et III, éclairage du jeu, instances éclairées choisies d'abord, vue dégagée vérifiée par 5 rayons) : `docs/art/rendus/Nuit4/Lot4/Planche_Jeu_Acte1.jpg`, `Planche_Jeu_Acte2.jpg`, `Planche_Jeu_Acte3.jpg` et `Jeu/`. Les étiquettes de main (« Coffre / 30 âmes ») sont masquées ; la lueur violette des attrapables est celle de main.
-- **Journal Unity** : 0 erreur et 0 avertissement après réimport des 17 FBX, des textures et la construction des prefabs (les seules erreurs de la console viennent de `MagnetismAudio.OnDestroy`, côté main).
+Les échelles du premier tableau (dont les échelles non uniformes) et la planche `Planche_Props.jpg` (rendu Blender de la
+première passe, poutre v01) sont **historiques** ; la référence est `Planche_Props_2.jpg` (Blender) et surtout les captures
+en jeu `Planche_Jeu_Acte1.jpg`, `Planche_Jeu_Acte2.jpg`, `Planche_Jeu_Acte3.jpg`.
+
+- **Prefabs** (`Props4.Construit`, `Assets/Art/Source~/Props/scripts/Props4.cs`) : 17 `P_Prop_<Nom>` (mêmes chemins, mêmes GUID
+  pour les 8 premiers) + 3 **variantes assemblées** sans génération : `P_Prop_Tonneaux_Couches` (4 tonneaux couchés en rang,
+  2,7 × 0,63 × 1,6 m), `P_Prop_Table_Banquet` (2 tables bout à bout, 6 × 1,09 × 1,38 m), `P_Prop_Banc_Eglise` (2 bancs, 4 ×
+  0,46 × 0,49 m). Matériaux toon, **LODGroup** (LOD0 jusqu'à 25 % de l'écran, LOD1 jusqu'à 1,5 %), colliders simples (aucun pour
+  la lanterne et la paille ; la paille n'a pas de LOD1), lumière chaude sur le vide `Feu` de la lanterne (1,5 ; 6 m) et vitres
+  émissives.
+- **Lueur des coffres** (`M_Prop_Coffre`, `M_Prop_CoffreVerrou`) : émission chaude modulée par la texture peinte (HDR (1 ; 0,58 ;
+  0,18) × 1,1 et × 0,9), le laiton et le bois clair brillent : le coffre se lit dans le noir à distance de jeu, même sans la
+  lueur de main. Le coffre décoratif ne brille pas (ce n'est pas un objet interactif).
+- **Attrapables** (tonneau, chaise) : la lueur reste celle de main (`EmissionGlow.Set(renderer, couleur, wholeModel: true)`,
+  qui marche sur ItHunts/Toon) ; les captures « après » la posent sur le modèle (couleur de prise à portée), comme en jeu.
+  Échelle 1 : le modèle tient dans la boîte physique de la greybox.
+- **Règle de pose par instance (pour main)** : pour chaque greybox, choisir parmi le modèle et ses variantes (tonneau → rang
+  couché ; table → banquet ; banc → banc d'église) celui dont les proportions sont les plus proches, tourner de 90° si l'axe
+  long diffère, échelle **uniforme** = moyenne géométrique des rapports d'axes (coffres ≤ × 1,6 ; attrapables × 1), posé au
+  centre de la boîte, au sol. C'est la fonction `Props4.Ajuste` (écart de forme = somme des |log| des rapports restants ;
+  au-delà de 0,9 l'instance n'a pas de modèle adapté).
+- **Couverture mesurée** (seed 4242, `Jeu/points_Acte*.txt`) : actes I et III, toutes les instances ont un modèle ou une
+  variante adaptés ; acte II, 15 instances restent sans modèle : `Prop_Armoire` en plaque de 3,9 × 0,7 × 3,9 m (armoire couchée :
+  utiliser la pièce de kit `Chateau_Armoire_Tombee`) et `Prop_Ratelier` en petit support de 0,6 × 1,4 × 0,5 m (garder la
+  greybox ou poser un `P_Prop_Tonneau` / caisse ; un petit présentoir est à modéliser plus tard).
+- **Lanterne et lit** : aucune instance dans les trois actes à la seed 4242 (ils existent dans le catalogue de main) ; rendus de
+  contrôle dans `Planche_Props_2.jpg`.
+- **Étirements résiduels** de la première passe (rapports `rapport_*.json`) : sarcophage et râtelier × 1,73, coffre verrouillé
+  × 1,42 (gisant un peu aplati) ; les nouveaux props restent sous × 1,3. À reprendre dans `nettoyer_prop.py` si l'utilisateur
+  le demande (sans nouvelle génération).
+- **Densité de texels** : textures en 1024 ; ≈ 400 px/m pour l'étagère (2,5 m) et la table, ≈ 280 px/m pour la statue à 3,6 m
+  (sous la référence de 512 px/m du lot 2 ; acceptable pour des props vus de 3 à 20 m, à passer en 2048 si l'on veut des gros
+  plans).
+- **Journal Unity** : `docs/art/rendus/Nuit4/Lot4/journal_unity.txt` (aucune erreur ni aucun avertissement venant des assets du
+  lot 4).
 
 ## Salles d'exemple des trois actes (lot 5, nuit du 2026-11-22, PR art-salles-exemple)
 
