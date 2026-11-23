@@ -362,7 +362,7 @@ def export(objs, path):
     sel = []
     for ob in objs:
         sel.append(ob)
-        sel.extend(ob.children)
+        sel.extend(ob.children_recursive)
     for ob in sel:
         ob.select_set(True)
     bpy.context.view_layer.objects.active = objs[0]

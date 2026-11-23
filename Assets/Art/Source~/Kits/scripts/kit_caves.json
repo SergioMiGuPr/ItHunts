@@ -500,20 +500,20 @@
   ]
  },
  "SM_Cave_Puits": {
-  "doc": "Puits : margelle ronde Ø 3 m (hauteur 0.9 m), conduit noir, deux montants de bois, traverse, treuil, corde et seau.",
+  "doc": "Puits (repère de l'acte I, refait au lot 3) : margelle lisse Ø 3.2 m sans marche ni arête vive, eau à -1.5 m, fond à -2.4 m.",
   "taille": [
-   3.1,
-   3.1,
-   9.88
+   4.58,
+   3.2,
+   6.45
   ],
-  "bas": -6.0,
-  "triangles": 364,
+  "bas": -2.41,
+  "triangles": 1036,
   "materiaux": [
    "M_Bib_Moellons_Peint",
-   "M_Fond_Noir",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Eau_Toon",
+   "M_Bib_Terre",
    "M_Bib_BoisNeuf",
-   "M_Corde",
-   "M_Bib_BoisPourri",
    "M_Bib_FerRouille"
   ]
  },
@@ -525,7 +525,7 @@
    13.0
   ],
   "bas": 0.0,
-  "triangles": 1368,
+  "triangles": 1600,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
    "M_Bib_Dalles_Sales"
@@ -585,6 +585,268 @@
   "materiaux": [
    "M_Bib_FerRouille",
    "M_Kit_Cire"
+  ]
+ },
+ "SM_Cave_Escalier_Droit_4m": {
+  "doc": "Escalier droit plein : monte de 4 m (marches de 20 cm ou moins), 3 m de large, palier de 1.5 m ; rampe de collision sous les nez.",
+  "taille": [
+   4.24,
+   7.7,
+   4.02
+  ],
+  "bas": -0.02,
+  "triangles": 946,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Dalles_Sales",
+   "M_Bib_RocheCave_Peint"
+  ]
+ },
+ "SM_Cave_Escalier_Colimacon": {
+  "doc": "Escalier en colimaçon (Ø 4 m, 3.6 m aux caves) : monte de 6.4 m en deux tours, 16 marches de 20 cm par tour, palier de 100° ; rampe hélicoïdale.",
+  "taille": [
+   3.6,
+   3.6,
+   7.7
+  ],
+  "bas": 0.0,
+  "triangles": 1323,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Moellons_Peint",
+   "M_Bib_Dalles_Sales"
+  ]
+ },
+ "SM_Cave_PorteVerrouillee": {
+  "doc": "Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure).",
+  "taille": [
+   6.0,
+   1.6,
+   6.6
+  ],
+  "bas": -0.0,
+  "triangles": 978,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_FerRouille",
+   "M_Kit_Sceau_Ame"
+  ]
+ },
+ "SM_Cave_Escalier_Tournant_4m": {
+  "doc": "Escalier à quart tournant : deux volées de 2 m, palier carré, palier en haut ; rampes de collision.",
+  "taille": [
+   7.5,
+   6.0,
+   4.0
+  ],
+  "bas": 0.0,
+  "triangles": 2410,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Dalles_Sales"
+  ]
+ },
+ "SM_Cave_Mezzanine_8x6": {
+  "doc": "Mezzanine de 8 × 6 m, dessus à 5 m (double saut et hissage), contre un mur ; garde-corps devant et à gauche, droite ouverte.",
+  "taille": [
+   8.08,
+   6.0,
+   5.0
+  ],
+  "bas": 0.0,
+  "triangles": 592,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Bib_PierreTaillee_Peint"
+  ]
+ },
+ "SM_Cave_Coursive_8m": {
+  "doc": "Coursive le long d'un mur : 8 × 2.5 m, dessus à 0 (pivot au ras du mur), garde-corps côté vide.",
+  "taille": [
+   7.96,
+   2.61,
+   2.15
+  ],
+  "bas": -2.15,
+  "triangles": 1080,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Cave_Passerelle_10m": {
+  "doc": "Passerelle entre deux étages : 10 × 2.4 m, dessus à 0, appuis aux bouts, garde-corps des deux côtés.",
+  "taille": [
+   10.6,
+   2.6,
+   0.72
+  ],
+  "bas": -0.73,
+  "triangles": 2004,
+  "materiaux": [
+   "M_Bib_BoisPourri"
+  ]
+ },
+ "SM_Cave_PorteHaute": {
+  "doc": "Porte de joueur en hauteur : ouverture de 2.4 × 3.6 m, seuil à 5 m dans un mur de 8 × 10 m, rebord de 3 × 1.2 m devant.",
+  "taille": [
+   8.0,
+   2.2,
+   10.0
+  ],
+  "bas": 0.0,
+  "triangles": 404,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_BoisPourri"
+  ]
+ },
+ "SM_Cave_PorteEtroite": {
+  "doc": "Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.2 m du traqueur baissé (il se faufile).",
+  "taille": [
+   12.0,
+   3.32,
+   10.01
+  ],
+  "bas": -0.01,
+  "triangles": 490,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint"
+  ]
+ },
+ "SM_Cave_Echelle_6m": {
+  "doc": "Échelle de 6 m contre un mur, barreaux tous les 30 cm, montants qui dépassent d'1 m en haut.",
+  "taille": [
+   0.75,
+   0.28,
+   7.0
+  ],
+  "bas": 0.0,
+  "triangles": 488,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Corde",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Cave_MurRebords_10m": {
+  "doc": "Mur de 6 × 10 m à quatre rebords plats en quinconce (tous les 2.2 m) : montée de rebord en rebord, wall jumps simples.",
+  "taille": [
+   6.11,
+   2.74,
+   10.34
+  ],
+  "bas": 0.0,
+  "triangles": 462,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint"
+  ]
+ },
+ "SM_Cave_MurEscalade_12m": {
+  "doc": "Mur escaladable de 8 × 12 m : prises plates en quinconce tous les 2 m (on s'y hisse) ; mur grimpable du traqueur et des goules.",
+  "taille": [
+   8.2,
+   2.19,
+   12.3
+  ],
+  "bas": 0.0,
+  "triangles": 180,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_BoisPourri"
+  ]
+ },
+ "SM_Cave_Tremie_8m": {
+  "doc": "Trémie : plancher de 8 × 8 m (dessus à 0) percé d'un trou de 4 × 4 m aux bords plats et nets.",
+  "taille": [
+   8.0,
+   8.0,
+   1.0
+  ],
+  "bas": -1.0,
+  "triangles": 88,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Bib_Moellons_Peint"
+  ]
+ },
+ "SM_Cave_Cheminee_16m": {
+  "doc": "Cheminée de roche de 16 m : parois parallèles à 3.5 m pour monter en wall jumps.",
+  "taille": [
+   13.48,
+   7.18,
+   16.63
+  ],
+  "bas": -0.03,
+  "triangles": 1342,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint"
+  ]
+ },
+ "SM_Cave_Balcon_Bois": {
+  "doc": "Balcon de planches de 3.2 × 1.8 m en encorbellement, garde-corps sur trois côtés.",
+  "taille": [
+   3.16,
+   1.85,
+   1.85
+  ],
+  "bas": -1.85,
+  "triangles": 300,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Cave_CelluleTraqueur_Herse": {
+  "doc": "Cellule d'apparition du traqueur : façade de 18 × 21 m, arc de 10 × 11 m, herse qui monte de 9.2 m.",
+  "taille": [
+   18.0,
+   15.44,
+   21.01
+  ],
+  "bas": -0.01,
+  "triangles": 1233,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Dalles_Sales",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Cave_CelluleTraqueur_Barricade": {
+  "doc": "Cellule d'apparition du traqueur dans la roche : caverne, barricade de rondins à deux battants.",
+  "taille": [
+   24.51,
+   18.15,
+   21.05
+  ],
+  "bas": -0.01,
+  "triangles": 3774,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint"
+  ]
+ },
+ "SM_Cave_CelluleTraqueur_Fosse": {
+  "doc": "Fosse d'apparition du traqueur : 12 × 12 × 15 m, mur à prises, deux trappes de grilles.",
+  "taille": [
+   15.0,
+   15.0,
+   16.82
+  ],
+  "bas": -15.02,
+  "triangles": 1532,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_Dalles_Sales",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_BoisNeuf",
+   "M_Bib_FerRouille"
   ]
  }
 }

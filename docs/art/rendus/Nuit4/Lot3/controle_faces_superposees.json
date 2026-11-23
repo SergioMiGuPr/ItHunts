@@ -1,0 +1,1374 @@
+{
+ "KitCaves": {
+  "SM_Cave_Applique.fbx": {
+   "faces": 240,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_ArcheBasse.fbx": {
+   "faces": 376,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_ArcheHaute.fbx": {
+   "faces": 504,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_ArcheRuine.fbx": {
+   "faces": 562,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Balcon_Bois.fbx": {
+   "faces": 300,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_Banc.fbx": {
+   "faces": 36,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Bassin.fbx": {
+   "faces": 276,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Brasero.fbx": {
+   "faces": 196,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Caisses_Pile.fbx": {
+   "faces": 216,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Canal_8m.fbx": {
+   "faces": 58,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Candelabre.fbx": {
+   "faces": 404,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_CelluleTraqueur_Barricade.fbx": {
+   "faces": 3774,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_CelluleTraqueur_Fosse.fbx": {
+   "faces": 1532,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_CelluleTraqueur_Herse.fbx": {
+   "faces": 1233,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_Cellule_Grille.fbx": {
+   "faces": 480,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Cellule_Porte.fbx": {
+   "faces": 156,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Chaines_Mur.fbx": {
+   "faces": 324,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Chandelles.fbx": {
+   "faces": 220,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Cheminee_16m.fbx": {
+   "faces": 1342,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Corniche_Bois_6m.fbx": {
+   "faces": 216,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Coursive_8m.fbx": {
+   "faces": 1080,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_Eboulis_Grand.fbx": {
+   "faces": 840,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Eboulis_Petit.fbx": {
+   "faces": 432,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Echelle_6m.fbx": {
+   "faces": 488,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Escalier_Colimacon.fbx": {
+   "faces": 1451,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_Escalier_Droit_4m.fbx": {
+   "faces": 948,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_Escalier_Tournant_4m.fbx": {
+   "faces": 2414,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_Etagere.fbx": {
+   "faces": 1136,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Gouffre_Bord_12m.fbx": {
+   "faces": 725,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Lit.fbx": {
+   "faces": 176,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Mezzanine_8x6.fbx": {
+   "faces": 592,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_MurBrise_4m.fbx": {
+   "faces": 480,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_MurBrise_8m.fbx": {
+   "faces": 480,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_MurEscalade_12m.fbx": {
+   "faces": 180,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_MurRebords_10m.fbx": {
+   "faces": 462,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Paille.fbx": {
+   "faces": 120,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Paroi_Courbe_10m.fbx": {
+   "faces": 492,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Paroi_Courbe_18m.fbx": {
+   "faces": 872,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Paroi_Courbe_6m.fbx": {
+   "faces": 340,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Paroi_Droite_10m.fbx": {
+   "faces": 388,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Paroi_Droite_18m.fbx": {
+   "faces": 688,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Paroi_Droite_6m.fbx": {
+   "faces": 268,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Paroi_Saillie_10m.fbx": {
+   "faces": 336,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Passerelle_10m.fbx": {
+   "faces": 2004,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_PilierRoche_18m.fbx": {
+   "faces": 874,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Plateforme_3m.fbx": {
+   "faces": 204,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_PontBois_12m.fbx": {
+   "faces": 1056,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_PontPierre_16m.fbx": {
+   "faces": 296,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_PorteEtroite.fbx": {
+   "faces": 490,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_PorteHaute.fbx": {
+   "faces": 404,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_PorteSortie.fbx": {
+   "faces": 1600,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_PorteVerrouillee.fbx": {
+   "faces": 978,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_Puits.fbx": {
+   "faces": 1036,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Cave_Rebord_4m.fbx": {
+   "faces": 156,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Sacs.fbx": {
+   "faces": 400,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Seau.fbx": {
+   "faces": 192,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_TableGarde.fbx": {
+   "faces": 216,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Tabouret.fbx": {
+   "faces": 72,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Tonneaux_Pile.fbx": {
+   "faces": 400,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Torche_Murale.fbx": {
+   "faces": 92,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Cave_Tremie_8m.fbx": {
+   "faces": 88,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  }
+ },
+ "KitChateau": {
+  "SM_Chateau_Applique_2Bougies.fbx": {
+   "faces": 220,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Applique_Miroir.fbx": {
+   "faces": 660,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Arcade_8x12.fbx": {
+   "faces": 440,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Armoire_Tombee.fbx": {
+   "faces": 72,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Autel.fbx": {
+   "faces": 224,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Balcon.fbx": {
+   "faces": 1196,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Banc_Eglise.fbx": {
+   "faces": 60,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Bibliotheque.fbx": {
+   "faces": 3772,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Candelabre_Pied.fbx": {
+   "faces": 744,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_CelluleTraqueur.fbx": {
+   "faces": 1858,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_Chaise.fbx": {
+   "faces": 72,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Chaise_Renversee.fbx": {
+   "faces": 72,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Chandelier.fbx": {
+   "faces": 1106,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Chandelier_Grand.fbx": {
+   "faces": 4636,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Chandelier_Moyen.fbx": {
+   "faces": 2796,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Chandelier_Petit.fbx": {
+   "faces": 1344,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Coffre.fbx": {
+   "faces": 48,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Colonne_12m.fbx": {
+   "faces": 200,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Coursive_8m.fbx": {
+   "faces": 1576,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_Echelle_6m.fbx": {
+   "faces": 864,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Escalier_Colimacon.fbx": {
+   "faces": 3711,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_Escalier_Droit_4m.fbx": {
+   "faces": 3016,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_Escalier_Tournant_4m.fbx": {
+   "faces": 4118,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_Estrade_Musiciens.fbx": {
+   "faces": 1700,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Fauteuil.fbx": {
+   "faces": 72,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Fenetre_Haute.fbx": {
+   "faces": 228,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Fenetre_Lancette_Double.fbx": {
+   "faces": 1161,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Fenetre_Lancette_Simple.fbx": {
+   "faces": 555,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Fenetre_Lancette_Triple.fbx": {
+   "faces": 1633,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Galerie_8m.fbx": {
+   "faces": 1470,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_GrandEscalier.fbx": {
+   "faces": 6116,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_GrandeEntree.fbx": {
+   "faces": 1824,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_LitBaldaquin.fbx": {
+   "faces": 320,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Lustre_Cristal.fbx": {
+   "faces": 3904,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Lutrin.fbx": {
+   "faces": 88,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Mezzanine_8x6.fbx": {
+   "faces": 3060,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_MiroirBrise.fbx": {
+   "faces": 156,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_MurEscalade_12m.fbx": {
+   "faces": 348,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_MurRebords_10m.fbx": {
+   "faces": 453,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Mur_8x12.fbx": {
+   "faces": 60,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Mur_8x20.fbx": {
+   "faces": 60,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Mur_Platre_8x12.fbx": {
+   "faces": 71,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Passerelle_10m.fbx": {
+   "faces": 3706,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_Pilier_20m.fbx": {
+   "faces": 425,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_PorteEtroite.fbx": {
+   "faces": 322,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_PorteHaute.fbx": {
+   "faces": 392,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_PorteSortie.fbx": {
+   "faces": 2180,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_PorteVerrouillee.fbx": {
+   "faces": 1002,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_Rosace.fbx": {
+   "faces": 696,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_TableBanquet.fbx": {
+   "faces": 784,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Table_Renversee.fbx": {
+   "faces": 72,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Tableau.fbx": {
+   "faces": 60,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Tenture.fbx": {
+   "faces": 892,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Chateau_Tremie_8m.fbx": {
+   "faces": 2080,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Chateau_Voute_8x8.fbx": {
+   "faces": 990,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  }
+ },
+ "KitJardin": {
+  "SM_Arene_Butte.fbx": {
+   "faces": 464,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Arene_Couvert.fbx": {
+   "faces": 312,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Arene_EscalierDescente.fbx": {
+   "faces": 576,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Arene_PilierBrise.fbx": {
+   "faces": 146,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_ArbreMort_Grand.fbx": {
+   "faces": 2029,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_ArbreMort_Penche.fbx": {
+   "faces": 1729,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_ArbreMort_Tordu.fbx": {
+   "faces": 2153,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Caveau.fbx": {
+   "faces": 158,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_CelluleTraqueur_Voliere.fbx": {
+   "faces": 5366,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Chemin_8m.fbx": {
+   "faces": 204,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Coursive_8m.fbx": {
+   "faces": 1308,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Echelle_6m.fbx": {
+   "faces": 448,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Escalier_Colimacon.fbx": {
+   "faces": 2135,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Escalier_Droit_3m.fbx": {
+   "faces": 540,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Escalier_Tournant_4m.fbx": {
+   "faces": 2846,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Falaise_16m.fbx": {
+   "faces": 616,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Falaise_Fente.fbx": {
+   "faces": 2280,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Falaise_Passage.fbx": {
+   "faces": 3606,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Falaise_Rebords_16m.fbx": {
+   "faces": 816,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Fontaine.fbx": {
+   "faces": 414,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Foret_Lisiere_20m.fbx": {
+   "faces": 1580,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Grille_4m.fbx": {
+   "faces": 559,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Haie_6m.fbx": {
+   "faces": 572,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Kiosque.fbx": {
+   "faces": 350,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Massif.fbx": {
+   "faces": 504,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Mezzanine_8x6.fbx": {
+   "faces": 2040,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_MurEnceinte_8m.fbx": {
+   "faces": 48,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_MurEnceinte_Breche_8m.fbx": {
+   "faces": 1296,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_MurEnceinte_CheminRonde_8m.fbx": {
+   "faces": 250,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_MurEnceinte_Tour.fbx": {
+   "faces": 750,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_MurEscalade_12m.fbx": {
+   "faces": 882,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_MurRebords_10m.fbx": {
+   "faces": 408,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Muret_4m.fbx": {
+   "faces": 84,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Palissade_4m.fbx": {
+   "faces": 230,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Passerelle_10m.fbx": {
+   "faces": 2748,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Pont_Bois_10m.fbx": {
+   "faces": 860,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Pont_Pierre_12m.fbx": {
+   "faces": 644,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Portail.fbx": {
+   "faces": 432,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_PorteEtroite.fbx": {
+   "faces": 550,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_PorteHaute.fbx": {
+   "faces": 584,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_PorteSortie.fbx": {
+   "faces": 2180,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_PorteVerrouillee.fbx": {
+   "faces": 1170,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Puits.fbx": {
+   "faces": 1344,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Serre_Ruine.fbx": {
+   "faces": 508,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Statue_Geante.fbx": {
+   "faces": 404,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Statue_Pleureuse.fbx": {
+   "faces": 404,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Terrasse_8m.fbx": {
+   "faces": 1658,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Terrasse_Acces_8m.fbx": {
+   "faces": 954,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0,
+   "piece_entiere_superposees": 0
+  },
+  "SM_Jardin_Tombe_Croix.fbx": {
+   "faces": 116,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  },
+  "SM_Jardin_Tombe_Stele.fbx": {
+   "faces": 122,
+   "degenerees": 0,
+   "superposees": 0,
+   "aire_m2": 0.0,
+   "partielles": 0,
+   "aire_partielle_m2": 0.0
+  }
+ }
+}

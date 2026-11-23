@@ -16,6 +16,8 @@ sys.path.insert(0, HERE)
 import importlib
 import kitlib as L
 importlib.reload(L)
+import kit_hauteur as H
+importlib.reload(H)
 from mathutils import Vector
 
 OUT = os.path.join(L.ROOT, "Assets", "Art", "Models", "KitCaves")
@@ -509,27 +511,18 @@ def SM_Cave_Tonneaux_Pile():
 # ------------------------------------------------------------------ puits
 @piece
 def SM_Cave_Puits():
-    """Puits : margelle ronde Ø 3 m (hauteur 0.9 m), conduit noir, deux montants de bois, traverse, treuil, corde et seau.
-    Repère de l'acte I (visible de loin)."""
-    k = K("SM_Cave_Puits")
-    k.lathe((0, 0, 0), [(1.55, 0), (1.55, 0.8), (1.45, 0.95), (1.05, 0.95), (1.05, -6.0)], MOEL, n=20)
-    k.cyl((0, 0, -6.0), 1.05, 0.05, NOIR, n=20)
-    for sx in (-1, 1):
-        k.box((sx * 1.35, 0, 1.9), (0.22, 0.22, 3.8), BOISN)
-    k.box((0, 0, 3.75), (3.0, 0.26, 0.26), BOISN)
-    k.cyl((-0.6, 0, 3.2), 0.16, 1.2, BOISN, n=10, axis="x")
-    k.obox((0, 0, 3.1), (0, 0, 1.4), 0.04, 0.04, CORDE)
-    k.lathe((0, 0, 1.05), [(0.13, 0.0), (0.16, 0.34), (0.145, 0.34), (0.12, 0.03)], BOISP, n=12)
-    k.obox((0.6, 0, 3.2), (0.9, -0.45, 3.0), 0.06, 0.06, FER)
-    return k.finish(199, dict(sale_h=1.0, mousse=0.6))
+    """Puits (repère de l'acte I, refait au lot 3) : margelle lisse Ø 3.2 m sans marche ni arête vive, eau à -1.5 m, fond à -2.4 m.
+    Margelle de 0.9 m à dessus arrondi, montants de bois posés au sol hors de la margelle, treuil ; on ressort du fond d'un
+    saut et d'un hissage (3.3 m) ; corde et seau sans collision (enfant Deco_SansCollision)."""
+    return H.puits(H.CAVE, "SM_Cave_Puits")
 
 
 # ------------------------------------------------------------------ porte de sortie d'acte
 @piece
 def SM_Cave_PorteSortie():
     """Porte de sortie de l'acte I : encadrement de pierre de taille 12 × 13 m, ouverture 8 × 10 m en plein cintre,
-    deux battants de bois épais cloutés de fer (pivots aux gonds : objets enfants Battant_G et Battant_D). Classique,
-    sans lumière colorée : ce sont les torches du décor qui l'éclairent."""
+    deux battants de bois épais cloutés de fer (pivots aux gonds : objets enfants Battant_G et Battant_D), sceau de lune de
+    sortie en fer sur les battants (lot 3). Classique, sans lumière colorée : ce sont les torches du décor qui l'éclairent."""
     k = K("SM_Cave_PorteSortie")
     L.masonry_arch(k, 8.0, 7.0, 3.6, 2.2, 2.2, PIERRE, n=14, top=13.0, seed=211)
     k.box((0, 0, 0.1), (12.4, 3.2, 0.2), DAL)
@@ -543,11 +536,13 @@ def SM_Cave_PorteSortie():
             hh = 7.0 + 3.6 * math.sqrt(max(0.0, 1 - ((abs(x)) / 4.0) ** 2)) - 0.05 - 0.21
             # nuit 4 : le battant commence au-dessus de la dalle de seuil (0.2 m) : plus de faces confondues avec elle
             kb.box((x, 0, 0.21 + hh / 2), (w / 8 - 0.02, 0.35, hh), BOISN)
-        for z in (1.2, 4.0, 6.8):
+        for z in (1.2, 3.0):
             kb.box((sx * w / 2, -0.2, z), (w - 0.2, 0.06, 0.28), FER)
             for i in range(7):
                 kb.box((sx * (0.3 + i * 0.55), -0.24, z), (0.1, 0.05, 0.1), FER)
         kb.cyl((sx * 3.2, -0.2, 3.6), 0.28, 0.08, FER, n=12, axis="y", caps=(True, True))
+        # nuit 4, lot 3 : sceau de sortie (anneau partagé, croissant de lune à gauche, étoile à droite, rayons)
+        H.sceau_lune(kb, sx, 0.0, 5.4, 1.6, -0.215, FER, FER)
         b = kb.finish(212 + sx, dict(sale_h=1.5, mousse=0.1))
         # pivot au gond (x = ±4 m) : la géométrie est décalée, l'objet est posé au gond
         for v in b.data.vertices:
@@ -620,6 +615,10 @@ def SM_Cave_Candelabre():
     return k.finish(227, dict(sale_h=0.0, mousse=0.0))
 
 
+# ------------------------------------------------------------------ nuit 4, lot 3 : hauteur (kit_hauteur.py)
+H.enregistre(PIECES, H.CAVE, H.pieces_caves(H.CAVE))
+
+
 # ------------------------------------------------------------------ principal
 def main(noms=None):
     mesures = {}
@@ -633,7 +632,7 @@ def main(noms=None):
         ob = f()
         L.export([ob], os.path.join(OUT, nom + ".fbx"))
         (x0, x1), (y0, y1), (z0, z1) = L.bounds(ob)
-        t = L.tris(ob) + sum(L.tris(c) for c in ob.children if c.type == "MESH")
+        t = L.tris(ob) + sum(L.tris(c) for c in ob.children_recursive if c.type == "MESH" and not c.name.startswith("Col_"))
         mesures[nom] = dict(doc=(f.__doc__ or "").strip().split("\n")[0], taille=[round(x1 - x0, 2), round(y1 - y0, 2), round(z1 - z0, 2)],
                             bas=round(z0, 2), triangles=t, materiaux=[m.name for m in ob.data.materials])
         print("ok", nom, mesures[nom]["taille"], t, flush=True)

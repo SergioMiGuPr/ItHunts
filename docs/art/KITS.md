@@ -54,8 +54,8 @@ Modèles `Assets/Art/Models/KitCaves/`, prefabs `Assets/Art/Prefabs/KitCaves/` (
 | `SM_Cave_Sacs` | Sacs de grain affaissés (tas de 1.8 m). | 1.39 × 1.26 × 0.7 | 0.0 | 400 | `M_Kit_Toile` |
 | `SM_Cave_Etagere` | Étagère de réserve 2.4 × 0.6 × 2.6 m, pots et jarres. | 2.4 × 0.6 × 2.6 | 0.0 | 1136 | `M_Bib_BoisPourri`, `M_Bib_Briques_Peint` |
 | `SM_Cave_Tonneaux_Pile` | Trois tonneaux couchés sur un chantier de bois + un debout (réserve, cave à vin). | 3.1 × 1.2 × 0.95 | 0.0 | 400 | `M_Bib_BoisNeuf`, `M_Bib_FerRouille`, `M_Bib_BoisPourri` |
-| `SM_Cave_Puits` | Puits : margelle ronde Ø 3 m (hauteur 0.9 m), conduit noir, deux montants de bois, traverse, treuil, corde et seau. | 3.1 × 3.1 × 9.88 | -6.0 | 404 | `M_Bib_Moellons_Peint`, `M_Fond_Noir`, `M_Bib_BoisNeuf`, `M_Corde`, `M_Bib_BoisPourri`, `M_Bib_FerRouille` |
-| `SM_Cave_PorteSortie` | Porte de sortie de l'acte I : encadrement de pierre de taille 12 × 13 m, ouverture 8 × 10 m en plein cintre, | 12.4 × 3.2 × 13.0 | 0.0 | 1372 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales` |
+| `SM_Cave_Puits` | Puits (repère de l'acte I, refait au lot 3) : margelle lisse Ø 3.2 m sans marche ni arête vive, eau à -1.5 m, fond à -2.4 m. | 4.58 × 3.2 × 6.45 | -2.41 | 1036 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Eau_Toon`, `M_Bib_Terre`, `M_Bib_BoisNeuf`, `M_Bib_FerRouille` |
+| `SM_Cave_PorteSortie` | Porte de sortie de l'acte I : encadrement de pierre de taille 12 × 13 m, ouverture 8 × 10 m en plein cintre, | 12.41 × 3.2 × 13.0 | 0.0 | 1600 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales` |
 | `SM_Cave_Torche_Murale` | Torche sur bras de fer scellé au mur (dos à y = 0) : flamme à 0.75 m du mur, à la hauteur du pivot + 0.55 m. | 0.18 × 0.76 × 0.75 | -0.25 | 92 | `M_Bib_FerRouille`, `M_Bib_BoisNeuf`, `M_Chiffon_Brule` |
 | `SM_Cave_Applique` | Applique de fer à trois bougies (dos à y = 0), 0.6 m de large : flammes à « Feu_1 » … « Feu_3 ». | 0.62 × 0.36 × 0.54 | -0.25 | 240 | `M_Bib_FerRouille`, `M_Kit_Cire` |
 | `SM_Cave_Chandelles` | Groupe de chandelles fondues au sol ou sur une table (0.4 m), coulures de cire : flammes « Feu_1 » … « Feu_5 ». | 0.42 × 0.34 × 0.29 | -0.03 | 220 | `M_Kit_Cire` |
@@ -99,7 +99,7 @@ Modèles `Assets/Art/Models/KitChateau/`, prefabs `Assets/Art/Prefabs/KitChateau
 | `SM_Chateau_Galerie_8m` | Galerie haute de 8 m sur consoles (dessus à 0, profondeur 4 m, dos contre le mur en y = 0) : dallage, balustrade | 8.0 × 4.05 × 4.65 | -3.55 | 1470 | `M_Bib_Dalles_Sales`, `M_Bib_PierreTaillee_Peint` |
 | `SM_Chateau_Balcon` | Balcon de 4 × 2.4 m en encorbellement (dessus à 0, dos au mur), balustrade sur trois côtés : point de vue, cible | 4.2 × 3.4 × 3.5 | -2.4 | 1196 | `M_Bib_Dalles_Sales`, `M_Bib_PierreTaillee_Peint` |
 | `SM_Chateau_GrandEscalier` | Grand escalier droit de 8 m de large qui monte de 8 m (32 marches de 0.25 × 0.5 m), tapis rouge central, rampes | 9.3 × 20.45 × 9.39 | 0.0 | 6116 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Tapis`, `M_Bib_Dalles_Sales` |
-| `SM_Chateau_GrandeEntree` | Grande porte d'entrée du château (mène à l'acte III) : façade de 20 × 22 m, portail en arc brisé de 9 × 13 m à | 20.2 × 6.47 × 22.0 | 0.0 | 1448 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales` |
+| `SM_Chateau_GrandeEntree` | Grande porte d'entrée du château (mène à l'acte III) : façade de 20 × 22 m, portail en arc brisé de 9 × 13 m à | 20.2 × 6.48 × 22.01 | -0.01 | 1824 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales` |
 | `SM_Chateau_Chandelier` | Chandelier suspendu : couronne de fer Ø 3 m à 12 bougies, pendu par une chaîne de 6 m (pivot au point | 3.14 × 3.14 × 6.9 | -6.9 | 1106 | `M_Bib_FerRouille`, `M_Kit_Cire` |
 | `SM_Chateau_Tenture` | Tenture lourde de 3 × 9 m sur tringle (pivot à la tringle, contre un mur), plis profonds, bas effrangé et déchiré. | 3.6 × 0.43 × 9.16 | -9.0 | 892 | `M_Bib_Tenture`, `M_Bib_FerRouille` |
 | `SM_Chateau_Bibliotheque` | Bibliothèque murale de 4 × 0.7 × 5 m (dos au mur, face vers +Z) : 7 rayons de livres serrés, quelques vides et | 4.2 × 1.0 × 5.65 | 0.0 | 3780 | `M_Bib_BoisNeuf`, `M_Bib_Tenture`, `M_Bib_BoisPourri`, `M_Kit_Toile_Peinte`, `M_Kit_Toile`, `M_Bib_Tapis` |
@@ -183,3 +183,130 @@ Modèles `Assets/Art/Models/KitJardin/`, prefabs `Assets/Art/Prefabs/KitJardin/`
 | `SM_Arene_PilierBrise` | Pilier brisé de 10 m (Ø 2 m), sommet cassé en biais, tambours tombés : point d'accroche de traction de l'arène. | 5.2 × 5.4 × 9.9 | 0.0 | 146 | `M_Bib_PierreTaillee_Peint` |
 | `SM_Arene_Couvert` | Pan de mur effondré (6 × 1.2 m, 3.5 m) : couvert contre les attaques du boss (pas contre le traqueur). | 6.53 × 3.39 × 3.44 | 0.0 | 312 | `M_Bib_Moellons_Peint` |
 | `SM_Arene_Butte` | Butte de terre et de roche (14 × 10 m, 3 m de haut) : relief de l'arène, pentes de glissade, vue dégagée. | 13.96 × 10.08 × 6.26 | -2.2 | 464 | `M_Bib_Terre_Racines`, `M_Bib_RocheCave_Peint` |
+
+## Nuit 4, lot 3 : pièces pour un level design en hauteur (branche art-kits-3)
+
+68 nouvelles pièces pour jouer sur la verticalité dans les trois actes, et 3 pièces existantes modifiées. Chaque type a sa version dans les matériaux de son acte :
+- **caves** : moellons, pierre de taille, roche, bois pourri, cordes ;
+- **château** : pierre claire, parquet, dalles claires, marbre, tapis, laiton éteint ;
+- **jardin** : moellons, pierre de taille, bois, fer forgé, lierre.
+
+**Pièces communes aux trois actes** :
+- escaliers droit, à quart tournant et en colimaçon (Ø 4 m, 3.6 m aux caves) ;
+- mezzanine (dessus à 5 m), coursive, passerelle entre étages ;
+- porte de joueur en hauteur (seuil à 5 m), porte étroite que le traqueur franchit en se faufilant ;
+- échelle, mur à rebords pour wall jumps simples, mur escaladable ;
+- porte verrouillée de salle payante.
+
+**Pièces propres à un acte** :
+- **caves** : trémie, cheminée de roche, balcon de bois, trois cellules d'apparition du traqueur (herse, barricade, fosse), puits refait ;
+- **château** : trémie balustrée, porte de sortie, cellule du traqueur, trois hautes fenêtres en lancettes avec repère `RayonLune`, chandeliers petit, moyen et grand, lustre à pampilles, deux appliques, candélabre sur pied ;
+- **jardin** : puits, porte de sortie, volière du traqueur, falaise à rebords, passage et fente dans la roche, deux terrasses, ponts de pierre et de bois, tour, brèche et chemin de ronde du mur d'enceinte.
+
+**Mesures de jeu respectées** (ART-HANDOFF § 3 et § 5 ter) :
+- marches de 18.75 à 20 cm sur des girons de 30 cm (38 cm au jardin), avec une rampe de collision lisse `Col_Rampe` sous les nez de marche : 33.7° (27.8° au jardin), 34° au plus dans les colimaçons ;
+- rebords plats d'au moins 0.6 m de profondeur, espacés de 2.2 à 3.5 m (saut et hissage) ;
+- portes étroites de 4.4 m qui contiennent le gabarit de 4 × 5.2 m du traqueur baissé ;
+- plateformes de moins de 10 m de profondeur : le traqueur ne s'y pose pas.
+
+**Enfants exportés avec les pièces** :
+- `Col_*` : collision seule, rendu retiré par KitBuilder ;
+- `Garde_Corps` : garde-corps, à mettre sur le calque « garde » ;
+- `Deco_SansCollision` : décor sans collision ;
+- parties mobiles : `Battant_G` et `Battant_D`, `Vantail`, `Serrure`, `Herse`, `Trappe_G` et `Trappe_D`, avec leur pivot à l'axe.
+
+**Repères exportés** :
+- `Accroche_*` : points de gameplay ;
+- `Feu_*` : flammes ;
+- `RayonLune` : à la fenêtre ;
+- `Apparition_Traqueur`, `Porte_Traqueur`, `Passage_*`, `Appui_*`.
+
+**Où trouver le reste** :
+- dimensions, pivots, axes et angles d'ouverture : docs/art/INTEGRATION-PROPS.md, section « Nuit 4, lot 3 » ;
+- planche : `docs/art/rendus/Nuit4/Lot3/Planche_Kits_Lot3.jpg`, une image par pièce dans le même dossier ;
+- sources : `kit_hauteur.py`, module commun importé par les trois scripts de kit ; rendus : `rendu_kits.py` et `planche_kits.py` ; catalogue : `kit_doc_lot3.py`.
+
+### Acte I : caves (18 pièces, `KitCaves`)
+
+| Pièce | Rôle | Emprise x × y × z (m) | Bas (m) | Triangles | Matériaux |
+|---|---|---|---|---|---|
+| `SM_Cave_Escalier_Droit_4m` | Escalier droit plein : monte de 4 m (marches de 20 cm ou moins), 3 m de large, palier de 1.5 m ; rampe de collision sous les nez. | 4.24 × 7.7 × 4.02 | -0.02 | 946 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales`, `M_Bib_RocheCave_Peint` |
+| `SM_Cave_Escalier_Tournant_4m` | Escalier à quart tournant : deux volées de 2 m, palier carré, palier en haut ; rampes de collision. | 7.5 × 6.0 × 4.0 | 0.0 | 2410 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales` |
+| `SM_Cave_Escalier_Colimacon` | Escalier en colimaçon (Ø 4 m, 3.6 m aux caves) : monte de 6.4 m en deux tours, 16 marches de 20 cm par tour, palier de 100° ; rampe hélicoïdale. | 3.6 × 3.6 × 7.7 | 0.0 | 1323 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Moellons_Peint`, `M_Bib_Dalles_Sales` |
+| `SM_Cave_Mezzanine_8x6` | Mezzanine de 8 × 6 m, dessus à 5 m (double saut et hissage), contre un mur ; garde-corps devant et à gauche, droite ouverte. | 8.08 × 6.0 × 5.0 | 0.0 | 592 | `M_Bib_BoisPourri`, `M_Bib_PierreTaillee_Peint` |
+| `SM_Cave_Coursive_8m` | Coursive le long d'un mur : 8 × 2.5 m, dessus à 0 (pivot au ras du mur), garde-corps côté vide. | 7.96 × 2.61 × 2.15 | -2.15 | 1080 | `M_Bib_BoisPourri`, `M_Bib_FerRouille` |
+| `SM_Cave_Passerelle_10m` | Passerelle entre deux étages : 10 × 2.4 m, dessus à 0, appuis aux bouts, garde-corps des deux côtés. | 10.6 × 2.6 × 0.72 | -0.73 | 2004 | `M_Bib_BoisPourri` |
+| `SM_Cave_PorteHaute` | Porte de joueur en hauteur : ouverture de 2.4 × 3.6 m, seuil à 5 m dans un mur de 8 × 10 m, rebord de 3 × 1.2 m devant. | 8.0 × 2.2 × 10.0 | 0.0 | 404 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_BoisPourri` |
+| `SM_Cave_PorteEtroite` | Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.2 m du traqueur baissé (il se faufile). | 12.0 × 3.32 × 10.01 | -0.01 | 490 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint` |
+| `SM_Cave_Echelle_6m` | Échelle de 6 m contre un mur, barreaux tous les 30 cm, montants qui dépassent d'1 m en haut. | 0.75 × 0.28 × 7.0 | 0.0 | 488 | `M_Bib_BoisPourri`, `M_Corde`, `M_Bib_FerRouille` |
+| `SM_Cave_MurRebords_10m` | Mur de 6 × 10 m à quatre rebords plats en quinconce (tous les 2.2 m) : montée de rebord en rebord, wall jumps simples. | 6.11 × 2.74 × 10.34 | 0.0 | 462 | `M_Bib_RocheCave_Peint` |
+| `SM_Cave_MurEscalade_12m` | Mur escaladable de 8 × 12 m : prises plates en quinconce tous les 2 m (on s'y hisse) ; mur grimpable du traqueur et des goules. | 8.2 × 2.19 × 12.3 | 0.0 | 180 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_BoisPourri` |
+| `SM_Cave_PorteVerrouillee` | Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure). | 6.0 × 1.6 × 6.6 | -0.0 | 978 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_FerRouille`, `M_Kit_Sceau_Ame` |
+| `SM_Cave_Tremie_8m` | Trémie : plancher de 8 × 8 m (dessus à 0) percé d'un trou de 4 × 4 m aux bords plats et nets. | 8.0 × 8.0 × 1.0 | -1.0 | 88 | `M_Bib_BoisPourri`, `M_Bib_Moellons_Peint` |
+| `SM_Cave_Cheminee_16m` | Cheminée de roche de 16 m : parois parallèles à 3.5 m pour monter en wall jumps. | 13.48 × 7.18 × 16.63 | -0.03 | 1342 | `M_Bib_RocheCave_Peint` |
+| `SM_Cave_Balcon_Bois` | Balcon de planches de 3.2 × 1.8 m en encorbellement, garde-corps sur trois côtés. | 3.16 × 1.85 × 1.85 | -1.85 | 300 | `M_Bib_BoisPourri`, `M_Bib_FerRouille` |
+| `SM_Cave_CelluleTraqueur_Herse` | Cellule d'apparition du traqueur : façade de 18 × 21 m, arc de 10 × 11 m, herse qui monte de 9.2 m. | 18.0 × 15.44 × 21.01 | -0.01 | 1233 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales`, `M_Bib_FerRouille` |
+| `SM_Cave_CelluleTraqueur_Barricade` | Cellule d'apparition du traqueur dans la roche : caverne, barricade de rondins à deux battants. | 24.51 × 18.15 × 21.05 | -0.01 | 3774 | `M_Bib_RocheCave_Peint` |
+| `SM_Cave_CelluleTraqueur_Fosse` | Fosse d'apparition du traqueur : 12 × 12 × 15 m, mur à prises, deux trappes de grilles. | 15.0 × 15.0 × 16.82 | -15.02 | 1532 | `M_Bib_Moellons_Peint`, `M_Bib_Dalles_Sales`, `M_Bib_PierreTaillee_Peint`, `M_Bib_BoisNeuf`, `M_Bib_FerRouille` |
+
+### Acte II : château (25 pièces, `KitChateau`)
+
+| Pièce | Rôle | Emprise x × y × z (m) | Bas (m) | Triangles | Matériaux |
+|---|---|---|---|---|---|
+| `SM_Chateau_Escalier_Droit_4m` | Escalier droit plein : monte de 4 m (marches de 20 cm ou moins), 4 m de large, palier de 1.5 m ; rampe de collision sous les nez. | 4.0 × 7.5 × 4.0 | 0.0 | 3014 | `M_Chateau_PierreClaire`, `M_Bib_Tapis`, `M_Chateau_Dalles` |
+| `SM_Chateau_Escalier_Tournant_4m` | Escalier à quart tournant : deux volées de 2 m, palier carré, palier en haut ; rampes de collision. | 8.5 × 7.0 × 4.0 | 0.0 | 4114 | `M_Chateau_PierreClaire`, `M_Bib_Tapis`, `M_Chateau_Dalles` |
+| `SM_Chateau_Escalier_Colimacon` | Escalier en colimaçon (Ø 4 m, 3.6 m aux caves) : monte de 6.4 m en deux tours, 16 marches de 20 cm par tour, palier de 100° ; rampe hélicoïdale. | 4.0 × 4.0 × 7.75 | 0.0 | 3583 | `M_Chateau_PierreClaire`, `M_Chateau_Dalles` |
+| `SM_Chateau_Mezzanine_8x6` | Mezzanine de 8 × 6 m, dessus à 5 m (double saut et hissage), contre un mur ; garde-corps devant et à gauche, droite ouverte. | 8.2 × 6.23 × 5.0 | 0.0 | 3060 | `M_Chateau_PierreClaire`, `M_Chateau_Parquet` |
+| `SM_Chateau_Coursive_8m` | Coursive le long d'un mur : 8 × 2.5 m, dessus à 0 (pivot au ras du mur), garde-corps côté vide. | 8.01 × 2.68 × 2.2 | -2.2 | 1576 | `M_Chateau_PierreClaire`, `M_Chateau_Parquet` |
+| `SM_Chateau_Passerelle_10m` | Passerelle entre deux étages : 10 × 2.4 m, dessus à 0, appuis aux bouts, garde-corps des deux côtés. | 10.0 × 2.69 × 2.21 | -2.2 | 3706 | `M_Chateau_PierreClaire`, `M_Chateau_Dalles` |
+| `SM_Chateau_PorteHaute` | Porte de joueur en hauteur : ouverture de 2.4 × 3.6 m, seuil à 5 m dans un mur de 8 × 10 m, rebord de 3 × 1.2 m devant. | 8.0 × 2.2 × 10.0 | 0.0 | 392 | `M_Chateau_PierreClaire` |
+| `SM_Chateau_PorteEtroite` | Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.2 m du traqueur baissé (il se faufile). | 12.01 × 2.08 × 10.0 | 0.0 | 322 | `M_Chateau_PierreClaire` |
+| `SM_Chateau_Echelle_6m` | Échelle de 6 m contre un mur, barreaux tous les 30 cm, montants qui dépassent d'1 m en haut. | 0.6 × 0.28 × 6.85 | 0.27 | 864 | `M_Bib_FerRouille` |
+| `SM_Chateau_MurRebords_10m` | Mur de 6 × 10 m à quatre rebords plats en quinconce (tous les 2.2 m) : montée de rebord en rebord, wall jumps simples. | 6.02 × 2.08 × 10.02 | -0.01 | 453 | `M_Chateau_PierreClaire` |
+| `SM_Chateau_MurEscalade_12m` | Mur escaladable de 8 × 12 m : prises plates en quinconce tous les 2 m (on s'y hisse) ; mur grimpable du traqueur et des goules. | 8.01 × 1.95 × 12.0 | 0.0 | 348 | `M_Chateau_PierreClaire` |
+| `SM_Chateau_PorteVerrouillee` | Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure). | 6.01 × 1.6 × 6.6 | -0.0 | 1002 | `M_Chateau_PierreClaire`, `M_Bib_Trim`, `M_Kit_Sceau_Ame` |
+| `SM_Chateau_Tremie_8m` | Trémie : dalle de 8 × 8 m percée d'un trou de 4 × 4 m, bordure de marbre, balustrade sur trois côtés. | 8.0 × 8.0 × 0.6 | -0.6 | 2080 | `M_Bib_Marbre`, `M_Chateau_Dalles`, `M_Chateau_PierreClaire` |
+| `SM_Chateau_PorteSortie` | Porte de sortie de l'acte II : arc brisé de 8 × 10 m à voussures, deux battants de boiserie, sceau de lune doré. | 12.41 × 3.18 × 14.01 | -0.01 | 2180 | `M_Chateau_PierreClaire`, `M_Bib_Marbre` |
+| `SM_Chateau_CelluleTraqueur` | Cellule d'apparition du traqueur : arc brisé de 10 × 12 m, herse de fer forgé en losanges qui monte de 9.2 m. | 18.01 × 15.58 × 21.01 | -0.01 | 1858 | `M_Chateau_PierreClaire`, `M_Chateau_Dalles`, `M_Bib_FerRouille` |
+| `SM_Chateau_Fenetre_Lancette_Simple` | Fenêtre en lancette simple : baie de 1.6 × 6.6 m (appui à 3 m) dans un panneau de 4 × 12 m, vitraux sombres, repère RayonLune. | 4.01 × 1.68 × 12.0 | 0.0 | 555 | `M_Chateau_PierreClaire`, `M_Kit_Vitrail`, `M_Kit_Vitrail_Rouge`, `M_Kit_Vitrail_Ambre`, `M_Bib_FerRouille` |
+| `SM_Chateau_Fenetre_Lancette_Double` | Fenêtre à deux lancettes et oculus : baie de 4 × 7.3 m (appui à 2.5 m) dans un panneau de 8 × 12 m, vitraux sombres, repère RayonLune. | 8.01 × 1.68 × 12.0 | 0.0 | 1161 | `M_Chateau_PierreClaire`, `M_Kit_Vitrail`, `M_Kit_Vitrail_Rouge`, `M_Kit_Vitrail_Ambre`, `M_Bib_FerRouille` |
+| `SM_Chateau_Fenetre_Lancette_Triple` | Haute fenêtre à trois lancettes et rose : baie de 5.6 × 14.3 m (appui à 3.5 m) dans un panneau de 8 × 20 m, vitraux sombres, repère RayonLune. | 8.01 × 1.68 × 20.0 | 0.0 | 1633 | `M_Chateau_PierreClaire`, `M_Kit_Vitrail`, `M_Kit_Vitrail_Rouge`, `M_Kit_Vitrail_Ambre`, `M_Bib_FerRouille` |
+| `SM_Chateau_Chandelier_Petit` | Petit chandelier suspendu : Ø 2 m (pièce de 12 × 12 m), 8 bougies, bas à 2.4 m sous le plafond (plafond de 6 m et plus). | 2.15 × 2.15 × 2.4 | -2.4 | 1344 | `M_Bib_FerRouille`, `M_Bib_Trim`, `M_Kit_Cire` |
+| `SM_Chateau_Chandelier_Moyen` | Chandelier moyen : Ø 3.3 m (salle de 24 × 16 m), 18 bougies sur deux couronnes, bas à 5 m sous le plafond (12 m). | 3.45 × 3.45 × 5.0 | -5.0 | 2796 | `M_Bib_FerRouille`, `M_Bib_Trim`, `M_Kit_Cire` |
+| `SM_Chateau_Chandelier_Grand` | Grand chandelier de hall : Ø 4.6 m (hall de 32 × 24 m), 32 bougies sur trois couronnes, bas à 8 m sous le plafond (20 m). | 4.75 × 4.75 × 8.0 | -8.0 | 4636 | `M_Bib_FerRouille`, `M_Bib_Trim`, `M_Kit_Cire` |
+| `SM_Chateau_Lustre_Cristal` | Lustre à pampilles de Ø 2.4 m : trois étages de bras dorés, 24 bougies, gouttes de cristal sombre. | 2.55 × 2.55 × 3.0 | -3.0 | 3904 | `M_Bib_Trim`, `M_Kit_Cire`, `M_Kit_Vitrail` |
+| `SM_Chateau_Applique_2Bougies` | Applique murale dorée à deux bougies (platine en écusson, bras en S). | 0.75 × 0.44 × 0.66 | -0.3 | 220 | `M_Bib_Trim`, `M_Kit_Cire` |
+| `SM_Chateau_Applique_Miroir` | Applique à miroir ovale sombre et trois bougies. | 0.79 × 0.5 × 1.26 | -0.34 | 660 | `M_Kit_Vitrail`, `M_Bib_Trim`, `M_Kit_Cire` |
+| `SM_Chateau_Candelabre_Pied` | Candélabre sur pied de 2.1 m, pied de marbre, sept bougies. | 0.84 × 0.84 × 2.27 | 0.0 | 744 | `M_Chateau_PierreClaire`, `M_Bib_Trim`, `M_Kit_Cire` |
+
+### Acte III : jardin (25 pièces, `KitJardin`)
+
+| Pièce | Rôle | Emprise x × y × z (m) | Bas (m) | Triangles | Matériaux |
+|---|---|---|---|---|---|
+| `SM_Jardin_Escalier_Droit_3m` | Escalier droit plein : monte de 3 m (marches de 20 cm ou moins), 3.2 m de large, palier de 1.5 m ; rampe de collision sous les nez. | 4.45 × 8.31 × 4.03 | 0.0 | 538 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales`, `M_Kit_Feuillage` |
+| `SM_Jardin_Escalier_Tournant_4m` | Escalier à quart tournant : deux volées de 2 m, palier carré, palier en haut ; rampes de collision. | 9.47 × 7.79 × 4.0 | -0.0 | 2842 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales`, `M_Kit_Feuillage` |
+| `SM_Jardin_Escalier_Colimacon` | Escalier en colimaçon (Ø 4 m, 3.6 m aux caves) : monte de 6.4 m en deux tours, 16 marches de 20 cm par tour, palier de 100° ; rampe hélicoïdale. | 4.0 × 4.0 × 7.7 | 0.0 | 2007 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Moellons_Peint`, `M_Bib_Dalles_Sales` |
+| `SM_Jardin_Mezzanine_8x6` | Mezzanine de 8 × 6 m, dessus à 5 m (double saut et hissage), contre un mur ; garde-corps devant et à gauche, droite ouverte. | 8.26 × 6.27 × 5.0 | 0.0 | 2040 | `M_Bib_BoisPourri`, `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Kit_Feuillage` |
+| `SM_Jardin_Coursive_8m` | Coursive le long d'un mur : 8 × 2.5 m, dessus à 0 (pivot au ras du mur), garde-corps côté vide. | 8.06 × 2.63 × 1.95 | -1.65 | 1308 | `M_Bib_BoisPourri`, `M_Bib_FerRouille`, `M_Kit_Feuillage` |
+| `SM_Jardin_Passerelle_10m` | Passerelle entre deux étages : 10 × 2.4 m, dessus à 0, appuis aux bouts, garde-corps des deux côtés. | 10.02 × 2.4 × 0.59 | -0.59 | 2748 | `M_Bib_BoisPourri`, `M_Bib_FerRouille` |
+| `SM_Jardin_PorteHaute` | Porte de joueur en hauteur : ouverture de 2.4 × 3.6 m, seuil à 5 m dans un mur de 8 × 10 m, rebord de 3 × 1.2 m devant. | 8.0 × 2.2 × 10.0 | 0.0 | 584 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Kit_Feuillage` |
+| `SM_Jardin_PorteEtroite` | Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.2 m du traqueur baissé (il se faufile). | 8.63 × 2.0 × 9.49 | 0.0 | 550 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Kit_Feuillage` |
+| `SM_Jardin_Echelle_6m` | Échelle de 6 m contre un mur, barreaux tous les 30 cm, montants qui dépassent d'1 m en haut. | 0.87 × 0.26 × 7.0 | -0.0 | 448 | `M_Bib_BoisPourri`, `M_Bib_FerRouille` |
+| `SM_Jardin_MurRebords_10m` | Mur de 6 × 10 m à quatre rebords plats en quinconce (tous les 2.2 m) : montée de rebord en rebord, wall jumps simples. | 6.32 × 2.17 × 10.24 | 0.0 | 408 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_FerRouille`, `M_Kit_Feuillage` |
+| `SM_Jardin_MurEscalade_12m` | Mur escaladable de 8 × 12 m : prises plates en quinconce tous les 2 m (on s'y hisse) ; mur grimpable du traqueur et des goules. | 8.14 × 3.14 × 12.27 | -0.02 | 882 | `M_Bib_RocheCave_Peint`, `M_Bib_HerbeSeche`, `M_Bib_PierreTaillee_Peint`, `M_Bib_Ecorce`, `M_Kit_Feuillage` |
+| `SM_Jardin_PorteVerrouillee` | Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure). | 6.34 × 1.6 × 6.6 | -0.0 | 1170 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_FerRouille`, `M_Kit_Sceau_Ame`, `M_Kit_Feuillage` |
+| `SM_Jardin_Puits` | Puits de jardin : margelle lisse Ø 3.2 m, arceau de fer forgé et poulie, eau à -1.5 m, fond à -2.4 m. | 4.56 × 3.2 × 6.55 | -2.41 | 1344 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Eau_Toon`, `M_Bib_Terre_Racines`, `M_Bib_FerRouille`, `M_Kit_Feuillage` |
+| `SM_Jardin_PorteSortie` | Porte de sortie de l'acte III (vers l'arène) : arche de 8 × 10 m entre deux contreforts, deux battants, sceau de lune. | 15.4 × 3.49 × 14.31 | -0.01 | 2180 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales`, `M_Bib_Moellons_Peint`, `M_Kit_Feuillage` |
+| `SM_Jardin_CelluleTraqueur_Voliere` | Cellule d'apparition du traqueur : grande volière de fer de Ø 16 m (20 m), portail à deux vantaux. | 17.86 × 16.56 × 21.71 | -0.01 | 5366 | `M_Bib_PierreTaillee_Peint`, `M_Bib_FerRouille`, `M_Kit_Feuillage` |
+| `SM_Jardin_Falaise_Rebords_16m` | Falaise de 16 × 16 m à quatre rebords plats tous les 3.5 m (saut et hissage). | 16.36 × 5.65 × 16.3 | 0.0 | 816 | `M_Bib_RocheCave_Peint`, `M_Bib_HerbeSeche` |
+| `SM_Jardin_Falaise_Passage` | Passage dans la roche : gorge de 10 × 16 m sous une arche naturelle, le traqueur passe. | 30.43 × 18.98 × 18.66 | -0.03 | 3606 | `M_Bib_RocheCave_Peint`, `M_Bib_HerbeSeche` |
+| `SM_Jardin_Falaise_Fente` | Fente dans la roche de 2.6 m de large et 12 m de long : joueurs seulement. | 18.5 × 14.99 × 14.8 | -0.04 | 2280 | `M_Bib_RocheCave_Peint`, `M_Bib_HerbeSeche` |
+| `SM_Jardin_Terrasse_8m` | Terrasse : mur de soutènement de 8 × 3 m à contreforts, dessus dallé de 8 × 6 m, balustrade. | 8.2 × 6.96 × 3.02 | -0.01 | 1658 | `M_Bib_Moellons_Peint`, `M_Bib_Dalles_Sales`, `M_Bib_PierreTaillee_Peint`, `M_Kit_Feuillage` |
+| `SM_Jardin_Terrasse_Acces_8m` | Terrasse avec accès : ouverture de 3.6 m entre deux piliers à vases (arrivée d'escalier). | 8.0 × 6.96 × 5.24 | -0.02 | 954 | `M_Bib_Moellons_Peint`, `M_Bib_Dalles_Sales`, `M_Bib_PierreTaillee_Peint`, `M_Kit_Feuillage` |
+| `SM_Jardin_Pont_Pierre_12m` | Pont de pierre en dos d'âne de 12 m (tablier de 3.6 m, +1.2 m au milieu), arche de 8 m, parapets bas. | 12.0 × 3.78 × 3.9 | -2.5 | 644 | `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales` |
+| `SM_Jardin_Pont_Bois_10m` | Pont de rondins et de planches de 10 × 2.4 m, main courante de branches. | 11.0 × 3.2 × 1.44 | -1.43 | 860 | `M_Bib_Ecorce`, `M_Bib_BoisPourri`, `M_Bib_PierreTaillee_Peint` |
+| `SM_Jardin_MurEnceinte_Tour` | Tour ronde d'angle du mur d'enceinte : Ø 6 m, 14 m, crénelée, meurtrières. | 8.46 × 7.2 × 14.4 | 0.0 | 750 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Bib_Dalles_Sales`, `M_Fond_Noir`, `M_Kit_Feuillage` |
+| `SM_Jardin_MurEnceinte_Breche_8m` | Mur d'enceinte de 8 m effondré au milieu : brèche à 1.4 m, éboulis en rampe. | 8.23 × 5.72 × 9.34 | -0.04 | 1296 | `M_Bib_Moellons_Peint`, `M_Bib_PierreTaillee_Peint`, `M_Kit_Feuillage` |
+| `SM_Jardin_MurEnceinte_CheminRonde_8m` | Mur d'enceinte de 8 × 9 m à chemin de ronde dallé et parapet crénelé. | 8.07 × 3.45 × 10.9 | 0.0 | 250 | `M_Bib_Moellons_Peint`, `M_Bib_Dalles_Sales`, `M_Bib_PierreTaillee_Peint`, `M_Kit_Feuillage` |
+
+Pièces existantes modifiées par ce lot : `SM_Cave_Puits` (refait : margelle lisse, eau, fond), `SM_Cave_PorteSortie` et `SM_Chateau_GrandeEntree` (sceau de lune de sortie sur les battants) ; leurs lignes sont à jour dans les sections des actes.

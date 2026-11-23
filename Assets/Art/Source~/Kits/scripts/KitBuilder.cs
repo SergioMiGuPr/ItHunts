@@ -55,12 +55,21 @@ public static class KitBuilder
         Plat("M_Kit_Toile_Peinte", new Color(0.16f, 0.12f, 0.12f));
         Plat("M_Kit_Lune", new Color(0.9f, 0.92f, 1f), new Color(2.2f, 2.3f, 2.6f));
         Plat("M_Kit_Os", new Color(0.81f, 0.77f, 0.65f));
+        // nuit 4, lot 3 : vitraux sombres colorés, sceau d'âme (cyan des âmes, réservé au jeu), surface de collision seule
+        Plat("M_Kit_Vitrail_Rouge", new Color(0.12f, 0.02f, 0.03f), new Color(0.2f, 0.02f, 0.03f), true);
+        Plat("M_Kit_Vitrail_Ambre", new Color(0.13f, 0.08f, 0.02f), new Color(0.22f, 0.12f, 0.02f), true);
+        Plat("M_Kit_Sceau_Ame", new Color(0.3f, 0.9f, 1f), new Color(0.4f, 2.6f, 3.2f));
+        Plat("M_Collision_Invisible", new Color(1f, 0f, 1f));
         AssetDatabase.SaveAssets();
     }
 
     static bool EstLumiere(string nom) => nom.Contains("Torche") || nom.Contains("Applique") || nom.Contains("Chandelle") ||
                                           nom.Contains("Candelabre") || nom.Contains("Brasero") || nom.Contains("Chandelier") ||
-                                          nom.Contains("Lanterne") || nom.Contains("Bougeoir");
+                                          nom.Contains("Lanterne") || nom.Contains("Bougeoir") || nom.Contains("Lustre");
+
+    // nuit 4, lot 3 : parties mobiles (pivots à l'axe, voir INTEGRATION-PROPS « Nuit 4, lot 3 »), jamais statiques
+    static bool EstMobile(string n) => n.StartsWith("Battant") || n.StartsWith("Vantail") || n.StartsWith("Serrure") ||
+                                       n.StartsWith("Herse") || n.StartsWith("Trappe");
 
     static bool EstPetit(Bounds b) => b.size.x < 2.5f && b.size.y < 3f && b.size.z < 2.5f;
 
@@ -79,7 +88,7 @@ public static class KitBuilder
             mi.importNormals = ModelImporterNormals.Import;
             mi.importAnimation = false; mi.animationType = ModelImporterAnimationType.None;
             mi.importCameras = false; mi.importLights = false;
-            mi.isReadable = false;
+            mi.isReadable = true;   // nuit 4 : le NavMesh est construit au chargement (lot 2 : Read/Write coché sur tous les FBX des kits)
             mi.materialImportMode = ModelImporterMaterialImportMode.ImportViaMaterialDescription;
             mi.materialLocation = ModelImporterMaterialLocation.InPrefab;
             mi.SaveAndReimport();
@@ -91,6 +100,17 @@ public static class KitBuilder
             var inst = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
             PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.OutermostRoot, InteractionMode.AutomatedAction);
             go.name = nom.Replace("SM_", "");
+            // nuit 4, lot 3 : la serrure de la porte verrouillée suit le vantail (exportée à côté de lui, rangée dessous ici)
+            var serrure = go.transform.Find("Serrure"); var vantail = go.transform.Find("Vantail");
+            if (serrure && vantail) serrure.SetParent(vantail, true);
+            // nuit 4, lot 3 : « Col_* » = collision seule (rampes lisses sous les marches) : rendu retiré, MeshCollider
+            foreach (var t in go.GetComponentsInChildren<Transform>().Where(t => t.name.StartsWith("Col_")).ToList())
+            {
+                var mr = t.GetComponent<MeshRenderer>();
+                if (mr) Object.DestroyImmediate(mr);
+                var mfc = t.GetComponent<MeshFilter>();
+                if (mfc && !t.GetComponent<MeshCollider>()) t.gameObject.AddComponent<MeshCollider>().sharedMesh = mfc.sharedMesh;
+            }
             // matériaux des kits en double face : les surfaces ouvertes (arches, parois, ponts) restent pleines quel que soit
             // l'ordre de leurs sommets (l'éclairage toon retourne la normale des faces arrière)
             foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
@@ -114,8 +134,9 @@ public static class KitBuilder
                 }
                 else
                     foreach (var mf in go.GetComponentsInChildren<MeshFilter>())
-                        if (!mf.GetComponent<MeshCollider>()) mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
-                foreach (var t in go.GetComponentsInChildren<Transform>()) t.gameObject.isStatic = !t.name.StartsWith("Battant");
+                        if (!mf.GetComponent<MeshCollider>() && !mf.name.StartsWith("Deco_")) mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+                foreach (var t in go.GetComponentsInChildren<Transform>())
+                    t.gameObject.isStatic = !t.GetComponentsInParent<Transform>(true).Any(p => EstMobile(p.name));
             }
             // sources de lumière : feu et lumière ponctuelle sur chaque repère « Feu* »
             foreach (var t in go.GetComponentsInChildren<Transform>().Where(t => t.name.StartsWith("Feu")).ToList())
@@ -135,9 +156,10 @@ public static class KitBuilder
                     l.type = LightType.Point;
                     l.color = new Color(1f, 0.6f, 0.32f);
                     // torches : ambiance intermédiaire du jeu (1.35 / 15.4 m, Ambiance_Intermediaire) ; bougies : petit halo chaud
-                    l.intensity = grand ? (nom.Contains("Brasero") ? 1.8f : 1.35f) : nom.Contains("Chandelier") ? 1.6f : 0.6f;
-                    l.range = grand ? (nom.Contains("Brasero") ? 16f : 15.4f) : nom.Contains("Chandelier") ? 18f : 5f;
-                    if (nom.Contains("Chandelier")) l.transform.position = go.transform.position + new Vector3(0, t.position.y - go.transform.position.y - 0.3f, 0);
+                    bool lustre = nom.Contains("Chandelier") || nom.Contains("Lustre");
+                    l.intensity = grand ? (nom.Contains("Brasero") ? 1.8f : 1.35f) : lustre ? (nom.Contains("Grand") ? 2.4f : 1.6f) : 0.6f;
+                    l.range = grand ? (nom.Contains("Brasero") ? 16f : 15.4f) : lustre ? (nom.Contains("Grand") ? 26f : 18f) : 5f;
+                    if (lustre) l.transform.position = go.transform.position + new Vector3(0, t.position.y - go.transform.position.y - 0.3f, 0);
                     l.shadows = grand ? LightShadows.Soft : LightShadows.None;
                     l.renderMode = LightRenderMode.Auto;
                 }

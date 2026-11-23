@@ -14,6 +14,8 @@ sys.path.insert(0, HERE)
 import importlib
 import kitlib as L
 importlib.reload(L)
+import kit_hauteur as H
+importlib.reload(H)
 from mathutils import Vector
 
 OUT = os.path.join(L.ROOT, "Assets", "Art", "Models", "KitChateau")
@@ -249,8 +251,8 @@ def SM_Chateau_GrandEscalier():
 @piece
 def SM_Chateau_GrandeEntree():
     """Grande porte d'entrée du château (mène à l'acte III) : façade de 20 × 22 m, portail en arc brisé de 9 × 13 m à
-    voussures, deux battants de chêne ferré (Battant_G, Battant_D, pivots aux gonds), perron de 5 marches, deux
-    contreforts. Face vers -Z (extérieur côté jardin à l'acte III)."""
+    voussures, deux battants de chêne ferré (Battant_G, Battant_D, pivots aux gonds) portant le sceau de lune de sortie
+    (lot 3), perron de 5 marches, deux contreforts. Face vers -Z (extérieur côté jardin à l'acte III)."""
     k = K("SM_Chateau_GrandeEntree")
     L.masonry_arch(k, 9.0, 8.0, 5.0, 3.0, 5.5, PIERRE, n=14, pointed=True, top=22.0, seed=327)
     for sx in (-1, 1):
@@ -267,9 +269,11 @@ def SM_Chateau_GrandeEntree():
             x = sx * (i + 0.5) * 0.5
             prof_top = 8.0 + 5.0 * max(0.0, 1 - (abs(x) / 4.5) ** 1.7) ** 0.5
             kb.box((x, 0, prof_top / 2), (0.48, 0.4, prof_top), BOIS)
-        for z in (1.5, 4.5, 7.5):
+        for z in (1.5, 3.4):
             kb.box((sx * 2.25, -0.24, z), (4.3, 0.08, 0.3), FER)
         kb.cyl((sx * 3.6, -0.24, 4.0), 0.35, 0.08, FER, n=12, axis="y")
+        # nuit 4, lot 3 : sceau de sortie d'acte (anneau partagé, croissant, étoile, rayons)
+        H.sceau_lune(kb, sx, 0.0, 6.4, 2.0, -0.24, FER, FER)
         b = kb.finish(329 + sx, dict(sale_h=1.5, mousse=0.1))
         for v in b.data.vertices:
             v.co.x -= sx * 4.5
@@ -564,6 +568,10 @@ def SM_Chateau_Estrade_Musiciens():
     return k.finish(381, dict(sale_h=0.3, mousse=0.0))
 
 
+# nuit 4, lot 3 : hauteur, fenêtres, chandeliers (kit_hauteur.py)
+H.enregistre(PIECES, H.CHATEAU, H.pieces_chateau(H.CHATEAU))
+
+
 def main(noms=None):
     mesures = {}
     path = os.path.join(HERE, "kit_chateau.json")
@@ -576,7 +584,7 @@ def main(noms=None):
         ob = f()
         L.export([ob], os.path.join(OUT, nom + ".fbx"))
         (x0, x1), (y0, y1), (z0, z1) = L.bounds(ob)
-        t = L.tris(ob) + sum(L.tris(c) for c in ob.children if c.type == "MESH")
+        t = L.tris(ob) + sum(L.tris(c) for c in ob.children_recursive if c.type == "MESH" and not c.name.startswith("Col_"))
         mesures[nom] = dict(doc=(f.__doc__ or "").strip().split("\n")[0], taille=[round(x1 - x0, 2), round(y1 - y0, 2), round(z1 - z0, 2)],
                             bas=round(z0, 2), triangles=t, materiaux=[m.name for m in ob.data.materials])
         print("ok", nom, mesures[nom]["taille"], t, flush=True)
