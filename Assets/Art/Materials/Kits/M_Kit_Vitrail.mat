@@ -39,7 +39,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
-    - _AmbientInfluence: 1
+    - _AmbientInfluence: 0.4
     - _BandCount: 3
     - _BandGradient: 0.45
     - _BandSoftness: 0.02
@@ -58,7 +58,7 @@ Material:
     - _LayerLow: 0.5
     - _LayerTile: 2
     - _LayerTop: 0
-    - _LightSaturation: 1.35
+    - _LightSaturation: 0.4
     - _MacroScale: 6
     - _MacroVariation: 0.35
     - _PointFalloff: 0.8
@@ -81,8 +81,8 @@ Material:
     - _WorldUV: 0
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.05, g: 0.06, b: 0.09, a: 1}
-    - _EmissionColor: {r: 0.07, g: 0.09, b: 0.16, a: 1}
+    - _BaseColor: {r: 0.026, g: 0.029, b: 0.036, a: 1}
+    - _EmissionColor: {r: 0.02, g: 0.024, b: 0.036, a: 1}
     - _GrimeColor: {r: 0.41999996, g: 0.39999998, b: 0.35999998, a: 1}
     - _MacroTint: {r: 0.78, g: 0.82, b: 0.74, a: 1}
     - _RimColor: {r: 0.35, g: 0.45, b: 0.7, a: 1}

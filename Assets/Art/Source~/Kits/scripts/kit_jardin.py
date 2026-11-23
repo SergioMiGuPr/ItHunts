@@ -17,6 +17,8 @@ sys.path.insert(0, HERE)
 import importlib
 import kitlib as L
 importlib.reload(L)
+import kit_hauteur as H
+importlib.reload(H)
 from mathutils import Vector
 
 OUT = os.path.join(L.ROOT, "Assets", "Art", "Models", "KitJardin")
@@ -117,29 +119,52 @@ def SM_Jardin_ArbreMort_Tordu():
 
 
 # ------------------------------------------------------------------ haies, massifs, forêt
-def masse_feuillage(k, c, size, seed, res=12):
-    L.rock_blob(k, c, size, FEUIL, seed=seed, res=res, amp=0.35)
+def bloc_feuillage(k, c, s, seed, cuts=4, amp=0.12, amp_haut=0.3):
+    """Masse de feuillage taillée puis laissée à l'abandon (relecture du lot 3 : plus de boules) : bloc à faces planes
+    subdivisé, faces bosselées par un bruit (amp), dessus déchiqueté (amp_haut), base plate posée au sol (c = centre de
+    la base). Lecture de haie ou de massif, pas de volume en boule."""
+    import bmesh
+    from mathutils import Vector
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    bmesh.ops.subdivide_edges(bm, edges=bm.edges[:], cuts=cuts, use_grid_fill=True)
+    off = Vector((seed * 3.7, seed * 1.3, seed * 5.9))
+    sx, sy, sz = s
+    cx, cy, cz = c
+    for v in bm.verts:
+        u = v.co.copy()
+        p = Vector((u.x * sx, u.y * sy, (u.z + 0.5) * sz))
+        if u.z > -0.49:
+            n = Vector((u.x * 2 if abs(u.x) > 0.49 else 0, u.y * 2 if abs(u.y) > 0.49 else 0, 1.0 if u.z > 0.49 else 0)).normalized()
+            d = L.fbm3((p + off) * 0.9, 3)
+            a_ = amp_haut if u.z > 0.49 else amp * (0.3 + 0.7 * (u.z + 0.5))
+            p += n * a_ * d
+            if u.z > 0.49:
+                p.z += amp_haut * 0.6 * L.fbm3((p + off) * 2.1, 2)
+        v.co = p + Vector((cx, cy, cz))
+    for f in bm.faces:
+        if all(v.co.z <= cz + 1e-6 for v in f.verts):
+            continue          # base posée au sol : face cachée
+        k.face([tuple(v.co) for v in f.verts], FEUIL)
+    bm.free()
 
 
 @piece
 def SM_Jardin_Haie_6m():
-    """Haie taillée devenue sauvage : 6 × 1.4 m, 2.6 m de haut, bosses irrégulières, trous (à poser le long d'une allée)."""
-    rnd = random.Random(411)
+    """Haie taillée devenue sauvage : 6 × 1.4 m, 2.6 m de haut, faces bosselées, dessus déchiqueté (à poser le long d'une
+    allée). Relecture du lot 3 : un bloc de feuillage bosselé au lieu des boules."""
     k = K("SM_Jardin_Haie_6m")
-    k.box((0, 0, 1.1), (5.6, 1.1, 2.2), FEUIL)
-    for i in range(7):
-        masse_feuillage(k, (-2.6 + i * 0.87, rnd.uniform(-0.2, 0.2), 1.2 + rnd.uniform(-0.2, 0.4)), (1.6, 1.6, 1.8), 411 + i, res=10)
+    bloc_feuillage(k, (0, 0, 0), (5.8, 1.3, 2.3), 411, cuts=5, amp=0.12, amp_haut=0.35)
     return k.finish(411, dict(sale_h=0.8, mousse=0.0))
 
 
 @piece
 def SM_Jardin_Massif():
-    """Massif d'arbustes morts (Ø 3 m) au coin d'une parcelle : boules de feuillage sombre et tiges sèches."""
+    """Massif d'arbustes morts (Ø 3 m) au coin d'une parcelle : masse basse de feuillage sombre bosselée et tiges sèches.
+    Relecture du lot 3 : une masse bosselée au lieu des boules."""
     rnd = random.Random(413)
     k = K("SM_Jardin_Massif")
-    for i in range(5):
-        a = i * 1.3
-        masse_feuillage(k, (math.cos(a) * 0.8, math.sin(a) * 0.8, 0.6), (1.6, 1.5, 1.5), 413 + i, res=10)
+    bloc_feuillage(k, (0, 0, 0), (2.6, 2.3, 1.2), 413, cuts=3, amp=0.18, amp_haut=0.3)
     for i in range(8):
         a = rnd.uniform(0, 6.28)
         L.tube(k, [(0, 0, 0.5), (math.cos(a) * 1.2, math.sin(a) * 1.2, 2.0 + rnd.uniform(0, 0.8))], [0.05, 0.015], ECORCE, sides=5)
@@ -148,8 +173,9 @@ def SM_Jardin_Massif():
 
 @piece
 def SM_Jardin_Foret_Lisiere_20m():
-    """Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés et masses sombres jusqu'à 20 m. Limite
-    naturelle du jardin (infranchissable, lisible), à poser en rangée."""
+    """Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés devant deux rideaux de feuillage sombre
+    (5 et 9 m, crêtes déchiquetées) et un roncier continu. Limite naturelle du jardin (infranchissable, lisible), à poser
+    en rangée. Relecture du lot 3 : rideaux de feuillage au lieu des boules."""
     rnd = random.Random(415)
     k = K("SM_Jardin_Foret_Lisiere_20m")
     for i in range(16):
@@ -158,10 +184,12 @@ def SM_Jardin_Foret_Lisiere_20m():
         h = rnd.uniform(14, 22)
         r = rnd.uniform(0.3, 0.8)
         L.tube(k, [(x, y, -0.5), (x + rnd.uniform(-0.6, 0.6), y, h * 0.5), (x + rnd.uniform(-1, 1), y + rnd.uniform(-0.5, 0.5), h)], [r, r * 0.7, 0.1], ECORCE, sides=6, rough=0.15, seed=i)
-    for i in range(14):
-        masse_feuillage(k, (-10 + i * 1.5 + rnd.uniform(-0.5, 0.5), rnd.uniform(1, 9), rnd.uniform(1.5, 4)), (rnd.uniform(3, 5), 3, rnd.uniform(3, 6)), 430 + i, res=10)
+    L.rock_wall(k, [(-10, 2.4), (-3, 1.9), (4, 2.6), (10, 2.2)], 5.0, FEUIL, thick=1.2, seg=1.2, amp=0.45, seed=430, inward=-1,
+                base_flare=0.3, top_jag=2.2)
+    L.rock_wall(k, [(-10, 6.5), (0, 6.0), (10, 6.8)], 9.0, FEUIL, thick=1.5, seg=1.4, amp=0.6, seed=431, inward=-1,
+                base_flare=0.0, top_jag=3.0)
     # ronces au pied (barrière basse continue)
-    k.box((0, 1.0, 0.9), (20, 1.6, 1.8), FEUIL)
+    bloc_feuillage(k, (0, 1.0, 0), (20, 1.6, 1.8), 415, cuts=6, amp=0.1, amp_haut=0.3)
     return k.finish(415, dict(sale_h=1.0, mousse=0.0))
 
 
@@ -470,6 +498,17 @@ def SM_Arene_Butte():
     return k.finish(477, dict(sale_h=1.0, mousse=0.6))
 
 
+# nuit 4, lot 3 : hauteur, falaises, terrasses, ponts, enceinte (kit_hauteur.py)
+H.enregistre(PIECES, H.JARDIN, H.pieces_jardin(H.JARDIN))
+
+
+def premiere_phrase(doc):
+    """Première phrase entière de la docstring (relecture du lot 3 : la première ligne seule tronquait les descriptions)."""
+    d = " ".join(l.strip() for l in (doc or "").strip().split("\n"))
+    i = d.find(". ")
+    return d if i < 0 else d[:i + 1]
+
+
 def main(noms=None):
     mesures = {}
     path = os.path.join(HERE, "kit_jardin.json")
@@ -482,8 +521,8 @@ def main(noms=None):
         ob = f()
         L.export([ob], os.path.join(OUT, nom + ".fbx"))
         (x0, x1), (y0, y1), (z0, z1) = L.bounds(ob)
-        t = L.tris(ob) + sum(L.tris(c) for c in ob.children if c.type == "MESH")
-        mesures[nom] = dict(doc=(f.__doc__ or "").strip().split("\n")[0], taille=[round(x1 - x0, 2), round(y1 - y0, 2), round(z1 - z0, 2)],
+        t = L.tris(ob) + sum(L.tris(c) for c in ob.children_recursive if c.type == "MESH" and not c.name.startswith("Col_"))
+        mesures[nom] = dict(doc=premiere_phrase(f.__doc__), taille=[round(x1 - x0, 2), round(y1 - y0, 2), round(z1 - z0, 2)],
                             bas=round(z0, 2), triangles=t, materiaux=[m.name for m in ob.data.materials])
         print("ok", nom, mesures[nom]["taille"], t, flush=True)
     json.dump(mesures, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)

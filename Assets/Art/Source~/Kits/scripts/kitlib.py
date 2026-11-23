@@ -279,9 +279,12 @@ def arch_profile(span, rise, n=12, pointed=False):
     return pts
 
 
-def masonry_arch(k, span, spring, rise, depth, pier_w, m, n=12, pointed=False, top=None, broken=0.0, seed=0, voussoir=True):
+def masonry_arch(k, span, spring, rise, depth, pier_w, m, n=12, pointed=False, top=None, broken=0.0, seed=0, voussoir=True,
+                 arriere=True):
     """Arche maçonnée : deux piédroits (pier_w) et un arc d'intrados `span` × `rise` posé à `spring` ; mur plein
-    jusqu'à `top` (sinon arc seul avec claveaux). `broken` > 0 : la partie droite de l'arc manque (ruine)."""
+    jusqu'à `top` (sinon arc seul avec claveaux). `broken` > 0 : la partie droite de l'arc manque (ruine).
+    `arriere=False` : archivolte et clé sur la face avant seulement, face arrière plane (portes dont les battants sont
+    posés contre la face arrière : rien ne dépasse dans leur course)."""
     rnd = random.Random(seed)
     top = top or (spring + rise + 1.0)
     hw = span / 2 + pier_w
@@ -319,7 +322,7 @@ def masonry_arch(k, span, spring, rise, depth, pier_w, m, n=12, pointed=False, t
             d = Vector((x - cx, 0, z - cz))
             d = d.normalized() if d.length > 1e-4 else Vector((0, 0, 1))
             ring.append((Vector((x, 0, z + spring)), d))
-        for y in (y0 - 0.12, y1 + 0.12):
+        for y in ((y0 - 0.12, y1 + 0.12) if arriere else (y0 - 0.12,)):
             for i in range(len(ring) - 1):
                 (pa, da), (pb, db) = ring[i], ring[i + 1]
                 ca, cb = pa + da * 0.42, pb + db * 0.42
@@ -327,7 +330,10 @@ def masonry_arch(k, span, spring, rise, depth, pier_w, m, n=12, pointed=False, t
         # clé d'arc en saillie
         if not broken:
             xk, zk = prof[len(prof) // 2]
-            k.box((xk, 0, zk + spring + 0.45), (0.9, depth + 0.5, 1.1), m, taper=0.15)
+            if arriere:
+                k.box((xk, 0, zk + spring + 0.45), (0.9, depth + 0.5, 1.1), m, taper=0.15)
+            else:
+                k.box((xk, -0.135, zk + spring + 0.45), (0.9, depth + 0.23, 1.1), m, taper=0.15)
 
 
 # ------------------------------------------------------------------ peinture de sommets
@@ -362,7 +368,7 @@ def export(objs, path):
     sel = []
     for ob in objs:
         sel.append(ob)
-        sel.extend(ob.children)
+        sel.extend(ob.children_recursive)
     for ob in sel:
         ob.select_set(True)
     bpy.context.view_layer.objects.active = objs[0]

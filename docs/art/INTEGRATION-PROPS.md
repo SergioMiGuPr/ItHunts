@@ -856,3 +856,185 @@ Onze salles entièrement habillées et éclairées, assemblées avec les kits de
 - **Points de grab et de traction :** 6 piliers brisés (Accroche_Traction à 8 m), 2 statues géantes (Accroche_Traction à 9 m), l'arbre mort du coin sud-est.
 - **Moment de tension :** On descend l'escalier vers une arène vide sous la lune ; le boss entre par le haut des falaises.
 - **Captures :** `docs/art/rendus/Exemples/Jardin/Arene_Boss_*.jpg`
+
+## Nuit 4, lot 3 : kits pour un level design en hauteur (2026-11-23, branche `art-kits-3`)
+
+Ce lot ajoute 68 pièces et en modifie 3, dans les kits des trois actes (`Assets/Art/Models/KitCaves|KitChateau|KitJardin/`). Elles sont modélisées par script dans Blender, sans IA, et la méthode est la même que pour les kits existants : UV monde, peinture de sommets, matériaux de la bibliothèque et du château.
+
+- **Catalogue** (emprise, triangles, matériaux) : docs/art/KITS.md, section « Nuit 4, lot 3 ».
+- **Planche** : `docs/art/rendus/Nuit4/Lot3/Planche_Kits_Lot3.jpg`. Il y a aussi une image par pièce : vue 3/4, mannequin de 1.8 m, gabarit rouge du traqueur pour les pièces qui le concernent, parties mobiles entrouvertes pour contrôler les pivots.
+- **Sources** (`Assets/Art/Source~/Kits/scripts/`) :
+  - `kit_hauteur.py` : module commun, importé par `kit_caves.py`, `kit_chateau.py` et `kit_jardin.py` ;
+  - `rendu_kits.py` : rendus de contrôle ;
+  - `planche_kits.py` : planche ;
+  - `kit_doc_lot3.py` : catalogue et manifeste.
+- **Régénérer une pièce** : `blender -b --factory-startup -P kit_x.py -- SM_…`.
+
+**Axes.** Les positions ci-dessous sont en **axes Unity**. La pièce regarde vers **+Z**, Y est en haut. Une cote Blender devient : x Unity = −x Blender, y Unity = z Blender, z Unity = −y Blender. Le côté « G » d'une porte est à gauche vu de face, donc à **+X** dans Unity.
+
+**Enfants et repères exportés** :
+
+| Nom | Rôle | Dans Unity |
+|---|---|---|
+| `Col_Rampe` | rampe lisse sous les nez de marche (escaliers) : pente de 33.7° (27.8° au jardin), 34.4° au plus dans les colimaçons (mesurée sur le FBX), sous la limite de 45° du contrôleur | **collision seule** : KitBuilder retire le rendu et met un MeshCollider (matériau `M_Collision_Invisible`) |
+| `Col_Escalier` | volume de collision de l'escalier (relecture du lot 3) : joues des volées, dessus des paliers 6 mm au-dessus des paliers visibles, dos, noyau, limon et sous-face du colimaçon, murs d'échiffre et socles du jardin, éboulis des caves ; 1 cm hors des faces visibles | **collision seule**, comme `Col_Rampe`. KitBuilder ne met plus de collider au rendu d'une pièce qui a des `Col_*` : tout ce qui arrête le joueur est dans `Col_Rampe` et `Col_Escalier` (les garde-corps gardent le leur) |
+| `Garde_Corps` | garde-corps, balustres, cordes, mains courantes, parapets de pont | collision des joueurs ; calque « garde » à poser par main (D-078 A2 : la main et le regard du traqueur le traversent) |
+| `Deco_SansCollision` | corde et seau des puits | aucun collider (KitBuilder) : rien où s'accrocher au-dessus de la margelle |
+| `Deco_Eau` | surface de l'eau des puits (relecture du lot 3) | aucun collider : le joueur traverse l'eau et descend jusqu'au fond (−2.4 m), qui reste solide |
+| `Battant_*`, `Vantail`, `Serrure`, `Herse`, `Trappe_*` | parties mobiles, pivot à l'axe | jamais statiques (KitBuilder) ; KitBuilder range `Serrure` sous `Vantail` |
+| `Accroche_Bord`, `Accroche_Rebord_n` | milieu de l'arête avant d'un dessus plat | rebords de hissage, `StalkerPassage` « rebord » s'il y a lieu |
+| `Accroche_Pied`, `Accroche_Sommet` | pied et sommet d'une face grimpable | `StalkerPassage` « mur_grimpe » (16 m au plus), `ClimbLink` des goules |
+| `Accroche_PorteEtroite` | milieu de l'ouverture, au sol | `StalkerPassage` « porte_etroite » |
+| `Accroche_Traction`, `Accroche_Bas`, `Accroche_Haut` | points de traction ; pied et haut d'échelle | |
+| `Appui_A`, `Appui_B` | bouts du tablier des passerelles | à poser sur les deux planchers |
+| `Apparition_Traqueur`, `Porte_Traqueur` | point d'apparition du traqueur ; milieu de sa sortie | `StalkerSpawn` ou repaire |
+| `Passage_Entree`, `Passage_Sortie` | bouts des passages dans la roche | |
+| `RayonLune` | milieu du vitrage des fenêtres | y mettre `Chateau_RayonLune` en enfant, transform local nul : le rayon descend à 55° vers la salle (+Z) |
+| `Feu_n` | flamme d'une bougie | feu et lumière ajoutés par KitBuilder |
+| `Feu_Torche` | flamme des torches du château (relecture du lot 3) | feu de torche à l'échelle 1 et lumière de torche (1.35 / 15.4 m, ombres douces) ; KitBuilder lit le numéro avec `int.TryParse` (« Feu_Torche » compte comme `Feu_1`) |
+
+### Pièces communes (une version par acte : `SM_Cave_…`, `SM_Chateau_…`, `SM_Jardin_…`)
+
+| Pièce | Emprise (L × l × h) | Pivot | Usage et mesures |
+|---|---|---|---|
+| `Escalier_Droit_4m` (jardin : `_3m`) | marches de 3 m de large (château 4 m, jardin 3.2 m) ; emprise 4.24 m aux caves (éboulis côté paroi), 4.45 m au jardin (murs d'échiffre) ; 7.5 à 8.3 m de long | sol, milieu du pied de la 1re marche ; monte vers **−Z** | 20 marches de 20 × 30 cm (jardin : 16 de 18.75 × 38 cm), palier de 1.5 m en haut. **Caves** : bloc maçonné, corde d'un côté, l'autre côté contre une paroi. **Château** : pierre claire, tapis central, balustrades et boules. **Jardin** : murs d'échiffre pleins et socles à vase (plus de touffes dans les vases). Collisions : `Col_Rampe` et `Col_Escalier`. |
+| `Escalier_Tournant_4m` | 7.5 × 6 m (château 8.5 × 7, jardin 9.5 × 7.8) | pied de la 1re volée ; volée 1 vers −Z, volée 2 vers **−X** | deux volées de 2 m, palier carré à 2 m, palier de 1.5 m en haut ; garde-corps sur tous les côtés vides |
+| `Escalier_Colimacon` | Ø 4 m (caves 3.6 m), 6.4 m + noyau | **axe du noyau**, au sol | 32 marches de 20 cm, 16 par tour (3 m libres sous la marche du tour suivant), sens anti-horaire vu de dessus, départ côté −X. Sous-face hélicoïdale ; palier de 100° à 6.4 m au-dessus des premières marches. Rampe hélicoïdale qui commence à 0.3 m du noyau. |
+| `Mezzanine_8x6` | 8 × 6 m, dessus à **5 m** | sol, au ras du mur, au milieu ; avance vers +Z | double saut et hissage (5.3 m) ou escalier, échelle ; garde-corps devant et côté +X ; côté −X ouvert pour une arrivée ; 6 m de profondeur : **le traqueur ne s'y pose pas** |
+| `Coursive_8m` | 8 × 2.5 m | **dessus**, au ras du mur | consoles ou contrefiches ; garde-corps côté vide ; `Accroche_Bord` (0, 0, 2.5) |
+| `Passerelle_10m` | 10 × 2.4 m | **dessus**, au centre | entre deux planchers ; garde-corps des deux côtés ; pour que le traqueur passe dessous, la poser avec le **dessous à 10 m** ou plus (§ 5 ter) |
+| `PorteHaute` | mur de 8 × 10 × 1 m | sol, milieu de la face avant | porte de joueur de 2.4 × 3.6 m, **seuil à 5 m**, rebord de 3 × 1.2 m devant (`Accroche_Bord` à (0, 5, 1.2)) ; derrière, un étage haut |
+| `PorteEtroite` | mur de 12 × 10 × 1.5 m ; jardin : mur de 8 × 9 × 1.2 m (comme le mur d'enceinte), emprise 8.2 × 1.8 × 9.3 m avec le chaperon et l'encadrement | sol, milieu de la face avant | ouverture de **4.4 m** qui contient le gabarit de **4 × 5.25 m** du traqueur baissé (`narrowDoorWidth` 4, `narrowDoorHeight` 5.2 plus 5 cm de marge) : le traqueur s'y faufile, le joueur passe à l'aise. Plein cintre aux caves et au jardin, arc brisé au château. |
+| `Echelle_6m` | 0.6–0.9 × 7 m | pied, dos au mur (z = 0) ; échelle à 0.22 m devant | barreaux tous les 30 cm, montants qui dépassent d'1 m (château : échelons de fer scellés) ; `chaine_grimpe` du joueur ; le traqueur l'ignore |
+| `MurRebords_10m` | 6 × 10 m | sol, milieu de la face | 4 rebords plats de 2.2 × 1 m, dessus à 2.2 / 4.4 / 6.6 / 8.8 m, en quinconce (x ±1.4) ; on monte de l'un à l'autre (hissage) ; avec un mur en face à 3–6 m, wall jumps |
+| `MurEscalade_12m` | 8 × 12 m | sol, milieu de la face | prises plates de 0.6 à 1.1 m de large, de 0.7 à 1 m de saillie, tous les 2 m en quinconce (même grille qu'avant), arête du haut nette. **Relecture du lot 3** : aux caves et au château, les prises font partie de l'appareil : boutisses de moellon à dessous chanfreiné et abouts de poutre aux caves, pierres d'attente à fort chanfrein dessous au château, arêtes usées, pierres voisines de la même assise en saillie de 3 cm, joints creux de 3.5 cm (1 038 et 1 388 triangles). Au jardin : roche et racines. |
+| `PorteVerrouillee` | mur de 6 × 6.6 × 1 m | sol, milieu de la face | salle payante (pièce de 12 × 12 m, porte de 3 × 3 m, § 0) ; voir « Portes » ; pas de seuil (celui des goules est posé par le jeu). **Relecture du lot 3** : chambranle de porte mouluré d'un seul tenant (piédroits et linteau, deux ressauts, socles), clef au sceau d'âme, plus de linteau à corniche ; rainure cachée dans le mur (y Unity de −0.37 à −0.63, x ±1.68, jusqu'à 6.45 m) où montent le vantail et la serrure ; coulisses de fer dans le tableau. |
+| `Tremie_8m` (caves, château) | dalle de 8 × 8 m (0.6 à 1 m) | **dessus**, au centre | trou de 4 × 4 m aux bords plats et nets ; au château, bordure de marbre et balustrade sur trois côtés, côté +Z ouvert |
+
+### Pièces propres à un acte
+
+| Pièce | Emprise | Pivot | Usage |
+|---|---|---|---|
+| `SM_Cave_Puits` (**refait**) | margelle Ø 3.2 m, 0.9 m de haut ; montants à ±1.95 m | axe, au sol | **Margelle lisse** : paroi droite, dessus arrondi en deux quarts de rond de 12 cm, ni marche ni arête vive. Les montants sont posés au sol, hors de la margelle. **Eau** (`M_Eau_Toon`) à −1.5 m dans l'enfant **`Deco_Eau`** (sans collider : on la traverse), **fond** à −2.4 m (éboulis, solide) : on en ressort d'un saut et d'un hissage (3.3 m). Corde et seau sans collision. **Percer le sol de la salle sur Ø 3.2 m sous le puits.** |
+| `SM_Jardin_Puits` | idem, arceau de fer forgé à 4 m | axe, au sol | même margelle, même eau (`Deco_Eau`), même fond ; plus de touffe au pied ; **percer le sol sur Ø 3.2 m** |
+| `SM_Cave_Cheminee_16m` | 13.5 × 7 × 16.6 m | sol, milieu de l'entrée | deux parois de roche parallèles à **3.5 m** et un fond (wall jumps en zigzag), peu bossues ; `Accroche_Pied` et `Accroche_Sommet` (0, 0 et 16, −2) |
+| `SM_Cave_Balcon_Bois` | 3.2 × 1.8 m | dessus, au ras du mur | point de vue, `Accroche_Traction` (0, 1.1, 1.8) |
+| `SM_Chateau_Fenetre_Lancette_Simple` / `_Double` / `_Triple` | panneaux de 4 × 12, 8 × 12 et 8 × 20 m, 1 m d'épaisseur (comme les murs du kit) | sol, milieu de la face intérieure | baies en arc brisé de 1.6 × 6.6, 4 × 7.3 et 5.6 × 14.3 m ; ébrasement intérieur de 0.45 m ; remplage (meneaux, arcs, oculus, rose à 6 rayons) ; **vitrail au plomb** (relecture du lot 3) : petits losanges sertis, en majorité bleu-gris sombre, bordure ponctuée de rouge et d'ambre, un médaillon rond par lancette (couronne ambre, quartiers rouges, cœur ambre), rose en secteurs rouge et ambre ; mêmes trois matériaux. `RayonLune` à (0, 6.3 / 6.15 / 10.65, −0.72). Elles se raccordent aux `SM_Chateau_Mur_8x12` et `_8x20`. |
+| `SM_Chateau_Chandelier_Petit` / `_Moyen` / `_Grand` | Ø 2.0, 3.3 et 4.6 m | **point d'accroche au plafond** ; tout pend vers −Y | Ø ≈ 8.3 cm × (L + l) de la salle : pièce de 12 × 12 m, salle de 24 × 16 m, hall de 32 × 24 m. Le bas est à **2.4, 5 et 8 m** sous le plafond. Bas du lustre à 3.5 m du sol au moins, donc plafond de **5.9 / 8.5 / 11.5 m** au moins (plafonds conseillés : 12 m pour une salle, 20 m pour le hall). 8, 18 et 32 bougies. |
+| `SM_Chateau_Lustre_Cristal` | Ø 2.4 m, bas à 3 m sous le plafond | point d'accroche | trois étages de bras dorés, 24 bougies, gouttes de cristal en **`M_Kit_Cristal`** (relecture du lot 3 : elles étaient en `M_Kit_Vitrail`, presque noir) ; plafond de 6.5 m au moins. Décor : le lustre attrapable du jeu reste `Prop_Lustre`. |
+| `SM_Chateau_Applique_2Bougies` / `_Miroir` | 0.75 × 0.66 m et 0.8 × 1.26 m | point de scellement, dos au mur | à poser à 2–2.5 m ; flammes à 0.36–0.4 m devant le mur |
+| `SM_Chateau_Candelabre_Pied` | Ø 0.84 × 2.3 m | sol | 7 bougies à 2.2–2.3 m |
+| `SM_Chateau_Torche_Murale` (**nouvelle**) | 0.16 × 0.41 × 0.76 m | point de scellement, **dos du support contre le plan Z = 0** (la torche avance vers +Z) | platine de fer forgé en losange, console en S et contrefiche, deux bagues (dorée en haut), manche de bois, tête de tissu goudronné ; à poser à 2.2–2.6 m ; `Feu_Torche` à (0, 0.56, 0.34) ; 393 triangles |
+| `SM_Chateau_Torchere` (**nouvelle**) | 0.67 × 0.59 × 1.88 m | sol, axe | trépied à volutes, fût à nœuds dorés, coupe et cage de fer, fagot de tissu goudronné ; `Feu_Torche` à 1.92 m ; 832 triangles |
+| `SM_Jardin_Falaise_Rebords_16m` | 16 × 16 m | sol, milieu du front | 4 rebords plats de 4 × 3.2 m tous les **3.5 m** (3.5 / 7 / 10.5 / 14 m), herbe au sommet (16.3 m) : passage d'un niveau de la forêt à l'autre |
+| `SM_Jardin_Falaise_Passage` | massif de 30 × 17 × 18 m | sol, milieu de l'entrée ; la gorge file vers −Z | gorge de **10 m** de large et 16 m de long sous une arche naturelle (dessous vers 10.5 m) : **le traqueur passe**, baissé |
+| `SM_Jardin_Falaise_Fente` | 18 × 13 × 14 m | idem | fente de **2.6 m** de large et 12 m de long : joueurs seuls ; tout point à moins de 15 m d'une ouverture (pas d'abri, D-035) ; bloc coincé vers 6 m ; parois peu bossues (wall jumps) |
+| `SM_Jardin_Terrasse_8m` / `_Acces_8m` | 8 × 6 m, dessus à **3 m** | sol, milieu du pied du mur | mur de soutènement à contreforts, dessus dallé, balustrade. La version à accès a une ouverture de 3.6 m entre deux piliers à vases, pour `SM_Jardin_Escalier_Droit_3m` posé devant (son palier arrive au bord). |
+| `SM_Jardin_Pont_Pierre_12m` | 12 × 3.6 m | **milieu, au niveau des bouts du tablier** | dos d'âne (+1.2 m, 17° au plus, sans marche), arche de 8 m sur un lit à −2.5 m, parapets de 0.8 m |
+| `SM_Jardin_Pont_Bois_10m` | 10 × 2.4 m | dessus, au centre | rondins, planches, main courante de branches |
+| `SM_Jardin_MurEnceinte_Tour` | Ø 6 m (7.2 avec le fruit), 14.4 m | axe, au sol | tour d'angle entre deux `MurEnceinte_8m` ; plateforme crénelée à 13.2 m (`Accroche_Traction`) |
+| `SM_Jardin_MurEnceinte_Breche_8m` | 8 × 1.2 × 9 m | sol, milieu de la face | brèche de 3 m dont le fond est à **1.4 m**, éboulis en rampe des deux côtés : on passe d'un saut, le traqueur l'enjambe |
+| `SM_Jardin_MurEnceinte_CheminRonde_8m` | 8 × 2.4 × 9 m | sol, milieu de la face côté jardin | allée dallée à 9 m, parapet crénelé côté extérieur (−Z) |
+
+### Cellules d'apparition du traqueur
+
+Le traqueur fait 7 × 14 m et se baisse jusqu'à 9 m. Toutes les cellules le contiennent debout. Le repère `Apparition_Traqueur` est au centre de son sol.
+
+| Pièce | Emprise | Volume intérieur | Sortie | Remarques |
+|---|---|---|---|---|
+| `SM_Cave_CelluleTraqueur_Herse` | façade de 18 × 21 × 2 m, bloc de 15 × 15.4 m | 12 × 12 m, berceau de 18 m | arc de 10 × 11 m, **herse** | Chaînes et anneaux au fond. Sol de la cellule fourni (dalles à 0). Il faut 21 m de hauteur ou un adossement à la paroi. Rainure cachée dans la façade (relecture du lot 3) : la herse y monte. |
+| `SM_Chateau_CelluleTraqueur` | façade de 18 × **22.5** × 2 m (relecture du lot 3 : la herse levée et ses fleurons restent cachés), pierre claire | berceau brisé de 19.5 m | arc brisé de 10 × 12 m, herse de fer forgé en losanges | corniche, double archivolte |
+| `SM_Cave_CelluleTraqueur_Barricade` | 24.5 × 18 × 21 m | caverne de 13 × 13 m, plafond à 15 m au moins au-dessus de lui | bouche de 10 × 11 m (il sort baissé), **barricade de rondins** à deux battants | roche, éboulis |
+| `SM_Cave_CelluleTraqueur_Fosse` | 15 × 15 m, 15 m de profondeur | fosse de 12 × 12 m | **deux trappes de grilles** au ras du sol | Mur du fond à prises (`Accroche_Pied` et `Accroche_Sommet`, `mur_grimpe` de 15 m : il en sort en grimpant). Margelle plate. **À poser dans un trou de 15 × 15 m du sol de la salle.** Les grilles fermées se marchent. |
+| `SM_Jardin_CelluleTraqueur_Voliere` | Ø 16 m (17 avec le portail), 21.7 m | Ø 16 m, dôme à 20 m | portail de 8.5 × 11 m à deux vantaux | volière de fer en ruine sur socle, barreaux tous les 0.5 m (on voit le monstre dedans) ; plus de touffes de lierre ; 4 cm de jeu au gond des vantaux |
+
+### Portes et parties mobiles (axes Unity, angles signés dans Unity)
+
+Les deux portes se distinguent au premier coup d'œil :
+
+| | Porte de sortie d'acte | Porte verrouillée (salle payante) |
+|---|---|---|
+| Forme | grande arche de 8 × 10 m dans une façade de 12 × 14 m | ouverture carrée de 3 × 3 m dans un chambranle de porte mouluré d'un seul tenant (sans corniche) |
+| Matériau | bois épais cloué : chêne aux caves et au jardin, boiserie au château | fer riveté (vantail en guillotine) dans un chambranle de pierre |
+| Symbole | sceau de lune en fer (doré au château) à cheval sur les deux battants : anneau, croissant à gauche, étoile à droite, huit rayons | sceau d'âme : **flamme cyan à trois langues** (`M_Kit_Sceau_Ame`, couleur des âmes) sur un disque, répétée sur la clef du chambranle |
+| Ouverture | deux battants pivotent | la serrure tourne, puis le vantail monte |
+
+| Pièce | Partie | Pivot (Unity, m) | Mouvement prévu |
+|---|---|---|---|
+| `SM_Cave_PorteSortie`, `SM_Chateau_PorteSortie`, `SM_Jardin_PorteSortie` | `Battant_G` | (+4, 0, **−1.11**) | rotation autour de **Y** de **−90°** : s'ouvre vers −Z, du côté de la sortie, à l'opposé de la face visible ; 1.6 s, en douceur. **Relecture du lot 3** : les battants sont posés contre la face arrière de l'arche (gonds 1 cm derrière, z = −1.11) ; l'archivolte arrière est retirée : à aucun moment ils ne traversent les piédroits |
+| | `Battant_D` | (−4, 0, −1.11) | **+90°** autour de Y |
+| `SM_Chateau_GrandeEntree` | `Battant_G` / `Battant_D` | (±4.5, 0, **−1.51**) | idem (−90° / +90°) ; contre la face arrière du portail (relecture du lot 3) ; elle porte aussi le sceau de lune |
+| `SM_*_PorteVerrouillee` | `Serrure` (rangée sous `Vantail` par KitBuilder) | (0, 1.5, −0.35) | 1. quart de tour de **+90°** autour de **Z** (`Quaternion.Euler(0, 0, 90)`, sens antihoraire vu de face), 0.5 s ; le contrôle couvre aussi −90° (les deux sens sont libres) |
+| | `Vantail` | (0, 0.02, −0.5), bas du vantail | 2. translation de **+3.1 m en Y**, 1.2 s : il rentre dans la rainure du mur, au-dessus du linteau (la serrure monte avec lui) ; l'ouverture est libre |
+| `SM_Cave_CelluleTraqueur_Herse`, `SM_Chateau_CelluleTraqueur` | `Herse` | (0, 0, −1), bas de la herse | translation de **+9.2 m en Y**, 2.5 s, par à-coups : le bas s'arrête à 9.2 m (le traqueur sort baissé) et le haut monte dans une rainure cachée de la façade (21 m aux caves, 22.5 m au château) |
+| `SM_Cave_CelluleTraqueur_Barricade` | `Battant_G` / `Battant_D` | (+5, 0, 0.9) / (−5, 0, 0.9) | **+100°** / **−100°** autour de Y : vers la salle (+Z), enfoncés par le traqueur, 0.6 s |
+| `SM_Cave_CelluleTraqueur_Fosse` | `Trappe_G` / `Trappe_D` | (+5.98, 0, 0) / (−5.98, 0, 0), charnière au bord de la fosse | **−110°** / **+110°** autour de **Z** : les grilles se relèvent, 1.5 s |
+| `SM_Jardin_CelluleTraqueur_Voliere` | `Battant_G` / `Battant_D` | (+4.24, 0, 7.13) / (−4.24, 0, 7.13) | **+100°** / **−100°** autour de Y, vers le jardin (+Z) |
+
+Convention Unity des angles ci-dessus : `Quaternion.Euler(0, θ, 0)` pour Y et `Quaternion.Euler(0, 0, θ)` pour Z, appliqués à la rotation locale de la partie (fermée = identité). Les rendus de contrôle montrent ces parties à mi-course. **Contrôle géométrique** (relecture du lot 3, `controle_lot3.py`) : à 0, 50 et 100 % de la course, intersection par arbres BVH entre chaque partie mobile et la maçonnerie de sa pièce : **0 intersection pour les 22 parties mobiles** (`docs/art/rendus/Nuit4/Lot3/controle_parties_mobiles.json`). Avant la relecture, toutes échouaient sauf les trappes de la fosse.
+
+### Lumières
+
+- **Repères `Feu_n`** (chandeliers, lustre, appliques, candélabre) : KitBuilder pose `VFX_Torche_Feu` à l'échelle 0.045 sur chaque bougie, et une seule lumière ponctuelle par pièce, sur `Feu_1`.
+  - Chandeliers et lustre : la lumière est recentrée sur l'axe, 0.3 m sous les bougies ; 1.6 / 18 m, et 2.4 / 26 m pour `Chandelier_Grand`.
+  - Appliques et candélabre : 0.6 / 5 m.
+- **Fenêtres** : un `Chateau_RayonLune` par repère `RayonLune`.
+- **Château** : deux torches ajoutées à la relecture du lot 3, `SM_Chateau_Torche_Murale` et `SM_Chateau_Torchere`, repère `Feu_Torche` : feu et lumière de torche (comme `SM_Cave_Torche_Murale`).
+
+### Ce qui reste à faire dans Unity
+
+Ni Unity ni les `.meta` n'ont été touchés par ce lot.
+
+1. Lancer `KitBuilder.Construit` pour `KitCaves`, `KitChateau` et `KitJardin` avec la version à jour de `Assets/Art/Source~/Kits/scripts/KitBuilder.cs`, qui fait déjà :
+   - les 4 nouveaux matériaux (`M_Kit_Vitrail_Rouge`, `M_Kit_Vitrail_Ambre`, `M_Kit_Sceau_Ame`, `M_Collision_Invisible`) ;
+   - `Col_*` en collision seule, `Deco_*` sans collider ;
+   - les parties mobiles non statiques et `Serrure` sous `Vantail` ;
+   - les lustres traités comme sources de lumière ;
+   - Read/Write coché, comme au lot 2.
+
+   Ensuite, vérifier le rapport `[mat?]` et faire générer les `.meta` des 68 nouveaux FBX.
+2. **Collisions** :
+   - régler le pas du contrôleur pour qu'il monte les marches par la `Col_Rampe` ;
+   - mettre `Garde_Corps` sur le calque « garde » ;
+   - pour la fosse, percer le sol de la salle sur 15 × 15 m ;
+   - poser les `StalkerPassage` et `ClimbLink` sur les repères `Accroche_*`.
+3. **Animations des portes** : scripts d'ouverture selon le tableau ci-dessus, et sons (grincement, chaîne de herse, déclic du sceau). La porte verrouillée garde sa lueur et son texte « Salle verrouillée / 50 âmes ».
+4. **Scènes vitrines et captures dans l'éclairage du jeu** : `KitBuilder.Vitrine` / `Capture`.
+
+### Relecture du lot 3 : corrections (branche `art-kits-3-b`)
+
+Corrections faites dans Blender seulement (Unity n'a pas été ouvert, aucun `.meta` touché, aucun crédit dépensé). Planche avant / après : `docs/art/rendus/Nuit4/Lot3/Planche_Corrections.jpg`, images dans `docs/art/rendus/Nuit4/Lot3/Corrections/`.
+
+- **Touffes de lierre** : toutes les touffes polyédriques en `M_Kit_Feuillage` sont retirées des pièces du jardin (et les touffes d'herbe de la falaise à rebords). Elles sont remplacées, là où c'est utile, par **deux cartes de lierre plates** plaquées au mur (bandes fines à bords de feuilles, 3 cm devant la paroi). Pièces anciennes du jardin : `SM_Jardin_Haie_6m`, `SM_Jardin_Massif` et `SM_Jardin_Foret_Lisiere_20m` sont refaites en blocs et rideaux de feuillage bosselés, sans boule. Noms et pivots inchangés.
+- **Puits** : eau dans l'enfant `Deco_Eau` (sans collider) ; **percer le sol de la salle sur Ø 3.2 m sous le puits**.
+- **Torches du château** : `SM_Chateau_Torche_Murale` et `SM_Chateau_Torchere`, repère `Feu_Torche`.
+- **Murs d'escalade** (caves, château) : prises intégrées à l'appareil, même grille, mêmes repères.
+- **Porte verrouillée** : chambranle de porte d'un seul tenant, flamme à trois langues, rainure pour le vantail ; mêmes enfants, noms, pivots et cotes d'ouverture.
+- **Lustre en cristal** : gouttes en `M_Kit_Cristal`.
+- **Vitraux** : losanges, médaillons, rose ; mêmes trois matériaux.
+- **Collisions des escaliers** : enfant `Col_Escalier` dans les 9 escaliers (voir le tableau des enfants).
+- **Parties mobiles** : portes de sortie et grande entrée (battants contre la face arrière, **pivots déplacés** : z Unity −1.11 et −1.51), cellules à herse (rainure ; façade du château à 22.5 m), barricade (roche dégagée de la course), volière (socles des poteaux et jeu au gond).
+
+À faire dans Unity :
+1. Réimporter les FBX de la liste du rapport et relancer `KitBuilder.Construit` pour les trois kits, avec `KitBuilder.cs` à jour. Il crée `M_Kit_Cristal` et lit `Feu_Torche`. Il faut aussi la règle « pas de collider au rendu d'une pièce qui a des `Col_*` ».
+2. Faire générer les `.meta` des deux nouveaux FBX.
+3. Les prefabs des portes de sortie changent de pivot : si une animation ou une scène a déjà été posée, la reprendre.
+
+### Fait dans Unity (lot 3, relecture) — remplace « Reste à faire côté Unity » ci-dessus
+
+- **Prefabs** reconstruits par `KitBuilder.Construit` pour les trois kits (`.meta` générés et commités).
+  - Les objets `Col_*` sont des collisions seules (rendu retiré) ; les `Deco_*` (eau des puits, etc.) n'en ont pas.
+  - **Une pièce qui a des `Col_*` (les 9 escaliers) n'a plus de collider sur son maillage visuel** (les nez de marche doublaient la rampe) ; `Col_Rampe` + `Col_Escalier` couvrent les marches, paliers, joues, noyaux et murs d'échiffre ; les `Garde_Corps` gardent leur collider.
+  - Parties mobiles non statiques ; torchère et candélabre sur pied avec une boîte de collision.
+- **Animation d'ouverture** : composant `ItHunts.Art.VFX.OuverturePorte` (assembly `ItHunts.Art.VFX`, déjà référencée par `ItHunts.Runtime`) posé par KitBuilder sur les 13 portes et cellules.
+  - Genres : `Battants` (portes de sortie, −90° / +90° en Y, 1,8 s) ; `Guillotine` (porte verrouillée : serrure +90° en Z sur 30 % de la course, puis vantail +3,1 m, rebond de fin, 2,2 s) ; `Herse` (+9,2 m, 2,6 s) ; `Trappes` (fosse, −110° / +110° en Z) ; `Vantaux` (barricade et volière, ±100° en Y, 0,9 s).
+  - API : `Ouvre()`, `Ferme()`, `Pose(0..1)` (aperçu, chargement), `EstOuverte`, `ouvrirAuDemarrage`. Les colliders des parties mobiles suivent.
+  - Contrôle de course (Blender) : 0 intersection à 0, 50 et 100 % (`controle_parties_mobiles.json`).
+- **Matériaux** : `M_Kit_Vitrail*` en verre vieilli aux teintes sourdes (le toon accentue les écarts de teinte : valeurs proches, saturation de la lumière 0,4) ; `M_Kit_Cristal` (gouttes du lustre) ; `M_Kit_Sceau_Ame` ; `M_Collision_Invisible` (jamais rendu).
+- **Ciel** : `M_Kit_Ciel` utilise la **lune peinte du menu principal** (`Assets/Art/Textures/Ciel/T_Ciel_Lune.png`, extraite de `Titre_Fond.png` par `Assets/Art/Source~/Kits/scripts/lune_menu.py`) ; **halo et dégradé continus** (plus de paliers, shader `ItHunts/Ciel`). Le ciel de l'acte III en jeu (captures `docs/art/rendus/Nuit4/Jeu/Acte3/*_lot3.jpg`) ne passe pas par `Jardin_Ciel` : son halo en paliers vient du ciel de la scène de main. **Pour main :** utiliser le prefab `Jardin_Ciel` (ou `M_Kit_Ciel`) comme ciel des actes.
+- **Grosses formes noires ellipsoïdales** :
+  - celles des kits (touffes de lierre et d'herbe en boule, buissons) sont **supprimées** (cartes de lierre plates, blocs de feuillage) ;
+  - celles de l'acte III en jeu sont les **arbres de secours de main** (`ActLevel.Dressing.Tree` : tronc cylindre + 3 sphères de feuillage) utilisés quand `Act_3.asset` ne contient pas les pièces `Jardin_ArbreMort_Grand`, `_Penche`, `_Tordu` dans sa liste `pieces`. **Pour main :** ajouter ces trois prefabs à `Act_3.asset > pieces` ; les sphères disparaissent.
+- **Lumières** : les torches murales, appliques, lustres et chandeliers portent leur feu et leur lumière ponctuelle (KitBuilder). En jeu, plusieurs pièces lumineuses dans une même salle s'ajoutent aux torches de main : à doser dans le niveau (limite de 4 lumières par objet du `PC_RPAsset`, rendu Forward+).
+- **Captures en jeu** : pièces posées dans des salles générées des actes II et I (seed 4242), fenêtre et appliques au mur, lustre au plafond, portes à 0 / 50 / 100 % d'ouverture : `docs/art/rendus/Nuit4/Lot3/Planche_Jeu_Lot3.jpg` et `Jeu/` (outil `Assets/Art/Source~/Kits/scripts/CapturesLot3.cs`). Vitrines des trois kits : `Planche_Unity_KitCaves.jpg`, `_KitChateau.jpg`, `_KitJardin.jpg`.
+- **Journal Unity** : 0 erreur et 0 avertissement à l'import des FBX et à la construction des prefabs des trois kits (seules erreurs de la console : `MagnetismAudio.OnDestroy`, côté main).

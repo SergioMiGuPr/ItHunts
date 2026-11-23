@@ -39,41 +39,41 @@
   ]
  },
  "SM_Jardin_Haie_6m": {
-  "doc": "Haie taillée devenue sauvage : 6 × 1.4 m, 2.6 m de haut, bosses irrégulières, trous (à poser le long d'une allée).",
+  "doc": "Haie taillée devenue sauvage : 6 × 1.4 m, 2.6 m de haut, faces bosselées, dessus déchiqueté (à poser le long d'une allée).",
   "taille": [
-   6.9,
-   1.95,
-   2.97
+   5.94,
+   1.46,
+   2.49
   ],
   "bas": 0.0,
-  "triangles": 572,
+  "triangles": 360,
   "materiaux": [
    "M_Kit_Feuillage"
   ]
  },
  "SM_Jardin_Massif": {
-  "doc": "Massif d'arbustes morts (Ø 3 m) au coin d'une parcelle : boules de feuillage sombre et tiges sèches.",
+  "doc": "Massif d'arbustes morts (Ø 3 m) au coin d'une parcelle : masse basse de feuillage sombre bosselée et tiges sèches.",
   "taille": [
-   3.05,
-   2.91,
-   2.29
+   2.78,
+   2.54,
+   2.76
   ],
-  "bas": 0.47,
-  "triangles": 504,
+  "bas": 0.0,
+  "triangles": 264,
   "materiaux": [
    "M_Kit_Feuillage",
    "M_Bib_Ecorce"
   ]
  },
  "SM_Jardin_Foret_Lisiere_20m": {
-  "doc": "Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés et masses sombres jusqu'à 20 m. Limite",
+  "doc": "Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés devant deux rideaux de feuillage sombre (5 et 9 m, crêtes déchiquetées) et un roncier continu.",
   "taille": [
-   23.18,
-   10.37,
+   20.58,
+   10.5,
    22.42
   ],
   "bas": -0.53,
-  "triangles": 1580,
+  "triangles": 1378,
   "materiaux": [
    "M_Bib_Ecorce",
    "M_Kit_Feuillage"
@@ -343,6 +343,385 @@
   "materiaux": [
    "M_Bib_Terre_Racines",
    "M_Bib_RocheCave_Peint"
+  ]
+ },
+ "SM_Jardin_Escalier_Droit_3m": {
+  "doc": "Escalier droit plein : monte de 3 m (marches de 20 cm ou moins), 3.2 m de large, palier de 1.5 m ; rampe de collision sous les nez.",
+  "taille": [
+   4.45,
+   8.31,
+   4.03
+  ],
+  "bas": 0.0,
+  "triangles": 442,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Dalles_Sales"
+  ]
+ },
+ "SM_Jardin_Escalier_Tournant_4m": {
+  "doc": "Escalier à quart tournant : deux volées de 2 m, palier carré, palier en haut ; rampes de collision.",
+  "taille": [
+   8.5,
+   7.0,
+   4.0
+  ],
+  "bas": 0.0,
+  "triangles": 2794,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Dalles_Sales"
+  ]
+ },
+ "SM_Jardin_Escalier_Colimacon": {
+  "doc": "Escalier en colimaçon (Ø 4 m, 3.6 m aux caves) : monte de 6.4 m en deux tours, 16 marches de 20 cm par tour, palier de 100° ; rampe hélicoïdale.",
+  "taille": [
+   4.0,
+   4.0,
+   7.7
+  ],
+  "bas": 0.0,
+  "triangles": 2007,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Moellons_Peint",
+   "M_Bib_Dalles_Sales"
+  ]
+ },
+ "SM_Jardin_Mezzanine_8x6": {
+  "doc": "Mezzanine de 8 × 6 m, dessus à 5 m (double saut et hissage), contre un mur ; garde-corps devant et à gauche, droite ouverte.",
+  "taille": [
+   8.05,
+   6.05,
+   5.0
+  ],
+  "bas": 0.0,
+  "triangles": 1884,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_Coursive_8m": {
+  "doc": "Coursive le long d'un mur : 8 × 2.5 m, dessus à 0 (pivot au ras du mur), garde-corps côté vide.",
+  "taille": [
+   8.0,
+   2.5,
+   1.65
+  ],
+  "bas": -1.65,
+  "triangles": 1260,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Jardin_Passerelle_10m": {
+  "doc": "Passerelle entre deux étages : 10 × 2.4 m, dessus à 0, appuis aux bouts, garde-corps des deux côtés.",
+  "taille": [
+   10.02,
+   2.4,
+   0.59
+  ],
+  "bas": -0.59,
+  "triangles": 2748,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Jardin_PorteHaute": {
+  "doc": "Porte de joueur en hauteur : ouverture de 2.4 × 3.6 m, seuil à 5 m dans un mur de 8 × 10 m, rebord de 3 × 1.2 m devant.",
+  "taille": [
+   8.0,
+   2.2,
+   10.0
+  ],
+  "bas": 0.0,
+  "triangles": 440,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_PorteEtroite": {
+  "doc": "Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.25 m du traqueur baissé (il se faufile).",
+  "taille": [
+   8.2,
+   1.8,
+   9.3
+  ],
+  "bas": 0.0,
+  "triangles": 343,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_Echelle_6m": {
+  "doc": "Échelle de 6 m contre un mur, barreaux tous les 30 cm, montants qui dépassent d'1 m en haut.",
+  "taille": [
+   0.87,
+   0.26,
+   7.0
+  ],
+  "bas": -0.0,
+  "triangles": 448,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Jardin_MurRebords_10m": {
+  "doc": "Mur de 6 × 10 m à quatre rebords plats en quinconce (tous les 2.2 m) : montée de rebord en rebord, wall jumps simples.",
+  "taille": [
+   6.1,
+   2.17,
+   10.24
+  ],
+  "bas": 0.0,
+  "triangles": 213,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_FerRouille",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_MurEscalade_12m": {
+  "doc": "Mur escaladable de 8 × 12 m : prises plates en quinconce tous les 2 m (on s'y hisse) ; mur grimpable du traqueur et des goules.",
+  "taille": [
+   8.14,
+   3.14,
+   12.27
+  ],
+  "bas": -0.02,
+  "triangles": 690,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint",
+   "M_Bib_HerbeSeche",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Ecorce"
+  ]
+ },
+ "SM_Jardin_PorteVerrouillee": {
+  "doc": "Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure).",
+  "taille": [
+   6.0,
+   1.43,
+   6.65
+  ],
+  "bas": -0.05,
+  "triangles": 1147,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_FerRouille",
+   "M_Kit_Sceau_Ame",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_Puits": {
+  "doc": "Puits de jardin : margelle lisse Ø 3.2 m, arceau de fer forgé et poulie, eau à -1.5 m, fond à -2.4 m.",
+  "taille": [
+   4.4,
+   3.2,
+   6.56
+  ],
+  "bas": -2.42,
+  "triangles": 1296,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Terre_Racines",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Jardin_PorteSortie": {
+  "doc": "Porte de sortie de l'acte III (vers l'arène) : arche de 8 × 10 m entre deux contreforts, deux battants, sceau de lune.",
+  "taille": [
+   15.4,
+   3.2,
+   14.31
+  ],
+  "bas": -0.01,
+  "triangles": 1781,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Dalles_Sales",
+   "M_Bib_Moellons_Peint",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_CelluleTraqueur_Voliere": {
+  "doc": "Cellule d'apparition du traqueur : grande volière de fer de Ø 16 m (20 m), portail à deux vantaux.",
+  "taille": [
+   17.0,
+   16.56,
+   21.73
+  ],
+  "bas": -0.03,
+  "triangles": 5056,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Jardin_Falaise_Rebords_16m": {
+  "doc": "Falaise de 16 × 16 m à quatre rebords plats tous les 3.5 m (saut et hissage).",
+  "taille": [
+   16.36,
+   5.65,
+   16.3
+  ],
+  "bas": 0.0,
+  "triangles": 720,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint",
+   "M_Bib_HerbeSeche"
+  ]
+ },
+ "SM_Jardin_Falaise_Passage": {
+  "doc": "Passage dans la roche : gorge de 10 × 16 m sous une arche naturelle, le traqueur passe.",
+  "taille": [
+   30.43,
+   18.98,
+   18.66
+  ],
+  "bas": -0.03,
+  "triangles": 3606,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint",
+   "M_Bib_HerbeSeche"
+  ]
+ },
+ "SM_Jardin_Falaise_Fente": {
+  "doc": "Fente dans la roche de 2.6 m de large et 12 m de long : joueurs seulement.",
+  "taille": [
+   18.5,
+   14.99,
+   14.8
+  ],
+  "bas": -0.04,
+  "triangles": 2280,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint",
+   "M_Bib_HerbeSeche"
+  ]
+ },
+ "SM_Jardin_Terrasse_8m": {
+  "doc": "Terrasse : mur de soutènement de 8 × 3 m à contreforts, dessus dallé de 8 × 6 m, balustrade.",
+  "taille": [
+   8.0,
+   6.9,
+   3.0
+  ],
+  "bas": 0.0,
+  "triangles": 1487,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_Dalles_Sales",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_Terrasse_Acces_8m": {
+  "doc": "Terrasse avec accès : ouverture de 3.6 m entre deux piliers à vases (arrivée d'escalier).",
+  "taille": [
+   8.0,
+   6.9,
+   5.0
+  ],
+  "bas": 0.0,
+  "triangles": 687,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_Dalles_Sales",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_Pont_Pierre_12m": {
+  "doc": "Pont de pierre en dos d'âne de 12 m (tablier de 3.6 m, +1.2 m au milieu), arche de 8 m, parapets bas.",
+  "taille": [
+   12.0,
+   3.78,
+   3.9
+  ],
+  "bas": -2.5,
+  "triangles": 644,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Dalles_Sales"
+  ]
+ },
+ "SM_Jardin_Pont_Bois_10m": {
+  "doc": "Pont de rondins et de planches de 10 × 2.4 m, main courante de branches.",
+  "taille": [
+   11.0,
+   3.2,
+   1.44
+  ],
+  "bas": -1.43,
+  "triangles": 860,
+  "materiaux": [
+   "M_Bib_Ecorce",
+   "M_Bib_BoisPourri",
+   "M_Bib_PierreTaillee_Peint"
+  ]
+ },
+ "SM_Jardin_MurEnceinte_Tour": {
+  "doc": "Tour ronde d'angle du mur d'enceinte : Ø 6 m, 14 m, crénelée, meurtrières.",
+  "taille": [
+   7.2,
+   7.2,
+   14.4
+  ],
+  "bas": 0.0,
+  "triangles": 615,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Dalles_Sales",
+   "M_Fond_Noir",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_MurEnceinte_Breche_8m": {
+  "doc": "Mur d'enceinte de 8 m effondré au milieu : brèche à 1.4 m, éboulis en rampe.",
+  "taille": [
+   8.0,
+   5.72,
+   9.35
+  ],
+  "bas": -0.04,
+  "triangles": 1269,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_MurEnceinte_CheminRonde_8m": {
+  "doc": "Mur d'enceinte de 8 × 9 m à chemin de ronde dallé et parapet crénelé.",
+  "taille": [
+   8.0,
+   3.45,
+   10.9
+  ],
+  "bas": 0.0,
+  "triangles": 151,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_Dalles_Sales",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Kit_Feuillage"
   ]
  }
 }
