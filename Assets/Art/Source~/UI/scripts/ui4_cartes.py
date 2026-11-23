@@ -107,15 +107,52 @@ def traqueur(n=128):
     pts = [(c + ew * math.cos(t), c + eh * math.sin(t) * (1 - 0.25 * abs(math.cos(t)))) for t in np.linspace(0, 2 * math.pi, 64)]
     d.polygon(pts, fill=(10, 4, 6, 255))
     pts2 = [(c + (ew - 4 * k) * math.cos(t), c + (eh - 4 * k) * math.sin(t) * (1 - 0.25 * abs(math.cos(t)))) for t in np.linspace(0, 2 * math.pi, 64)]
-    d.polygon(pts2, fill=(132, 26, 18, 255))
+    d.polygon(pts2, fill=(206, 190, 128, 255))   # blanc d'œil jauni (os) : distinct du point rouge des goules
     # iris plus chaud au centre, pupille fendue verticale
-    d.ellipse((c - eh * 0.75, c - eh * 0.75, c + eh * 0.75, c + eh * 0.75), fill=(196, 64, 26, 255))
+    d.ellipse((c - eh * 0.75, c - eh * 0.75, c + eh * 0.75, c + eh * 0.75), fill=(226, 150, 40, 255))
     d.polygon([(c, c - eh * 0.95), (c + N * 0.025, c), (c, c + eh * 0.95), (c - N * 0.025, c)], fill=(8, 2, 4, 255))
-    d.ellipse((c - eh * 0.55, c - eh * 0.6, c - eh * 0.3, c - eh * 0.35), fill=(240, 160, 110, 255))   # éclat
+    d.ellipse((c - eh * 0.55, c - eh * 0.6, c - eh * 0.3, c - eh * 0.35), fill=(255, 236, 200, 255))   # éclat
     return im.resize((n, n), Image.LANCZOS)
 
 
+def rose():
+    """Rose des vents de la carte ouverte : l'ornement épineux de la bulle, en croix (4 pointes), même fer."""
+    im = Image.open(os.path.join(MC, "MiniCarte_Cadre.png")).convert("RGBA")
+    p = im.crop((im.width // 2 - 40, 0, im.width // 2 + 40, 92))      # la pointe seule, sans l'anneau
+    n = 512
+    out = Image.new("RGBA", (n, n), (0, 0, 0, 0))
+    for ang in (0, 90, 180, 270):
+        o = p.rotate(ang, resample=Image.BICUBIC, expand=True)
+        o = o.resize((int(o.width * 2.0), int(o.height * 2.0)), Image.LANCZOS)
+        ox = n // 2 - o.width // 2 + int(round(math.sin(math.radians(ang)) * -o.height * 0.0))
+        cx, cy = n // 2, n // 2
+        dx, dy = {0: (0, -1), 90: (-1, 0), 180: (0, 1), 270: (1, 0)}[ang]
+        out.alpha_composite(o, (cx - o.width // 2 + dx * int(o.width * 0.5 if dx else 0), cy - o.height // 2 + dy * int(o.height * 0.5 if dy else 0)))
+    return out
+
+
+def legende():
+    """Cadre de la légende : mêmes coins que la carte (ornement épineux de la bulle, en petit) au lieu des rosettes."""
+    src = Image.open(os.path.join(CA, "Carte_Legende_Cadre.png")).convert("RGBA")
+    a = np.asarray(src).astype(np.float32)
+    N = a.shape[0]
+    p = Image.open(os.path.join(MC, "MiniCarte_Cadre.png")).convert("RGBA")
+    p = p.crop((p.width // 2 - 40, 0, p.width // 2 + 40, 92))
+    out = src.copy()
+    c0, r = 14, 14
+    for (cx, cy, ang) in ((c0, c0, 45), (N - c0, c0, -45), (c0, N - c0, 135), (N - c0, N - c0, -135)):
+        h = a[cy - r:cy + r, N // 2 - r:N // 2 + r]
+        v = a[N // 2 - r:N // 2 + r, cx - r:cx + r]
+        out.paste(Image.fromarray(np.maximum(h, v).astype(np.uint8), "RGBA"), (cx - r, cy - r))
+        orn = p.rotate(ang, resample=Image.BICUBIC, expand=True)
+        orn = orn.resize((max(1, int(orn.width * 0.42)), max(1, int(orn.height * 0.42))), Image.LANCZOS)
+        out.alpha_composite(orn, (cx - orn.width // 2, cy - orn.height // 2))
+    return out
+
+
 if __name__ == "__main__":
+    legende().save(os.path.join(CA, "Carte_Legende_Cadre.png"))
+    rose().save(os.path.join(CA, "Carte_Rose.png"))
     fond().save(os.path.join(CA, "Carte_Fond.png"))
     cadre().save(os.path.join(CA, "Carte_Cadre.png"))
     goule().save(os.path.join(MC, "MiniCarte_Goule.png"))

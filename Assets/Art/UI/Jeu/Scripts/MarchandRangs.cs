@@ -60,50 +60,66 @@ namespace ItHunts.Art.UIJeu
             if (solde) solde.text = ames.ToString();
             Pose(nouvelle, offreNouvelle, ames, false);
             Pose(montee, offreMontee, ames, true);
-            if (soin != null)
+            if (soin != null && soin.bouton)
             {
                 bool on = soinPrix > 0;
                 soin.bouton.gameObject.SetActive(on);
                 if (on)
                 {
-                    if (soin.illustration) { soin.illustration.icone.sprite = iconeSoin; }
-                    soin.nom.text = "Soin";
-                    soin.rang.text = "+" + soinPV + " PV";
-                    soin.description.text = "Referme vos plaies : " + soinPV + " points de vie tout de suite.";
+                    if (soin.illustration && soin.illustration.icone) soin.illustration.icone.sprite = iconeSoin;
+                    if (soin.nom) soin.nom.text = "Soin";
+                    if (soin.rang) { soin.rang.text = "+" + soinPV + " PV"; soin.rang.color = prixOk; }
+                    if (soin.description) soin.description.text = "Referme vos plaies : " + soinPV + " points de vie tout de suite.";
                     Prix(soin, soinPrix, ames);
                 }
             }
         }
 
+        /// <summary>Couleur du texte de chaque rang (accord avec les cadres).</summary>
+        public Color[] couleursRangs =
+        {
+            new Color(0.80f, 0.56f, 0.38f), new Color(0.80f, 0.81f, 0.84f), new Color(0.95f, 0.79f, 0.40f),
+            new Color(0.62f, 0.84f, 0.97f), new Color(0.84f, 0.52f, 0.96f)
+        };
+
+        string Rang(int r)
+        {
+            r = Mathf.Clamp(r, 0, 4);
+            return "<color=#" + ColorUtility.ToHtmlStringRGB(couleursRangs[r]) + ">" + CatalogueAmeliorations.Rangs[r] + "</color>";
+        }
+
         private void Pose(Carte c, Offre o, int ames, bool estMontee)
         {
-            if (c == null) return;
+            if (c == null || c.bouton == null) return;
+            if (o != null && estMontee && o.rang >= 4) o = null;      // pas de montée au-delà de Mythique : carte masquée
             c.bouton.gameObject.SetActive(o != null);
             if (o == null) return;
             int r = Mathf.Clamp(o.rang, 0, 4);
             if (c.illustration) { c.illustration.catalogue = catalogue; c.illustration.Configure(o.id, r); }
-            c.nom.text = o.nom;
-            if (estMontee && r < 4)
+            if (c.nom) c.nom.text = o.nom;
+            if (estMontee)
             {
-                c.rang.text = CatalogueAmeliorations.Rangs[r] + "  →  " + CatalogueAmeliorations.Rangs[r + 1];
+                if (c.rang) { c.rang.supportRichText = true; c.rang.text = Rang(r) + "  \u2192  " + Rang(r + 1); }
                 if (c.rangApres) { c.rangApres.catalogue = catalogue; c.rangApres.Configure(o.id, r + 1); }
             }
             else
             {
-                c.rang.text = (catalogue && catalogue.EstPassif(o.id) ? "Passif, " : "") + CatalogueAmeliorations.Rangs[r];
+                if (c.rang) { c.rang.supportRichText = true; c.rang.text = (catalogue && catalogue.EstPassif(o.id) ? "Passif, " : "") + Rang(r); }
                 if (c.rangApres) c.rangApres.Vide();
             }
-            c.description.text = o.description;
+            if (c.description) c.description.text = o.description;
             Prix(c, o.prix, ames);
         }
 
+        /// <summary>Indisponible (âmes insuffisantes) : le cadre reste, l'illustration s'assombrit, prix en rouge, bouton inactif.</summary>
         private void Prix(Carte c, int p, int ames)
         {
             bool ok = ames >= p;
-            c.prix.text = p.ToString();
-            c.prix.color = ok ? prixOk : prixTrop;
-            foreach (var g in c.corps) if (g) g.color = ok ? Color.white : teinteIndispo;
+            if (c.prix) { c.prix.text = p.ToString(); c.prix.color = ok ? prixOk : prixTrop; }
+            if (c.illustration && c.illustration.icone) c.illustration.icone.color = ok ? Color.white : teinteIndispo;
+            if (c.rangApres && c.rangApres.icone) c.rangApres.icone.color = ok ? Color.white : teinteIndispo;
             if (c.flamme) c.flamme.color = ok ? Color.white : teinteIndispo;
+            if (c.bouton) c.bouton.interactable = ok;
         }
 
         public void RemplitApercu() => Remplit(apercuNouvelle, apercuMontee, apercuSoinPV, apercuSoinPrix, apercuAmes);

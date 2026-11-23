@@ -80,7 +80,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: "Le passage vers l'acte suivant se descelle avec le temps. Il faudra alors
-    200 \xE2mes pour le franchir."
+    des \xE2mes pour le franchir."
 --- !u!114 &3163704534572503608
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -400,7 +400,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
   m_Material: {fileID: 0}
-  m_Color: {r: 0.86, g: 0.9, b: 0.96, a: 1}
+  m_Color: {r: 0.95, g: 0.74, b: 0.42, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

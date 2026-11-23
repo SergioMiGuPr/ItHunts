@@ -49,7 +49,8 @@ namespace ItHunts.Art.UIJeu
             gameObject.SetActive(true);
         }
 
-        /// <summary>Porte de sortie pas encore ouverte : temps restant (mm:ss) et explication ; pas d'achat possible.</summary>
+        /// <summary>Porte de sortie pas encore ouverte : temps restant (m:ss) et explication ; pas d'achat possible. À rappeler à chaque
+        /// image (ou chaque seconde) tant que le panneau est visible : le minuteur n'avance pas seul.</summary>
         public void MontreSortieScellee(float secondesRestantes, int prixAmes)
         {
             Montre("Sortie scellée", prixAmes, 0);
@@ -59,7 +60,8 @@ namespace ItHunts.Art.UIJeu
             if (explication)
             {
                 explication.gameObject.SetActive(true);
-                explication.text = "Le passage vers l'acte suivant se descelle avec le temps. Il faudra alors " + prixAmes + " âmes pour le franchir.";
+                explication.text = prixAmes > 0 ? "Le passage vers l'acte suivant se descelle avec le temps. Il faudra alors des âmes pour le franchir."
+                                                : "Le passage vers l'acte suivant se descelle avec le temps.";
             }
             prix.color = prixOk; flamme.color = Color.white;
             invite.gameObject.SetActive(false);                                  // scellée : ni touche ni invite

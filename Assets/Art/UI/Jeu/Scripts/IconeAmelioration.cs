@@ -19,15 +19,22 @@ namespace ItHunts.Art.UIJeu
         /// <summary>Par identifiant de AMELIORATIONS.md (ex. « G12 », « R-P1 »), rang 0 à 4.</summary>
         public void Configure(string id, int rang)
         {
-            if (catalogue == null) return;
-            Configure(catalogue.Icone(id), rang, catalogue.EstPassif(id));
+            if (catalogue == null) { Vide(); return; }
+            var sp = catalogue.Icone(id);
+            if (sp == null) Debug.LogWarning("IconeAmelioration : identifiant inconnu (" + id + "), voir Catalogue_Ameliorations", this);
+            Configure(sp, rang, catalogue.EstPassif(id));
         }
 
         public void Configure(Sprite illustration, int rang, bool passif)
         {
             rang = Mathf.Clamp(rang, 0, 4);
             if (icone) { icone.sprite = illustration; icone.enabled = illustration != null; }
-            if (cadre && catalogue) cadre.sprite = passif ? catalogue.cadresPassifs[rang] : catalogue.cadres[rang];
+            if (cadre && catalogue)
+            {
+                var jeu = passif ? catalogue.cadresPassifs : catalogue.cadres;
+                cadre.sprite = jeu != null && jeu.Length > 0 ? jeu[Mathf.Min(rang, jeu.Length - 1)] : null;
+                cadre.enabled = cadre.sprite != null;
+            }
             if (masque) masque.enabled = passif;
             var m = masque ? masque.GetComponent<Image>() : null;
             if (m) m.enabled = passif;

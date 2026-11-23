@@ -122,7 +122,7 @@ public static class UIJeu4Builder
     // ------------------------------------------------------------------ écran de fin
     static GameObject FinDeRunUI(CatalogueAmeliorations cat)
     {
-        const float W = 1120, H = 960;
+        const float W = 1120, H = 880;
         var r = C("Panneau_FinDeRun", null, 0, 0, W, H);
         Img(C("Voile", r, 0, 0, 4000, 3000), null, new Color(0.02f, 0.0f, 0.01f, 0.72f), true);
         var lu = Img(C("Lueur_Titre", r, 0, 360, 760, 260), Spr(LUEUR), new Color(0.86f, 0.22f, 0.25f, 0.35f), false, false);
@@ -139,8 +139,9 @@ public static class UIJeu4Builder
         {
             int col = i / 7, row = i % 7;
             float x = col == 0 ? x0 : x1, y = 228 + row * 44;
-            if (row % 2 == 0) Img(HG("Bande_" + i, r, x - 14, y - 2, colW + 28, 40), null, new Color(0, 0, 0, 0.28f));
             f.libelles[i] = Txt(HG("Libelle_" + i, r, x, y, 240, 38), EB("Regular"), 24, OR, TextAnchor.MiddleLeft, "Statistique");
+            // la bande suit sa ligne : masquée avec elle quand il y a moins de 14 statistiques
+            if (row % 2 == 0) { var bd = Img(HG("Bande", f.libelles[i].transform, -14, -1, colW + 28, 40), null, new Color(0, 0, 0, 0.28f)); bd.transform.SetAsFirstSibling(); }
             f.valeurs[i] = Txt(HG("Valeur_" + i, r, x + colW - 160, y, 160, 38), EB("SemiBold"), 24, AME, TextAnchor.MiddleRight, "0");
         }
         // améliorations : titre et grille de 10 cases (le passif en premier), dans le cadre
@@ -151,8 +152,9 @@ public static class UIJeu4Builder
         f.ameliorations = new IconeAmelioration[10];
         for (int i = 0; i < 10; i++)
             f.ameliorations[i] = Icone(r, "Amelioration_" + i, gx + i * (T + G), 618, T, cat);
-        f.recommencer = Cartouche(r, "Recommencer", 170, 780, 300, 66, "Recommencer");
-        f.campement = Cartouche(r, "Campement", W - 170 - 300, 780, 300, 66, "Campement");
+        f.surplus = Txt(HG("Surplus", r, W - 130, 638, 80, 40), EB("SemiBold"), 26, AME, TextAnchor.MiddleLeft, "+0");
+        f.recommencer = Cartouche(r, "Recommencer", 170, 740, 300, 66, "Recommencer");
+        f.campement = Cartouche(r, "Campement", W - 170 - 300, 740, 300, 66, "Campement");
         f.apercu = new[]
         {
             new FinDeRun.Stat { libelle = "Acte atteint", valeur = "II, le château" }, new FinDeRun.Stat { libelle = "Temps de la run", valeur = "23 min 41 s" },
@@ -178,7 +180,7 @@ public static class UIJeu4Builder
         var p = r.gameObject.AddComponent<PanneauPorte>();
         p.groupe = g; p.cadre = cadre;
         p.nom = Txt(HG("Nom", r, 0, 28, W, 48), GG("SemiBold"), 40, OR, TextAnchor.MiddleCenter, "Sortie scellée");
-        p.temps = Txt(HG("Temps", r, 0, 84, W, 40), EB("SemiBold"), 30, AME, TextAnchor.MiddleCenter, "S'ouvre dans 2:41");
+        p.temps = Txt(HG("Temps", r, 0, 84, W, 40), EB("SemiBold"), 30, new Color(0.95f, 0.74f, 0.42f), TextAnchor.MiddleCenter, "S'ouvre dans 2:41");
         p.explication = Txt(HG("Explication", r, 60, 130, W - 120, 70), EB("Italic"), 22, DESC, TextAnchor.UpperCenter, "", true, true);
         p.flamme = Img(HG("Flamme", r, W / 2f - 62, 204, 22, 36), Spr(FLAMME));
         p.prix = Txt(HG("Prix", r, W / 2f - 32, 200, 120, 44), EB("SemiBold"), 32, AME, TextAnchor.MiddleLeft, "200");
@@ -200,14 +202,19 @@ public static class UIJeu4Builder
         var cad = Img(HG("Cadre", rt, 0, 0, w, h), Spr(CADRE), null, false, false); cad.type = Image.Type.Sliced; cad.pixelsPerUnitMultiplier = 1.6f;
         c.lueur = Img(C("Lueur", rt, 0, 120, w + 60, 280), Spr(LUEUR), new Color(0.62f, 0.74f, 0.95f, 0.0f), false, false);
         c.bouton = rt.gameObject.AddComponent<Button>(); c.bouton.transition = Selectable.Transition.None; c.bouton.targetGraphic = hit;
-        float ic = 176;
-        c.illustration = Icone(rt, "Illustration", (w - ic) / 2f, 40, ic, cat);
+        float ic = montee ? 140 : 176;
+        // montée : l'amélioration au rang actuel à gauche, une flèche, la même au rang suivant à droite (même taille)
+        c.illustration = Icone(rt, "Illustration", montee ? 26 : (w - ic) / 2f, montee ? 58 : 40, ic, cat);
         c.nom = Txt(HG("Nom", rt, 0, 232, w, 40), GG("SemiBold"), 30, OR, TextAnchor.MiddleCenter, "Nom");
         c.rang = Txt(HG("Rang", rt, 0, 274, w, 30), EB("SemiBold"), 22, AME, TextAnchor.MiddleCenter, "Bronze");
-        if (montee) c.rangApres = Icone(rt, "RangApres", w - 30 - 64, 168, 64, cat);
-        c.description = Txt(HG("Description", rt, 28, 316, w - 56, 110), EB("Italic"), 21, DESC, TextAnchor.UpperCenter, "", true, true);
-        c.flamme = Img(HG("Flamme", rt, w / 2f - 44, h - 62, 22, 36), Spr(FLAMME));
-        c.prix = Txt(HG("Prix", rt, w / 2f - 14, h - 66, 120, 44), EB("SemiBold"), 32, AME, TextAnchor.MiddleLeft, "60");
+        if (montee)
+        {
+            c.rangApres = Icone(rt, "RangApres", w - 26 - ic, 58, ic, cat);
+            Txt(HG("Fleche", rt, w / 2f - 20, 106, 40, 44), EB("SemiBold"), 38, OR, TextAnchor.MiddleCenter, "\u2192");
+        }
+        c.description = Txt(HG("Description", rt, 28, 316, w - 56, 80), EB("Italic"), 21, DESC, TextAnchor.UpperCenter, "", true, true);
+        c.flamme = Img(HG("Flamme", rt, w / 2f - 44, h - 58, 22, 36), Spr(FLAMME));
+        c.prix = Txt(HG("Prix", rt, w / 2f - 14, h - 62, 120, 44), EB("SemiBold"), 32, AME, TextAnchor.MiddleLeft, "60");
         c.corps = new Graphic[] { cad };
         if (soin) { c.illustration.cadre.enabled = false; }
         return c;
@@ -215,7 +222,7 @@ public static class UIJeu4Builder
 
     static GameObject MarchandUI(CatalogueAmeliorations cat)
     {
-        const float W = 1260, H = 760, CW = 360, CH = 500;
+        const float W = 1260, H = 720, CW = 360, CH = 460;
         var r = C("Panneau_MarchandRangs", null, 0, 0, W, H);
         Img(C("Voile", r, 0, 0, 4000, 3000), null, new Color(0.02f, 0.0f, 0.01f, 0.6f), true);
         Cadre(r, W, H);
@@ -241,6 +248,15 @@ public static class UIJeu4Builder
 
     public static string Construit()
     {
+        // icônes de carte : sprites (comme les autres icônes de la mini-carte), sans mip, alpha transparent
+        foreach (var f in new[] { "Assets/Art/UI/MiniCarte/MiniCarte_Goule.png", "Assets/Art/UI/MiniCarte/MiniCarte_Traqueur.png", "Assets/Art/UI/Carte/Carte_Rose.png" })
+        {
+            var ti = (TextureImporter)AssetImporter.GetAtPath(f);
+            if (ti == null) continue;
+            ti.textureType = TextureImporterType.Sprite; ti.spriteImportMode = SpriteImportMode.Single; ti.alphaIsTransparency = true;
+            ti.mipmapEnabled = false; ti.textureCompression = TextureImporterCompression.CompressedHQ; ti.wrapMode = TextureWrapMode.Clamp;
+            ti.SaveAndReimport();
+        }
         var cat = Catalogue();
         var pf = new[] { Sauve(FinDeRunUI(cat), "Panneau_FinDeRun"), Sauve(PorteSortieUI(), "Panneau_PorteSortie"), Sauve(MarchandUI(cat), "Panneau_MarchandRangs") };
         var sc = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);

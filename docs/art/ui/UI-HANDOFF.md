@@ -416,3 +416,20 @@ captures `docs/art/rendus/Nuit4/Lot6/`. Illustrations et cadres : lot 5 (`docs/a
   - `MiniCarte_Goule.png` (64 px) : petit point rouge sang cerné d'encre ; à afficher à 14 à 20 px ;
   - `MiniCarte_Traqueur.png` (128 px) : œil fendu rouge braise dans une couronne d'épines, halo sombre ; à afficher à 28 à 44 px
     (lisible à 24 px), au-dessus des autres icônes.
+
+**Après la relecture indépendante (lot 6)** :
+
+- Icônes de carte et rose importées en **sprites** (sans mip, alpha transparent), comme les autres icônes de la mini-carte.
+- **Carte ouverte** : en plus du fond et du cadre, `Carte_Rose` (étoile épineuse de la bulle) et `Carte_Legende_Cadre` (mêmes
+  coins) sont refaites ; ajouter **Traqueur** et **Goule** à la légende.
+- **Traqueur** : œil jauni à pupille sang (plus rouge sur rouge avec les goules) ; 28 px minimum dans la bulle, 40 à 48 px sur la
+  carte ouverte.
+- **Marchand** : une carte trop chère garde son cadre, son illustration s'assombrit, son prix passe en rouge et son bouton
+  devient **inactif** (`interactable = false`). La **montée** montre l'amélioration au rang actuel → la même au rang suivant
+  (même taille), rangs colorés ; une offre de montée au rang Mythique est masquée.
+- **Écran de fin** : au-delà de 10 améliorations, « +N » s'affiche à droite de la rangée ; les bandes des lignes vides
+  disparaissent avec elles.
+- **Porte scellée** : rappeler `MontreSortieScellee` à chaque image (ou chaque seconde) tant que le panneau est visible ;
+  minuteur en or.
+- **Scripts robustes** aux références nulles, aux rangs hors bornes, aux identifiants inconnus (avertissement dans la console) et
+  à un catalogue absent (case vidée).

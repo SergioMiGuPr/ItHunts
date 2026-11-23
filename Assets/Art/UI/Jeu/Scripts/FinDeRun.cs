@@ -24,6 +24,7 @@ namespace ItHunts.Art.UIJeu
 
         [Header("Améliorations (nuit 4) : grille d'icônes encadrées, 10 au plus")]
         public Text titreAmeliorations;
+        [Tooltip("Plus d'améliorations que de cases : affiche +N.")] public Text surplus;
         public IconeAmelioration[] ameliorations = new IconeAmelioration[0];
         public string[] apercuAmeliorations = { "R-P1", "G12", "G1", "R5", "G20", "G26", "R8", "G7" };
         public int[] apercuRangs = { 2, 4, 1, 3, 0, 2, 1, 0 };
@@ -44,7 +45,7 @@ namespace ItHunts.Art.UIJeu
             titre.color = victoire ? couleurVictoire : couleurMort;
             if (lueurTitre) lueurTitre.color = new Color(titre.color.r, titre.color.g, titre.color.b, 0.35f);
             sousTitre.text = sousTitreTexte;
-            for (int i = 0; i < libelles.Length; i++)
+            for (int i = 0; i < libelles.Length && i < valeurs.Length; i++)
             {
                 bool on = stats != null && i < stats.Length;
                 libelles[i].gameObject.SetActive(on);
@@ -66,6 +67,8 @@ namespace ItHunts.Art.UIJeu
                 else ameliorations[i].Vide();
             }
             if (titreAmeliorations) titreAmeliorations.text = n > 0 ? "Améliorations" : "Aucune amélioration";
+            int reste = ids != null ? ids.Length - n : 0;
+            if (surplus) { surplus.gameObject.SetActive(reste > 0); surplus.text = "+" + reste; }
             // la rangée reste centrée dans le cadre quel que soit le nombre d'améliorations
             if (n > 0 && ameliorations.Length > 1 && ameliorations[0] && ameliorations[1])
             {
