@@ -53,6 +53,7 @@ SPECIAUX = {
     "M_Kit_Vitrail_Rouge": dict(col=(0.12, 0.02, 0.03), em=(0.09, 0.01, 0.015), tex=None),
     "M_Kit_Vitrail_Ambre": dict(col=(0.13, 0.08, 0.02), em=(0.1, 0.055, 0.012), tex=None),
     "M_Kit_Feuillage": dict(col=(0.10, 0.13, 0.09), em=None, tex=None),
+    "M_Kit_Cristal": dict(col=(0.62, 0.68, 0.76), em=(0.06, 0.07, 0.09), tex=None),
     "M_Kit_Cire": dict(col=(0.78, 0.72, 0.58), em=None, tex=None),
     "M_Fond_Noir": dict(col=(0.01, 0.01, 0.012), em=None, tex=None),
 }
@@ -273,7 +274,9 @@ def scene_rendu():
     sc.collection.objects.link(so)
 
 
-def rend(fbx, out):
+def rend(fbx, out, sortie=None, cible=None, montrer_col=False):
+    """`sortie` : nom de l'image (sinon le nom de la pièce) ; `cible` = (x, y, z, rayon) en mètres (repère de Blender) :
+    vue rapprochée ; `montrer_col` : surfaces Col_* rendues en magenta translucide (contrôle des collisions)."""
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.fbx(filepath=fbx)
     nom = os.path.splitext(os.path.basename(fbx))[0]
@@ -314,7 +317,12 @@ def rend(fbx, out):
         o.data.transform(mw)
         o.matrix_world = Matrix.Identity(4)
         if o.name.startswith("Col_"):
-            o.hide_render = True
+            if montrer_col:
+                o.data.materials.clear()
+                o.data.materials.append(plat("R_Collision", (0.95, 0.1, 0.85), alpha=0.35, em=0.6))
+                o.visible_shadow = False
+            else:
+                o.hide_render = True
             continue
         for i, sl in enumerate(o.material_slots):
             if sl.material:
@@ -322,7 +330,7 @@ def rend(fbx, out):
                 if k not in cache:
                     cache[k] = materiau(k)
                 o.material_slots[i].material = cache[k]
-    vis = [o for o in meshes if not o.hide_render]
+    vis = [o for o in meshes if not o.hide_render and not o.name.startswith("Col_")]
     pts = [v.co for o in vis for v in o.data.vertices]
     mn = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts)))
     mx = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
@@ -333,14 +341,14 @@ def rend(fbx, out):
     sol_z = 0.0
     if "Chandelier" in nom or "Lustre" in nom:
         sol_z = mn.z - 3.5
-    elif "Applique" in nom:
+    elif ("Applique" in nom or "Torche_Murale" in nom):
         sol_z = -2.0
     elif any(x in nom for x in ("Coursive", "Balcon", "Passerelle")):
         sol_z = -4.5
     figs = []
     xm = mn.x - 1.0
     ym = mn.y - 0.6
-    if "Colimacon" in nom or "Puits" in nom or "Echelle" in nom or "Applique" in nom or "Candelabre" in nom:
+    if "Colimacon" in nom or "Puits" in nom or "Echelle" in nom or ("Applique" in nom or "Torche_Murale" in nom) or "Candelabre" in nom:
         xm = mx.x + 0.8
     figs.append(mannequin((xm, ym, sol_z), rot=math.radians(20)))
     if "Escalier" in nom or "Mezzanine" in nom or "Coursive" in nom or "Passerelle" in nom or "Tremie" in nom:
@@ -368,8 +376,8 @@ def rend(fbx, out):
     gab = []
     if "PorteEtroite" in nom:
         p = reperes.get("Accroche_PorteEtroite", Vector((0, 0.75, 0)))
-        gab.append(cadre("Gabarit_4x5m2", (p.x, p.y - 0.1, 0.0), 4.0, 5.2))
-        gab.append(cadre("Gabarit_4x5m2_b", (p.x, p.y + 0.1, 0.0), 4.0, 5.2))
+        gab.append(cadre("Gabarit_4x5m25", (p.x, p.y - 0.1, 0.0), 4.0, 5.25))
+        gab.append(cadre("Gabarit_4x5m25_b", (p.x, p.y + 0.1, 0.0), 4.0, 5.25))
     if "Traqueur" in nom:
         p = reperes.get("Apparition_Traqueur", Vector(((mn.x + mx.x) / 2, (mn.y + mx.y) / 2, 0)))
         gab.append(capsule("Traqueur_7x14", p, 3.5, 14.0))
@@ -443,7 +451,7 @@ def rend(fbx, out):
         pl.scale = (mx.x - mn.x + 3, mx.y - mn.y + 3, 1)
         pl.data.materials.append(plat("R_Plafond", (0.25, 0.24, 0.23)))
         pl.visible_shadow = False
-    elif "Applique" in nom:
+    elif ("Applique" in nom or "Torche_Murale" in nom):
         bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 0.002, 0), rotation=(math.radians(90), 0, 0))
         pl = bpy.context.active_object
         pl.scale = (3.0, 4.6, 1)
@@ -456,6 +464,8 @@ def rend(fbx, out):
     # caméra 3/4 avant-gauche, au-dessus
     c = (mn2 + mx2) / 2
     r = (mx2 - mn2).length / 2
+    if cible:
+        c, r = Vector(cible[:3]), cible[3]
     elev = 1.25 if ("Fosse" in nom or "Tremie" in nom) else 0.3 if ("Chandelier" in nom or "Lustre" in nom) else 0.62
     d = Vector((-0.72, -1.0, elev)).normalized()
     cam = bpy.data.cameras.new("Cam")
@@ -468,7 +478,7 @@ def rend(fbx, out):
     co.rotation_euler = (-d).to_track_quat("-Z", "Y").to_euler()
     cam.clip_end = dist * 4
     sc.camera = co
-    sc.render.filepath = os.path.join(out, nom + ".jpg")
+    sc.render.filepath = os.path.join(out, (sortie or nom) + ".jpg")
     bpy.ops.render.render(write_still=True)
     print("rendu", nom, flush=True)
 

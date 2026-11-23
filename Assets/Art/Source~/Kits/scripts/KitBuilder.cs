@@ -60,8 +60,8 @@ public static class KitBuilder
         Plat("M_Kit_Vitrail_Ambre", new Color(0.036f, 0.031f, 0.024f), new Color(0.03f, 0.022f, 0.012f), true);
         Plat("M_Kit_Sceau_Ame", new Color(0.3f, 0.9f, 1f), new Color(0.4f, 2.6f, 3.2f));
         Plat("M_Collision_Invisible", new Color(1f, 0f, 1f));
-        // cristal du lustre : pâle et froid, faible émission (il accroche la lumière des bougies)
-        Plat("M_Kit_Cristal", new Color(0.62f, 0.66f, 0.74f), new Color(0.16f, 0.15f, 0.13f), true);
+        // cristal du lustre : pâle et froid, faible émission chaude (il accroche la lumière des bougies)
+        Plat("M_Kit_Cristal", new Color(0.62f, 0.68f, 0.76f), new Color(0.12f, 0.11f, 0.1f), true);
         // vitraux : la lumière des torches ne les sature pas (verre épais et sale, vu de l'intérieur la nuit)
         foreach (var v in new[] { "M_Kit_Vitrail", "M_Kit_Vitrail_Rouge", "M_Kit_Vitrail_Ambre" })
         {
@@ -178,7 +178,8 @@ public static class KitBuilder
                     fx.transform.localPosition = Vector3.zero;
                     fx.transform.localScale = Vector3.one * (grand ? (nom.Contains("Brasero") ? 1.6f : 1f) : 0.045f);
                 }
-                var feuIdx = t.name.Length > 4 ? int.Parse(t.name.Substring(4)) : 1;
+                // « Feu », « Feu_3 » ou « Feu_Torche » (relecture du lot 3 : repère nommé des torches du château)
+                var feuIdx = t.name.Length > 4 && int.TryParse(t.name.Substring(4), out var fi) ? fi : 1;
                 if (grand || feuIdx == 1)
                 {
                     var l = new GameObject("Lumiere").AddComponent<Light>();

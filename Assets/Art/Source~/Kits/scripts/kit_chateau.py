@@ -254,7 +254,11 @@ def SM_Chateau_GrandeEntree():
     voussures, deux battants de chêne ferré (Battant_G, Battant_D, pivots aux gonds) portant le sceau de lune de sortie
     (lot 3), perron de 5 marches, deux contreforts. Face vers -Z (extérieur côté jardin à l'acte III)."""
     k = K("SM_Chateau_GrandeEntree")
-    L.masonry_arch(k, 9.0, 8.0, 5.0, 3.0, 5.5, PIERRE, n=14, pointed=True, top=22.0, seed=327)
+    # relecture du lot 3 : archivolte sur la face avant seulement, battants contre la face arrière (y = 1.5), gonds 1 cm
+    # derrière : ils s'ouvrent vers l'arrière sans traverser les piédroits
+    L.masonry_arch(k, 9.0, 8.0, 5.0, 3.0, 5.5, PIERRE, n=14, pointed=True, top=22.0, seed=327, arriere=False)
+    yg = 1.51
+    yc = yg + 0.2
     for sx in (-1, 1):
         k.box((sx * 9.0, -1.8, 9.0), (2.2, 2.0, 18.0), PIERRE, taper=0.15)
         k.box((sx * 9.0, -1.8, 18.5), (1.6, 1.4, 1.2), PIERRE, taper=0.5)
@@ -268,17 +272,18 @@ def SM_Chateau_GrandeEntree():
         for i in range(9):
             x = sx * (i + 0.5) * 0.5
             prof_top = 8.0 + 5.0 * max(0.0, 1 - (abs(x) / 4.5) ** 1.7) ** 0.5
-            kb.box((x, 0, prof_top / 2), (0.48, 0.4, prof_top), BOIS)
+            kb.box((x, yc, prof_top / 2), (0.48, 0.4, prof_top), BOIS)
         for z in (1.5, 3.4):
-            kb.box((sx * 2.25, -0.24, z), (4.3, 0.08, 0.3), FER)
-        kb.cyl((sx * 3.6, -0.24, 4.0), 0.35, 0.08, FER, n=12, axis="y")
+            kb.box((sx * 2.25, yc - 0.24, z), (4.3, 0.08, 0.3), FER)
+        kb.cyl((sx * 3.6, yc - 0.24, 4.0), 0.35, 0.08, FER, n=12, axis="y")
         # nuit 4, lot 3 : sceau de sortie d'acte (anneau partagé, croissant, étoile, rayons)
-        H.sceau_lune(kb, sx, 0.0, 6.4, 2.0, -0.24, FER, FER)
+        H.sceau_lune(kb, sx, 0.0, 6.4, 2.0, yc - 0.24, FER, FER)
         b = kb.finish(329 + sx, dict(sale_h=1.5, mousse=0.1))
         for v in b.data.vertices:
             v.co.x -= sx * 4.5
+            v.co.y -= yg
         b.parent = ob
-        b.location = (sx * 4.5, 0, 0)
+        b.location = (sx * 4.5, yg, 0)
     return ob
 
 
@@ -572,6 +577,13 @@ def SM_Chateau_Estrade_Musiciens():
 H.enregistre(PIECES, H.CHATEAU, H.pieces_chateau(H.CHATEAU))
 
 
+def premiere_phrase(doc):
+    """Première phrase entière de la docstring (relecture du lot 3 : la première ligne seule tronquait les descriptions)."""
+    d = " ".join(l.strip() for l in (doc or "").strip().split("\n"))
+    i = d.find(". ")
+    return d if i < 0 else d[:i + 1]
+
+
 def main(noms=None):
     mesures = {}
     path = os.path.join(HERE, "kit_chateau.json")
@@ -585,7 +597,7 @@ def main(noms=None):
         L.export([ob], os.path.join(OUT, nom + ".fbx"))
         (x0, x1), (y0, y1), (z0, z1) = L.bounds(ob)
         t = L.tris(ob) + sum(L.tris(c) for c in ob.children_recursive if c.type == "MESH" and not c.name.startswith("Col_"))
-        mesures[nom] = dict(doc=(f.__doc__ or "").strip().split("\n")[0], taille=[round(x1 - x0, 2), round(y1 - y0, 2), round(z1 - z0, 2)],
+        mesures[nom] = dict(doc=premiere_phrase(f.__doc__), taille=[round(x1 - x0, 2), round(y1 - y0, 2), round(z1 - z0, 2)],
                             bas=round(z0, 2), triangles=t, materiaux=[m.name for m in ob.data.materials])
         print("ok", nom, mesures[nom]["taille"], t, flush=True)
     json.dump(mesures, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)

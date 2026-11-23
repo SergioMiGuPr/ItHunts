@@ -524,7 +524,11 @@ def SM_Cave_PorteSortie():
     deux battants de bois épais cloutés de fer (pivots aux gonds : objets enfants Battant_G et Battant_D), sceau de lune de
     sortie en fer sur les battants (lot 3). Classique, sans lumière colorée : ce sont les torches du décor qui l'éclairent."""
     k = K("SM_Cave_PorteSortie")
-    L.masonry_arch(k, 8.0, 7.0, 3.6, 2.2, 2.2, PIERRE, n=14, top=13.0, seed=211)
+    # relecture du lot 3 : archivolte sur la face avant seulement, battants contre la face arrière (y = 1.1), gonds 1 cm
+    # derrière : ils s'ouvrent vers l'arrière sans traverser les piédroits
+    L.masonry_arch(k, 8.0, 7.0, 3.6, 2.2, 2.2, PIERRE, n=14, top=13.0, seed=211, arriere=False)
+    yg = 1.11
+    yc = yg + 0.175
     k.box((0, 0, 0.1), (12.4, 3.2, 0.2), DAL)
     ob = k.finish(211, dict(sale_h=3.0, mousse=0.4))
     for side, sx in (("G", -1), ("D", 1)):
@@ -535,20 +539,21 @@ def SM_Cave_PorteSortie():
             x = sx * (i + 0.5) * w / 8
             hh = 7.0 + 3.6 * math.sqrt(max(0.0, 1 - ((abs(x)) / 4.0) ** 2)) - 0.05 - 0.21
             # nuit 4 : le battant commence au-dessus de la dalle de seuil (0.2 m) : plus de faces confondues avec elle
-            kb.box((x, 0, 0.21 + hh / 2), (w / 8 - 0.02, 0.35, hh), BOISN)
+            kb.box((x, yc, 0.21 + hh / 2), (w / 8 - 0.02, 0.35, hh), BOISN)
         for z in (1.2, 3.0):
-            kb.box((sx * w / 2, -0.2, z), (w - 0.2, 0.06, 0.28), FER)
+            kb.box((sx * w / 2, yc - 0.2, z), (w - 0.2, 0.06, 0.28), FER)
             for i in range(7):
-                kb.box((sx * (0.3 + i * 0.55), -0.24, z), (0.1, 0.05, 0.1), FER)
-        kb.cyl((sx * 3.2, -0.2, 3.6), 0.28, 0.08, FER, n=12, axis="y", caps=(True, True))
+                kb.box((sx * (0.3 + i * 0.55), yc - 0.24, z), (0.1, 0.05, 0.1), FER)
+        kb.cyl((sx * 3.2, yc - 0.2, 3.6), 0.28, 0.08, FER, n=12, axis="y", caps=(True, True))
         # nuit 4, lot 3 : sceau de sortie (anneau partagé, croissant de lune à gauche, étoile à droite, rayons)
-        H.sceau_lune(kb, sx, 0.0, 5.4, 1.6, -0.215, FER, FER)
+        H.sceau_lune(kb, sx, 0.0, 5.4, 1.6, yc - 0.215, FER, FER)
         b = kb.finish(212 + sx, dict(sale_h=1.5, mousse=0.1))
-        # pivot au gond (x = ±4 m) : la géométrie est décalée, l'objet est posé au gond
+        # pivot au gond (x = ±4 m, y = 1.11) : la géométrie est décalée, l'objet est posé au gond
         for v in b.data.vertices:
             v.co.x -= sx * 4.0
+            v.co.y -= yg
         b.parent = ob
-        b.location = (sx * 4.0, 0, 0)
+        b.location = (sx * 4.0, yg, 0)
     return ob
 
 
@@ -620,6 +625,13 @@ H.enregistre(PIECES, H.CAVE, H.pieces_caves(H.CAVE))
 
 
 # ------------------------------------------------------------------ principal
+def premiere_phrase(doc):
+    """Première phrase entière de la docstring (relecture du lot 3 : la première ligne seule tronquait les descriptions)."""
+    d = " ".join(l.strip() for l in (doc or "").strip().split("\n"))
+    i = d.find(". ")
+    return d if i < 0 else d[:i + 1]
+
+
 def main(noms=None):
     mesures = {}
     path = os.path.join(HERE, "kit_caves.json")
@@ -633,7 +645,7 @@ def main(noms=None):
         L.export([ob], os.path.join(OUT, nom + ".fbx"))
         (x0, x1), (y0, y1), (z0, z1) = L.bounds(ob)
         t = L.tris(ob) + sum(L.tris(c) for c in ob.children_recursive if c.type == "MESH" and not c.name.startswith("Col_"))
-        mesures[nom] = dict(doc=(f.__doc__ or "").strip().split("\n")[0], taille=[round(x1 - x0, 2), round(y1 - y0, 2), round(z1 - z0, 2)],
+        mesures[nom] = dict(doc=premiere_phrase(f.__doc__), taille=[round(x1 - x0, 2), round(y1 - y0, 2), round(z1 - z0, 2)],
                             bas=round(z0, 2), triangles=t, materiaux=[m.name for m in ob.data.materials])
         print("ok", nom, mesures[nom]["taille"], t, flush=True)
     json.dump(mesures, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
