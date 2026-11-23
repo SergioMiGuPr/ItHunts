@@ -318,6 +318,9 @@ public static class KitBuilder
         mc.shader = Shader.Find("ItHunts/Ciel");
         var luneDir = new Vector3(-0.35f, 0.42f, 0.84f).normalized;
         mc.SetVector("_LuneDir", luneDir);
+        // nuit 4, lot 3 : la lune peinte du menu principal, halo et dégradé continus (plus de paliers)
+        mc.SetTexture("_LuneTex", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Textures/Ciel/T_Ciel_Lune.png"));
+        mc.SetFloat("_LuneTexOn", 1f); mc.SetFloat("_Paliers", 0f);
         EditorUtility.SetDirty(mc);
         var go = new GameObject("Jardin_Ciel");
         var sph = new GameObject("Voute_Celeste");
