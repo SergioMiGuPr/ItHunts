@@ -1,0 +1,9 @@
+Prop_Statue (Prop_Statue) greybox (1.60, 4.96, 1.60) -> modèle (1.05, 3.60, 1.03) ; vue (0.00, 0.00, 1.00) près 3,1 m, jeu 7,0 m
+Coffre : instance Coffre : Allée des statues écartée (greybox (1.72, 1.00, 1.80), modèle (0.90, 0.60, 0.55))
+Prop_Banc (Prop_Banc) greybox (2.00, 0.48, 0.40) -> modèle (2.48, 0.56, 0.60) ; vue (0.00, 0.00, 1.00) près 3,4 m, jeu 7,0 m
+Coffre : instance Coffre : Labyrinthe de haies écartée (greybox (1.80, 1.00, 1.63), modèle (0.90, 0.60, 0.55))
+Coffre : instance Coffre : Ravin écartée (greybox (1.77, 1.00, 1.77), modèle (0.90, 0.60, 0.55))
+Prop_Tonneau_Attrapable (Prop_Tonneau_Attrapable) greybox (0.76, 0.90, 0.76) -> modèle (0.76, 0.90, 0.76) ; vue (0.31, 0.00, 0.95) près 2,4 m, jeu 7,0 m
+Coffre (Coffre : Fontaine) greybox (1.50, 1.00, 1.00) -> modèle (1.35, 0.90, 0.83) ; vue (0.00, 0.00, -1.00) près 3,0 m, jeu 7,0 m
+CoffreVerrou (Coffre de la salle verrouillée) greybox (1.77, 1.00, 1.51) -> modèle (1.57, 0.90, 1.29) ; vue (0.80, 0.00, -0.60) près 3,2 m, jeu 7,0 m
+Prop_Table (Prop_Table) greybox (1.00, 0.95, 2.20) -> modèle (1.20, 0.95, 2.60) ; vue (0.00, 0.00, -1.00) près 3,6 m, jeu 7,0 m

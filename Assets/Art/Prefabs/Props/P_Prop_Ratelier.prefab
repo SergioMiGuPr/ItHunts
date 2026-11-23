@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 33e9205800355884fade9913a28937ec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 33e9205800355884fade9913a28937ec, type: 3}
       propertyPath: m_LocalPosition.y
@@ -30,11 +30,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 33e9205800355884fade9913a28937ec, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 33e9205800355884fade9913a28937ec, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 33e9205800355884fade9913a28937ec, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -48,7 +48,7 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -7511558181221131132, guid: 33e9205800355884fade9913a28937ec, type: 3}
+    - target: {fileID: -1171850952794900641, guid: 33e9205800355884fade9913a28937ec, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: b83eaaded7d1d72438f86e0238cf6d22, type: 2}
@@ -56,14 +56,32 @@ PrefabInstance:
       propertyPath: m_Name
       value: P_Prop_Ratelier
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 5914698611862717857, guid: 33e9205800355884fade9913a28937ec, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: b83eaaded7d1d72438f86e0238cf6d22, type: 2}
+    m_RemovedComponents:
+    - {fileID: 4742473837712756890, guid: 33e9205800355884fade9913a28937ec, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 33e9205800355884fade9913a28937ec, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2307418002457062780}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 33e9205800355884fade9913a28937ec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 674962435141794927}
   m_SourcePrefab: {fileID: 100100000, guid: 33e9205800355884fade9913a28937ec, type: 3}
+--- !u!23 &1916403802189785428 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 5914698611862717857, guid: 33e9205800355884fade9913a28937ec, type: 3}
+  m_PrefabInstance: {fileID: 5227927196217650421}
+  m_PrefabAsset: {fileID: 0}
+--- !u!23 &2824297730507856810 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -1171850952794900641, guid: 33e9205800355884fade9913a28937ec, type: 3}
+  m_PrefabInstance: {fileID: 5227927196217650421}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &4921376421846520228 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 33e9205800355884fade9913a28937ec, type: 3}
@@ -88,5 +106,28 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.6, y: 1.8, z: 0.3}
-  m_Center: {x: 0, y: 0.9, z: 0}
+  m_Size: {x: 1.6, y: 1.8, z: 0.3012169}
+  m_Center: {x: 0, y: 0.9, z: 0.0010140836}
+--- !u!205 &674962435141794927
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4921376421846520228}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 0.9, z: 0.0010140836}
+  m_Size: 1.8
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.25
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 1916403802189785428}
+  - screenRelativeHeight: 0.015
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 2824297730507856810}
+  m_Enabled: 1

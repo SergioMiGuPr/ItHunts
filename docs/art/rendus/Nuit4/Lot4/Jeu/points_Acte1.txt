@@ -1,9 +1,32 @@
-Coffre (Coffre : Cachot) greybox (1.72, 1.00, 1.39) -> modèle (1.53, 0.90, 1.17) ; vue (-0.29, 0.00, -0.96) près 3,2 m, jeu 7,0 m
+Prop_Chaudron (Prop_Chaudron) greybox (1.13, 1.06, 1.15) -> modèle (1.69, 1.00, 1.69) ; vue (-0.99, 0.00, -0.14) près 2,7 m, jeu 7,0 m
+Prop_Table (Prop_Table) greybox (1.63, 0.95, 2.40) -> modèle (1.95, 0.95, 2.84) ; vue (-0.74, 0.00, 0.67) près 3,7 m, jeu 7,0 m
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (1.20, 0.95, 3.10), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau_Attrapable (Prop_Tonneau_Attrapable) greybox (0.84, 0.90, 0.84) -> modèle (0.84, 0.90, 0.84) ; vue (-0.92, 0.00, -0.39) près 2,5 m, jeu 7,0 m
+Prop_Ratelier (Prop_Ratelier) greybox (2.60, 2.06, 0.50) -> modèle (1.87, 2.11, 0.59) ; vue (0.00, 0.00, 1.00) près 3,9 m, jeu 7,0 m
+Prop_Etagere (Prop_Etagere) greybox (0.60, 2.60, 2.40) -> modèle (0.81, 3.03, 2.52) ; vue (-1.00, 0.00, 0.00) près 3,7 m, jeu 7,0 m
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (1.20, 0.95, 3.10), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (3.10, 0.95, 1.20), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (3.10, 0.95, 1.20), modèle (0.60, 0.90, 0.60))
+Prop_Poutre (Prop_Poutre) greybox (0.50, 0.50, 6.00) -> modèle (0.58, 0.50, 3.97) ; vue (-0.50, 0.00, 0.87) près 6,6 m, jeu 7,0 m
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (1.20, 0.95, 3.10), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (1.20, 0.95, 3.10), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (3.10, 0.95, 1.20), modèle (0.60, 0.90, 0.60))
+Prop_Sarcophage (Prop_Sarcophage) greybox (2.57, 1.00, 1.26) -> modèle (2.53, 0.92, 1.04) ; vue (1.00, 0.00, 0.00) près 3,9 m, jeu 7,0 m
+Coffre : instance Coffre : Réserve écartée (greybox (1.77, 1.00, 1.77), modèle (0.90, 0.60, 0.55))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (3.10, 0.95, 1.20), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (1.20, 0.95, 3.10), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (1.20, 0.95, 3.10), modèle (0.60, 0.90, 0.60))
+Prop_Paille (Prop_Paille) greybox (2.00, 0.36, 2.08) -> modèle (2.75, 0.27, 2.76) ; vue (-0.14, 0.00, -0.99) près 3,5 m, jeu 7,0 m
+Coffre : instance Coffre : Cave à vin écartée (greybox (1.80, 1.00, 1.63), modèle (0.90, 0.60, 0.55))
+Prop_Banc (Prop_Banc) greybox (2.00, 0.47, 0.40) -> modèle (2.48, 0.56, 0.60) ; vue (0.87, 0.00, 0.50) près 3,4 m, jeu 7,0 m
+Coffre (Coffre : Grotte inondée) greybox (1.42, 1.00, 1.74) -> modèle (1.20, 0.90, 1.54) ; vue (0.95, 0.00, 0.32) près 3,2 m, jeu 7,0 m
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (1.20, 0.95, 3.10), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (1.20, 0.95, 3.10), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (1.20, 0.95, 3.10), modèle (0.60, 0.90, 0.60))
 CoffreVerrou (Coffre de la salle verrouillée) greybox (1.62, 1.00, 1.19) -> modèle (1.45, 0.90, 0.99) ; vue (-0.92, 0.00, -0.38) près 3,1 m, jeu 7,0 m
-Prop_Chaise_Attrapable (Prop_Chaise_Attrapable) greybox (0.74, 1.00, 0.74) -> modèle (0.60, 1.00, 0.60) ; vue (0.90, 0.00, -0.44) près 2,4 m, jeu 7,0 m
-Prop_Poutre (Prop_Poutre) greybox (0.50, 0.50, 6.00) -> modèle (0.53, 0.46, 6.00) ; vue (-0.87, 0.00, 0.50) près 6,6 m, jeu 7,0 m
-Prop_Ratelier (Prop_Ratelier) greybox (2.60, 2.06, 0.50) -> modèle (2.60, 2.11, 0.50) ; vue (0.00, 0.00, 1.00) près 3,9 m, jeu 7,0 m
-Prop_Sarcophage (Prop_Sarcophage) greybox (2.57, 1.00, 1.26) -> modèle (2.51, 1.00, 1.20) ; vue (-1.00, 0.00, 0.00) près 3,9 m, jeu 7,0 m
 Prop_Statue (Prop_Statue) greybox (1.40, 3.58, 1.40) -> modèle (1.05, 3.60, 1.03) ; vue (0.00, 0.00, -1.00) près 2,9 m, jeu 7,0 m
-Prop_Tonneau (Prop_Tonneau) greybox (1.20, 0.95, 3.10) -> modèle (0.90, 1.10, 0.90) ; vue (1.00, 0.00, 0.00) près 4,3 m, jeu 7,0 m
-Prop_Tonneau_Attrapable (Prop_Tonneau_Attrapable) greybox (0.64, 0.90, 0.64) -> modèle (0.64, 0.90, 0.64) ; vue (-1.00, 0.00, -0.07) près 2,3 m, jeu 7,0 m
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (3.10, 0.95, 1.20), modèle (0.60, 0.90, 0.60))
+Prop_Chaise_Attrapable (Prop_Chaise_Attrapable) greybox (0.69, 1.00, 0.69) -> modèle (0.57, 1.00, 0.57) ; vue (0.95, 0.00, 0.31) près 2,4 m, jeu 7,0 m
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (1.20, 0.95, 3.10), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (3.10, 0.95, 1.20), modèle (0.60, 0.90, 0.60))
+Prop_Tonneau : instance Prop_Tonneau écartée (greybox (3.10, 0.95, 1.20), modèle (0.60, 0.90, 0.60))

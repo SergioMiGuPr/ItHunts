@@ -169,7 +169,7 @@ public static class Props4
         switch (greybox)
         {
             case "Prop_Tonneau_Attrapable": return ("Tonneau", Vector3.zero, Vector3.zero, Vector3.one);
-            case "Prop_Tonneau": return ("Tonneau", Vector3.zero, Vector3.zero, new Vector3(1.5f, 1.22f, 1.5f));
+            case "Prop_Tonneau": return ("Tonneau", Vector3.zero, Vector3.zero, Vector3.one * 1.22f);
             case "Prop_Chaise_Attrapable": return ("Chaise", Vector3.zero, Vector3.zero, Vector3.one);
             case "Prop_Poutre": return ("Poutre", Vector3.zero, Vector3.zero, Vector3.one);
             // deuxième passe : échelles uniformes seulement (cotes du modèle déjà proches de la greybox)
@@ -182,8 +182,8 @@ public static class Props4
             case "Prop_Armoire": return ("Armoire", Vector3.zero, Vector3.zero, Vector3.one);
             case "Prop_Lit": return ("Lit", Vector3.zero, Vector3.zero, Vector3.one);
             case "Prop_Chaudron": return ("Chaudron", Vector3.zero, Vector3.zero, Vector3.one);
-            case "Prop_Sarcophage": return ("Sarcophage", Vector3.zero, new Vector3(0, 90, 0), new Vector3(1.14f, 1.25f, 1.33f));
-            case "Prop_Ratelier": return ("Ratelier", Vector3.zero, Vector3.zero, new Vector3(1.625f, 1.17f, 1f));
+            case "Prop_Sarcophage": return ("Sarcophage", Vector3.zero, new Vector3(0, 90, 0), Vector3.one * 1.15f);
+            case "Prop_Ratelier": return ("Ratelier", Vector3.zero, Vector3.zero, Vector3.one * 1.17f);
             case "Prop_Statue": return ("Statue", Vector3.zero, Vector3.zero, Vector3.one * 1.385f);
         }
         if (greybox.StartsWith("Coffre de la salle verrouillée")) return ("CoffreVerrou", Vector3.zero, Vector3.zero, Vector3.one * 1.5f);
@@ -223,7 +223,11 @@ public static class Props4
         var deja = new HashSet<string>();
         var cibles = Object.FindObjectsByType<Transform>(FindObjectsSortMode.None)
             .Where(t => t.parent == null || !t.parent.name.StartsWith("Prop_"))
-            .Where(t => Regle(Nettoie(t.name), new Bounds()) != null).OrderBy(t => t.name).ToList();
+            .Where(t => Regle(Nettoie(t.name), new Bounds()) != null).ToList();
+        // instances éclairées d'abord (lumière ponctuelle du niveau la plus proche), pour des images lisibles
+        var lumieres = Object.FindObjectsByType<Light>(FindObjectsSortMode.None).Where(l => l.type == LightType.Point && l.enabled && (player == null || !l.transform.IsChildOf(player)) && !l.transform.IsChildOf(go.transform)).ToList();
+        float Proche(Transform t) => lumieres.Count == 0 ? 99f : lumieres.Min(l => Vector3.Distance(l.transform.position, t.position) / Mathf.Max(l.range, 1f));
+        cibles = cibles.OrderBy(t => Proche(t)).ToList();
         Time.timeScale = 0f;
         foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
             if (r.sharedMaterial != null && r.sharedMaterial.shader != null && r.sharedMaterial.shader.name.Contains("WorldText")) r.gameObject.SetActive(false);
@@ -237,6 +241,16 @@ public static class Props4
             var rs = t.GetComponentsInChildren<Renderer>().Where(r => r.enabled && r.gameObject.activeInHierarchy && !(r is ParticleSystemRenderer)).ToArray();
             if (rs.Length == 0) continue;
             var gb = rs[0].bounds; foreach (var r in rs) gb.Encapsulate(r.bounds);
+            // greybox d'une autre forme que le modèle (groupe de tonneaux, petit support) : écartée, on prend une autre instance
+            var pfA = AssetDatabase.LoadAssetAtPath<GameObject>(Prefabs + "P_Prop_" + regle.nom + ".prefab");
+            if (pfA != null)
+            {
+                var rsA = pfA.GetComponentsInChildren<Renderer>(); var mb = rsA[0].bounds; foreach (var r in rsA) mb.Encapsulate(r.bounds);
+                float[] dg = { gb.size.x, gb.size.y, gb.size.z }, dm = { mb.size.x * regle.ech.x, mb.size.y * regle.ech.y, mb.size.z * regle.ech.z };
+                System.Array.Sort(dg); System.Array.Sort(dm);
+                bool forme = true; for (int k = 0; k < 3; k++) if (dg[k] > dm[k] * 1.6f + 0.15f || dm[k] > dg[k] * 1.6f + 0.15f) forme = false;
+                if (!forme) { log.Add($"{type} : instance {t.name} écartée (greybox {gb.size.ToString("F2")}, modèle {mb.size.ToString("F2")})"); continue; }
+            }
             // point de vue : du côté le plus dégagé, à 2.2 m + taille (près) et 7 m (jeu), œil 1.7 m
             Vector3 centre = gb.center; float sol = gb.min.y;
             Vector3 best = Vector3.zero; float bd = -1;
@@ -245,7 +259,11 @@ public static class Props4
                 Vector3 d = Quaternion.Euler(0, i * 30f, 0) * t.forward; d.y = 0; d.Normalize();
                 float near = 1.8f + Mathf.Max(gb.extents.x, gb.extents.z) * 1.6f;
                 Vector3 e = new Vector3(centre.x, sol + 1.7f, centre.z) + d * near;
-                bool libre = !Physics.Linecast(e, centre, out RaycastHit h, ~0, QueryTriggerInteraction.Ignore) || h.transform.IsChildOf(t);
+                // vue dégagée : au moins 4 rayons sur 5 (centre et coins hauts de la boîte) arrivent sur la greybox
+                int ok = 0;
+                foreach (var cible in new[] { centre, gb.center + new Vector3(gb.extents.x, gb.extents.y * 0.8f, gb.extents.z), gb.center + new Vector3(-gb.extents.x, gb.extents.y * 0.8f, gb.extents.z), gb.center + new Vector3(gb.extents.x, gb.extents.y * 0.8f, -gb.extents.z), gb.center + new Vector3(-gb.extents.x, gb.extents.y * 0.8f, -gb.extents.z) })
+                    if (!Physics.Linecast(e, cible, out RaycastHit hc, ~0, QueryTriggerInteraction.Ignore) || hc.transform.IsChildOf(t) || Vector3.Distance(hc.point, cible) < 0.4f) ok++;
+                bool libre = ok >= 4;
                 float libreLoin = Physics.Raycast(new Vector3(centre.x, sol + 1.7f, centre.z), d, out RaycastHit h2, 12f, ~0, QueryTriggerInteraction.Ignore) ? h2.distance : 12f;
                 if (!libre) continue;
                 if (libreLoin > bd) { bd = libreLoin; best = d; }
