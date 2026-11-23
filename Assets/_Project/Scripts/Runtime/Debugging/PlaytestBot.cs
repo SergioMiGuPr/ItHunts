@@ -763,7 +763,9 @@ namespace ItHunts.Debugging
             while (_corner < _corners.Count - 1 && Flat(_corners[_corner] - pos) < 1.4f && Mathf.Abs(_corners[_corner].y - pos.y) < 2.5f)
             {
                 _corner++;
-                _lastProgress = Time.time;                               // un coin de passé : on avance, même si le but s'éloigne
+                if (_corner > 1)
+                    _lastProgress = Time.time;                           // un vrai coin de passé (le coin 0 est la position de départ du
+                                                                         // chemin, refait à chaque replanification : il ne compte pas)
             }
             Vector3 target = _corners[Mathf.Min(_corner, _corners.Count - 1)];
             Vector3 to = target - pos;

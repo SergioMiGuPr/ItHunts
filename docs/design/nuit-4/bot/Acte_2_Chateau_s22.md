@@ -1,36 +1,26 @@
-# Bot : Acte_2_Chateau_s22 (2026-11-23 15:03)
+# Bot : Acte_2_Chateau_s22 (2026-11-23 18:48)
 
-## Acte_2_Chateau (acte 1, seed 22) : ❌ 3 défaut(s), 0 erreur(s)
+## Acte_2_Chateau (acte 2, seed 22) : ❌ 5 défaut(s), 0 erreur(s)
 
-- Temps de jeu de l'acte : 8:34 ; temps réel 3842 s (vitesse ×1).
-- Âmes en fin d'acte : 20 ; achats : 0 ; coffres essayés : 0.
-- Tirs : 710 ; coups reçus (comptés, invulnérable) : 0 ; parades : 1648 appuis, 706 réussies (images avec une annonce de goule à moins de 6 m : 642).
-- Fuites devant le traqueur : 20 ; tractions de secours : 53 ; téléportations après blocage : 9 ; esquives (boss) : 0.
-- Vitesse max : 22,0 m/s ; images par seconde (éditeur) : moyenne 11, minimum 3.
+- Temps de jeu de l'acte : 5:54 ; temps réel 135 s (vitesse ×1).
+- Âmes en fin d'acte : 19 ; achats : 0 ; coffres essayés : 0.
+- Tirs : 692 ; coups reçus (comptés, invulnérable) : 0 ; parades : 1776 appuis, 855 réussies (images avec une annonce de goule à moins de 6 m : 822).
+- Fuites devant le traqueur : 3 ; tractions de secours : 18 ; téléportations après blocage : 5 ; esquives (boss) : 0.
+- Vitesse max : 23,1 m/s ; images par seconde (éditeur) : moyenne 22, minimum 4.
 - Toutes les salles visitées : non.
 
 **Défauts :**
 - [blocage] aucun progrès vers « salle Bibliothèque » pendant 12 s à 0:00, position (-25.0, 0.0, -24.2) (salle Palier) ; téléporté au point suivant
-- [blocage] aucun progrès vers « salle Grand escalier » pendant 12 s à 0:53, position (45.1, 5.0, -41.6) (salle Salle de bal) ; téléporté au point suivant
-- [blocage] aucun progrès vers « coffre » pendant 12 s à 2:01, position (77.1, -4.8, -4.9) (salle Chapelle II) ; téléporté au point suivant
+- [blocage] aucun progrès vers « salle Armurerie » pendant 12 s à 1:23, position (69.8, 4.7, -173.0) (salle Salle à manger II) ; téléporté au point suivant
+- [blocage] aucun progrès vers « salle Armurerie » pendant 12 s à 1:37, position (89.1, 0.0, -174.6) (salle Salle à manger II) ; téléporté au point suivant
+- [blocage] aucun progrès vers « salle Grand escalier » pendant 12 s à 2:44, position (116.9, -5.0, -80.6) (salle Salle du trône II) ; téléporté au point suivant
+- [blocage] aucun progrès vers « porte de sortie » pendant 12 s à 5:36, position (0.9, -5.0, -116.0) (salle Tour effondrée II) ; téléporté au point suivant
 
 <details><summary>Journal du bot</summary>
 
-- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 1:35, position (82.4, -5.0, 54.9) (salle Armurerie II) ; téléporté au point suivant
-- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 2:42, position (37.1, -5.0, -16.3) (salle Grand escalier) ; téléporté au point suivant
-- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 3:11, position (38.6, -5.0, -17.4) (salle Grand escalier) ; téléporté au point suivant
-- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 4:29, position (44.9, -5.0, -35.7) (salle Grand escalier) ; téléporté au point suivant
-- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 6:58, position (77.4, -5.0, 55.4) (salle Armurerie II) ; téléporté au point suivant
-- [sortie] payable, 202 âmes à 7:09
-- [sortie] payable, 202 âmes à 7:24
-- [sortie] payable, 209 âmes à 7:27
-- [sortie] payable, 209 âmes à 7:38
-- [sortie] payable, 215 âmes à 7:47
-- [sortie] payable, 217 âmes à 8:01
-- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 8:18, position (-5.0, 0.4, -27.1) (salle Palier) ; téléporté au point suivant
-- [sortie] payable, 220 âmes à 8:18
-- [sortie] porte payée à 8:32 : ouverte
-- [acte] terminé à 8:34 (temps de jeu)
+- [sortie] payable, 202 âmes à 5:05
+- [sortie] demande d'ouverture à 5:52 (porte déjà ouverte)
+- [acte] terminé à 5:54 (temps de jeu)
 - [acte] acte gagné
 
 </details>

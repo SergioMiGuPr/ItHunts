@@ -145,7 +145,7 @@ namespace ItHunts.Tests
                             bool loading = ActLevel.Current != null && ActLevel.Current.Loading;
                             if (p != null && !loading && Object.FindFirstObjectByType<ZoneState>() != null)
                             {
-                                report = new BotReport { Seed = seed, Scene = active.name, Act = active.name.StartsWith("Acte_") && int.TryParse(active.name.Substring(5, 1), out int an) ? an : act + 1 };
+                                report = new BotReport { Seed = seed, Scene = active.name, Act = active.name.StartsWith("Acte_") && int.TryParse(active.name.Substring(5, 1), out int an) ? an - 1 : act };
                                 bot = PlaytestBot.Attach(p, report);
                                 _reports.Add(report);
                                 break;
