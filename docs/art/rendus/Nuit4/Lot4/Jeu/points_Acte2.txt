@@ -1,0 +1,7 @@
+Coffre (Coffre : Armurerie) greybox (1.80, 1.00, 1.72) -> modèle (1.56, 0.90, 1.48) ; vue (-0.62, 0.00, -0.78) près 3,2 m, jeu 7,0 m
+CoffreVerrou (Coffre de la salle verrouillée) greybox (1.00, 1.00, 1.50) -> modèle (0.82, 0.90, 1.35) ; vue (-0.87, 0.00, 0.50) près 3,0 m, jeu 7,0 m
+Prop_Chaise_Attrapable (Prop_Chaise_Attrapable) greybox (0.75, 1.00, 0.75) -> modèle (0.62, 1.00, 0.62) ; vue (-0.02, 0.00, -1.00) près 2,4 m, jeu 7,0 m
+Prop_Poutre (Prop_Poutre) greybox (1.74, 0.50, 5.97) -> modèle (1.77, 0.46, 5.98) ; vue (-0.21, 0.00, -0.98) près 6,6 m, jeu 7,0 m
+Prop_Ratelier (Prop_Ratelier) greybox (0.60, 1.40, 0.48) -> modèle (2.60, 2.11, 0.50) ; vue (0.87, 0.00, 0.50) près 2,3 m, jeu 7,0 m
+Prop_Statue (Prop_Statue) greybox (1.40, 3.58, 1.40) -> modèle (1.03, 3.60, 1.05) ; vue (-1.00, 0.00, 0.00) près 2,9 m, jeu 7,0 m
+Prop_Tonneau (Prop_Tonneau) greybox (0.94, 1.10, 0.94) -> modèle (0.90, 1.10, 0.90) ; vue (0.50, 0.00, 0.87) près 2,5 m, jeu 7,0 m

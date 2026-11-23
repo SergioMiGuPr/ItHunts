@@ -647,7 +647,14 @@ Remarques :
 - **Pièces de kit à la place de primitives** (aucun nouveau modèle) : `Prop_MurEffondre` → `SM_Cave_MurBrise_*` ;
   `Prop_Gravats` → `SM_Cave_Eboulis_*` ; caisses (`Prop_Caisse`, `Prop_Caisse_Attrapable`, `Prop_PileDeCaisses`) → modèle de
   caisse existant `SM_Caisse` (§ 4 bis).
-- **À faire dans Unity (côté `main` pour les prefabs)** : matériaux toon `M_Prop_<Nom>` avec la texture de base (et un
+- **Fait dans Unity (lot 4, branche `art-props-3d`)** avec `Assets/Art/Source~/Props/scripts/Props4.cs` (`Props4.Construit`) :
+  - **Textures éclaircies** pour la lecture en jeu (gamma 0,8 puis gain 1,08, script `eclaircir_props.py`) ; les ombres peintes par Tripo s'ouvrent, les teintes restent.
+  - **Matériaux toon** `Assets/Art/Materials/Props/M_Prop_<Nom>.mat`, copiés de `M_Caisse` (`ItHunts/Toon`, UV du modèle). S'y ajoutent `M_Prop_Coffre_Interieur` et `M_Prop_CoffreVerrou_Interieur`, très sombres (faces qui referment les ouvertures).
+  - **Lueur dorée des coffres** (« tout ce qui est interactif brille ») : rim chaud du shader toon, HDR (1, 0.62, 0.25) × 1,6, largeur 0,22, intensité 0,65. Pas de masque d'émission : l'atlas de Tripo mêle le laiton et le bois clair.
+  - **Prefabs** `Assets/Art/Prefabs/Props/P_Prop_<Nom>.prefab` : modèle, matériaux et colliders simples. Une boîte pour la plupart ; boîte de socle et capsule pour la statue ; une boîte pour le râtelier et pour chaque coffre (y compris le couvercle). Pas de Rigidbody, de `Grabbable` ni de lueur : c'est main qui les ajoute en remplaçant le maillage des greybox, avec les réglages du tableau.
+  - **Captures en jeu** (actes I et II, seed 4242), greybox remplacée sur place avec ces réglages : `docs/art/rendus/Nuit4/Lot4/Planche_Jeu_Acte1.jpg`, `Planche_Jeu_Acte2.jpg` et les images de `Jeu/`. Les tailles mesurées sont dans `Jeu/points_Acte*.txt`.
+  - **Écarts relevés.** Dans l'acte II, un `Prop_Ratelier` greybox mesure 0,6 × 1,4 × 0,48 m, et non 2,6 × 2,1 × 0,5 : l'échelle fixe du tableau le grossit. Pour main : régler l'échelle d'après la boîte de la greybox de chaque instance (hauteur et emprise), pas une échelle fixe par type. Même remarque pour `Prop_Tonneau` de l'acte I (groupe de 3,1 × 0,95 × 1,2 m).
+  - **Éléments de main sur les captures.** Les étiquettes « Coffre / 30 âmes » (police de main) et la lueur violette des attrapables sont du ressort de main ; les étiquettes sont masquées sur les captures.
   matériau très sombre non éclairé pour `*_Interieur`), prefabs (remplacement du maillage des greybox avec les réglages
   ci-dessus), colliders : boîtes simples (garder celles des greybox pour les attrapables), râtelier en deux boîtes
   (montants + barre), statue en socle + capsule, sarcophage en une boîte ; lueur des objets attrapables conservée.
