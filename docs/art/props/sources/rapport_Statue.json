@@ -12,17 +12,34 @@
   2.1667,
   2.1667
  ],
+ "etirement_max": 1.0,
+ "cotes_visees": [
+  1.0,
+  1.0,
+  2.6
+ ],
  "triangles_tripo": 6646,
  "texture_tripo": [
   2048,
   2048
  ],
  "texture": "Assets/Art/Textures/Props/T_Prop_Statue_BaseColor.png",
+ "texture_taille": 1024,
  "dimensions": [
   0.756,
   0.746,
   2.6
  ],
- "triangles": 6646,
- "fbx": "Assets/Art/Models/Props/SM_Prop_Statue.fbx"
+ "pivot_bas": 0.0,
+ "centre_emprise": [
+  0.0,
+  0.0
+ ],
+ "triangles": 5880,
+ "triangles_lod1": 2940,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Statue.fbx",
+ "objets_fbx": [
+  "SM_Prop_Statue_LOD0",
+  "SM_Prop_Statue_LOD1"
+ ]
 }

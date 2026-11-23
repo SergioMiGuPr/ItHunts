@@ -1,5 +1,7 @@
 // Lot 4 (nuit 4) : intégration Unity des props Tripo. Construit() en édition : réglages d'import, matériaux toon, prefabs
-// avec colliders. Shoot(dossier) en Play Mode (acte chargé) : chaque greybox remplacée par son prefab, captures avant / après
+// avec colliders et LODGroup (LOD0 / LOD1 nommés *_LOD0 / *_LOD1 dans les FBX ; deuxième passe, branche art-props-3d-b).
+// À relancer après la deuxième passe : les FBX ont changé de hiérarchie (SM_Prop_<Nom>_LOD0/_LOD1, Couvercle = vide sur la
+// charnière avec Couvercle_LOD0/_LOD1), les prefabs P_Prop_* sont reconstruits (même chemin, même GUID). Shoot(dossier) en Play Mode (acte chargé) : chaque greybox remplacée par son prefab, captures avant / après
 // de près et à distance de jeu, éclairage du jeu.
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +16,10 @@ public static class Props4
 {
     public const string Modeles = "Assets/Art/Models/Props/", Textures = "Assets/Art/Textures/Props/",
         Mats = "Assets/Art/Materials/Props/", Prefabs = "Assets/Art/Prefabs/Props/";
-    public static readonly string[] Noms = { "Tonneau", "Chaise", "Poutre", "Sarcophage", "Ratelier", "Coffre", "CoffreVerrou", "Statue" };
+    public static readonly string[] Noms = { "Tonneau", "Chaise", "Poutre", "Sarcophage", "Ratelier", "Coffre", "CoffreVerrou", "Statue",
+        "Lanterne", "Etagere", "CoffreDeco", "Table", "Banc", "Paille", "Armoire", "Lit", "Chaudron" };
+    // décor sans collision (catalogue des props) : aucun collider dans le prefab
+    static readonly HashSet<string> SansCollision = new HashSet<string> { "Lanterne", "Paille" };
 
     public static string Construit()
     {
@@ -37,6 +42,16 @@ public static class Props4
 
             var mat = Mat("M_Prop_" + n, modele);
             mat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(tp));
+            if (n == "Lanterne")
+            {
+                // vitres et bougie lumineuses (masque T_Prop_Lanterne_Emission, linéaire) : la lanterne se lit allumée de près
+                string ep = Textures + "T_Prop_Lanterne_Emission.png";
+                var ei = (TextureImporter)AssetImporter.GetAtPath(ep);
+                ei.sRGBTexture = false; ei.mipmapEnabled = true; ei.textureCompression = TextureImporterCompression.CompressedHQ; ei.SaveAndReimport();
+                mat.SetFloat("_Emission", 1f); mat.EnableKeyword("_EMISSION");
+                mat.SetTexture("_EmissionMap", AssetDatabase.LoadAssetAtPath<Texture2D>(ep));
+                mat.SetColor("_EmissionColor", new Color(1.0f, 0.55f, 0.2f) * 2.2f);
+            }
             mat.SetColor("_BaseColor", Color.white);
             if (mat.HasProperty("_WorldUV")) mat.SetFloat("_WorldUV", 0f);
             Material inter = null;
@@ -65,7 +80,18 @@ public static class Props4
                 r.sharedMaterials = r.sharedMaterials.Select(m => m != null && m.name.Contains("Interieur") ? inter : mat).ToArray();
             var b = new Bounds(go.transform.position, Vector3.zero); bool init = false;
             foreach (var r in go.GetComponentsInChildren<Renderer>(true)) { if (!init) { b = r.bounds; init = true; } else b.Encapsulate(r.bounds); }
-            Colliders(n, go, b);
+            if (!SansCollision.Contains(n)) Colliders(n, go, b);
+            Lods(go);
+            if (n == "Lanterne")
+            {
+                // lumière chaude sur le vide « Feu » (réglages de départ, à reprendre par main avec ses lumières de niveau)
+                var feu = go.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "Feu");
+                if (feu != null && feu.GetComponent<Light>() == null)
+                {
+                    var l = feu.gameObject.AddComponent<Light>();
+                    l.type = LightType.Point; l.color = new Color(1.0f, 0.62f, 0.3f); l.range = 6f; l.intensity = 1.5f; l.shadows = LightShadows.None;
+                }
+            }
             string pp = Prefabs + "P_Prop_" + n + ".prefab";
             PrefabUtility.SaveAsPrefabAsset(go, pp);
             Object.DestroyImmediate(go);
@@ -74,6 +100,20 @@ public static class Props4
         }
         AssetDatabase.SaveAssets();
         return string.Join("\n", log);
+    }
+
+    // un seul LODGroup sur la racine : renderers *_LOD0 (corps et couvercle) puis *_LOD1 ; ceux que l'import a pu créer
+    // (racine, Couvercle) sont retirés d'abord
+    static void Lods(GameObject go)
+    {
+        var rs = go.GetComponentsInChildren<Renderer>(true);
+        var l0 = rs.Where(r => r.name.EndsWith("_LOD0")).ToArray();
+        var l1 = rs.Where(r => r.name.EndsWith("_LOD1")).ToArray();
+        foreach (var g in go.GetComponentsInChildren<LODGroup>(true)) Object.DestroyImmediate(g);
+        if (l0.Length == 0 || l1.Length == 0) return;
+        var lg = go.AddComponent<LODGroup>();
+        lg.SetLODs(new[] { new LOD(0.25f, l0), new LOD(0.015f, l1) });
+        lg.RecalculateBounds();
     }
 
     static Material Mat(string nom, Material modele)
@@ -91,7 +131,7 @@ public static class Props4
         Vector3 c = b.center - go.transform.position, s = b.size;
         switch (n)
         {
-            case "Ratelier":   // montants + barre (on passe sous la barre de rien : deux boîtes suffisent)
+            case "Ratelier":   // une seule boîte (montants, barre et armes), un peu moins profonde que le modèle
                 Box(go, new Vector3(c.x, s.y * 0.5f, c.z), new Vector3(s.x, s.y, s.z * 0.6f));
                 break;
             case "Statue":     // socle + capsule
@@ -101,6 +141,8 @@ public static class Props4
                 break;
             case "Coffre":
             case "CoffreVerrou":
+                // une boîte sur la racine, à la taille du coffre fermé : elle ne suit pas le couvercle quand il s'ouvre
+                // (aucun collider sur Couvercle)
                 Box(go, new Vector3(c.x, s.y * 0.5f, c.z), s);
                 break;
             default:
@@ -129,7 +171,17 @@ public static class Props4
             case "Prop_Tonneau_Attrapable": return ("Tonneau", Vector3.zero, Vector3.zero, Vector3.one);
             case "Prop_Tonneau": return ("Tonneau", Vector3.zero, Vector3.zero, new Vector3(1.5f, 1.22f, 1.5f));
             case "Prop_Chaise_Attrapable": return ("Chaise", Vector3.zero, Vector3.zero, Vector3.one);
-            case "Prop_Poutre": return ("Poutre", Vector3.zero, Vector3.zero, new Vector3(1.5f, 1.4f, 1.4f));
+            case "Prop_Poutre": return ("Poutre", Vector3.zero, Vector3.zero, Vector3.one);
+            // deuxième passe : échelles uniformes seulement (cotes du modèle déjà proches de la greybox)
+            case "Prop_Lanterne": return ("Lanterne", Vector3.zero, Vector3.zero, Vector3.one);
+            case "Prop_Etagere": return ("Etagere", Vector3.zero, Vector3.zero, Vector3.one);
+            case "Prop_CoffreDeco": return ("CoffreDeco", Vector3.zero, Vector3.zero, Vector3.one);
+            case "Prop_Table": return ("Table", Vector3.zero, Vector3.zero, Vector3.one);
+            case "Prop_Banc": return ("Banc", Vector3.zero, Vector3.zero, Vector3.one);
+            case "Prop_Paille": return ("Paille", Vector3.zero, Vector3.zero, Vector3.one);
+            case "Prop_Armoire": return ("Armoire", Vector3.zero, Vector3.zero, Vector3.one);
+            case "Prop_Lit": return ("Lit", Vector3.zero, Vector3.zero, Vector3.one);
+            case "Prop_Chaudron": return ("Chaudron", Vector3.zero, Vector3.zero, Vector3.one);
             case "Prop_Sarcophage": return ("Sarcophage", Vector3.zero, new Vector3(0, 90, 0), new Vector3(1.14f, 1.25f, 1.33f));
             case "Prop_Ratelier": return ("Ratelier", Vector3.zero, Vector3.zero, new Vector3(1.625f, 1.17f, 1f));
             case "Prop_Statue": return ("Statue", Vector3.zero, Vector3.zero, Vector3.one * 1.385f);

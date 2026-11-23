@@ -1,11 +1,67 @@
 {
  "_note": "Relevé sur les vues --inspecter (2026-11-23) : après alignement automatique, l'avant des modèles Tripo regarde +X, d'où rot_z = -90 ; couvercle = hauteur relative de la jointure.",
- "Tonneau": {"rot_z": 0},
- "Chaise": {"rot_z": -90},
- "Poutre": {"rot_z": 0, "dims": [4.0, 0.38, 0.33]},
- "Sarcophage": {"rot_z": 90},
- "Ratelier": {"rot_z": -90},
- "Coffre": {"rot_z": -90, "couvercle": 0.635},
- "CoffreVerrou": {"rot_z": -90, "couvercle": 0.70},
- "Statue": {"rot_z": -90, "uniforme": true}
+ "Tonneau": {
+  "rot_z": 0
+ },
+ "Chaise": {
+  "rot_z": -90
+ },
+ "Poutre": {
+  "rot_z": 90,
+  "dims": [
+   4.0,
+   0.5,
+   0.5
+  ],
+  "poids": [
+   20,
+   1,
+   1
+  ],
+  "glb": "tripo_poutre_v02.glb"
+ },
+ "Sarcophage": {
+  "rot_z": 90
+ },
+ "Ratelier": {
+  "rot_z": -90
+ },
+ "Coffre": {
+  "rot_z": -90,
+  "couvercle": 0.635
+ },
+ "CoffreVerrou": {
+  "rot_z": -90,
+  "couvercle": 0.7
+ },
+ "Statue": {
+  "rot_z": -90,
+  "uniforme": true
+ },
+ "_note_b": "Deuxième passe (2026-11-23) : relevé sur les vues --inspecter des neuf GLB. Lanterne en échelle uniforme (hauteur 0.8). Poutre v02 : Tripo l'a faite 5 fois plus longue qu'épaisse (et non 13) ; pour la garder à 4 m sans étirer de plus de x1.3, la longueur est prioritaire (poids 4) et la section vise 0.5 m, celle de la greybox Prop_Poutre.",
+ "Lanterne": {
+  "rot_z": -90,
+  "uniforme": true
+ },
+ "Etagere": {
+  "rot_z": -90
+ },
+ "CoffreDeco": {
+  "rot_z": -90
+ },
+ "Table": {
+  "rot_z": 0
+ },
+ "Banc": {
+  "rot_z": 0
+ },
+ "Armoire": {
+  "rot_z": -90
+ },
+ "Lit": {
+  "rot_z": -90
+ },
+ "Chaudron": {
+  "rot_z": 0
+ }
 }

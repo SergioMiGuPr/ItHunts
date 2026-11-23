@@ -1,0 +1,53 @@
+{
+ "nom": "Armoire",
+ "objets": {
+  "SM_Prop_Armoire_LOD0": {
+   "avant": {
+    "faces": 4209,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 4209,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 1,
+    "aretes_de_bord": 2
+   }
+  },
+  "SM_Prop_Armoire_LOD1": {
+   "avant": {
+    "faces": 2103,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 2103,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 1,
+    "aretes_de_bord": 2
+   }
+  }
+ },
+ "dimensions": [
+  1.6,
+  0.852,
+  2.616
+ ],
+ "triangles_lod0": 4209,
+ "triangles_lod1": 2103,
+ "ok": true
+}

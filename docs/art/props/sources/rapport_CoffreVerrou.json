@@ -12,12 +12,19 @@
   0.994,
   1.2
  ],
+ "etirement_max": 1.418,
+ "cotes_visees": [
+  0.9,
+  0.55,
+  0.6
+ ],
  "triangles_tripo": 6143,
  "texture_tripo": [
   2048,
   2048
  ],
  "texture": "Assets/Art/Textures/Props/T_Prop_CoffreVerrou_BaseColor.png",
+ "texture_taille": 1024,
  "couvercle": {
   "hauteur_coupe": 0.42,
   "charniere": [
@@ -25,13 +32,38 @@
    0.274,
    0.42
   ],
-  "triangles": 2128
+  "triangles": 1934,
+  "ouverture_corps": {
+   "boucles": 1,
+   "paroi_m": 0.045,
+   "fond_m": 0.25,
+   "faces_ajoutees": 92
+  },
+  "ouverture_couvercle": {
+   "boucles": 1,
+   "paroi_m": 0.045,
+   "fond_m": null,
+   "faces_ajoutees": 89
+  }
  },
  "dimensions": [
   0.9,
   0.55,
-  0.42
+  0.6
  ],
- "triangles": 6491,
- "fbx": "Assets/Art/Models/Props/SM_Prop_CoffreVerrou.fbx"
+ "pivot_bas": 0.0,
+ "centre_emprise": [
+  0.0,
+  0.0
+ ],
+ "triangles": 5937,
+ "triangles_lod1": 3021,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_CoffreVerrou.fbx",
+ "objets_fbx": [
+  "Couvercle",
+  "Couvercle_LOD0",
+  "Couvercle_LOD1",
+  "SM_Prop_CoffreVerrou_LOD0",
+  "SM_Prop_CoffreVerrou_LOD1"
+ ]
 }

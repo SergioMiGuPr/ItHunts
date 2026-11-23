@@ -12,17 +12,34 @@
   0.9048,
   1.125
  ],
+ "etirement_max": 1.243,
+ "cotes_visees": [
+  0.6,
+  0.6,
+  0.9
+ ],
  "triangles_tripo": 3667,
  "texture_tripo": [
-  2048,
-  2048
+  1024,
+  1024
  ],
  "texture": "Assets/Art/Textures/Props/T_Prop_Tonneau_BaseColor.png",
+ "texture_taille": 1024,
  "dimensions": [
   0.6,
   0.6,
   0.9
  ],
+ "pivot_bas": 0.0,
+ "centre_emprise": [
+  0.0,
+  0.0
+ ],
  "triangles": 3667,
- "fbx": "Assets/Art/Models/Props/SM_Prop_Tonneau.fbx"
+ "triangles_lod1": 1833,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Tonneau.fbx",
+ "objets_fbx": [
+  "SM_Prop_Tonneau_LOD0",
+  "SM_Prop_Tonneau_LOD1"
+ ]
 }

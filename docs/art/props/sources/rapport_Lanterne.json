@@ -1,0 +1,57 @@
+{
+ "nom": "Lanterne",
+ "glb": "tripo_lanterne_v01.glb",
+ "alignement_deg": 0.0,
+ "rot_z": -90,
+ "sommets_soudes": 902,
+ "faces_degenerees": 0,
+ "ilots": 1,
+ "ilots_flottants_retires": 0,
+ "echelle_appliquee": [
+  1.6,
+  1.6,
+  1.6
+ ],
+ "etirement_max": 1.0,
+ "cotes_visees": [
+  0.5,
+  0.5,
+  0.8
+ ],
+ "triangles_tripo": 2050,
+ "texture_tripo": [
+  2048,
+  2048
+ ],
+ "texture": "Assets/Art/Textures/Props/T_Prop_Lanterne_BaseColor.png",
+ "texture_taille": 1024,
+ "feu": [
+  0.0,
+  0.0,
+  0.2879999876022339
+ ],
+ "accroche": [
+  0.0,
+  0.0,
+  0.800000011920929
+ ],
+ "dimensions": [
+  0.393,
+  0.395,
+  0.8
+ ],
+ "pivot_bas": 0.0,
+ "centre_emprise": [
+  0.0,
+  -0.0
+ ],
+ "triangles": 1470,
+ "triangles_lod1": 734,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Lanterne.fbx",
+ "objets_fbx": [
+  "Accroche",
+  "Feu",
+  "SM_Prop_Lanterne_LOD0",
+  "SM_Prop_Lanterne_LOD1"
+ ]
+}

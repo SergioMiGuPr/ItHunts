@@ -12,17 +12,34 @@
   1.245,
   2.1176
  ],
+ "etirement_max": 1.733,
+ "cotes_visees": [
+  1.6,
+  0.5,
+  1.8
+ ],
  "triangles_tripo": 5670,
  "texture_tripo": [
   2048,
   2048
  ],
  "texture": "Assets/Art/Textures/Props/T_Prop_Ratelier_BaseColor.png",
+ "texture_taille": 1024,
  "dimensions": [
   1.6,
   0.5,
   1.8
  ],
+ "pivot_bas": 0.0,
+ "centre_emprise": [
+  0.0,
+  0.0
+ ],
  "triangles": 5670,
- "fbx": "Assets/Art/Models/Props/SM_Prop_Ratelier.fbx"
+ "triangles_lod1": 2834,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Ratelier.fbx",
+ "objets_fbx": [
+  "SM_Prop_Ratelier_LOD0",
+  "SM_Prop_Ratelier_LOD1"
+ ]
 }
