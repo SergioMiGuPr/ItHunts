@@ -118,6 +118,7 @@ namespace ItHunts.Debugging
                         case "ombres_decor": look.shadowedLights = 1; break;
                         case "extinction": look.lightCulling = false; break;
                         case "halos": look.halos = false; break;
+                        case "vfx": look.vfxCulling = false; break;
                         case "vacillement": look.flicker = false; break;
                         case "atlas":
                             if (UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline is UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset urp)
@@ -166,11 +167,28 @@ namespace ItHunts.Debugging
                 variant += $" ; distance d'affichage {far} m";
             }
 
+            // -ithunts-perf-at S : timer avancé à S secondes (moment de jeu typique, sans chercher de pic) ; sinon pic de la fin.
+            int at2 = System.Array.IndexOf(args, "-ithunts-perf-at");
+            float atSec = 0f;
+            bool atFixed = at2 >= 0 && at2 + 1 < args.Length && float.TryParse(args[at2 + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out atSec);
             if (zone != null)
-                zone.DebugAdvance(820f - zone.Elapsed);
+            {
+                if (atFixed)
+                {
+                    // Par pas de 10 s : les vagues ont le temps d'apparaître comme en jeu.
+                    while (zone.Elapsed < atSec - 1f)
+                    {
+                        zone.DebugAdvance(Mathf.Min(10f, atSec - zone.Elapsed));
+                        yield return new WaitForSeconds(0.1f);
+                    }
+                }
+                else
+                    zone.DebugAdvance(820f - zone.Elapsed);
+            }
+
             // Pic de vague réellement actif : on avance encore par pas de 5 s jusqu'au prochain pic (selon les réglages des vagues).
             var director = FindFirstObjectByType<ItHunts.Enemies.WaveDirector>();
-            for (int k = 0; k < 120 && zone != null && director != null && !director.InPeak; k++)
+            for (int k = 0; k < 120 && !atFixed && zone != null && director != null && !director.InPeak; k++)
             {
                 zone.DebugAdvance(5f);
                 yield return new WaitForSeconds(0.1f);

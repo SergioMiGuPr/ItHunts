@@ -61,6 +61,13 @@ namespace ItHunts.Settings
         [Tooltip("Elle ne se rallume qu'en revenant à (marge − hystérésis) : pas de bascule au bord.")]
         [Min(0f)] public float lightCullHysteresis = 4f;
 
+        [Header("Flammes et poussières du décor lointaines : coupées (nuit 4 : 3 400 systèmes de particules simulés dans l'acte II)")]
+        public bool vfxCulling = true;
+        [Tooltip("Un effet de particules du décor qui boucle (flammes des appliques et des lustres, poussière des rayons de lune) est coupé au-delà de cette distance du joueur le plus proche (m). La lumière reste.")]
+        [Min(5f)] public float vfxCullDistance = 30f;
+        [Tooltip("Il ne revient qu'en deçà de (distance − hystérésis).")]
+        [Min(0f)] public float vfxCullHysteresis = 4f;
+
         [Header("Lanterne du personnage : cône vers l'avant qui projette des ombres")]
         public bool lanternCone = true;
         [Range(10f, 120f)] public float lanternConeAngle = 62f;
