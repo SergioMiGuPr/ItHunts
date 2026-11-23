@@ -124,7 +124,6 @@ GameObject:
   - component: {fileID: 8207383954613099752}
   - component: {fileID: 5592992581599633729}
   - component: {fileID: 8890543205700701545}
-  - component: {fileID: 4306785171848447579}
   m_Layer: 0
   m_Name: Chateau_Escalier_Droit_4m
   m_TagString: Untagged
@@ -208,28 +207,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &4306785171848447579
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5619278718671291351}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 4764216815665100933, guid: db00a0032a0ae73409b2001a8d9eb011, type: 3}
 --- !u!1 &6092061678294655212
 GameObject:
   m_ObjectHideFlags: 0

@@ -126,6 +126,7 @@ GameObject:
   - component: {fileID: 97600952206399524}
   - component: {fileID: 124452460422211368}
   - component: {fileID: 2454972690261519737}
+  - component: {fileID: 2980188274750910962}
   m_Layer: 0
   m_Name: Chateau_CelluleTraqueur
   m_TagString: Untagged
@@ -232,6 +233,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 5413125911072701394, guid: f227837f3ad6ca04ab6fea9d8da36b8f, type: 3}
+--- !u!114 &2980188274750910962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4060038234238493417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 2
+  partieA: {fileID: 7721290636428233650}
+  partieB: {fileID: 0}
+  duree: 2.6
+  ouverture: 0
+  ouvrirAuDemarrage: 0
 --- !u!1 &6337242831231321940
 GameObject:
   m_ObjectHideFlags: 0

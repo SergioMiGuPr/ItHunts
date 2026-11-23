@@ -127,6 +127,7 @@ GameObject:
   - component: {fileID: 3965153065884804994}
   - component: {fileID: 4409258121261973786}
   - component: {fileID: 7437214407684784394}
+  - component: {fileID: 5938590646136868360}
   m_Layer: 0
   m_Name: Chateau_PorteVerrouillee
   m_TagString: Untagged
@@ -231,6 +232,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 1728746523413525698, guid: 293b2c93914bff540b44fc6dabcd66b1, type: 3}
+--- !u!114 &5938590646136868360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3548131676888845699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 1
+  partieA: {fileID: 1351108833521973584}
+  partieB: {fileID: 4968542715120748553}
+  duree: 2.2
+  ouverture: 0
+  ouvrirAuDemarrage: 0
 --- !u!1 &3734718873920601910
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5771143055904965316}
   - component: {fileID: 1494235411965972397}
   - component: {fileID: 6103564404663563404}
+  - component: {fileID: 2646295261748612087}
   m_Layer: 0
   m_Name: Chateau_PorteSortie
   m_TagString: Untagged
@@ -116,6 +117,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -7864651496281211936, guid: 54cf16aff5ef4d4458ca399ba429ebfa, type: 3}
+--- !u!114 &2646295261748612087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1706482780830409175}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 0
+  partieA: {fileID: 1859135908462460960}
+  partieB: {fileID: 513953582456450739}
+  duree: 1.8
+  ouverture: 0
+  ouvrirAuDemarrage: 0
 --- !u!1 &2001212169216801007
 GameObject:
   m_ObjectHideFlags: 0

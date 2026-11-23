@@ -60,6 +60,8 @@ public static class KitBuilder
         Plat("M_Kit_Vitrail_Ambre", new Color(0.036f, 0.031f, 0.024f), new Color(0.03f, 0.022f, 0.012f), true);
         Plat("M_Kit_Sceau_Ame", new Color(0.3f, 0.9f, 1f), new Color(0.4f, 2.6f, 3.2f));
         Plat("M_Collision_Invisible", new Color(1f, 0f, 1f));
+        // cristal du lustre : pâle et froid, faible émission (il accroche la lumière des bougies)
+        Plat("M_Kit_Cristal", new Color(0.62f, 0.66f, 0.74f), new Color(0.16f, 0.15f, 0.13f), true);
         // vitraux : la lumière des torches ne les sature pas (verre épais et sale, vu de l'intérieur la nuit)
         foreach (var v in new[] { "M_Kit_Vitrail", "M_Kit_Vitrail_Rouge", "M_Kit_Vitrail_Ambre" })
         {
@@ -139,10 +141,32 @@ public static class KitBuilder
                     bc.center = go.transform.InverseTransformPoint(b.center); bc.size = b.size;
                 }
                 else
+                {
+                    // nuit 4, lot 3 (relecture) : une pièce qui a ses propres collisions « Col_* » (rampe lisse sous les marches,
+                    // parois) n'en reçoit pas sur son maillage visuel (les nez de marche doubleraient la rampe) ; ses garde-corps
+                    // gardent la leur
+                    bool aCol = go.GetComponentsInChildren<Transform>().Any(t => t.name.StartsWith("Col_"));
                     foreach (var mf in go.GetComponentsInChildren<MeshFilter>())
-                        if (!mf.GetComponent<MeshCollider>() && !mf.name.StartsWith("Deco_")) mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+                        if (!mf.GetComponent<MeshCollider>() && !mf.name.StartsWith("Deco_") && (!aCol || mf.name.StartsWith("Garde")))
+                            mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+                }
                 foreach (var t in go.GetComponentsInChildren<Transform>())
                     t.gameObject.isStatic = !t.GetComponentsInParent<Transform>(true).Any(p => EstMobile(p.name));
+            }
+            // nuit 4, lot 3 : animation d'ouverture des portes et des cellules (composant OuverturePorte, ItHunts.Art.VFX)
+            {
+                Transform F(string n) => go.GetComponentsInChildren<Transform>().FirstOrDefault(t => t.name == n);
+                var o = (ItHunts.Art.VFX.OuverturePorte)null;
+                if (F("Vantail")) { o = go.AddComponent<ItHunts.Art.VFX.OuverturePorte>(); o.genre = ItHunts.Art.VFX.OuverturePorte.Genre.Guillotine; o.partieA = F("Vantail"); o.partieB = F("Serrure"); o.duree = 2.2f; }
+                else if (F("Herse")) { o = go.AddComponent<ItHunts.Art.VFX.OuverturePorte>(); o.genre = ItHunts.Art.VFX.OuverturePorte.Genre.Herse; o.partieA = F("Herse"); o.duree = 2.6f; }
+                else if (F("Trappe_G")) { o = go.AddComponent<ItHunts.Art.VFX.OuverturePorte>(); o.genre = ItHunts.Art.VFX.OuverturePorte.Genre.Trappes; o.partieA = F("Trappe_G"); o.partieB = F("Trappe_D"); o.duree = 1.2f; }
+                else if (F("Battant_G"))
+                {
+                    o = go.AddComponent<ItHunts.Art.VFX.OuverturePorte>();
+                    o.genre = nom.Contains("CelluleTraqueur") ? ItHunts.Art.VFX.OuverturePorte.Genre.Vantaux : ItHunts.Art.VFX.OuverturePorte.Genre.Battants;
+                    o.partieA = F("Battant_G"); o.partieB = F("Battant_D"); o.duree = nom.Contains("CelluleTraqueur") ? 0.9f : 1.8f;
+                }
+                if (o != null) sb.Append($"[ouverture {o.genre}] ");
             }
             // sources de lumière : feu et lumière ponctuelle sur chaque repère « Feu* »
             foreach (var t in go.GetComponentsInChildren<Transform>().Where(t => t.name.StartsWith("Feu")).ToList())
