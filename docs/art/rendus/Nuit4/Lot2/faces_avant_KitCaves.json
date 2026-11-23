@@ -1,0 +1,346 @@
+{
+ "SM_Cave_Applique.fbx": {
+  "faces": 240,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 11,
+  "aire_partielle_m2": 0.003
+ },
+ "SM_Cave_ArcheBasse.fbx": {
+  "faces": 376,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 53,
+  "aire_partielle_m2": 0.703
+ },
+ "SM_Cave_ArcheHaute.fbx": {
+  "faces": 504,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 72,
+  "aire_partielle_m2": 0.758
+ },
+ "SM_Cave_ArcheRuine.fbx": {
+  "faces": 562,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 16,
+  "aire_partielle_m2": 0.165
+ },
+ "SM_Cave_Banc.fbx": {
+  "faces": 36,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Bassin.fbx": {
+  "faces": 276,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Brasero.fbx": {
+  "faces": 196,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Caisses_Pile.fbx": {
+  "faces": 216,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 13,
+  "aire_partielle_m2": 1.002
+ },
+ "SM_Cave_Canal_8m.fbx": {
+  "faces": 58,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 8,
+  "aire_partielle_m2": 16.0
+ },
+ "SM_Cave_Candelabre.fbx": {
+  "faces": 404,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 38,
+  "aire_partielle_m2": 0.011
+ },
+ "SM_Cave_Cellule_Grille.fbx": {
+  "faces": 480,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 72,
+  "aire_partielle_m2": 0.453
+ },
+ "SM_Cave_Cellule_Porte.fbx": {
+  "faces": 156,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Chaines_Mur.fbx": {
+  "faces": 324,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Chandelles.fbx": {
+  "faces": 220,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 18,
+  "aire_partielle_m2": 0.004
+ },
+ "SM_Cave_Corniche_Bois_6m.fbx": {
+  "faces": 216,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Eboulis_Grand.fbx": {
+  "faces": 840,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Eboulis_Petit.fbx": {
+  "faces": 432,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 6,
+  "aire_partielle_m2": 0.03
+ },
+ "SM_Cave_Etagere.fbx": {
+  "faces": 1136,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Gouffre_Bord_12m.fbx": {
+  "faces": 726,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 57,
+  "aire_partielle_m2": 12.022
+ },
+ "SM_Cave_Lit.fbx": {
+  "faces": 176,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 36,
+  "aire_partielle_m2": 0.144
+ },
+ "SM_Cave_MurBrise_4m.fbx": {
+  "faces": 480,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 83,
+  "aire_partielle_m2": 5.954
+ },
+ "SM_Cave_MurBrise_8m.fbx": {
+  "faces": 480,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 84,
+  "aire_partielle_m2": 6.649
+ },
+ "SM_Cave_Paille.fbx": {
+  "faces": 120,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Paroi_Courbe_10m.fbx": {
+  "faces": 492,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Paroi_Courbe_18m.fbx": {
+  "faces": 872,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Paroi_Courbe_6m.fbx": {
+  "faces": 340,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Paroi_Droite_10m.fbx": {
+  "faces": 388,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Paroi_Droite_18m.fbx": {
+  "faces": 688,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Paroi_Droite_6m.fbx": {
+  "faces": 268,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Paroi_Saillie_10m.fbx": {
+  "faces": 336,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_PilierRoche_18m.fbx": {
+  "faces": 874,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Plateforme_3m.fbx": {
+  "faces": 204,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 4,
+  "aire_partielle_m2": 0.117
+ },
+ "SM_Cave_PontBois_12m.fbx": {
+  "faces": 1056,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 11,
+  "aire_partielle_m2": 0.007
+ },
+ "SM_Cave_PontPierre_16m.fbx": {
+  "faces": 296,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 44,
+  "aire_partielle_m2": 29.6
+ },
+ "SM_Cave_PorteSortie.fbx": {
+  "faces": 1372,
+  "degenerees": 0,
+  "superposees": 4,
+  "aire_m2": 9.662,
+  "partielles": 88,
+  "aire_partielle_m2": 1.619
+ },
+ "SM_Cave_Puits.fbx": {
+  "faces": 404,
+  "degenerees": 0,
+  "superposees": 40,
+  "aire_m2": 0.328,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Rebord_4m.fbx": {
+  "faces": 156,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Sacs.fbx": {
+  "faces": 400,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 49,
+  "aire_partielle_m2": 0.139
+ },
+ "SM_Cave_Seau.fbx": {
+  "faces": 192,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_TableGarde.fbx": {
+  "faces": 216,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 18,
+  "aire_partielle_m2": 0.047
+ },
+ "SM_Cave_Tabouret.fbx": {
+  "faces": 72,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Tonneaux_Pile.fbx": {
+  "faces": 400,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Cave_Torche_Murale.fbx": {
+  "faces": 92,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ }
+}
