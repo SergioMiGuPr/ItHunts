@@ -50,16 +50,22 @@ public static class KitBuilder
         Plat("M_Kit_Cire", new Color(0.78f, 0.72f, 0.58f));
         Plat("M_Kit_Flamme", new Color(1f, 0.8f, 0.5f), new Color(4f, 1.6f, 0.45f), true);
         Plat("M_Kit_Toile", new Color(0.36f, 0.3f, 0.24f));
-        Plat("M_Kit_Vitrail", new Color(0.05f, 0.06f, 0.09f), new Color(0.07f, 0.09f, 0.16f), true);
+        Plat("M_Kit_Vitrail", new Color(0.026f, 0.029f, 0.036f), new Color(0.02f, 0.024f, 0.036f), true);   // vitraux : verre vieilli aux teintes sourdes (nuit 4, lot 3 : écarts de teinte faibles, le toon les accentue)
         Plat("M_Kit_Feuillage", new Color(0.10f, 0.13f, 0.09f), null, true);
         Plat("M_Kit_Toile_Peinte", new Color(0.16f, 0.12f, 0.12f));
         Plat("M_Kit_Lune", new Color(0.9f, 0.92f, 1f), new Color(2.2f, 2.3f, 2.6f));
         Plat("M_Kit_Os", new Color(0.81f, 0.77f, 0.65f));
         // nuit 4, lot 3 : vitraux sombres colorés, sceau d'âme (cyan des âmes, réservé au jeu), surface de collision seule
-        Plat("M_Kit_Vitrail_Rouge", new Color(0.12f, 0.02f, 0.03f), new Color(0.2f, 0.02f, 0.03f), true);
-        Plat("M_Kit_Vitrail_Ambre", new Color(0.13f, 0.08f, 0.02f), new Color(0.22f, 0.12f, 0.02f), true);
+        Plat("M_Kit_Vitrail_Rouge", new Color(0.036f, 0.024f, 0.026f), new Color(0.03f, 0.014f, 0.014f), true);
+        Plat("M_Kit_Vitrail_Ambre", new Color(0.036f, 0.031f, 0.024f), new Color(0.03f, 0.022f, 0.012f), true);
         Plat("M_Kit_Sceau_Ame", new Color(0.3f, 0.9f, 1f), new Color(0.4f, 2.6f, 3.2f));
         Plat("M_Collision_Invisible", new Color(1f, 0f, 1f));
+        // vitraux : la lumière des torches ne les sature pas (verre épais et sale, vu de l'intérieur la nuit)
+        foreach (var v in new[] { "M_Kit_Vitrail", "M_Kit_Vitrail_Rouge", "M_Kit_Vitrail_Ambre" })
+        {
+            var m = AssetDatabase.LoadAssetAtPath<Material>($"{MATKIT}/{v}.mat");
+            m.SetFloat("_LightSaturation", 0.4f); m.SetFloat("_AmbientInfluence", 0.4f); EditorUtility.SetDirty(m);
+        }
         AssetDatabase.SaveAssets();
     }
 

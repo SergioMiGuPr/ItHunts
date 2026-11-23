@@ -27,8 +27,23 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Bib_PierreTaillee_Peint
+    second: {fileID: 2100000, guid: 04560a32a59849145bc8d03cc871482b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bib_Terre
+    second: {fileID: 2100000, guid: 38f40780281207348a1133a1108734e4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Corde
     second: {fileID: 2100000, guid: 177efb7386d703441a942bd61cf8f4af, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Eau_Toon
+    second: {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
