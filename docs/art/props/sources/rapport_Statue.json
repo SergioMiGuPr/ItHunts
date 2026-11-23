@@ -1,0 +1,28 @@
+{
+ "nom": "Statue",
+ "glb": "tripo_statue_v01.glb",
+ "alignement_deg": 0.0,
+ "rot_z": -90,
+ "sommets_soudes": 1281,
+ "faces_degenerees": 0,
+ "ilots": 1,
+ "ilots_flottants_retires": 0,
+ "echelle_appliquee": [
+  2.1667,
+  2.1667,
+  2.1667
+ ],
+ "triangles_tripo": 6646,
+ "texture_tripo": [
+  2048,
+  2048
+ ],
+ "texture": "Assets/Art/Textures/Props/T_Prop_Statue_BaseColor.png",
+ "dimensions": [
+  0.756,
+  0.746,
+  2.6
+ ],
+ "triangles": 6646,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Statue.fbx"
+}

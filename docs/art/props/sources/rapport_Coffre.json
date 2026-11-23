@@ -1,0 +1,37 @@
+{
+ "nom": "Coffre",
+ "glb": "tripo_coffre_v01.glb",
+ "alignement_deg": 0.0,
+ "rot_z": -90,
+ "sommets_soudes": 1852,
+ "faces_degenerees": 0,
+ "ilots": 1,
+ "ilots_flottants_retires": 0,
+ "echelle_appliquee": [
+  1.4033,
+  1.1807,
+  1.2
+ ],
+ "triangles_tripo": 4490,
+ "texture_tripo": [
+  2048,
+  2048
+ ],
+ "texture": "Assets/Art/Textures/Props/T_Prop_Coffre_BaseColor.png",
+ "couvercle": {
+  "hauteur_coupe": 0.381,
+  "charniere": [
+   0.0,
+   0.262,
+   0.381
+  ],
+  "triangles": 1458
+ },
+ "dimensions": [
+  0.9,
+  0.543,
+  0.381
+ ],
+ "triangles": 4942,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Coffre.fbx"
+}

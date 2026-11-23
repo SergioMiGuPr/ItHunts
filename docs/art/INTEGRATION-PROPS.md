@@ -608,6 +608,50 @@ leur `Grabbable` et leur lueur ; leur modèle doit rester dans la boîte (la col
 | Lustre (salles) | 1.6 × 0.3 × 1.6, suspendu | — | **attrapable** (25 kg, tombe) | pivot au point d'accroche |
 | Lustre géant (arène) | 12 × 1.5 × 12, à 24 m | 1 | piège | |
 
+## Nuit 4, lot 4 : props en 3D (2026-11-23, branche `art-props-3d`)
+
+Huit props encore en primitives greybox deviennent de vrais modèles. Chaîne : image concept dans la DA (Higgsfield,
+Nano Banana 2.1, 2K) → **Tripo H3.1** image vers 3D (texture, sans PBR) → nettoyage par script dans Blender 5.0
+(`Assets/Art/Source~/Props/scripts/nettoyer_prop.py`, réglages relevés dans `docs/art/props/sources/reglages_props.json`,
+un rapport `rapport_<Nom>.json` par prop). Sources (images, GLB, journal des dépenses : 88 crédits) dans
+`docs/art/props/sources/`. Contrôle : `docs/art/rendus/Nuit4/Lot4/Planche_Props.jpg` (FBX réimporté, mannequin de 1.8 m,
+coffres couvercle ouvert à 70°).
+
+Conventions communes : FBX dans `Assets/Art/Models/Props/SM_Prop_<Nom>.fbx` (réglages d'export de `kitlib.export` :
+**+Y en haut, +Z en avant dans Unity**, échelle 1, 1 unité = 1 m), pivot **au sol, au centre de l'emprise** ; une texture
+de base `Assets/Art/Textures/Props/T_Prop_<Nom>_BaseColor.png` par prop (couleurs peintes par Tripo : un peu d'ombre
+douce est restée dans la texture, à surveiller avec le shader toon) ; un matériau par prop `M_Prop_<Nom>` (à refaire
+dans Unity avec `ItHunts/Toon`). Aucun collider dans les FBX.
+
+| Prop | Fichier | Dimensions l × p × h (m) | Pivot | Triangles | Texture | Remplace (greybox) | Réglage dans le prefab |
+|---|---|---|---|---|---|---|---|
+| Tonneau | `SM_Prop_Tonneau.fbx` | 0.6 × 0.6 × 0.9 | sol, centre | 3 667 | 1024 | `Prop_Tonneau_Attrapable` (0.6 × 0.9 × 0.6) et `Prop_Tonneau` (0.9 × 1.1 × 0.9) | attrapable : échelle 1, pivot de la greybox au centre → modèle à (0, −0.45, 0) si la greybox est centrée ; fixe : échelle (1.5, 1.22, 1.5) |
+| Chaise | `SM_Prop_Chaise.fbx` | 0.45 × 0.45 × 1.0 | sol, centre | 3 511 | 1024 | `Prop_Chaise_Attrapable` (0.55 × 1 × 0.55) | échelle 1 : tient dans la boîte de collision de la greybox (garder sa boîte, son Rigidbody, `Grabbable` et la lueur) |
+| Poutre tombée | `SM_Prop_Poutre.fbx` | 4.0 × 0.38 × 0.33 (clous et ferrure compris ; bois ≈ 0.3 × 0.3) | sol, centre | 2 716 | 1024 | `Prop_Poutre` (6 × 0.5 × 0.5) quand elle est posée au sol | longueur sur X ; échelle (1.5, 1.4, 1.4) pour la boîte de 6 m. La poutre suspendue à crochet reste `SM_Poutre` (§ 2) |
+| Sarcophage | `SM_Prop_Sarcophage.fbx` | 2.2 × 0.9 × 0.8 | sol, centre | 6 513 | 2048 | `Prop_Sarcophage` (1.2 × 1 × 2.5, long sur Z) | longueur sur X : rotation (0, 90, 0) ; échelle (1.14, 1.25, 1.33) pour remplir la boîte, ou échelle 1 |
+| Râtelier d'armes | `SM_Prop_Ratelier.fbx` | 1.6 × 0.5 × 1.8 | sol, centre | 5 670 | 2048 | `Prop_Ratelier` (2.6 × 2.1 × 0.5) | échelle (1.625, 1.17, 1) ; armes soudées au râtelier (un seul objet) |
+| Coffre de récompense | `SM_Prop_Coffre.fbx` + enfant **`Couvercle`** | 0.9 × 0.55 × 0.6 (corps 0.38 de haut) | corps : sol, centre ; `Couvercle` : **axe de la charnière arrière**, (0, 0.381, −0.262) dans le repère du coffre | 4 942 (couvercle 1 458) | 1024 + `M_Prop_Coffre_Interieur` (faces qui referment les ouvertures, sombre) | coffre greybox « Economy_Chest » de `TestArenaSceneBuilder.BuildChest` (corps 1.4 × 0.8 × 0.9, couvercle 1.5 × 0.2 × 1, collider 1.4 × 0.9 × 0.9) | échelle 1.5 pour garder l'encombrement de la greybox (1.35 × 0.83 × 0.9) ; brancher `Chest.lid` sur l'enfant `Couvercle`. Ouverture : rotation locale **X ≈ −70°** (le bord avant monte et part vers l'arrière) |
+| Coffre de salle verrouillée | `SM_Prop_CoffreVerrou.fbx` + enfant **`Couvercle`** | 0.9 × 0.55 × 0.6 (corps 0.42 de haut) | corps : sol, centre ; `Couvercle` : axe de la charnière, (0, 0.42, −0.274) | 6 491 (couvercle 2 128) | 2048 + `M_Prop_CoffreVerrou_Interieur` | coffre de la salle verrouillée (`G_SalleVerrouillee`, `LockedRoomSpot`) | même règle ; le cadenas et sa chaîne sont sur le corps (ils restent en place à l'ouverture) |
+| Statue gothique | `SM_Prop_Statue.fbx` | 0.76 × 0.75 × 2.6 (échelle uniforme réglée sur la hauteur) | sol, centre | 6 646 | 2048 | `Prop_Statue` (1.4 × 3.6 × 1.4) | échelle uniforme 1.385 pour la hauteur de 3.6 m (socle 1.05 m de côté) |
+
+Remarques :
+
+- **Couvercle des coffres.** Aujourd'hui `Chest` cache les renderers du couvercle pour le joueur qui l'a ouvert ; avec le
+  pivot sur la charnière on peut animer l'ouverture (rotation X de 0 à −70°, par caméra comme le masquage actuel). Les
+  ouvertures du corps et du couvercle sont refermées par une face plane (`*_Interieur`) : il n'y a pas de fond creusé,
+  le dessus du corps est plat et sombre à 0.38 m (coffre) ou 0.42 m (coffre verrouillé). Une lueur dorée de butin
+  (ART-HANDOFF : coffres en doré / orangé) y sera bien posée.
+- **Déformations dues à la mise aux cotes** (rapport : `echelle_appliquee`) : poutre étirée de × 3.1 en longueur (Tripo
+  l'a faite courte : fibres et clous allongés, lisible à distance) ; sarcophage étiré de × 1.7 en longueur et × 1.3 en
+  largeur (gisant plus long et plus plat que sur l'image) ; les autres restent entre × 0.9 et × 1.4.
+- **Pièces de kit à la place de primitives** (aucun nouveau modèle) : `Prop_MurEffondre` → `SM_Cave_MurBrise_*` ;
+  `Prop_Gravats` → `SM_Cave_Eboulis_*` ; caisses (`Prop_Caisse`, `Prop_Caisse_Attrapable`, `Prop_PileDeCaisses`) → modèle de
+  caisse existant `SM_Caisse` (§ 4 bis).
+- **À faire dans Unity (côté `main` pour les prefabs)** : matériaux toon `M_Prop_<Nom>` avec la texture de base (et un
+  matériau très sombre non éclairé pour `*_Interieur`), prefabs (remplacement du maillage des greybox avec les réglages
+  ci-dessus), colliders : boîtes simples (garder celles des greybox pour les attrapables), râtelier en deux boîtes
+  (montants + barre), statue en socle + capsule, sarcophage en une boîte ; lueur des objets attrapables conservée.
+
 ## Salles d'exemple des trois actes (lot 5, nuit du 2026-11-22, PR art-salles-exemple)
 
 Onze salles entièrement habillées et éclairées, assemblées avec les kits des lots 2 à 4, prêtes à servir de modèles. Prefabs dans `Assets/Art/Levels/Exemples/<Acte>/<Nom>.prefab` (pièces des kits avec collisions, blocs de sol et de plafond, lumières) ; scènes de contrôle `Assets/Art/Scenes/Exemples_<Acte>.unity` (éclairage de l'acte) ; captures dans `docs/art/rendus/Exemples/<Acte>/`. Les plans sont générés par `Assets/Art/Source~/Kits/scripts/salles.py` (texte lisible dans `Assets/Art/Source~/Kits/plans/`), assemblés par `SalleBuilder.cs`. **Pour `main` :** y ajouter le gameplay (points d'apparition, vagues, coffres, portes de module, NavMesh) ; les repères `Accroche_*` des pièces marquent les points de traction et les rebords. Coordonnées dans le repère du prefab (m), +Z vers le nord.

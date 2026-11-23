@@ -1,0 +1,11 @@
+{
+ "_note": "Relevé sur les vues --inspecter (2026-11-23) : après alignement automatique, l'avant des modèles Tripo regarde +X, d'où rot_z = -90 ; couvercle = hauteur relative de la jointure.",
+ "Tonneau": {"rot_z": 0},
+ "Chaise": {"rot_z": -90},
+ "Poutre": {"rot_z": 0, "dims": [4.0, 0.38, 0.33]},
+ "Sarcophage": {"rot_z": 90},
+ "Ratelier": {"rot_z": -90},
+ "Coffre": {"rot_z": -90, "couvercle": 0.635},
+ "CoffreVerrou": {"rot_z": -90, "couvercle": 0.70},
+ "Statue": {"rot_z": -90, "uniforme": true}
+}

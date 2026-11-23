@@ -1,0 +1,28 @@
+{
+ "nom": "Tonneau",
+ "glb": "tripo_tonneau_v01.glb",
+ "alignement_deg": -39.0,
+ "rot_z": 0,
+ "sommets_soudes": 1311,
+ "faces_degenerees": 0,
+ "ilots": 1,
+ "ilots_flottants_retires": 0,
+ "echelle_appliquee": [
+  0.9098,
+  0.9048,
+  1.125
+ ],
+ "triangles_tripo": 3667,
+ "texture_tripo": [
+  2048,
+  2048
+ ],
+ "texture": "Assets/Art/Textures/Props/T_Prop_Tonneau_BaseColor.png",
+ "dimensions": [
+  0.6,
+  0.6,
+  0.9
+ ],
+ "triangles": 3667,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Tonneau.fbx"
+}
