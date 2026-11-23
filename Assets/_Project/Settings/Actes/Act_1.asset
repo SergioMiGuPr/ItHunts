@@ -22,6 +22,8 @@ MonoBehaviour:
   mainPathShare: 0.4
   loopChance: 0.8
   minStartExit: 6
+  minDoorsPerRoom: 2
+  landingChance: 0.5
   doorWidth: 12
   doorHeight: 9
   ceiling: {x: 16, y: 22}

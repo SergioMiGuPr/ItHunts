@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G10
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G10"
-  displayName: "Traction rapide"
-  description: "Une charge de traction revient plus vite."
-  icon: {fileID: 0}
-  iconSymbol: "-1s"
+  code: G10
+  displayName: Traction rapide
+  description: Une charge de traction revient plus vite.
+  icon: {fileID: 21300000, guid: 94714bf34ec72ee4eb60d59d0033e925, type: 3}
+  iconSymbol: -1s
   color: {r: 0.3, g: 0.9, b: 3.2, a: 1}
   kind: 9
   character: 0
@@ -34,8 +34,9 @@ MonoBehaviour:
   - "\u22121.6 s"
   - "\u22122.2 s"
   - "\u22122.8 s"
-  - "\u22123.4 s, l'arriv\xE9e d'une traction rend la charge si vous atterrissez \xE0 plus de 12 m/s"
-  synergies: "Second souffle (G3), Orbe vorace (G9)"
+  - "\u22123.4 s, l'arriv\xE9e d'une traction rend la charge si vous atterrissez
+    \xE0 plus de 12 m/s"
+  synergies: Second souffle (G3), Orbe vorace (G9)
   amount: 1
   forArtifact: {fileID: 0}
   rarity: 0

@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G8
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G8"
-  displayName: "Marchandage"
+  code: G8
+  displayName: Marchandage
   description: "Prix du marchand r\xE9duits."
-  icon: {fileID: 0}
-  iconSymbol: "%"
+  icon: {fileID: 21300000, guid: c5e5372bc096e1e48aaa20036d7ceaa9, type: 3}
+  iconSymbol: '%'
   color: {r: 0.4, g: 2.6, b: 3.2, a: 1}
   kind: 7
   character: 0

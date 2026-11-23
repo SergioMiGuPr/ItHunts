@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G14
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G14"
-  displayName: "Onde blessante"
+  code: G14
+  displayName: Onde blessante
   description: "L'onde de r\xE9pulsion blesse les ennemis touch\xE9s."
-  icon: {fileID: 0}
-  iconSymbol: "10"
+  icon: {fileID: 21300000, guid: a42d9da989cd5e446afc3cdff87ead54, type: 3}
+  iconSymbol: 10
   color: {r: 3.2, g: 1.3, b: 0.3, a: 1}
   kind: 13
   character: 0
@@ -35,12 +35,12 @@ MonoBehaviour:
   - 1.5
   rankValues3: []
   rankTexts:
-  - "10 PV"
-  - "15 PV"
-  - "20 PV, ralentit 1.5 s"
-  - "28 PV"
+  - 10 PV
+  - 15 PV
+  - 20 PV, ralentit 1.5 s
+  - 28 PV
   - "38 PV, double onde (une seconde 0.3 s apr\xE8s)"
-  synergies: "Rebond (G16), Onde de choc (G15)"
+  synergies: Rebond (G16), Onde de choc (G15)
   amount: 10
   forArtifact: {fileID: 0}
   rarity: 0

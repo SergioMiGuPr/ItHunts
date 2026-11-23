@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_K5
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "K5"
+  code: K5
   displayName: "Os bris\xE9"
   description: "Les coups font saigner (d\xE9g\xE2ts sur la dur\xE9e)."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 81aad2673083a49499fc30a7c9c77b68, type: 3}
   iconSymbol: "\u2666"
   color: {r: 2.6, g: 2.4, b: 1.8, a: 1}
   kind: 56
@@ -40,11 +40,11 @@ MonoBehaviour:
   - 2
   - 2
   rankTexts:
-  - "3 PV/s, 3 s"
-  - "4 PV/s, 4 s"
-  - "5 PV/s, 5 s, 2 saignements se cumulent"
-  - "6 PV/s, 6 s"
-  - "8 PV/s, 7 s, un saignant qui meurt vous soigne 8 PV"
+  - 3 PV/s, 3 s
+  - 4 PV/s, 4 s
+  - 5 PV/s, 5 s, 2 saignements se cumulent
+  - 6 PV/s, 6 s
+  - 8 PV/s, 7 s, un saignant qui meurt vous soigne 8 PV
   synergies: "Brise-garde (K7) ; saigner et br\xFBler se cumulent (Allumette G28)"
   amount: 3
   forArtifact: {fileID: 0}

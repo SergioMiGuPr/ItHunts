@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G4
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G4"
-  displayName: "Rythme de fer"
+  code: G4
+  displayName: Rythme de fer
   description: "Chaque parade r\xE9ussie d'affil\xE9e (6 s) augmente vos d\xE9g\xE2ts."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 52b55b238f7f40f498862e7aad9d7d75, type: 3}
   iconSymbol: "\u2669"
   color: {r: 3, g: 2.4, b: 0.9, a: 1}
   kind: 3
@@ -35,10 +35,10 @@ MonoBehaviour:
   - 5
   rankValues3: []
   rankTexts:
-  - "+10 % par parade, max 3"
-  - "+15 %, max 3"
-  - "+20 %, max 4"
-  - "+25 %, max 4"
+  - +10 % par parade, max 3
+  - +15 %, max 3
+  - +20 %, max 4
+  - +25 %, max 4
   - "+30 %, max 5, \xE0 3 parades le temps ralentit 1 s autour de vous"
   synergies: "Pr\xE9dateur (G22)"
   amount: 0.1

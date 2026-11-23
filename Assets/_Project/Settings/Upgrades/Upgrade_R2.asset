@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_R2
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "R2"
-  displayName: "Flamme large"
+  code: R2
+  displayName: Flamme large
   description: "C\xF4ne du jet."
-  icon: {fileID: 0}
-  iconSymbol: "<>"
+  icon: {fileID: 21300000, guid: a52bc7a51a16bd04e999927f088abc78, type: 3}
+  iconSymbol: <>
   color: {r: 3.4, g: 1.2, b: 0.3, a: 1}
   kind: 33
   character: 1
@@ -35,7 +35,7 @@ MonoBehaviour:
   - "+35\xB0, le jet pousse l\xE9g\xE8rement (1 m)"
   - "+45\xB0"
   - "+60\xB0, cercle complet autour du renard"
-  synergies: "Long souffle (R1), Fourrure de braise (R-P1)"
+  synergies: Long souffle (R1), Fourrure de braise (R-P1)
   amount: 15
   forArtifact: {fileID: 0}
   rarity: 0

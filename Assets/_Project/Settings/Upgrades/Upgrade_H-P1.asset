@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_H-P1
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "H-P1"
-  displayName: "Vision nocturne"
-  description: "Les ennemis ont un contour visible \xE0 travers l'obscurit\xE9 ; le hibou lit l'\xE9tat d'un ennemi (PV)."
-  icon: {fileID: 0}
+  code: H-P1
+  displayName: Vision nocturne
+  description: "Les ennemis ont un contour visible \xE0 travers l'obscurit\xE9 ;
+    le hibou lit l'\xE9tat d'un ennemi (PV)."
+  icon: {fileID: 21300000, guid: 93d1ccf8781779b4dbd91528f3e8498c, type: 3}
   iconSymbol: "\u25C6"
   color: {r: 2, g: 1, b: 3.2, a: 1}
   kind: 60
@@ -30,10 +31,10 @@ MonoBehaviour:
   rankValues2: []
   rankValues3: []
   rankTexts:
-  - "20 m"
-  - "30 m"
+  - 20 m
+  - 30 m
   - "40 m, et \xE0 travers les murs \xE0 moins de 15 m"
-  - "50 m"
+  - 50 m
   - "partout, le traqueur est visible \xE0 travers les murs \xE0 moins de 30 m"
   synergies: "Souffle court (G29), Longue port\xE9e (H5)"
   amount: 20

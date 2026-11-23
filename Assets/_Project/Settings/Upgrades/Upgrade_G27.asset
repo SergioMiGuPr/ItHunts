@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G27
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G27"
-  displayName: "Chute amortie"
-  description: "Chute dans le vide moins punitive, atterrissage fort qui frappe autour."
-  icon: {fileID: 0}
+  code: G27
+  displayName: Chute amortie
+  description: Chute dans le vide moins punitive, atterrissage fort qui frappe autour.
+  icon: {fileID: 21300000, guid: 511f4c33e8ca81745a78199d44d64f6a, type: 3}
   iconSymbol: "\u2913"
   color: {r: 0.4, g: 2.4, b: 3, a: 1}
   kind: 26
@@ -43,8 +43,8 @@ MonoBehaviour:
   - "\u221220 \u2192 \u221212 PV"
   - "\u22128 PV, l'atterrissage fort \xE9tourdit \xE0 2 m"
   - "\u22124 PV, 15 PV de d\xE9g\xE2ts \xE0 3 m"
-  - "0 PV"
-  - "l'atterrissage fort explose (30 PV, 4 m) et vous relance d'un petit saut"
+  - 0 PV
+  - l'atterrissage fort explose (30 PV, 4 m) et vous relance d'un petit saut
   synergies: "Charge de r\xE9pulsion (G17), D\xE9tonateur (G20)"
   amount: 12
   forArtifact: {fileID: 0}

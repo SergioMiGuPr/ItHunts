@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_C2
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "C2"
-  displayName: "Cadavre explosif"
-  description: "La balle qui tue fait exploser l'ennemi."
-  icon: {fileID: 0}
+  code: C2
+  displayName: Cadavre explosif
+  description: La balle qui tue fait exploser l'ennemi.
+  icon: {fileID: 21300000, guid: dce3aa2277c7b4d41851f4c871a3d488, type: 3}
   iconSymbol: "\u2738"
   color: {r: 1.2, g: 3, b: 1, a: 1}
   kind: 43
@@ -40,10 +40,10 @@ MonoBehaviour:
   - 2
   - 3
   rankTexts:
-  - "16 PV, 3.5 m"
-  - "24 PV, 4 m"
+  - 16 PV, 3.5 m
+  - 24 PV, 4 m
   - "32 PV, 4.5 m, cha\xEEne 2"
-  - "40 PV, 5 m"
+  - 40 PV, 5 m
   - "50 PV, 5.5 m, cha\xEEne 3 et l'explosion paralyse 0.5 s"
   synergies: "Main leste (C5), D\xE9tonateur (G20)"
   amount: 16

@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G29
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G29"
-  displayName: "Souffle court"
-  description: "Le traqueur vous d\xE9tecte de moins loin et perd votre trace plus vite (sa vitesse ne change pas)."
-  icon: {fileID: 0}
+  code: G29
+  displayName: Souffle court
+  description: "Le traqueur vous d\xE9tecte de moins loin et perd votre trace plus
+    vite (sa vitesse ne change pas)."
+  icon: {fileID: 21300000, guid: 4ce91871ddf499743ae42befcd5849db, type: 3}
   iconSymbol: "\u25CD"
   color: {r: 1.4, g: 2.8, b: 1.2, a: 1}
   kind: 28
@@ -35,7 +36,7 @@ MonoBehaviour:
   - "\u221222 %, les goules alertent le traqueur 1 s plus tard"
   - "\u221228 %"
   - "\u221233 %, 2 s d'invisibilit\xE9 pour le traqueur apr\xE8s une parade r\xE9ussie"
-  synergies: "Peau changeante (C-P1), Vision nocturne (H-P1)"
+  synergies: Peau changeante (C-P1), Vision nocturne (H-P1)
   amount: 0.1
   forArtifact: {fileID: 0}
   rarity: 0

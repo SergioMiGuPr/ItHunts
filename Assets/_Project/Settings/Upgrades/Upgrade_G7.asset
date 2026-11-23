@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G7
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G7"
+  code: G7
   displayName: "\xC2mes gourmandes"
   description: "Plus d'\xE2mes par ennemi tu\xE9."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: fdb9de1483fe63d4dbf5f48a93b197f0, type: 3}
   iconSymbol: "\u2726"
   color: {r: 0.4, g: 2.6, b: 3.2, a: 1}
   kind: 6
@@ -30,12 +30,12 @@ MonoBehaviour:
   rankValues2: []
   rankValues3: []
   rankTexts:
-  - "+10 %"
-  - "+18 %"
+  - +10 %
+  - +18 %
   - "+25 %, +1 \xE2me par kill \xE0 plus de 14 m/s"
-  - "+35 %"
+  - +35 %
   - "+50 %, kill \xE0 plus de 14 m/s : \xE2mes doubl\xE9es"
-  synergies: "Vif-argent (G26), Semelles de vent (G24)"
+  synergies: Vif-argent (G26), Semelles de vent (G24)
   amount: 0.1
   forArtifact: {fileID: 0}
   rarity: 0

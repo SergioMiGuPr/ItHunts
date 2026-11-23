@@ -69,6 +69,7 @@ namespace ItHunts.Debugging
         private Chest _targetChest;
         private IInteractable _targetMerchant;
         private bool _merchantDone;
+        private float _merchantAgainAt;
         private float _nextShot, _nextMenuAction, _lastYawChange;
         private readonly Dictionary<Ghoul, float> _signals = new Dictionary<Ghoul, float>();
         private readonly HashSet<Ghoul> _parriedSignal = new HashSet<Ghoul>();
@@ -283,8 +284,19 @@ namespace ItHunts.Debugging
                 return;
             }
 
+            // Sortie payable : elle passe avant la fuite tant que le traqueur n'est pas à moins de 10 m (un joueur file vers la porte).
+            ExitDoor exitFirst = _level.ExitDoorObject;
+            int soulsNow = RunState.Current != null ? RunState.Current.Souls(_health.PlayerId) : 0;
+            bool exitReady = exitFirst != null && _zone != null && _zone.ExitUnlocked && (exitFirst.Open || soulsNow >= exitFirst.Price);
+            bool stalkerClose = _stalker != null && Vector3.Distance(_stalker.transform.position, pos) < 10f;
+            if (exitReady && !stalkerClose && Current == Task.Fuir)
+            {
+                Current = Task.Explorer;
+                _hasGoal = false;
+            }
+
             // Fuite : traqueur en chasse, proche et qui nous voit.
-            if (_stalker != null && (_stalker.Mode == StalkerMode.Chasse || _stalker.Mode == StalkerMode.Enrage))
+            if (!(exitReady && !stalkerClose) && _stalker != null && (_stalker.Mode == StalkerMode.Chasse || _stalker.Mode == StalkerMode.Enrage))
             {
                 float d = Vector3.Distance(_stalker.transform.position, pos);
                 if (Current != Task.Fuir && d < fleeDistance && _stalker.Target == _health)
@@ -374,7 +386,7 @@ namespace ItHunts.Debugging
                 if (_targetChest == null)
                 {
                     Chest best = null;
-                    float bestD = 60f;
+                    float bestD = 140f;
                     foreach (Chest c in Chest.AllChests)
                     {
                         if (c == null || !c.isActiveAndEnabled || _chestsDone.Contains(c) || c.OpenedFor(_health.PlayerId))
@@ -414,12 +426,12 @@ namespace ItHunts.Debugging
             }
 
             // Marchand : une visite par acte, quand on a de quoi acheter (au moins 40 âmes).
-            if ((Current == Task.Explorer || Current == Task.Marchand) && !_merchantDone && souls >= 40)
+            if ((Current == Task.Explorer || Current == Task.Marchand) && Time.time > _merchantAgainAt && souls >= 60)
             {
                 if (_targetMerchant == null)
                 {
                     IInteractable best = null;
-                    float bestD = 80f;
+                    float bestD = 260f;
                     foreach (IInteractable i in Interactables.All)
                     {
                         if (!(i is ArtifactMerchant) && !(i is Merchant))
@@ -454,7 +466,7 @@ namespace ItHunts.Debugging
                 float bestD = float.PositiveInfinity;
                 foreach (ActRoom r in p.Rooms)
                 {
-                    if (_visited.Contains(r.Id) || r.Role == RoomRole.Verrouillee || r.Role == RoomRole.HallDeSortie)
+                    if (_visited.Contains(r.Id) || r.Special)
                         continue;
                     Vector3 c = RoomPoint(r);
                     float d = PathLength(pos, c);
@@ -474,8 +486,7 @@ namespace ItHunts.Debugging
                     }
 
                     // Patrouille : la salle la plus éloignée du traqueur, pour tuer des goules en attendant la sortie.
-                    ActRoom far = p.Rooms.Where(r => r.Role != RoomRole.Verrouillee && r.Role != RoomRole.HallDeSortie)
-                        .OrderBy(_ => Random.value).First();
+                    ActRoom far = p.Rooms.Where(r => !r.Special).OrderBy(_ => Random.value).First();
                     next = far.Id;
                 }
 
@@ -500,7 +511,7 @@ namespace ItHunts.Debugging
             float bestScore = float.NegativeInfinity;
             foreach (ActRoom r in p.Rooms)
             {
-                if (r.Role == RoomRole.Verrouillee || r.Role == RoomRole.HallDeSortie)
+                if (r.Special)
                     continue;
                 Vector3 c = RoomPoint(r);
                 float fromStalker = Vector3.Distance(c, s), fromMe = Vector3.Distance(c, pos);
@@ -557,6 +568,8 @@ namespace ItHunts.Debugging
                     else
                     {
                         _merchantDone = true;
+                        _merchantAgainAt = Time.time + 90f;
+                        _targetMerchant = null;
                         Current = Task.Explorer;
                         _hasGoal = false;
                     }
@@ -640,6 +653,7 @@ namespace ItHunts.Debugging
             if (menu.Type == ShopMenu.Kind.Marchand)
             {
                 _merchantDone = true;
+                _merchantAgainAt = Time.time + 90f;
                 _targetMerchant = null;
             }
 
@@ -917,6 +931,10 @@ namespace ItHunts.Debugging
             return hit.collider.GetComponentInParent<Damageable>() == d;
         }
 
+        private readonly Dictionary<Ghoul, int> _seenStrikes = new Dictionary<Ghoul, int>();
+        private readonly Dictionary<Ghoul, int> _seenLeaps = new Dictionary<Ghoul, int>();
+        private readonly List<float> _pressAt = new List<float>();
+
         private void Parry(Vector3 pos, ref PlayerInputReader.Frame f)
         {
             float now = Time.time;
@@ -927,27 +945,25 @@ namespace ItHunts.Debugging
                 float d = Vector3.Distance(g.Position, pos);
                 if (d <= 6f && g.SignalsOn)
                     Report.SignalsSeen++;
-                if (d > 6f || !g.SignalsOn)
-                {
-                    _signals.Remove(g);
-                    _parriedSignal.Remove(g);
-                    continue;
-                }
+                int strikes = g.Strikes, leaps = g.LeapCount;
+                bool newStrike = _seenStrikes.TryGetValue(g, out int s0) && strikes > s0 && d < 5f;
+                bool newLeap = _seenLeaps.TryGetValue(g, out int l0) && leaps > l0 && d < 9f;
+                _seenStrikes[g] = strikes;
+                _seenLeaps[g] = leaps;
+                // Coup de griffes : impact 0.55 s après son début (D-096), appui à +0.40 s ; bond : appui à +0.15 s (pendant le vol, D-108).
+                if (newStrike)
+                    _pressAt.Add(now + 0.40f);
+                else if (newLeap)
+                    _pressAt.Add(now + 0.15f);
+            }
 
-                if (!_signals.TryGetValue(g, out float since))
+            for (int i = _pressAt.Count - 1; i >= 0; i--)
+                if (now >= _pressAt[i])
                 {
-                    _signals[g] = since = now;
-                    _parriedSignal.Remove(g);
-                }
-
-                // Coup annoncé 0.55 s avant l'impact (D-096) ; la fenêtre vaut 0.25 s avant : appui à 0.40 s.
-                if (!_parriedSignal.Contains(g) && now - since >= 0.40f)
-                {
-                    _parriedSignal.Add(g);
+                    _pressAt.RemoveAt(i);
                     f.Parry = true;
                     Report.ParryPresses++;
                 }
-            }
         }
 
         // ---------- Boss ----------

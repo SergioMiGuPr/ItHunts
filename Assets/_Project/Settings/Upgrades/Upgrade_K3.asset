@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_K3
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "K3"
-  displayName: "Fente"
-  description: "La fente (dash, glissade) va plus loin et frappe plus fort."
-  icon: {fileID: 0}
+  code: K3
+  displayName: Fente
+  description: La fente (dash, glissade) va plus loin et frappe plus fort.
+  icon: {fileID: 21300000, guid: a28e6a2dcc369084c9fd59b60f8f43ea, type: 3}
   iconSymbol: "\u27F6"
   color: {r: 2.6, g: 2.4, b: 1.8, a: 1}
   kind: 54
@@ -40,7 +40,7 @@ MonoBehaviour:
   - "+3 m, \xD71.5, traverse un ennemi"
   - "+4 m, \xD71.6"
   - "+5 m, \xD71.8, la fente traverse tous les ennemis et les \xE9tourdit"
-  synergies: "Harpon (G11), Briseur d'os (G21)"
+  synergies: Harpon (G11), Briseur d'os (G21)
   amount: 1
   forArtifact: {fileID: 0}
   rarity: 0

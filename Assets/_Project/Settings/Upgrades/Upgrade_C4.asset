@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_C4
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "C4"
-  displayName: "Ricochet"
-  description: "La balle rebondit vers l'ennemi le plus proche."
-  icon: {fileID: 0}
+  code: C4
+  displayName: Ricochet
+  description: La balle rebondit vers l'ennemi le plus proche.
+  icon: {fileID: 21300000, guid: 9c21f9c61639a3245af1b6abd94d5c36, type: 3}
   iconSymbol: "\u21AF"
   color: {r: 1.2, g: 3, b: 1, a: 1}
   kind: 45
@@ -40,11 +40,11 @@ MonoBehaviour:
   - 18
   - 18
   rankTexts:
-  - "1 rebond, 60 %"
-  - "1, 75 %"
+  - 1 rebond, 60 %
+  - 1, 75 %
   - "2 rebonds, 75 %, port\xE9e 18 m"
-  - "2, 90 %"
-  - "3 rebonds, 100 %, un ricochet sur un headshot est un headshot"
+  - 2, 90 %
+  - 3 rebonds, 100 %, un ricochet sur un headshot est un headshot
   synergies: "Perforante (C3), \u0152il fendu (C-P2)"
   amount: 1
   forArtifact: {fileID: 0}

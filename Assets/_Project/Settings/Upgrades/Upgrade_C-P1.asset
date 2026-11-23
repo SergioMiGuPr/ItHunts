@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_C-P1
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "C-P1"
-  displayName: "Peau changeante"
-  description: "Immobile et sans tirer, vous vous fondez : les goules vous perdent, le traqueur vous d\xE9tecte de moins loin."
-  icon: {fileID: 0}
+  code: C-P1
+  displayName: Peau changeante
+  description: "Immobile et sans tirer, vous vous fondez : les goules vous perdent,
+    le traqueur vous d\xE9tecte de moins loin."
+  icon: {fileID: 21300000, guid: 5285d56ed3c62ac43a5fb8c5c856bd07, type: 3}
   iconSymbol: "\u25C6"
   color: {r: 1.2, g: 3, b: 1, a: 1}
   kind: 40
@@ -39,8 +40,9 @@ MonoBehaviour:
   - "1.2 s, \u221240 %"
   - "1 s, \u221250 %, les goules proches s'arr\xEAtent de chercher"
   - "0.8 s, \u221260 %"
-  - "0.6 s, \u221270 %, le premier tir depuis le camouflage est un critique \xD73 garanti"
-  synergies: "Souffle court (G29)"
+  - "0.6 s, \u221270 %, le premier tir depuis le camouflage est un critique \xD73
+    garanti"
+  synergies: Souffle court (G29)
   amount: 1.5
   forArtifact: {fileID: 0}
   rarity: 0

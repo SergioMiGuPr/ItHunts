@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G2
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G2"
-  displayName: "Garde large"
+  code: G2
+  displayName: Garde large
   description: "Fen\xEAtre de parade plus longue."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 93b677c6c3c51e243baa1f183cd8a3ae, type: 3}
   iconSymbol: "\u27E8\u27E9"
   color: {r: 3, g: 2.4, b: 0.9, a: 1}
   kind: 1
@@ -30,12 +30,12 @@ MonoBehaviour:
   rankValues2: []
   rankValues3: []
   rankTexts:
-  - "+40 ms"
-  - "+60 ms"
+  - +40 ms
+  - +60 ms
   - "+80 ms, la tol\xE9rance tardive double"
-  - "+100 ms"
+  - +100 ms
   - "+120 ms, pare aussi les d\xE9bris et les projectiles (boss compris)"
-  synergies: "Rythme de fer (G4)"
+  synergies: Rythme de fer (G4)
   amount: 0.04
   forArtifact: {fileID: 0}
   rarity: 0

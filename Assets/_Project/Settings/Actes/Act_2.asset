@@ -22,6 +22,8 @@ MonoBehaviour:
   mainPathShare: 0.4
   loopChance: 0.8
   minStartExit: 6
+  minDoorsPerRoom: 2
+  landingChance: 0.5
   doorWidth: 12
   doorHeight: 10
   ceiling: {x: 22, y: 30}
@@ -58,10 +60,10 @@ MonoBehaviour:
   lockedRooms: 2
   merchants: 1
   stalkerFromArrival: 1
-  wallMaterial: {fileID: 2100000, guid: 937129f1375498d418acdad77aecd316, type: 2}
-  floorMaterial: {fileID: 2100000, guid: 988f0b4a58cfef64a8e1c5c28f34044a, type: 2}
-  ceilingMaterial: {fileID: 2100000, guid: 6ced1bd0866b0da4c86f4322807dac33, type: 2}
-  trimMaterial: {fileID: 2100000, guid: 797758874c625cb40aa550976e754ea6, type: 2}
+  wallMaterial: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+  floorMaterial: {fileID: 2100000, guid: 79e2a798fb455f14a875b121dc801c38, type: 2}
+  ceilingMaterial: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
+  trimMaterial: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
   waterMaterial: {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   propMaterial: {fileID: 2100000, guid: 906f34049ab58bc408820a06944a0900, type: 2}
   foliageMaterial: {fileID: 2100000, guid: b7f371e6767fd044dbcb032f53a0eb54, type: 2}
@@ -93,57 +95,57 @@ MonoBehaviour:
     mist: {fileID: 0}
     functionMaterials:
     - function: Salle de bal
-      wall: {fileID: 2100000, guid: 937129f1375498d418acdad77aecd316, type: 2}
+      wall: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
       floor: {fileID: 2100000, guid: a4ab8d0ae41df7f429a71e18e547c305, type: 2}
-      ceiling: {fileID: 2100000, guid: 6ced1bd0866b0da4c86f4322807dac33, type: 2}
-    - function: "Biblioth\xE8que"
-      wall: {fileID: 2100000, guid: 6ced1bd0866b0da4c86f4322807dac33, type: 2}
-      floor: {fileID: 2100000, guid: 7391315084617384fbca88f4c9bf98d4, type: 2}
-      ceiling: {fileID: 2100000, guid: 6c55a52d95fd7144694987090a0b0f54, type: 2}
-    - function: Chapelle
-      wall: {fileID: 2100000, guid: 797758874c625cb40aa550976e754ea6, type: 2}
-      floor: {fileID: 2100000, guid: a4ab8d0ae41df7f429a71e18e547c305, type: 2}
-      ceiling: {fileID: 2100000, guid: 937129f1375498d418acdad77aecd316, type: 2}
-    - function: "Salle \xE0 manger"
-      wall: {fileID: 2100000, guid: 6ced1bd0866b0da4c86f4322807dac33, type: 2}
-      floor: {fileID: 2100000, guid: 988f0b4a58cfef64a8e1c5c28f34044a, type: 2}
-      ceiling: {fileID: 2100000, guid: 6c55a52d95fd7144694987090a0b0f54, type: 2}
-    - function: Galerie des portraits
-      wall: {fileID: 2100000, guid: 6ced1bd0866b0da4c86f4322807dac33, type: 2}
-      floor: {fileID: 2100000, guid: 988f0b4a58cfef64a8e1c5c28f34044a, type: 2}
-      ceiling: {fileID: 2100000, guid: 6ced1bd0866b0da4c86f4322807dac33, type: 2}
-    - function: Chambre
-      wall: {fileID: 2100000, guid: 6c55a52d95fd7144694987090a0b0f54, type: 2}
-      floor: {fileID: 2100000, guid: 7391315084617384fbca88f4c9bf98d4, type: 2}
-      ceiling: {fileID: 2100000, guid: 6ced1bd0866b0da4c86f4322807dac33, type: 2}
-    - function: Armurerie
-      wall: {fileID: 2100000, guid: 937129f1375498d418acdad77aecd316, type: 2}
-      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
-      ceiling: {fileID: 2100000, guid: 797758874c625cb40aa550976e754ea6, type: 2}
+      ceiling: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
     - function: "Salle du tr\xF4ne"
-      wall: {fileID: 2100000, guid: 797758874c625cb40aa550976e754ea6, type: 2}
+      wall: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
       floor: {fileID: 2100000, guid: a4ab8d0ae41df7f429a71e18e547c305, type: 2}
-      ceiling: {fileID: 2100000, guid: 937129f1375498d418acdad77aecd316, type: 2}
-    - function: Bains
-      wall: {fileID: 2100000, guid: 8e0dbaf0807bff542815432ae128f151, type: 2}
-      floor: {fileID: 2100000, guid: a4ab8d0ae41df7f429a71e18e547c305, type: 2}
-      ceiling: {fileID: 2100000, guid: 8e0dbaf0807bff542815432ae128f151, type: 2}
-    - function: "Tour effondr\xE9e"
-      wall: {fileID: 2100000, guid: 48dd3e1849a3ad841ae6344e7e36ec50, type: 2}
-      floor: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
-      ceiling: {fileID: 2100000, guid: 701efb10de09498418a7d16eec8958b5, type: 2}
+      ceiling: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
     - function: Grand escalier
-      wall: {fileID: 2100000, guid: 797758874c625cb40aa550976e754ea6, type: 2}
+      wall: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
       floor: {fileID: 2100000, guid: a4ab8d0ae41df7f429a71e18e547c305, type: 2}
-      ceiling: {fileID: 2100000, guid: 6ced1bd0866b0da4c86f4322807dac33, type: 2}
-    - function: Salon de musique
-      wall: {fileID: 2100000, guid: 6ced1bd0866b0da4c86f4322807dac33, type: 2}
+      ceiling: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
+    - function: Chapelle
+      wall: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+      floor: {fileID: 2100000, guid: a4ab8d0ae41df7f429a71e18e547c305, type: 2}
+      ceiling: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+    - function: Bains
+      wall: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+      floor: {fileID: 2100000, guid: a4ab8d0ae41df7f429a71e18e547c305, type: 2}
+      ceiling: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+    - function: "Biblioth\xE8que"
+      wall: {fileID: 2100000, guid: bb421f18b0c3c334c9d3bb04391ffa25, type: 2}
       floor: {fileID: 2100000, guid: 7391315084617384fbca88f4c9bf98d4, type: 2}
-      ceiling: {fileID: 2100000, guid: 6c55a52d95fd7144694987090a0b0f54, type: 2}
+      ceiling: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
+    - function: "Salle \xE0 manger"
+      wall: {fileID: 2100000, guid: bb421f18b0c3c334c9d3bb04391ffa25, type: 2}
+      floor: {fileID: 2100000, guid: bd9fdfc4c93de2f4c97068165508a478, type: 2}
+      ceiling: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
+    - function: Salon de musique
+      wall: {fileID: 2100000, guid: bb421f18b0c3c334c9d3bb04391ffa25, type: 2}
+      floor: {fileID: 2100000, guid: bd9fdfc4c93de2f4c97068165508a478, type: 2}
+      ceiling: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
+    - function: Galerie des portraits
+      wall: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
+      floor: {fileID: 2100000, guid: bd9fdfc4c93de2f4c97068165508a478, type: 2}
+      ceiling: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
+    - function: Chambre
+      wall: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
+      floor: {fileID: 2100000, guid: 7391315084617384fbca88f4c9bf98d4, type: 2}
+      ceiling: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
+    - function: Armurerie
+      wall: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+      floor: {fileID: 2100000, guid: 79e2a798fb455f14a875b121dc801c38, type: 2}
+      ceiling: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+    - function: "Tour effondr\xE9e"
+      wall: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+      floor: {fileID: 2100000, guid: 79e2a798fb455f14a875b121dc801c38, type: 2}
+      ceiling: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
     - function: Palier
-      wall: {fileID: 2100000, guid: 937129f1375498d418acdad77aecd316, type: 2}
-      floor: {fileID: 2100000, guid: 988f0b4a58cfef64a8e1c5c28f34044a, type: 2}
-      ceiling: {fileID: 2100000, guid: 6ced1bd0866b0da4c86f4322807dac33, type: 2}
+      wall: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+      floor: {fileID: 2100000, guid: 79e2a798fb455f14a875b121dc801c38, type: 2}
+      ceiling: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
     swaps:
     - prop: Prop_Etagere
       piece: {fileID: 4386235089055679547, guid: 4023af438ba55eb4e94747fce8df6b29, type: 3}

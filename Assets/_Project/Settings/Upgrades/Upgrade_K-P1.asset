@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_K-P1
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "K-P1"
+  code: K-P1
   displayName: "Peau \xE9paisse"
   description: "D\xE9g\xE2ts re\xE7us r\xE9duits ; PV max."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 4b665d479d71cf6408548793e0275e60, type: 3}
   iconSymbol: "\u25C6"
   color: {r: 2.6, g: 2.4, b: 1.8, a: 1}
   kind: 50
@@ -39,7 +39,8 @@ MonoBehaviour:
   - "\u221212 %, +15"
   - "\u221216 %, +20, pas de recul quand vous \xEAtes touch\xE9"
   - "\u221220 %, +25"
-  - "\u221225 %, +30, sous 25 % de PV : coups re\xE7us divis\xE9s par 2 et d\xE9g\xE2ts \xD71.3"
+  - "\u221225 %, +30, sous 25 % de PV : coups re\xE7us divis\xE9s par 2 et d\xE9g\xE2ts
+    \xD71.3"
   synergies: "C\u0153ur solide (G19)"
   amount: 0.08
   forArtifact: {fileID: 0}

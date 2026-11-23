@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G25
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G25"
-  displayName: "Pas de chat"
-  description: "Glissade plus longue, wall slide plus lent, wall jump plus fort."
-  icon: {fileID: 0}
+  code: G25
+  displayName: Pas de chat
+  description: Glissade plus longue, wall slide plus lent, wall jump plus fort.
+  icon: {fileID: 21300000, guid: 04ee4e27af6b4e34aa5a9b8e0cb6daea, type: 3}
   iconSymbol: "\u14DA"
   color: {r: 0.4, g: 2.4, b: 3, a: 1}
   kind: 24
@@ -41,11 +41,11 @@ MonoBehaviour:
   - 0.5
   rankTexts:
   - "glissade \u221220 % de freinage"
-  - "wall jump +1 m/s"
+  - wall jump +1 m/s
   - "wall slide 2\xD7 plus lent, hissage +0.5 m"
-  - "wall jump +2 m/s"
+  - wall jump +2 m/s
   - "wall jump sur le m\xEAme mur autoris\xE9, les murs rendent aussi une charge"
-  synergies: "Griffes grimpantes (K-P2), Plumes (H-P2)"
+  synergies: Griffes grimpantes (K-P2), Plumes (H-P2)
   amount: 0.2
   forArtifact: {fileID: 0}
   rarity: 0

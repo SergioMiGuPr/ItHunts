@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G21
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G21"
-  displayName: "Briseur d'os"
+  code: G21
+  displayName: Briseur d'os
   description: "D\xE9g\xE2ts contre les ennemis \xE9tourdis ou paralys\xE9s."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ab8b6795598a1a74e9ddd88b6b8dc60a, type: 3}
   iconSymbol: "\u2715"
   color: {r: 3.2, g: 0.5, b: 0.5, a: 1}
   kind: 20

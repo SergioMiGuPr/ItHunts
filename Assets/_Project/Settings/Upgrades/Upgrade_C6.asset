@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_C6
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "C6"
+  code: C6
   displayName: "Sixi\xE8me chambre"
   description: "La derni\xE8re balle du barillet est sp\xE9ciale."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: e7978abded5d1434f99236dd1ae0fb66, type: 3}
   iconSymbol: "\u2465"
   color: {r: 1.2, g: 3, b: 1, a: 1}
   kind: 47
@@ -34,8 +34,9 @@ MonoBehaviour:
   - "\xD72.5, \xE9tourdit 1 s"
   - "\xD73, perce tout"
   - "\xD73.5, explose (4 m)"
-  - "\xD74, si elle tue : rechargement instantan\xE9 et la suivante est aussi une \xAB sixi\xE8me \xBB (une fois)"
-  synergies: "Main leste (C5), Briseur d'os (G21)"
+  - "\xD74, si elle tue : rechargement instantan\xE9 et la suivante est aussi une
+    \xAB sixi\xE8me \xBB (une fois)"
+  synergies: Main leste (C5), Briseur d'os (G21)
   amount: 2
   forArtifact: {fileID: 0}
   rarity: 0

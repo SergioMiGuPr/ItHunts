@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G30
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G30"
+  code: G30
   displayName: "\u0152il du collectionneur"
-  description: "Les coffres offrent un choix en plus ; les salles verrouill\xE9es sont moins ch\xE8res."
-  icon: {fileID: 0}
+  description: "Les coffres offrent un choix en plus ; les salles verrouill\xE9es
+    sont moins ch\xE8res."
+  icon: {fileID: 21300000, guid: 184661557c9264e488a1dd66a01d037a, type: 3}
   iconSymbol: "\u25C9"
   color: {r: 1.4, g: 2.8, b: 1.2, a: 1}
   kind: 29
@@ -35,12 +36,12 @@ MonoBehaviour:
   - 0.5
   rankValues3: []
   rankTexts:
-  - "+1 choix"
+  - +1 choix
   - "porte \u221225 %"
   - "+1 choix, les coffres proposent une mont\xE9e de rang d\xE8s l'acte I"
   - "porte \u221250 %"
   - "+2 choix, un coffre peut offrir une am\xE9lioration directement en Argent"
-  synergies: "Marchandage (G8)"
+  synergies: Marchandage (G8)
   amount: 1
   forArtifact: {fileID: 0}
   rarity: 0

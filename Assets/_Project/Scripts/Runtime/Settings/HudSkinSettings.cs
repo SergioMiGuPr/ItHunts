@@ -56,8 +56,20 @@ namespace ItHunts.Settings
             new Color(0.72f, 0.45f, 0.26f), new Color(0.78f, 0.80f, 0.84f), new Color(0.96f, 0.78f, 0.28f),
             new Color(0.70f, 0.90f, 1.00f), new Color(0.85f, 0.45f, 0.95f),
         };
+        [Tooltip("Cadres de rang de la DA (PR #48) : Bronze, Argent, Or, Diamant, Mythique ; posés par-dessus l'icône (à 80 %).")]
+        public Sprite[] rankFrames = new Sprite[0];
+        [Tooltip("Cadres en losange des passifs, mêmes rangs ; l'icône est découpée par le masque en losange (à 62 %).")]
+        public Sprite[] passiveFrames = new Sprite[0];
+        public Sprite passiveMask;
+
+        public Sprite RankFrame(int rank, bool passive)
+        {
+            Sprite[] list = passive ? passiveFrames : rankFrames;
+            return list != null && list.Length > 0 ? list[Mathf.Clamp(rank, 0, list.Length - 1)] : null;
+        }
+
         [Tooltip("Case d'une amélioration (px 1080p), espace entre deux cases, espace au-dessus de la barre de vie.")]
-        [Min(8f)] public float upgradeIconSize = 44f;
+        [Min(8f)] public float upgradeIconSize = 58f;
         [Min(0f)] public float upgradeIconGap = 6f;
         [Min(0f)] public float upgradeRowGap = 10f;
 

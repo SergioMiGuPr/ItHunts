@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_C7
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "C7"
+  code: C7
   displayName: "\xC9ventail"
   description: "Maintenir le clic vide le barillet en rafale (cadence \xD73, dispersion)."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 186ac46d678aa78478d15dc153719b7a, type: 3}
   iconSymbol: "\u22EE\u22EE"
   color: {r: 1.2, g: 3, b: 1, a: 1}
   kind: 48
@@ -40,7 +40,7 @@ MonoBehaviour:
   - "4\xB0, \xD71, la rafale pousse les goules"
   - "3\xB0, \xD71.1"
   - "2\xB0, \xD71.2, la rafale paralyse et rend 2 balles si elle tue"
-  synergies: "Balles paralysantes (C1), Perforante (C3)"
+  synergies: Balles paralysantes (C1), Perforante (C3)
   amount: 6
   forArtifact: {fileID: 0}
   rarity: 0

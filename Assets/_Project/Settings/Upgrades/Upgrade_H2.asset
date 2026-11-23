@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_H2
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "H2"
+  code: H2
   displayName: "Cha\xEEnage"
   description: "Le drain saute \xE0 l'ennemi le plus proche de la cible."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 191cf9ff7671f764cab38eaae93148cf, type: 3}
   iconSymbol: "\u26D3"
   color: {r: 2, g: 1, b: 3.2, a: 1}
   kind: 63
@@ -40,11 +40,11 @@ MonoBehaviour:
   - 10
   - 12
   rankTexts:
-  - "1 saut, 6 m, 50 %"
-  - "1 saut, 8 m, 65 %"
-  - "2 sauts, 10 m, 75 %"
-  - "2 sauts, 90 %"
-  - "3 sauts, 12 m, 100 %, la cible morte passe le lien au suivant sans recharge"
+  - 1 saut, 6 m, 50 %
+  - 1 saut, 8 m, 65 %
+  - 2 sauts, 10 m, 75 %
+  - 2 sauts, 90 %
+  - 3 sauts, 12 m, 100 %, la cible morte passe le lien au suivant sans recharge
   synergies: "Lien multiple (H1), Pages br\xFBlantes (H7)"
   amount: 1
   forArtifact: {fileID: 0}

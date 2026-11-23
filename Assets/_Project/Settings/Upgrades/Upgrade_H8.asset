@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_H8
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "H8"
+  code: H8
   displayName: "Soin li\xE9"
-  description: "Le soin d'alli\xE9 est plus fort ; pendant un drain, vous r\xE9g\xE9n\xE9rez aussi."
-  icon: {fileID: 0}
+  description: "Le soin d'alli\xE9 est plus fort ; pendant un drain, vous r\xE9g\xE9n\xE9rez
+    aussi."
+  icon: {fileID: 21300000, guid: 1a15d03f4873d0f44beaec5760a01e9c, type: 3}
   iconSymbol: "\u271A"
   color: {r: 2, g: 1, b: 3.2, a: 1}
   kind: 69
@@ -35,10 +36,10 @@ MonoBehaviour:
   - 6
   rankValues3: []
   rankTexts:
-  - "soin 10 PV/s, +1 PV/s pour vous"
-  - "12 PV/s, +2"
-  - "14 PV/s, +3, le soin a 2 charges"
-  - "16 PV/s, +4"
+  - soin 10 PV/s, +1 PV/s pour vous
+  - 12 PV/s, +2
+  - 14 PV/s, +3, le soin a 2 charges
+  - 16 PV/s, +4
   - "20 PV/s, +6, le soin ressuscite un alli\xE9 tomb\xE9 (coop) une fois par acte"
   synergies: "Sangsue (H4), C\u0153ur solide (G19)"
   amount: 10

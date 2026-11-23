@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G26
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G26"
-  displayName: "Vif-argent"
+  code: G26
+  displayName: Vif-argent
   description: "Bunny hop : gain par saut et contr\xF4le en l'air."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 6449a32fa1751494f850077d53bda7c3, type: 3}
   iconSymbol: "\u21D7"
   color: {r: 0.4, g: 2.4, b: 3, a: 1}
   kind: 25
@@ -35,10 +35,10 @@ MonoBehaviour:
   - 0.2
   rankValues3: []
   rankTexts:
-  - "+15 %"
-  - "+25 %"
+  - +15 %
+  - +25 %
   - "+35 %, contr\xF4le en l'air +20 %"
-  - "+50 %"
+  - +50 %
   - "+60 %, au-del\xE0 de 16 m/s vous traversez les goules en les \xE9tourdissant"
   synergies: "\xC2mes gourmandes (G7), Briseur d'os (G21)"
   amount: 0.15

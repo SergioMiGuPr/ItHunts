@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G28
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G28"
-  displayName: "Allumette"
-  description: "Un ennemi en feu qui meurt enflamme ses voisins."
-  icon: {fileID: 0}
+  code: G28
+  displayName: Allumette
+  description: Un ennemi en feu qui meurt enflamme ses voisins.
+  icon: {fileID: 21300000, guid: af611fa7303be6a499826ca4927e91d0, type: 3}
   iconSymbol: "\u2668"
   color: {r: 1.4, g: 2.8, b: 1.2, a: 1}
   kind: 27
@@ -40,10 +40,10 @@ MonoBehaviour:
   - 0.2
   - 0.2
   rankTexts:
-  - "2 m, 3 s"
-  - "2.5 m, 4 s"
-  - "3 m, 5 s, le feu ralentit 20 %"
-  - "3.5 m, 6 s"
+  - 2 m, 3 s
+  - 2.5 m, 4 s
+  - 3 m, 5 s, le feu ralentit 20 %
+  - 3.5 m, 6 s
   - "4 m, 7 s, le feu \xE9tourdit 0.5 s \xE0 la premi\xE8re br\xFBlure"
   synergies: "Sillage (G13), lanterne (R1 \xE0 R8), Feu gr\xE9geois (R5)"
   amount: 2

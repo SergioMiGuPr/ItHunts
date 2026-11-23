@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G18
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G18"
-  displayName: "Projectiles lourds"
+  code: G18
+  displayName: Projectiles lourds
   description: "Objets lanc\xE9s ou repouss\xE9s : plus de d\xE9g\xE2ts (zone comprise)."
-  icon: {fileID: 0}
-  iconSymbol: "x1.25"
+  icon: {fileID: 21300000, guid: b6273136421461a4dbc87839aeddaf95, type: 3}
+  iconSymbol: x1.25
   color: {r: 3.2, g: 0.5, b: 0.5, a: 1}
   kind: 17
   character: 0
@@ -30,10 +30,10 @@ MonoBehaviour:
   rankValues2: []
   rankValues3: []
   rankTexts:
-  - "+25 %"
-  - "+40 %"
-  - "+60 %, les objets ne se brisent plus au premier impact"
-  - "+85 %"
+  - +25 %
+  - +40 %
+  - +60 %, les objets ne se brisent plus au premier impact
+  - +85 %
   - "+120 %, un objet lanc\xE9 revient vers l'orbe apr\xE8s l'impact"
   synergies: "Onde de choc (G15), Langue de cam\xE9l\xE9on (C8)"
   amount: 0.25

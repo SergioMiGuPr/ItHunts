@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G1
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G1"
-  displayName: "Riposte"
+  code: G1
+  displayName: Riposte
   description: "Une parade r\xE9ussie renvoie une onde qui blesse les ennemis autour."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: e4589376cb6d8804c9f2b319a24c9344, type: 3}
   iconSymbol: "\u21AF"
   color: {r: 3, g: 2.4, b: 0.9, a: 1}
   kind: 0
@@ -40,10 +40,10 @@ MonoBehaviour:
   - 0
   - 1.5
   rankTexts:
-  - "15 PV, 3 m"
-  - "22 PV, 3.5 m"
-  - "30 PV, 4 m, repousse"
-  - "40 PV, 4.5 m"
+  - 15 PV, 3 m
+  - 22 PV, 3.5 m
+  - 30 PV, 4 m, repousse
+  - 40 PV, 4.5 m
   - "55 PV, 5 m, l'onde \xE9tourdit 1.5 s"
   synergies: "D\xE9tonateur (G20), Briseur d'os (G21)"
   amount: 15

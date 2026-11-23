@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_R-P1
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "R-P1"
-  displayName: "Fourrure de braise"
-  description: "Insensible au feu ; un ennemi qui vous frappe s'enflamme."
-  icon: {fileID: 0}
+  code: R-P1
+  displayName: Fourrure de braise
+  description: Insensible au feu ; un ennemi qui vous frappe s'enflamme.
+  icon: {fileID: 21300000, guid: 584c727869bcd6f42abb7e04616dd878, type: 3}
   iconSymbol: "\u25C6"
   color: {r: 3.4, g: 1.2, b: 0.3, a: 1}
   kind: 30
@@ -36,11 +36,11 @@ MonoBehaviour:
   rankValues3: []
   rankTexts:
   - "br\xFBlure 2 s"
-  - "3 s"
+  - 3 s
   - "4 s, le coup re\xE7u est r\xE9duit de 10 %"
-  - "5 s"
+  - 5 s
   - "6 s, l'ennemi est repouss\xE9 de 4 m et \xE9tourdi 0.8 s"
-  synergies: "Sillage (G13), Flamme large (R2)"
+  synergies: Sillage (G13), Flamme large (R2)
   amount: 2
   forArtifact: {fileID: 0}
   rarity: 0

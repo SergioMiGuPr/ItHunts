@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G11
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G11"
-  displayName: "Harpon"
+  code: G11
+  displayName: Harpon
   description: "La traction vise aussi les ennemis : vous \xEAtes tir\xE9 vers eux."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: b9d16b8e13ad388488e216fe9cd6733c, type: 3}
   iconSymbol: "\u2693"
   color: {r: 0.3, g: 0.9, b: 3.2, a: 1}
   kind: 10
@@ -40,8 +40,8 @@ MonoBehaviour:
   - 0
   - 3
   rankTexts:
-  - "goules"
-  - "goules et volants"
+  - goules
+  - goules et volants
   - "l'arriv\xE9e frappe 20 PV"
   - "35 PV et \xE9tourdit 1 s"
   - "50 PV, l'arriv\xE9e explose (3 m)"

@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_C3
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "C3"
-  displayName: "Balle perforante"
-  description: "La balle traverse des ennemis."
-  icon: {fileID: 0}
+  code: C3
+  displayName: Balle perforante
+  description: La balle traverse des ennemis.
+  icon: {fileID: 21300000, guid: 7e0ce89090b9ea143b091aa86da848e7, type: 3}
   iconSymbol: "\xBB"
   color: {r: 1.2, g: 3, b: 1, a: 1}
   kind: 44
@@ -36,9 +36,9 @@ MonoBehaviour:
   rankValues3: []
   rankTexts:
   - "+1 (75 % gard\xE9s)"
-  - "+2"
+  - +2
   - "+2 (90 % gard\xE9s), traverse les objets"
-  - "+3"
+  - +3
   - "+4, 100 % gard\xE9s, le dernier travers\xE9 est paralys\xE9"
   synergies: "Ricochet (C4), \xC9ventail (C7)"
   amount: 1

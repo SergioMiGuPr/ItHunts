@@ -4,6 +4,16 @@
 
 ## Étape en cours
 
+**Nuit du 2026-11-23 (nuit 4) : vérification en jeu, 70 améliorations à rangs, actes à boucles et paliers, D-100 à D-108, rapport
+`docs/design/nuit-4/RAPPORT.md`.** Branche `animations` ; PR d'art #45 (art-textures-1) et #46 (art-menus-4) fusionnées dans `main`.
+- **Outils de vérification** : `PlaytestBot` (joue un acte par les mêmes entrées que le joueur), tests PlayMode `BotRunTests`
+  (3 seeds par acte, boss, run complète), `ExitHallTests` (porte de sortie, 9/9), `ParryInGameTests` (vraie touche V),
+  `ActCaptureTests` (captures à points fixes). Lancement sur l'éditeur ouvert : voir la mémoire « outils Unity ».
+- **Bugs prouvés et corrigés** : porte de sortie (aucun OnTriggerEnter quand on traverse la boîte : test de boîte à chaque pas fixe) ;
+  parade (le coup de griffes marchait, le bond était toujours « trop tôt » : appui pendant le vol accepté) ; goules figées (recul
+  sans fin relâché après 4 s) ; « Destroying assets is not permitted » (MagnetismAudio) ; maillages non lisibles du NavMesh.
+- **Reste** : voir la fin du rapport de la nuit 4.
+
 **Nuit du 2026-11-22 (nuit 3) : run en 3 actes + boss, D-092 à D-099, rapport `docs/design/nuit-3/RAPPORT.md`.** Fusionné dans
 `main`. Les 9 PR d'art (#36 à #44) sont intégrées et branchées, aucune n'est bloquée.
 - **Actes** (D-092) : générateur `ActPlan` / `ActLevel` (salles organiques, boucles, rampes, bassins, fosses, terrasses, fonctions),

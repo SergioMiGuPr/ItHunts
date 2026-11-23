@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_R4
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "R4"
-  displayName: "Braises"
+  code: R4
+  displayName: Braises
   description: "Dur\xE9e de la br\xFBlure ; les br\xFBlures se cumulent (plafond)."
-  icon: {fileID: 0}
-  iconSymbol: "+2 s"
+  icon: {fileID: 21300000, guid: 97a2ab60acfbd1f4288d2ab3e488d335, type: 3}
+  iconSymbol: +2 s
   color: {r: 3.4, g: 1.2, b: 0.3, a: 1}
   kind: 35
   character: 1
@@ -35,10 +35,10 @@ MonoBehaviour:
   - 3
   rankValues3: []
   rankTexts:
-  - "+2 s"
-  - "+3 s"
+  - +2 s
+  - +3 s
   - "+4 s, 2 br\xFBlures se cumulent"
-  - "+5 s"
+  - +5 s
   - "+6 s, 3 br\xFBlures se cumulent, \xE0 3 l'ennemi est paralys\xE9 1 s"
   synergies: "Allumette (G28), D\xE9tonateur (G20)"
   amount: 2

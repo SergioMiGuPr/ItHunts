@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G3
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G3"
-  displayName: "Second souffle"
+  code: G3
+  displayName: Second souffle
   description: "Une parade r\xE9ussie rend des PV."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 915a2deb185c14a42ac9b86ac65261e5, type: 3}
   iconSymbol: "\u2665"
   color: {r: 3, g: 2.4, b: 0.9, a: 1}
   kind: 2
@@ -30,12 +30,12 @@ MonoBehaviour:
   rankValues2: []
   rankValues3: []
   rankTexts:
-  - "6 PV"
-  - "9 PV"
-  - "12 PV + une charge de mouvement"
-  - "16 PV"
-  - "22 PV, + une charge de traction"
-  synergies: "Charge en plus (G23), Traction rapide (G10)"
+  - 6 PV
+  - 9 PV
+  - 12 PV + une charge de mouvement
+  - 16 PV
+  - 22 PV, + une charge de traction
+  synergies: Charge en plus (G23), Traction rapide (G10)
   amount: 6
   forArtifact: {fileID: 0}
   rarity: 0

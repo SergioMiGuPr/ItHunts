@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_H3
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "H3"
-  displayName: "Lien vorace"
-  description: "Drain par seconde."
-  icon: {fileID: 0}
+  code: H3
+  displayName: Lien vorace
+  description: Drain par seconde.
+  icon: {fileID: 21300000, guid: b484fa9dd1b76f342b9dbba376b58a6c, type: 3}
   iconSymbol: "\u21E3"
   color: {r: 2, g: 1, b: 3.2, a: 1}
   kind: 64
@@ -35,12 +35,12 @@ MonoBehaviour:
   - 0.5
   rankValues3: []
   rankTexts:
-  - "+4 PV/s"
-  - "+7"
-  - "+10, la cible ralentit 25 %"
-  - "+13"
-  - "+16, la cible ralentit 50 % et ne peut plus bondir"
-  synergies: "Sangsue (H4), Lien d'ancrage (H6)"
+  - +4 PV/s
+  - +7
+  - +10, la cible ralentit 25 %
+  - +13
+  - +16, la cible ralentit 50 % et ne peut plus bondir
+  synergies: Sangsue (H4), Lien d'ancrage (H6)
   amount: 4
   forArtifact: {fileID: 0}
   rarity: 0

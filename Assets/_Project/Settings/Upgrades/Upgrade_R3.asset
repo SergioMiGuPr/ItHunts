@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_R3
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "R3"
+  code: R3
   displayName: "M\xE8che vive"
-  description: "Recharge du jet."
-  icon: {fileID: 0}
-  iconSymbol: "-0,5"
+  description: Recharge du jet.
+  icon: {fileID: 21300000, guid: b6c62bf561ff4ee478936b07ca525974, type: 3}
+  iconSymbol: -0,5
   color: {r: 3.4, g: 1.2, b: 0.3, a: 1}
   kind: 34
   character: 1
@@ -40,7 +40,7 @@ MonoBehaviour:
   - "\u22121.1 s, un kill en feu rend 0.5 s"
   - "\u22121.4 s"
   - "\u22121.7 s, un kill en feu finit la recharge"
-  synergies: "Souffle double (R7), Orbe vorace (G9)"
+  synergies: Souffle double (R7), Orbe vorace (G9)
   amount: 0.5
   forArtifact: {fileID: 0}
   rarity: 0

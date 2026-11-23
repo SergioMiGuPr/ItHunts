@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_R7
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "R7"
-  displayName: "Souffle double"
-  description: "Charges de jet."
-  icon: {fileID: 0}
+  code: R7
+  displayName: Souffle double
+  description: Charges de jet.
+  icon: {fileID: 21300000, guid: 33585b15f32727c4f9bcc714883aa5ec, type: 3}
   iconSymbol: "\u2AF6"
   color: {r: 3.4, g: 1.2, b: 0.3, a: 1}
   kind: 38
@@ -43,7 +43,7 @@ MonoBehaviour:
   - "2 charges (la 2e revient 2\xD7 plus lentement)"
   - "la 2e revient \xE0 vitesse normale"
   - "2 charges, le 2e jet cons\xE9cutif +25 % de br\xFBlure"
-  - "3 charges"
+  - 3 charges
   - "3 charges, un jet tenu encha\xEEne les charges sans pause (jet long)"
   synergies: "M\xE8che vive (R3)"
   amount: 1

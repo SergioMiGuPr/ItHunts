@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G13
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G13"
-  displayName: "Sillage"
-  description: "Pendant une traction, vous laissez une tra\xEEn\xE9e qui blesse et ralentit les ennemis travers\xE9s."
-  icon: {fileID: 0}
+  code: G13
+  displayName: Sillage
+  description: "Pendant une traction, vous laissez une tra\xEEn\xE9e qui blesse et
+    ralentit les ennemis travers\xE9s."
+  icon: {fileID: 21300000, guid: 41e10bc66c3ab984a8c3558282270ac1, type: 3}
   iconSymbol: "\u224B"
   color: {r: 0.3, g: 0.9, b: 3.2, a: 1}
   kind: 12
@@ -41,11 +42,11 @@ MonoBehaviour:
   - 2
   rankTexts:
   - "8 PV, \u221220 % 2 s"
-  - "12 PV"
+  - 12 PV
   - "16 PV, \u221235 %"
-  - "22 PV"
+  - 22 PV
   - "30 PV, la tra\xEEn\xE9e enflamme"
-  synergies: "Allumette (G28), Fourrure de braise (R-P1)"
+  synergies: Allumette (G28), Fourrure de braise (R-P1)
   amount: 8
   forArtifact: {fileID: 0}
   rarity: 0

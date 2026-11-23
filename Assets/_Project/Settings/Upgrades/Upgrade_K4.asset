@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_K4
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "K4"
-  displayName: "Onde de taille"
+  code: K4
+  displayName: Onde de taille
   description: "Un coup port\xE9 \xE0 plus de 12 m/s envoie une onde tranchante devant."
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: b0c30599f855c66469ad9c942007b355, type: 3}
   iconSymbol: "\u2312"
   color: {r: 2.6, g: 2.4, b: 1.8, a: 1}
   kind: 55
@@ -35,12 +35,12 @@ MonoBehaviour:
   - 30
   rankValues3: []
   rankTexts:
-  - "6 m, 10 PV"
-  - "8 m, 14 PV"
-  - "10 m, 18 PV, l'onde traverse"
-  - "12 m, 24 PV"
+  - 6 m, 10 PV
+  - 8 m, 14 PV
+  - 10 m, 18 PV, l'onde traverse
+  - 12 m, 24 PV
   - "14 m, 30 PV, l'onde \xE9tourdit 1 s"
-  synergies: "Vif-argent (G26), Semelles de vent (G24)"
+  synergies: Vif-argent (G26), Semelles de vent (G24)
   amount: 6
   forArtifact: {fileID: 0}
   rarity: 0

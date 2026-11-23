@@ -1,52 +1,186 @@
-# Bot : Acte_1_Caves_s11 (2026-11-23 00:54)
+# Bot : Acte_1_Caves_s11 (2026-11-23 13:45)
 
-## Acte_1_Caves (acte 1, seed 11) : ❌ 29 défaut(s), 0 erreur(s)
+## Acte_1_Caves (acte 1, seed 11) : ❌ 5 défaut(s), 0 erreur(s)
 
-- Temps de jeu de l'acte : 0:00 ; temps réel 1409 s (vitesse ×1).
-- Âmes en fin d'acte : 1431 ; achats : 2 ; coffres essayés : 2.
-- Tirs : 1672 ; coups reçus (comptés, invulnérable) : 0 ; parades : 0 appuis, 0 réussies.
-- Fuites devant le traqueur : 339 ; tractions de secours : 141 ; téléportations après blocage : 28 ; esquives (boss) : 0.
-- Vitesse max : 24,8 m/s ; images par seconde (éditeur) : moyenne 24, minimum 4.
+- Temps de jeu de l'acte : 0:00 ; temps réel 1407 s (vitesse ×1).
+- Âmes en fin d'acte : 3702 ; achats : 1 ; coffres essayés : 1.
+- Tirs : 6453 ; coups reçus (comptés, invulnérable) : 0 ; parades : 0 appuis, 0 réussies (images avec une annonce de goule à moins de 6 m : 1983).
+- Fuites devant le traqueur : 194 ; tractions de secours : 319 ; téléportations après blocage : 29 ; esquives (boss) : 0.
+- Vitesse max : 24,8 m/s ; images par seconde (éditeur) : moyenne 24, minimum 7.
 - Toutes les salles visitées : non.
 
 **Défauts :**
-- [blocage] aucun progrès vers « coffre » pendant 12 s à 0:00, position (0.4, 0.0, -31.7) (salle Salle du puits) ; téléporté au point suivant
-- [blocage] aucun progrès vers « salle Chapelle souterraine » pendant 12 s à 0:15, position (-0.7, 3.0, -48.3) (salle Salle verrouillée II) ; téléporté au point suivant
-- [blocage] aucun progrès vers « salle Réserve » pendant 12 s à 1:01, position (109.6, 0.0, 17.5) (salle Salle de torture) ; téléporté au point suivant
-- [blocage] aucun progrès vers « salle Réserve » pendant 12 s à 1:14, position (109.6, 0.7, 19.7) (salle Salle de torture) ; téléporté au point suivant
-- [blocage] aucun progrès vers « salle Réserve » pendant 12 s à 1:28, position (108.6, 5.1, 27.8) (salle Salle de torture) ; téléporté au point suivant
-- [blocage] aucun progrès vers « coffre » pendant 12 s à 2:05, position (106.5, 0.4, 29.3) (salle Réserve) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 2:44, position (105.6, 0.1, 21.6) (salle Salle de torture) ; téléporté au point suivant
-- [blocage] aucun progrès vers « salle Citerne » pendant 12 s à 4:59, position (27.3, 6.0, -81.5) (salle Crypte II) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 5:13, position (31.8, 3.0, -77.4) (salle Chapelle souterraine) ; téléporté au point suivant
-- [blocage] aucun progrès vers « salle Citerne » pendant 12 s à 7:36, position (28.2, 6.2, -80.9) (salle Crypte II) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 7:53, position (51.1, 3.0, -63.6) (salle Chapelle souterraine) ; téléporté au point suivant
-- [blocage] aucun progrès vers « porte de sortie » pendant 12 s à 8:47, position (7.5, 0.0, -29.8) (salle Salle du puits) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 9:06, position (30.7, 3.0, -78.5) (salle Chapelle souterraine) ; téléporté au point suivant
-- [blocage] aucun progrès vers « hall de sortie » pendant 12 s à 9:33, position (8.8, 6.0, -106.8) (salle Hall de sortie) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 10:40, position (28.4, 6.0, -80.9) (salle Crypte II) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 11:09, position (27.4, 3.0, -78.6) (salle Chapelle souterraine) ; téléporté au point suivant
-- [blocage] aucun progrès vers « hall de sortie » pendant 12 s à 11:32, position (8.6, 6.0, -106.9) (salle Hall de sortie) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 12:17, position (25.4, 6.0, -96.4) (salle Crypte II) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 13:07, position (24.9, 6.0, -96.7) (salle Crypte II) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 14:32, position (13.4, 3.0, 61.5) (salle Ossuaire) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 15:23, position (23.0, 0.0, 52.6) (salle Galerie de mine) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 15:55, position (32.5, 0.0, 40.6) (salle Galerie de mine) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 16:48, position (35.5, 0.0, 38.9) (salle Galerie de mine) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 17:40, position (30.0, 3.8, 26.9) (salle Cave à vin) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 18:04, position (30.1, 3.8, 26.9) (salle Cave à vin) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 18:26, position (22.9, 3.0, -17.9) (salle Salle des gardes) ; téléporté au point suivant
-- [blocage] aucun progrès vers « fuite » pendant 12 s à 19:46, position (22.0, 0.0, 38.9) (salle Galerie de mine) ; téléporté au point suivant
-- [blocage] aucun progrès vers « hall de sortie » pendant 12 s à 20:47, position (22.5, 0.0, 38.9) (salle Galerie de mine) ; téléporté au point suivant
+- [blocage] aucun progrès vers « salle Porte d'arrivée » pendant 12 s à 0:00, position (1.0, 0.0, 21.3) (salle Salle du puits) ; téléporté au point suivant
+- [blocage] aucun progrès vers « salle Citerne » pendant 12 s à 0:22, position (5.2, 0.0, 22.7) (salle Porte d'arrivée) ; téléporté au point suivant
+- [blocage] aucun progrès vers « coffre » pendant 12 s à 3:21, position (15.0, 0.2, 27.9) (salle Salle du puits) ; téléporté au point suivant
+- [blocage] aucun progrès vers « porte de sortie » pendant 12 s à 53:09, position (94.7, 0.0, -3.7) (salle Crypte) ; téléporté au point suivant
 - [durée] le bot n'a pas fini l'acte en 1400 s réelles
 
 <details><summary>Journal du bot</summary>
 
-- [achat] coffre : ★ Projectiles lourds (0 âmes, reste 0) à 0:02
-- [achat] coffre : Ricochet (0 âmes, reste 16) à 2:08
-- [sortie] payable, 200 âmes à 8:29
-- [sortie] payable, 224 âmes à 9:09
-- [sortie] porte payée à 9:17 : ouverte
+- [achat] coffre : Peau changeante · Argent (0 âmes, reste 20) à 3:24
+- [économie] âmes insuffisantes pour la sortie à 10:00 : 145 / 200 ; ajoutées par l'admin pour continuer
+- [sortie] payable, 200 âmes à 10:00
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 12:40, position (22.9, 3.7, 16.8) (salle Citerne) ; téléporté au point suivant
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 13:05, position (52.5, -4.0, -32.7) (salle Galerie de mine) ; téléporté au point suivant
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 13:41, position (64.4, -4.0, -16.6) (salle Galerie de mine) ; téléporté au point suivant
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 14:45, position (58.7, -4.0, -4.8) (salle Galerie de mine) ; téléporté au point suivant
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 33:01, position (62.2, 0.0, -20.9) (salle Grotte inondée II) ; téléporté au point suivant
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 33:26, position (64.4, -3.2, -15.8) (salle Galerie de mine) ; téléporté au point suivant
+- [sortie] payable, 600 âmes à 33:34
+- [sortie] payable, 600 âmes à 33:41
+- [sortie] payable, 624 âmes à 33:50
+- [sortie] payable, 654 âmes à 34:02
+- [sortie] payable, 660 âmes à 34:14
+- [sortie] payable, 690 âmes à 34:24
+- [sortie] payable, 702 âmes à 34:33
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 34:54, position (94.9, 0.0, -6.1) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 750 âmes à 34:57
+- [sortie] payable, 760 âmes à 35:06
+- [sortie] payable, 806 âmes à 35:21
+- [sortie] payable, 842 âmes à 35:38
+- [sortie] payable, 866 âmes à 35:50
+- [sortie] payable, 882 âmes à 36:03
+- [sortie] payable, 918 âmes à 36:14
+- [sortie] payable, 972 âmes à 36:45
+- [sortie] payable, 996 âmes à 37:02
+- [sortie] payable, 1020 âmes à 37:13
+- [sortie] payable, 1032 âmes à 37:20
+- [sortie] payable, 1044 âmes à 37:30
+- [sortie] payable, 1074 âmes à 37:41
+- [sortie] payable, 1092 âmes à 37:50
+- [sortie] payable, 1104 âmes à 38:01
+- [sortie] payable, 1134 âmes à 38:12
+- [sortie] payable, 1146 âmes à 38:21
+- [sortie] payable, 1170 âmes à 38:31
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 38:52, position (94.6, 0.0, -10.5) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 1194 âmes à 38:54
+- [sortie] payable, 1212 âmes à 39:05
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 39:28, position (95.0, 0.0, -6.1) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 1268 âmes à 39:31
+- [sortie] payable, 1274 âmes à 39:41
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 40:06, position (95.1, 0.0, -6.4) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 1334 âmes à 40:08
+- [sortie] payable, 1334 âmes à 40:16
+- [sortie] payable, 1364 âmes à 40:25
+- [sortie] payable, 1376 âmes à 40:38
+- [sortie] payable, 1412 âmes à 40:51
+- [sortie] payable, 1422 âmes à 41:00
+- [sortie] payable, 1458 âmes à 41:18
+- [sortie] payable, 1476 âmes à 41:26
+- [sortie] payable, 1494 âmes à 41:39
+- [sortie] payable, 1506 âmes à 41:47
+- [sortie] payable, 1530 âmes à 41:56
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 42:16, position (94.9, 0.0, -6.1) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 1566 âmes à 42:18
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 42:43, position (94.9, 0.0, -6.1) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 1608 âmes à 42:46
+- [sortie] payable, 1626 âmes à 42:56
+- [sortie] payable, 1650 âmes à 43:05
+- [sortie] payable, 1656 âmes à 43:15
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 43:37, position (95.0, 0.0, -6.1) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 1704 âmes à 43:39
+- [sortie] payable, 1716 âmes à 43:50
+- [sortie] payable, 1722 âmes à 43:59
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 44:23, position (95.1, 0.0, -9.0) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 1776 âmes à 44:26
+- [sortie] payable, 1800 âmes à 44:39
+- [sortie] payable, 1818 âmes à 44:48
+- [sortie] payable, 1836 âmes à 44:56
+- [sortie] payable, 1836 âmes à 45:02
+- [sortie] payable, 1854 âmes à 45:11
+- [sortie] payable, 1884 âmes à 45:21
+- [sortie] payable, 1926 âmes à 45:43
+- [sortie] payable, 1932 âmes à 45:51
+- [sortie] payable, 1956 âmes à 46:00
+- [sortie] payable, 1968 âmes à 46:09
+- [sortie] payable, 1980 âmes à 46:18
+- [sortie] payable, 2034 âmes à 46:47
+- [sortie] payable, 2046 âmes à 46:56
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 47:14, position (88.0, 0.0, 0.3) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 2082 âmes à 47:14
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 47:30, position (88.0, 0.0, 0.3) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 2100 âmes à 47:30
+- [sortie] payable, 2112 âmes à 47:39
+- [sortie] payable, 2124 âmes à 47:53
+- [sortie] payable, 2136 âmes à 48:01
+- [sortie] payable, 2160 âmes à 48:08
+- [sortie] payable, 2178 âmes à 48:17
+- [sortie] payable, 2196 âmes à 48:34
+- [sortie] payable, 2220 âmes à 48:44
+- [sortie] payable, 2226 âmes à 48:53
+- [sortie] payable, 2256 âmes à 49:01
+- [sortie] payable, 2274 âmes à 49:11
+- [sortie] payable, 2280 âmes à 49:18
+- [sortie] payable, 2280 âmes à 49:24
+- [sortie] payable, 2310 âmes à 49:34
+- [sortie] payable, 2334 âmes à 49:47
+- [sortie] payable, 2358 âmes à 49:58
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 50:14, position (87.4, 0.0, -0.8) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 2382 âmes à 50:15
+- [sortie] payable, 2394 âmes à 50:23
+- [sortie] payable, 2424 âmes à 50:34
+- [sortie] payable, 2448 âmes à 50:50
+- [sortie] payable, 2478 âmes à 51:02
+- [sortie] payable, 2502 âmes à 51:16
+- [sortie] payable, 2520 âmes à 51:29
+- [sortie] payable, 2544 âmes à 51:38
+- [sortie] payable, 2562 âmes à 51:54
+- [sortie] payable, 2622 âmes à 52:23
+- [sortie] payable, 2628 âmes à 52:28
+- [sortie] payable, 2652 âmes à 52:37
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 52:53, position (87.3, 0.0, 1.4) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 2676 âmes à 52:53
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 53:28, position (84.7, 0.0, -12.5) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 2718 âmes à 53:29
+- [sortie] payable, 2736 âmes à 53:36
+- [sortie] payable, 2754 âmes à 53:45
+- [sortie] payable, 2790 âmes à 54:02
+- [sortie] payable, 2802 âmes à 54:10
+- [sortie] payable, 2820 âmes à 54:21
+- [sortie] payable, 2850 âmes à 54:33
+- [sortie] payable, 2868 âmes à 54:42
+- [sortie] payable, 2892 âmes à 54:53
+- [sortie] payable, 2910 âmes à 55:03
+- [sortie] payable, 2910 âmes à 55:09
+- [sortie] payable, 2940 âmes à 55:19
+- [sortie] payable, 2958 âmes à 55:29
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 55:46, position (87.8, 0.0, 0.3) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 2982 âmes à 55:47
+- [sortie] payable, 2994 âmes à 55:55
+- [sortie] payable, 3018 âmes à 56:07
+- [sortie] payable, 3042 âmes à 56:17
+- [sortie] payable, 3066 âmes à 56:32
+- [sortie] payable, 3102 âmes à 56:45
+- [sortie] payable, 3108 âmes à 57:00
+- [sortie] payable, 3144 âmes à 57:11
+- [sortie] payable, 3144 âmes à 57:21
+- [sortie] payable, 3210 âmes à 57:50
+- [sortie] payable, 3228 âmes à 58:06
+- [sortie] payable, 3246 âmes à 58:20
+- [sortie] payable, 3252 âmes à 58:29
+- [sortie] payable, 3282 âmes à 58:38
+- [sortie] payable, 3300 âmes à 58:50
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 59:15, position (94.9, 0.0, -6.1) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 3348 âmes à 59:17
+- [sortie] payable, 3378 âmes à 59:35
+- [sortie] payable, 3384 âmes à 59:45
+- [sortie] payable, 3408 âmes à 59:52
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 60:10, position (87.8, 0.0, -0.7) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 3444 âmes à 60:11
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 60:26, position (88.1, 0.0, -0.7) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 3456 âmes à 60:27
+- [sortie] payable, 3474 âmes à 60:35
+- [sortie] payable, 3504 âmes à 60:55
+- [sortie] payable, 3528 âmes à 61:09
+- [sortie] payable, 3540 âmes à 61:19
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 61:36, position (88.2, 0.0, -0.7) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 3582 âmes à 61:37
+- [sortie] payable, 3600 âmes à 61:49
+- [sortie] payable, 3612 âmes à 61:58
+- [sortie] payable, 3636 âmes à 62:10
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 62:37, position (92.9, 0.0, 11.7) (salle Crypte) ; téléporté au point suivant
+- [sortie] payable, 3702 âmes à 62:40
 
 </details>
 

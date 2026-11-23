@@ -79,7 +79,7 @@ namespace ItHunts.HudArt
         private sealed class UpgradeCell
         {
             public GameObject Root;
-            public Image Frame, Back, Icon;
+            public Image Frame, Back, Icon, Mask;
             public Text Symbol;
         }
 
@@ -114,10 +114,14 @@ namespace ItHunts.HudArt
                 r.pivot = new Vector2(0.5f, 0.5f);
                 r.anchoredPosition = new Vector2(i * (size + gap) + size * 0.5f, size * 0.5f);
                 r.sizeDelta = new Vector2(size, size);
-                cell.Frame = Square("Cadre", r, 0f, Color.white);
+                // Ordre : fond, masque (passifs), icône, cadre de la DA par-dessus (l'icône occupe 80 % de la case, 62 % en losange).
                 cell.Back = Square("Fond", r, 3f, new Color(0.06f, 0.04f, 0.07f, 0.92f));
-                cell.Icon = Square("Icône", r, 6f, Color.white);
+                cell.Mask = Square("Masque", r, size * 0.1f, Color.white);
+                cell.Mask.gameObject.AddComponent<Mask>().showMaskGraphic = false;
+                cell.Icon = Square("Icône", (RectTransform)cell.Mask.transform, 0f, Color.white);
                 cell.Icon.preserveAspect = true;
+                cell.Frame = Square("Cadre", r, 0f, Color.white);
+                cell.Frame.preserveAspect = true;
                 var tgo = new GameObject("Symbole", typeof(RectTransform));
                 tgo.layer = go.layer;
                 tgo.transform.SetParent(r, false);
@@ -175,17 +179,38 @@ namespace ItHunts.HudArt
                     continue;
                 UpgradeDefinition u = list[i];
                 int rank = _upgrades.RankOf(u);
-                cell.Frame.color = skin != null ? skin.RankColor(rank) : Color.white;
                 bool sprite = u.icon != null;
                 cell.Icon.enabled = sprite;
                 cell.Icon.sprite = u.icon;
                 cell.Symbol.enabled = !sprite;
                 cell.Symbol.text = u.iconSymbol;
-                // Le passif se lit à sa forme : losange (cadre et fond tournés de 45°), l'icône reste droite.
-                float angle = u.isPassive ? 45f : 0f;
-                cell.Frame.rectTransform.localRotation = cell.Back.rectTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
-                float k = u.isPassive ? 0.78f : 1f;
-                cell.Frame.rectTransform.localScale = cell.Back.rectTransform.localScale = Vector3.one * k;
+                Sprite frame = skin != null ? skin.RankFrame(rank, u.isPassive) : null;
+                float side = cell.Root.GetComponent<RectTransform>().sizeDelta.x;
+                if (frame != null)
+                {
+                    // Cadre de la DA (gemmes de rang sous le cadre) ; passif : cadre en losange et icône découpée par le masque (62 %).
+                    cell.Frame.sprite = frame;
+                    cell.Frame.color = Color.white;
+                    cell.Back.enabled = false;
+                    cell.Mask.sprite = u.isPassive && skin.passiveMask != null ? skin.passiveMask : null;
+                    float inset = (u.isPassive ? 0.19f : 0.1f) * side;
+                    cell.Mask.rectTransform.offsetMin = new Vector2(inset, inset);
+                    cell.Mask.rectTransform.offsetMax = new Vector2(-inset, -inset);
+                    cell.Frame.rectTransform.localRotation = cell.Back.rectTransform.localRotation = Quaternion.identity;
+                    cell.Frame.rectTransform.localScale = Vector3.one;
+                }
+                else
+                {
+                    // Repli : cadre de couleur ; le passif se lit à sa forme (losange), l'icône reste droite.
+                    cell.Frame.sprite = null;
+                    cell.Frame.color = skin != null ? skin.RankColor(rank) : Color.white;
+                    cell.Back.enabled = true;
+                    cell.Mask.sprite = null;
+                    float angle = u.isPassive ? 45f : 0f;
+                    cell.Frame.rectTransform.localRotation = cell.Back.rectTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
+                    float k = u.isPassive ? 0.78f : 1f;
+                    cell.Frame.rectTransform.localScale = cell.Back.rectTransform.localScale = Vector3.one * k;
+                }
             }
         }
 

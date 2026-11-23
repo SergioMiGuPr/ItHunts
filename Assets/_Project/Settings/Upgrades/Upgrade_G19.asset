@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_G19
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "G19"
+  code: G19
   displayName: "C\u0153ur solide"
-  description: "PV max."
-  icon: {fileID: 0}
-  iconSymbol: "PV+"
+  description: PV max.
+  icon: {fileID: 21300000, guid: 95dcfca60ee82bc44af86f48381866ac, type: 3}
+  iconSymbol: PV+
   color: {r: 3.2, g: 0.5, b: 0.5, a: 1}
   kind: 18
   character: 0
@@ -30,11 +30,12 @@ MonoBehaviour:
   rankValues2: []
   rankValues3: []
   rankTexts:
-  - "+25 (et autant tout de suite)"
-  - "+40"
+  - +25 (et autant tout de suite)
+  - +40
   - "+55, r\xE9g\xE9n\xE9ration 1 PV / 4 s hors combat"
-  - "+75"
-  - "+100, une fois par run vous revenez \xE0 50 % de PV au lieu de mourir (pas face \xE0 la prise du traqueur)"
+  - +75
+  - "+100, une fois par run vous revenez \xE0 50 % de PV au lieu de mourir (pas face
+    \xE0 la prise du traqueur)"
   synergies: "Second souffle (G3), Peau \xE9paisse (K-P1)"
   amount: 25
   forArtifact: {fileID: 0}

@@ -54,14 +54,14 @@ namespace ItHunts.Level.Acts
 
             float depth = r.Feature == RoomFeature.Vide ? VoidDepth : FloorDepth;
             foreach (RectInt rc in Rects(floor))
-                Solid(root, "Sol", RectCenter(rc, r.Floor - depth * 0.5f), RectSize(rc, depth), 0f, KitBuild.Kind.Bloc, settings.floorMaterial);
+                Solid(root, "Sol", RectCenter(rc, r.Floor - depth * 0.5f), RectSize(rc, depth), 0f, KitBuild.Kind.Bloc, null);
             // Sous les rampes : sol au niveau bas (la rampe le recouvre).
             foreach (ActDoor d in Plan.Doors.Where(d => d.RampRoom == r.Id))
                 foreach (RectInt rc in Rects(new HashSet<Vector2Int>(d.RampCells)))
-                    Solid(root, "Sol (rampe)", RectCenter(rc, r.Floor - FloorDepth * 0.5f), RectSize(rc, FloorDepth), 0f, KitBuild.Kind.Bloc, settings.floorMaterial);
+                    Solid(root, "Sol (rampe)", RectCenter(rc, r.Floor - FloorDepth * 0.5f), RectSize(rc, FloorDepth), 0f, KitBuild.Kind.Bloc, null);
             foreach (RectInt rc in Rects(terrace))
                 Solid(root, "Terrasse", RectCenter(rc, r.Floor + (r.TerraceHeight - FloorDepth) * 0.5f), RectSize(rc, r.TerraceHeight + FloorDepth), 0f,
-                    KitBuild.Kind.Bloc, settings.floorMaterial);
+                    KitBuild.Kind.Bloc, null);
 
             if (r.Feature == RoomFeature.Eau && hollow.Count > 0)
                 BuildBasin(r, root, hollow, island);
@@ -69,7 +69,7 @@ namespace ItHunts.Level.Acts
                 BuildVoid(r, root, hollow, bridge, island);
             else
                 foreach (RectInt rc in Rects(new HashSet<Vector2Int>(hollow.Concat(island))))
-                    Solid(root, "Sol", RectCenter(rc, r.Floor - depth * 0.5f), RectSize(rc, depth), 0f, KitBuild.Kind.Bloc, settings.floorMaterial);
+                    Solid(root, "Sol", RectCenter(rc, r.Floor - depth * 0.5f), RectSize(rc, depth), 0f, KitBuild.Kind.Bloc, null);
             if (terrace.Count > 0)
                 BuildTerraceRoutes(r, root, terrace);
         }
@@ -79,9 +79,9 @@ namespace ItHunts.Level.Acts
         {
             float depth = settings.waterDepth;
             foreach (RectInt rc in Rects(hollow))
-                Solid(root, "Fond du bassin", RectCenter(rc, r.Floor - depth - FloorDepth * 0.5f), RectSize(rc, FloorDepth), 0f, KitBuild.Kind.Bloc, settings.floorMaterial);
+                Solid(root, "Fond du bassin", RectCenter(rc, r.Floor - depth - FloorDepth * 0.5f), RectSize(rc, FloorDepth), 0f, KitBuild.Kind.Bloc, null);
             foreach (RectInt rc in Rects(island))
-                Solid(root, "Îlot", RectCenter(rc, r.Floor - (depth + FloorDepth) * 0.5f + 0.4f), RectSize(rc, depth + FloorDepth), 0f, KitBuild.Kind.Bloc, settings.floorMaterial);
+                Solid(root, "Îlot", RectCenter(rc, r.Floor - (depth + FloorDepth) * 0.5f + 0.4f), RectSize(rc, depth + FloorDepth), 0f, KitBuild.Kind.Bloc, null);
             // Surface : un plan par rectangle du creux (îlots compris : ils dépassent).
             float surface = r.Floor - depth + Mathf.Min(1.1f, depth * 0.45f);
             var all = new HashSet<Vector2Int>(hollow.Concat(island));
@@ -133,7 +133,7 @@ namespace ItHunts.Level.Acts
             foreach (RectInt rc in Rects(bridge))
                 Solid(root, "Pont", RectCenter(rc, r.Floor - 0.35f), RectSize(rc, 0.7f), 0f, KitBuild.Kind.Pont, settings.trimMaterial != null ? settings.trimMaterial : null);
             foreach (RectInt rc in Rects(island))
-                Solid(root, "Pilier", RectCenter(rc, r.Floor + 0.3f - VoidDepth * 0.5f), RectSize(rc, VoidDepth + 0.6f), 0f, KitBuild.Kind.Bloc, settings.floorMaterial);
+                Solid(root, "Pilier", RectCenter(rc, r.Floor + 0.3f - VoidDepth * 0.5f), RectSize(rc, VoidDepth + 0.6f), 0f, KitBuild.Kind.Bloc, null);
             // Déclencheur sous tout le creux : chute = dégâts et retour au dernier sol sûr.
             var all = new HashSet<Vector2Int>(hollow.Concat(bridge).Concat(island));
             int x0 = all.Min(c => c.x), x1 = all.Max(c => c.x), y0 = all.Min(c => c.y), y1 = all.Max(c => c.y);

@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
   m_Name: Upgrade_R5
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
-  code: "R5"
+  code: R5
   displayName: "Feu gr\xE9geois"
-  description: "Le jet laisse des flaques de feu au sol."
-  icon: {fileID: 0}
+  description: Le jet laisse des flaques de feu au sol.
+  icon: {fileID: 21300000, guid: b930dcde4edeead4ca6e655db6130831, type: 3}
   iconSymbol: "\u2248"
   color: {r: 3.4, g: 1.2, b: 0.3, a: 1}
   kind: 36
@@ -40,12 +40,12 @@ MonoBehaviour:
   - 0.3
   - 0.3
   rankTexts:
-  - "3 s, 1.5 m"
-  - "4 s, 2 m"
-  - "5 s, 2.5 m, les flaques ralentissent 30 %"
-  - "6 s, 3 m"
+  - 3 s, 1.5 m
+  - 4 s, 2 m
+  - 5 s, 2.5 m, les flaques ralentissent 30 %
+  - 6 s, 3 m
   - "8 s, 3.5 m, la premi\xE8re entr\xE9e dans une flaque \xE9tourdit 0.6 s"
-  synergies: "Allumette (G28), Briseur d'os (G21)"
+  synergies: Allumette (G28), Briseur d'os (G21)
   amount: 3
   forArtifact: {fileID: 0}
   rarity: 0
