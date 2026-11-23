@@ -25,10 +25,14 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 2c182f3a30950d74fb725cd78a8ac9c2, type: 3}
+        m_Texture: {fileID: 2800000, guid: 9d7c2ef720586a647970135dbfd6b4d7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LayerMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -37,14 +41,28 @@ Material:
     - _AlphaClip: 0
     - _AmbientInfluence: 1
     - _BandCount: 3
+    - _BandGradient: 0.45
     - _BandSoftness: 0.02
     - _BandThreshold: 0.15
     - _Cull: 2
     - _Cutoff: 0.5
+    - _Decor: 0
     - _DstBlend: 0
     - _Emission: 0
     - _EmissionThroughFog: 0
+    - _GrimeGroundY: 0
+    - _GrimeHeight: 1.8
+    - _GrimeStrength: 0.75
+    - _HeightBlend: 0.06
+    - _LayerAmount: 0
+    - _LayerLow: 0.5
+    - _LayerTile: 2
+    - _LayerTop: 0
+    - _LightSaturation: 1.35
+    - _MacroScale: 6
+    - _MacroVariation: 0.35
     - _PointFalloff: 0.8
+    - _PointGradient: 0.8
     - _PointSoftness: 0.015
     - _PointSteps: 3
     - _PointThreshold: 0.35
@@ -58,14 +76,19 @@ Material:
     - _SrcBlend: 1
     - _TopRandomRotation: 0
     - _TopRotation: 0
+    - _VertexPaint: 0
+    - _WetStrength: 0.5
     - _WorldUV: 1
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _GrimeColor: {r: 0.41999996, g: 0.39999998, b: 0.35999998, a: 1}
+    - _MacroTint: {r: 0.78, g: 0.82, b: 0.74, a: 1}
     - _RimColor: {r: 0.35, g: 0.45, b: 0.7, a: 1}
     - _ShadowColor: {r: 0.028, g: 0.034, b: 0.07499998, a: 1}
     - _TileOffset: {r: 0, g: 0, b: 0, a: 0}
     - _TileSize: {r: 4, g: 4, b: 0, a: 0}
+    - _WetColor: {r: 0.54999995, g: 0.62, b: 0.62, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

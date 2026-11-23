@@ -1,0 +1,202 @@
+{
+ "SM_Arene_Butte.fbx": {
+  "faces": 464,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 3,
+  "aire_partielle_m2": 0.109
+ },
+ "SM_Arene_Couvert.fbx": {
+  "faces": 312,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 39,
+  "aire_partielle_m2": 14.705
+ },
+ "SM_Arene_EscalierDescente.fbx": {
+  "faces": 576,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 292,
+  "aire_partielle_m2": 1613.799
+ },
+ "SM_Arene_PilierBrise.fbx": {
+  "faces": 146,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 9,
+  "aire_partielle_m2": 2.25
+ },
+ "SM_Jardin_ArbreMort_Grand.fbx": {
+  "faces": 2029,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Jardin_ArbreMort_Penche.fbx": {
+  "faces": 1729,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Jardin_ArbreMort_Tordu.fbx": {
+  "faces": 2153,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Jardin_Caveau.fbx": {
+  "faces": 158,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 21,
+  "aire_partielle_m2": 13.376
+ },
+ "SM_Jardin_Chemin_8m.fbx": {
+  "faces": 204,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 24,
+  "aire_partielle_m2": 0.391
+ },
+ "SM_Jardin_Falaise_16m.fbx": {
+  "faces": 616,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Jardin_Fontaine.fbx": {
+  "faces": 414,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Jardin_Foret_Lisiere_20m.fbx": {
+  "faces": 1580,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Jardin_Grille_4m.fbx": {
+  "faces": 559,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 8,
+  "aire_partielle_m2": 0.019
+ },
+ "SM_Jardin_Haie_6m.fbx": {
+  "faces": 572,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Jardin_Kiosque.fbx": {
+  "faces": 350,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 36,
+  "aire_partielle_m2": 2.18
+ },
+ "SM_Jardin_Massif.fbx": {
+  "faces": 504,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 3,
+  "aire_partielle_m2": 0.007
+ },
+ "SM_Jardin_MurEnceinte_8m.fbx": {
+  "faces": 48,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 9,
+  "aire_partielle_m2": 10.04
+ },
+ "SM_Jardin_Muret_4m.fbx": {
+  "faces": 84,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 24,
+  "aire_partielle_m2": 1.728
+ },
+ "SM_Jardin_Palissade_4m.fbx": {
+  "faces": 230,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 110,
+  "aire_partielle_m2": 0.672
+ },
+ "SM_Jardin_Portail.fbx": {
+  "faces": 432,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 4,
+  "aire_partielle_m2": 0.01
+ },
+ "SM_Jardin_Serre_Ruine.fbx": {
+  "faces": 508,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 130,
+  "aire_partielle_m2": 1.097
+ },
+ "SM_Jardin_Statue_Geante.fbx": {
+  "faces": 404,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 2,
+  "aire_partielle_m2": 1.69
+ },
+ "SM_Jardin_Statue_Pleureuse.fbx": {
+  "faces": 404,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 2,
+  "aire_partielle_m2": 1.69
+ },
+ "SM_Jardin_Tombe_Croix.fbx": {
+  "faces": 116,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 12,
+  "aire_partielle_m2": 0.187
+ },
+ "SM_Jardin_Tombe_Stele.fbx": {
+  "faces": 122,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ }
+}

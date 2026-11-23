@@ -993,3 +993,87 @@ Avertissement vu dans le journal à chaque création de matériau toon : « Fail
 'Decor (variation, bas des murs sale et humide, couche melangee en hauteur)' » : l'attribut `[Header(...)]` du shader `ItHunts/Toon`
 contient des parenthèses que l'inspecteur ne sait pas lire ; sans effet en jeu, mais il remplit la console (à remplacer par un titre
 sans parenthèses).
+
+## Densité de texels et échelle des matériaux (nuit 4, lot 2, branche `art-materiaux-2`)
+
+**Densité de référence pour tout le jeu : 512 px/m** (tuile de 1024 px pour 2 m, ou de 2048 px pour 4 m). Les objets tenus
+ou vus de très près montent à 1024 px/m : bois de 1 m, reliures. Recherche : `docs/art/RECHERCHE-NUIT-4.md`.
+
+Tous les matériaux du décor sont en **UV monde** (shader `ItHunts/Toon`, `_WorldUV`, en espace monde). La taille de tuile
+(`_TileSize`, en m) fixe donc seule la taille réelle de ce qui est peint, quelle que soit l'échelle de la pièce.
+
+| Tuile | Taille | Résolution | Densité | Élément peint (taille réelle) |
+|---|---|---|---|---|
+| Moellons | 4 × 4 m | 2048 | 512 px/m | pierres de 33 à 44 cm |
+| PierreTaillee | 4 × 3 m | 2048 × 1536 | 512 px/m | assises de 50 cm, blocs de 0,6 à 1,4 m |
+| PierreClaire (château) | 4 × 3 m | 2048 × 1536 | 512 px/m | assises de 43 cm, blocs de 0,6 à 1,2 m |
+| Dalles | 4 × 4 m | 2048 | 512 px/m | dalles de 57 cm (au lieu de 80) |
+| RocheCave | 4 × 4 m (au lieu de 6) | 2048 | 512 px/m | pans de 0,8 à 1 m (au lieu de 1,2 à 1,5 m) |
+| Briques | 2 × 2 m | 1024 | 512 px/m | briques de 22-28 × 8 cm (au lieu de 14 cm de haut) |
+| PlatreFissure, Terre | 2 × 2 m (au lieu de 3) | 1024 | 512 px/m | — |
+| Parquet | 2 × 2 m | 1024 | 512 px/m | lames de 15 cm × 0,6 à 1,2 m |
+| Boiserie | 2 × 2 m | 1024 | 512 px/m | panneaux de 0,8 × 1 m, cadre de 10 cm |
+| PlatrePeint | 2 × 2 m | 1024 | 512 px/m | fleurons au pochoir tous les 50 cm |
+| Marbre, Tapis, Tenture, Gravier, HerbeSeche, Écorce (lot 0) | 2 × 2 m | 1024 | 512 px/m | dalles de marbre de 50 cm, rosaces de 1 m |
+| Bois (neuf, pourri, mouillé), FerRouille | 1 × 1 m | 1024 | 1024 px/m | planches de 25 cm |
+| Reliures (château) | 0,5 × 0,5 m | 1024 | 2048 px/m | dos de livres de 3 à 7 cm |
+
+**Acte II : matériaux du château** (`Assets/Art/Materials/Chateau/`). Plus aucune texture de cave :
+
+- `M_Chateau_PierreClaire` : la couche de salpêtre est retirée ;
+- `M_Chateau_Dalles` : dalles de calcaire clair (texture `T_Mat_DallesClaires`, 57 cm, propre au château) ;
+- `M_Chateau_Parquet` ;
+- `M_Chateau_Boiserie` ;
+- `M_Chateau_PlatrePeint` ;
+- `M_Chateau_Reliures`, pour les livres de la bibliothèque, qui portaient le motif du tapis ;
+- `M_Bib_Marbre`, `M_Bib_Tapis` et `M_Bib_Tenture`, repris tels quels (lot 0).
+
+Les prefabs du kit du château et les salles d'exemple utilisent déjà la pierre claire.
+
+**À câbler par main dans `Act_2.asset`** (`settings` et `art.functionMaterials`). Cette attribution est vérifiée en jeu par
+l'aperçu d'intégration (`docs/art/rendus/Nuit4/Lot2/`) :
+
+| Fonction | Mur | Sol | Plafond |
+|---|---|---|---|
+| défaut (`wallMaterial`, `floorMaterial`, `ceilingMaterial`, `trimMaterial`) | PierreClaire | Chateau_Dalles | PlatrePeint (bordure : PierreClaire) |
+| Salle de bal, Salle du trône, Grand escalier | PierreClaire | Marbre | PlatrePeint |
+| Chapelle, Bains | PierreClaire | Marbre | PierreClaire |
+| Bibliothèque | Boiserie | Tapis | PlatrePeint |
+| Salle à manger, Salon de musique | Boiserie | Parquet | PlatrePeint |
+| Galerie des portraits | PlatrePeint | Parquet | PlatrePeint |
+| Chambre | PlatrePeint | Tapis | PlatrePeint |
+| Armurerie, Tour effondrée | PierreClaire | Chateau_Dalles | PierreClaire |
+| Palier | PierreClaire | Chateau_Dalles | PlatrePeint |
+
+**Bug à corriger sur main (`ActLevel.Geometry.cs`).** Les sols (« Sol », « Sol (rampe) », bassins, îlots) reçoivent
+`settings.floorMaterial` en paramètre explicite, et `Solid` ne regarde le matériau de la fonction que si ce paramètre est
+nul. Les sols ne prennent donc jamais celui de leur fonction (marbre de la salle de bal, tapis de la bibliothèque…). Il
+faut passer `null` pour ces sols : le sol de la fonction est alors utilisé, avec `floorMaterial` en repli.
+
+**Anciens matériaux du niveau 1 en UV monde** (`M_Dalles_Monde`, `M_Pierre_Monde`, `M_Voute_Briques_Monde`, encore
+utilisés dans quelques salles) : ils étaient à 256 et 341 px/m. Ils prennent maintenant les tuiles de la bibliothèque
+(512 px/m).
+
+**Après la fusion de la PR #45 (lot 0)**, Écorce, HerbeSeche, Tapis et Tenture passent à 2 × 2 m. Sur cette branche,
+partie de main avant #45, ils gardent leurs anciennes tailles.
+
+**Faces superposées :** 0 dans les 98 pièces des 3 kits, y compris entre les objets d'une même pièce : les battants de la
+porte de sortie de l'acte I sont remontés au-dessus de la dalle de seuil. Contrôle : `Assets/Art/Source~/Kits/scripts/faces_superposees.py`.
+Avant correction, il y en avait :
+
+- 80 entièrement recouvertes ;
+- 4 822 partiellement recouvertes, sur 2 985 m², dont les marches posées sur des dalles, les faces internes entre deux blocs
+  et les cadres de porte au ras du mur.
+
+La correction se fait à la source : `kitlib.export` nettoie chaque objet avant l'export.
+
+- Une face entièrement recouverte dans le même sens est supprimée.
+- Les faces internes dos à dos sont supprimées.
+- En cas de recouvrement partiel, la plus petite face avance de 2 à 8 mm le long de sa normale.
+
+Les kits sont régénérés par leurs scripts, ce qui garde l'orientation et les couleurs de sommets. Il n'y a aucune face
+dégénérée.
+
+**Maillages lisibles :** tous les FBX des kits ont maintenant Read/Write coché, parce que le NavMesh est construit au
+chargement. Sans cela, `RuntimeNavMeshBuilder: Source mesh … does not allow read access` apparaît et le NavMesh échoue dans
+le build. Ce changement d'import, voulu, est listé dans la PR.

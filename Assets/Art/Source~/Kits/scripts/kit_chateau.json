@@ -6,7 +6,7 @@
    1.7,
    12.0
   ],
-  "bas": 0.0,
+  "bas": -0.0,
   "triangles": 60,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint"
@@ -15,11 +15,11 @@
  "SM_Chateau_Mur_8x20": {
   "doc": "Mur de grand hall 8 × 20 m : pierre de taille, plinthe, corniche à 19 m.",
   "taille": [
-   8.0,
+   8.01,
    1.7,
    20.0
   ],
-  "bas": 0.0,
+  "bas": -0.0,
   "triangles": 60,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint"
@@ -28,12 +28,12 @@
  "SM_Chateau_Mur_Platre_8x12": {
   "doc": "Mur d'appartement 8 × 12 m : plâtre fissuré au-dessus d'un lambris de pierre de 3.2 m (chambres, bibliothèque).",
   "taille": [
-   8.0,
+   8.01,
    1.7,
    12.0
   ],
-  "bas": 0.0,
-  "triangles": 72,
+  "bas": -0.0,
+  "triangles": 71,
   "materiaux": [
    "M_Bib_PlatreFissure_Sale",
    "M_Bib_PierreTaillee_Peint"
@@ -46,7 +46,7 @@
    1.7,
    20.0
   ],
-  "bas": 0.0,
+  "bas": -0.0,
   "triangles": 228,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
@@ -61,7 +61,7 @@
    19.2
   ],
   "bas": 0.0,
-  "triangles": 428,
+  "triangles": 425,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint"
   ]
@@ -97,7 +97,7 @@
   "doc": "Arcade de passage entre deux halls : baie en arc brisé de 6 × 10 m dans un mur de 8 × 14 m.",
   "taille": [
    8.0,
-   1.94,
+   1.97,
    14.0
   ],
   "bas": 0.0,
@@ -125,7 +125,7 @@
   "taille": [
    4.2,
    3.4,
-   3.5
+   3.51
   ],
   "bas": -2.4,
   "triangles": 1196,
@@ -141,7 +141,7 @@
    20.45,
    9.39
   ],
-  "bas": 0.0,
+  "bas": -0.0,
   "triangles": 6116,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
@@ -153,11 +153,11 @@
   "doc": "Grande porte d'entrée du château (mène à l'acte III) : façade de 20 × 22 m, portail en arc brisé de 9 × 13 m à",
   "taille": [
    20.2,
-   6.47,
-   22.0
+   6.48,
+   22.01
   ],
-  "bas": 0.0,
-  "triangles": 1448,
+  "bas": -0.01,
+  "triangles": 1424,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
    "M_Bib_Dalles_Sales"
@@ -195,11 +195,11 @@
   "doc": "Bibliothèque murale de 4 × 0.7 × 5 m (dos au mur, face vers +Z) : 7 rayons de livres serrés, quelques vides et",
   "taille": [
    4.2,
-   1.0,
-   5.65
+   1.01,
+   5.66
   ],
-  "bas": 0.0,
-  "triangles": 3780,
+  "bas": -0.01,
+  "triangles": 3772,
   "materiaux": [
    "M_Bib_BoisNeuf",
    "M_Bib_Tenture",
@@ -213,10 +213,10 @@
   "doc": "Grand tableau sombre de 2 × 2.8 m dans un cadre doré éteint (accroché au mur, pivot au clou, face vers +Z).",
   "taille": [
    2.16,
-   0.14,
-   2.9
+   0.15,
+   2.91
   ],
-  "bas": -2.85,
+  "bas": -2.86,
   "triangles": 60,
   "materiaux": [
    "M_Kit_Toile_Peinte",
@@ -239,7 +239,7 @@
  "SM_Chateau_Chaise": {
   "doc": "",
   "taille": [
-   0.5,
+   0.51,
    0.5,
    1.52
   ],
@@ -269,7 +269,7 @@
    3.99,
    0.7
   ],
-  "bas": 0.0,
+  "bas": -0.0,
   "triangles": 72,
   "materiaux": [
    "M_Bib_BoisNeuf",

@@ -366,6 +366,13 @@ def export(objs, path):
     for ob in sel:
         ob.select_set(True)
     bpy.context.view_layer.objects.active = objs[0]
+    # nuit 4 : aucune face superposée (lignes et clignotements sur les rebords) ni dégénérée
+    import faces_superposees as FS
+    for ob in sel:
+        if ob.type == "MESH":
+            r = FS.nettoie(ob)
+            if r and (r["superposees"] or r["partielles"] or r["degenerees"]):
+                print("  faces corrigées", ob.name, r, flush=True)
     bpy.ops.export_scene.fbx(
         filepath=path, use_selection=True, object_types={"MESH", "EMPTY"},
         apply_unit_scale=True, apply_scale_options="FBX_SCALE_ALL", global_scale=1.0,
