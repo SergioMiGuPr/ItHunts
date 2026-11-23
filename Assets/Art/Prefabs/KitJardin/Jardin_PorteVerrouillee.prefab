@@ -126,6 +126,7 @@ GameObject:
   - component: {fileID: 507585234234757618}
   - component: {fileID: 6470699798120822207}
   - component: {fileID: 4469959107781684818}
+  - component: {fileID: 6941057940342184000}
   m_Layer: 0
   m_Name: Jardin_PorteVerrouillee
   m_TagString: Untagged
@@ -232,6 +233,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -2472684588336946524, guid: b50075b128b10da4db47f87f6355e138, type: 3}
+--- !u!114 &6941057940342184000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3563898670213510036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 1
+  partieA: {fileID: 9183416405448021714}
+  partieB: {fileID: 1925776786635314195}
+  duree: 2.2
+  ouverture: 0
+  ouvrirAuDemarrage: 0
 --- !u!1 &6934845965771586488
 GameObject:
   m_ObjectHideFlags: 0

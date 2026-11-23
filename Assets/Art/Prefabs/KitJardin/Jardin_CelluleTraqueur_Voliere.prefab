@@ -125,6 +125,7 @@ GameObject:
   - component: {fileID: 1877936419521380563}
   - component: {fileID: 4959365822990515546}
   - component: {fileID: 5390179555152122861}
+  - component: {fileID: 2258463372594609003}
   m_Layer: 0
   m_Name: Jardin_CelluleTraqueur_Voliere
   m_TagString: Untagged
@@ -186,7 +187,6 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 04560a32a59849145bc8d03cc871482b, type: 2}
   - {fileID: 2100000, guid: 9f2fdf7453e756345a009e4dfeb99ea4, type: 2}
-  - {fileID: 2100000, guid: 39e3025ada4b71b4699825363eff9719, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -232,6 +232,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -1881538479160116056, guid: 84e0ea95dd8a5b444a4da40967a556da, type: 3}
+--- !u!114 &2258463372594609003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3982486835129454627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 4
+  partieA: {fileID: 2113642109085428717}
+  partieB: {fileID: 296266278102159585}
+  duree: 0.9
+  ouverture: 0
+  ouvrirAuDemarrage: 0
 --- !u!1 &5537229795245092211
 GameObject:
   m_ObjectHideFlags: 0

@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 1412935439323437299}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4, y: 0, z: 0}
+  m_LocalPosition: {x: 4, y: 0, z: -1.11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -142,7 +142,7 @@ Transform:
   m_GameObject: {fileID: 3393844576126830647}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4, y: 0, z: 0}
+  m_LocalPosition: {x: -4, y: 0, z: -1.11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -240,6 +240,7 @@ GameObject:
   - component: {fileID: 709234525250350399}
   - component: {fileID: 8329631417245823870}
   - component: {fileID: 8256621230936385211}
+  - component: {fileID: 8704331733668330949}
   m_Layer: 0
   m_Name: Cave_PorteSortie
   m_TagString: Untagged
@@ -344,3 +345,21 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -2676711644827386305, guid: fd5f45eaf89b41a45a8c51cf3f14b842, type: 3}
+--- !u!114 &8704331733668330949
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7679477395042816359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 0
+  partieA: {fileID: 3007121930003971386}
+  partieB: {fileID: 5182418143735635744}
+  duree: 1.8
+  ouverture: 0
+  ouvrirAuDemarrage: 0

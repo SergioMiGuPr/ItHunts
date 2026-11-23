@@ -187,6 +187,7 @@ GameObject:
   - component: {fileID: 7440346125845339387}
   - component: {fileID: 3856411461457336983}
   - component: {fileID: 3431386573009746468}
+  - component: {fileID: 779573012890772892}
   m_Layer: 0
   m_Name: Cave_CelluleTraqueur_Herse
   m_TagString: Untagged
@@ -294,3 +295,21 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 7944394226447929198, guid: 83ac0e0aa945c624ebee108a9dfc43cb, type: 3}
+--- !u!114 &779573012890772892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9208640534650353316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 2
+  partieA: {fileID: 7416803077807782365}
+  partieB: {fileID: 0}
+  duree: 2.6
+  ouverture: 0
+  ouvrirAuDemarrage: 0

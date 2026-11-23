@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 3116401551870286425}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4, y: 0, z: 0}
+  m_LocalPosition: {x: 4, y: 0, z: -1.11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -142,7 +142,7 @@ Transform:
   m_GameObject: {fileID: 4456053024069248788}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4, y: 0, z: 0}
+  m_LocalPosition: {x: -4, y: 0, z: -1.11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -240,6 +240,7 @@ GameObject:
   - component: {fileID: 3169382653959003584}
   - component: {fileID: 2492595920474032881}
   - component: {fileID: 8988012178301746174}
+  - component: {fileID: 3244551101499985844}
   m_Layer: 0
   m_Name: Jardin_PorteSortie
   m_TagString: Untagged
@@ -346,3 +347,21 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 833651645204954354, guid: cef4b721fec73614a8ec7be1eb32e4ed, type: 3}
+--- !u!114 &3244551101499985844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5850994988472171704}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 0
+  partieA: {fileID: 6939719315818630616}
+  partieB: {fileID: 2144159735267351846}
+  duree: 1.8
+  ouverture: 0
+  ouvrirAuDemarrage: 0

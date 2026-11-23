@@ -1,0 +1,13 @@
+Chateau salle : salle Tour effondrée 283 cases, plafond 22,2 m, fond à 18,2 m
+Chateau_salle_avant : (33.1, -2.3, -174.9) -> (18.1, -0.5, -189.9)
+Chateau_cote_avant : (31.0, -2.3, -177.0) -> (31.0, -1.5, -167.2)
+Chateau_salle_apres : (33.1, -2.3, -174.9) -> (18.1, -0.5, -189.9)
+Chateau_cote_apres : (31.0, -2.3, -177.0) -> (31.0, -1.5, -167.2)
+Chateau_fond_pres : (21.3, -2.3, -186.7) -> (18.1, -1.5, -189.9)
+Chateau_cote_pres : (34.2, -2.3, -170.4) -> (31.0, -1.5, -167.2)
+Chateau portes : salle Grand escalier 181 cases, plafond 9,7 m, fond à 14,8 m
+Chateau_portes_000 : (-25.0, -2.3, -123.0) -> (-41.5, -1.0, -112.5)
+Chateau_portes_050 : (-25.0, -2.3, -123.0) -> (-41.5, -1.0, -112.5)
+Chateau_portes_100 : (-25.0, -2.3, -123.0) -> (-41.5, -1.0, -112.5)
+Chateau_porte_sortie_pres : (-35.5, -2.3, -105.5) -> (-41.5, -1.0, -105.5)
+Chateau_porte_verrouillee_pres : (-36.5, -2.3, -119.5) -> (-41.5, -2.0, -119.5)

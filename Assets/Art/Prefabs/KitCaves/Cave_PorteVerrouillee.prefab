@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7066502005374757659}
   - component: {fileID: 5896078189364748341}
   - component: {fileID: 3885456277230204464}
+  - component: {fileID: 1852862352350660891}
   m_Layer: 0
   m_Name: Cave_PorteVerrouillee
   m_TagString: Untagged
@@ -117,6 +118,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8798076701922958925, guid: 4d80b005339a4cd4dac7a7735b5b661c, type: 3}
+--- !u!114 &1852862352350660891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2312769429504099925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 1
+  partieA: {fileID: 691014840434713314}
+  partieB: {fileID: 824654802971887280}
+  duree: 2.2
+  ouverture: 0
+  ouvrirAuDemarrage: 0
 --- !u!1 &2565518344209339161
 GameObject:
   m_ObjectHideFlags: 0

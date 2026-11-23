@@ -187,6 +187,7 @@ GameObject:
   - component: {fileID: 7789092675933825045}
   - component: {fileID: 7913707877499849263}
   - component: {fileID: 7022762436636471361}
+  - component: {fileID: 324067480223665034}
   m_Layer: 0
   m_Name: Cave_CelluleTraqueur_Fosse
   m_TagString: Untagged
@@ -297,6 +298,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 247306800724293504, guid: 06e1f06699b3c9547b4e1ecea887c2bb, type: 3}
+--- !u!114 &324067480223665034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3475176615037214078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 3
+  partieA: {fileID: 7879405518169834205}
+  partieB: {fileID: 1740207839768080302}
+  duree: 1.2
+  ouverture: 0
+  ouvrirAuDemarrage: 0
 --- !u!1 &3905860807036314224
 GameObject:
   m_ObjectHideFlags: 0

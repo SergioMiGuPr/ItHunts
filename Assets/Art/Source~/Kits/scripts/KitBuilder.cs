@@ -133,7 +133,8 @@ public static class KitBuilder
             // collisions : pièces d'architecture (maillage statique) ; petits objets : boîte
             var b = new Bounds(go.transform.position, Vector3.zero);
             foreach (var r in go.GetComponentsInChildren<Renderer>()) b.Encapsulate(r.bounds);
-            if (!EstLumiere(nom))
+            // lumières au sol (torchère, candélabre sur pied) : on ne les traverse pas
+            if (!EstLumiere(nom) || nom.Contains("Torchere") || nom.Contains("Candelabre_Pied"))
             {
                 if (EstPetit(b))
                 {

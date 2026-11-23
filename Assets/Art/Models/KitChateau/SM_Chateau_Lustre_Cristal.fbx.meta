@@ -17,6 +17,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Kit_Cristal
+    second: {fileID: 2100000, guid: 3f925f07f04c51f4fb6c21aacb5ebf7e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Kit_Vitrail
     second: {fileID: 2100000, guid: 063d22c382b1ea7429d58df3a429af2f, type: 2}
   materials:

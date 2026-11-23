@@ -1,0 +1,13 @@
+Caves salle : salle Galerie de mine 288 cases, plafond 16,6 m, fond à 17,8 m
+Caves_salle_avant : (0.9, 1.7, 61.1) -> (20.8, 3.5, 59.0)
+Caves_cote_avant : (3.0, 1.7, 59.0) -> (14.5, 2.5, 70.5)
+Caves_salle_apres : (0.9, 1.7, 61.1) -> (20.8, 3.5, 59.0)
+Caves_cote_apres : (3.0, 1.7, 59.0) -> (14.5, 2.5, 70.5)
+Caves_fond_pres : (17.6, 1.7, 62.2) -> (20.8, 2.5, 59.0)
+Caves_cote_pres : (11.3, 1.7, 67.3) -> (14.5, 2.5, 70.5)
+Caves portes : salle Salle des gardes 263 cases, plafond 16,2 m, fond à 18,8 m
+Caves_portes_000 : (79.0, 4.7, 73.0) -> (79.0, 6.0, 97.8)
+Caves_portes_050 : (79.0, 4.7, 73.0) -> (79.0, 6.0, 97.8)
+Caves_portes_100 : (79.0, 4.7, 73.0) -> (79.0, 6.0, 97.8)
+Caves_porte_sortie_pres : (86.0, 4.7, 91.8) -> (86.0, 6.0, 97.8)
+Caves_porte_verrouillee_pres : (72.0, 4.7, 92.8) -> (72.0, 5.0, 97.8)

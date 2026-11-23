@@ -103,7 +103,7 @@ public static class CapturesLot3
             for (int k = 0; k < 8; k++) if (Mur(centre, Quaternion.Euler(0, k * 45f, 0) * Vector3.forward, out RaycastHit h)) murs.Add(h);
             if (murs.Count < 3) continue;
             murs = murs.OrderByDescending(h => h.distance).ToList();
-            if (murs[0].distance < 8f || murs[0].distance > 16f) continue;
+            if (murs[0].distance < 6f || murs[0].distance > 22f) continue;
             if (!murs.Any(h => Mathf.Abs(Vector3.Dot(h.normal, murs[0].normal)) < 0.3f)) continue;
             int si = faites++;
             var fond = murs[0];
@@ -126,7 +126,6 @@ public static class CapturesLot3
                 if (acte == "Chateau")
                 {
                     Pose(P(acte, "Fenetre_Lancette_Double"), pf + fond.normal * 0.02f + Vector3.up * 2.5f, face, poses);
-                    Pose(P(acte, "RayonLune"), pf + fond.normal * 0.5f + Vector3.up * 8f, face, poses);
                     Pose(P(acte, "Applique_2Bougies"), pf + fond.normal * 0.02f + lat * 6f + Vector3.up * 2.3f, face, poses);
                     Pose(P(acte, "Applique_2Bougies"), pf + fond.normal * 0.02f - lat * 6f + Vector3.up * 2.3f, face, poses);
                     Pose(P(acte, "Torche_Murale"), pc + cote.normal * 0.02f + latC * 4f + Vector3.up * 2.2f, faceCote, poses);
