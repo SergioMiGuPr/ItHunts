@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_VFX_Prise_Contour
-  m_Shader: {fileID: 4800000, guid: 2c7e03ade08158a4c9bf48682345d182, type: 3}
+  m_Shader: {fileID: 4800000, guid: 807075f8e0eeb2140b9b980fe32b381c, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -25,10 +25,12 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Opacite: 0.45
+    - _Epaisseur: 0.02
+    - _Opacite: 0.75
     - _Puissance: 5
     - _Pulsation: 0
+    - _PulsationMin: 0.35
     m_Colors:
-    - _Couleur: {r: 0.34, g: 0.29, b: 0.4, a: 1}
+    - _Couleur: {r: 0.36, g: 0.33, b: 0.29, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

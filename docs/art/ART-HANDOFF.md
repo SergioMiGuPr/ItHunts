@@ -752,8 +752,8 @@ ceux de `ProceduralSfx` et des vues qui les jouent).
 | `Traqueur/Sfx_Traqueur_Grognement` | grondement (`LastRoarTime`), passage en Alerte ou Recherche | `StalkerRoar` | mono, décompressé |
 | `Traqueur/Sfx_Traqueur_Cri_Enrage_01`, `_02` | passage en mode Enragé (fin du timer), une variante au hasard | (nouveau) | mono, décompressé |
 | `Traqueur/Sfx_Traqueur_Cri_Prise` | le traqueur attrape un joueur (mort en un coup) | (nouveau) | mono, décompressé |
-| `Traqueur/Sfx_Traqueur_Cri_Apparition_01`, `_02` (5,0 s) | **apparition** du traqueur (sortie de sa cellule, entrée dans la zone) : cri long, montée puis rugissement, infra-grave ; une variante au hasard ; son 3D portant loin (80–120 m) | (nouveau, nuit 4) | mono, décompressé |
-| `Traqueur/Sfx_Traqueur_Cri_Vu_01` (3,25 s), `_02` (2,35 s) | **« je t'ai vu »** : le traqueur repère un joueur (passage en Chasse) ; aspiration puis hurlement aigu ; une variante au hasard, pas plus d'une fois toutes les 8 s | (nouveau, nuit 4) | mono, décompressé |
+| `Traqueur/Sfx_Traqueur_Cri_Apparition_01` (4,42 s), `_02` (5,0 s) | **apparition** du traqueur (sortie de sa cellule, entrée dans la zone) : rugissement qui monte, attaque en moins de 0,5 s ; une variante au hasard ; son 3D portant loin (80–120 m) | (nouveau, nuit 4) | mono, décompressé, **normalize décoché** (niveau calé par script) |
+| `Traqueur/Sfx_Traqueur_Cri_Vu_01` (2,57 s), `_02` (2,22 s) | **« je t'ai vu »** : le traqueur repère un joueur (passage en Chasse) ; courte aspiration puis hurlement ; une variante au hasard, pas plus d'une fois toutes les 8 s | (nouveau, nuit 4) | mono, décompressé, **normalize décoché** |
 | `Goule/Sfx_Goule_Alerte` | la goule annonce son bond (`GhoulMode.Annonce`) | `GhoulHiss` | mono, décompressé |
 | `Goule/Sfx_Goule_Attaque_01`, `_02` | coup ou bond d'une goule, une variante au hasard | (nouveau) | mono, décompressé |
 | `Goule/Sfx_Goule_Mort` | mort d'une goule | `Kill` (goule) | mono, décompressé |

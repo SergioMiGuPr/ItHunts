@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: M_VFX_Volant_Annonce
-  m_Shader: {fileID: 4800000, guid: 2c7e03ade08158a4c9bf48682345d182, type: 3}
+  m_Shader: {fileID: 4800000, guid: 807075f8e0eeb2140b9b980fe32b381c, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -25,10 +25,12 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Opacite: 0.55
+    - _Epaisseur: 0.022
+    - _Opacite: 0.85
     - _Puissance: 3.5
     - _Pulsation: 2.2
+    - _PulsationMin: 0.35
     m_Colors:
-    - _Couleur: {r: 0.42, g: 0.06, b: 0.05, a: 1}
+    - _Couleur: {r: 0.5, g: 0.07, b: 0.05, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

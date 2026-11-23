@@ -1,9 +1,11 @@
-// Marquage au sol des attaques du boss (nuit 4, lot 7). Sobre et lisible, à la manière des jeux de boss exigeants :
-// bord net (encre rouge sang éteint), remplissage sombre et translucide qui laisse voir le décor (le sol s'assombrit, il n'est
-// pas recouvert d'une couleur vive), front qui se remplit pendant l'annonce (du centre vers le bord, ou du boss vers la pointe),
-// montée en intensité sur les 40 derniers pour cent, éclair bref et chaud au moment de l'impact.
-// Formes : 0 cercle, 1 couloir (rectangle, le boss en bas, v = 0), 2 cône (sommet au boss, en bas au centre), 3 anneau.
-// Posé sur un quad à plat (uv 0..1), piloté par MarquageBoss.
+// Marquage au sol des attaques du boss et des apparitions (nuit 4, lot 7). Sobre et lisible, à la manière des jeux de boss
+// exigeants : bord net rouge sang éteint d'épaisseur constante EN MÈTRES (12 cm, au moins 1,5 px à l'écran), remplissage
+// rouge sang sombre et translucide (le sol rougit et s'assombrit, il n'est jamais couvert d'une plaque claire), zone déjà
+// « remplie » un peu plus chaude que la zone à venir, avec un front en dégradé doux (pas un second bord), montée en
+// intensité sur les 40 derniers pour cent, éclair d'impact porté par le bord.
+// Formes : 0 cercle, 1 couloir (rectangle, le boss en bas, -Z local), 2 cône (sommet au boss, en bas au centre), 3 anneau.
+// Coordonnées prises dans l'espace de l'objet (x, z de -0.5 à 0.5) : marche sur le quad de MarquageBoss comme sur le cylindre
+// aplati de WaveDirector (apparitions), sans dépendre des UV. La taille en mètres est lue dans la matrice de l'objet.
 Shader "ItHunts/VFX/MarquageSol"
 {
     Properties
@@ -13,13 +15,16 @@ Shader "ItHunts/VFX/MarquageSol"
         _Intensite ("Intensité (montée avant l'impact)", Range(0, 1)) = 0
         _Flash ("Éclair d'impact", Range(0, 1)) = 0
         _Fondu ("Disparition", Range(0, 1)) = 1
+        _Pulsation ("Pulsation (Hz, 0 : aucune ; marques d'apparition)", Range(0, 4)) = 0
         _DemiAngle ("Cône : demi-angle (degrés)", Range(5, 90)) = 35
         _RayonInterieur ("Anneau : rayon intérieur (0..1)", Range(0, 0.95)) = 0.55
-        _Bord ("Épaisseur du bord (fraction du rayon)", Range(0.005, 0.1)) = 0.025
-        _CouleurBord ("Bord", Color) = (0.52, 0.07, 0.06, 1)
-        _CouleurBordChaud ("Bord à l'impact", Color) = (1.0, 0.78, 0.55, 1)
-        _CouleurFond ("Remplissage sombre", Color) = (0.12, 0.014, 0.02, 1)
-        _OpaciteFond ("Opacité du remplissage (avant / rempli)", Vector) = (0.3, 0.58, 0, 0)
+        _BordM ("Épaisseur du bord (m)", Range(0.02, 0.5)) = 0.12
+        _FrontM ("Largeur du dégradé du front (m)", Range(0.1, 4)) = 1.2
+        _CouleurBord ("Bord", Color) = (0.62, 0.09, 0.07, 1)
+        _CouleurBordChaud ("Bord à l'impact", Color) = (1.0, 0.72, 0.48, 1)
+        _CouleurFond ("Remplissage : zone à venir", Color) = (0.07, 0.01, 0.012, 1)
+        _CouleurRempli ("Remplissage : zone remplie", Color) = (0.24, 0.035, 0.03, 1)
+        _OpaciteFond ("Opacité (à venir / remplie)", Vector) = (0.38, 0.6, 0, 0)
     }
     SubShader
     {
@@ -38,64 +43,83 @@ Shader "ItHunts/VFX/MarquageSol"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
-            float _Forme, _Progression, _Intensite, _Flash, _Fondu, _DemiAngle, _RayonInterieur, _Bord;
-            float4 _CouleurBord, _CouleurBordChaud, _CouleurFond, _OpaciteFond;
+            float _Forme, _Progression, _Intensite, _Flash, _Fondu, _Pulsation, _DemiAngle, _RayonInterieur, _BordM, _FrontM;
+            float4 _CouleurBord, _CouleurBordChaud, _CouleurFond, _CouleurRempli, _OpaciteFond;
             CBUFFER_END
 
-            struct A { float4 pos : POSITION; float2 uv : TEXCOORD0; };
-            struct V { float4 pos : SV_POSITION; float2 uv : TEXCOORD0; };
+            struct A { float4 pos : POSITION; };
+            struct V { float4 pos : SV_POSITION; float2 xz : TEXCOORD0; float2 taille : TEXCOORD1; };
 
-            V vert(A i) { V o; o.pos = TransformObjectToHClip(i.pos.xyz); o.uv = i.uv; return o; }
+            V vert(A i)
+            {
+                V o;
+                o.pos = TransformObjectToHClip(i.pos.xyz);
+                o.xz = i.pos.xz;                                             // -0.5..0.5
+                float4x4 m = GetObjectToWorldMatrix();
+                o.taille = float2(length(float3(m._m00, m._m10, m._m20)), length(float3(m._m02, m._m12, m._m22)));
+                return o;
+            }
 
-            // d : distance signée normalisée (< 0 dedans, 0 au bord) ; p : coordonnée du front (0 départ, 1 fin)
-            void Forme(float2 uv, out float d, out float p)
+            // d : distance signée au contour en mètres (< 0 dedans) ; p : avancée du front (0 départ, 1 fin) ; L : longueur du front (m)
+            void Forme(float2 xz, float2 T, out float d, out float p, out float L)
             {
                 int f = (int)round(_Forme);
                 if (f == 1)
                 {
-                    float2 q = abs(uv * 2 - 1);
-                    d = max(q.x, q.y) - 1;
-                    p = uv.y;
+                    float2 h = T * 0.5;
+                    float2 q = abs(xz) * T;                                  // mètres depuis le centre
+                    d = max(q.x - h.x, q.y - h.y);
+                    p = xz.y + 0.5;
+                    L = T.y;
                 }
                 else if (f == 2)
                 {
-                    float2 c = float2(uv.x * 2 - 1, uv.y);              // sommet en (0, 0), axe vers +v
+                    float P = T.y;                                           // portée ; largeur du quad = 2 P
+                    float2 c = float2(xz.x * T.x, (xz.y + 0.5) * T.y);       // sommet en (0, 0), axe vers +z
                     float r = length(c);
-                    float a = degrees(atan2(abs(c.x), max(c.y, 1e-4)));
-                    float da = (a - _DemiAngle) / max(_DemiAngle, 1) * r;
-                    d = max(r - 1, da);
-                    p = r;
+                    float a = atan2(abs(c.x), max(c.y, 1e-4));
+                    float da = r * sin(clamp(a - radians(_DemiAngle), -1.5, 1.5));
+                    d = max(r - P, da);
+                    p = r / P;
+                    L = P;
                 }
                 else
                 {
-                    float r = length(uv * 2 - 1);
-                    d = r - 1;
+                    float R = 0.5 * T.x;
+                    float r = length(xz) * 2;                                // 0..1 au rayon
+                    d = (r - 1) * R;
                     p = r;
-                    if (f == 3) { d = max(d, _RayonInterieur - r); p = (r - _RayonInterieur) / max(1 - _RayonInterieur, 1e-3); }
+                    L = R;
+                    if (f == 3)
+                    {
+                        d = max(d, (_RayonInterieur - r) * R);
+                        p = (r - _RayonInterieur) / max(1 - _RayonInterieur, 1e-3);
+                        L = R * (1 - _RayonInterieur);
+                    }
                 }
             }
 
             half4 frag(V i) : SV_Target
             {
-                float d, p;
-                Forme(i.uv, d, p);
-                float aa = max(fwidth(d), 1e-4) * 1.2;
+                float d, p, L;
+                Forme(i.xz, i.taille, d, p, L);
+                float aa = max(fwidth(d), 1e-4);
                 float dedans = 1 - smoothstep(-aa, aa, d);
                 if (dedans <= 0) discard;
-                // bord net : bande de _Bord à l'intérieur du contour
-                float bord = smoothstep(-_Bord - aa, -_Bord + aa, d);
-                // remplissage : plus sombre derrière le front ; le front lui-même est un fin filet
-                float rempli = 1 - smoothstep(_Progression - aa * 2, _Progression + aa * 2, p);
-                float front = (1 - smoothstep(0, aa * 3 + 0.004, abs(p - _Progression))) * step(0.001, _Progression) * (1 - step(0.999, _Progression));
-                float monte = _Intensite;
-                float aFond = lerp(_OpaciteFond.x, _OpaciteFond.y, rempli) * (1 + 0.2 * monte);
-                float3 cBord = lerp(_CouleurBord.rgb * (0.75 + 0.6 * monte), _CouleurBordChaud.rgb, _Flash);
-                float3 col = _CouleurFond.rgb;
-                float a = aFond;
-                col = lerp(col, cBord, max(bord, front * 0.7));
-                a = lerp(a, 0.85 + 0.15 * monte, max(bord, front * 0.6));
-                // éclair : le bord devient chaud, le remplissage rougeoie à peine (jamais une plaque claire)
-                col = lerp(col, _CouleurBordChaud.rgb * 0.22, _Flash * 0.3 * (1 - bord));
+                float bordM = max(_BordM, aa * 1.5);
+                float bord = smoothstep(-bordM - aa, -bordM + aa, d);
+                // front en dégradé doux : 1 dans la zone remplie, 0 devant, transition de _FrontM mètres
+                float largeur = max(_FrontM / max(L, 0.1), 1e-3);
+                float rempli = _Progression >= 0.999 ? 1 : 1 - smoothstep(_Progression - largeur, _Progression, p);
+                float puls = _Pulsation > 0 ? 0.5 + 0.5 * sin(_Time.y * 6.2831 * _Pulsation) : 0;
+                float monte = saturate(_Intensite + 0.35 * puls);
+                float3 fond = lerp(_CouleurFond.rgb, _CouleurRempli.rgb * (1 + 0.5 * monte), rempli);
+                float aFond = lerp(_OpaciteFond.x, _OpaciteFond.y, rempli) * (1 + 0.15 * monte);
+                float3 cBord = lerp(_CouleurBord.rgb * (0.8 + 0.5 * monte), _CouleurBordChaud.rgb, _Flash);
+                float3 col = lerp(fond, cBord, bord);
+                float a = lerp(aFond, 0.9 + 0.1 * monte, bord);
+                // éclair : le bord devient chaud, le remplissage rougeoie (jamais une plaque claire)
+                col = lerp(col, float3(0.42, 0.11, 0.05), _Flash * 0.5 * (1 - bord));
                 return half4(col, saturate(a * dedans * _Fondu));
             }
             ENDHLSL
