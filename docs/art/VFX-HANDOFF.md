@@ -165,3 +165,61 @@ morceaux.
 - les lumières des flashs sont sans ombre.
 
 **Réseau :** tout est cosmétique et local.
+
+## Nuit 4, lot 7 : marquage du boss, annonces des volants, screamer de mort
+
+Captures en jeu (arène de `Acte_4_Boss`, éclairage du jeu, lanterne du joueur) et planches : `docs/art/rendus/Nuit4/Lot7/`
+(`Planche_Marquage_Boss.jpg`, `Planche_Volant.jpg`, `Planche_Screamer.jpg`, `Planche_Cris_Traqueur.png`).
+
+### Marquage au sol des attaques du boss (`MarquageBoss`, shader `ItHunts/VFX/MarquageSol`)
+
+Remplace les marques orange additives de `FinalBoss.Mark` (cylindre / cube en Lit transparent). Sobre, à la manière des
+jeux de boss exigeants : **bord net** rouge sang éteint, **remplissage sombre translucide** (le sol s'assombrit et rougit à
+peine, il n'est jamais recouvert d'une plaque claire), **front** qui se remplit pendant l'annonce (du centre vers le bord, ou
+du boss vers la pointe), **montée** d'intensité sur les 40 derniers pour cent, **éclair** chaud de 0,1 s à l'impact (le bord
+seulement ; le remplissage rougeoie à peine), puis disparition en 0,18 s. Une seule couleur pour tout le boss : le type
+d'attaque se lit à la forme.
+
+| Attaque (`FinalBoss`) | Aujourd'hui | Appel à la place |
+|---|---|---|
+| Prise, Bond, Cri, Débris, Éruptions | `Disc(at, r)` | `MarquageBoss.Cercle(at, r, TelegraphLeft)` (Cri : `Anneau(at, r, r * 0.6f, t)` si l'on veut lire « éloigne-toi ») |
+| Charge | `Lane(from, dir, longueur, 7)` | `MarquageBoss.Couloir(from, dir, longueur, 7f, TelegraphLeft)` |
+| Balayage | `Cone(...)` (5 bandes) | `MarquageBoss.Cone(from, dir, sweepRange, 45f, TelegraphLeft)` (demi-angle en degrés) |
+
+- Le marquage se pose à plat à la hauteur donnée (+3 cm), avance tout seul (`Update`) et **se détruit seul** après l'impact ;
+  `Annule()` l'efface (boss étourdi, attaque interrompue) : à appeler dans `ClearTelegraphs`.
+- `reduireEffets = true` (option d'accessibilité) : éclair d'impact à moitié.
+- `Pose(t)` : aperçu, état à l'instant `t` (captures, éditeur).
+- Matériau de réglage : `Assets/Art/VFX/Materiaux/M_VFX_Marquage_Boss.mat` (le script crée ses copies depuis le shader ;
+  le matériau sert à régler les couleurs dans l'inspecteur et à garder le shader dans le build : à mettre dans un prefab
+  ou dans *Always Included Shaders*, sinon `Shader.Find` échoue dans un build).
+
+### Volants : annonce du piqué et prise (`ItHunts/VFX/HaloSombre`)
+
+- **Annonce du piqué** : sur `Volant.prefab`, l'enfant « Annonce du piqué » (sphère de 1,1) prend
+  `Assets/Art/VFX/Materiaux/M_VFX_Volant_Annonce.mat` à la place de `Flyer_Telegraph.mat` (orange plein, HDR 4) : le centre
+  reste transparent, seul un fin liseré rouge sang sombre (fresnel) cerne le volant et pulse à 2,2 Hz. Plus de boule.
+  `FlyerSettings.telegraphColor` n'est alors plus utilisé (le constructeur de `Test_Arena` crée encore l'ancien matériau).
+- **Volant tenu** : plus de lueur violette sur le corps. Réglage proposé :
+  - pour un ennemi tenu, `TelekinesisView` n'appelle plus `SetGlow(grabColor * glowHeld)` (lueur noire) ;
+  - à la place, il active la même sphère avec `M_VFX_Prise_Contour.mat` : contour gris lavande, opacité 0,45, sans
+    pulsation (au plus un contour discret, comme demandé) ;
+  - le clignotement « il va se libérer » garde son rythme, mais sur ce contour (opacité 0,45 ↔ 0,15) au lieu du violet ↔ blanc.
+  Valeurs : `_Couleur` (0.34, 0.29, 0.40), `_Puissance` 5, `_Opacite` 0.45, `_Pulsation` 0.
+- **Apparition** : aucune boule rouge à l'apparition. Si une marque d'apparition est gardée, utiliser
+  `M_VFX_Volant_Annonce` à opacité 0,3 pendant 0,4 s.
+
+### Screamer de la mort par le traqueur (`ScreamerMort`)
+
+Effet d'écran par le post-traitement URP (un `Volume` global, priorité 200, profil créé en code) : **sursaut** rouge de
+0,15 s (exposition +0,9, contraste, filtre rouge), **distorsion** en barillet (−0,42) qui relâche, **aberration
+chromatique**, **grain** fort, **vignette** rouge sang presque noire qui se referme, puis l'image se vide de couleur et
+s'assombrit vers l'écran de fin. Durée 0,9 s.
+
+- **Version adoucie** (`Joue(true)`, option « réduire les effets ») : ni sursaut, ni rougeur, ni distorsion ; aberration et
+  grain au quart ; vignette plus douce ; 1,2 s. Aucun flash.
+- Utilisation (main) : un objet avec `Volume` + `ScreamerMort` dans la scène du joueur (sur la couche des volumes de la
+  caméra) ; à la mort par le traqueur : `Joue(reglages.reduireEffets)` en même temps que `Sfx_Traqueur_Cri_Prise` ; à la
+  relance : `Arrete()`. L'état final reste affiché jusqu'à `Arrete()` (il enchaîne avec l'écran de fin).
+- En écran partagé, un screamer par joueur (volume local à la caméra du joueur ou `volumeLayerMask` par joueur).
+- `apercu` (0..1) et `apercuReduit` dans l'inspecteur pour régler à l'œil ; `Pose(k, reduit)` pour les captures.
