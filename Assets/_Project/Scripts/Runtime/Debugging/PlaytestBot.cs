@@ -272,9 +272,7 @@ namespace ItHunts.Debugging
 
         private void Decide(Vector3 pos)
         {
-            if (_level == null || _level.Plan == null)
-                return;
-            ActPlan p = _level.Plan;
+            // Arène du boss (scène sans ActLevel) : descendre l'escalier jusqu'au centre de la cuvette, ce qui lance le combat.
             FinalBoss boss = FinalBoss.Current_;
             if (boss != null && boss.Started && !boss.Dead)
             {
@@ -283,6 +281,25 @@ namespace ItHunts.Debugging
                 Current = Task.Boss;
                 return;
             }
+
+            if (boss != null && boss.Dead)
+            {
+                if (Current != Task.Attente)
+                    Report.Note("boss", "boss vaincu à " + Clock());
+                Current = Task.Attente;
+                return;
+            }
+
+            if (BossArena.Current != null && (_level == null || _level.Plan == null))
+            {
+                if (!_hasGoal)
+                    SetGoal(BossArena.Current.Center + Vector3.back * 8f, "centre de l'arène");
+                return;
+            }
+
+            if (_level == null || _level.Plan == null)
+                return;
+            ActPlan p = _level.Plan;
 
             // Sortie payable : elle passe avant la fuite tant que le traqueur n'est pas à moins de 10 m (un joueur file vers la porte).
             ExitDoor exitFirst = _level.ExitDoorObject;

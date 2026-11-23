@@ -194,9 +194,10 @@ namespace ItHunts.Tests
 
                     if (bot.Done && !chain)
                         break;
-                    if (Time.realtimeSinceStartup - t0 > 1400f)
+                    float limit = act == 3 && !chain ? 540f : 1400f;   // boss : 9 min réelles au plus (premier plan)
+                    if (Time.realtimeSinceStartup - t0 > limit)
                     {
-                        report.Fail("durée", "le bot n'a pas fini l'acte en 1400 s réelles");
+                        report.Fail("durée", $"le bot n'a pas fini en {limit:0} s réelles");
                         break;
                     }
 
@@ -205,6 +206,9 @@ namespace ItHunts.Tests
             }
             finally
             {
+                var fb = FinalBoss.Current_;
+                if (fb != null && report != null)
+                    report.Note("boss", $"PV du boss à la fin : {fb.Health:0} / {fb.MaxHealth:0} (phase {fb.Phase}, {fb.AttacksDone} attaques)");
                 Time.timeScale = 1f;
                 ActLevel.SeedOverride = 0;
                 RunSession.ResetForTests();
@@ -251,7 +255,7 @@ namespace ItHunts.Tests
             LogAssert.ignoreFailingMessages = true;
             Application.runInBackground = true;
             string tagPath = Path.Combine(Application.dataPath, "..", "Library", "ithunts-capture-tag.txt");
-            string tag = File.Exists(tagPath) ? File.ReadAllText(tagPath).Trim() : "sans-nom";
+            string tag = File.Exists(tagPath) ? File.ReadAllText(tagPath).Trim() : "apres";
             RunSession.ResetForTests();
             RunSession.AdminMode = true;
             RunSession.Characters = new[] { 1, -1 };
