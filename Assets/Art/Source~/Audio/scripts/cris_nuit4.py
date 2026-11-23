@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Cris du traqueur (nuit 4, lot 7) : cri d'apparition et cri « je t'ai vu », générés sur Higgsfield (Mirelo, 6 essais,
+"""Cris du traqueur (nuit 4, lot 7) : cri d'apparition et cri « je t'ai vu », générés sur Higgsfield (Mirelo, 8 essais (8,5 crédits),
 docs/art/audio/nuit4/) puis traités ici (ffmpeg pour décoder, numpy) :
-- choix sur mesures (montée d'énergie, attaque, crête, centroïde) : apparition v1 (montée de -28 à -5 dB puis rugissement),
-  variante v3 (long souffle puis rugissement) ; vu v3 (hurlement aigu, attaque à 0.45 s), variante v2 (coupée à 2.1 s) ;
+- choix sur mesures (montée d'énergie, attaque, crête, spectre) : apparition v1 (montée de -28 à -5 dB puis rugissement),
+  variante v5 (cri éraillé qui monte ; générée après relecture : v2 et v3 avaient 97-99 % de leur énergie sous 300 Hz) ; vu v3 (hurlement aigu, attaque à 0.45 s), variante v2 (coupée à 2.1 s) ;
 - passe-haut 30 Hz (4 pôles) : plus de continu ni de sous-grave inaudible ; apparition : passe-haut 55 Hz, grave -4 dB,
   présence +7 dB à 1,8 kHz et +5 dB à 3,5 kHz (la source était surtout du grave) ;
 - apparition : infra-grave discret (38 Hz, -20 dB, enveloppe du rugissement), légère saturation douce ; le cri démarre en
@@ -101,7 +101,7 @@ def main():
     ref = lit(os.path.join(OUT, "Sfx_Traqueur_Cri_Enrage_01.wav"))
     cible = rms80(tete(ref, -45, 0.005)) * 10 ** (2 / 20)
     choix = [("traqueur_apparition_v1", "Sfx_Traqueur_Cri_Apparition_01", apparition, 400, None),
-             ("traqueur_apparition_v3", "Sfx_Traqueur_Cri_Apparition_02", apparition, 400, None),
+             ("traqueur_apparition_v5", "Sfx_Traqueur_Cri_Apparition_02", apparition, 400, None),
              ("traqueur_vu_v3", "Sfx_Traqueur_Cri_Vu_01", vu, 200, 2.45),
              ("traqueur_vu_v2", "Sfx_Traqueur_Cri_Vu_02", vu, 160, 2.1)]
     for src, nom, f, fin, coupe in choix:

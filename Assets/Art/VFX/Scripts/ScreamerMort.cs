@@ -10,7 +10,7 @@ namespace ItHunts.Art.VFX
     /// sur les bords (aberration chromatique), le grain monte, une vignette rouge sang presque noire se referme, puis tout
     /// retombe vers le noir de l'écran de fin. Version adoucie (option « réduire les effets ») : pas de distorsion, aberration et
     /// grain faibles, vignette plus douce, ni sursaut ni rougeur. Durée totale 0,9 s (adoucie : 1,2 s). Le poids du volume suit
-    /// la courbe « poids » : l'effet se mêle à l'étalonnage du jeu au lieu de l'écraser.
+    /// la courbe « poids » (fondu d'entrée), puis les paramètres forcés remplacent ceux de l'étalonnage du jeu ; seuls ceux-là.
     /// Utilisation : un GameObject avec Volume (global, priorité haute) + ce composant ; le jeu appelle Joue(reduireEffets).
     /// </summary>
     [RequireComponent(typeof(Volume))]
@@ -62,15 +62,18 @@ namespace ItHunts.Art.VFX
         {
             Prepare();
             k = Mathf.Clamp01(k);
-            // le poids du volume suit la courbe : à 0 l'étalonnage du jeu (HorrorLook) reste intact, et l'effet s'y mêle en montant
+            // le poids du volume suit la courbe (0 -> 1 en 0,07 s) : l'effet arrive en fondu sur l'étalonnage du jeu, puis REMPLACE les
+            // paramètres qu'il force (vignette, aberration, grain, distorsion, saturation, contraste, exposition, filtre) ; les autres
+            // réglages de HorrorLook (bloom, virage des couleurs...) restent actifs
             _v.weight = poids.Evaluate(k);
             float coup = reduit ? 0f : Mathf.Sin(Mathf.Clamp01(k / 0.35f) * Mathf.PI);           // distorsion : un coup qui relâche
             float sursaut = reduit ? 0f : Mathf.Sin(Mathf.Clamp01(k / 0.16f) * Mathf.PI);       // 0,15 s au début (version forte)
             float fin = Mathf.InverseLerp(0.5f, 1f, k);
             _vig.color.Override(vignette);
-            _vig.intensity.Override(reduit ? 0.48f : 0.62f);
-            _vig.smoothness.Override(reduit ? 0.7f : 0.45f);
-            _ab.intensity.Override(reduit ? 0.25f : 1f);
+            _vig.intensity.Override(reduit ? 0.5f : 0.78f);
+            _vig.smoothness.Override(reduit ? 0.7f : 0.32f);
+            _vig.rounded.Override(true);
+            _ab.intensity.Override(reduit ? 0.2f : 0.55f);
             _grain.type.Override(FilmGrainLookup.Medium4);
             _grain.intensity.Override(reduit ? 0.25f : 0.8f);
             _grain.response.Override(0.6f);

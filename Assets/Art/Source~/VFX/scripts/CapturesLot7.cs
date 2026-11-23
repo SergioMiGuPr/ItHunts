@@ -26,15 +26,15 @@ public static class CapturesLot7
     {
         var coque = Shader.Find("ItHunts/VFX/ContourCoque");
         var a = Mat(Dossier + "M_VFX_Volant_Annonce.mat", coque);
-        a.SetColor("_Couleur", new Color(0.50f, 0.07f, 0.05f)); a.SetFloat("_Epaisseur", 0.022f); a.SetFloat("_Opacite", 0.85f);
+        a.SetColor("_Couleur", new Color(0.62f, 0.08f, 0.06f)); a.SetFloat("_Epaisseur", 0.022f); a.SetFloat("_MinPx", 3f); a.SetFloat("_Opacite", 1f);
         a.SetFloat("_Pulsation", 2.2f); a.SetFloat("_PulsationMin", 0.35f);
         var p = Mat(Dossier + "M_VFX_Prise_Contour.mat", coque);
         p.SetColor("_Couleur", new Color(0.36f, 0.33f, 0.29f)); p.SetFloat("_Epaisseur", 0.02f); p.SetFloat("_Opacite", 0.75f);
-        p.SetFloat("_Pulsation", 0f);
+        p.SetFloat("_Pulsation", 0f); p.SetFloat("_MinPx", 2f);
         var sol = Shader.Find("ItHunts/VFX/MarquageSol");
         var m = Mat("Assets/Art/VFX/Resources/M_VFX_Marquage_Boss.mat", sol);
         var defaut = new Material(sol); m.CopyPropertiesFromMaterial(defaut); Object.DestroyImmediate(defaut);   // une seule source : le shader
-        var ap = Mat(Dossier + "M_VFX_Apparition.mat", sol);
+        var ap = Mat("Assets/Art/VFX/Resources/M_VFX_Apparition.mat", sol);
         ap.SetFloat("_Forme", 0); ap.SetFloat("_Progression", 1); ap.SetFloat("_Intensite", 0.2f); ap.SetFloat("_Pulsation", 1.2f);
         ap.SetFloat("_BordM", 0.06f); ap.SetFloat("_Fondu", 1);
         foreach (var x in new[] { a, p, m, ap }) EditorUtility.SetDirty(x);
@@ -44,9 +44,20 @@ public static class CapturesLot7
 
     static Material Mat(string chemin, Shader sh)
     {
+        // matériau repris à neuf depuis le shader (aucune propriété héritée d'un ancien shader), GUID conservé
         var m = AssetDatabase.LoadAssetAtPath<Material>(chemin);
-        if (m == null) { m = new Material(sh) { name = Path.GetFileNameWithoutExtension(chemin) }; AssetDatabase.CreateAsset(m, chemin); }
-        m.shader = sh;
+        if (m == null) { m = new Material(sh) { name = Path.GetFileNameWithoutExtension(chemin) }; AssetDatabase.CreateAsset(m, chemin); return m; }
+        var propre = new Material(sh);
+        m.shader = sh; m.CopyPropertiesFromMaterial(propre);
+        var so = new SerializedObject(m);
+        foreach (var liste in new[] { "m_SavedProperties.m_Floats", "m_SavedProperties.m_Colors", "m_SavedProperties.m_TexEnvs" })
+        {
+            var pr = so.FindProperty(liste);
+            for (int i = pr.arraySize - 1; i >= 0; i--)
+                if (!propre.HasProperty(pr.GetArrayElementAtIndex(i).FindPropertyRelative("first").stringValue)) pr.DeleteArrayElementAtIndex(i);
+        }
+        so.ApplyModifiedPropertiesWithoutUndo();
+        Object.DestroyImmediate(propre);
         return m;
     }
 
@@ -91,15 +102,25 @@ public static class CapturesLot7
         _log.Add(nom + " : cam " + _cam.transform.position.ToString("F1") + " -> " + _cam.transform.forward.ToString("F2"));
     }
 
+    static List<Renderer> _corps; static Camera _src;
+    /// <summary>Corps et mains du joueur : visibles dans la vue du joueur, masqués pour les vues extérieures.</summary>
+    static void Corps(bool visible)
+    {
+        if (_corps == null)
+            _corps = _player.GetComponentsInChildren<Renderer>(true).Concat(_src.GetComponentsInChildren<Renderer>(true))
+                .Where(r => r.enabled).Distinct().ToList();                        // corps, mains et orbe (enfants de la caméra du joueur)
+        foreach (var r in _corps) if (r) r.enabled = visible;
+    }
+
     static readonly BindingFlags NP = BindingFlags.NonPublic | BindingFlags.Instance;
 
     public static async Task<string> Shoot(string dossier)
     {
-        _log.Clear();
+        _log.Clear(); _corps = null;
         float t0 = Time.realtimeSinceStartup;
         while (Time.realtimeSinceStartup - t0 < 240f && (ActLevel.Current == null || ActLevel.Current.Loading || PlayerCam() == null)) await Task.Delay(500);
         await Task.Delay(1500);
-        Camera src = PlayerCam();
+        Camera src = PlayerCam(); _src = src;
         _player = PlayerHealth.All.Count > 0 ? PlayerHealth.All[0].transform : null;
         var target = PlayerHealth.All[0];
         var go = new GameObject("CaptureCam");
@@ -163,17 +184,18 @@ public static class CapturesLot7
             // vues : joueur (œil 1,7 m, vers le boss) et témoin (7 m de haut, derrière le joueur)
             Vector3 oeil = P + Vector3.up * 1.7f, regardJeu = Vector3.Lerp(B + Vector3.up * 2.5f, centre, 0.5f);
             Vector3 temoin = P - versCentre * 9f + Vector3.up * 7f; temoin.y = Sol(temoin) + 7f;
-            Cam(oeil, regardJeu); await Snap($"Boss_{nom}_jeu_avant");
-            Cam(temoin, centre); await Snap($"Boss_{nom}_temoin_avant");
+            Corps(true); Cam(oeil, regardJeu); await Snap($"Boss_{nom}_jeu_avant");
+            Corps(false); Cam(temoin, centre); await Snap($"Boss_{nom}_temoin_avant");
             foreach (var g in tele.Where(x => x != null)) g.GetComponent<Renderer>().enabled = false;
             foreach (var m in miennes) m.gameObject.SetActive(true);
             foreach (var (k, suf) in new[] { (fait, "annonce"), (0.92f, "montee"), (1.03f, "impact") })
             {
                 foreach (var m in miennes) m.Pose(k);
-                Cam(oeil, regardJeu); await Snap($"Boss_{nom}_jeu_{suf}");
-                Cam(temoin, centre); await Snap($"Boss_{nom}_temoin_{suf}");
+                Corps(true); Cam(oeil, regardJeu); await Snap($"Boss_{nom}_jeu_{suf}");
+                Corps(false); Cam(temoin, centre); await Snap($"Boss_{nom}_temoin_{suf}");
             }
-            // de près : 2,5 m du bord de la première marque, vers le bord
+            // de près : 2,2 m du bord de la première marque, vers le bord (le joueur et ses mains masqués : caméra hors de son corps)
+            Corps(false);
             if (miennes.Count > 0)
             {
                 var mt = miennes[0].transform;
@@ -188,6 +210,7 @@ public static class CapturesLot7
                 foreach (var m in miennes) { m.gameObject.SetActive(true); m.Pose(0.92f); }
                 Cam(e, bord - dehors * 1.5f); await Snap($"Boss_{nom}_pres_montee");
             }
+            Corps(true);
             foreach (var m in miennes) Object.Destroy(m.gameObject);
             _log.Add($"{nom} : annonce {total:F2} s, capturée à {fait:P0}, {n} marques de main");
         }
@@ -209,7 +232,9 @@ public static class CapturesLot7
         var grab = vol.GetComponent<ItHunts.Orbs.Grabbable>();
         Vector3 oeilV = P + Vector3.up * 1.7f;
         Vector3 loinV = P - (V - P).normalized * 9f; loinV.y = Sol(loinV) + 1.7f;
-        foreach (var (e, d) in new[] { (oeilV, "pres"), (loinV, "jeu") })
+        Vector3 tresLoinV = P - (V - P).normalized * 17f; tresLoinV.y = Sol(tresLoinV) + 1.7f;
+        Corps(false);
+        foreach (var (e, d) in new[] { (oeilV, "pres"), (loinV, "jeu"), (tresLoinV, "loin") })
         {
             Cam(e, V);
             if (tel) tel.enabled = false; cd.Cache(); if (grab) grab.SetGlow(Color.black);
@@ -231,7 +256,7 @@ public static class CapturesLot7
         Vector3 oeilS = S + (P - S).normalized * 3.5f; oeilS.y = Sol(oeilS) + 1.7f;
         Vector3 loinS = S + (P - S).normalized * 12f; loinS.y = Sol(loinS) + 1.7f;
         Cam(oeilS, S); await Snap("Apparition_pres_avant"); Cam(loinS, S); await Snap("Apparition_jeu_avant");
-        mr.sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>(Dossier + "M_VFX_Apparition.mat");
+        mr.sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/VFX/Resources/M_VFX_Apparition.mat");
         Cam(oeilS, S); await Snap("Apparition_pres_apres"); Cam(loinS, S); await Snap("Apparition_jeu_apres");
         Object.Destroy(marque);
 
@@ -240,6 +265,13 @@ public static class CapturesLot7
         Vector3 vers = P - boss.transform.position; vers.y = 0; vers.Normalize();
         Vector3 oe = boss.transform.position + vers * 3.2f; oe.y = Sol(oe) + 1.7f;
         Vector3 tete = new Vector3(bb.center.x, bb.min.y + bb.size.y * 0.62f, bb.center.z);
+        // cadrage retenu : au pied du traqueur (3,2 m), regard vers le visage (le crâne se découpe sur le ciel) ; un cadrage à hauteur
+        // de tête (os SK_Traqueur_v4_Tete) montrait l'arrière du crâne dans la pose de combat
+        var os = boss.GetComponentsInChildren<Transform>().FirstOrDefault(x => x.name.EndsWith("_Tete") || x.name.ToLower().Contains("head"));
+        // l'os de la tête n'est pas toujours à jour hors caméra : repli sur la hauteur connue du modèle (~9 m debout)
+        tete = os != null && os.position.y > boss.transform.position.y + 3f ? os.position : boss.transform.position + Vector3.up * 8.5f;
+        oe = boss.transform.position + vers * 6f; oe.y = Sol(oe) + 1.7f;
+        _log.Add("screamer : cadrage au pied (5 m), regard vers la tête " + tete.ToString("F1"));
         Joueur(oe - Vector3.up * 1.6f, boss.transform.position);
         var sgo = new GameObject("Screamer");
         var vols = Object.FindObjectsByType<Volume>(FindObjectsSortMode.None);

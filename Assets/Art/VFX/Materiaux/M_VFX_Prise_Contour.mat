@@ -26,8 +26,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _Epaisseur: 0.02
+    - _MinPx: 2
     - _Opacite: 0.75
-    - _Puissance: 5
     - _Pulsation: 0
     - _PulsationMin: 0.35
     m_Colors:

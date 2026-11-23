@@ -2,7 +2,8 @@
 // exigeants : bord net rouge sang éteint d'épaisseur constante EN MÈTRES (12 cm, au moins 1,5 px à l'écran), remplissage
 // rouge sang sombre et translucide (le sol rougit et s'assombrit, il n'est jamais couvert d'une plaque claire), zone déjà
 // « remplie » un peu plus chaude que la zone à venir, avec un front en dégradé doux (pas un second bord), montée en
-// intensité sur les 40 derniers pour cent, éclair d'impact porté par le bord.
+// intensité sur les 40 derniers pour cent (remplissage plus chaud qui bat de plus en plus vite, bord qui s'épaissit),
+// éclair d'impact porté par le bord. Seules les faces tournées vers le haut sont dessinées (quad, dessus du cylindre).
 // Formes : 0 cercle, 1 couloir (rectangle, le boss en bas, -Z local), 2 cône (sommet au boss, en bas au centre), 3 anneau.
 // Coordonnées prises dans l'espace de l'objet (x, z de -0.5 à 0.5) : marche sur le quad de MarquageBoss comme sur le cylindre
 // aplati de WaveDirector (apparitions), sans dépendre des UV. La taille en mètres est lue dans la matrice de l'objet.
@@ -47,14 +48,15 @@ Shader "ItHunts/VFX/MarquageSol"
             float4 _CouleurBord, _CouleurBordChaud, _CouleurFond, _CouleurRempli, _OpaciteFond;
             CBUFFER_END
 
-            struct A { float4 pos : POSITION; };
-            struct V { float4 pos : SV_POSITION; float2 xz : TEXCOORD0; float2 taille : TEXCOORD1; };
+            struct A { float4 pos : POSITION; float3 n : NORMAL; };
+            struct V { float4 pos : SV_POSITION; float2 xz : TEXCOORD0; float2 taille : TEXCOORD1; float haut : TEXCOORD2; };
 
             V vert(A i)
             {
                 V o;
                 o.pos = TransformObjectToHClip(i.pos.xyz);
                 o.xz = i.pos.xz;                                             // -0.5..0.5
+                o.haut = i.n.y;                                              // cylindre de WaveDirector : seul le dessus compte
                 float4x4 m = GetObjectToWorldMatrix();
                 o.taille = float2(length(float3(m._m00, m._m10, m._m20)), length(float3(m._m02, m._m12, m._m22)));
                 return o;
@@ -101,20 +103,24 @@ Shader "ItHunts/VFX/MarquageSol"
 
             half4 frag(V i) : SV_Target
             {
+                if (i.haut < 0.5) discard;                                   // dessous et flancs du cylindre : pas de double disque
                 float d, p, L;
                 Forme(i.xz, i.taille, d, p, L);
                 float aa = max(fwidth(d), 1e-4);
                 float dedans = 1 - smoothstep(-aa, aa, d);
                 if (dedans <= 0) discard;
-                float bordM = max(_BordM, aa * 1.5);
+                float monte0 = saturate(_Intensite);
+                float bordM = max(_BordM * (1 + 0.7 * monte0), aa * 1.5);    // le bord s'épaissit pendant la montée (12 -> 20 cm)
                 float bord = smoothstep(-bordM - aa, -bordM + aa, d);
                 // front en dégradé doux : 1 dans la zone remplie, 0 devant, transition de _FrontM mètres
                 float largeur = max(_FrontM / max(L, 0.1), 1e-3);
                 float rempli = _Progression >= 0.999 ? 1 : 1 - smoothstep(_Progression - largeur, _Progression, p);
                 float puls = _Pulsation > 0 ? 0.5 + 0.5 * sin(_Time.y * 6.2831 * _Pulsation) : 0;
                 float monte = saturate(_Intensite + 0.35 * puls);
-                float3 fond = lerp(_CouleurFond.rgb, _CouleurRempli.rgb * (1 + 0.5 * monte), rempli);
-                float aFond = lerp(_OpaciteFond.x, _OpaciteFond.y, rempli) * (1 + 0.15 * monte);
+                // montée : le remplissage se réchauffe nettement et bat de plus en plus vite (3 -> 10 Hz)
+                float bat = monte0 * 0.3 * (0.5 + 0.5 * sin(_Time.y * 6.2831 * (3 + 7 * monte0)));
+                float3 fond = lerp(_CouleurFond.rgb, _CouleurRempli.rgb * (1 + 1.2 * monte + bat), rempli);
+                float aFond = lerp(_OpaciteFond.x, _OpaciteFond.y, rempli) * (1 + 0.2 * monte + bat);
                 float3 cBord = lerp(_CouleurBord.rgb * (0.8 + 0.5 * monte), _CouleurBordChaud.rgb, _Flash);
                 float3 col = lerp(fond, cBord, bord);
                 float a = lerp(aFond, 0.9 + 0.1 * monte, bord);

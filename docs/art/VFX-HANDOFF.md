@@ -194,37 +194,40 @@ Une seule couleur pour tout le boss : le type d'attaque se lit à la forme.
 
 | Attaque (`FinalBoss`) | Aujourd'hui | Appel à la place (durée = `TelegraphLeft`) |
 |---|---|---|
-| Prise, Bond, Cri, Débris, Éruptions | `Disc(at, r)` | `MarquageBoss.Cercle(at, r, duree)`. Disque plein, Cri compris : son centre n'est pas sûr. |
-| Charge | `Lane(from, dir, longueur, 7)` | `var m = MarquageBoss.Couloir(from, dir, longueur, 7f, duree); m.Prolonge(longueur / chargeSpeed);` La marque reste pleine pendant la course. |
-| Balayage | `Cone(...)` (5 bandes) | `MarquageBoss.Cone(from, dir, sweepRange, 45f, duree)`. Demi-angle en degrés. |
+| Prise, Cri, Débris, Éruptions | `Disc(at, r)` | `MarquageBoss.Cercle(at, r, duree)` (disque plein, y compris pour le Cri : son centre n'est pas sûr) |
+| Bond | `Disc(tp, leapRadius)` | `MarquageBoss.Cercle(tp, leapRadius, duree).Prolonge(0.9f)` : l'onde de choc tombe après les 0,9 s de vol, la marque reste pleine jusque-là |
+| Charge | `Lane(from, dir, longueur, 7)` | `MarquageBoss.Couloir(from, dir, longueur, largeur, duree)`, puis `Annule()` quand la course s'arrête réellement (distance atteinte ou bord de l'arène à `ArenaRadius - 6.5`) |
+| Balayage | `Cone(...)` (5 bandes) | `var m = MarquageBoss.Cone(from, dir, sweepRange, 45f, duree);` puis `m.Oriente(transform.forward)` à chaque image de l'annonce (le boss pivote vers la cible et frappe selon son orientation finale) |
+| Invocation | `Disc(m, 2f)` | `MarquageBoss.Apparition(m, 2f, duree)` (ce n'est pas un coup : cercle plein pulsé, même matériau que les apparitions des vagues) |
 
-- **Hauteur.** La marque se pose à plat, 3 cm au-dessus du point donné. Passer des points ramenés à `ArenaCenter.y`, comme aujourd'hui (`Flat(x) + Vector3.up * ArenaCenter.y`).
-  - Sur un sol en relief, un décalque URP serait plus juste : renderer feature à ajouter sur main si besoin.
-- **Cycle de vie.** La marque joue l'impact puis se détruit seule.
-  - **Ne pas** l'effacer dans `ClearTelegraphs` à la résolution, sinon l'éclair ne se voit jamais.
-  - Garder les `MarquageBoss` dans une liste, et n'appeler `Annule()` qu'en cas d'interruption : boss étourdi, mort, nouvelle attaque avant la fin.
+**Écarts entre marques et dégâts, à régler côté main** :
+- **Charge :** les dégâts touchent tout joueur à moins de 5 m du boss (couloir réel de 10 m de large), alors que la marque fait 7 m. Il faut aligner l'un sur l'autre : marque de 10 m, ou rayon de dégâts de 3,5 m.
+- **Bond et Débris sur un sol en relief :** la marque est plate, à `ArenaCenter.y` + 3 cm. Sur la butte ou l'escalier, elle s'enterre ou flotte, alors que `Shockwave` touche jusqu'à 4 m plus haut. **Demande prioritaire à main :** un décalque URP (renderer feature « Decal » sur le renderer, réglage partagé) permettra de projeter le même shader sur le relief.
+
 - **Matériau.** `Assets/Art/VFX/Resources/M_VFX_Marquage_Boss.mat`, chargé par `Resources.Load`, donc présent dans le build sans autre réglage.
   - C'est la seule source des valeurs : régler ce matériau change le jeu.
   - `MarquageBoss.Configure(mat)` permet d'en passer un autre.
   - Les valeurs propres à chaque marque passent par un `MaterialPropertyBlock` : aucune allocation de matériau.
-- **Accessibilité.** `MarquageBoss.ReduireEffets = GameSettings.ReduceMotion` réduit l'éclair de moitié.
+- **Accessibilité.** `MarquageBoss.ReduireEffets = GameSettings.ReduceMotion` réduit l'éclair de moitié. Ce réglage est commun à tous les joueurs : une marque au sol est vue par tous. En coop, prendre le réglage le plus prudent.
+- **Performance.** Le `MaterialPropertyBlock` sort ces marques du SRP Batcher. C'est sans effet notable : une à quinze marques à la fois.
 - **Aperçu.** `Pose(t)` montre l'état à l'instant `t`, pour les captures et l'éditeur.
 
 ### Marque d'apparition des vagues (`WaveDirector.telegraphMaterial`)
 
-Mettre `Assets/Art/VFX/Materiaux/M_VFX_Apparition.mat` dans `WaveDirector.telegraphMaterial` :
+Mettre `Assets/Art/VFX/Resources/M_VFX_Apparition.mat` dans `WaveDirector.telegraphMaterial` :
 - Il remplace `Wave_Spawn_Telegraph` (Unlit orange HDR 3), créé aujourd'hui par `ActSceneBuilder`, `RandomLevelBuilder` et `TestArenaSceneBuilder`.
 - Même shader que le marquage du boss : cercle plein, bord de 6 cm, pulsation à 1,2 Hz.
-- Le shader lit la forme dans l'espace de l'objet. Il marche donc tel quel sur le cylindre aplati de `ShowMarker` (1,6 × 0,01 × 1,6).
+- Le shader lit la forme dans l'espace de l'objet. Il marche donc tel quel sur le cylindre aplati de `ShowMarker` (1,6 × 0,01 × 1,6) : seul le dessus est dessiné (le dessous et les flancs sont écartés par la normale), donc pas de double disque.
+- Pour un point de volant, `ShowMarker` pose la marque 0,3 m sous le point d'apparition, parfois en l'air. Une marque « au sol » flotte alors dans le vide. **Proposition pour main :** projeter le point au sol (raycast vers le bas) pour la marque.
 
 Il n'y a plus de disque orange plein.
 
 ### Volants : annonce du piqué et volant tenu (`ContourDiscret`, shader `ItHunts/VFX/ContourCoque`)
 
-Plus de boule : un **contour collé à la silhouette** (coque inversée : le maillage est gonflé de 2 cm et ses faces avant sont écartées).
+Plus de boule : un **contour collé à la silhouette** (coque inversée : le maillage est gonflé de 2 cm et ses faces avant sont écartées). Le contour garde **au moins 3 px à l'écran** (2 px pour la prise) : il reste lisible à 12 et 20 m (voir `Planche_Volant.jpg`).
 
 - **Composant.** `ContourDiscret` va sur la racine de `Volant.prefab`, avec deux matériaux :
-  - `annonce = M_VFX_Volant_Annonce` : encre rouge sang éteint (0.50, 0.07, 0.05), opacité 0,85, pulsation 2,2 Hz ;
+  - `annonce = M_VFX_Volant_Annonce` : encre rouge sang (0.62, 0.08, 0.06), opacité 1, pulsation 2,2 Hz ;
   - `prise = M_VFX_Prise_Contour` : ton d'os neutre (0.36, 0.33, 0.29), opacité 0,75, fixe.
 
   Au premier usage, il crée des copies des rendus en enfants. Il ignore le rendu « Annonce du piqué ».
@@ -233,19 +236,20 @@ Plus de boule : un **contour collé à la silhouette** (coque inversée : le mai
   - Supprimer `SetGlow(grabColor * glowHeld)` : plus de lueur.
   - C'est `Flyer` qui montre `prise` tant qu'il est tenu.
   - Le clignotement « il va se libérer » alterne `prise` et `null`, au même rythme qu'aujourd'hui.
-- **Modèle définitif.** Le futur modèle du volant gardera le même composant. Pour un `SkinnedMeshRenderer`, le matériau de coque est ajouté en dernier.
+- **Modèle définitif.** Le futur modèle du volant gardera le même composant. Pour un `SkinnedMeshRenderer`, le matériau de coque est ajouté en dernier : il ne cerne que le dernier sous-maillage, il faut donc un modèle en un sous-maillage. Les primitives de la greybox ont des normales séparées : la coque s'ouvre un peu aux arêtes des cubes. Un modèle lissé n'aura pas ce défaut.
+- **Reste du violet, à trancher par l'utilisateur.** Le trait violet de l'orbe vers l'objet tenu (`TelekinesisView`, `line`) suit la règle de game design « violet = objet tenu » (couleur de l'orbe). La consigne de la DA dit « ni violet quand attrapé » pour le volant lui-même. Le volant n'a plus de violet ; le trait de l'orbe reste tel quel tant que l'utilisateur n'a pas tranché.
 
 ### Screamer de la mort par le traqueur (`ScreamerMort`)
 
 Effet d'écran fait par le post-traitement URP : un `Volume` à priorité 200, avec un profil créé en code.
-- Le **poids du volume suit une courbe** (de 0 à 1 en 0,07 s).
-- **Seuls les paramètres utiles sont forcés.** L'effet se mêle à l'étalonnage du jeu (`HorrorLook`) au lieu de l'écraser.
+- Le **poids du volume suit une courbe** : de 0 à 1 en 0,07 s, l'effet arrive en fondu sur l'étalonnage du jeu (`HorrorLook`).
+- Ensuite, il **remplace** les paramètres qu'il force : vignette, aberration, grain, distorsion, saturation, contraste, exposition et filtre. Les autres réglages de `HorrorLook` (bloom, virage des couleurs) restent actifs.
 
 **Version forte (0,9 s)**, dans l'ordre :
 1. Image désaturée, puis teintée de rouge sang. On ne teinte pas directement en rouge : un rouge sur ciel bleu virerait au violet.
 2. **Sursaut** de 0,15 s : exposition +0,55 et contraste.
 3. **Distorsion** en barillet (−0,45) qui relâche, avec un pic à 17,5 %.
-4. **Aberration chromatique**, **grain** fort et **vignette** sang (0,62).
+4. **Aberration chromatique** (0,55, limitée pour éviter une frange bleue), **grain** fort et **vignette** sang serrée (0,78, arrondie).
 5. L'image s'assombrit (−1,8 IL) vers l'écran de fin.
 
 **Version adoucie (1,2 s)** : ni sursaut, ni rougeur vive, ni distorsion, ni flash. L'aberration et le grain sont au quart, la vignette est douce.
@@ -265,3 +269,9 @@ Effet d'écran fait par le post-traitement URP : un `Volume` à priorité 200, a
 **Aperçu** :
 - `apercu` (de 0 à 1) et `apercuReduit` montrent l'effet dans l'inspecteur, **en Play Mode seulement**. Ils sont remis à 0 dans un build.
 - `Pose(k, reduit)` sert aux captures.
+
+### Contrôle du lot 7
+
+- **Journal Unity** (après réimport des shaders, des matériaux et des sons, compilation et captures en Play Mode dans `Acte_4_Boss`) : 0 erreur et 0 avertissement sur ces assets. Les seules erreurs de la console sont `Destroying assets is not permitted` dans `ItHunts.Audio.MagnetismAudio.OnDestroy` (`Assets/_Project`, côté main).
+- **Read/Write des maillages de l'arène** : 6 pièces de `KitJardin` utilisées par l'arène du boss (`SM_Arene_Butte`, `_Couvert`, `_EscalierDescente`, `_PilierBrise`, `SM_Jardin_Falaise_16m`, `SM_Jardin_Statue_Geante`) donnaient l'erreur « Source mesh … does not allow read access » (NavMesh en build). Elles sont passées à Read/Write. La PR du lot 2 (#47) rend lisibles toutes les pièces des kits : les deux changements sont identiques.
+- **Éclairage des captures.** Ce sont celles du jeu, sans lumière ajoutée : l'arène du boss est très sombre par choix de DA (ciel de nuit, braseros), et les marques sont faites pour s'y lire. Le volant est la greybox de main (pas de modèle d'ennemi demandé à la DA cette nuit).

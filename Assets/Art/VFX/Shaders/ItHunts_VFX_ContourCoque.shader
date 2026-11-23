@@ -8,6 +8,7 @@ Shader "ItHunts/VFX/ContourCoque"
     {
         _Couleur ("Couleur du contour", Color) = (0.45, 0.07, 0.05, 1)
         _Epaisseur ("Épaisseur (m)", Range(0.002, 0.08)) = 0.018
+        _MinPx ("Épaisseur minimale à l'écran (px)", Range(0, 6)) = 2.5
         _Opacite ("Opacité", Range(0, 1)) = 0.8
         _Pulsation ("Pulsation (Hz, 0 : fixe)", Range(0, 6)) = 0
         _PulsationMin ("Opacité au creux de la pulsation (fraction)", Range(0, 1)) = 0.35
@@ -25,7 +26,7 @@ Shader "ItHunts/VFX/ContourCoque"
             #pragma fragment frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             CBUFFER_START(UnityPerMaterial)
-            float4 _Couleur; float _Epaisseur, _Opacite, _Pulsation, _PulsationMin;
+            float4 _Couleur; float _Epaisseur, _MinPx, _Opacite, _Pulsation, _PulsationMin;
             CBUFFER_END
             struct A { float4 pos : POSITION; float3 n : NORMAL; };
             struct V { float4 pos : SV_POSITION; };
@@ -35,6 +36,10 @@ Shader "ItHunts/VFX/ContourCoque"
                 float3 w = TransformObjectToWorld(i.pos.xyz);
                 float3 n = normalize(TransformObjectToWorldNormal(i.n));
                 o.pos = TransformWorldToHClip(w + n * _Epaisseur);
+                // plancher en pixels : le contour reste lisible à distance de jeu (12-20 m), où 2 cm font moins d'un pixel
+                float2 nc = mul((float3x3)GetWorldToHClipMatrix(), n).xy;
+                nc = nc / max(length(nc), 1e-5);
+                o.pos.xy += nc * (_MinPx * 2.0 / _ScreenParams.xy) * o.pos.w;
                 return o;
             }
             half4 frag(V i) : SV_Target
