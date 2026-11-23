@@ -5,7 +5,7 @@ kit_chateau.py et kit_jardin.py, qui enregistrent leurs versions avec `enregistr
 Chaque type de pièce est un constructeur paramétré par un **style d'acte** (`CAVE`, `CHATEAU`, `JARDIN` : matériaux,
 garde-corps, décor). Mesures tirées du contrôleur (ART-HANDOFF § 3) : marches de 18 à 20 cm, saut 1.3 m, hissage jusqu'à
 3.7 m (un saut) ou 5.3 m (double saut), dessus d'au moins 0.6 m de profondeur, wall jump de 1.8 m ; traqueur (§ 5 ter,
-D-078) : porte étroite d'au moins 4 × 5.2 m (il se faufile), plateformes de moins de 10 m de profondeur où il ne se pose pas,
+D-078) : porte étroite d'au moins 4 × 5.25 m (il se faufile), plateformes de moins de 10 m de profondeur où il ne se pose pas,
 mur grimpable de 16 m au plus.
 
 Conventions (comme kitlib) : Blender Z en haut, avant de la pièce vers -Y (Unity +Z), pivot au sol sauf mention.
@@ -23,6 +23,8 @@ import kitlib as L
 COL = "M_Collision_Invisible"
 SCEAU_AME = "M_Kit_Sceau_Ame"          # cyan des âmes (réservé au jeu) : sceau de la porte verrouillée
 VITRAUX = ("M_Kit_Vitrail", "M_Kit_Vitrail_Rouge", "M_Kit_Vitrail_Ambre")
+CRISTAL = "M_Kit_Cristal"               # gouttes du lustre à pampilles (relecture du lot 3 ; créé par KitBuilder)
+CHIFFON = "M_Chiffon_Brule"             # tête des torches : tissu goudronné
 
 CAVE = dict(act="Cave", mur="M_Bib_Moellons_Peint", pierre="M_Bib_PierreTaillee_Peint", marche="M_Bib_PierreTaillee_Peint",
             sol="M_Bib_Dalles_Sales", bois="M_Bib_BoisPourri", planche="M_Bib_BoisPourri", porte="M_Bib_BoisNeuf",
@@ -96,6 +98,151 @@ def dz():
 def rampe_col(kc, pts):
     """Surface de collision (quad ou polygone plan)."""
     kc.face([tuple(p) for p in pts], COL)
+
+
+# ------------------------------------------------------------------ corrections du lot 3 (relecture)
+def col_boite(kc, k, n0, marge=0.01, zmin=None):
+    """Boîte de collision (Col_*) qui englobe les sommets ajoutés à `k` depuis l'indice `n0` (blocs de décor posés le long
+    d'un escalier : éboulis, socles, vases), agrandie de `marge` (aucune face confondue avec le décor)."""
+    k.bm.verts.ensure_lookup_table()
+    vs = [k.bm.verts[i].co for i in range(n0, len(k.bm.verts))]
+    if not vs:
+        return
+    lo = Vector((min(v.x for v in vs), min(v.y for v in vs), min(v.z for v in vs))) - Vector((marge, marge, marge))
+    hi = Vector((max(v.x for v in vs), max(v.y for v in vs), max(v.z for v in vs))) + Vector((marge, marge, marge))
+    if zmin is not None:
+        lo.z = zmin
+    kc.box(tuple((lo + hi) / 2), tuple(hi - lo), COL)
+
+
+def col_prisme(kc, prof, x0, x1):
+    """Volume de collision : profil (y, z) extrudé de x0 à x1."""
+    prism(kc, prof, x0, x1, COL, axis="x")
+
+
+def lierre(k, S, chemin, normale, l=0.32, seed=0, ecart=0.03):
+    """Carte de lierre plate plaquée contre une paroi : bande fine qui suit `chemin` (points 3D, du haut vers le bas), à
+    `ecart` de la paroi (le long de `normale(p)`, vecteur sortant de la paroi), bords dentelés de feuilles (triangles
+    alternés), pointe effilée en bas. Matériau de feuillage de l'acte, double face. Aucun volume."""
+    rnd = random.Random(seed)
+    P = [Vector(p) for p in chemin]
+    n = len(P)
+    G, D = [], []
+    for i, p in enumerate(P):
+        t = (P[min(i + 1, n - 1)] - P[max(i - 1, 0)]).normalized()
+        nn = Vector(normale(p)).normalized()
+        s = t.cross(nn).normalized()
+        u = i / (n - 1)
+        w = l * (0.55 + 0.45 * math.sin(math.pi * min(1.0, u * 1.4 + 0.1))) * rnd.uniform(0.8, 1.1)
+        if i == n - 1:
+            w = 0.02
+        c = p + nn * ecart
+        G.append(c - s * w / 2)
+        D.append(c + s * w / 2)
+    m = S["feuil"]
+    for i in range(n - 1):
+        k.face([G[i], D[i], D[i + 1], G[i + 1]], m)
+        # feuilles : une pointe par segment, d'un côté puis de l'autre
+        a, b = (G[i], G[i + 1]) if i % 2 == 0 else (D[i + 1], D[i])
+        mil = (a + b) / 2
+        dehors = (mil - (G[i] + D[i] + G[i + 1] + D[i + 1]) / 4)
+        if dehors.length > 1e-6:
+            pointe = mil + dehors.normalized() * l * rnd.uniform(0.2, 0.3) + (b - a) * 0.25
+            k.face([a, pointe, b] if i % 2 == 0 else [a, pointe, b], m)
+
+
+def lierre_mur(k, S, x, z0, z1, y=0.0, l=0.32, seed=0, ecart=0.03):
+    """Carte de lierre sur une face de mur plane tournée vers -Y (face en y), du haut z0 au bas z1, autour de x."""
+    rnd = random.Random(seed)
+    nseg = max(3, int((z0 - z1) / 0.45))
+    pts = []
+    for i in range(nseg + 1):
+        z = z0 - (z0 - z1) * i / nseg
+        pts.append((x + 0.08 * math.sin(i * 1.3 + seed) + rnd.uniform(-0.04, 0.04), y, z))
+    lierre(k, S, pts, lambda p: (0, -1, 0), l=l, seed=seed, ecart=ecart)
+
+
+def pierre(k, c, s, m, ch=0.035, bas=None, seed=0, usure=0.012, dos=False):
+    """Pierre de taille ou about de poutre engagé dans un mur dont la face est vers -Y : boîte centrée en c, tailles s,
+    **arêtes avant chanfreinées** (`ch`), chanfrein du dessous avant plus fort si `bas` = (profondeur, hauteur) (pierre
+    d'attente, console), coins légèrement irréguliers (arêtes usées). Enveloppe convexe : volume fermé, dessus plat.
+    La face arrière (dans le mur) est omise sauf si `dos`."""
+    import bmesh
+    rnd = random.Random(seed)
+    cx, cy, cz = c
+    hx, hy, hz = s[0] / 2, s[1] / 2, s[2] / 2
+    bm = bmesh.new()
+    pts = []
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            pts.append((cx + sx * hx, cy + hy, cz + sz * hz))
+            cy_, cz_ = (ch, ch) if (sz > 0 or bas is None) else bas
+            j = lambda: rnd.uniform(-usure, usure)
+            pts.append((cx + sx * (hx - ch) + j(), cy - hy, cz + sz * (hz - cz_) + j()))
+            pts.append((cx + sx * hx, cy - hy + cy_ + j(), cz + sz * (hz - cz_) + j()))
+            pts.append((cx + sx * (hx - ch) + j(), cy - hy + cy_ + j(), cz + sz * hz))
+    vs = [bm.verts.new(p) for p in pts]
+    bmesh.ops.convex_hull(bm, input=vs)
+    for f in bm.faces:
+        if not dos and all(abs(v.co.y - (cy + hy)) < 1e-6 for v in f.verts):
+            continue
+        k.face([tuple(v.co) for v in f.verts], m)
+    bm.free()
+
+
+def flamme3(cx, cz, h):
+    """Flamme d'âme lisible à trois langues (sceau de la porte verrouillée) : langue centrale haute, deux langues
+    latérales plus basses qui s'écartent, base ronde ; hauteur h, base en (cx, cz)."""
+    P = [(0.00, 0.00), (0.19, 0.03), (0.32, 0.12), (0.39, 0.26), (0.39, 0.40), (0.47, 0.64), (0.30, 0.49), (0.21, 0.52),
+         (0.17, 0.70), (0.07, 0.86), (0.02, 1.00), (-0.07, 0.85), (-0.15, 0.70), (-0.19, 0.53), (-0.29, 0.50),
+         (-0.47, 0.66), (-0.40, 0.42), (-0.39, 0.26), (-0.32, 0.12), (-0.19, 0.03)]
+    return [(cx + x * h, cz + z * h) for x, z in P]
+
+
+def mur_rainure(k, x0, x1, h, t, o, m, m_reveal, ya, yb, xs, zs, zb=-0.05):
+    """Mur de x0 à x1 (face avant en y = 0, épaisseur t, hauteur h) percé d'une ouverture `o` (dict de `_contour`) et
+    creusé d'une **rainure** cachée pour une partie qui coulisse vers le haut (herse, vantail) : vide de ya à yb (y),
+    de -xs à xs (x) et de zb à zs (z). Le tableau de l'ouverture est interrompu dans la rainure ; les parois de la
+    rainure sont des faces réelles, la partie mobile y monte sans traverser la maçonnerie."""
+    c = _contour(o)
+    _face_percee(k, x0, x1, h, 0.0, [c], m, +1)
+    _face_percee(k, x0, x1, h, t, [c], m, -1)
+    n = len(c)
+    for i in range(n - 1):
+        (xa_, za_), (xb_, zb_) = c[i], c[i + 1]
+        for (y_a, y_b) in ((0.0, ya), (yb, t)):
+            k.face([(xa_, y_a, za_), (xb_, y_a, zb_), (xb_, y_b, zb_), (xa_, y_b, za_)], m_reveal)
+    k.face([(x0, 0, h), (x1, 0, h), (x1, t, h), (x0, t, h)], m)
+    for x in (x0, x1):
+        k.face([(x, 0, 0), (x, t, 0), (x, t, h), (x, 0, h)], m)
+    # parois de la rainure : faces percées de l'ouverture (avant et arrière), joues, fond haut, fonds bas des joues
+    for y, sens in ((ya, -1), (yb, +1)):
+        _face_percee_z(k, -xs, xs, zb, zs, y, c, m_reveal, sens)
+    for sx in (-1, 1):
+        k.face([(sx * xs, ya, zb), (sx * xs, yb, zb), (sx * xs, yb, zs), (sx * xs, ya, zs)], m_reveal)
+    k.face([(-xs, ya, zs), (xs, ya, zs), (xs, yb, zs), (-xs, yb, zs)], m_reveal)
+    xo = o["ow"] / 2
+    for sx in (-1, 1):
+        a, b = sorted((sx * xo, sx * xs))
+        k.face([(a, ya, zb), (b, ya, zb), (b, yb, zb), (a, yb, zb)], m_reveal)
+
+
+def _face_percee_z(k, x0, x1, z0, z1, y, contour, m, sens):
+    """Face plane en y de x0 à x1 et de z0 à z1, privée de l'ouverture `contour` (posée au sol, z de 0 au haut de l'arc) :
+    bandes verticales découpées aux abscisses du contour."""
+    xs_ = sorted(set([x0, x1] + [p[0] for p in contour if x0 < p[0] < x1]))
+    l, r = contour[0][0], contour[-1][0]
+    for i in range(len(xs_) - 1):
+        xa, xb = xs_[i], xs_[i + 1]
+        xm = (xa + xb) / 2
+        if l - 1e-6 <= xm <= r + 1e-6:
+            za, zb_ = _ztop(contour, xa), _ztop(contour, xb)
+        else:
+            za = zb_ = z0
+        if z1 - max(za, zb_) < 1e-6:
+            continue
+        q = [(xa, y, za), (xb, y, zb_), (xb, y, z1), (xa, y, z1)]
+        k.face(q if sens > 0 else list(reversed(q)), m)
 
 
 def anneau_obox(k, c, r, w, d, m, n=16, a0=math.pi / 2, plan="xz", y=0.0):
@@ -381,12 +528,21 @@ def escalier_droit(S, nom, H=4.0, w=3.0, g=0.3, palier=1.5):
                                palier=palier, m_pal=S["sol"], tapis=tapis, m_tapis=S.get("tapis"))
     rampe_col(kc, [(-w / 2, v0, za), (w / 2, v0, za), (w / 2, v1, zb), (-w / 2, v1, zb)])
     yt = n * g + palier
+    # volume de collision du bloc (KitBuilder ne met plus de collider au rendu des pièces à Col_*) : joues, palier, dos ;
+    # 1 cm hors des faces visibles (aucune face confondue)
+    kv = L.K("Col_Escalier")
+    e_ = 0.01
+    # pente 2.5 cm sous la rampe (aucune face confondue avec Col_Rampe), dessus du palier 6 mm au-dessus du palier visible
+    col_prisme(kv, [(v0 + 0.04, -0.02), (v1, H - 0.025), (yt + e_, H - 0.025), (yt + e_, -0.02)], -w / 2 - e_, w / 2 + e_)
+    kv.face([(-w / 2 - e_, v1, H + 0.006), (w / 2 + e_, v1, H + 0.006), (w / 2 + e_, yt + e_, H + 0.006), (-w / 2 - e_, yt + e_, H + 0.006)], COL)
     if act == "Cave":
         garde(kg, S, (w / 2 - 0.15, 0.15, r), (w / 2 - 0.15, (n - 1) * g + 0.1, H), kind="corde")
         garde(kg, S, (w / 2 - 0.15, (n - 1) * g + 0.1, H), (w / 2 - 0.15, yt - 0.15, H), kind="corde")
         rnd = random.Random(S["seed"] + 1)
         for j in range(3):
+            n0 = len(k.bm.verts)
             L.rock_blob(k, (-w / 2 - 0.6 + rnd.uniform(-0.2, 0.2), 0.4 + j * 1.6, 0 + dz()), (1.0, 1.1, 0.7), S["roche"], seed=S["seed"] + j, res=8)
+            col_boite(kv, k, n0, zmin=-0.05)
     elif act == "Chateau":
         for sx in (-1, 1):
             x = sx * (w / 2 - 0.22)
@@ -402,12 +558,18 @@ def escalier_droit(S, nom, H=4.0, w=3.0, g=0.3, palier=1.5):
             xc = sx * (w / 2 + 0.225)
             for (pa, pb) in zip(prof[1:4], prof[2:5]):
                 k.obox((xc, pa[0], pa[1] + 0.06), (xc, pb[0], pb[1] + 0.06), 0.6, 0.14, S["pierre"])
+            n0 = len(k.bm.verts)
             k.box((xc, -0.75, 0.6), (0.8, 0.7, 1.2), S["pierre"])
             k.lathe((xc, -0.75, 1.2), [(0.18, 0), (0.32, 0.25), (0.28, 0.55), (0.12, 0.6), (0.2, 0.75), (0.0, 0.75)], S["pierre"], n=10)
-            L.rock_blob(k, (xc, -0.75, 1.85), (0.5, 0.5, 0.35), S["feuil"], seed=S["seed"] + 5 + sx, res=8, amp=0.3)
+            col_boite(kv, k, n0, zmin=-0.05)
+            # mur d'échiffre et son chaperon (0.6 m de large, 0.13 m au-dessus du mur)
+            a_, b_ = sorted((sx * (w / 2 - 0.08), sx * (w / 2 + 0.53)))
+            col_prisme(kv, [(y_, z_ + (0.135 if z_ > 0 else -0.02)) for y_, z_ in [(-0.41, 0.0), (-0.41, 1.05), (0.0, r + 0.9),
+                                                                                  ((n - 1) * g, H + 0.9), (yt + 0.01, H + 0.9), (yt + 0.01, 0.0)]], a_, b_)
     ob = k.finish(S["seed"] + 11, PEINT_ARCHI)
     enfant(ob, kg, S["seed"] + 12, peinture=PEINT_ARCHI)
     enfant(ob, kc, 0)
+    enfant(ob, kv, 0)
     return ob
 
 
@@ -449,11 +611,24 @@ def escalier_tournant(S, nom, H=4.0, w=3.0, g=0.3):
     garde(kg, S, (j2, y1 + w - e, H), (xe - e, y1 + w - e, H), kind=kind)
     garde(kg, S, (w / 2 + 0.1, y1 + e, h1 + r), (j2, y1 + e, H), kind=kind)
     garde(kg, S, (j2, y1 + e, H), (xe - e, y1 + e, H), kind=kind)
-    if act == "Jardin":
-        L.rock_blob(k, (-w / 2 - 0.3, y1 + w + 0.2, 0.0 + dz()), (1.4, 1.2, 1.4), S["feuil"], seed=S["seed"] + 21, res=8, amp=0.3)
+    # volume de collision : A = volée 1 et palier carré (pente 2.5 cm sous la rampe), B = volée 2 et palier haut, séparés
+    # d'1 cm ; dessus des paliers 6 mm au-dessus des paliers visibles ; 1 cm hors des faces visibles
+    kv = L.K("Col_Escalier")
+    e_ = 0.01
+    yb_ = y1 + w + e_
+    col_prisme(kv, [(a0 + 0.04, -0.02), (a1, h1 - 0.025), (yb_, h1 - 0.025), (yb_, -0.02)], -w / 2 - e_, w / 2 + e_)
+    xb0 = w / 2 + b0
+    xb1 = w / 2 + b1
+    xl = w / 2 + 0.017
+    pente = (H - h1) / (xb1 - xb0 - 0.04)
+    zl = h1 - 0.025 + (xl - xb0 - 0.04) * pente
+    prism(kv, [(xl, -0.02), (xl, zl), (xb1, H - 0.025), (xe + e_, H - 0.025), (xe + e_, -0.02)], y1 - e_, yb_, COL, axis="y")
+    kv.face([(-w / 2 - e_, a1, h1 + 0.006), (xb0, a1, h1 + 0.006), (xb0, yb_, h1 + 0.006), (-w / 2 - e_, yb_, h1 + 0.006)], COL)
+    kv.face([(xb1, y1 - e_, H + 0.006), (xe + e_, y1 - e_, H + 0.006), (xe + e_, yb_, H + 0.006), (xb1, yb_, H + 0.006)], COL)
     ob = k.finish(S["seed"] + 21, PEINT_ARCHI)
     enfant(ob, kg, S["seed"] + 22, peinture=PEINT_ARCHI)
     enfant(ob, kc, 0)
+    enfant(ob, kv, 0)
     return ob
 
 
@@ -517,8 +692,42 @@ def colimacon(S, nom, H=6.4, R=2.0, noyau=0.45, par_tour=16):
         t1 = -da + (n * da) * (j + 1) / m_
         z0 = (t0 / da + 1) * r
         z1 = (t1 / da + 1) * r
-        # bord intérieur à 0.3 m du noyau : le centre du joueur (rayon 0.4) n'en approche pas, pente de 34° au plus
+        # bord intérieur à 0.3 m du noyau : le centre du joueur (rayon 0.4) n'en approche pas, pente de 34.4° au plus (mesurée)
         rampe_col(kc, [P(noyau + 0.3, t0, z0), P(R, t0, z0), P(R, t1, z1), P(noyau + 0.3, t1, z1)])
+    # volume de collision : noyau, sous-face hélicoïdale et bandeau extérieur des marches, palier (dessus, dessous, bord),
+    # 1 cm hors des faces visibles
+    kv = L.K("Col_Escalier")
+    rn = noyau * (1.06 if act == "Cave" else 1.0) + 0.012
+    kv.cyl((0, 0, -0.02), rn, hn + 0.3, COL, n=par_tour)
+    if act == "Chateau":
+        kv.cyl((0, 0, -0.02), noyau + 0.262, 0.47, COL, n=par_tour)
+    Re = R + 0.01
+    def zr(t):
+        return (t / da + 1) * r
+    def zc(t):
+        return max(-0.02, zr(t) - ep - 0.01)
+    def zt(t):
+        return min(zr(t), H + 0.006)
+    nseg = 2 * n
+    for j in range(nseg):
+        t0 = n * da * j / nseg
+        t1 = n * da * (j + 1) / nseg
+        if zc(t0) > -0.019 or zc(t1) > -0.019:
+            kv.face([P(rn, t1, zc(t1)), P(Re, t1, zc(t1)), P(Re, t0, zc(t0)), P(rn, t0, zc(t0))], COL)
+        kv.face([P(Re, t0, zc(t0)), P(Re, t1, zc(t1)), P(Re, t1, zt(t1)), P(Re, t0, zt(t0))], COL)
+    # dessus du dernier secteur (marche du haut, à H) et du palier : 6 mm au-dessus
+    sect_c = secteur[:-1] + [secteur[-1] + 0.006]       # bord du palier de collision 6 mrad au-delà du bord visible
+    haut = [(n - 1) * da + da * j / 2 for j in range(3)] + sect_c[1:]
+    for j in range(len(haut) - 1):
+        b0, b1 = haut[j], haut[j + 1]
+        kv.face([P(rn, b0, H + 0.006), P(Re, b0, H + 0.006), P(Re, b1, H + 0.006), P(rn, b1, H + 0.006)], COL)
+    for j in range(na):
+        b0, b1 = sect_c[j], sect_c[j + 1]
+        kv.face([P(rn, b1, H - 0.31), P(Re, b1, H - 0.31), P(Re, b0, H - 0.31), P(rn, b0, H - 0.31)], COL)
+        kv.face([P(Re, b0, H - 0.31), P(Re, b1, H - 0.31), P(Re, b1, H + 0.006), P(Re, b0, H + 0.006)], COL)
+    b1 = sect_c[-1]
+    kv.face([P(rn, b1, H - 0.31), P(Re, b1, H - 0.31), P(Re, b1, H + 0.006), P(rn, b1, H + 0.006)], COL)
+    kv.face([P(rn, a0 + 0.006, zc(a0)), P(Re, a0 + 0.006, zc(a0)), P(Re, a0 + 0.006, H - 0.31), P(rn, a0 + 0.006, H - 0.31)], COL)
     # garde-corps extérieur : main courante hélicoïdale + barreaux
     rr = R - 0.07
     hm = 1.0
@@ -544,6 +753,7 @@ def colimacon(S, nom, H=6.4, R=2.0, noyau=0.45, par_tour=16):
     ob = k.finish(S["seed"] + 31, PEINT_ARCHI)
     enfant(ob, kg, S["seed"] + 32, peinture=PEINT_OBJET)
     enfant(ob, kc, 0)
+    enfant(ob, kv, 0)
     ob["sortie"] = "palier"
     return ob
 
@@ -597,7 +807,8 @@ def mezzanine(S, nom, Lx=8.0, D=6.0, Hd=5.0):
             for y in (-0.45, yf + 0.45):
                 k.box((x, y, (Hd - 0.5) / 2), (0.8, 0.8, Hd - 0.5), S["mur"])
                 k.box((x, y, Hd - 0.45), (0.95, 0.95, 0.1), S["pierre"])
-                L.rock_blob(k, (x + 0.2, y - 0.2, rnd.uniform(1.0, 2.5)), (1.0, 1.0, 2.0), S["feuil"], seed=S["seed"] + int(x * 10 + y), res=8, amp=0.35)
+                if y < -1.0:
+                    lierre_mur(k, S, x + 0.05, Hd - 0.55, 1.6, y=y - 0.4, l=0.3, seed=S["seed"] + int(x * 10))
         kind = "fer"
     e = 0.22 if kind == "balustre" else 0.115
     garde(kg, S, (-Lx / 2 + e, yf + e, Hd), (Lx / 2 - e, yf + e, Hd), kind=kind)
@@ -645,7 +856,6 @@ def coursive(S, nom, Lx=8.0, D=2.5):
             k.obox((x, -0.04, -1.6), (x, -D + 0.25, -0.42), 0.08, 0.06, S["fer"], up=(1, 0, 0))
             k.box((x, -D / 2, -0.43), (0.08, D - 0.1, 0.06), S["fer"])
             k.box((x, -0.04, -1.0), (0.24, 0.08, 1.3), S["fer"])
-        L.rock_blob(k, (Lx / 2 - 1.2, -0.3, -1.4), (2.2, 0.8, 2.4), S["feuil"], seed=S["seed"] + 52, res=8, amp=0.35)
         kind = "fer"
     e = 0.22 if kind == "balustre" else 0.115
     garde(kg, S, (-Lx / 2 + e, -D + e, 0), (Lx / 2 - e, -D + e, 0), kind=kind)
@@ -728,18 +938,17 @@ def porte_haute(S, nom, w=8.0, h=10.0, t=1.0, z0=5.0):
     if act == "Cave":
         k.box((0, -0.18, z0 + 3.75), (3.6, 0.4, 0.45), S["bois"])
     if act == "Jardin":
-        rnd = random.Random(S["seed"] + 71)
-        for j in range(4):
-            L.rock_blob(k, (rnd.uniform(-3.4, 3.4), -0.1, rnd.uniform(1.5, 8.5)), (rnd.uniform(1.4, 2.6), 0.6, rnd.uniform(1.6, 3.0)),
-                        S["feuil"], seed=S["seed"] + 72 + j, res=8, amp=0.4, flat_base=False)
+        # lierre : deux cartes plates qui pendent du haut du mur, loin de l'encadrement et du rebord
+        lierre_mur(k, S, -3.1, h - 0.02, 5.4, l=0.34, seed=S["seed"] + 72)
+        lierre_mur(k, S, 2.9, h - 0.02, 7.2, l=0.3, seed=S["seed"] + 73)
     k.empty("Accroche_Bord", (0, -1.2, z0))
     return k.finish(S["seed"] + 71, PEINT_ARCHI)
 
 
 # =================================================================== 8. porte étroite (le traqueur se faufile)
 def porte_etroite(S, nom, w=12.0, h=10.0, t=1.5):
-    """Porte étroite au sol : ouverture de 4.4 m de large qui contient un rectangle de 4 × 5.2 m (gabarit du traqueur
-    baissé, `narrowDoorWidth` 4, `narrowDoorHeight` 5.2) : il s'y faufile (vitesse × 0.45) ; le joueur passe à l'aise."""
+    """Porte étroite au sol : ouverture de 4.4 m de large qui contient un rectangle de 4 × 5.25 m (gabarit du traqueur
+    baissé, `narrowDoorWidth` 4, `narrowDoorHeight` 5.2 plus 5 cm de marge) : il s'y faufile (vitesse × 0.45) ; le joueur passe à l'aise."""
     k = L.K(nom)
     act = S["act"]
     ow = 4.4
@@ -747,7 +956,7 @@ def porte_etroite(S, nom, w=12.0, h=10.0, t=1.5):
         rise, pointed = 2.6, True
     else:
         rise, pointed = 2.2, False
-    # naissance calculée pour que le rectangle de 4 × 5.2 m tienne sous l'arc
+    # naissance calculée pour que le rectangle de 4 × 5.25 m tienne sous l'arc
     prof = L.arch_profile(ow, rise, 14, pointed)
     def haut_a(xq):
         for i in range(len(prof) - 1):
@@ -767,10 +976,8 @@ def porte_etroite(S, nom, w=12.0, h=10.0, t=1.5):
             L.rock_blob(k, (rnd.choice([-1, 1]) * rnd.uniform(3.2, 5.5), rnd.uniform(-1.4, -0.6), 0 + dz()), (1.0, 0.9, 0.7), S["mur"], seed=S["seed"] + 82 + j, res=8)
     elif act == "Jardin":
         k.box((0, 0.5 * t - 0.0, h + 0.15), (w + 0.2, t + 0.6, 0.3), S["pierre"])
-        rnd = random.Random(S["seed"] + 81)
-        for j in range(5):
-            L.rock_blob(k, (rnd.uniform(-3.6, 3.6), -0.15, rnd.uniform(5.5, 8.8)), (rnd.uniform(1.4, 2.4), 0.7, rnd.uniform(1.4, 2.6)),
-                        S["feuil"], seed=S["seed"] + 82 + j, res=8, amp=0.4, flat_base=False)
+        lierre_mur(k, S, -3.4, h - 0.02, 5.6, l=0.32, seed=S["seed"] + 82)
+        lierre_mur(k, S, 3.45, h - 0.02, 6.9, l=0.28, seed=S["seed"] + 83)
     else:
         corniche_simple(k, -w / 2, w / 2, h - 0.9, S["pierre"])
     k.empty("Accroche_PorteEtroite", (0, t / 2, 0))
@@ -904,9 +1111,9 @@ def mur_rebords(S, nom, w=6.0, h=10.0):
                 k.obox((x + sx, 0.0, zt - 1.0), (x + sx, -dep + 0.2, zt - 0.32), 0.1, 0.08, S["fer"], up=(1, 0, 0))
         k.empty(f"Accroche_Rebord_{i + 1}", (x, -dep, zt))
     if act == "Jardin":
-        for j in range(5):
-            L.rock_blob(k, (rnd.uniform(-2.6, 2.6), -0.1, rnd.uniform(0.8, 9.0)), (rnd.uniform(1.2, 2.2), 0.55, rnd.uniform(1.4, 2.6)), S["feuil"],
-                        seed=S["seed"] + 120 + j, res=8, amp=0.4, flat_base=False)
+        # deux cartes de lierre hors des rebords et de leurs consoles
+        lierre_mur(k, S, -2.62, h - 0.02, 6.75, l=0.26, seed=S["seed"] + 120)
+        lierre_mur(k, S, 2.62, 8.45, 4.7, l=0.26, seed=S["seed"] + 121)
     return k.finish(S["seed"] + 111, PEINT_ARCHI)
 
 
@@ -914,10 +1121,13 @@ def mur_rebords(S, nom, w=6.0, h=10.0):
 def mur_escalade(S, nom, w=8.0, h=12.0):
     """Mur escaladable de w × h m : prises plates en quinconce tous les 2 m de haut (0.7 m de profondeur : on s'y hisse
     d'une prise à l'autre), arête du haut nette où se hisser ; type `mur_grimpe` pour le traqueur (16 m au plus) et les
-    goules (Accroche_Pied, Accroche_Sommet)."""
+    goules (Accroche_Pied, Accroche_Sommet). Caves et château (relecture du lot 3) : les prises font partie de l'appareil
+    (boutisses et abouts de poutre aux caves, pierres d'attente chanfreinées dessous au château), arêtes usées, pierres
+    voisines de la même assise légèrement en saillie, joints creux entre elles."""
     k = L.K(nom)
     act = S["act"]
     rnd = random.Random(S["seed"] + 131)
+    rp = random.Random(S["seed"] + 137)          # forme des pierres (n'altère pas la grille des prises)
     t = 1.0
     if act == "Cave":
         k.box((0, t / 2, h / 2), (w, t, h), S["mur"])
@@ -929,6 +1139,24 @@ def mur_escalade(S, nom, w=8.0, h=12.0):
         L.rock_wall(k, [(-w / 2, 0.1), (-w / 4, -0.1), (w / 4, 0.12), (w / 2, 0.0)], h, S["roche"], thick=1.8, seg=0.8, amp=0.25,
                     seed=S["seed"] + 132, inward=-1, base_flare=0.5, top_jag=0.3)
         k.face([(-w / 2, 0.6, h + 0.25), (w / 2, 0.6, h + 0.25), (w / 2, 2.0, h + 0.25), (-w / 2, 2.0, h + 0.25)], S["herbe"])
+
+    def voisines(x, z, lg, nb):
+        """Pierres de la même assise que la prise (à gauche, à droite, au-dessus pour le château) : 3 cm de saillie,
+        arêtes chanfreinées, joints de 3 cm."""
+        g = 0.035
+        hl = 0.44
+        xa = x - lg / 2 - g
+        wl = min(rp.uniform(0.55, 0.85), xa + w / 2 - 0.06)
+        pierre(k, (xa - wl / 2, 0.015, z - hl / 2 - rp.uniform(0.0, 0.03)), (wl, 0.1, hl - rp.uniform(0.0, 0.05)), S["pierre"],
+               ch=0.025, seed=rp.randint(0, 9999))
+        xb = x + lg / 2 + g
+        wr = min(rp.uniform(0.55, 0.85), w / 2 - 0.06 - xb)
+        pierre(k, (xb + wr / 2, 0.015, z - hl / 2 - rp.uniform(0.0, 0.03)), (wr, 0.1, hl - rp.uniform(0.0, 0.05)), S["pierre"],
+               ch=0.025, seed=rp.randint(0, 9999))
+        if nb > 2:
+            wh = rp.uniform(0.7, 1.0)
+            pierre(k, (x + rp.uniform(-0.15, 0.15), 0.015, z + g + 0.19), (wh, 0.1, 0.38), S["pierre"], ch=0.025, seed=rp.randint(0, 9999))
+
     rang = 0
     z = 1.8
     while z < h - 0.5:
@@ -937,13 +1165,21 @@ def mur_escalade(S, nom, w=8.0, h=12.0):
             x += rnd.uniform(-0.25, 0.25)
             if act == "Cave":
                 if rnd.random() < 0.5:
-                    k.box((x, -0.3, z - 0.18), (0.5, 0.75 + 0.6, 0.36), S["bois"], rot=rnd.uniform(-0.05, 0.05))
+                    # about de poutre engagé dans le mur : 0.6 m de large, 0.75 m de saillie, arêtes chanfreinées
+                    rnd.uniform(-0.05, 0.05)
+                    pierre(k, (x, -0.3, z - 0.19), (0.6, 1.35, 0.38), S["bois"], ch=0.04, seed=rp.randint(0, 9999), usure=0.015)
+                    voisines(x, z, 0.6, 2)
                 else:
-                    k.box((x, -0.25, z - 0.2), (1.0, 0.75 + 0.5, 0.4), S["pierre"])
+                    # boutisse de moellon : 1 m de large, 0.75 m de saillie, dessous chanfreiné, arêtes usées
+                    pierre(k, (x, -0.25, z - 0.21), (1.0, 1.25, 0.42), S["pierre"], ch=0.035, bas=(0.3, 0.16),
+                           seed=rp.randint(0, 9999), usure=0.02)
+                    voisines(x, z, 1.0, 2)
             elif act == "Chateau":
-                # pierres d'attente (harpe) : boutisses en saillie, chanfreinées dessous
-                k.box((x, -0.3, z - 0.2), (1.1, 0.7 + 0.6, 0.4), S["pierre"])
-                k.box((x, -0.3, z - 0.47), (0.9, 0.5 + 0.6, 0.14), S["pierre"])
+                # pierre d'attente (harpe) : boutisse de 1.1 m, 0.7 m de saillie, fort chanfrein dessous (console), arête
+                # du dessus à peine adoucie
+                pierre(k, (x, -0.3, z - 0.22), (1.1, 1.3, 0.44), S["pierre"], ch=0.025, bas=(0.4, 0.22), seed=rp.randint(0, 9999),
+                       usure=0.008)
+                voisines(x, z, 1.1, 3)
             else:
                 k.box((x, -0.35, z - 0.2), (1.0, 1.5, 0.4), S["pierre"], rot=rnd.uniform(-0.08, 0.08))
         rang += 1
@@ -953,8 +1189,6 @@ def mur_escalade(S, nom, w=8.0, h=12.0):
             x0 = rnd.uniform(-3, 3)
             L.tube(k, [(x0, 0.0, h + 0.2), (x0 + rnd.uniform(-0.6, 0.6), -0.5, h * 0.6), (x0 + rnd.uniform(-1, 1), -0.3, h * 0.25), (x0, -0.6, 0.0)],
                    [0.16, 0.12, 0.09, 0.05], S["ecorce"], sides=6, rough=0.2, seed=j)
-        for j in range(4):
-            L.rock_blob(k, (rnd.uniform(-3.2, 3.2), -0.2, rnd.uniform(2, 11)), (1.6, 0.6, 2.0), S["feuil"], seed=S["seed"] + 140 + j, res=8, amp=0.4, flat_base=False)
     k.empty("Accroche_Pied", (0, -0.6, 0))
     k.empty("Accroche_Sommet", (0, -0.6, h))
     return k.finish(S["seed"] + 131, PEINT_ARCHI)
@@ -962,56 +1196,66 @@ def mur_escalade(S, nom, w=8.0, h=12.0):
 
 # =================================================================== portes à parties mobiles
 def porte_verrouillee(S, nom):
-    """Porte de la salle payante (verrouillée) : ouverture **carrée** de 3 × 3 m dans un mur de 6 × 6.6 × 1 m, chambranle
-    à linteau droit, **vantail de fer riveté** qui coulisse vers le haut dans le mur (guillotine, `Vantail`) et **sceau
-    d'âme** rond (flamme, `Serrure`) qui tourne d'un quart de tour avant l'ouverture. Rien de commun avec la porte de sortie
-    (arc, deux battants de bois, lune)."""
+    """Porte de la salle payante (verrouillée) : ouverture **carrée** de 3 × 3 m dans un mur de 6 × 6.6 × 1 m, **chambranle
+    de porte** mouluré d'un seul tenant (deux piédroits et le linteau, à deux ressauts, sur des socles), clef portant le
+    sceau d'âme ; **vantail de fer riveté** qui coulisse vers le haut dans une rainure du mur (guillotine, `Vantail`),
+    coulisses de fer dans le tableau, **sceau d'âme** rond (flamme à trois langues, `Serrure`) qui tourne d'un quart de
+    tour avant l'ouverture. Rien de commun avec la porte de sortie (arc, deux battants de bois, lune).
+    Relecture du lot 3 : plus de linteau à corniche (elle se lisait comme une cheminée) ; la rainure (y de 0.37 à 0.63,
+    x ±1.68, jusqu'à 6.45 m) contient le vantail et la serrure sur toute leur course."""
     k = L.K(nom)
     act = S["act"]
     w, h, t = 6.0, 6.6, 1.0
     o = dict(cx=0.0, ow=3.0, z0=0.0, spring=3.0, rise=0.0)
-    cf, cb = mur_perce(k, -w / 2, w / 2, h, 0.0, t, [o], S["mur"], S["pierre"])
+    ya, yb, xs, zs = 0.37, 0.63, 1.68, 6.45
+    mur_rainure(k, -w / 2, w / 2, h, t, o, S["mur"], S["pierre"], ya, yb, xs, zs)
     mp = S["pierre"]
-    # chambranle à crossettes : jambages, linteau monolithe, clef portant le sceau
+    m_or = S["fer"] if act != "Chateau" else S["dore"]
+    # chambranle d'un seul tenant : profil en U (piédroits et linteau), deux ressauts ; il commence dans les socles
+    def U(xi, zi, lg, z0, y0, y1):
+        poly = [(-xi - lg, z0), (-xi, z0), (-xi, zi), (xi, zi), (xi, z0), (xi + lg, z0), (xi + lg, zi + lg), (-xi - lg, zi + lg)]
+        prism(k, poly, y0, y1, mp, axis="y")
+    U(1.56, 3.06, 0.52, 0.3, -0.17, 0.02)      # bandeau large, 17 cm de saillie
+    U(1.53, 3.03, 0.2, 0.32, -0.27, -0.1)       # baguette intérieure, 27 cm de saillie
     for sx in (-1, 1):
-        k.box((sx * 1.85, -0.14, 1.65), (0.7, 0.32, 3.3), mp)
-        k.box((sx * 1.85, -0.18, 0.2), (0.86, 0.4, 0.4), mp)
-    k.box((0, -0.16, 3.5), (4.8, 0.36, 0.95), mp)
-    k.box((0, -0.25, 4.15), (5.2, 0.3, 0.3), mp)
-    k.box((0, -0.3, 3.6), (1.0, 0.4, 1.2), mp)
-    disque = [(math.cos(2 * math.pi * i / 16) * 0.38, 3.6 + math.sin(2 * math.pi * i / 16) * 0.38) for i in range(16)]
-    prism(k, disque, -0.55, -0.48, S["fer"] if act != "Chateau" else S["dore"], axis="y")
-    prism(k, flamme(0.0, 3.36, 0.48), -0.6, -0.54, SCEAU_AME, axis="y")
+        k.box((sx * 1.84, -0.15, 0.225 + dz()), (0.64, 0.38, 0.45), mp)       # socles des piédroits
+    # clef : trapèze au milieu du linteau, porte le sceau d'âme
+    clef = [(-0.36, 3.04), (0.36, 3.04), (0.46, 4.08), (-0.46, 4.08)]
+    prism(k, clef, -0.34, 0.01, mp, axis="y")
+    disque = [(math.cos(2 * math.pi * i / 16) * 0.31, 3.6 + math.sin(2 * math.pi * i / 16) * 0.31) for i in range(16)]
+    prism(k, disque, -0.4, -0.33, m_or, axis="y")
+    prism(k, flamme3(0.0, 3.37, 0.46), -0.43, -0.39, SCEAU_AME, axis="y")
+    # coulisses de fer dans le tableau, devant la rainure (le vantail coulisse derrière)
+    for sx in (-1, 1):
+        k.box((sx * 1.48, 0.33, 1.49 + dz()), (0.05, 0.06, 2.98), S["fer"])
+        k.box((sx * 1.48, 0.67, 1.49 + dz()), (0.05, 0.06, 2.98), S["fer"])
     if act == "Jardin":
-        rnd = random.Random(S["seed"] + 151)
-        for j in range(4):
-            L.rock_blob(k, (rnd.choice([-1, 1]) * rnd.uniform(2.4, 2.9), -0.2, rnd.uniform(0.5, 5.5)), (1.0, 0.6, 1.8), S["feuil"],
-                        seed=S["seed"] + 152 + j, res=8, amp=0.4, flat_base=False)
-    if act == "Chateau":
-        corniche_simple(k, -w / 2, w / 2, h - 0.6, S["pierre"])
+        lierre_mur(k, S, -2.55, h - 0.02, 3.9, l=0.28, seed=S["seed"] + 152)
+        lierre_mur(k, S, 2.6, h - 0.02, 4.6, l=0.26, seed=S["seed"] + 153)
     ob = k.finish(S["seed"] + 151, PEINT_ARCHI)
-    # vantail : plaque de fer de 3.3 × 3.2 m dans le plan médian du mur (rainures dans les jambages), bandes et rivets
+    # vantail : plaque de fer de 3.3 × 3.2 m dans la rainure (plaque de 0.45 à 0.55), bandes, montants et rivets devant
     kv = L.K("Vantail")
     yv = t / 2
-    kv.box((0, yv, 1.62), (3.3, 0.12, 3.2), S["fer"])
-    for z in (0.35, 1.2, 2.05, 2.82):
-        kv.box((0, yv - 0.08, z), (2.96, 0.05, 0.2), S["fer"] if act != "Chateau" else S["dore"])
+    kv.box((0, yv, 1.62), (3.3, 0.1, 3.2), S["fer"])
+    for z in (0.35, 0.85, 2.15, 2.82):
+        kv.box((0, 0.435, z), (2.96, 0.04, 0.2), m_or)
         for i in range(9):
-            kv.box((-1.35 + i * 0.3375, yv - 0.12, z), (0.07, 0.04, 0.07), S["fer"])
+            if abs(-1.35 + i * 0.3375) > 0.6 or abs(z - 1.5) > 0.6:
+                kv.box((-1.35 + i * 0.3375, 0.409, z), (0.07, 0.022, 0.07), S["fer"])
     for sx in (-1, 1):
-        kv.box((sx * 1.2, yv - 0.08, 1.62), (0.16, 0.05, 2.9), S["fer"])
+        kv.box((sx * 1.2, 0.437, 1.62), (0.16, 0.034, 2.9), S["fer"])
     enfant(ob, kv, S["seed"] + 153, pivot=(0, yv, 0.02))
-    # serrure : disque du sceau d'âme, au milieu du vantail (tourne autour de l'axe de la porte)
+    # serrure : disque du sceau d'âme au milieu du vantail (tourne autour de l'axe de la porte), plaqué contre lui
     ks = L.K("Serrure")
-    zs = 1.5
-    disque = [(math.cos(2 * math.pi * i / 20) * 0.5, zs + math.sin(2 * math.pi * i / 20) * 0.5) for i in range(20)]
-    prism(ks, disque, yv - 0.22, yv - 0.052, S["fer"] if act != "Chateau" else S["dore"], axis="y")
-    prism(ks, flamme(0.0, zs - 0.3, 0.62), yv - 0.27, yv - 0.215, SCEAU_AME, axis="y")
+    zs_ = 1.5
+    disque = [(math.cos(2 * math.pi * i / 20) * 0.5, zs_ + math.sin(2 * math.pi * i / 20) * 0.5) for i in range(20)]
+    prism(ks, disque, 0.405, 0.447, m_or, axis="y")
+    prism(ks, flamme3(0.0, zs_ - 0.3, 0.62), 0.392, 0.408, SCEAU_AME, axis="y")
     for i in range(6):
         a = math.pi / 2 + i * math.pi / 3
-        ks.cyl((math.cos(a) * 0.42, yv - 0.25, zs + math.sin(a) * 0.42), 0.045, 0.05, S["fer"], n=6, axis="y")
+        ks.cyl((math.cos(a) * 0.43, 0.392, zs_ + math.sin(a) * 0.43), 0.035, 0.016, S["fer"], n=6, axis="y")
     # enfant direct de la pièce (un enfant de second niveau sort mal orienté du FBX) : KitBuilder la range sous Vantail
-    enfant(ob, ks, S["seed"] + 154, pivot=(0, yv - 0.15, zs))
+    enfant(ob, ks, S["seed"] + 154, pivot=(0, yv - 0.15, zs_))
     return ob
 
 
@@ -1044,10 +1288,14 @@ def sceau_lune(kb, sx, cx, cz, R, y, m, m_ext):
         prism(kb, etoile(cx + R * 0.45, cz + R * 0.05, R * 0.33), y - 0.06, y + 0.05, m_ext, axis="y")
 
 
-def battants(ob, S, ow, spring, rise, pointed, seed, ep=0.35, y=0.0, z0=0.21, sceau_z=None, m_planche=None, panneaux=False):
+def battants(ob, S, ow, spring, rise, pointed, seed, ep=0.35, y=0.0, z0=0.21, sceau_z=None, m_planche=None, panneaux=False, n=14):
     """Deux battants (Battant_G à -X Blender = gauche vu de face, Battant_D à +X) qui remplissent une ouverture en arc ;
-    pivots aux gonds (x = ±ow/2, y), géométrie au-dessus du seuil z0 ; sceau de lune de sortie en fer sur les deux battants."""
-    prof = L.arch_profile(ow, rise, 24, pointed)
+    pivots aux gonds (x = ±ow/2, y), géométrie au-dessus du seuil z0 ; sceau de lune de sortie en fer sur les deux battants.
+    Relecture du lot 3 : `y` est le plan des gonds, posé 1 cm derrière la face arrière de la maçonnerie ; le battant
+    occupe y … y + ep (vers l'arrière) et s'ouvre vers l'arrière : rien ne traverse les piédroits pendant la course. Le
+    haut des planches suit l'intrados à `n` segments (le même que l'arche), 5 cm dessous."""
+    prof = L.arch_profile(ow, rise, n, pointed)
+    y = y + ep / 2           # plan médian du battant
     def haut(x):
         for i in range(len(prof) - 1):
             (xa, za), (xb, zb) = prof[i], prof[i + 1]
@@ -1080,7 +1328,7 @@ def battants(ob, S, ow, spring, rise, pointed, seed, ep=0.35, y=0.0, z0=0.21, sc
         sz = sceau_z if sceau_z is not None else spring * 0.6
         m_s = S["fer"] if S["act"] != "Chateau" else S["dore"]
         sceau_lune(kb, sx, 0.0, sz, min(1.8, hw * 0.45), y - ep / 2 - 0.04, m_s, m_s)
-        b = enfant(ob, kb, seed + (1 if sx > 0 else 2), pivot=(sx * hw, y, 0), peinture=dict(sale_h=1.5, mousse=0.1))
+        b = enfant(ob, kb, seed + (1 if sx > 0 else 2), pivot=(sx * hw, y - ep / 2, 0), peinture=dict(sale_h=1.5, mousse=0.1))
         res.append(b)
     return res
 
@@ -1092,7 +1340,7 @@ def porte_sortie(S, nom):
     k = L.K(nom)
     act = S["act"]
     if act == "Chateau":
-        L.masonry_arch(k, 8.0, 6.0, 4.0, 2.2, 2.2, S["pierre"], n=14, pointed=True, top=14.0, seed=S["seed"] + 161)
+        L.masonry_arch(k, 8.0, 6.0, 4.0, 2.2, 2.2, S["pierre"], n=14, pointed=True, top=14.0, seed=S["seed"] + 161, arriere=False)
         for j in range(2):
             c = _contour(dict(cx=0.0, ow=8.0 + 1.0 * (j + 1), z0=0.0, spring=6.0, rise=4.0 + 0.5 * (j + 1), pointed=True, n=14))
             encadrement(k, c, -1.1, 0.5, 0.5 - 0.18 * j, S["pierre"])
@@ -1100,7 +1348,7 @@ def porte_sortie(S, nom):
         k.box((0, -1.4, 0.1), (11.0, 0.8, 0.2), S["marbre"])
         spring, rise, pointed = 6.0, 4.0, True
     else:
-        L.masonry_arch(k, 8.0, 6.0, 4.0, 2.2, 2.2, S["pierre"], n=14, top=14.0, seed=S["seed"] + 161)
+        L.masonry_arch(k, 8.0, 6.0, 4.0, 2.2, 2.2, S["pierre"], n=14, top=14.0, seed=S["seed"] + 161, arriere=False)
         k.box((0, 0, 0.1), (12.4, 3.2, 0.2), S["sol"])
         spring, rise, pointed = 6.0, 4.0, False
         if act == "Jardin":
@@ -1108,12 +1356,13 @@ def porte_sortie(S, nom):
             for sx in (-1, 1):
                 k.box((sx * 6.9, -0.2, 6.5), (1.6, 2.6, 13.0), S["mur"], taper=0.12)
                 k.lathe((sx * 6.9, -0.2, 13.0), [(0.6, 0), (0.75, 0.3), (0.5, 0.8), (0.65, 1.0), (0.0, 1.3)], S["pierre"], n=10)
-            for j in range(6):
-                L.rock_blob(k, (rnd.uniform(-6.5, 6.5), -1.4, rnd.uniform(9.5, 13.5)), (rnd.uniform(1.4, 2.6), 0.8, rnd.uniform(1.4, 2.4)),
-                            S["feuil"], seed=S["seed"] + 164 + j, res=8, amp=0.4, flat_base=False)
+            # lierre : deux cartes plates sur la façade, entre l'arche et les contreforts
+            lierre_mur(k, S, -5.45, 13.95, 8.6, y=-1.1, l=0.34, seed=S["seed"] + 164)
+            lierre_mur(k, S, 5.5, 13.95, 10.2, y=-1.1, l=0.3, seed=S["seed"] + 165)
     ob = k.finish(S["seed"] + 161, dict(sale_h=3.0, mousse=0.4))
     z0 = 0.21 if act != "Chateau" else 0.02
-    battants(ob, S, 8.0, spring, rise, pointed, S["seed"] + 165, z0=z0, sceau_z=5.4, panneaux=(act == "Chateau"))
+    # battants contre la face arrière de l'arche (y = 1.1), gonds 1 cm derrière
+    battants(ob, S, 8.0, spring, rise, pointed, S["seed"] + 165, y=1.11, z0=z0, sceau_z=5.4, panneaux=(act == "Chateau"))
     return ob
 
 
@@ -1121,9 +1370,12 @@ def porte_sortie(S, nom):
 def puits(S, nom, R=1.6, Ri=1.1, hm=0.9, eau=-1.5, fond=-2.4):
     """Puits à margelle **lisse** (paroi droite, dessus arrondi en deux quarts de rond de 12 cm, aucune marche ni arête
     vive), conduit maçonné, **eau** à -1.5 m (M_Eau_Toon) et **fond** à -2.4 m (on en ressort d'un saut et d'un hissage :
-    3.3 m) ; montants posés **au sol hors de la margelle** ; corde et seau dans l'enfant `Deco_SansCollision`."""
+    3.3 m) ; montants posés **au sol hors de la margelle** ; corde et seau dans l'enfant `Deco_SansCollision`.
+    Relecture du lot 3 : l'eau est un enfant séparé `Deco_Eau` (KitBuilder ne lui met pas de collider) : on traverse sa
+    surface et on descend jusqu'au fond, qui reste solide. Le sol de la salle est à percer sur Ø 3.2 m sous le puits."""
     k = L.K(nom)
     kd = L.K("Deco_SansCollision")
+    ke = L.K("Deco_Eau")
     act = S["act"]
     n = 24
     q = 0.12
@@ -1137,7 +1389,7 @@ def puits(S, nom, R=1.6, Ri=1.1, hm=0.9, eau=-1.5, fond=-2.4):
         prof.append((Ri + q + q * math.cos(a), hm - q + q * math.sin(a)))
     k.lathe((0, 0, 0), prof, S["pierre"], n=n)
     k.lathe((0, 0, 0), [(Ri, hm - q), (Ri, fond)], S["mur"], n=n)
-    k.face([(math.cos(2 * math.pi * i / n) * Ri, math.sin(2 * math.pi * i / n) * Ri, eau) for i in range(n)], "M_Eau_Toon")
+    ke.face([(math.cos(2 * math.pi * i / n) * (Ri - 0.005), math.sin(2 * math.pi * i / n) * (Ri - 0.005), eau) for i in range(n)], "M_Eau_Toon")
     k.face([(math.cos(2 * math.pi * i / n) * Ri, math.sin(2 * math.pi * i / n) * Ri, fond) for i in reversed(range(n))], S.get("terre", "M_Bib_Terre"))
     rnd = random.Random(S["seed"] + 171)
     for j in range(5):
@@ -1168,7 +1420,6 @@ def puits(S, nom, R=1.6, Ri=1.1, hm=0.9, eau=-1.5, fond=-2.4):
             for i in range(len(vol) - 1):
                 k.obox(vol[i], vol[i + 1], 0.04, 0.04, S["fer"], up=(0, 1, 0))
         k.cyl((0, -0.05, 3.85), 0.22, 0.1, S["fer"], n=12, axis="y")
-        L.rock_blob(k, (-R - 0.2, 0.6, 0.0 + dz()), (1.2, 1.0, 0.9), S["feuil"], seed=S["seed"] + 179, res=8, amp=0.35)
         h_corde = 3.7
     kd.obox((0, 0, h_corde), (0, 0, 1.75), 0.035, 0.035, S["corde"])
     kd.lathe((0, 0, 1.35), [(0.13, 0.0), (0.16, 0.34), (0.145, 0.34), (0.12, 0.03)], S["bois"], n=12)
@@ -1179,6 +1430,7 @@ def puits(S, nom, R=1.6, Ri=1.1, hm=0.9, eau=-1.5, fond=-2.4):
     kd.obox((0.15, 0, 1.69), (0, 0, 1.78), 0.02, 0.02, S["fer"])
     ob = k.finish(S["seed"] + 171, dict(sale_h=1.0, mousse=0.6, sol=fond))
     enfant(ob, kd, S["seed"] + 178)
+    enfant(ob, ke, 0, peinture=dict(sale_h=0.0, mousse=0.0))
     return ob
 
 
@@ -1275,11 +1527,14 @@ def cellule_herse(S, nom):
     ow = 10.0
     if act == "Chateau":
         o = dict(cx=0.0, ow=ow, z0=0.0, spring=7.0, rise=5.0, pointed=True, n=16)
+        Hf = 22.5          # relecture du lot 3 : la herse levée (fleurons à 12.75 + 9.2 m) reste cachée dans la façade
     else:
         o = dict(cx=0.0, ow=ow, z0=0.0, spring=6.0, rise=5.0, pointed=False, n=16)
     crown = o["spring"] + o["rise"]
-    cf, cb = mur_perce(k, -W / 2, W / 2, Hf, 0.0, t, [o], S["mur"], S["pierre"])
-    encadrement(k, cf[0], 0.0, 1.1, 0.45, S["pierre"])
+    # façade creusée d'une rainure (y de 0.48 à 1.32, x ±5.36) où la herse monte sans traverser la maçonnerie
+    mur_rainure(k, -W / 2, W / 2, Hf, t, o, S["mur"], S["pierre"], 0.48, 1.32, 5.36,
+                crown + 0.4 + (0.35 if act == "Chateau" else 0.0) + 9.2 + 0.12)
+    encadrement(k, _contour(o), 0.0, 1.1, 0.45, S["pierre"])
     if act == "Chateau":
         c2 = _contour(dict(cx=0.0, ow=ow + 2.4, z0=0.0, spring=7.0, rise=5.6, pointed=True, n=16))
         encadrement(k, c2, 0.0, 0.6, 0.3, S["pierre"])
@@ -1343,8 +1598,13 @@ def cellule_barricade(S, nom):
                 seed=sd + 4, inward=-1, thick=2.0, seg=1.0, amp=0.5, base_flare=0.6, top_jag=0.0)
     L.rock_blob(k, (0, 7.0, 16.2), (15.5, 16.0, 6.0), S["roche"], seed=sd + 5, res=12, amp=0.18, flat_base=False)
     rnd = random.Random(sd)
+    # relecture du lot 3 : la roche de la bouche est repoussée derrière le plan y = -0.62 (|x| < 6.1 m, jusqu'à 12.8 m) :
+    # les battants (y de -1.43 à -0.68) pivotent sans la traverser ; éboulis écartés de la course des battants
+    for v in k.bm.verts:
+        if abs(v.co.x) < 6.1 and v.co.z < 12.8 and v.co.y < -0.62:
+            v.co.y = -0.62
     for j in range(6):
-        L.rock_blob(k, (rnd.choice([-1, 1]) * rnd.uniform(5.8, 10), rnd.uniform(-2.2, -1.2), 0 + dz()), (rnd.uniform(1.0, 2.0), 1.2, 0.9),
+        L.rock_blob(k, (rnd.choice([-1, 1]) * rnd.uniform(7.3, 10), rnd.uniform(-2.2, -1.2), 0 + dz()), (rnd.uniform(1.0, 2.0), 1.2, 0.9),
                     S["roche"], seed=sd + 20 + j, res=8)
     k.empty("Apparition_Traqueur", (0, 7.0, 0))
     k.empty("Porte_Traqueur", (0, 0.0, 0))
@@ -1429,7 +1689,7 @@ def cellule_fosse(S, nom, c=12.0, prof=15.0):
 
 def voliere(S, nom, R=8.0, hb=12.0, hd=20.0):
     """Cellule d'apparition du traqueur au jardin : grande volière de fer (Ø 16 m, 20 m sous le dôme) sur un socle de
-    pierre, barreaux serrés, lierre ; portail de 8.5 × 11 m à deux vantaux (`Battant_G`, `Battant_D`) qui s'ouvrent vers le
+    pierre, barreaux serrés ; portail de 8.5 × 11 m à deux vantaux (`Battant_G`, `Battant_D`) qui s'ouvrent vers le
     jardin."""
     k = L.K(nom)
     sd = S["seed"] + 231
@@ -1480,24 +1740,19 @@ def voliere(S, nom, R=8.0, hb=12.0, hd=20.0):
     yg = -R * math.cos(gate)
     for sx in (-1, 1):
         k.box((sx * (xg + 0.25), yg, 6.0), (0.5, 0.5, 12.0), S["fer"])
-        k.box((sx * (xg + 0.25), yg, 0.5), (1.2, 1.2, 1.0), S["pierre"])
+        # socle du poteau hors de la course du vantail (relecture du lot 3)
+        k.box((sx * (xg + 0.32), yg + 0.02, 0.5 + dz()), (0.62, 0.62, 1.0), S["pierre"])
     k.box((0, yg, 11.9), (2 * xg + 1.0, 0.45, 0.45), S["fer"])
     arc = [Vector((-xg + 2 * xg * i / 12, yg, 12.1 + 1.4 * math.sin(math.pi * i / 12))) for i in range(13)]
     for i in range(12):
         k.obox(arc[i], arc[i + 1], 0.14, 0.14, S["fer"], up=(0, 1, 0))
-    for j in range(9):
-        a = rnd.uniform(0, 2 * math.pi)
-        if dans_porte(a, 0.2):
-            continue
-        L.rock_blob(k, (math.cos(a) * (R + 0.2), math.sin(a) * (R + 0.2), rnd.uniform(0.5, 9)), (rnd.uniform(1.8, 3.2), 1.0, rnd.uniform(2, 4)),
-                    S["feuil"], seed=sd + j, res=8, amp=0.4, flat_base=False)
     k.empty("Apparition_Traqueur", (0, 0, 0))
     k.empty("Porte_Traqueur", (0, yg, 0))
     ob = k.finish(sd, dict(sale_h=1.5, mousse=0.6))
     for side, sx in (("G", -1), ("D", 1)):
         kb = L.K(f"Battant_{side}")
         x0 = sx * 0.03
-        x1 = sx * xg
+        x1 = sx * (xg - 0.04)      # 4 cm de jeu au gond : le vantail ne frotte ni le poteau ni son socle
         yb = yg - 0.35
         for xx in (x0, x1):
             kb.box((xx - sx * 0.08 * (1 if xx == x1 else -1), yb, 5.6), (0.16, 0.16, 11.0), S["fer"])
@@ -1546,10 +1801,123 @@ def _demi_largeur(prof, zr):
     return 0.0
 
 
+def _clip_convexe(sub, clip):
+    """Polygone `sub` découpé par le polygone convexe `clip` (Sutherland-Hodgman, sens quelconque)."""
+    def aire(p):
+        return 0.5 * sum(p[i][0] * p[(i + 1) % len(p)][1] - p[(i + 1) % len(p)][0] * p[i][1] for i in range(len(p)))
+    if aire(clip) < 0:
+        clip = clip[::-1]
+    r = list(sub)
+    for i in range(len(clip)):
+        a, b = clip[i], clip[(i + 1) % len(clip)]
+        if not r:
+            return []
+        out = []
+        for q in range(len(r)):
+            p_, n_ = r[q], r[(q + 1) % len(r)]
+            ip = (b[0] - a[0]) * (p_[1] - a[1]) - (b[1] - a[1]) * (p_[0] - a[0])
+            iq = (b[0] - a[0]) * (n_[1] - a[1]) - (b[1] - a[1]) * (n_[0] - a[0])
+            if ip >= 0:
+                out.append(p_)
+            if (ip >= 0) != (iq >= 0):
+                t = ip / (ip - iq)
+                out.append((p_[0] + t * (n_[0] - p_[0]), p_[1] + t * (n_[1] - p_[1])))
+        r = out
+    # sommets confondus retirés
+    res = []
+    for p_ in r:
+        if not res or (abs(p_[0] - res[-1][0]) > 1e-4 or abs(p_[1] - res[-1][1]) > 1e-4):
+            res.append(p_)
+    if len(res) > 1 and abs(res[0][0] - res[-1][0]) < 1e-4 and abs(res[0][1] - res[-1][1]) < 1e-4:
+        res.pop()
+    return res if len(res) >= 3 and abs(aire(res)) > 1e-4 else []
+
+
+def medaillon_z(sill, spring_l):
+    return sill + (spring_l - sill) * 0.56
+
+
+def vitrail(k, S, cg, yg, bw, nl, wl, mw, sill, spring_l, oculus):
+    """Vitrail en panneaux au plomb (relecture du lot 3) : fond de plomb (fer) juste derrière le verre ; losanges sertis
+    (jeu de 2.5 cm = filets de plomb) découpés dans la baie, en majorité bleu-gris sombre (`M_Kit_Vitrail`) ; bordure
+    ponctuée de rouge et d'ambre ; un médaillon rond par lancette (couronne ambre, quartiers rouges, cœur ambre), posé
+    1.2 cm devant les losanges ; rose : secteurs alternés rouge et ambre. Mêmes trois matériaux qu'avant."""
+    bleu, rouge, ambre = VITRAUX
+    k.face([(x, yg + 0.012, z) for x, z in cg], S["fer"])
+    a = 0.2 if bw < 5.0 else 0.28
+    b = a * 1.4
+    g = 0.025
+    zmin = min(p[1] for p in cg)
+    zmax = max(p[1] for p in cg)
+    rmed = min(0.42 * wl, 1.0)
+    zm = medaillon_z(sill, spring_l)
+    meds = [(-bw / 2 + wl / 2 + j * (wl + mw), zm) for j in range(nl)]
+    def dist_bord(x, z):
+        d = 1e9
+        for q in range(len(cg)):
+            (x1, z1), (x2, z2) = cg[q], cg[(q + 1) % len(cg)]
+            vx, vz = x2 - x1, z2 - z1
+            L2 = vx * vx + vz * vz
+            t = 0 if L2 < 1e-12 else max(0.0, min(1.0, ((x - x1) * vx + (z - z1) * vz) / L2))
+            d = min(d, math.hypot(x - x1 - t * vx, z - z1 - t * vz))
+        return d
+    jr = 0
+    z = zmin
+    while z < zmax + b:
+        off = a if jr % 2 else 0.0
+        ir = 0
+        x = -bw / 2 - 2 * a + off
+        while x < bw / 2 + 2 * a:
+            if any(math.hypot(x - mx, z - mz) + max(a, b) < rmed - 0.02 for mx, mz in meds):
+                x += 2 * a; ir += 1
+                continue
+            sa, sb = a - g, b - g * b / a
+            poly = _clip_convexe([(x, z - sb), (x + sa, z), (x, z + sb), (x - sa, z)], cg)
+            if poly:
+                m = bleu
+                if oculus and math.hypot(x, z - oculus[0]) < oculus[1]:
+                    ang = math.atan2(z - oculus[0], x) - math.pi / 2
+                    sect = int(math.floor((ang % (2 * math.pi)) / (2 * math.pi / oculus[2])))
+                    m = ambre if math.hypot(x, z - oculus[0]) < 0.3 else (rouge if sect % 2 == 0 else ambre)
+                elif dist_bord(x, z) < 0.3:
+                    m = rouge if (ir + jr) % 4 == 0 else ambre if (ir + jr) % 4 == 2 else bleu
+                elif (ir * 7 + jr * 3) % 13 == 0:
+                    m = ambre
+                k.face([(px, yg, pz) for px, pz in poly], m)
+            x += 2 * a
+            ir += 1
+        z += b
+        jr += 1
+    # médaillons : couronne ambre (16 claveaux), quartiers rouges et bleus, cœur ambre ; plomb derrière
+    yf = yg - 0.012
+    for mx, mz in meds:
+        n = 16
+        k.face([(mx + math.cos(2 * math.pi * q / 24) * (rmed + 0.02), yf + 0.006, mz + math.sin(2 * math.pi * q / 24) * (rmed + 0.02))
+                for q in range(24)], S["fer"])
+        for q in range(n):
+            t0 = 2 * math.pi * q / n + 0.012
+            t1 = 2 * math.pi * (q + 1) / n - 0.012
+            r0, r1 = rmed * 0.8, rmed - 0.012
+            k.face([(mx + math.cos(t0) * r0, yf, mz + math.sin(t0) * r0), (mx + math.cos(t1) * r0, yf, mz + math.sin(t1) * r0),
+                    (mx + math.cos(t1) * r1, yf, mz + math.sin(t1) * r1), (mx + math.cos(t0) * r1, yf, mz + math.sin(t0) * r1)],
+                   ambre if q % 4 else rouge)
+        nq = 8
+        for q in range(nq):
+            t0 = 2 * math.pi * q / nq + 0.03
+            t1 = 2 * math.pi * (q + 1) / nq - 0.03
+            r0, r1 = rmed * 0.26, rmed * 0.8 - 0.024
+            arc = [(mx + math.cos(t0 + (t1 - t0) * u / 3) * r1, mz + math.sin(t0 + (t1 - t0) * u / 3) * r1) for u in range(4)]
+            pts = [(mx + math.cos(t0) * r0, mz + math.sin(t0) * r0)] + arc + [(mx + math.cos(t1) * r0, mz + math.sin(t1) * r0)]
+            k.face([(px, yf, pz) for px, pz in pts], rouge if q % 2 == 0 else bleu)
+        k.face([(mx + math.cos(2 * math.pi * q / 10) * (rmed * 0.26 - 0.024), yf, mz + math.sin(2 * math.pi * q / 10) * (rmed * 0.26 - 0.024))
+                for q in range(10)], ambre)
+
+
 def fenetre(S, nom, w, h, bw, sill, top, nl, oculus=None):
     """Haute fenêtre gothique en lancettes dans un panneau de mur de w × h m (1 m d'épaisseur, comme les murs du kit) :
-    baie en arc brisé, ébrasement intérieur de 0.45 m, remplage (meneaux, arcs des lancettes, oculus), vitraux sombres en
-    registres (bleu nuit, rouge, ambre) sertis de plomb ; repère vide `RayonLune` au milieu du vitrage."""
+    baie en arc brisé, ébrasement intérieur de 0.45 m, remplage (meneaux, arcs des lancettes, oculus), vitrail au plomb
+    (losanges bleu-gris sombre, bordure et médaillon rouge et ambre, rose en secteurs, voir `vitrail`) ; repère vide
+    `RayonLune` au milieu du vitrage."""
     k = L.K(nom)
     t = 1.0
     rise = bw * 0.85
@@ -1561,18 +1929,6 @@ def fenetre(S, nom, w, h, bw, sill, top, nl, oculus=None):
     yg = 0.72
     fr = yg / t
     cg = [(f[0] + (b[0] - f[0]) * fr, f[1] + (b[1] - f[1]) * fr) for f, b in zip(cf[0], cb[0])]
-    zs = cg[0][1]
-    ztop = max(p[1] for p in cg)
-    i = 0
-    hreg = 0.9
-    while zs < ztop - 1e-3:
-        z2 = min(ztop, zs + hreg)
-        poly = _clip_z(cg, zs, z2)
-        if poly:
-            m = VITRAUX[0] if i % 3 != 1 else (VITRAUX[1] if (i // 3) % 2 == 0 else VITRAUX[2])
-            k.face([(x, yg, z) for x, z in poly], m)
-        zs = z2
-        i += 1
     mw = 0.22
     wl = (bw - (nl - 1) * mw) / nl
     if nl > 1:
@@ -1581,19 +1937,23 @@ def fenetre(S, nom, w, h, bw, sill, top, nl, oculus=None):
         prl = L.arch_profile(wl, rise_l, 10, True)
     else:
         spring_l, rise_l, prl = o["spring"], rise, L.arch_profile(bw, rise, 16, True)
+    hreg = 0.9
+    vitrail(k, S, cg, yg, bw, nl, wl, mw, sill, spring_l, oculus)
+    zmed = [medaillon_z(sill, spring_l)]
+    rmed = min(0.42 * wl, 1.0)
     for j in range(nl):
         cx = -bw / 2 + wl / 2 + j * (wl + mw)
         if nl > 1:
             for q in range(len(prl) - 1):
                 (xa, za), (xb, zb) = prl[q], prl[q + 1]
                 k.obox((cx + xa, yg, spring_l + za), (cx + xb, yg, spring_l + zb), 0.18, 0.32, S["pierre"], up=(0, 1, 0))
+        # barlotières de fer (sauf à travers le médaillon)
         z = sill + hreg
         while z < spring_l + rise_l - 0.3:
             hwz = wl / 2 if z <= spring_l else _demi_largeur(prl, z - spring_l)
-            if hwz > 0.15:
+            if hwz > 0.15 and all(abs(z - zm) > rmed + 0.12 for zm in zmed):
                 k.box((cx, yg, z), (2 * hwz, 0.1, 0.05), S["fer"])
             z += hreg
-        k.box((cx, yg, (sill + spring_l) / 2 + 0.3), (0.04, 0.08, spring_l - sill + 0.6), S["fer"])
         if j < nl - 1:
             xm = cx + wl / 2 + mw / 2
             k.box((xm, yg, (sill + spring_l) / 2), (mw, 0.34, spring_l - sill), S["pierre"])
@@ -1662,8 +2022,9 @@ def chandelier(S, nom, D, chute, etages):
 
 
 def lustre_cristal(S, nom, D=2.4, chute=3.0):
-    """Lustre à pampilles (Ø 2.4 m) : trois étages de bras dorés (12, 8 et 4 bougies), gouttes de cristal sombre, pivot au
-    point d'accroche du plafond, bas à 3 m sous le plafond."""
+    """Lustre à pampilles (Ø 2.4 m) : trois étages de bras dorés (12, 8 et 4 bougies), gouttes de cristal (`M_Kit_Cristal`,
+    relecture du lot 3 : elles étaient en verre de vitrail presque noir), pivot au point d'accroche du plafond, bas à 3 m
+    sous le plafond."""
     k = L.K(nom)
     zb = -chute + 0.3           # la pointe basse est à -chute
     corps = 1.9
@@ -1693,8 +2054,8 @@ def lustre_cristal(S, nom, D=2.4, chute=3.0):
         top, bot = (x, y, z + 0.06), (x, y, z - s * 2)
         mid = [(x + s * 0.5, y, z - s * 0.6), (x, y + s * 0.5, z - s * 0.6), (x - s * 0.5, y, z - s * 0.6), (x, y - s * 0.5, z - s * 0.6)]
         for q in range(4):
-            k.face([top, mid[q], mid[(q + 1) % 4]], VITRAUX[0])
-            k.face([bot, mid[(q + 1) % 4], mid[q]], VITRAUX[0])
+            k.face([top, mid[q], mid[(q + 1) % 4]], CRISTAL)
+            k.face([bot, mid[(q + 1) % 4], mid[q]], CRISTAL)
     return k.finish(S["seed"] + 261, dict(sale_h=0.0, mousse=0.0))
 
 
@@ -1740,6 +2101,63 @@ def candelabre_pied(S, nom):
     return k.finish(S["seed"] + 281, dict(sale_h=0.2, mousse=0.0))
 
 
+# =================================================================== torches du château (relecture du lot 3)
+def torche_murale(S, nom):
+    """Torche murale du château : platine de fer forgé en losange étiré (dos contre le mur, plan y = 0, pivot au point de
+    scellement), console en S et contrefiche, deux bagues (dorée en haut) qui tiennent un manche de bois, tête enveloppée
+    de tissu goudronné en trois tours ; flamme au repère `Feu_Torche`, 0.34 m devant le mur et 0.56 m au-dessus du pivot."""
+    k = L.K(nom)
+    fer, dore = S["fer"], S["dore"]
+    plat = [(0.0, 0.25), (0.05, 0.17), (0.08, 0.05), (0.08, -0.05), (0.05, -0.17), (0.0, -0.25), (-0.05, -0.17), (-0.08, -0.05),
+            (-0.08, 0.05), (-0.05, 0.17)]
+    prism(k, plat, -0.03, 0.0, fer, axis="y")
+    for z in (0.15, -0.15):
+        k.cyl((0, -0.042, z), 0.018, 0.014, dore, n=6, axis="y")      # rivets de scellement
+    yt = -0.34
+    L.tube(k, [(0, -0.02, 0.02), (0, -0.12, -0.02), (0, -0.24, 0.02), (0, yt, 0.07)], [0.017] * 4, fer, sides=6)
+    L.tube(k, [(0, -0.02, -0.18), (0, -0.1, -0.16), (0, -0.2, -0.1), (0, yt + 0.02, -0.07)], [0.012] * 4, fer, sides=5)
+    # volute sous la console
+    vol = [(0, -0.16 - 0.05 * math.cos(t * 0.9), -0.05 - 0.05 * math.sin(t * 0.9)) for t in range(7)]
+    L.tube(k, vol, [0.009] * len(vol), fer, sides=4, cap=False)
+    k.cyl((0, yt, 0.07), 0.052, 0.04, dore, n=10, caps=(False, False))
+    k.cyl((0, yt, -0.09), 0.048, 0.035, fer, n=10, caps=(False, False))
+    k.cyl((0, yt, -0.24), 0.034, 0.56, S["bois"], n=8, r2=0.038)
+    k.lathe((0, yt, 0.32), [(0.0, -0.005), (0.04, 0.0), (0.062, 0.025), (0.055, 0.055), (0.068, 0.075), (0.06, 0.105), (0.07, 0.125),
+                            (0.058, 0.155), (0.046, 0.175), (0.0, 0.19)], CHIFFON, n=8)
+    k.empty("Feu_Torche", (0, yt, 0.56))
+    return k.finish(S["seed"] + 291, dict(sale_h=0.0, mousse=0.0))
+
+
+def torchere(S, nom):
+    """Torchère sur pied du château (1.85 m) : trépied de fer à pieds en volute, fût à nœuds dorés, coupe de fer et cage de
+    quatre feuillards qui tient un fagot de tissu goudronné ; flamme au repère `Feu_Torche` (1.9 m). Pivot au sol, axe."""
+    k = L.K(nom)
+    fer, dore = S["fer"], S["dore"]
+    for q in range(3):
+        a = math.pi / 2 + 2 * math.pi * q / 3
+        c, s_ = math.cos(a), math.sin(a)
+        pts = [(c * 0.03, s_ * 0.03, 0.42), (c * 0.14, s_ * 0.14, 0.3), (c * 0.26, s_ * 0.26, 0.1), (c * 0.33, s_ * 0.33, 0.04)]
+        L.tube(k, pts, [0.022, 0.02, 0.018, 0.016], fer, sides=6)
+        vol = [(c * (0.33 + 0.045 * math.sin(t * 0.9)), s_ * (0.33 + 0.045 * math.sin(t * 0.9)), 0.045 - 0.04 * math.cos(t * 0.9) + 0.04)
+               for t in range(6)]
+        L.tube(k, vol, [0.012] * len(vol), fer, sides=4, cap=False)
+        k.cyl((c * 0.33, s_ * 0.33, 0.0), 0.04, 0.025, fer, n=6)
+    k.lathe((0, 0, 0.36), [(0.0, 0.0), (0.06, 0.02), (0.075, 0.07), (0.04, 0.12), (0.028, 0.15)], dore, n=8)
+    k.cyl((0, 0, 0.5), 0.026, 1.05, fer, n=8, caps=(False, False))
+    for z in (0.95, 1.5):
+        k.lathe((0, 0, z - 0.06), [(0.026, 0.0), (0.05, 0.03), (0.058, 0.06), (0.05, 0.09), (0.026, 0.12)], dore, n=8)
+    k.lathe((0, 0, 1.55), [(0.0, 0.0), (0.04, 0.0), (0.1, 0.04), (0.14, 0.11), (0.155, 0.16), (0.14, 0.17)], fer, n=12)
+    k.lathe((0, 0, 1.6), [(0.0, 0.0), (0.11, 0.02), (0.125, 0.07), (0.112, 0.11), (0.124, 0.15), (0.1, 0.2), (0.07, 0.24), (0.0, 0.27)],
+            CHIFFON, n=10)
+    for q in range(4):
+        a = math.pi / 4 + q * math.pi / 2
+        c, s_ = math.cos(a), math.sin(a)
+        L.tube(k, [(c * 0.15, s_ * 0.15, 1.7), (c * 0.15, s_ * 0.15, 1.78), (c * 0.12, s_ * 0.12, 1.84), (c * 0.15, s_ * 0.15, 1.87)],
+               [0.012] * 4, fer, sides=4)
+    k.empty("Feu_Torche", (0, 0, 1.92))
+    return k.finish(S["seed"] + 295, dict(sale_h=0.3, mousse=0.0))
+
+
 # =================================================================== jardin : falaises, passages, terrasses, ponts, enceinte
 def falaise_rebords(S, nom, h=16.0):
     """Falaise de 16 m de front et de haut à quatre rebords plats (3.5 m d'écart : saut et hissage de l'un à l'autre),
@@ -1752,7 +2170,6 @@ def falaise_rebords(S, nom, h=16.0):
     for i, (x, z) in enumerate(((-4.0, 3.5), (2.5, 7.0), (-2.5, 10.5), (3.5, 14.0))):
         k.box((x, -0.6, z - 0.3), (4.0, 3.2, 0.6), S["roche"])
         L.rock_blob(k, (x, -0.8, z - 2.0), (3.6, 2.4, 2.0), S["roche"], seed=sd + i, res=8, amp=0.25, flat_base=False)
-        L.rock_blob(k, (x + 1.2, -0.4, z), (1.0, 0.8, 0.4), S["herbe"], seed=sd + 10 + i, res=6, amp=0.3)
         k.empty(f"Accroche_Rebord_{i + 1}", (x, -2.2, z))
     k.empty("Accroche_Sommet", (0, 0.8, h + 0.3))
     return k.finish(sd, dict(sale_h=3.0, mousse=0.7))
@@ -1822,15 +2239,11 @@ def terrasse(S, nom, acces=False, Lx=8.0, D=6.0, H=3.0):
         for sx in (-1, 1):
             k.box((sx * 2.1, 0.3, H + 0.65), (0.6, 0.6, 1.3), S["pierre"])
             k.lathe((sx * 2.1, 0.3, H + 1.3), [(0.16, 0), (0.3, 0.22), (0.26, 0.5), (0.1, 0.55), (0.18, 0.7), (0.0, 0.7)], S["pierre"], n=10)
-            L.rock_blob(k, (sx * 2.1, 0.3, H + 1.9), (0.5, 0.5, 0.35), S["feuil"], seed=sd + sx, res=8, amp=0.3)
     else:
         garde(kg, S, (-Lx / 2 + 0.22, 0.3, H), (Lx / 2 - 0.22, 0.3, H), kind="balustre")
-    rnd = random.Random(sd)
-    for j in range(4):
-        x = rnd.uniform(-3.6, 3.6)
-        if acces and abs(x) < 2.2:
-            x = 3.0 * (1 if x > 0 else -1)
-        L.rock_blob(k, (x, -0.5, 0.0 + dz()), (rnd.uniform(1.2, 2.0), 0.8, rnd.uniform(0.8, 1.6)), S["feuil"], seed=sd + 5 + j, res=8, amp=0.4)
+    # lierre : cartes plates qui pendent du chaperon, entre les contreforts
+    for j, x in enumerate((-2.45, 2.45) if acces else (-1.6, 1.7)):
+        lierre_mur(k, S, x, H - 0.3, 0.9 + 0.4 * j, l=0.22 if acces else 0.28, seed=sd + 5 + j)
     k.empty("Accroche_Bord", (0, 0, H))
     ob = k.finish(sd, dict(sale_h=1.5, mousse=0.8))
     enfant(ob, kg, sd + 1, peinture=dict(sale_h=0.5, mousse=0.6))
@@ -1912,10 +2325,12 @@ def tour_enceinte(S, nom, R=3.0, h=14.0):
         k.box((math.cos(a) * (R + 0.05), math.sin(a) * (R + 0.05), h - 0.8 + 0.6), (0.6, 1.1, 1.2), S["pierre"], rot=a)
     for j, (a, z) in enumerate(((-math.pi / 2, 4.0), (0.3, 6.0), (2.6, 6.0), (-math.pi / 2 + 0.5, 10.5), (1.8, 10.5))):
         k.box((math.cos(a) * (R + 0.02), math.sin(a) * (R + 0.02), z), (0.2, 0.2, 1.4), "M_Fond_Noir", rot=a)
-    rnd = random.Random(sd)
-    for j in range(4):
-        a = rnd.uniform(0, 6.28)
-        L.rock_blob(k, (math.cos(a) * (R + 0.4), math.sin(a) * (R + 0.4), rnd.uniform(0, 7)), (2.0, 1.2, 3.0), S["feuil"], seed=sd + j, res=8, amp=0.4, flat_base=False)
+    # lierre : deux cartes plates qui suivent le fût (au-dessus et au-dessous du cordon), loin des meurtrières
+    for j, (a, z0, z1) in enumerate(((1.2, h - 1.42, 9.5), (4.0, 8.9, 3.0))):
+        nseg = int((z0 - z1) / 0.45)
+        pts = [(math.cos(a + 0.03 * math.sin(i * 1.3)) * R, math.sin(a + 0.03 * math.sin(i * 1.3)) * R, z0 - (z0 - z1) * i / nseg)
+               for i in range(nseg + 1)]
+        lierre(k, S, pts, lambda p: (p[0], p[1], 0.0), l=0.32, seed=sd + j, ecart=0.0)
     k.empty("Accroche_Traction", (0, -R - 0.4, h - 0.8))
     return k.finish(sd, dict(sale_h=2.5, mousse=0.8))
 
@@ -1942,7 +2357,7 @@ def breche_enceinte(S, nom, Lx=8.0, h=9.0, t=1.2):
             r = rnd.uniform(0, 2.6)
             L.rock_blob(k, (rnd.uniform(-2.2, 2.2), t / 2 + sy * (t / 2 + 0.4 + r * 0.6), 0 + dz()), (rnd.uniform(0.7, 1.3), rnd.uniform(0.6, 1.0), 0.9 * (1.4 - r * 0.4)),
                         S["mur"], seed=sd + j + (10 if sy > 0 else 0), res=8)
-    L.rock_blob(k, (-3.4, -0.3, 0.0 + dz()), (1.6, 0.9, 2.6), S["feuil"], seed=sd + 30, res=8, amp=0.4)
+    lierre_mur(k, S, -3.66, 7.9, 4.6, l=0.22, seed=sd + 30)
     return k.finish(sd, dict(sale_h=2.0, mousse=0.8))
 
 
@@ -1960,9 +2375,8 @@ def chemin_ronde(S, nom, Lx=8.0, h=9.0, t=2.4):
     k.box((0, -0.15, h - 0.2), (Lx, 0.3, 0.25), S["pierre"])
     for x in (-3.0, 3.0):
         k.box((x, -0.5, 3.5), (1.0, 1.0, 7.0), S["mur"], taper=0.3)
-    rnd = random.Random(sd)
-    for j in range(3):
-        L.rock_blob(k, (rnd.uniform(-3.6, 3.6), -0.3, rnd.uniform(0.5, 6)), (1.6, 0.8, 2.6), S["feuil"], seed=sd + j, res=8, amp=0.4, flat_base=False)
+    lierre_mur(k, S, -2.5, h - 0.35, 4.2, l=0.3, seed=sd + 1)
+    lierre_mur(k, S, 2.9, h - 0.35, 5.6, l=0.28, seed=sd + 2)
     k.empty("Accroche_Bord", (0, 0, h))
     return k.finish(sd, dict(sale_h=2.5, mousse=0.8))
 
@@ -1992,7 +2406,7 @@ def pieces_chateau(S):
         ("SM_Chateau_Fenetre_Lancette_Triple", fenetre, dict(w=8.0, h=20.0, bw=5.6, sill=3.5, top=17.8, nl=3, oculus=(16.0, 0.85, 6)),
          "Haute fenêtre à trois lancettes et rose : baie de 5.6 × 14.3 m (appui à 3.5 m) dans un panneau de 8 × 20 m, vitraux sombres, repère RayonLune."),
         ("SM_Chateau_Chandelier_Petit", chandelier, dict(D=2.0, chute=2.4, etages=((1.0, 8),)),
-         "Petit chandelier suspendu : Ø 2 m (pièce de 12 × 12 m), 8 bougies, bas à 2.4 m sous le plafond (plafond de 6 m et plus)."),
+         "Petit chandelier suspendu : Ø 2 m (pièce de 12 × 12 m), 8 bougies, bas à 2.4 m sous le plafond (plafond de 5.9 m au moins)."),
         ("SM_Chateau_Chandelier_Moyen", chandelier, dict(D=3.3, chute=5.0, etages=((1.0, 12), (0.55, 6))),
          "Chandelier moyen : Ø 3.3 m (salle de 24 × 16 m), 18 bougies sur deux couronnes, bas à 5 m sous le plafond (12 m)."),
         ("SM_Chateau_Chandelier_Grand", chandelier, dict(D=4.6, chute=8.0, etages=((1.0, 16), (0.66, 10), (0.36, 6))),
@@ -2001,6 +2415,10 @@ def pieces_chateau(S):
         ("SM_Chateau_Applique_2Bougies", applique, dict(nb=2), "Applique murale dorée à deux bougies (platine en écusson, bras en S)."),
         ("SM_Chateau_Applique_Miroir", applique, dict(nb=3, miroir=True), "Applique à miroir ovale sombre et trois bougies."),
         ("SM_Chateau_Candelabre_Pied", candelabre_pied, dict(), "Candélabre sur pied de 2.1 m, pied de marbre, sept bougies."),
+        ("SM_Chateau_Torche_Murale", torche_murale, dict(),
+         "Torche murale : platine et console de fer forgé, manche de bois dans deux bagues, tête de tissu goudronné ; repère Feu_Torche."),
+        ("SM_Chateau_Torchere", torchere, dict(),
+         "Torchère sur pied de 1.85 m : trépied à volutes, fût à nœuds dorés, cage de fer et fagot de tissu goudronné ; repère Feu_Torche."),
     ]
 
 
@@ -2051,7 +2469,7 @@ def communs(S, H_esc=4.0, g=0.3, w=3.0):
         (f"SM_{a}_PorteHaute", porte_haute, dict(),
          "Porte de joueur en hauteur : ouverture de 2.4 × 3.6 m, seuil à 5 m dans un mur de 8 × 10 m, rebord de 3 × 1.2 m devant."),
         (f"SM_{a}_PorteEtroite", porte_etroite, dict(),
-         "Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.2 m du traqueur baissé (il se faufile)."),
+         "Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.25 m du traqueur baissé (il se faufile)."),
         (f"SM_{a}_Echelle_6m", echelle, dict(),
          "Échelle de 6 m contre un mur, barreaux tous les 30 cm, montants qui dépassent d'1 m en haut."),
         (f"SM_{a}_MurRebords_10m", mur_rebords, dict(),

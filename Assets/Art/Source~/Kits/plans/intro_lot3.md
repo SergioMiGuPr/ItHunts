@@ -16,9 +16,9 @@
 - **jardin** : puits, porte de sortie, volière du traqueur, falaise à rebords, passage et fente dans la roche, deux terrasses, ponts de pierre et de bois, tour, brèche et chemin de ronde du mur d'enceinte.
 
 **Mesures de jeu respectées** (ART-HANDOFF § 3 et § 5 ter) :
-- marches de 18.75 à 20 cm sur des girons de 30 cm (38 cm au jardin), avec une rampe de collision lisse `Col_Rampe` sous les nez de marche : 33.7° (27.8° au jardin), 34° au plus dans les colimaçons ;
+- marches de 18.75 à 20 cm sur des girons de 30 cm (38 cm au jardin), avec une rampe de collision lisse `Col_Rampe` sous les nez de marche : 33.7° (27.8° au jardin), 34.4° au plus dans les colimaçons (mesurée) ;
 - rebords plats d'au moins 0.6 m de profondeur, espacés de 2.2 à 3.5 m (saut et hissage) ;
-- portes étroites de 4.4 m qui contiennent le gabarit de 4 × 5.2 m du traqueur baissé ;
+- portes étroites de 4.4 m qui contiennent le gabarit de 4 × 5.25 m du traqueur baissé ;
 - plateformes de moins de 10 m de profondeur : le traqueur ne s'y pose pas.
 
 **Enfants exportés avec les pièces** :

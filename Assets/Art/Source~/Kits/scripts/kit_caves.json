@@ -511,21 +511,20 @@
   "materiaux": [
    "M_Bib_Moellons_Peint",
    "M_Bib_PierreTaillee_Peint",
-   "M_Eau_Toon",
    "M_Bib_Terre",
    "M_Bib_BoisNeuf",
    "M_Bib_FerRouille"
   ]
  },
  "SM_Cave_PorteSortie": {
-  "doc": "Porte de sortie de l'acte I : encadrement de pierre de taille 12 × 13 m, ouverture 8 × 10 m en plein cintre,",
+  "doc": "Porte de sortie de l'acte I : encadrement de pierre de taille 12 × 13 m, ouverture 8 × 10 m en plein cintre, deux battants de bois épais cloutés de fer (pivots aux gonds : objets enfants Battant_G et Battant_D), sceau de lune de sortie en fer sur les battants (lot 3).",
   "taille": [
    12.41,
    3.2,
    13.0
   ],
   "bas": 0.0,
-  "triangles": 1600,
+  "triangles": 1432,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
    "M_Bib_Dalles_Sales"
@@ -592,9 +591,9 @@
   "taille": [
    4.24,
    7.7,
-   4.02
+   4.01
   ],
-  "bas": -0.02,
+  "bas": -0.01,
   "triangles": 946,
   "materiaux": [
    "M_Bib_Moellons_Peint",
@@ -622,11 +621,11 @@
   "doc": "Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure).",
   "taille": [
    6.0,
-   1.6,
-   6.6
+   1.43,
+   6.65
   ],
-  "bas": -0.0,
-  "triangles": 978,
+  "bas": -0.05,
+  "triangles": 1120,
   "materiaux": [
    "M_Bib_Moellons_Peint",
    "M_Bib_PierreTaillee_Peint",
@@ -706,7 +705,7 @@
   ]
  },
  "SM_Cave_PorteEtroite": {
-  "doc": "Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.2 m du traqueur baissé (il se faufile).",
+  "doc": "Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.25 m du traqueur baissé (il se faufile).",
   "taille": [
    12.0,
    3.32,
@@ -751,11 +750,11 @@
   "doc": "Mur escaladable de 8 × 12 m : prises plates en quinconce tous les 2 m (on s'y hisse) ; mur grimpable du traqueur et des goules.",
   "taille": [
    8.2,
-   2.19,
+   2.18,
    12.3
   ],
   "bas": 0.0,
-  "triangles": 180,
+  "triangles": 1038,
   "materiaux": [
    "M_Bib_Moellons_Peint",
    "M_Bib_PierreTaillee_Peint",
@@ -808,10 +807,10 @@
   "taille": [
    18.0,
    15.44,
-   21.01
+   21.05
   ],
-  "bas": -0.01,
-  "triangles": 1233,
+  "bas": -0.05,
+  "triangles": 1351,
   "materiaux": [
    "M_Bib_Moellons_Peint",
    "M_Bib_PierreTaillee_Peint",
@@ -824,9 +823,9 @@
   "taille": [
    24.51,
    18.15,
-   21.05
+   21.07
   ],
-  "bas": -0.01,
+  "bas": -0.04,
   "triangles": 3774,
   "materiaux": [
    "M_Bib_RocheCave_Peint"

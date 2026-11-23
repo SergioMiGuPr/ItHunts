@@ -150,14 +150,14 @@
   ]
  },
  "SM_Chateau_GrandeEntree": {
-  "doc": "Grande porte d'entrée du château (mène à l'acte III) : façade de 20 × 22 m, portail en arc brisé de 9 × 13 m à",
+  "doc": "Grande porte d'entrée du château (mène à l'acte III) : façade de 20 × 22 m, portail en arc brisé de 9 × 13 m à voussures, deux battants de chêne ferré (Battant_G, Battant_D, pivots aux gonds) portant le sceau de lune de sortie (lot 3), perron de 5 marches, deux contreforts.",
   "taille": [
    20.2,
-   6.48,
+   6.2,
    22.01
   ],
   "bas": -0.01,
-  "triangles": 1824,
+  "triangles": 1656,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
    "M_Bib_Dalles_Sales"
@@ -521,7 +521,7 @@
   ]
  },
  "SM_Chateau_PorteEtroite": {
-  "doc": "Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.2 m du traqueur baissé (il se faufile).",
+  "doc": "Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.25 m du traqueur baissé (il se faufile).",
   "taille": [
    12.01,
    2.08,
@@ -567,7 +567,7 @@
    12.0
   ],
   "bas": 0.0,
-  "triangles": 348,
+  "triangles": 1388,
   "materiaux": [
    "M_Chateau_PierreClaire"
   ]
@@ -575,16 +575,17 @@
  "SM_Chateau_PorteVerrouillee": {
   "doc": "Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure).",
   "taille": [
-   6.01,
-   1.6,
-   6.6
+   6.0,
+   1.43,
+   6.65
   ],
-  "bas": -0.0,
-  "triangles": 1002,
+  "bas": -0.05,
+  "triangles": 1120,
   "materiaux": [
    "M_Chateau_PierreClaire",
    "M_Bib_Trim",
-   "M_Kit_Sceau_Ame"
+   "M_Kit_Sceau_Ame",
+   "M_Bib_FerRouille"
   ]
  },
  "SM_Chateau_Tremie_8m": {
@@ -606,11 +607,11 @@
   "doc": "Porte de sortie de l'acte II : arc brisé de 8 × 10 m à voussures, deux battants de boiserie, sceau de lune doré.",
   "taille": [
    12.41,
-   3.18,
+   2.9,
    14.01
   ],
   "bas": -0.01,
-  "triangles": 2180,
+  "triangles": 2012,
   "materiaux": [
    "M_Chateau_PierreClaire",
    "M_Bib_Marbre"
@@ -621,10 +622,10 @@
   "taille": [
    18.01,
    15.58,
-   21.01
+   22.55
   ],
-  "bas": -0.01,
-  "triangles": 1858,
+  "bas": -0.05,
+  "triangles": 1977,
   "materiaux": [
    "M_Chateau_PierreClaire",
    "M_Chateau_Dalles",
@@ -634,18 +635,18 @@
  "SM_Chateau_Fenetre_Lancette_Simple": {
   "doc": "Fenêtre en lancette simple : baie de 1.6 × 6.6 m (appui à 3 m) dans un panneau de 4 × 12 m, vitraux sombres, repère RayonLune.",
   "taille": [
-   4.01,
+   4.02,
    1.68,
    12.0
   ],
   "bas": 0.0,
-  "triangles": 555,
+  "triangles": 864,
   "materiaux": [
    "M_Chateau_PierreClaire",
+   "M_Bib_FerRouille",
    "M_Kit_Vitrail",
-   "M_Kit_Vitrail_Rouge",
    "M_Kit_Vitrail_Ambre",
-   "M_Bib_FerRouille"
+   "M_Kit_Vitrail_Rouge"
   ]
  },
  "SM_Chateau_Fenetre_Lancette_Double": {
@@ -656,13 +657,13 @@
    12.0
   ],
   "bas": 0.0,
-  "triangles": 1161,
+  "triangles": 1794,
   "materiaux": [
    "M_Chateau_PierreClaire",
+   "M_Bib_FerRouille",
    "M_Kit_Vitrail",
-   "M_Kit_Vitrail_Rouge",
    "M_Kit_Vitrail_Ambre",
-   "M_Bib_FerRouille"
+   "M_Kit_Vitrail_Rouge"
   ]
  },
  "SM_Chateau_Fenetre_Lancette_Triple": {
@@ -673,17 +674,17 @@
    20.0
   ],
   "bas": 0.0,
-  "triangles": 1633,
+  "triangles": 2560,
   "materiaux": [
    "M_Chateau_PierreClaire",
+   "M_Bib_FerRouille",
    "M_Kit_Vitrail",
-   "M_Kit_Vitrail_Rouge",
    "M_Kit_Vitrail_Ambre",
-   "M_Bib_FerRouille"
+   "M_Kit_Vitrail_Rouge"
   ]
  },
  "SM_Chateau_Chandelier_Petit": {
-  "doc": "Petit chandelier suspendu : Ø 2 m (pièce de 12 × 12 m), 8 bougies, bas à 2.4 m sous le plafond (plafond de 6 m et plus).",
+  "doc": "Petit chandelier suspendu : Ø 2 m (pièce de 12 × 12 m), 8 bougies, bas à 2.4 m sous le plafond (plafond de 5.9 m au moins).",
   "taille": [
    2.15,
    2.15,
@@ -739,7 +740,7 @@
   "materiaux": [
    "M_Bib_Trim",
    "M_Kit_Cire",
-   "M_Kit_Vitrail"
+   "M_Kit_Cristal"
   ]
  },
  "SM_Chateau_Applique_2Bougies": {
@@ -784,6 +785,37 @@
    "M_Chateau_PierreClaire",
    "M_Bib_Trim",
    "M_Kit_Cire"
+  ]
+ },
+ "SM_Chateau_Torche_Murale": {
+  "doc": "Torche murale : platine et console de fer forgé, manche de bois dans deux bagues, tête de tissu goudronné ; repère Feu_Torche.",
+  "taille": [
+   0.16,
+   0.41,
+   0.76
+  ],
+  "bas": -0.25,
+  "triangles": 393,
+  "materiaux": [
+   "M_Bib_FerRouille",
+   "M_Bib_Trim",
+   "M_Bib_BoisNeuf",
+   "M_Chiffon_Brule"
+  ]
+ },
+ "SM_Chateau_Torchere": {
+  "doc": "Torchère sur pied de 1.85 m : trépied à volutes, fût à nœuds dorés, cage de fer et fagot de tissu goudronné ; repère Feu_Torche.",
+  "taille": [
+   0.67,
+   0.59,
+   1.88
+  ],
+  "bas": 0.0,
+  "triangles": 832,
+  "materiaux": [
+   "M_Bib_FerRouille",
+   "M_Bib_Trim",
+   "M_Chiffon_Brule"
   ]
  }
 }
