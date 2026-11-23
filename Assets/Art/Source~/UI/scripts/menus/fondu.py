@@ -69,7 +69,8 @@ def stats(img, sel):
     S, V = reg.sat(img)
     hf = np.abs(L - reg.blur(L, 1.0))
     hf3 = np.abs(L - reg.blur(L, 3.0))
-    return {"lum": float(L[sel].mean() * 255), "sat": float(S[sel].mean()), "nettete": float(hf[sel].mean() / max(hf3[sel].mean(), 1e-6)),
+    return {"lum": float(L[sel].mean() * 255), "sat": float(S[sel].mean()),
+            "p10": float(np.percentile(L[sel], 10) * 255), "p50": float(np.percentile(L[sel], 50) * 255), "p90": float(np.percentile(L[sel], 90) * 255), "nettete": float(hf[sel].mean() / max(hf3[sel].mean(), 1e-6)),
             "detail": float(hf[sel].mean() * 255), "px": int(sel.sum())}
 
 
@@ -106,6 +107,15 @@ def mesure(capture, occupants):
 
 
 CONFIGS = {"A": [0, 3, 1, 2], "B": [3, 0, 2, 1], "C": [1, 2, 3, 0], "D": [2, 1, 0, 3]}
+# Nuit 4 : la cible n'est plus le décor lui-même (égaler sa luminosité rendait les personnages ternes et boueux) mais la
+# vivacité des personnages de la maquette, mesurée par rapport au décor qui les entoure (mêmes mesures, lanternes exclues) :
+# renard place 1 : lum x 2.96, sat x 1.56 ; hibou place 2 : lum x 3.51, sat x 0.78. Égaler la moyenne seule délavait les
+# personnages (ombres relevées, tons pastel) : la luminance est réglée sur deux points, médiane et 90e centile (maquette :
+# renard x 2.82 et x 3.64, hibou x 4.04 et x 3.52), qui fixent le gain ET le contraste (exposant) de chaque place ; les ombres
+# restent profondes. Saturation : x 1.45 celle du décor (les sprites sont moins saturés que les personnages de la maquette).
+VIVACITE_LUM, VIVACITE_SAT = 3.0, 1.45
+VIVACITE_P50, VIVACITE_P90 = 3.0, 3.6
+CONTRASTE_PERSO = {"Renard": 1.3, "Koala": 1.1, "Cameleon": 1.25, "Hibou": 1.3}
 REGLAGES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fondu_reglages.json")
 
 
@@ -122,8 +132,17 @@ def ajuste(dossier, ecrire=True):
             r = idx[(v["perso"], place)]
             p, d, lp, ld = v["personnage"], v["decor"], v["lanterne"], v["decor_lanterne"]
             tab["%s_%d" % (v["perso"], place)] = v
-            r["lum"] = round(float(np.clip(r["lum"] * (d["lum"] / p["lum"]) ** 2.0, 0.2, 4.0)), 4)
-            r["sat"] = round(float(np.clip(r["sat"] * (d["sat"] / max(p["sat"], 1e-3)) ** 1.2, 0.1, 2.0)), 4)
+            # deux points en luminance linéaire : log o' = a + b log o ; L' = lum L^c  ->  c' = c b, lum' = e^a lum^b
+            c0 = r.get("contraste") or CONTRASTE_PERSO[v["perso"]]
+            p50, p90 = max(p["p50"], 1.0), max(p["p90"], 2.0)
+            t50, t90 = VIVACITE_P50 * d["p50"], VIVACITE_P90 * d["p90"]
+            lin = lambda x: (x / 255.0) ** 2.2
+            b = (np.log(lin(t90)) - np.log(lin(t50))) / max(np.log(lin(p90)) - np.log(lin(p50)), 1e-3)
+            b = float(np.clip(b, 0.7, 1.4)) ** 0.7                     # pas amorti
+            a = np.log(lin(t50)) - b * np.log(lin(p50))
+            r["contraste"] = round(float(np.clip(c0 * b, 0.8, 2.2)), 4)
+            r["lum"] = round(float(np.clip(np.exp(0.7 * a) * r["lum"] ** b, 0.2, 8.0)), 4)
+            r["sat"] = round(float(np.clip(r["sat"] * (VIVACITE_SAT * d["sat"] / max(p["sat"], 1e-3)) ** 1.2, 0.1, 2.5)), 4)
             # acuité : baisse quand la douceur monte (pente mesurée ~0,13 par pixel de rayon) ; douceur minimale 0,5 px
             # netteté (acuité) : les sprites réduits sont déjà un peu plus doux que le décor (0,54 à 0,63 contre 0,61 à
             # 0,68) ; l'égaler demanderait de les renforcer. Douceur fixe de 0,5 px : contour adouci et grain de la
@@ -139,7 +158,8 @@ def ajuste(dossier, ecrire=True):
     ecarts = []
     for k, v in sorted(tab.items()):
         p, d = v["personnage"], v["decor"]
-        ecarts.append((abs(p["lum"] / d["lum"] - 1), abs(p["sat"] / d["sat"] - 1), abs(p["nettete"] / d["nettete"] - 1), abs(p["detail"] / d["detail"] - 1)))
+        ecarts.append((abs(p["p50"] / (VIVACITE_P50 * d["p50"]) - 1) + abs(p["p90"] / (VIVACITE_P90 * d["p90"]) - 1), abs(p["sat"] / (VIVACITE_SAT * d["sat"]) - 1), abs(p["nettete"] / d["nettete"] - 1), abs(p["detail"] / d["detail"] - 1)))
+        print("%-12s p50 %5.1f/%5.1f p90 %5.1f/%5.1f p10 %5.1f | " % (k, p["p50"], VIVACITE_P50 * d["p50"], p["p90"], VIVACITE_P90 * d["p90"], p["p10"]), end="")
         print("%-12s lum %5.1f/%5.1f  sat %.3f/%.3f  net %5.3f/%5.3f | lanterne lum %5.1f/%5.1f sat %.3f/%.3f"
               % (k, p["lum"], d["lum"], p["sat"], d["sat"], p["nettete"], d["nettete"], v["lanterne"]["lum"],
                  v["decor_lanterne"]["lum"], v["lanterne"]["sat"], v["decor_lanterne"]["sat"]))

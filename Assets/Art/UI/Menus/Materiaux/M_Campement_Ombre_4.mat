@@ -29,10 +29,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Cisaille: 1.1
+    - _Cisaille: -1.1
     - _ColorMask: 15
     - _ContactFlou: 9
-    - _ContactForce: 1.5
+    - _ContactForce: 2
     - _ContactHaut: 0.6
     - _Ecrase: 0.3
     - _Max: 0.8
@@ -49,7 +49,7 @@ Material:
     m_Colors:
     - _Cadre: {r: -0.9, g: -0.12, b: 1.5, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _ContactDecal: {r: 0.012, g: -0.018, b: 0, a: 0}
+    - _ContactDecal: {r: -0.012, g: -0.018, b: 0, a: 0}
     - _Couleur: {r: 0.22300342, g: 0.28055266, b: 0.71936584, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -3,162 +3,178 @@
   {
    "perso": "Renard",
    "place": 1,
-   "lum": 0.687,
-   "sat": 0.3389,
+   "lum": 1.0,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 1.2041,
-   "lanterneSat": 1.3091,
-   "detail": 1.0
+   "lanterneLum": 1.205,
+   "lanterneSat": 1.3098,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Renard",
    "place": 2,
-   "lum": 0.9847,
-   "sat": 0.4689,
+   "lum": 1.0,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 0.7412,
-   "lanterneSat": 0.5946,
-   "detail": 1.0
+   "lanterneLum": 0.7467,
+   "lanterneSat": 0.5961,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Renard",
    "place": 3,
-   "lum": 2.1805,
-   "sat": 0.7319,
+   "lum": 1.0,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 0.6166,
-   "lanterneSat": 0.8559,
-   "detail": 1.0
+   "lanterneLum": 0.6168,
+   "lanterneSat": 0.8563,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Renard",
    "place": 4,
-   "lum": 1.5006,
-   "sat": 0.6631,
+   "lum": 1.0,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 0.4343,
-   "lanterneSat": 0.6408,
-   "detail": 1.0
+   "lanterneLum": 0.4341,
+   "lanterneSat": 0.6405,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Koala",
    "place": 1,
-   "lum": 0.5619,
-   "sat": 0.6034,
+   "lum": 1.15,
+   "sat": 1.1,
    "douceur": 0.5,
-   "lanterneLum": 1.2485,
+   "lanterneLum": 1.2122,
    "lanterneSat": 2.0,
-   "detail": 1.0
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Koala",
    "place": 2,
-   "lum": 0.806,
-   "sat": 0.7732,
+   "lum": 1.15,
+   "sat": 1.1,
    "douceur": 0.5,
-   "lanterneLum": 0.8605,
-   "lanterneSat": 1.2969,
-   "detail": 1.0
+   "lanterneLum": 0.8476,
+   "lanterneSat": 1.3012,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Koala",
    "place": 3,
-   "lum": 1.0308,
-   "sat": 1.0404,
+   "lum": 1.15,
+   "sat": 1.1,
    "douceur": 0.5,
    "lanterneLum": 0.2,
-   "lanterneSat": 2.0,
-   "detail": 1.0
+   "lanterneSat": 0.9063,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Koala",
    "place": 4,
-   "lum": 0.8838,
-   "sat": 1.0007,
+   "lum": 1.15,
+   "sat": 1.1,
    "douceur": 0.5,
-   "lanterneLum": 0.4674,
-   "lanterneSat": 0.9074,
-   "detail": 1.0
+   "lanterneLum": 0.4655,
+   "lanterneSat": 0.9057,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Cameleon",
    "place": 1,
-   "lum": 0.4107,
-   "sat": 0.3883,
+   "lum": 1.0,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 1.0454,
-   "lanterneSat": 1.4591,
-   "detail": 1.0
+   "lanterneLum": 1.0734,
+   "lanterneSat": 1.4827,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Cameleon",
    "place": 2,
-   "lum": 0.6771,
-   "sat": 0.5599,
+   "lum": 1.0,
+   "sat": 1.0,
    "douceur": 0.5,
    "lanterneLum": 0.6619,
-   "lanterneSat": 0.7588,
-   "detail": 1.0
+   "lanterneSat": 0.7574,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Cameleon",
    "place": 3,
-   "lum": 1.2761,
-   "sat": 0.7397,
+   "lum": 1.0,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 0.5476,
-   "lanterneSat": 0.924,
-   "detail": 1.0
+   "lanterneLum": 0.5403,
+   "lanterneSat": 0.9161,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Cameleon",
    "place": 4,
-   "lum": 0.8797,
-   "sat": 0.6827,
+   "lum": 1.0,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 0.3863,
-   "lanterneSat": 0.6979,
-   "detail": 1.0
+   "lanterneLum": 0.3854,
+   "lanterneSat": 0.6991,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Hibou",
    "place": 1,
-   "lum": 0.9246,
-   "sat": 0.5317,
+   "lum": 1.15,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 0.9552,
+   "lanterneLum": 0.9609,
    "lanterneSat": 2.0,
-   "detail": 1.0
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Hibou",
    "place": 2,
-   "lum": 1.4506,
-   "sat": 0.704,
+   "lum": 1.15,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 0.7491,
-   "lanterneSat": 1.0361,
-   "detail": 1.0
+   "lanterneLum": 0.7565,
+   "lanterneSat": 1.0316,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Hibou",
    "place": 3,
-   "lum": 1.7693,
-   "sat": 1.016,
+   "lum": 1.15,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 0.62,
-   "lanterneSat": 1.3935,
-   "detail": 1.0
+   "lanterneLum": 0.6204,
+   "lanterneSat": 1.3947,
+   "detail": 1.0,
+   "contraste": 1.0
   },
   {
    "perso": "Hibou",
    "place": 4,
-   "lum": 1.5647,
-   "sat": 0.9547,
+   "lum": 1.15,
+   "sat": 1.0,
    "douceur": 0.5,
-   "lanterneLum": 0.3606,
-   "lanterneSat": 0.8349,
-   "detail": 1.0
+   "lanterneLum": 0.3617,
+   "lanterneSat": 0.8386,
+   "detail": 1.0,
+   "contraste": 1.0
   }
  ]
 }

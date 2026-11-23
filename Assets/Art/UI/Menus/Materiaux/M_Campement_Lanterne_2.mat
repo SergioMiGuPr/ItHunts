@@ -48,7 +48,7 @@ Material:
     - _LisereFace: 3
     - _LisereForce: 0.45
     - _LisereLargeur: 1
-    - _Luminosite: 0.7491
+    - _Luminosite: 0.7565
     - _OmbreForce: 0.5
     - _OmbreSeuil: 0.12
     - _Opaque: 0
@@ -59,7 +59,7 @@ Material:
     - _Pivot: 0.2
     - _Respiration: 0
     - _Rythme: 0.22
-    - _Saturation: 1.0361
+    - _Saturation: 1.0316
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -71,7 +71,7 @@ Material:
     - _Centre: {r: 0.5, g: 0.5, b: 0.45, a: 0}
     - _ChaudCouleur: {r: 1.25, g: 1.02, b: 0.82, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _FeuUV: {r: 1.921105, g: -1.0721649, b: 0, a: 0}
+    - _FeuUV: {r: 1.9173234, g: -1.069959, b: 0, a: 0}
     - _FroidCouleur: {r: 0.62, g: 0.66, b: 0.86, a: 1}
     - _LanterneCouleur: {r: 1, g: 0.8, b: 0.5, a: 1}
     - _LanterneUV: {r: 0.5, g: 0.1, b: 0.25, a: 0}

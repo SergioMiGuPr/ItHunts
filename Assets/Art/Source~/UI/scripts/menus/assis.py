@@ -31,7 +31,8 @@ PERSOS = {
     "Koala": {"capuche": 121, "caisse": [(722, 978), (1100, 900), (1795, 905), (1795, 1260), (1040, 1378), (722, 1312)],
               "lanterne": (1818, 1045, 2045, 1445), "couleur": (0.33, 0.78, 0.32)},
     "Cameleon": {"capuche": 79, "caisse": [(664, 985), (1100, 925), (1880, 912), (1885, 1242), (1050, 1388), (664, 1288)],
-                 "lanterne": (1036, 1036, 1245, 1491), "couleur": (0.87, 0.63, 0.25), "texture": True},
+                 "lanterne": (1036, 1036, 1245, 1491), "couleur": (0.87, 0.63, 0.25), "texture": True,
+                 "gris_caisse": True},
     "Hibou": {"capuche": 136, "caisse": [(215, 1003), (760, 1010), (1065, 1030), (1072, 1250), (645, 1405), (215, 1332)],
               "lanterne": (1304, 1036, 1532, 1464), "couleur": (0.37, 0.73, 0.93), "xmax": 1600,
               # l'aile déployée élargit la silhouette à hauteur d'épaules : échelle prise à largeur de capuche égale
@@ -61,8 +62,29 @@ def silhouette(I, B):
     core = reg.erode(reg.dilate(core.astype(np.float32), 2), 2) > 0.5
     small = reg.keep_large(core[::2, ::2], 2000)
     core = np.repeat(np.repeat(small, 2, 0), 2, 1)[:core.shape[0], :core.shape[1]] & core
-    core = reg.fill_holes(core)
-    return core, fg
+    filled = reg.fill_holes(core)
+    # nuit 4 : les trous fermés qui ont la couleur du fond (spirale de la queue du caméléon, entre les jambes, sous les
+    # bras) restent transparents ; seuls les petits trous (reflets, défauts) sont bouchés
+    trous = filled & ~core
+    e0 = reg.err_map(I, B)
+    lisse = ecart_local(I, 1.0) < 0.01
+    Lg = reg.gray(I)
+    g0 = float(np.median(Lg))
+    lab, n = composantes(trous)
+    fond = np.zeros_like(trous)
+    for k in range(1, n + 1):
+        px = lab == k
+        if px.sum() < 40:
+            continue
+        # fond : couleur du fond (>= 88 % des pixels) ET intérieur parfaitement lisse (>= 85 % des pixels à 2 px du bord du
+        # trou ; la peinture a toujours des touches ou de l'encre). Mesuré sur les 4 personnages : spirale de la queue,
+        # entre les jambes, sous l'aile, entre les serres ; fourrure grise, visages et oreilles restent.
+        inn = px & (reg.erode(px.astype(np.float32), 2) > 0.5)
+        # et la valeur du gris de fond (le modèle de fond peut être faux entre deux sangles sombres : bottes du renard)
+        proche = np.abs(Lg[px] - g0) < 0.08
+        if inn.sum() >= 20 and (e0[px] < 0.04).mean() >= 0.88 and lisse[inn].mean() >= 0.85 and proche.mean() >= 0.85:
+            fond |= px
+    return filled & ~fond, fg
 
 
 def remove_seat(I, core, poly, neutre_texture=False, lanterne=None, couleurs_perso=False):
@@ -105,6 +127,57 @@ def remove_seat(I, core, poly, neutre_texture=False, lanterne=None, couleurs_per
     char = reg.keep_large(char[::2, ::2], 1500)
     char = np.repeat(np.repeat(char, 2, 0), 2, 1)[:h, :w] & rest & (near | ~P)
     return char, seat | (P & core & ~char)
+
+
+def ecart_local(I, r=2.0):
+    """Écart type local de la luminance (rayon ~r px) : ~0 sur le fond gris uni, nettement plus sur la peinture."""
+    L = reg.gray(I)
+    m = reg.blur(L, r)
+    return np.sqrt(np.maximum(reg.blur(L * L, r) - m * m, 0))
+
+
+def retire_restes_caisse(a, poly, I, B, passes=6, gris_large=False):
+    """Nuit 4 : restes de la caisse et du fond collés au personnage (faces gris lavande sous la cape, éclats au bord du
+    siège). Dans le contour de la caisse (élargi), on ronge depuis le bord de l'alpha les pixels gris clairs peu saturés
+    (faces de la caisse) ou proches du fond, passe après passe : ce qui est relié au personnage par un pont de gris part,
+    l'intérieur du personnage (encré, saturé ou sombre) reste. Puis les îlots détachés disparaissent."""
+    H, W = a.shape
+    P = reg.poly_mask(H, W, np.array(poly, np.float64), aa=1.0) > 0.5
+    P = reg.dilate(P.astype(np.float32), 24) > 0.5
+    S, V = reg.sat(I)
+    e = reg.err_map(I, B)
+    lisse = ecart_local(I) < 0.015
+    tres_lisse = ecart_local(I, 1.0) < 0.012
+    # faces de la caisse : grises claires, ou aplats lisses peu saturés à n'importe quelle valeur (face à l'ombre, mauve ;
+    # face éclairée bleutée), ou couleur du fond
+    gris = (lisse & (((S < 0.16) & (V > 0.40)) | (e < 0.06))) | (tres_lisse & (S < 0.55) & (V > 0.12))
+    if gris_large:
+        # personnage sans aucune partie grise (caméléon) : tout gris peu saturé du contour de la caisse est de la caisse
+        gris |= (S < 0.22) & (V > 0.28)
+    m = a > 0.5
+    for _ in range(passes):
+        bord = m & ~(reg.erode(m.astype(np.float32), 1) > 0.5)
+        ote = bord & gris & P
+        if not ote.any():
+            break
+        # on ronge en largeur (6 px par passe) dans les zones grises connexes au bord
+        zone = reg.dilate(ote.astype(np.float32), 6) > 0.5
+        m = m & ~(zone & gris & P)
+    # puis les zones grises entières (connexes) qui touchent le bord : faces de caisse enclavées sous la cape ou les cuisses
+    bord = m & ~(reg.erode(m.astype(np.float32), 1) > 0.5)
+    g2 = (m & gris & P)[::2, ::2]
+    lab, n = composantes(g2)
+    b2 = reg.dilate(bord.astype(np.float32), 2)[::2, ::2] > 0.5
+    ote = np.zeros_like(g2)
+    for k in range(1, n + 1):
+        px = lab == k
+        if 30 <= px.sum() <= 20000 and (px & b2).any():
+            ote |= px
+    ote = np.repeat(np.repeat(ote, 2, 0), 2, 1)[:H, :W]
+    m = m & ~(reg.dilate(ote.astype(np.float32), 1) > 0.5)
+    m = keep_large(m[::2, ::2], 3000)
+    m = np.repeat(np.repeat(m, 2, 0), 2, 1)[:H, :W]
+    return np.where(m, a, 0.0).astype(np.float32)
 
 
 def up(m, shape):
@@ -339,6 +412,14 @@ def main():
         if "xmax" in p:
             core[:, p["xmax"] // K:] = False
         char, seat = remove_seat(I, core, p["caisse"], p.get("texture", False), p["lanterne"], p.get("couleurs", False))
+        # nuit 4 : petits trous entièrement entourés par le personnage (entre les sangles des bottes, plis) rebouchés : la
+        # règle de la caisse les prenait pour du siège ; les trous de fond (spirale, entre les jambes) sont déjà hors de core
+        tr = reg.fill_holes(char) & ~char & core
+        lab, n = composantes(tr)
+        for k in range(1, n + 1):
+            px = lab == k
+            if px.sum() < 600:
+                char |= px
         if CTRL:
             vis = I * 0.4 + np.stack([seat, char, np.zeros_like(char)], -1) * 0.6
             reg.save(os.path.join(CTRL, "assis_%s.png" % name), vis[::2, ::2], "RGB")
@@ -355,6 +436,7 @@ def main():
         a_l, _ = extrait_lanterne(Ifull, p["lanterne"])
         a_c = a * (1 - lm) * (1 - a_l)
         a_c = retire_bandes_caisse(a_c, p["caisse"], Ifull)
+        a_c = retire_restes_caisse(a_c, p["caisse"], Ifull, Bf, gris_large=p.get("gris_caisse", False))
         # couleur démêlée du gris
         F = reg.unmix(Ifull, Bf, a)
         # échelle (mi-définition pour la mesure)
