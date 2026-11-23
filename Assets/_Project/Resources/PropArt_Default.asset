@@ -1,0 +1,146 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 486d6562313311f4e823dac1d7fa6c7c, type: 3}
+  m_Name: PropArt_Default
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.PropArtSettings
+  enabledInGame: 1
+  maxShapeError: 0.9
+  entries:
+  - greybox: Prop_Tonneau_Attrapable
+    prefix: 0
+    models:
+    - {fileID: 179533381834045636, guid: 745a1c34edce34843a125758fdb2e538, type: 3}
+    fixedScale: 1
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Chaise_Attrapable
+    prefix: 0
+    models:
+    - {fileID: 1278113451050334403, guid: e506751c66ff5414ca831157e8543d7f, type: 3}
+    fixedScale: 1
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Tonneau
+    prefix: 0
+    models:
+    - {fileID: 179533381834045636, guid: 745a1c34edce34843a125758fdb2e538, type: 3}
+    - {fileID: 8111891019518882678, guid: 7c63e89647c8032419cbeb251f520f9c, type: 3}
+    fixedScale: 0
+    maxScale: 1.6
+    chest: 0
+  - greybox: Prop_Poutre
+    prefix: 0
+    models:
+    - {fileID: 2331186945815499870, guid: 3dd80883f92d0db479cb145b2ec8ccd8, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Sarcophage
+    prefix: 0
+    models:
+    - {fileID: 351607052263464143, guid: b7e740da278f70d47bd401d062ce3b59, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Ratelier
+    prefix: 0
+    models:
+    - {fileID: 4921376421846520228, guid: 2b1a421b796ebf846aab23e7c4f800bb, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Statue
+    prefix: 0
+    models:
+    - {fileID: 3446046900950984188, guid: 7f6499186a89cec4f9c91f375eb134a5, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Lanterne
+    prefix: 0
+    models:
+    - {fileID: 2087783610309173940, guid: 3ddd840dbddfe3941bfe63fed52b0709, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Etagere
+    prefix: 0
+    models:
+    - {fileID: 2703029049921424891, guid: bf40ab8609595d74a95360302f26bcc6, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_CoffreDeco
+    prefix: 0
+    models:
+    - {fileID: 2383801500692793266, guid: a91bdb10f2e1fe14d9407001fd1dad7d, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Table
+    prefix: 0
+    models:
+    - {fileID: 3938788703657902283, guid: cea904fd6ce13d04b8b8a0192d9b4042, type: 3}
+    - {fileID: 1682240659488107851, guid: ecddaeee9889a67479151c4c334f0384, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Banc
+    prefix: 0
+    models:
+    - {fileID: 3050198582289660905, guid: aba83c8e2f21bc348bc6391598682e52, type: 3}
+    - {fileID: 6205683095515559775, guid: 5e9414a5ddbcc9c44ac6faf135294495, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Paille
+    prefix: 0
+    models:
+    - {fileID: 6583503566448129739, guid: b818280265a95c340b56492aedb884be, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Armoire
+    prefix: 0
+    models:
+    - {fileID: 6243154830654119191, guid: 576785f7831b4034e968076f7da1306d, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Lit
+    prefix: 0
+    models:
+    - {fileID: 3305257222336990541, guid: b7892a6c2302d034faf24241b22cf769, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: Prop_Chaudron
+    prefix: 0
+    models:
+    - {fileID: 2808831483314550231, guid: 729a9efdcb837fc4f9f4df274ae81271, type: 3}
+    fixedScale: 0
+    maxScale: 2
+    chest: 0
+  - greybox: "Coffre de la salle verrouill\xE9e"
+    prefix: 0
+    models:
+    - {fileID: 298011841884591681, guid: bb66383d7da893f43a477650e664bc80, type: 3}
+    fixedScale: 1.5
+    maxScale: 1.6
+    chest: 1
+  - greybox: 'Coffre : '
+    prefix: 1
+    models:
+    - {fileID: 3036382440211267924, guid: 6ee4b0a01421a8c4da5a30756851c49b, type: 3}
+    fixedScale: 1.5
+    maxScale: 1.6
+    chest: 1

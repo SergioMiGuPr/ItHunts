@@ -69,6 +69,15 @@ namespace ItHunts.Economy
                 _lidRenderers = lid.GetComponentsInChildren<Renderer>(true);
         }
 
+        /// <summary>Couvercle du modèle de la DA (PropArt, enfant « Couvercle ») : caché pour qui a ouvert le coffre.</summary>
+        public void SetLid(Transform newLid)
+        {
+            if (newLid == null)
+                return;
+            lid = newLid;
+            _lidRenderers = newLid.GetComponentsInChildren<Renderer>(true);
+        }
+
         private string BaseText() => Price > 0 ? $"Coffre\n{Price} âmes" : "Coffre";
 
         private void OnEnable()

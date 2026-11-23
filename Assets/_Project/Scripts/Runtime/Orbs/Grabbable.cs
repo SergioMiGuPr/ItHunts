@@ -359,6 +359,13 @@ namespace ItHunts.Orbs
                 Body.useGravity = true;
         }
 
+        /// <summary>Modèle de la DA posé sur la greybox (PropArt) : ses rendus remplacent ceux de la greybox (lueur, présence).</summary>
+        public void UseRenderers(Renderer[] renderers)
+        {
+            if (renderers != null && renderers.Length > 0)
+                _renderers = renderers;
+        }
+
         /// <summary>Couleur d'émission (HDR) de tous ses rendus.</summary>
         public void SetGlow(Color color)
         {

@@ -124,6 +124,22 @@ namespace ItHunts.Level
 
         public void SetOpen(bool open)
         {
+            // Portes du kit de la DA (nuit 4, lot 3, PR #52) : leur animation OuverturePorte (battants à leurs gonds, courbe douce).
+            var anim = GetComponent<ItHunts.Art.VFX.OuverturePorte>();
+            if (anim != null && FindLeaves())
+            {
+                Open = open;
+                if (open)
+                    anim.Ouvre();
+                else
+                    anim.Pose(0f);
+                foreach (Collider c in _leftLeaf.GetComponentsInChildren<Collider>(true))
+                    c.enabled = !open;
+                foreach (Collider c in _rightLeaf.GetComponentsInChildren<Collider>(true))
+                    c.enabled = !open;
+                return;
+            }
+
             if (FindLeaves())
             {
                 if (!_closedKnown)
