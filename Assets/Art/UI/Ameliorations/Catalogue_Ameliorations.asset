@@ -1,0 +1,168 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9322fec18b4663f4fa9a354ded95dd1a, type: 3}
+  m_Name: Catalogue_Ameliorations
+  m_EditorClassIdentifier: ItHunts.Art.UIJeu::ItHunts.Art.UIJeu.CatalogueAmeliorations
+  entrees:
+  - id: G1
+    icone: {fileID: 21300000, guid: e4589376cb6d8804c9f2b319a24c9344, type: 3}
+  - id: G2
+    icone: {fileID: 21300000, guid: 93b677c6c3c51e243baa1f183cd8a3ae, type: 3}
+  - id: G3
+    icone: {fileID: 21300000, guid: 915a2deb185c14a42ac9b86ac65261e5, type: 3}
+  - id: G4
+    icone: {fileID: 21300000, guid: 52b55b238f7f40f498862e7aad9d7d75, type: 3}
+  - id: G5
+    icone: {fileID: 21300000, guid: 3fbe20ee2e7363342af542be5d095dd9, type: 3}
+  - id: G6
+    icone: {fileID: 21300000, guid: 6730fb93d2d787a439302c2486db19bd, type: 3}
+  - id: G7
+    icone: {fileID: 21300000, guid: fdb9de1483fe63d4dbf5f48a93b197f0, type: 3}
+  - id: G8
+    icone: {fileID: 21300000, guid: c5e5372bc096e1e48aaa20036d7ceaa9, type: 3}
+  - id: G9
+    icone: {fileID: 21300000, guid: 33d6d11f23638894e9674d7ee7c22b04, type: 3}
+  - id: G10
+    icone: {fileID: 21300000, guid: 94714bf34ec72ee4eb60d59d0033e925, type: 3}
+  - id: G11
+    icone: {fileID: 21300000, guid: b9d16b8e13ad388488e216fe9cd6733c, type: 3}
+  - id: G12
+    icone: {fileID: 21300000, guid: 0cfc5be6f0aaa5e42abbd121e8b42e07, type: 3}
+  - id: G13
+    icone: {fileID: 21300000, guid: 41e10bc66c3ab984a8c3558282270ac1, type: 3}
+  - id: G14
+    icone: {fileID: 21300000, guid: a42d9da989cd5e446afc3cdff87ead54, type: 3}
+  - id: G15
+    icone: {fileID: 21300000, guid: 1d7e2e6c4422d854490e6c6969ea5d96, type: 3}
+  - id: G16
+    icone: {fileID: 21300000, guid: e4720bb6a460fe0449b10a6695d8f89b, type: 3}
+  - id: G17
+    icone: {fileID: 21300000, guid: 08c9af7b333664c429c9822e84890795, type: 3}
+  - id: G18
+    icone: {fileID: 21300000, guid: b6273136421461a4dbc87839aeddaf95, type: 3}
+  - id: G19
+    icone: {fileID: 21300000, guid: 95dcfca60ee82bc44af86f48381866ac, type: 3}
+  - id: G20
+    icone: {fileID: 21300000, guid: 1f8a43ceec2b7e84c96be54930c1e260, type: 3}
+  - id: G21
+    icone: {fileID: 21300000, guid: ab8b6795598a1a74e9ddd88b6b8dc60a, type: 3}
+  - id: G22
+    icone: {fileID: 21300000, guid: a12a3bc380b362c409fdb6e09673da79, type: 3}
+  - id: G23
+    icone: {fileID: 21300000, guid: 759ce8c9e6f70e44496d6003023c54c0, type: 3}
+  - id: G24
+    icone: {fileID: 21300000, guid: 50d27d257a0d45e49b60d6894b858c36, type: 3}
+  - id: G25
+    icone: {fileID: 21300000, guid: 04ee4e27af6b4e34aa5a9b8e0cb6daea, type: 3}
+  - id: G26
+    icone: {fileID: 21300000, guid: 6449a32fa1751494f850077d53bda7c3, type: 3}
+  - id: G27
+    icone: {fileID: 21300000, guid: 511f4c33e8ca81745a78199d44d64f6a, type: 3}
+  - id: G28
+    icone: {fileID: 21300000, guid: af611fa7303be6a499826ca4927e91d0, type: 3}
+  - id: G29
+    icone: {fileID: 21300000, guid: 4ce91871ddf499743ae42befcd5849db, type: 3}
+  - id: G30
+    icone: {fileID: 21300000, guid: 184661557c9264e488a1dd66a01d037a, type: 3}
+  - id: R-P1
+    icone: {fileID: 21300000, guid: 584c727869bcd6f42abb7e04616dd878, type: 3}
+  - id: R-P2
+    icone: {fileID: 21300000, guid: 7d94f508ff2f94346ad7f6c4e5f4f812, type: 3}
+  - id: R1
+    icone: {fileID: 21300000, guid: 1d81e6eb30108b5468c26e947b359bfb, type: 3}
+  - id: R2
+    icone: {fileID: 21300000, guid: a52bc7a51a16bd04e999927f088abc78, type: 3}
+  - id: R3
+    icone: {fileID: 21300000, guid: b6c62bf561ff4ee478936b07ca525974, type: 3}
+  - id: R4
+    icone: {fileID: 21300000, guid: 97a2ab60acfbd1f4288d2ab3e488d335, type: 3}
+  - id: R5
+    icone: {fileID: 21300000, guid: b930dcde4edeead4ca6e655db6130831, type: 3}
+  - id: R6
+    icone: {fileID: 21300000, guid: deacea36ae544464b9c1ec92482ac1b1, type: 3}
+  - id: R7
+    icone: {fileID: 21300000, guid: 33585b15f32727c4f9bcc714883aa5ec, type: 3}
+  - id: R8
+    icone: {fileID: 21300000, guid: eb90ddcf03bdc91459fde43c020c8750, type: 3}
+  - id: C-P1
+    icone: {fileID: 21300000, guid: 5285d56ed3c62ac43a5fb8c5c856bd07, type: 3}
+  - id: C-P2
+    icone: {fileID: 21300000, guid: 29137f31847dfda4ca0d453409ea6f54, type: 3}
+  - id: C1
+    icone: {fileID: 21300000, guid: ad7e23f70842bf14a914ce17cc76aad6, type: 3}
+  - id: C2
+    icone: {fileID: 21300000, guid: dce3aa2277c7b4d41851f4c871a3d488, type: 3}
+  - id: C3
+    icone: {fileID: 21300000, guid: 7e0ce89090b9ea143b091aa86da848e7, type: 3}
+  - id: C4
+    icone: {fileID: 21300000, guid: 9c21f9c61639a3245af1b6abd94d5c36, type: 3}
+  - id: C5
+    icone: {fileID: 21300000, guid: 0b2d491ad661a8b4f967f708857a3558, type: 3}
+  - id: C6
+    icone: {fileID: 21300000, guid: e7978abded5d1434f99236dd1ae0fb66, type: 3}
+  - id: C7
+    icone: {fileID: 21300000, guid: 186ac46d678aa78478d15dc153719b7a, type: 3}
+  - id: C8
+    icone: {fileID: 21300000, guid: da864a9cb17417044a5e37af1eac25bc, type: 3}
+  - id: K-P1
+    icone: {fileID: 21300000, guid: 4b665d479d71cf6408548793e0275e60, type: 3}
+  - id: K-P2
+    icone: {fileID: 21300000, guid: d382915d4977b534f85a341311d7bc14, type: 3}
+  - id: K1
+    icone: {fileID: 21300000, guid: f833d9f59ed40ad41a81bbf8cfe27f9a, type: 3}
+  - id: K2
+    icone: {fileID: 21300000, guid: 978b183300814df408f6d37fd10e0561, type: 3}
+  - id: K3
+    icone: {fileID: 21300000, guid: a28e6a2dcc369084c9fd59b60f8f43ea, type: 3}
+  - id: K4
+    icone: {fileID: 21300000, guid: b0c30599f855c66469ad9c942007b355, type: 3}
+  - id: K5
+    icone: {fileID: 21300000, guid: 81aad2673083a49499fc30a7c9c77b68, type: 3}
+  - id: K6
+    icone: {fileID: 21300000, guid: ac61402ecf5246e458fe1050da6b3097, type: 3}
+  - id: K7
+    icone: {fileID: 21300000, guid: 4025e9311ece2314e8eacd9c8382aa08, type: 3}
+  - id: K8
+    icone: {fileID: 21300000, guid: d0bf67b576a2b27499f9d553eed10924, type: 3}
+  - id: H-P1
+    icone: {fileID: 21300000, guid: 93d1ccf8781779b4dbd91528f3e8498c, type: 3}
+  - id: H-P2
+    icone: {fileID: 21300000, guid: 83183b43f6bf39749a96901c7355c440, type: 3}
+  - id: H1
+    icone: {fileID: 21300000, guid: 5e23f28b292d7164d893924f500eff5c, type: 3}
+  - id: H2
+    icone: {fileID: 21300000, guid: 191cf9ff7671f764cab38eaae93148cf, type: 3}
+  - id: H3
+    icone: {fileID: 21300000, guid: b484fa9dd1b76f342b9dbba376b58a6c, type: 3}
+  - id: H4
+    icone: {fileID: 21300000, guid: 9d56a065d9327db4abdc9e2c5836a50b, type: 3}
+  - id: H5
+    icone: {fileID: 21300000, guid: 9503e7eab22dff74d994b1b913a1bfb8, type: 3}
+  - id: H6
+    icone: {fileID: 21300000, guid: c78228cce991c0547b84514208ad101e, type: 3}
+  - id: H7
+    icone: {fileID: 21300000, guid: 6c6d864ca2912a748956f586a069be9d, type: 3}
+  - id: H8
+    icone: {fileID: 21300000, guid: 1a15d03f4873d0f44beaec5760a01e9c, type: 3}
+  cadres:
+  - {fileID: 21300000, guid: 01fe2998094f1804cb8de6d99e289c01, type: 3}
+  - {fileID: 21300000, guid: 2181ddd07e358f44cab2d8f7ed4d1524, type: 3}
+  - {fileID: 21300000, guid: cf7003a7f3e63914499a640a6bb7a018, type: 3}
+  - {fileID: 21300000, guid: 690e873a0957d604c99986dff6c49612, type: 3}
+  - {fileID: 21300000, guid: 35feb9c652272d543bd33b9da1836a42, type: 3}
+  cadresPassifs:
+  - {fileID: 21300000, guid: 41f6ba7fc48f6194b84c42744674dc3a, type: 3}
+  - {fileID: 21300000, guid: 1801f230c0bda4b499978b94afe6f992, type: 3}
+  - {fileID: 21300000, guid: 66bffd9c8eb14ed4a96b8863be8f31e0, type: 3}
+  - {fileID: 21300000, guid: 07244eabd5e40804e82fe0cf5fd0451a, type: 3}
+  - {fileID: 21300000, guid: fc1b1787ed8fe8f479b8009430186577, type: 3}
+  masquePassif: {fileID: 21300000, guid: ff8d894e2b9013947b3f84593aef739a, type: 3}

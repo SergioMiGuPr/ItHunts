@@ -387,3 +387,49 @@ Toutes les tailles sont en unités du canvas 1920 × 1080 (*match height*).
 - remplacer le choix d'acte du playtest et le panneau admin actuels par ces prefabs, en branchant les événements ;
 - afficher la barre du boss à l'entrée de l'arène, appeler `Phase(i)` aux changements de phase ;
 - appeler `MarqueurCritique.Affiche()` à chaque headshot, en même temps que `Sfx_Headshot_Critique` (lot 6) et `VFX_Critique` (lot 8).
+
+## 9. Lot 6 de la nuit 4 : écran de fin, marchand à rangs, porte de sortie scellée, cartes unifiées (2026-11-23, branche `art-ui-4`)
+
+Constructeur : `Assets/Art/Source~/UI/scripts/UIJeu4Builder.cs` (`Construit`, `Capture`) ; scène d'aperçu `Assets/Art/Scenes/Test_UI_Jeu4.unity` ;
+captures `docs/art/rendus/Nuit4/Lot6/`. Illustrations et cadres : lot 5 (`docs/art/ameliorations/AMELIORATIONS-ART.md`).
+
+- **`CatalogueAmeliorations`** (`Assets/Art/UI/Ameliorations/Catalogue_Ameliorations.asset`) : identifiant de AMELIORATIONS.md → sprite,
+  10 cadres de rang, masque losange. `Icone(id)`, `EstPassif(id)` (« X-P1 »).
+- **`IconeAmelioration`** (composant, une case) : `Configure(id, rang)` ou `Configure(sprite, rang, passif)` : illustration à 80 % sous
+  le cadre carré du rang, ou à 62 % découpée en losange sous le cadre de passif ; `Vide()`. Sert au HUD (rangée au-dessus de la
+  barre de vie : instancier 10 cases de 56 à 64 px, le passif en premier), à l'écran de fin et au marchand.
+- **`Panneau_FinDeRun`** (refait, même GUID) : statistiques en **deux colonnes de 7 lignes** (14 au plus : les 13 statistiques de
+  main tiennent dans le cadre sans resserrement), puis **grille de 10 améliorations** (cases de 80 px, centrées) au-dessus des
+  boutons. Nouvelle méthode `RemplitAmeliorations(string[] ids, int[] rangs)` à appeler après `Remplit`. Plus aucun texte
+  d'améliorations à ajouter dans les statistiques : la liste ne déborde plus du cadre.
+- **`Panneau_MarchandRangs`** (nouveau, script `MarchandRangs`) : trois cartes, **amélioration nouvelle** (toujours Bronze),
+  **montée de rang** (« Argent → Or », illustration au rang actuel et petite icône au rang suivant), **soin**. Chaque carte :
+  illustration encadrée, nom, rang, description, prix en âmes (rouge si les âmes manquent). `Remplit(nouvelle, montee, soinPV,
+  soinPrix, ames)` (`Offre` : id, nom, rang, description, prix ; null masque la carte), événements `Achat(0|1|2)` et `Ferme`.
+  `Panneau_Marchand` (ancienne liste) reste en place tant que main ne bascule pas.
+- **`Panneau_PorteSortie`** (nouveau, script `PanneauPorte`) : porte de sortie d'acte encore scellée. `MontreSortieScellee(secondes,
+  prix)` affiche « Sortie scellée », « S'ouvre dans m:ss », une explication et le prix ; ni touche ni invite tant que c'est scellé.
+  Quand le temps est écoulé : `Montre("Sortie de l'acte", prix, ames)` comme avant.
+- **Mini-carte et carte ouverte, un seul design** : `Carte_Fond` prend le fond bleu nuit de la bulle (plus de parchemin brun),
+  `Carte_Cadre` garde ses filets de fer lavande mais ses rosaces deviennent l'ornement épineux de la bulle (mêmes GUID : la carte
+  de main suit). Même jeu d'icônes dans les deux, avec deux nouvelles :
+  - `MiniCarte_Goule.png` (64 px) : petit point rouge sang cerné d'encre ; à afficher à 14 à 20 px ;
+  - `MiniCarte_Traqueur.png` (128 px) : œil fendu rouge braise dans une couronne d'épines, halo sombre ; à afficher à 28 à 44 px
+    (lisible à 24 px), au-dessus des autres icônes.
+
+**Après la relecture indépendante (lot 6)** :
+
+- Icônes de carte et rose importées en **sprites** (sans mip, alpha transparent), comme les autres icônes de la mini-carte.
+- **Carte ouverte** : en plus du fond et du cadre, `Carte_Rose` (étoile épineuse de la bulle) et `Carte_Legende_Cadre` (mêmes
+  coins) sont refaites ; ajouter **Traqueur** et **Goule** à la légende.
+- **Traqueur** : œil jauni à pupille sang (plus rouge sur rouge avec les goules) ; 28 px minimum dans la bulle, 40 à 48 px sur la
+  carte ouverte.
+- **Marchand** : une carte trop chère garde son cadre, son illustration s'assombrit, son prix passe en rouge et son bouton
+  devient **inactif** (`interactable = false`). La **montée** montre l'amélioration au rang actuel → la même au rang suivant
+  (même taille), rangs colorés ; une offre de montée au rang Mythique est masquée.
+- **Écran de fin** : au-delà de 10 améliorations, « +N » s'affiche à droite de la rangée ; les bandes des lignes vides
+  disparaissent avec elles.
+- **Porte scellée** : rappeler `MontreSortieScellee` à chaque image (ou chaque seconde) tant que le panneau est visible ;
+  minuteur en or.
+- **Scripts robustes** aux références nulles, aux rangs hors bornes, aux identifiants inconnus (avertissement dans la console) et
+  à un catalogue absent (case vidée).
