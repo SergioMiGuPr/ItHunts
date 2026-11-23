@@ -1,0 +1,688 @@
+{
+ "SM_Cave_Escalier_Droit_4m": {
+  "objets": [
+   "Col_Escalier",
+   "Col_Rampe",
+   "Garde_Corps",
+   "SM_Cave_Escalier_Droit_4m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": 33.7,
+  "triangles": 946,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Cave_Escalier_Tournant_4m": {
+  "objets": [
+   "Col_Escalier",
+   "Col_Rampe",
+   "Garde_Corps",
+   "SM_Cave_Escalier_Tournant_4m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": 33.7,
+  "triangles": 2410,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Cave_Escalier_Colimacon": {
+  "objets": [
+   "Col_Escalier",
+   "Col_Rampe",
+   "Garde_Corps",
+   "SM_Cave_Escalier_Colimacon"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": 34.4,
+  "triangles": 1323,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Cave_MurEscalade_12m": {
+  "objets": [
+   "Accroche_Pied",
+   "Accroche_Sommet",
+   "SM_Cave_MurEscalade_12m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1038
+ },
+ "SM_Cave_PorteVerrouillee": {
+  "objets": [
+   "SM_Cave_PorteVerrouillee",
+   "Serrure",
+   "Vantail"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1120
+ },
+ "SM_Cave_Puits": {
+  "objets": [
+   "Deco_Eau",
+   "Deco_SansCollision",
+   "SM_Cave_Puits"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1036,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Cave_PorteSortie": {
+  "objets": [
+   "Battant_D",
+   "Battant_G",
+   "SM_Cave_PorteSortie"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1432
+ },
+ "SM_Cave_CelluleTraqueur_Herse": {
+  "objets": [
+   "Apparition_Traqueur",
+   "Herse",
+   "Porte_Traqueur",
+   "SM_Cave_CelluleTraqueur_Herse"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1351
+ },
+ "SM_Cave_CelluleTraqueur_Barricade": {
+  "objets": [
+   "Apparition_Traqueur",
+   "Battant_D",
+   "Battant_G",
+   "Porte_Traqueur",
+   "SM_Cave_CelluleTraqueur_Barricade"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 3774
+ },
+ "SM_Chateau_Escalier_Droit_4m": {
+  "objets": [
+   "Col_Escalier",
+   "Col_Rampe",
+   "Garde_Corps",
+   "SM_Chateau_Escalier_Droit_4m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": 33.7,
+  "triangles": 3014,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Chateau_Escalier_Tournant_4m": {
+  "objets": [
+   "Col_Escalier",
+   "Col_Rampe",
+   "Garde_Corps",
+   "SM_Chateau_Escalier_Tournant_4m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": 33.7,
+  "triangles": 4114,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Chateau_Escalier_Colimacon": {
+  "objets": [
+   "Col_Escalier",
+   "Col_Rampe",
+   "Garde_Corps",
+   "SM_Chateau_Escalier_Colimacon"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": 34.4,
+  "triangles": 3583,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Chateau_MurEscalade_12m": {
+  "objets": [
+   "Accroche_Pied",
+   "Accroche_Sommet",
+   "SM_Chateau_MurEscalade_12m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1388
+ },
+ "SM_Chateau_PorteVerrouillee": {
+  "objets": [
+   "SM_Chateau_PorteVerrouillee",
+   "Serrure",
+   "Vantail"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1120
+ },
+ "SM_Chateau_PorteSortie": {
+  "objets": [
+   "Battant_D",
+   "Battant_G",
+   "SM_Chateau_PorteSortie"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 2012
+ },
+ "SM_Chateau_CelluleTraqueur": {
+  "objets": [
+   "Apparition_Traqueur",
+   "Herse",
+   "Porte_Traqueur",
+   "SM_Chateau_CelluleTraqueur"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1977
+ },
+ "SM_Chateau_GrandeEntree": {
+  "objets": [
+   "Battant_D",
+   "Battant_G",
+   "SM_Chateau_GrandeEntree"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1656
+ },
+ "SM_Chateau_Fenetre_Lancette_Simple": {
+  "objets": [
+   "RayonLune",
+   "SM_Chateau_Fenetre_Lancette_Simple"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 864
+ },
+ "SM_Chateau_Fenetre_Lancette_Double": {
+  "objets": [
+   "RayonLune",
+   "SM_Chateau_Fenetre_Lancette_Double"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1794
+ },
+ "SM_Chateau_Fenetre_Lancette_Triple": {
+  "objets": [
+   "RayonLune",
+   "SM_Chateau_Fenetre_Lancette_Triple"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 2560
+ },
+ "SM_Chateau_Lustre_Cristal": {
+  "objets": [
+   "Feu_1",
+   "Feu_10",
+   "Feu_11",
+   "Feu_12",
+   "Feu_13",
+   "Feu_14",
+   "Feu_15",
+   "Feu_16",
+   "Feu_17",
+   "Feu_18",
+   "Feu_19",
+   "Feu_2",
+   "Feu_20",
+   "Feu_21",
+   "Feu_22",
+   "Feu_23",
+   "Feu_24",
+   "Feu_3",
+   "Feu_4",
+   "Feu_5",
+   "Feu_6",
+   "Feu_7",
+   "Feu_8",
+   "Feu_9",
+   "SM_Chateau_Lustre_Cristal"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 3904
+ },
+ "SM_Chateau_Torche_Murale": {
+  "objets": [
+   "Feu_Torche",
+   "SM_Chateau_Torche_Murale"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 393
+ },
+ "SM_Chateau_Torchere": {
+  "objets": [
+   "Feu_Torche",
+   "SM_Chateau_Torchere"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 832
+ },
+ "SM_Jardin_Escalier_Droit_3m": {
+  "objets": [
+   "Col_Escalier",
+   "Col_Rampe",
+   "SM_Jardin_Escalier_Droit_3m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": 27.8,
+  "triangles": 442,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Jardin_Escalier_Tournant_4m": {
+  "objets": [
+   "Col_Escalier",
+   "Col_Rampe",
+   "Garde_Corps",
+   "SM_Jardin_Escalier_Tournant_4m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": 27.8,
+  "triangles": 2794,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Jardin_Escalier_Colimacon": {
+  "objets": [
+   "Col_Escalier",
+   "Col_Rampe",
+   "Garde_Corps",
+   "SM_Jardin_Escalier_Colimacon"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": 34.4,
+  "triangles": 2007,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Jardin_Mezzanine_8x6": {
+  "objets": [
+   "Accroche_Bord",
+   "Garde_Corps",
+   "SM_Jardin_Mezzanine_8x6"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1884,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Jardin_Coursive_8m": {
+  "objets": [
+   "Accroche_Bord",
+   "Garde_Corps",
+   "SM_Jardin_Coursive_8m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1260,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Jardin_PorteHaute": {
+  "objets": [
+   "Accroche_Bord",
+   "SM_Jardin_PorteHaute"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 440
+ },
+ "SM_Jardin_PorteEtroite": {
+  "objets": [
+   "Accroche_PorteEtroite",
+   "SM_Jardin_PorteEtroite"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 343
+ },
+ "SM_Jardin_MurRebords_10m": {
+  "objets": [
+   "Accroche_Rebord_1",
+   "Accroche_Rebord_2",
+   "Accroche_Rebord_3",
+   "Accroche_Rebord_4",
+   "SM_Jardin_MurRebords_10m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 213
+ },
+ "SM_Jardin_MurEscalade_12m": {
+  "objets": [
+   "Accroche_Pied",
+   "Accroche_Sommet",
+   "SM_Jardin_MurEscalade_12m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 690
+ },
+ "SM_Jardin_PorteVerrouillee": {
+  "objets": [
+   "SM_Jardin_PorteVerrouillee",
+   "Serrure",
+   "Vantail"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1147
+ },
+ "SM_Jardin_Puits": {
+  "objets": [
+   "Deco_Eau",
+   "Deco_SansCollision",
+   "SM_Jardin_Puits"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1296,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Jardin_PorteSortie": {
+  "objets": [
+   "Battant_D",
+   "Battant_G",
+   "SM_Jardin_PorteSortie"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1781
+ },
+ "SM_Jardin_CelluleTraqueur_Voliere": {
+  "objets": [
+   "Apparition_Traqueur",
+   "Battant_D",
+   "Battant_G",
+   "Porte_Traqueur",
+   "SM_Jardin_CelluleTraqueur_Voliere"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 5056
+ },
+ "SM_Jardin_Falaise_Rebords_16m": {
+  "objets": [
+   "Accroche_Rebord_1",
+   "Accroche_Rebord_2",
+   "Accroche_Rebord_3",
+   "Accroche_Rebord_4",
+   "Accroche_Sommet",
+   "SM_Jardin_Falaise_Rebords_16m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 720
+ },
+ "SM_Jardin_Terrasse_8m": {
+  "objets": [
+   "Accroche_Bord",
+   "Garde_Corps",
+   "SM_Jardin_Terrasse_8m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1487,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Jardin_Terrasse_Acces_8m": {
+  "objets": [
+   "Accroche_Bord",
+   "Garde_Corps",
+   "SM_Jardin_Terrasse_Acces_8m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 687,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Jardin_MurEnceinte_Tour": {
+  "objets": [
+   "Accroche_Traction",
+   "SM_Jardin_MurEnceinte_Tour"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 615
+ },
+ "SM_Jardin_MurEnceinte_Breche_8m": {
+  "objets": [
+   "SM_Jardin_MurEnceinte_Breche_8m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1269
+ },
+ "SM_Jardin_MurEnceinte_CheminRonde_8m": {
+  "objets": [
+   "Accroche_Bord",
+   "SM_Jardin_MurEnceinte_CheminRonde_8m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 151
+ },
+ "SM_Jardin_Haie_6m": {
+  "objets": [
+   "SM_Jardin_Haie_6m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 360
+ },
+ "SM_Jardin_Massif": {
+  "objets": [
+   "SM_Jardin_Massif"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 264
+ },
+ "SM_Jardin_Foret_Lisiere_20m": {
+  "objets": [
+   "SM_Jardin_Foret_Lisiere_20m"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1378
+ },
+ "SM_Cave_CelluleTraqueur_Fosse": {
+  "objets": [
+   "Accroche_Pied",
+   "Accroche_Sommet",
+   "Apparition_Traqueur",
+   "SM_Cave_CelluleTraqueur_Fosse",
+   "Trappe_D",
+   "Trappe_G"
+  ],
+  "isoles": 0,
+  "aretes_nulles": 0,
+  "faces_superposees": 0,
+  "faces_partielles": 0,
+  "faces_degenerees": 0,
+  "pente_max_col": null,
+  "triangles": 1532
+ }
+}

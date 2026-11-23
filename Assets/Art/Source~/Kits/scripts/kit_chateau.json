@@ -150,14 +150,14 @@
   ]
  },
  "SM_Chateau_GrandeEntree": {
-  "doc": "Grande porte d'entrée du château (mène à l'acte III) : façade de 20 × 22 m, portail en arc brisé de 9 × 13 m à",
+  "doc": "Grande porte d'entrée du château (mène à l'acte III) : façade de 20 × 22 m, portail en arc brisé de 9 × 13 m à voussures, deux battants de chêne ferré (Battant_G, Battant_D, pivots aux gonds) portant le sceau de lune de sortie (lot 3), perron de 5 marches, deux contreforts.",
   "taille": [
    20.2,
-   6.48,
+   6.2,
    22.01
   ],
   "bas": -0.01,
-  "triangles": 1424,
+  "triangles": 1656,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
    "M_Bib_Dalles_Sales"
@@ -419,6 +419,403 @@
   "materiaux": [
    "M_Bib_BoisNeuf",
    "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Chateau_Escalier_Droit_4m": {
+  "doc": "Escalier droit plein : monte de 4 m (marches de 20 cm ou moins), 4 m de large, palier de 1.5 m ; rampe de collision sous les nez.",
+  "taille": [
+   4.0,
+   7.5,
+   4.0
+  ],
+  "bas": 0.0,
+  "triangles": 3014,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_Tapis",
+   "M_Chateau_Dalles"
+  ]
+ },
+ "SM_Chateau_Escalier_Tournant_4m": {
+  "doc": "Escalier à quart tournant : deux volées de 2 m, palier carré, palier en haut ; rampes de collision.",
+  "taille": [
+   8.5,
+   7.0,
+   4.0
+  ],
+  "bas": 0.0,
+  "triangles": 4114,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_Tapis",
+   "M_Chateau_Dalles"
+  ]
+ },
+ "SM_Chateau_Escalier_Colimacon": {
+  "doc": "Escalier en colimaçon (Ø 4 m, 3.6 m aux caves) : monte de 6.4 m en deux tours, 16 marches de 20 cm par tour, palier de 100° ; rampe hélicoïdale.",
+  "taille": [
+   4.0,
+   4.0,
+   7.75
+  ],
+  "bas": 0.0,
+  "triangles": 3583,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Chateau_Dalles"
+  ]
+ },
+ "SM_Chateau_Mezzanine_8x6": {
+  "doc": "Mezzanine de 8 × 6 m, dessus à 5 m (double saut et hissage), contre un mur ; garde-corps devant et à gauche, droite ouverte.",
+  "taille": [
+   8.2,
+   6.23,
+   5.0
+  ],
+  "bas": 0.0,
+  "triangles": 3060,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Chateau_Parquet"
+  ]
+ },
+ "SM_Chateau_Coursive_8m": {
+  "doc": "Coursive le long d'un mur : 8 × 2.5 m, dessus à 0 (pivot au ras du mur), garde-corps côté vide.",
+  "taille": [
+   8.01,
+   2.68,
+   2.2
+  ],
+  "bas": -2.2,
+  "triangles": 1576,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Chateau_Parquet"
+  ]
+ },
+ "SM_Chateau_Passerelle_10m": {
+  "doc": "Passerelle entre deux étages : 10 × 2.4 m, dessus à 0, appuis aux bouts, garde-corps des deux côtés.",
+  "taille": [
+   10.0,
+   2.69,
+   2.21
+  ],
+  "bas": -2.2,
+  "triangles": 3706,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Chateau_Dalles"
+  ]
+ },
+ "SM_Chateau_PorteHaute": {
+  "doc": "Porte de joueur en hauteur : ouverture de 2.4 × 3.6 m, seuil à 5 m dans un mur de 8 × 10 m, rebord de 3 × 1.2 m devant.",
+  "taille": [
+   8.0,
+   2.2,
+   10.0
+  ],
+  "bas": 0.0,
+  "triangles": 392,
+  "materiaux": [
+   "M_Chateau_PierreClaire"
+  ]
+ },
+ "SM_Chateau_PorteEtroite": {
+  "doc": "Porte étroite au sol : ouverture de 4.4 m qui contient le gabarit de 4 × 5.25 m du traqueur baissé (il se faufile).",
+  "taille": [
+   12.01,
+   2.08,
+   10.0
+  ],
+  "bas": 0.0,
+  "triangles": 322,
+  "materiaux": [
+   "M_Chateau_PierreClaire"
+  ]
+ },
+ "SM_Chateau_Echelle_6m": {
+  "doc": "Échelle de 6 m contre un mur, barreaux tous les 30 cm, montants qui dépassent d'1 m en haut.",
+  "taille": [
+   0.6,
+   0.28,
+   6.85
+  ],
+  "bas": 0.27,
+  "triangles": 864,
+  "materiaux": [
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Chateau_MurRebords_10m": {
+  "doc": "Mur de 6 × 10 m à quatre rebords plats en quinconce (tous les 2.2 m) : montée de rebord en rebord, wall jumps simples.",
+  "taille": [
+   6.02,
+   2.08,
+   10.02
+  ],
+  "bas": -0.01,
+  "triangles": 453,
+  "materiaux": [
+   "M_Chateau_PierreClaire"
+  ]
+ },
+ "SM_Chateau_MurEscalade_12m": {
+  "doc": "Mur escaladable de 8 × 12 m : prises plates en quinconce tous les 2 m (on s'y hisse) ; mur grimpable du traqueur et des goules.",
+  "taille": [
+   8.01,
+   1.95,
+   12.0
+  ],
+  "bas": 0.0,
+  "triangles": 1388,
+  "materiaux": [
+   "M_Chateau_PierreClaire"
+  ]
+ },
+ "SM_Chateau_PorteVerrouillee": {
+  "doc": "Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure).",
+  "taille": [
+   6.0,
+   1.43,
+   6.65
+  ],
+  "bas": -0.05,
+  "triangles": 1120,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_Trim",
+   "M_Kit_Sceau_Ame",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Chateau_Tremie_8m": {
+  "doc": "Trémie : dalle de 8 × 8 m percée d'un trou de 4 × 4 m, bordure de marbre, balustrade sur trois côtés.",
+  "taille": [
+   8.0,
+   8.0,
+   0.6
+  ],
+  "bas": -0.6,
+  "triangles": 2080,
+  "materiaux": [
+   "M_Bib_Marbre",
+   "M_Chateau_Dalles",
+   "M_Chateau_PierreClaire"
+  ]
+ },
+ "SM_Chateau_PorteSortie": {
+  "doc": "Porte de sortie de l'acte II : arc brisé de 8 × 10 m à voussures, deux battants de boiserie, sceau de lune doré.",
+  "taille": [
+   12.41,
+   2.9,
+   14.01
+  ],
+  "bas": -0.01,
+  "triangles": 2012,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_Marbre"
+  ]
+ },
+ "SM_Chateau_CelluleTraqueur": {
+  "doc": "Cellule d'apparition du traqueur : arc brisé de 10 × 12 m, herse de fer forgé en losanges qui monte de 9.2 m.",
+  "taille": [
+   18.01,
+   15.58,
+   22.55
+  ],
+  "bas": -0.05,
+  "triangles": 1977,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Chateau_Dalles",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Chateau_Fenetre_Lancette_Simple": {
+  "doc": "Fenêtre en lancette simple : baie de 1.6 × 6.6 m (appui à 3 m) dans un panneau de 4 × 12 m, vitraux sombres, repère RayonLune.",
+  "taille": [
+   4.02,
+   1.68,
+   12.0
+  ],
+  "bas": 0.0,
+  "triangles": 864,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_FerRouille",
+   "M_Kit_Vitrail",
+   "M_Kit_Vitrail_Ambre",
+   "M_Kit_Vitrail_Rouge"
+  ]
+ },
+ "SM_Chateau_Fenetre_Lancette_Double": {
+  "doc": "Fenêtre à deux lancettes et oculus : baie de 4 × 7.3 m (appui à 2.5 m) dans un panneau de 8 × 12 m, vitraux sombres, repère RayonLune.",
+  "taille": [
+   8.01,
+   1.68,
+   12.0
+  ],
+  "bas": 0.0,
+  "triangles": 1794,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_FerRouille",
+   "M_Kit_Vitrail",
+   "M_Kit_Vitrail_Ambre",
+   "M_Kit_Vitrail_Rouge"
+  ]
+ },
+ "SM_Chateau_Fenetre_Lancette_Triple": {
+  "doc": "Haute fenêtre à trois lancettes et rose : baie de 5.6 × 14.3 m (appui à 3.5 m) dans un panneau de 8 × 20 m, vitraux sombres, repère RayonLune.",
+  "taille": [
+   8.01,
+   1.68,
+   20.0
+  ],
+  "bas": 0.0,
+  "triangles": 2560,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_FerRouille",
+   "M_Kit_Vitrail",
+   "M_Kit_Vitrail_Ambre",
+   "M_Kit_Vitrail_Rouge"
+  ]
+ },
+ "SM_Chateau_Chandelier_Petit": {
+  "doc": "Petit chandelier suspendu : Ø 2 m (pièce de 12 × 12 m), 8 bougies, bas à 2.4 m sous le plafond (plafond de 5.9 m au moins).",
+  "taille": [
+   2.15,
+   2.15,
+   2.4
+  ],
+  "bas": -2.4,
+  "triangles": 1344,
+  "materiaux": [
+   "M_Bib_FerRouille",
+   "M_Bib_Trim",
+   "M_Kit_Cire"
+  ]
+ },
+ "SM_Chateau_Chandelier_Moyen": {
+  "doc": "Chandelier moyen : Ø 3.3 m (salle de 24 × 16 m), 18 bougies sur deux couronnes, bas à 5 m sous le plafond (12 m).",
+  "taille": [
+   3.45,
+   3.45,
+   5.0
+  ],
+  "bas": -5.0,
+  "triangles": 2796,
+  "materiaux": [
+   "M_Bib_FerRouille",
+   "M_Bib_Trim",
+   "M_Kit_Cire"
+  ]
+ },
+ "SM_Chateau_Chandelier_Grand": {
+  "doc": "Grand chandelier de hall : Ø 4.6 m (hall de 32 × 24 m), 32 bougies sur trois couronnes, bas à 8 m sous le plafond (20 m).",
+  "taille": [
+   4.75,
+   4.75,
+   8.0
+  ],
+  "bas": -8.0,
+  "triangles": 4636,
+  "materiaux": [
+   "M_Bib_FerRouille",
+   "M_Bib_Trim",
+   "M_Kit_Cire"
+  ]
+ },
+ "SM_Chateau_Lustre_Cristal": {
+  "doc": "Lustre à pampilles de Ø 2.4 m : trois étages de bras dorés, 24 bougies, gouttes de cristal sombre.",
+  "taille": [
+   2.55,
+   2.55,
+   3.0
+  ],
+  "bas": -3.0,
+  "triangles": 3904,
+  "materiaux": [
+   "M_Bib_Trim",
+   "M_Kit_Cire",
+   "M_Kit_Cristal"
+  ]
+ },
+ "SM_Chateau_Applique_2Bougies": {
+  "doc": "Applique murale dorée à deux bougies (platine en écusson, bras en S).",
+  "taille": [
+   0.75,
+   0.44,
+   0.66
+  ],
+  "bas": -0.3,
+  "triangles": 220,
+  "materiaux": [
+   "M_Bib_Trim",
+   "M_Kit_Cire"
+  ]
+ },
+ "SM_Chateau_Applique_Miroir": {
+  "doc": "Applique à miroir ovale sombre et trois bougies.",
+  "taille": [
+   0.79,
+   0.5,
+   1.26
+  ],
+  "bas": -0.34,
+  "triangles": 660,
+  "materiaux": [
+   "M_Kit_Vitrail",
+   "M_Bib_Trim",
+   "M_Kit_Cire"
+  ]
+ },
+ "SM_Chateau_Candelabre_Pied": {
+  "doc": "Candélabre sur pied de 2.1 m, pied de marbre, sept bougies.",
+  "taille": [
+   0.84,
+   0.84,
+   2.27
+  ],
+  "bas": 0.0,
+  "triangles": 744,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_Trim",
+   "M_Kit_Cire"
+  ]
+ },
+ "SM_Chateau_Torche_Murale": {
+  "doc": "Torche murale : platine et console de fer forgé, manche de bois dans deux bagues, tête de tissu goudronné ; repère Feu_Torche.",
+  "taille": [
+   0.16,
+   0.41,
+   0.76
+  ],
+  "bas": -0.25,
+  "triangles": 393,
+  "materiaux": [
+   "M_Bib_FerRouille",
+   "M_Bib_Trim",
+   "M_Bib_BoisNeuf",
+   "M_Chiffon_Brule"
+  ]
+ },
+ "SM_Chateau_Torchere": {
+  "doc": "Torchère sur pied de 1.85 m : trépied à volutes, fût à nœuds dorés, cage de fer et fagot de tissu goudronné ; repère Feu_Torche.",
+  "taille": [
+   0.67,
+   0.59,
+   1.88
+  ],
+  "bas": 0.0,
+  "triangles": 832,
+  "materiaux": [
+   "M_Bib_FerRouille",
+   "M_Bib_Trim",
+   "M_Chiffon_Brule"
   ]
  }
 }

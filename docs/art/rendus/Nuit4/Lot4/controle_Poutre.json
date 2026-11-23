@@ -1,0 +1,53 @@
+{
+ "nom": "Poutre",
+ "objets": {
+  "SM_Prop_Poutre_LOD0": {
+   "avant": {
+    "faces": 2952,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 2952,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 5,
+    "aretes_de_bord": 5
+   }
+  },
+  "SM_Prop_Poutre_LOD1": {
+   "avant": {
+    "faces": 1476,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 1476,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 5,
+    "aretes_de_bord": 5
+   }
+  }
+ },
+ "dimensions": [
+  3.969,
+  0.577,
+  0.5
+ ],
+ "triangles_lod0": 2952,
+ "triangles_lod1": 1476,
+ "ok": true
+}

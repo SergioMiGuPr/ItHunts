@@ -1,0 +1,666 @@
+{
+ "SM_Cave_PorteVerrouillee": {
+  "Serrure": {
+   "pivot_unity": [
+    0.0,
+    1.5,
+    -0.35
+   ],
+   "phases": [
+    {
+     "phase": "rotation Z +90°",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z +90°",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z +90°",
+     "course": 1.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -90°",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -90°",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -90°",
+     "course": 1.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m (avec le vantail)",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m (avec le vantail)",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m (avec le vantail)",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  },
+  "Vantail": {
+   "pivot_unity": [
+    0.0,
+    0.02,
+    -0.5
+   ],
+   "phases": [
+    {
+     "phase": "translation Y +3.1 m",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Cave_PorteSortie": {
+  "Battant_D": {
+   "pivot_unity": [
+    -4.0,
+    -0.0,
+    -1.11
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y +90",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +90",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +90",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  },
+  "Battant_G": {
+   "pivot_unity": [
+    4.0,
+    -0.0,
+    -1.11
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y -90",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -90",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -90",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Cave_CelluleTraqueur_Herse": {
+  "Herse": {
+   "pivot_unity": [
+    0.0,
+    -0.0,
+    -1.0
+   ],
+   "phases": [
+    {
+     "phase": "translation Y +9.2",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +9.2",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +9.2",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Cave_CelluleTraqueur_Barricade": {
+  "Battant_D": {
+   "pivot_unity": [
+    -5.0,
+    0.0,
+    0.9
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y -100",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -100",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -100",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  },
+  "Battant_G": {
+   "pivot_unity": [
+    5.0,
+    0.0,
+    0.9
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y +100",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +100",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +100",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Chateau_PorteVerrouillee": {
+  "Serrure": {
+   "pivot_unity": [
+    0.0,
+    1.5,
+    -0.35
+   ],
+   "phases": [
+    {
+     "phase": "rotation Z +90°",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z +90°",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z +90°",
+     "course": 1.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -90°",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -90°",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -90°",
+     "course": 1.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m (avec le vantail)",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m (avec le vantail)",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m (avec le vantail)",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  },
+  "Vantail": {
+   "pivot_unity": [
+    0.0,
+    0.02,
+    -0.5
+   ],
+   "phases": [
+    {
+     "phase": "translation Y +3.1 m",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Chateau_PorteSortie": {
+  "Battant_D": {
+   "pivot_unity": [
+    -4.0,
+    -0.0,
+    -1.11
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y +90",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +90",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +90",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  },
+  "Battant_G": {
+   "pivot_unity": [
+    4.0,
+    -0.0,
+    -1.11
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y -90",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -90",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -90",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Chateau_CelluleTraqueur": {
+  "Herse": {
+   "pivot_unity": [
+    0.0,
+    -0.0,
+    -1.0
+   ],
+   "phases": [
+    {
+     "phase": "translation Y +9.2",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +9.2",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +9.2",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Chateau_GrandeEntree": {
+  "Battant_D": {
+   "pivot_unity": [
+    -4.5,
+    -0.0,
+    -1.51
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y +90",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +90",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +90",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  },
+  "Battant_G": {
+   "pivot_unity": [
+    4.5,
+    -0.0,
+    -1.51
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y -90",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -90",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -90",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Jardin_PorteVerrouillee": {
+  "Serrure": {
+   "pivot_unity": [
+    0.0,
+    1.5,
+    -0.35
+   ],
+   "phases": [
+    {
+     "phase": "rotation Z +90°",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z +90°",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z +90°",
+     "course": 1.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -90°",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -90°",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -90°",
+     "course": 1.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m (avec le vantail)",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m (avec le vantail)",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m (avec le vantail)",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  },
+  "Vantail": {
+   "pivot_unity": [
+    0.0,
+    0.02,
+    -0.5
+   ],
+   "phases": [
+    {
+     "phase": "translation Y +3.1 m",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "translation Y +3.1 m",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Jardin_PorteSortie": {
+  "Battant_D": {
+   "pivot_unity": [
+    -4.0,
+    -0.0,
+    -1.11
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y +90",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +90",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +90",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  },
+  "Battant_G": {
+   "pivot_unity": [
+    4.0,
+    -0.0,
+    -1.11
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y -90",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -90",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -90",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Jardin_CelluleTraqueur_Voliere": {
+  "Battant_D": {
+   "pivot_unity": [
+    -4.239,
+    0.0,
+    7.134
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y -100",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -100",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y -100",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  },
+  "Battant_G": {
+   "pivot_unity": [
+    4.239,
+    0.0,
+    7.134
+   ],
+   "phases": [
+    {
+     "phase": "rotation Y +100",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +100",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Y +100",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ },
+ "SM_Cave_CelluleTraqueur_Fosse": {
+  "Trappe_D": {
+   "pivot_unity": [
+    -5.98,
+    0.0,
+    0.0
+   ],
+   "phases": [
+    {
+     "phase": "rotation Z +110",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z +110",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z +110",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  },
+  "Trappe_G": {
+   "pivot_unity": [
+    5.98,
+    0.0,
+    0.0
+   ],
+   "phases": [
+    {
+     "phase": "rotation Z -110",
+     "course": 0.0,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -110",
+     "course": 0.5,
+     "intersections": 0
+    },
+    {
+     "phase": "rotation Z -110",
+     "course": 1.0,
+     "intersections": 0
+    }
+   ],
+   "ok": true
+  }
+ }
+}

@@ -50,17 +50,34 @@ public static class KitBuilder
         Plat("M_Kit_Cire", new Color(0.78f, 0.72f, 0.58f));
         Plat("M_Kit_Flamme", new Color(1f, 0.8f, 0.5f), new Color(4f, 1.6f, 0.45f), true);
         Plat("M_Kit_Toile", new Color(0.36f, 0.3f, 0.24f));
-        Plat("M_Kit_Vitrail", new Color(0.05f, 0.06f, 0.09f), new Color(0.07f, 0.09f, 0.16f), true);
+        Plat("M_Kit_Vitrail", new Color(0.026f, 0.029f, 0.036f), new Color(0.02f, 0.024f, 0.036f), true);   // vitraux : verre vieilli aux teintes sourdes (nuit 4, lot 3 : écarts de teinte faibles, le toon les accentue)
         Plat("M_Kit_Feuillage", new Color(0.10f, 0.13f, 0.09f), null, true);
         Plat("M_Kit_Toile_Peinte", new Color(0.16f, 0.12f, 0.12f));
         Plat("M_Kit_Lune", new Color(0.9f, 0.92f, 1f), new Color(2.2f, 2.3f, 2.6f));
         Plat("M_Kit_Os", new Color(0.81f, 0.77f, 0.65f));
+        // nuit 4, lot 3 : vitraux sombres colorés, sceau d'âme (cyan des âmes, réservé au jeu), surface de collision seule
+        Plat("M_Kit_Vitrail_Rouge", new Color(0.036f, 0.024f, 0.026f), new Color(0.03f, 0.014f, 0.014f), true);
+        Plat("M_Kit_Vitrail_Ambre", new Color(0.036f, 0.031f, 0.024f), new Color(0.03f, 0.022f, 0.012f), true);
+        Plat("M_Kit_Sceau_Ame", new Color(0.3f, 0.9f, 1f), new Color(0.4f, 2.6f, 3.2f));
+        Plat("M_Collision_Invisible", new Color(1f, 0f, 1f));
+        // cristal du lustre : pâle et froid, faible émission chaude (il accroche la lumière des bougies)
+        Plat("M_Kit_Cristal", new Color(0.62f, 0.68f, 0.76f), new Color(0.12f, 0.11f, 0.1f), true);
+        // vitraux : la lumière des torches ne les sature pas (verre épais et sale, vu de l'intérieur la nuit)
+        foreach (var v in new[] { "M_Kit_Vitrail", "M_Kit_Vitrail_Rouge", "M_Kit_Vitrail_Ambre" })
+        {
+            var m = AssetDatabase.LoadAssetAtPath<Material>($"{MATKIT}/{v}.mat");
+            m.SetFloat("_LightSaturation", 0.4f); m.SetFloat("_AmbientInfluence", 0.4f); EditorUtility.SetDirty(m);
+        }
         AssetDatabase.SaveAssets();
     }
 
     static bool EstLumiere(string nom) => nom.Contains("Torche") || nom.Contains("Applique") || nom.Contains("Chandelle") ||
                                           nom.Contains("Candelabre") || nom.Contains("Brasero") || nom.Contains("Chandelier") ||
-                                          nom.Contains("Lanterne") || nom.Contains("Bougeoir");
+                                          nom.Contains("Lanterne") || nom.Contains("Bougeoir") || nom.Contains("Lustre");
+
+    // nuit 4, lot 3 : parties mobiles (pivots à l'axe, voir INTEGRATION-PROPS « Nuit 4, lot 3 »), jamais statiques
+    static bool EstMobile(string n) => n.StartsWith("Battant") || n.StartsWith("Vantail") || n.StartsWith("Serrure") ||
+                                       n.StartsWith("Herse") || n.StartsWith("Trappe");
 
     static bool EstPetit(Bounds b) => b.size.x < 2.5f && b.size.y < 3f && b.size.z < 2.5f;
 
@@ -79,7 +96,7 @@ public static class KitBuilder
             mi.importNormals = ModelImporterNormals.Import;
             mi.importAnimation = false; mi.animationType = ModelImporterAnimationType.None;
             mi.importCameras = false; mi.importLights = false;
-            mi.isReadable = false;
+            mi.isReadable = true;   // nuit 4 : le NavMesh est construit au chargement (lot 2 : Read/Write coché sur tous les FBX des kits)
             mi.materialImportMode = ModelImporterMaterialImportMode.ImportViaMaterialDescription;
             mi.materialLocation = ModelImporterMaterialLocation.InPrefab;
             mi.SaveAndReimport();
@@ -91,6 +108,17 @@ public static class KitBuilder
             var inst = PrefabUtility.GetOutermostPrefabInstanceRoot(go);
             PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.OutermostRoot, InteractionMode.AutomatedAction);
             go.name = nom.Replace("SM_", "");
+            // nuit 4, lot 3 : la serrure de la porte verrouillée suit le vantail (exportée à côté de lui, rangée dessous ici)
+            var serrure = go.transform.Find("Serrure"); var vantail = go.transform.Find("Vantail");
+            if (serrure && vantail) serrure.SetParent(vantail, true);
+            // nuit 4, lot 3 : « Col_* » = collision seule (rampes lisses sous les marches) : rendu retiré, MeshCollider
+            foreach (var t in go.GetComponentsInChildren<Transform>().Where(t => t.name.StartsWith("Col_")).ToList())
+            {
+                var mr = t.GetComponent<MeshRenderer>();
+                if (mr) Object.DestroyImmediate(mr);
+                var mfc = t.GetComponent<MeshFilter>();
+                if (mfc && !t.GetComponent<MeshCollider>()) t.gameObject.AddComponent<MeshCollider>().sharedMesh = mfc.sharedMesh;
+            }
             // matériaux des kits en double face : les surfaces ouvertes (arches, parois, ponts) restent pleines quel que soit
             // l'ordre de leurs sommets (l'éclairage toon retourne la normale des faces arrière)
             foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
@@ -105,7 +133,8 @@ public static class KitBuilder
             // collisions : pièces d'architecture (maillage statique) ; petits objets : boîte
             var b = new Bounds(go.transform.position, Vector3.zero);
             foreach (var r in go.GetComponentsInChildren<Renderer>()) b.Encapsulate(r.bounds);
-            if (!EstLumiere(nom))
+            // lumières au sol (torchère, candélabre sur pied) : on ne les traverse pas
+            if (!EstLumiere(nom) || nom.Contains("Torchere") || nom.Contains("Candelabre_Pied"))
             {
                 if (EstPetit(b))
                 {
@@ -113,9 +142,32 @@ public static class KitBuilder
                     bc.center = go.transform.InverseTransformPoint(b.center); bc.size = b.size;
                 }
                 else
+                {
+                    // nuit 4, lot 3 (relecture) : une pièce qui a ses propres collisions « Col_* » (rampe lisse sous les marches,
+                    // parois) n'en reçoit pas sur son maillage visuel (les nez de marche doubleraient la rampe) ; ses garde-corps
+                    // gardent la leur
+                    bool aCol = go.GetComponentsInChildren<Transform>().Any(t => t.name.StartsWith("Col_"));
                     foreach (var mf in go.GetComponentsInChildren<MeshFilter>())
-                        if (!mf.GetComponent<MeshCollider>()) mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
-                foreach (var t in go.GetComponentsInChildren<Transform>()) t.gameObject.isStatic = !t.name.StartsWith("Battant");
+                        if (!mf.GetComponent<MeshCollider>() && !mf.name.StartsWith("Deco_") && (!aCol || mf.name.StartsWith("Garde")))
+                            mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+                }
+                foreach (var t in go.GetComponentsInChildren<Transform>())
+                    t.gameObject.isStatic = !t.GetComponentsInParent<Transform>(true).Any(p => EstMobile(p.name));
+            }
+            // nuit 4, lot 3 : animation d'ouverture des portes et des cellules (composant OuverturePorte, ItHunts.Art.VFX)
+            {
+                Transform F(string n) => go.GetComponentsInChildren<Transform>().FirstOrDefault(t => t.name == n);
+                var o = (ItHunts.Art.VFX.OuverturePorte)null;
+                if (F("Vantail")) { o = go.AddComponent<ItHunts.Art.VFX.OuverturePorte>(); o.genre = ItHunts.Art.VFX.OuverturePorte.Genre.Guillotine; o.partieA = F("Vantail"); o.partieB = F("Serrure"); o.duree = 2.2f; }
+                else if (F("Herse")) { o = go.AddComponent<ItHunts.Art.VFX.OuverturePorte>(); o.genre = ItHunts.Art.VFX.OuverturePorte.Genre.Herse; o.partieA = F("Herse"); o.duree = 2.6f; }
+                else if (F("Trappe_G")) { o = go.AddComponent<ItHunts.Art.VFX.OuverturePorte>(); o.genre = ItHunts.Art.VFX.OuverturePorte.Genre.Trappes; o.partieA = F("Trappe_G"); o.partieB = F("Trappe_D"); o.duree = 1.2f; }
+                else if (F("Battant_G"))
+                {
+                    o = go.AddComponent<ItHunts.Art.VFX.OuverturePorte>();
+                    o.genre = nom.Contains("CelluleTraqueur") ? ItHunts.Art.VFX.OuverturePorte.Genre.Vantaux : ItHunts.Art.VFX.OuverturePorte.Genre.Battants;
+                    o.partieA = F("Battant_G"); o.partieB = F("Battant_D"); o.duree = nom.Contains("CelluleTraqueur") ? 0.9f : 1.8f;
+                }
+                if (o != null) sb.Append($"[ouverture {o.genre}] ");
             }
             // sources de lumière : feu et lumière ponctuelle sur chaque repère « Feu* »
             foreach (var t in go.GetComponentsInChildren<Transform>().Where(t => t.name.StartsWith("Feu")).ToList())
@@ -127,7 +179,8 @@ public static class KitBuilder
                     fx.transform.localPosition = Vector3.zero;
                     fx.transform.localScale = Vector3.one * (grand ? (nom.Contains("Brasero") ? 1.6f : 1f) : 0.045f);
                 }
-                var feuIdx = t.name.Length > 4 ? int.Parse(t.name.Substring(4)) : 1;
+                // « Feu », « Feu_3 » ou « Feu_Torche » (relecture du lot 3 : repère nommé des torches du château)
+                var feuIdx = t.name.Length > 4 && int.TryParse(t.name.Substring(4), out var fi) ? fi : 1;
                 if (grand || feuIdx == 1)
                 {
                     var l = new GameObject("Lumiere").AddComponent<Light>();
@@ -135,9 +188,10 @@ public static class KitBuilder
                     l.type = LightType.Point;
                     l.color = new Color(1f, 0.6f, 0.32f);
                     // torches : ambiance intermédiaire du jeu (1.35 / 15.4 m, Ambiance_Intermediaire) ; bougies : petit halo chaud
-                    l.intensity = grand ? (nom.Contains("Brasero") ? 1.8f : 1.35f) : nom.Contains("Chandelier") ? 1.6f : 0.6f;
-                    l.range = grand ? (nom.Contains("Brasero") ? 16f : 15.4f) : nom.Contains("Chandelier") ? 18f : 5f;
-                    if (nom.Contains("Chandelier")) l.transform.position = go.transform.position + new Vector3(0, t.position.y - go.transform.position.y - 0.3f, 0);
+                    bool lustre = nom.Contains("Chandelier") || nom.Contains("Lustre");
+                    l.intensity = grand ? (nom.Contains("Brasero") ? 1.8f : 1.35f) : lustre ? (nom.Contains("Grand") ? 2.4f : 1.6f) : 0.6f;
+                    l.range = grand ? (nom.Contains("Brasero") ? 16f : 15.4f) : lustre ? (nom.Contains("Grand") ? 26f : 18f) : 5f;
+                    if (lustre) l.transform.position = go.transform.position + new Vector3(0, t.position.y - go.transform.position.y - 0.3f, 0);
                     l.shadows = grand ? LightShadows.Soft : LightShadows.None;
                     l.renderMode = LightRenderMode.Auto;
                 }
@@ -290,6 +344,9 @@ public static class KitBuilder
         mc.shader = Shader.Find("ItHunts/Ciel");
         var luneDir = new Vector3(-0.35f, 0.42f, 0.84f).normalized;
         mc.SetVector("_LuneDir", luneDir);
+        // nuit 4, lot 3 : la lune peinte du menu principal, halo et dégradé continus (plus de paliers)
+        mc.SetTexture("_LuneTex", AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Textures/Ciel/T_Ciel_Lune.png"));
+        mc.SetFloat("_LuneTexOn", 1f); mc.SetFloat("_Paliers", 0f);
         EditorUtility.SetDirty(mc);
         var go = new GameObject("Jardin_Ciel");
         var sph = new GameObject("Voute_Celeste");

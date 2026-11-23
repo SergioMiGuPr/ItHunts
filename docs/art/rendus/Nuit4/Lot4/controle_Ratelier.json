@@ -1,0 +1,53 @@
+{
+ "nom": "Ratelier",
+ "objets": {
+  "SM_Prop_Ratelier_LOD0": {
+   "avant": {
+    "faces": 5670,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 5670,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 2,
+    "aretes_de_bord": 2
+   }
+  },
+  "SM_Prop_Ratelier_LOD1": {
+   "avant": {
+    "faces": 2834,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 2834,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 2,
+    "aretes_de_bord": 2
+   }
+  }
+ },
+ "dimensions": [
+  1.6,
+  0.5,
+  1.8
+ ],
+ "triangles_lod0": 5670,
+ "triangles_lod1": 2834,
+ "ok": true
+}

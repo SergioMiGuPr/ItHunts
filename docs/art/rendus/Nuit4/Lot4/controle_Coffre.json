@@ -1,0 +1,93 @@
+{
+ "nom": "Coffre",
+ "objets": {
+  "SM_Prop_Coffre_LOD0": {
+   "avant": {
+    "faces": 3500,
+    "degenerees": 2,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 3498,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 6,
+    "aretes_de_bord": 11
+   }
+  },
+  "SM_Prop_Coffre_LOD1": {
+   "avant": {
+    "faces": 1868,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 1868,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 6,
+    "aretes_de_bord": 5
+   }
+  },
+  "Couvercle_LOD0": {
+   "avant": {
+    "faces": 1466,
+    "degenerees": 1,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 1465,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 0,
+    "aretes_de_bord": 3
+   }
+  },
+  "Couvercle_LOD1": {
+   "avant": {
+    "faces": 748,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 748,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 0,
+    "aretes_de_bord": 0
+   }
+  }
+ },
+ "dimensions": [
+  0.9,
+  0.55,
+  0.6
+ ],
+ "triangles_lod0": 4963,
+ "triangles_lod1": 2616,
+ "ok": true
+}

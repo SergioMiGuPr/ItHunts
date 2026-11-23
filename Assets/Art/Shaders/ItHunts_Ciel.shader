@@ -8,7 +8,9 @@ Shader "ItHunts/Ciel"
         _Zenith ("Zénith", Color) = (0.02, 0.025, 0.06, 1)
         _Horizon ("Horizon", Color) = (0.07, 0.08, 0.14, 1)
         _Sol ("Sous l'horizon", Color) = (0.01, 0.012, 0.02, 1)
-        [IntRange] _Paliers ("Paliers du dégradé", Range(2, 8)) = 4
+        [IntRange] _Paliers ("Paliers du dégradé (0 : continu)", Range(0, 8)) = 0
+        [NoScaleOffset] _LuneTex ("Lune peinte (RGBA, celle du menu principal)", 2D) = "black" {}
+        _LuneTexOn ("Utiliser la lune peinte", Range(0, 1)) = 1
         _LuneDir ("Direction de la lune (monde)", Vector) = (-0.35, 0.42, 0.84, 0)
         _LuneTaille ("Taille de la lune (rad)", Range(0.01, 0.2)) = 0.075
         [HDR] _LuneCouleur ("Couleur de la lune", Color) = (2.4, 2.45, 2.6, 1)
@@ -36,8 +38,9 @@ Shader "ItHunts/Ciel"
             CBUFFER_START(UnityPerMaterial)
                 half4 _Zenith, _Horizon, _Sol, _LuneCouleur, _HaloCouleur, _NuageCouleur, _NuageBord;
                 float4 _LuneDir;
-                half _Paliers, _LuneTaille, _HaloTaille, _Etoiles, _Nuages, _Vent;
+                half _Paliers, _LuneTaille, _HaloTaille, _Etoiles, _Nuages, _Vent, _LuneTexOn;
             CBUFFER_END
+            TEXTURE2D(_LuneTex); SAMPLER(sampler_LuneTex);
             struct A { float4 pos : POSITION; };
             struct V { float4 cs : SV_POSITION; float3 dir : TEXCOORD0; };
             V Vert(A i)
@@ -62,9 +65,9 @@ Shader "ItHunts/Ciel"
             {
                 float3 d = normalize(i.dir);
                 float h = d.y;
-                // dégradé en paliers
+                // dégradé continu (nuit 4 : plus de bandes dans le ciel), paliers en option
                 float t = saturate(h * 1.6);
-                t = floor(t * _Paliers) / _Paliers;
+                if (_Paliers >= 2) t = floor(t * _Paliers) / _Paliers;
                 half3 c = h < 0 ? lerp(_Horizon.rgb * 0.6, _Sol.rgb, saturate(-h * 6)) : lerp(_Horizon.rgb, _Zenith.rgb, t);
                 // étoiles (grille sur la sphère), plus nombreuses en haut
                 float3 g = floor(d * 220);
@@ -75,9 +78,11 @@ Shader "ItHunts/Ciel"
                 float3 ld = normalize(_LuneDir.xyz);
                 float ang = acos(saturate(dot(d, ld)));
                 float r = ang / _LuneTaille;
+                // halo continu (nuit 4 : plus de halo en paliers) : décroissance douce
                 float halo = saturate(1 - r / _HaloTaille);
-                halo = floor(halo * 4) / 4;
-                c += _HaloCouleur.rgb * halo * 0.6;
+                halo = halo * halo * (3 - 2 * halo);
+                halo *= halo;
+                c += _HaloCouleur.rgb * halo * 0.7;
                 // disque : mers sombres
                 float3 u = normalize(cross(ld, float3(0, 1, 0)));
                 float3 v = cross(u, ld);
@@ -85,6 +90,13 @@ Shader "ItHunts/Ciel"
                 float mer = step(0.62, Fbm(q * 1.6 + 3.1));
                 half3 lune = _LuneCouleur.rgb * (1 - 0.32 * mer) * (0.86 + 0.14 * step(0.0, q.x + q.y * 0.3));
                 float disque = 1 - smoothstep(0.97, 1.0, r);
+                if (_LuneTexOn > 0.5)
+                {
+                    // lune peinte du menu principal, plaquée sur le disque (q dans -1..1)
+                    half4 lt = SAMPLE_TEXTURE2D_LOD(_LuneTex, sampler_LuneTex, q * 0.5 + 0.5, 0);
+                    lune = lt.rgb * max(max(_LuneCouleur.r, _LuneCouleur.g), _LuneCouleur.b) * 0.75;
+                    disque = lt.a * step(max(abs(q.x), abs(q.y)), 1);
+                }
                 // nuages en bandes, devant la lune
                 float2 np = d.xz / max(d.y + 0.25, 0.05) * 0.9 + float2(_Time.y * _Vent, _Time.y * _Vent * 0.3);
                 float n = Fbm(np * float2(0.7, 1.8));

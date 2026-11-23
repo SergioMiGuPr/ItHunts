@@ -1,0 +1,45 @@
+{
+ "nom": "Table",
+ "glb": "tripo_table_v01.glb",
+ "alignement_deg": 0.0,
+ "rot_z": 0,
+ "sommets_soudes": 1386,
+ "faces_degenerees": 0,
+ "ilots": 1,
+ "ilots_flottants_retires": 0,
+ "echelle_appliquee": [
+  1.3051,
+  1.4076,
+  1.2667
+ ],
+ "etirement_max": 1.111,
+ "cotes_visees": [
+  2.6,
+  1.2,
+  0.95
+ ],
+ "triangles_tripo": 3078,
+ "texture_tripo": [
+  2048,
+  2048
+ ],
+ "texture": "Assets/Art/Textures/Props/T_Prop_Table_BaseColor.png",
+ "texture_taille": 1024,
+ "dimensions": [
+  2.6,
+  1.2,
+  0.95
+ ],
+ "pivot_bas": 0.0,
+ "centre_emprise": [
+  0.0,
+  0.0
+ ],
+ "triangles": 2940,
+ "triangles_lod1": 1470,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Table.fbx",
+ "objets_fbx": [
+  "SM_Prop_Table_LOD0",
+  "SM_Prop_Table_LOD1"
+ ]
+}

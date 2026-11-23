@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2747011575669033979}
   - component: {fileID: 2911591822333036068}
   - component: {fileID: 5879321147484286709}
+  - component: {fileID: 4769008712680124754}
   m_Layer: 0
   m_Name: Chateau_GrandeEntree
   m_TagString: Untagged
@@ -69,7 +70,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+  - {fileID: 2100000, guid: 04560a32a59849145bc8d03cc871482b, type: 2}
   - {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -116,6 +117,24 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -3472769395083470026, guid: 8c97aff713ec50f4a845fc867c45fb97, type: 3}
+--- !u!114 &4769008712680124754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2206335245286194389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e799c3be9b3f44f89ebd49bb782eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.OuverturePorte
+  genre: 0
+  partieA: {fileID: 7095898362622519825}
+  partieB: {fileID: 3666062818808738202}
+  duree: 1.8
+  ouverture: 0
+  ouvrirAuDemarrage: 0
 --- !u!1 &3588302510892138327
 GameObject:
   m_ObjectHideFlags: 0
@@ -144,7 +163,7 @@ Transform:
   m_GameObject: {fileID: 3588302510892138327}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.5, y: 0, z: 0}
+  m_LocalPosition: {x: 4.5, y: 0, z: -1.51}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -258,7 +277,7 @@ Transform:
   m_GameObject: {fileID: 7806024144209927377}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.5, y: 0, z: 0}
+  m_LocalPosition: {x: -4.5, y: 0, z: -1.51}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

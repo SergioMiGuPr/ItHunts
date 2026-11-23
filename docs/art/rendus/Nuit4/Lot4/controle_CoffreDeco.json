@@ -1,0 +1,53 @@
+{
+ "nom": "CoffreDeco",
+ "objets": {
+  "SM_Prop_CoffreDeco_LOD0": {
+   "avant": {
+    "faces": 2939,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 2939,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 5,
+    "aretes_de_bord": 4
+   }
+  },
+  "SM_Prop_CoffreDeco_LOD1": {
+   "avant": {
+    "faces": 1469,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 1469,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 5,
+    "aretes_de_bord": 4
+   }
+  }
+ },
+ "dimensions": [
+  1.2,
+  0.8,
+  0.8
+ ],
+ "triangles_lod0": 2939,
+ "triangles_lod1": 1469,
+ "ok": true
+}

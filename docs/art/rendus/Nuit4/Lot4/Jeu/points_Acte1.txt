@@ -1,0 +1,14 @@
+Prop_Chaudron (Prop_Chaudron) -> Chaudron × 0,94 rot 90 écart 0,25 ; greybox (1.13, 1.06, 1.15) -> modèle (1.22, 0.94, 1.22) ; vue (-0.99, 0.00, -0.14) près 2,7 m, jeu 9,0 m
+Prop_Table (Prop_Table) -> Table × 1,08 rot 0 écart 0,46 ; greybox (1.63, 0.95, 2.40) -> modèle (1.30, 1.02, 2.80) ; vue (-0.74, 0.00, 0.67) près 3,7 m, jeu 9,0 m
+Prop_Tonneau (Prop_Tonneau) -> Tonneaux_Couches × 1,09 rot 0 écart 0,72 ; greybox (1.20, 0.95, 3.10) -> modèle (1.72, 0.69, 2.99) ; vue (0.00, 0.00, -1.00) près 4,3 m, jeu 8,0 m
+Prop_Tonneau_Attrapable (Prop_Tonneau_Attrapable) -> Tonneau × 1,25 rot 0 écart 0,45 ; greybox (0.84, 0.90, 0.84) -> modèle (0.75, 1.13, 0.75) ; vue (-0.92, 0.00, -0.39) près 2,5 m, jeu 9,0 m
+Prop_Ratelier (Prop_Ratelier) -> Ratelier × 1,23 rot 0 écart 0,56 ; greybox (2.60, 2.06, 0.50) -> modèle (1.96, 2.21, 0.62) ; vue (0.00, 0.00, 1.00) près 3,9 m, jeu 9,0 m
+Prop_Poutre (Prop_Poutre) -> Poutre × 1,09 rot 0 écart 0,65 ; greybox (0.50, 0.50, 6.00) -> modèle (0.63, 0.55, 4.34) ; vue (-0.50, 0.00, 0.87) près 6,6 m, jeu 9,0 m
+Prop_Etagere (Prop_Etagere) -> Etagere × 0,85 rot 0 écart 0,26 ; greybox (2.40, 2.60, 0.60) -> modèle (2.13, 2.57, 0.68) ; vue (0.00, 0.00, 1.00) près 3,7 m, jeu 9,0 m
+Prop_Sarcophage (Prop_Sarcophage) -> Sarcophage × 1,27 rot 90 écart 0,19 ; greybox (2.57, 1.00, 1.26) -> modèle (2.79, 1.02, 1.14) ; vue (1.00, 0.00, 0.00) près 3,9 m, jeu 9,0 m
+Coffre (Coffre : Réserve) -> Coffre × 2,19 rot 90 écart 0,76 ; greybox (1.77, 1.00, 1.77) -> modèle (1.21, 1.31, 1.97) ; vue (0.71, 0.00, 0.71) près 3,2 m, jeu 9,0 m
+Prop_Paille (Prop_Paille) -> Paille × 1,12 rot 90 écart 0,29 ; greybox (2.00, 0.36, 2.08) -> modèle (2.24, 0.31, 2.16) ; vue (-0.14, 0.00, -0.99) près 3,5 m, jeu 9,0 m
+Prop_Banc (Prop_Banc) -> Banc × 0,77 rot 0 écart 0,28 ; greybox (2.00, 0.47, 0.40) -> modèle (1.90, 0.43, 0.46) ; vue (0.87, 0.00, 0.50) près 3,4 m, jeu 9,0 m
+CoffreVerrou (Coffre de la salle verrouillée) -> CoffreVerrou × 1,86 rot 0 écart 0,29 ; greybox (1.62, 1.00, 1.19) -> modèle (1.68, 1.12, 1.02) ; vue (-0.92, 0.00, -0.38) près 3,1 m, jeu 9,0 m
+Prop_Statue (Prop_Statue) -> Statue × 1,68 rot 0 écart 0,40 ; greybox (1.40, 3.58, 1.40) -> modèle (1.27, 4.38, 1.26) ; vue (0.00, 0.00, -1.00) près 2,9 m, jeu 9,0 m
+Prop_Chaise_Attrapable (Prop_Chaise_Attrapable) -> Chaise × 1,33 rot 0 écart 0,58 ; greybox (0.69, 1.00, 0.69) -> modèle (0.60, 1.33, 0.60) ; vue (0.95, 0.00, 0.31) près 2,4 m, jeu 9,0 m
