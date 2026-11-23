@@ -4,9 +4,10 @@
 
 ## Fabrication
 
-- **Génération** : Higgsfield → Nano Banana 2.1, en 4K, par grilles de 2 × 2 icônes (18 grilles + 2 planches de cadres = **20 images, 60 crédits**). L'image de référence de style est un recadrage de la maquette `ui_choix_perso_v01` de l'utilisateur.
+- **Génération** : Higgsfield → Nano Banana 2.1, en 4K, par grilles de 2 × 2 icônes (18 grilles + 2 planches de cadres + 2 grilles refaites après relecture = **22 images, 66 crédits**). L'image de référence de style est un recadrage de la maquette `ui_choix_perso_v01` de l'utilisateur.
 - **Prompts** : formule commune dans `Assets/Art/Source~/UI/scripts/ameliorations/liste_icones.py` (sujet de chaque icône), plus le gabarit ci-dessous. Chaque icône a un sujet unique et central, des contours encrés, des aplats, un fond sombre fumé et une seule couleur d'accent, pour rester lisible à 64 px.
 - **Découpe** : `decoupe_icones.py` découpe les quarts rognés et supprime les gouttières claires. `cadres.py` extrait les cadres (alpha hors du blanc pur, pointes voisines masquées).
+- **Refaites après la relecture indépendante** (doublons à 64 px ou sujet faux) : G13 Sillage, G15 Onde de choc, K4 Onde de taille, G23 Charge en plus, K-P1 Peau épaisse, H1 Lien multiple, G17 Charge de répulsion, R3 Mèche vive (grilles 20 et 21).
 - **Refaite une fois** : C8 « Langue de caméléon », que la grille 12 dessinait comme un serpent. La version retenue est celle de la grille 17. La version de la grille 12 reste dans les sources et n'est pas utilisée.
 
 ## Gabarit de prompt (grilles)
@@ -19,6 +20,8 @@ Cadres : « Game UI asset sheet on a perfectly flat pure white background: a sin
 
 - **Icône** : `Assets/Art/UI/Ameliorations/Icones/ICO_<id>.png`, 512 px, sprite. Pour les passifs, le `-` de l'identifiant devient `_` (ex. `ICO_R_P1`).
 - **Cadre** : `Assets/Art/UI/Ameliorations/Cadres/Cadre_<Rang>.png` pour une amélioration, `Cadre_Passif_<Rang>.png` pour un passif. Rangs : `Bronze`, `Argent`, `Or`, `Diamant`, `Mythique`.
+- **Cadres** : même emprise pour les 5 rangs (496 px dans 512, la rangée du HUD ne saute pas) ; bords décontaminés (plus de liseré blanc) ; **repère de forme du rang** pour les daltoniens : 1 à 5 gemmes serties sous le cadre (Bronze 1 … Mythique 5).
+- **Masque des passifs** : `Cadres/Masque_Passif_Losange.png` (losange à 62 %) à poser en `Mask` sur l'icône d'un passif.
 - **Composition** : le cadre a la taille de la case. L'icône est centrée **à 80 %** de la case sous un cadre carré. Sous un cadre de passif, elle est centrée **à 62 %** et découpée en losange (masque losange, sommets aux milieux des côtés).
 - **Tailles conseillées** : HUD 56 à 64 px (rangée au-dessus de la barre de vie, le passif en premier), écran de fin 72 px, marchand 128 à 160 px.
 - **Planches de contrôle** : `planche_64.png` (les 70 icônes à 64 px) et `planche_cadres.png` (rangs à 128 et à 64 px).
@@ -98,4 +101,4 @@ Cadres : « Game UI asset sheet on a perfectly flat pure white background: a sin
 | H7 | Pages brûlantes | `ICO_H7.png` | grille_17 case 0 |
 | H8 | Soin lié | `ICO_H8.png` | grille_17 case 1 |
 
-`ICO_G7_variante.png` est une variante de « Âmes gourmandes » (grille 17), non utilisée, laissée au choix de la DA.
+La variante de « Âmes gourmandes » (grille 17) n'est pas retenue : elle reste dans `sources/` (hors du jeu).

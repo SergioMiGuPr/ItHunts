@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: d90daaf7890c3ab40a3958dde7f3bd90
+guid: ff8d894e2b9013947b3f84593aef739a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4396518935260505951
-    second: ICO_G7_variante_0
+      213: -2962251721174018208
+    second: Masque_Passif_Losange_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -48,7 +48,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ICO_G7_variante_0
+      name: Masque_Passif_Losange_0
       rect:
         serializedVersion: 2
         x: 0
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f572b788da2930d30800000000000000
-      internalID: 4396518935260505951
+      spriteID: 067122811c7f3e6d0800000000000000
+      internalID: -2962251721174018208
       vertices: []
       indices: 
       edges: []
