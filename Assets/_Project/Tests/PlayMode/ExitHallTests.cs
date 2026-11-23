@@ -75,19 +75,20 @@ namespace ItHunts.Tests
             float walked = 0f;
             var outDir = System.IO.Path.Combine(BotRunTests.OutDir, "porte");
             System.IO.Directory.CreateDirectory(outDir);
-            ActCapture.Save(Camera.main, System.IO.Path.Combine(outDir, $"acte{act + 1}_s{seed}_0_devant.jpg"));
-            while (walked < 16f && !zone.Finished)
-            {
-                Vector3 at = level.ExitPoint + dir * walked;
-                at.y = hall.Floor + 0.3f;
-                // Le joueur traverse la porte à pied : téléporté pas à pas (0.5 m), la physique fait le reste.
-                p.Motor.Teleport(at);
-                walked += 0.5f;
-                yield return new WaitForFixedUpdate();
+            ActCapture.Save(null, System.IO.Path.Combine(outDir, $"acte{act + 1}_s{seed}_0_devant.jpg"));
+            // Le joueur marche vraiment (entrée « avancer », comme au clavier) : un CharacterController téléporté ne déclenche pas les zones.
+            var reader = p.GetComponent<ItHunts.Input.PlayerInputReader>();
+            var look = p.GetComponent<PlayerLook>();
+            look.SetView(Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg, 0f);
+            reader.Override = _ => new ItHunts.Input.PlayerInputReader.Frame { Move = Vector2.up };
+            Vector3 from = p.transform.position;
+            float until = Time.time + 8f;
+            while (Time.time < until && !zone.Finished)
                 yield return null;
-            }
-
-            ActCapture.Save(Camera.main, System.IO.Path.Combine(outDir, $"acte{act + 1}_s{seed}_1_hall.jpg"));
+            reader.Override = null;
+            walked = Vector3.Distance(from, p.transform.position);
+            geo += $" ; arrivé à {p.transform.position:F1}, dans la boîte {box.bounds.Contains(p.transform.position + Vector3.up)}, couches joueur {LayerMask.LayerToName(p.gameObject.layer)} / boîte {LayerMask.LayerToName(box.gameObject.layer)}, collision {!Physics.GetIgnoreLayerCollision(p.gameObject.layer, box.gameObject.layer)}, zone démarrée {zone.Started}, finie {zone.Finished}, boîte active {box.enabled && box.gameObject.activeInHierarchy}";
+            ActCapture.Save(null, System.IO.Path.Combine(outDir, $"acte{act + 1}_s{seed}_1_hall.jpg"));
             yield return new WaitForSeconds(0.5f);
             // La fin d'acte s'affiche puis la scène suivante se charge après le délai : on vérifie seulement la victoire de la zone.
             ActLevel.SeedOverride = 0;
