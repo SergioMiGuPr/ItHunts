@@ -125,6 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a16dedf58d73e82469d8b7afc91a51a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Combat.Hitbox
+  Head: 0
 --- !u!1 &668550380809211652
 GameObject:
   m_ObjectHideFlags: 0
@@ -462,6 +463,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a16dedf58d73e82469d8b7afc91a51a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Combat.Hitbox
+  Head: 0
 --- !u!1 &5222704621657584371
 GameObject:
   m_ObjectHideFlags: 0
@@ -514,6 +516,7 @@ GameObject:
   - component: {fileID: 7267472439821074966}
   - component: {fileID: 8018963084472228801}
   - component: {fileID: 6479385349632537916}
+  - component: {fileID: 1071350477569467928}
   m_Layer: 0
   m_Name: Volant
   m_TagString: Untagged
@@ -599,6 +602,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Orbs.Grabbable
   startsAnchored: 0
+  glowWholeModel: 0
   durabilityOverride: 0
   breaksOnAnyImpact: 0
   splashRadiusOverride: 0
@@ -668,6 +672,22 @@ MonoBehaviour:
   wingLeft: {fileID: 2078514437116381976}
   wingRight: {fileID: 4766533885230168137}
   telegraph: {fileID: 605863331933002680}
+--- !u!114 &1071350477569467928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5390533417705284493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c8318a2dd128504fb43be69e42d430c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ItHunts.Art.VFX::ItHunts.Art.VFX.ContourDiscret
+  annonce: {fileID: 2100000, guid: 4c1e34e24f91c324690748230e5478ca, type: 2}
+  prise: {fileID: 2100000, guid: fe3f92d3c3c82334ab8f6bd3f3df38ab, type: 2}
+  ignorer:
+  - Annonce
 --- !u!1 &6391278919979697546
 GameObject:
   m_ObjectHideFlags: 0

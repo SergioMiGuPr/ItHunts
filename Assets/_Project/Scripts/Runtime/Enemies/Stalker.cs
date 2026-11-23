@@ -1020,7 +1020,7 @@ namespace ItHunts.Enemies
             Mode = enraged ? StalkerMode.Enrage : StalkerMode.Chasse;
             if (before == StalkerMode.Repaire || (Mode == StalkerMode.Enrage && before != StalkerMode.Enrage))
                 LastRoarTime = now;
-            if (before != StalkerMode.Chasse && before != StalkerMode.Enrage && now - LastCryTime > 6f)
+            if (before != StalkerMode.Chasse && before != StalkerMode.Enrage && now - LastSpotCryTime > 8f)
             {
                 LastCryTime = now;                                       // il repère un joueur : cri marquant (nuit 4, point 7), gueule ouverte
                 LastSpotCryTime = now;

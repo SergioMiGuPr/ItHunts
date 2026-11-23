@@ -472,6 +472,19 @@ namespace ItHunts.Level.Acts
                 KitBuild.Ramp(_roomRoots[low.Id], "Rampe entre salles", doorFoot + inward * (run - T * 0.5f), -inward, run, high.Floor - low.Floor, w, settings.kit);
             }
 
+            // Nuit 4, point 1 (« ouvertures de portes en noir total ») : une lueur chaude de chaque côté de l'ouverture, qui dessine le seuil
+            // et laisse deviner la salle voisine (sans ombre, portée 12 m). Pas sur la porte d'arrivée du traqueur (il attend dans le noir).
+            if (!d.Gate)
+                foreach (float side in new[] { -1f, 1f })
+                {
+                    int room = side < 0 ? d.A : d.B;
+                    if (Plan.Rooms[room].Role == RoomRole.Arrivee || Plan.Rooms[room].Role == RoomRole.Repaire)
+                        continue;
+                    Vector3 at = c + n * side * 2.5f;
+                    at.y = Plan.Rooms[room].Floor + Mathf.Min(6f, openTop - sill - 1f);
+                    PointLight(_roomRoots[room], at, settings.torchColor, settings.torchIntensity * 0.55f, 12f).name = "Lueur de la porte";
+                }
+
             if (d.Exit)
                 BuildExitDoor(root, d, c, n, w, sill, openTop);
             else if (d.Locked)

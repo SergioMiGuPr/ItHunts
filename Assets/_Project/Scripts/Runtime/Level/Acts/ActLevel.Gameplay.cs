@@ -393,7 +393,7 @@ namespace ItHunts.Level.Acts
             trig.AddComponent<ZoneExit>();
             // Au-delà de la porte : une lueur froide (on devine la suite), pas une lampe de couleur vive.
             PointLight(_roomRoots[hall.Id], Plan.CellCenter(hall.CenterCell, hall.Floor + 6f), settings.theme == ActTheme.Jardin ? new Color(0.5f, 0.6f, 0.9f)
-                : new Color(0.75f, 0.7f, 0.9f), 2.5f, 18f);
+                : new Color(0.75f, 0.7f, 0.9f), 6f, 22f);                 // nuit 4 : le hall n'est plus un trou noir derrière la porte
             if (Art != null && Art.exitHallPiece != null)
                 KitPiece(Art.exitHallPiece, _roomRoots[hall.Id], Plan.CellCenter(hall.CenterCell, hall.Floor) - toHall * 6f, toHall, Vector3.one, true)
                     .name = "Descente vers l'arène";

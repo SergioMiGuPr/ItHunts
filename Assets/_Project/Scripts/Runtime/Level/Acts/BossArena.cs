@@ -244,7 +244,8 @@ namespace ItHunts.Level.Acts
         {
             Vector3 from = stalker.position, to = new Vector3(0f, 0f, -14f);
             var art = ItHunts.Audio.GameAudio.Settings;
-            ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Pick(art != null ? art.stalkerEnragedCries : null), from + Vector3.up * 10f, 1f, 160f);
+            AudioClip appear = art != null ? ItHunts.Audio.GameAudio.Pick(art.stalkerAppearCries) : null;
+            ItHunts.Audio.GameAudio.PlayAt(appear != null ? appear : ItHunts.Audio.GameAudio.Pick(art != null ? art.stalkerEnragedCries : null), from + Vector3.up * 10f, 1f, 160f);
             foreach (Player.CameraShake sh in FindObjectsByType<Player.CameraShake>(FindObjectsSortMode.None))
                 sh.AddTrauma(0.35f);
             yield return new WaitForSeconds(0.9f);

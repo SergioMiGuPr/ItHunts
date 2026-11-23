@@ -144,7 +144,11 @@ namespace ItHunts.Enemies
             {
                 _seenSpot = _stalker.LastSpotCryTime;
                 if (art != null)
-                    GameAudio.PlayOn(_voice, GameAudio.Pick(art.stalkerEnragedCries), null, cry);
+                {
+                    AudioClip spotted = GameAudio.Pick(art.stalkerSpottedCries);
+                    GameAudio.PlayOn(_voice, spotted != null ? spotted : GameAudio.Pick(art.stalkerEnragedCries), null, cry);
+                }
+
                 Cry?.Invoke(transform.position);
             }
 

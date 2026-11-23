@@ -18,6 +18,12 @@ MonoBehaviour:
   stalkerEnragedCries:
   - {fileID: 8300000, guid: fce4ccaeddeca4144ad75af4a1a1630d, type: 3}
   - {fileID: 8300000, guid: 7c206ff2b20cd974585ec7b8e0609946, type: 3}
+  stalkerAppearCries:
+  - {fileID: 8300000, guid: d8944718f172d80409ca2c581c7ac81c, type: 3}
+  - {fileID: 8300000, guid: 3ea5768cc794e9b498de86bdb7cf0323, type: 3}
+  stalkerSpottedCries:
+  - {fileID: 8300000, guid: 74fdd3331df0dcf48b9217c794dfcc91, type: 3}
+  - {fileID: 8300000, guid: b83da0d941ed2764b8aa4f18f0a8b0df, type: 3}
   stalkerGrabCry: {fileID: 8300000, guid: 002b2c005b1ee3e4e8f15372602114a6, type: 3}
   stalkerStepsVolume: 0.9
   stalkerCryVolume: 1

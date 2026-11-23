@@ -117,7 +117,9 @@ namespace ItHunts.Level.Acts
             {
                 Opened = true;
                 ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings?.stalkerArrival, transform.position, 1f, 120f);
-                ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Pick(ItHunts.Audio.GameAudio.Settings?.stalkerEnragedCries), transform.position, 1f);
+                var art = ItHunts.Audio.GameAudio.Settings;
+                AudioClip appear = art != null ? ItHunts.Audio.GameAudio.Pick(art.stalkerAppearCries) : null;
+                ItHunts.Audio.GameAudio.PlayAt(appear != null ? appear : ItHunts.Audio.GameAudio.Pick(art?.stalkerEnragedCries), transform.position, 1f, 160f);
             }
         }
 

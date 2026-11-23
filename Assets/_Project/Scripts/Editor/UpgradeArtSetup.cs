@@ -55,8 +55,33 @@ namespace ItHunts.EditorTools
                 EditorUtility.SetDirty(skin);
             }
 
+            WireLot7();
             AssetDatabase.SaveAssets();
             Debug.Log("Illustrations des améliorations : " + icons + " branchées, " + missing + " manquantes ; cadres de rang dans HudSkin_Default.");
+        }
+
+        /// <summary>Lot 7 de la DA (PR #50) : contour du volant sur son prefab, cris d'apparition et « je t'ai vu » dans GameAudio_Default.</summary>
+        private static void WireLot7()
+        {
+            const string flyer = "Assets/_Project/Prefabs/Niveau/Volant.prefab";
+            GameObject root = PrefabUtility.LoadPrefabContents(flyer);
+            if (root != null)
+            {
+                var c = root.GetComponent<ItHunts.Art.VFX.ContourDiscret>() ?? root.AddComponent<ItHunts.Art.VFX.ContourDiscret>();
+                c.annonce = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/VFX/Materiaux/M_VFX_Volant_Annonce.mat");
+                c.prise = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/VFX/Materiaux/M_VFX_Prise_Contour.mat");
+                PrefabUtility.SaveAsPrefabAsset(root, flyer);
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+
+            var audio = AssetDatabase.LoadAssetAtPath<GameAudioSettings>("Assets/_Project/Resources/GameAudio_Default.asset");
+            if (audio != null)
+            {
+                AudioClip A(string n) => AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Art/Audio/Traqueur/" + n + ".wav");
+                audio.stalkerAppearCries = new[] { A("Sfx_Traqueur_Cri_Apparition_01"), A("Sfx_Traqueur_Cri_Apparition_02") };
+                audio.stalkerSpottedCries = new[] { A("Sfx_Traqueur_Cri_Vu_01"), A("Sfx_Traqueur_Cri_Vu_02") };
+                EditorUtility.SetDirty(audio);
+            }
         }
     }
 }

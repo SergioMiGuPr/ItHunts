@@ -64,11 +64,23 @@ namespace ItHunts.Player
             if (_reader != null)
                 _reader.Override = _ => default;                        // plus aucune entrée : le joueur est pris
             BuildOverlay();
+            // Post-traitement de la DA (PR #50, ScreamerMort) : volume global à priorité 200, désaturé puis rouge sang, sursaut, distorsion.
+            var go = new GameObject("Screamer (DA)");
+            go.transform.SetParent(transform, false);
+            go.AddComponent<UnityEngine.Rendering.Volume>();
+            _screamer = go.AddComponent<ItHunts.Art.VFX.ScreamerMort>();
         }
+
+        private ItHunts.Art.VFX.ScreamerMort _screamer;
 
         private void OnDisable()
         {
             Active = false;
+            if (_screamer != null)
+            {
+                _screamer.Arrete();
+                Destroy(_screamer.gameObject);
+            }
             if (_look != null)
             {
                 _look.ViewOffset = Vector3.zero;
@@ -130,6 +142,8 @@ namespace ItHunts.Player
             {
                 _cried = true;
                 _stalker.ForceCry(2f);
+                if (_screamer != null)
+                    _screamer.Joue(_reduced);
                 var art = ItHunts.Audio.GameAudio.Settings;
                 float vol = _reduced ? 0.25f : 1f;
                 ItHunts.Audio.GameAudio.PlayAt(art != null ? art.stalkerGrabCry : null, headPos, vol);

@@ -127,6 +127,10 @@ namespace ItHunts.Enemies
             if (flyerPool != null)
                 foreach (Flyer f in flyerPool.GetComponentsInChildren<Flyer>(true))
                     _flyers.Members.Add(f.gameObject);
+            // Nuit 4 (PR #50) : marque d'apparition de la DA (cercle plein pulsé, même shader que le boss), plus de disque orange.
+            Material art = Resources.Load<Material>("M_VFX_Apparition");
+            if (art != null)
+                telegraphMaterial = art;
             _audio = gameObject.AddComponent<AudioSource>();
             _audio.spatialBlend = 0f;
             _audio.playOnAwake = false;
@@ -767,8 +771,9 @@ namespace ItHunts.Enemies
             }
 
             Vector3 at = point.transform.position;
-            if (point.Accepts(SpawnKinds.Volant) && !point.Accepts(SpawnKinds.Goule))
-                at += Vector3.down * 0.3f;
+            // Point de volant en l'air : la marque est projetée au sol (elle ne flotte plus dans le vide).
+            if (Physics.Raycast(at + Vector3.up * 0.5f, Vector3.down, out RaycastHit ground, 40f, ~0, QueryTriggerInteraction.Ignore))
+                at = ground.point;
             m.transform.position = at + Vector3.up * 0.03f;
             m.transform.localScale = new Vector3(1.6f, 0.01f, 1.6f);
             m.SetActive(true);

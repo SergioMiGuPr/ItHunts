@@ -657,6 +657,7 @@ namespace ItHunts.Enemies
 
         private Renderer[] _eyes;
         private MaterialPropertyBlock _eyeBlock;
+        private ItHunts.Art.VFX.ContourDiscret _contour;
         private bool _eyesLit;
 
         /// <summary>Yeux rouges pendant l'annonce du piqué seulement (correctifs-rendu point 5) ; sombres au repos.</summary>
@@ -698,7 +699,14 @@ namespace ItHunts.Enemies
             // corps qui luit légèrement (ExtraGlow, couleur du piqué).
             if (telegraph != null && telegraph.enabled)
                 telegraph.enabled = false;
-            if (_damageable != null && settings != null)
+            // Contour de la DA (PR #50, ContourDiscret) : encre rouge sang à l'annonce du piqué, ton d'os quand il est tenu ; sinon rien.
+            _contour ??= GetComponent<ItHunts.Art.VFX.ContourDiscret>();
+            if (_contour != null)
+            {
+                bool held = _grab != null && _grab.Held;
+                _contour.Montre(Mode == FlyerMode.Annonce && !Dead ? _contour.annonce : held && !Dead ? _contour.prise : null);
+            }
+            else if (_damageable != null && settings != null)
                 _damageable.ExtraGlow = Mode == FlyerMode.Annonce && !Dead ? settings.diveGlowColor * 0.35f : Color.black;
             EyeGlow(Mode == FlyerMode.Annonce && !Dead);
             float flap = Mode == FlyerMode.AuSol ? 0f : Mode == FlyerMode.Tenu ? 18f : Mode == FlyerMode.Pique ? 4f : 10f;
