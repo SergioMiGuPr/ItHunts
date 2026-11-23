@@ -43,6 +43,8 @@ namespace ItHunts.Enemies
         /// <summary>Ouverture de l'os de la mâchoire (°) : tests et debug.</summary>
         public float JawAngle => _jawAngle;
         public Transform JawBone => _jawBone;
+        /// <summary>Os de la tête (gros plan de la mise à mort, nuit 4).</summary>
+        public Transform Head => _head;
         public ParticleSystem Drool => _drool;
 
         public StalkerFace(Transform[] bones, Transform stalker, SkinnedMeshRenderer head, StalkerSettings s)

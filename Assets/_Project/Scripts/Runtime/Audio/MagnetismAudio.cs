@@ -58,9 +58,9 @@ namespace ItHunts.Audio
 
         private void OnDestroy()
         {
+            // Seuls les sons synthétisés se détruisent ; ceux de la DA sont des assets (« Destroying assets is not permitted », nuit 4).
             foreach (AudioClip clip in new[] { _hum != null ? _hum.clip : null, _start, _end, _repel, _refusal, _ready })
-                if (clip != null)
-                    Destroy(clip);
+                ProceduralSfx.DestroyIfRuntime(clip);
         }
 
         // Après PlayerMotor (ordre d'exécution −100) : l'état de ce tick est à jour.

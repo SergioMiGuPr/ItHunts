@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ItHunts.Combat;
 using ItHunts.Enemies;
 using ItHunts.Player;
 using ItHunts.Settings;
@@ -144,6 +145,7 @@ namespace ItHunts.Level
 
             UpdateVolume(s, dt);
             CullLights(s);
+            CullVfx(s);
             UpdateCones(s);
             UpdateFlicker(s);
             UpdateHalos(s);
@@ -755,6 +757,79 @@ namespace ItHunts.Level
                     l.enabled = true;
                     _culled.Remove(l);
                 }
+            }
+        }
+
+        // ---------- Effets de particules du décor au loin ----------
+
+        private readonly List<GameObject> _decorVfx = new List<GameObject>();
+        private readonly HashSet<GameObject> _vfxCulled = new HashSet<GameObject>();
+        private float _nextVfxScan, _nextVfxCull;
+        private int _vfxCursor;
+
+        /// <summary>Effets du décor coupés parce qu'ils sont loin de tous les joueurs (tests, mesures).</summary>
+        public int CulledVfxCount => _vfxCulled.Count;
+
+        private void CullVfx(HorrorLookSettings s)
+        {
+            bool on = s != null && s.vfxCulling && _eyes.Count > 0;
+            if (!on)
+            {
+                foreach (GameObject g in _vfxCulled)
+                    if (g != null)
+                        g.SetActive(true);
+                _vfxCulled.Clear();
+                return;
+            }
+
+            if (Time.unscaledTime >= _nextVfxScan)
+            {
+                // Racines des effets qui bouclent (VFX_Torche_Feu, Poussiere…), hors joueurs, ennemis et objets qu'on tient ou qu'on lance.
+                _nextVfxScan = Time.unscaledTime + 10f;
+                _decorVfx.Clear();
+                foreach (ParticleSystem ps in FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None))
+                {
+                    Transform t = ps.transform;
+                    if (t.parent != null && t.parent.GetComponent<ParticleSystem>() != null)
+                        continue;                                       // sous-système : on coupe sa racine
+                    if (ps.GetComponent<Light>() != null || ps.GetComponent<AudioSource>() != null || ps.GetComponent<MeshRenderer>() != null
+                        || t.GetComponentInParent<ItHunts.Economy.SoulSystem>() != null)
+                        continue;                                       // objet partagé (lumière, son, maillage) ou âme du pool : on n'y touche pas
+                    if (!ps.main.loop || t.GetComponentInParent<Rigidbody>() != null || t.GetComponentInParent<Damageable>() != null
+                        || t.GetComponentInParent<PlayerMotor>() != null || t.GetComponentInParent<EnemyBody>() != null)
+                        continue;
+                    _decorVfx.Add(ps.gameObject);
+                }
+
+                foreach (GameObject g in _vfxCulled)
+                    if (g != null)
+                        _decorVfx.Add(g);                               // coupés : FindObjectsByType ne les voit plus
+            }
+
+            if (Time.time < _nextVfxCull || _decorVfx.Count == 0)
+                return;
+            _nextVfxCull = Time.time + 0.05f;
+            // Un quart de la liste à chaque passage : toute la liste en 0.2 s, sans pic d'une image.
+            int count = Mathf.Max(1, _decorVfx.Count / 4);
+            float far = s.vfxCullDistance, near = Mathf.Max(0f, far - s.vfxCullHysteresis);
+            for (int k = 0; k < count; k++)
+            {
+                _vfxCursor = (_vfxCursor + 1) % _decorVfx.Count;
+                GameObject g = _decorVfx[_vfxCursor];
+                if (g == null)
+                    continue;
+                bool culled = _vfxCulled.Contains(g);
+                if (!culled && !g.activeSelf)
+                    continue;                                           // éteint par autre chose : on n'y touche pas
+                float d = Near(g.transform.position);
+                bool off = culled ? d > near : d > far;
+                if (off == culled)
+                    continue;
+                g.SetActive(!off);
+                if (off)
+                    _vfxCulled.Add(g);
+                else
+                    _vfxCulled.Remove(g);
             }
         }
 

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3acb984585714184b9f2883f6df4009f, type: 3}
+  m_Name: UpgradePool_Hibou
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradePool
+  upgrades:
+  - {fileID: 11400000, guid: 48e20849ffd3796485adff456008bc16, type: 2}
+  - {fileID: 11400000, guid: b295462fecaff7eea8980214c14669c5, type: 2}
+  - {fileID: 11400000, guid: ba91ca037cdd9fc30dcc69693bb60818, type: 2}
+  - {fileID: 11400000, guid: 3837e81f7c5899afaf8e9e0dfa76ade4, type: 2}
+  - {fileID: 11400000, guid: 28b8335af03e462ed9e5fa2755f4147a, type: 2}
+  - {fileID: 11400000, guid: ae50e1f1b6db5a7777baca9eaf9a6066, type: 2}
+  - {fileID: 11400000, guid: d41a8358a8b2e38b35628f707ea8207c, type: 2}
+  - {fileID: 11400000, guid: 03f70369f8b8d46e655876758619c1f9, type: 2}
+  - {fileID: 11400000, guid: 521fc9baaef7543ac2b359bc08c15586, type: 2}
+  - {fileID: 11400000, guid: de6b8847ecc883068053632b7f3873ff, type: 2}

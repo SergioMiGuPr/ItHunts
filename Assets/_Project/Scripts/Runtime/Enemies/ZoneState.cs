@@ -44,6 +44,19 @@ namespace ItHunts.Enemies
         /// <summary>Combat de boss en cours (D-049) : les vagues s'arrêtent.</summary>
         public bool BossFightActive { get; set; }
 
+        /// <summary>Un combat de boss en cours dans la scène (Sangsue Mythique : le bouclier absorbe un coup du traqueur).</summary>
+        public static bool BossFightActiveAnywhere
+        {
+            get
+            {
+                if (_anyZone == null)
+                    _anyZone = FindFirstObjectByType<ZoneState>();
+                return _anyZone != null && _anyZone.BossFightActive;
+            }
+        }
+
+        private static ZoneState _anyZone;
+
         /// <summary>Remplacé par le combat de boss (D-049) : vrai s'il prend la main à la sortie.</summary>
         public System.Func<PlayerHealth, bool> ExitHandler { get; set; }
         public float GraceLeft => settings != null ? Mathf.Max(0f, settings.gracePeriod - Elapsed) : 0f;
@@ -176,7 +189,10 @@ namespace ItHunts.Enemies
                 Finished = true;
                 FinishTime = Elapsed;
                 float d = settings != null ? settings.exitRestartDelay : 2f;
-                Show("Mort", d + 1f);
+                if (ItHunts.Player.StalkerDeathCam.Active)
+                    d = Mathf.Max(d, ItHunts.Player.StalkerDeathCam.Duration - 1f);   // le screamer va jusqu'au bout avant l'écran de fin
+                else
+                    Show("Mort", d + 1f);
                 RunStatsTracker.CloseCurrentAct();
                 _pending = () => RunEndScreen.Show(false, Summary("Tu es mort."));
                 _resetAt = Time.time + d;

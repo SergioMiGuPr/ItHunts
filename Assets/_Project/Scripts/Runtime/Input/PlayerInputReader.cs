@@ -65,6 +65,22 @@ namespace ItHunts.Input
         /// <summary>Carte ouverte maintenue (Tab / croix haut), par joueur.</summary>
         public bool MapHeld => _map != null && _map.IsPressed();
 
+        /// <summary>Entrées d'une image fournies par un remplaçant (bot de playtest, nuit 4) : à la place des actions du PlayerInput.</summary>
+        public struct Frame
+        {
+            public Vector2 Move;
+            public bool JumpHeld, JumpPress, SlideHeld, DashPress, AttractPress, AttractHeld, RepelPress, RepelHeld, GrabPress, ThrowPress,
+                ThrowHeld, ReloadPress, Parry, Interact;
+        }
+
+        /// <summary>
+        /// Remplaçant des entrées (bot de playtest) : posé, les actions du PlayerInput ne sont plus lues ; la vue est pilotée directement
+        /// par PlayerLook.SetView. Null : joueur humain.
+        /// </summary>
+        public System.Func<PlayerInputReader, Frame> Override { get; set; }
+        public PlayerMotor Motor => _motor;
+        public ItHunts.Economy.PlayerInteractor Interactor => _interactor;
+
         public string ControlScheme => _playerInput != null ? _playerInput.currentControlScheme : null;
         public bool UsingGamepad => ControlScheme == GamepadScheme;
         public int PlayerIndex => _playerInput != null ? _playerInput.playerIndex : 0;
@@ -100,6 +116,12 @@ namespace ItHunts.Input
 
         private void Update()
         {
+            if (Override != null)
+            {
+                ApplyOverride(Override(this));
+                return;
+            }
+
             Move = Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f);
             LookMouseDelta = _look.ReadValue<Vector2>();
             LookStick = Vector2.ClampMagnitude(_lookGamepad.ReadValue<Vector2>(), 1f);
@@ -139,6 +161,38 @@ namespace ItHunts.Input
             ParryPressed = _parry != null && _parry.WasPressedThisFrame();
             ToggleDebugPressed = _toggleDebug.WasPressedThisFrame();
             PausePressed = _pause.WasPressedThisFrame();
+        }
+
+        private void ApplyOverride(Frame f)
+        {
+            int next = _motor != null ? _motor.NextTick : 0;
+            Move = Vector2.ClampMagnitude(f.Move, 1f);
+            LookMouseDelta = Vector2.zero;
+            LookStick = Vector2.zero;
+            JumpHeld = f.JumpHeld;
+            if (f.JumpPress)
+                JumpPressedTick = next;
+            SlideHeld = f.SlideHeld;
+            if (f.DashPress)
+                DashPressedTick = next;
+            if (f.AttractPress)
+                AttractPressedTick = next;
+            AttractHeld = f.AttractHeld;
+            if (f.RepelPress)
+                RepelPressedTick = next;
+            RepelHeld = f.RepelHeld;
+            if (f.GrabPress)
+                GrabPressedTick = next;
+            if (f.ThrowPress)
+                ThrowPressedTick = next;
+            ThrowHeld = f.ThrowHeld;
+            if (f.ReloadPress)
+                ReloadPressedTick = next;
+            ParryPressed = f.Parry;
+            if (f.Interact && _interactor != null)
+                _interactor.Press();
+            ToggleDebugPressed = false;
+            PausePressed = false;
         }
     }
 }

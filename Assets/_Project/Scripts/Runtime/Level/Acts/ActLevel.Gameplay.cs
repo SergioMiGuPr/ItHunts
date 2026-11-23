@@ -229,7 +229,8 @@ namespace ItHunts.Level.Acts
                 if (r.Special || r.Role == RoomRole.Depart)
                     continue;
                 float area = r.Use.Count(kv => kv.Value != CellUse.Creux) * Plan.Cell * Plan.Cell;
-                int g = Mathf.Clamp(Mathf.RoundToInt(area / 100f * settings.ghoulsPer100 * RunSession.EnemyCount), settings.minGhoulsPerRoom, settings.maxGhoulsPerRoom);
+                int g = Mathf.Clamp(Mathf.RoundToInt(area / 100f * settings.ghoulsPer100 * RunSession.EnemyCount * EnemyScaling.CountMultiplier()),
+                    settings.minGhoulsPerRoom, settings.maxGhoulsPerRoom + 3);   // plus de goules par acte et selon le stuff (nuit 4)
                 for (int k = 0; k < g && ghoul != null; k++)
                 {
                     if (!FreeCell(r, out Vector2Int c, allowTerrace: true, clearance: 0))
@@ -392,7 +393,7 @@ namespace ItHunts.Level.Acts
             trig.AddComponent<ZoneExit>();
             // Au-delà de la porte : une lueur froide (on devine la suite), pas une lampe de couleur vive.
             PointLight(_roomRoots[hall.Id], Plan.CellCenter(hall.CenterCell, hall.Floor + 6f), settings.theme == ActTheme.Jardin ? new Color(0.5f, 0.6f, 0.9f)
-                : new Color(0.75f, 0.7f, 0.9f), 2.5f, 18f);
+                : new Color(0.75f, 0.7f, 0.9f), 6f, 22f);                 // nuit 4 : le hall n'est plus un trou noir derrière la porte
             if (Art != null && Art.exitHallPiece != null)
                 KitPiece(Art.exitHallPiece, _roomRoots[hall.Id], Plan.CellCenter(hall.CenterCell, hall.Floor) - toHall * 6f, toHall, Vector3.one, true)
                     .name = "Descente vers l'arène";
@@ -412,9 +413,31 @@ namespace ItHunts.Level.Acts
 
         private void BuildLockedDoor(Transform parent, ActDoor d, Vector3 c, Vector3 n, float w, float sill, float openTop)
         {
+            // Nuit 4, point 5 : la salle verrouillée se ferme par une grille de fer (on voit le coffre à travers) qui se lève une fois
+            // payée ; la porte de sortie, elle, a ses battants de bois du kit : les deux ne se confondent plus.
             Vector3 inward = Plan.Rooms[d.B].Role == RoomRole.Verrouillee ? n : -n;
-            Transform door = DoorLeaves(parent, "Porte de la salle verrouillée", c, inward, w, sill, openTop);
-            var ld = door.gameObject.AddComponent<LockedDoor>();
+            var root = new GameObject("Grille de la salle verrouillée").transform;
+            root.SetParent(parent, false);
+            root.position = new Vector3(c.x, sill, c.z);
+            root.rotation = Quaternion.LookRotation(inward, Vector3.up);
+            float h = openTop - sill;
+            Material iron = settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial;
+            var grille = new GameObject("Barreaux").transform;
+            grille.SetParent(root, false);
+            var col = grille.gameObject.AddComponent<BoxCollider>();
+            col.size = new Vector3(w, h, 0.3f);
+            col.center = new Vector3(0f, h * 0.5f, 0f);
+            int count = Mathf.RoundToInt(w / 0.5f);
+            for (int i = 0; i <= count; i++)
+                Visual(grille, "Barreau", CubeMesh, iron, root.TransformPoint(new Vector3(-w * 0.5f + i * w / count, h * 0.5f, 0f)), root.rotation,
+                    new Vector3(0.12f, h, 0.12f), merge: false);
+            for (int k = 0; k <= 3; k++)
+                Visual(grille, "Traverse", CubeMesh, iron, root.TransformPoint(new Vector3(0f, 0.3f + h * k / 3f * 0.9f, 0f)), root.rotation,
+                    new Vector3(w, 0.18f, 0.2f), merge: false);
+            // Serrure : un gros cadenas au milieu, à hauteur d'yeux (lisible de loin, lueur orangée du code « payable »).
+            Visual(grille, "Cadenas", CubeMesh, iron, root.TransformPoint(new Vector3(0f, 1.7f, 0.15f)), root.rotation, new Vector3(0.6f, 0.8f, 0.3f), merge: false);
+            var ld = root.gameObject.AddComponent<LockedDoor>();
+            ld.ConfigureGrille(grille, h + 0.5f);
             if (economy != null)
                 ld.Configure(economy);
         }
@@ -423,26 +446,38 @@ namespace ItHunts.Level.Acts
 
         private void BuildArrivalGate(Transform parent, ActDoor d, Vector3 c, Vector3 n, float w, float sill, float openTop)
         {
+            // Nuit 4 : plus de herse à barreaux (on voyait le traqueur attendre dans sa cellule). Une porte pleine à deux battants, qu'il
+            // enfonce à la fin de la période de grâce (les battants s'ouvrent à la volée, son d'arrivée) ; le vestibule reste noir.
             Vector3 toVestibule = Plan.Rooms[d.B].Role == RoomRole.Arrivee ? n : -n;
-            var root = new GameObject("Herse d'arrivée du traqueur").transform;
+            var root = new GameObject("Porte d'arrivée du traqueur").transform;
             root.SetParent(parent, false);
             root.position = new Vector3(c.x, sill, c.z);
             root.rotation = Quaternion.LookRotation(toVestibule, Vector3.up);
+            root.gameObject.AddComponent<StalkerPassesThrough>();
             float h = openTop - sill;
+            Material wood = settings.propMaterial != null ? settings.propMaterial : settings.wallMaterial;
             Material iron = settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial;
-            var bars = new GameObject("Barreaux").transform;
-            bars.SetParent(root, false);
-            var col = bars.gameObject.AddComponent<BoxCollider>();
-            col.size = new Vector3(w, h, 0.4f);
-            col.center = new Vector3(0f, h * 0.5f, 0f);
-            bars.gameObject.AddComponent<StalkerPassesThrough>();
-            int count = Mathf.RoundToInt(w / 0.6f);
-            for (int i = 0; i <= count; i++)
-                Visual(bars, "Barreau", CubeMesh, iron, root.TransformPoint(new Vector3(-w * 0.5f + i * w / count, h * 0.5f, 0f)), root.rotation, new Vector3(0.14f, h, 0.14f), merge: false);
-            for (int k = 1; k <= 4; k++)
-                Visual(bars, "Traverse", CubeMesh, iron, root.TransformPoint(new Vector3(0f, h * k / 5f, 0f)), root.rotation, new Vector3(w, 0.16f, 0.18f), merge: false);
+            Transform[] hinges = new Transform[2];
+            foreach (float side in new[] { -1f, 1f })
+            {
+                // Gond au bord de l'ouverture : le battant pivote autour.
+                var hinge = new GameObject(side < 0 ? "Gond gauche" : "Gond droit").transform;
+                hinge.SetParent(root, false);
+                hinge.localPosition = new Vector3(side * w * 0.5f, 0f, 0f);
+                var leaf = new GameObject("Battant");
+                leaf.transform.SetParent(hinge, false);
+                leaf.transform.localPosition = new Vector3(-side * w * 0.25f, h * 0.5f, 0f);
+                var col = leaf.AddComponent<BoxCollider>();
+                col.size = new Vector3(w * 0.5f, h, 0.5f);
+                Visual(leaf.transform, "Planches", CubeMesh, wood, leaf.transform.position, root.rotation, new Vector3(w * 0.5f - 0.05f, h, 0.45f), merge: false);
+                for (int k = 0; k < 3; k++)
+                    Visual(leaf.transform, "Ferrure", CubeMesh, iron, leaf.transform.position + Vector3.up * ((k - 1) * h * 0.33f), root.rotation,
+                        new Vector3(w * 0.48f, 0.25f, 0.55f), merge: false);
+                hinges[side < 0 ? 0 : 1] = hinge;
+            }
+
             var gate = root.gameObject.AddComponent<ArrivalGate>();
-            gate.Configure(bars, h + 1f);
+            gate.ConfigureLeaves(hinges[0], hinges[1]);
             ArrivalDoorPoint = new Vector3(c.x, sill, c.z);
         }
     }

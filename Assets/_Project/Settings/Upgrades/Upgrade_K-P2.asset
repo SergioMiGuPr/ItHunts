@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_K-P2
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: K-P2
+  displayName: Griffes grimpantes
+  description: Wall slide plus lent, wall jump plus haut, hissage plus haut.
+  icon: {fileID: 21300000, guid: d382915d4977b534f85a341311d7bc14, type: 3}
+  iconSymbol: "\u25C6"
+  color: {r: 2.6, g: 2.4, b: 1.8, a: 1}
+  kind: 51
+  character: 3
+  isPassive: 1
+  rankValues:
+  - 0.3
+  - 0.3
+  - 0.5
+  - 0.5
+  - 0.5
+  rankValues2:
+  - 0.4
+  - 0.4
+  - 0.8
+  - 0.8
+  - 0.8
+  rankValues3:
+  - 0
+  - 0.5
+  - 0.5
+  - 1
+  - 1
+  rankTexts:
+  - "slide \u221230 %, hissage +0.4 m"
+  - wall jump +0.5 m
+  - "slide \u221250 %, hissage +0.8 m, les murs rendent une charge"
+  - wall jump +1 m
+  - "s'accrocher au mur (1 s immobile) puis repartir d'un wall jump \xE0 pleine puissance"
+  synergies: Pas de chat (G25)
+  amount: 0.3
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

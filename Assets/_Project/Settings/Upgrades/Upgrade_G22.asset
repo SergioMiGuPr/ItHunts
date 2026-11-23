@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_G22
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: G22
+  displayName: "Pr\xE9dateur"
+  description: "Chaque kill : +d\xE9g\xE2ts pendant 5 s (piles)."
+  icon: {fileID: 21300000, guid: a12a3bc380b362c409fdb6e09673da79, type: 3}
+  iconSymbol: "\u25B2"
+  color: {r: 3.2, g: 0.5, b: 0.5, a: 1}
+  kind: 21
+  character: 0
+  isPassive: 0
+  rankValues:
+  - 0.06
+  - 0.08
+  - 0.1
+  - 0.12
+  - 0.15
+  rankValues2:
+  - 5
+  - 5
+  - 6
+  - 6
+  - 8
+  rankValues3: []
+  rankTexts:
+  - +6 %, max 5
+  - +8 %, max 5
+  - +10 %, max 6, + vitesse de course +0.5 m/s
+  - +12 %, max 6
+  - "+15 %, max 8, \xE0 5 piles vos attaques \xE9tourdissent"
+  synergies: "Rythme de fer (G4), \xC9lan du b\xFBcheron (K8)"
+  amount: 0.06
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

@@ -27,11 +27,19 @@ namespace ItHunts.Economy
             value <= 0 ? 0 : Mathf.RoundToInt(value * (enraged ? enragedMultiplier : 1f));
 
         /// <summary>
-        /// Prix après purchases achats de ce joueur dans la même catégorie : chaque achat le monte de increasePercent % (composé),
-        /// arrondi. 0 % : prix fixe. Un prix de base nul (coffre gratuit) reste nul.
+        /// Prix après purchases achats de ce joueur dans la même catégorie : chaque achat ajoute increasePercent % du prix de base
+        /// (hausse douce, D-100 ; avant : composée), le tout plafonné à cap × le prix de base (0 : sans plafond), arrondi. 0 % : prix
+        /// fixe. Un prix de base nul (coffre gratuit) reste nul.
         /// </summary>
-        public static int RaisedPrice(int basePrice, float increasePercent, int purchases) =>
-            basePrice <= 0 ? 0 : Mathf.RoundToInt(basePrice * Mathf.Pow(1f + Mathf.Max(0f, increasePercent) / 100f, Mathf.Max(0, purchases)));
+        public static int RaisedPrice(int basePrice, float increasePercent, int purchases, float cap = 0f)
+        {
+            if (basePrice <= 0)
+                return 0;
+            float factor = 1f + Mathf.Max(0f, increasePercent) / 100f * Mathf.Max(0, purchases);
+            if (cap > 0f)
+                factor = Mathf.Min(factor, cap);
+            return Mathf.RoundToInt(basePrice * factor);
+        }
 
         /// <summary>Achat : assez d'âmes ? (sinon refus, en rouge).</summary>
         public static bool CanAfford(int souls, int price) => price <= 0 || souls >= price;

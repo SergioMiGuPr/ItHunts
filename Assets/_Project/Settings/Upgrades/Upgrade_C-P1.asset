@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_C-P1
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: C-P1
+  displayName: Peau changeante
+  description: "Immobile et sans tirer, vous vous fondez : les goules vous perdent,
+    le traqueur vous d\xE9tecte de moins loin."
+  icon: {fileID: 21300000, guid: 5285d56ed3c62ac43a5fb8c5c856bd07, type: 3}
+  iconSymbol: "\u25C6"
+  color: {r: 1.2, g: 3, b: 1, a: 1}
+  kind: 40
+  character: 2
+  isPassive: 1
+  rankValues:
+  - 1.5
+  - 1.2
+  - 1
+  - 0.8
+  - 0.6
+  rankValues2:
+  - 0.3
+  - 0.4
+  - 0.5
+  - 0.6
+  - 0.7
+  rankValues3: []
+  rankTexts:
+  - "apr\xE8s 1.5 s, \u221230 % de d\xE9tection"
+  - "1.2 s, \u221240 %"
+  - "1 s, \u221250 %, les goules proches s'arr\xEAtent de chercher"
+  - "0.8 s, \u221260 %"
+  - "0.6 s, \u221270 %, le premier tir depuis le camouflage est un critique \xD73
+    garanti"
+  synergies: Souffle court (G29)
+  amount: 1.5
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

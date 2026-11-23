@@ -121,7 +121,9 @@ namespace ItHunts.Enemies
             _telegraphMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One);
             _telegraphMat.SetInt("_ZWrite", 0);
             _telegraphMat.renderQueue = 3000;
-            _telegraphMat.SetColor("_BaseColor", new Color(1f, 0.32f, 0.12f, 0.55f));
+            _telegraphMat.SetColor("_BaseColor", MarkColor(0.35f));         // ambre éteint, sobre (nuit 4, point 8 : plus de rouge vif)
+            _telegraphFillMat = new Material(_telegraphMat) { name = "Annonce du boss (fond)" };
+            _telegraphFillMat.SetColor("_BaseColor", MarkColor(0.08f));
             _weakMat = new Material(sh) { name = "Point faible (lueur)" };
             _weakMat.SetColor("_BaseColor", new Color(3.2f, 2.2f, 0.7f, 1f));
         }
@@ -413,26 +415,29 @@ namespace ItHunts.Enemies
             AttacksDone++;
             ClearTelegraphs();
             _marks.Clear();
+            // Enchaînements lisibles (phases 2 et 3) : balayage → prise là où le joueur a reculé ; charge → cri à l'arrivée ; bond → balayage.
+            if (Phase >= 2 && _combo == Attack.Aucune && _rng.NextDouble() < (Phase >= 3 ? 0.55 : 0.35))
+                _combo = a == Attack.Balayage ? Attack.Prise : a == Attack.Charge ? Attack.Cri : a == Attack.Bond ? Attack.Balayage : Attack.Aucune;
             Vector3 tp = Flat(target.transform.position) + Vector3.up * ArenaCenter.y;
             switch (a)
             {
                 case Attack.Prise:
                     TelegraphLeft = Telegraph(settings.grabTelegraph);
                     _marks.Add(tp);
-                    Disc(tp, 4.5f);
+                    Disc(tp, 4.5f, TelegraphLeft);
                     Play("Traqueur_Prise", 2.37f / (TelegraphLeft + 0.2f));
                     GameAudio.PlayAt(GameAudio.Settings?.stalkerGrowl, transform.position + Vector3.up * 10f, 1f, 80f);
                     break;
                 case Attack.Balayage:
                     TelegraphLeft = Telegraph(settings.sweepTelegraph);
-                    Cone(transform.position, transform.forward, settings.sweepRange, 90f);
+                    Cone(transform.position, transform.forward, settings.sweepRange, 90f, TelegraphLeft);
                     Play("Traqueur_Prise", 1.6f);
                     GameAudio.PlayAt(GameAudio.Settings?.stalkerGrowl, transform.position + Vector3.up * 10f, 1f, 80f);
                     break;
                 case Attack.Charge:
                     TelegraphLeft = Telegraph(settings.chargeTelegraph);
                     _chargeDir = Flat(tp - transform.position).normalized;
-                    Lane(transform.position, _chargeDir, settings.chargeDistance, 7f);
+                    Lane(transform.position, _chargeDir, settings.chargeDistance, ChargeWidth, TelegraphLeft);
                     Play("Traqueur_Repos");
                     GameAudio.PlayAt(GameAudio.Pick(GameAudio.Settings?.stalkerEnragedCries), transform.position + Vector3.up * 10f, 1f, 120f);
                     break;
@@ -440,12 +445,12 @@ namespace ItHunts.Enemies
                     TelegraphLeft = Telegraph(settings.leapTelegraph);
                     _leapFrom = transform.position;
                     _leapTo = tp;
-                    Disc(tp, settings.leapRadius);
+                    Disc(tp, settings.leapRadius, TelegraphLeft, 0.9f);
                     Play("Traqueur_Bond", 2.05f / TelegraphLeft);
                     break;
                 case Attack.Cri:
                     TelegraphLeft = Telegraph(settings.cryTelegraph);
-                    Disc(Flat(transform.position) + Vector3.up * ArenaCenter.y, settings.cryRadius);
+                    Disc(Flat(transform.position) + Vector3.up * ArenaCenter.y, settings.cryRadius, TelegraphLeft);
                     Play("Traqueur_Repos");
                     break;
                 case Attack.Debris:
@@ -456,7 +461,7 @@ namespace ItHunts.Enemies
                             {
                                 Vector3 m = Flat(p.transform.position) + Vector3.up * ArenaCenter.y + new Vector3((float)_rng.NextDouble() - 0.5f, 0f, (float)_rng.NextDouble() - 0.5f) * 9f;
                                 _marks.Add(m);
-                                Disc(m, 2.6f);
+                                Disc(m, 2.6f, TelegraphLeft);
                             }
 
                     Play("Traqueur_Prise", 1.2f);
@@ -470,7 +475,7 @@ namespace ItHunts.Enemies
                                 Vector3 m = k == 0 ? Flat(p.transform.position) + Vector3.up * ArenaCenter.y
                                     : Flat(p.transform.position) + Vector3.up * ArenaCenter.y + Quaternion.Euler(0f, k * 360f / settings.eruptions, 0f) * Vector3.forward * 8f;
                                 _marks.Add(m);
-                                Disc(m, settings.eruptionRadius);
+                                Disc(m, settings.eruptionRadius, TelegraphLeft);
                             }
 
                     Play("Traqueur_Repos");
@@ -481,7 +486,7 @@ namespace ItHunts.Enemies
                     {
                         Vector3 m = ArenaCenter + Quaternion.Euler(0f, k * 360f / settings.summonCount + (float)_rng.NextDouble() * 40f, 0f) * Vector3.forward * (ArenaRadius - 10f);
                         _marks.Add(m);
-                        Disc(m, 2f);
+                        _marquages.Add(ItHunts.Art.VFX.MarquageBoss.Apparition(m, 2f, TelegraphLeft));
                     }
 
                     Play("Traqueur_Repos");
@@ -497,8 +502,14 @@ namespace ItHunts.Enemies
             {
                 case Step.Annonce:
                     TelegraphLeft = Mathf.Max(0f, TelegraphLeft - Time.deltaTime);
-                    if (Current == Attack.Prise || Current == Attack.Balayage || Current == Attack.Debris)
+                    // Le boss suit sa cible du regard, et le marquage du balayage tourne avec lui (enfant du boss) ; dans les 300 derniers ms,
+                    // plus rien ne bouge : ce qu'on voit au sol est exactement ce qui frappe.
+                    if (TelegraphLeft > FreezeBefore && Current == Attack.Balayage)
+                    {
                         Face(target.transform.position - transform.position, settings.turnRate * 0.6f);
+                        if (_cone != null)
+                            _cone.Oriente(transform.forward);
+                    }
                     PulseTelegraphs(t);
                     if (TelegraphLeft > 0f)
                         return;
@@ -512,7 +523,7 @@ namespace ItHunts.Enemies
                         Move(_chargeDir * settings.chargeSpeed * Time.deltaTime);
                         Play("Traqueur_CourseEnragee_A", 2f);
                         foreach (PlayerHealth p in PlayerHealth.All)
-                            if (p != null && !p.Dead && Vector3.Distance(Flat(p.transform.position), Flat(transform.position)) < 5f)
+                            if (p != null && !p.Dead && Vector3.Distance(Flat(p.transform.position), Flat(transform.position)) < ChargeWidth * 0.5f)
                                 Hurt(p, settings.chargeDamage, _chargeDir * 18f + Vector3.up * 6f, "Charge du traqueur");
                         if (t * settings.chargeSpeed < settings.chargeDistance && Vector3.Distance(Flat(transform.position), Flat(ArenaCenter)) < ArenaRadius - 6.5f)
                             return;
@@ -532,12 +543,24 @@ namespace ItHunts.Enemies
 
                     _step = Step.Recuperation;
                     _stateStart = now;
-                    ClearTelegraphs();
+                    if (_lane != null)
+                        _lane.Annule();                                   // la course s'est vraiment arrêtée
+                    _lane = null;
                     return;
                 case Step.Recuperation:
                     if (t < (Phase >= 3 ? 0.6f : 0.9f))
                         return;
                     Current = Attack.Aucune;
+                    if (_combo != Attack.Aucune)
+                    {
+                        // Enchaînement (Dark Souls, nuit 4) : la suite part tout de suite, annonce un peu plus courte mais jamais sous le plancher.
+                        Attack next = _combo;
+                        _combo = Attack.Aucune;
+                        StartAttack(next, target, now);
+                        TelegraphLeft = Mathf.Max(settings.minTelegraph, TelegraphLeft * 0.85f);
+                        return;
+                    }
+
                     _nextAttack = now + settings.cooldownByPhase[Mathf.Clamp(Phase - 1, 0, 2)];
                     return;
             }
@@ -668,25 +691,50 @@ namespace ItHunts.Enemies
             }
         }
 
-        private void Disc(Vector3 at, float radius) => Mark("Annonce (cercle)", at, new Vector3(radius * 2f, 0.02f, radius * 2f), Quaternion.identity, DiscMesh);
+        /// <summary>Largeur de la marque et des dégâts de la charge (m) : alignées (PR #50 : la marque faisait 7 m, les dégâts 10 m).</summary>
+        public const float ChargeWidth = 10f;
+        private readonly List<ItHunts.Art.VFX.MarquageBoss> _marquages = new List<ItHunts.Art.VFX.MarquageBoss>();
+        private ItHunts.Art.VFX.MarquageBoss _cone, _lane;
 
-        private void Lane(Vector3 from, Vector3 dir, float length, float width) =>
-            Mark("Annonce (couloir)", Flat(from) + Vector3.up * ArenaCenter.y + dir * (length * 0.5f), new Vector3(width, 0.02f, length), Quaternion.LookRotation(dir), QuadMesh);
-
-        private void Cone(Vector3 from, Vector3 dir, float range, float angle)
+        // Marquages de la DA (PR #50, MarquageBoss) : bord net = zone exacte des dégâts, montée d'intensité, éclair à l'impact, puis la marque
+        // s'éteint seule. Réglage d'accessibilité : « Réduire les animations ».
+        private void Disc(Vector3 at, float radius, float duration, float hold = 0f)
         {
-            for (int k = -2; k <= 2; k++)
-            {
-                Vector3 d = Quaternion.Euler(0f, k * angle / 4f, 0f) * Flat(dir).normalized;
-                Mark("Annonce (balayage)", Flat(from) + Vector3.up * ArenaCenter.y + d * (range * 0.5f), new Vector3(range * 0.32f, 0.02f, range), Quaternion.LookRotation(d), QuadMesh);
-            }
+            ItHunts.Art.VFX.MarquageBoss.ReduireEffets = ItHunts.Level.GameSettings.ReduceMotion;
+            var m = ItHunts.Art.VFX.MarquageBoss.Cercle(at, radius, duration);
+            if (m != null && hold > 0f)
+                m.Prolonge(hold);
+            _marquages.Add(m);
         }
+
+        private void Lane(Vector3 from, Vector3 dir, float length, float width, float duration)
+        {
+            _lane = ItHunts.Art.VFX.MarquageBoss.Couloir(Flat(from) + Vector3.up * ArenaCenter.y, dir, length, width, duration);
+            _marquages.Add(_lane);
+        }
+
+        private void Cone(Vector3 from, Vector3 dir, float range, float angle, float duration)
+        {
+            _cone = ItHunts.Art.VFX.MarquageBoss.Cone(Flat(from) + Vector3.up * ArenaCenter.y, Flat(dir).normalized, range, angle * 0.5f, duration);
+            _marquages.Add(_cone);
+        }
+
+        /// <summary>Teinte des marques de repli (sans le matériau de la DA) : ambre éteint, jamais un rouge vif.</summary>
+        private static Color MarkColor(float a) => new Color(0.85f, 0.58f, 0.32f, a);
+        private Material _telegraphFillMat;
 
         private void PulseTelegraphs(float t)
         {
-            float a = 0.35f + 0.3f * Mathf.Abs(Mathf.Sin(t * 9f));
-            _telegraphMat.SetColor("_BaseColor", new Color(1f, 0.32f, 0.12f, a));
+            // Pulsation lente et discrète ; dans les 300 derniers ms, le marquage se fige et s'affirme (l'impact tombe à son extinction).
+            float a = TelegraphLeft < FreezeBefore ? 0.55f : 0.22f + 0.12f * Mathf.Abs(Mathf.Sin(t * 5f));
+            _telegraphMat.SetColor("_BaseColor", MarkColor(a));
         }
+
+        /// <summary>Les marquages et la visée se figent ce temps avant l'impact (recherche nuit 4 : snapshot FFXIV, 300 ms).</summary>
+        public const float FreezeBefore = 0.3f;
+        /// <summary>Enchaînement prévu après l'attaque en cours (Dark Souls : balayage puis prise, charge puis cri) ; Aucune sinon.</summary>
+        private Attack _combo = Attack.Aucune;
+        public Attack PendingCombo => _combo;
 
         private void ClearTelegraphs()
         {
@@ -694,6 +742,12 @@ namespace ItHunts.Enemies
                 if (g != null)
                     Destroy(g);
             _telegraphs.Clear();
+            // Attaque interrompue (étourdi, mort, nouvelle attaque) : les marques encore affichées sont annulées.
+            foreach (ItHunts.Art.VFX.MarquageBoss m in _marquages)
+                if (m != null)
+                    m.Annule();
+            _marquages.Clear();
+            _cone = _lane = null;
         }
     }
 }

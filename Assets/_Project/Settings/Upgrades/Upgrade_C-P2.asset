@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_C-P2
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: C-P2
+  displayName: "\u0152il fendu"
+  description: "Zone de t\xEAte des ennemis plus grande ; les critiques s'encha\xEEnent
+    (2.5 s) : chacun augmente le suivant."
+  icon: {fileID: 21300000, guid: 29137f31847dfda4ca0d453409ea6f54, type: 3}
+  iconSymbol: "\u25C6"
+  color: {r: 1.2, g: 3, b: 1, a: 1}
+  kind: 41
+  character: 2
+  isPassive: 1
+  rankValues:
+  - 0.2
+  - 0.3
+  - 0.4
+  - 0.5
+  - 0.6
+  rankValues2:
+  - 0.25
+  - 0.35
+  - 0.45
+  - 0.55
+  - 0.7
+  rankValues3:
+  - 3
+  - 3
+  - 4
+  - 4
+  - 5
+  rankTexts:
+  - "zone +20 %, +0.25 par cha\xEEne (max 3)"
+  - +30 %, +0.35
+  - +40 %, +0.45 (max 4), 8 % de chance de critique sur tout le corps
+  - +50 %, +0.55
+  - "+60 %, +0.7 (max 5), 15 % de critique sur le corps, headshot sur un paralys\xE9
+    = kill (goule et volant)"
+  synergies: Ricochet (C4), Balles paralysantes (C1)
+  amount: 0.2
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_G30
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: G30
+  displayName: "\u0152il du collectionneur"
+  description: "Les coffres offrent un choix en plus ; les salles verrouill\xE9es
+    sont moins ch\xE8res."
+  icon: {fileID: 21300000, guid: 184661557c9264e488a1dd66a01d037a, type: 3}
+  iconSymbol: "\u25C9"
+  color: {r: 1.4, g: 2.8, b: 1.2, a: 1}
+  kind: 29
+  character: 0
+  isPassive: 0
+  rankValues:
+  - 1
+  - 1
+  - 2
+  - 2
+  - 3
+  rankValues2:
+  - 0
+  - 0.25
+  - 0.25
+  - 0.5
+  - 0.5
+  rankValues3: []
+  rankTexts:
+  - +1 choix
+  - "porte \u221225 %"
+  - "+1 choix, les coffres proposent une mont\xE9e de rang d\xE8s l'acte I"
+  - "porte \u221250 %"
+  - "+2 choix, un coffre peut offrir une am\xE9lioration directement en Argent"
+  synergies: Marchandage (G8)
+  amount: 1
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

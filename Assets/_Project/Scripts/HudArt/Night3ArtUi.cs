@@ -56,8 +56,11 @@ namespace ItHunts.HudArt
             if (view == null)
                 return;
             var stats = end.Lines.Select(l => new FinDeRun.Stat { libelle = l.label, valeur = l.value }).ToArray();
+            // Nuit 4 (PR #49) : la grille d'illustrations de la DA montre les améliorations ; la ligne texte disparaît des statistiques.
+            stats = stats.Where(x => x.libelle == null || !x.libelle.StartsWith("Améliorations")).ToArray();
             FitRows(view, stats.Length);
             view.Remplit(end.Victory, end.Headline, stats);
+            FillUpgrades(view);
             view.Recommencer += end.Replay;
             view.Campement += end.ToCamp;
             end.Skinned = true;
@@ -65,6 +68,21 @@ namespace ItHunts.HudArt
             foreach (MonoBehaviour m in end.GetComponents<MonoBehaviour>())
                 if (m.GetType().Name == "RunEndScreenArt")
                     Object.Destroy(m);                                       // la vue provisoire laisse la place
+        }
+
+        /// <summary>Améliorations du premier joueur (codes de AMELIORATIONS.md et rangs), le passif en premier.</summary>
+        private static void FillUpgrades(FinDeRun view)
+        {
+            var run = ItHunts.Artifacts.RunState.Current;
+            ItHunts.Player.PlayerHealth p = ItHunts.Player.PlayerHealth.All.FirstOrDefault(x => x != null);
+            if (run == null || p == null)
+            {
+                view.RemplitAmeliorations(new string[0], new int[0]);
+                return;
+            }
+
+            var owned = run.UpgradesOf(p.PlayerId).Where(u => u != null).OrderByDescending(u => u.isPassive).ToList();
+            view.RemplitAmeliorations(owned.Select(u => u.code).ToArray(), owned.Select(u => Mathf.Max(0, run.RankOf(p.PlayerId, u))).ToArray());
         }
 
         /// <summary>

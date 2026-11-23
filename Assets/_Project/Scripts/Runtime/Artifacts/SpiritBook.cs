@@ -121,7 +121,8 @@ namespace ItHunts.Artifacts
         /// <summary>
         /// Cible visée : ennemi ou allié vivant à portée, dans le cône de visée, en vue ; le plus proche du centre du viseur.
         /// </summary>
-        public static BookLink Find(Vector3 eye, Vector3 aim, SpiritBookSettings cfg, Transform self, out Damageable enemy, out PlayerHealth ally)
+        public static BookLink Find(Vector3 eye, Vector3 aim, SpiritBookSettings cfg, Transform self, out Damageable enemy, out PlayerHealth ally,
+            bool allowDowned = false)
         {
             enemy = null;
             ally = null;
@@ -134,7 +135,9 @@ namespace ItHunts.Artifacts
                     continue;
                 var e = c.GetComponentInParent<Damageable>();
                 PlayerHealth p = e == null ? c.GetComponentInParent<PlayerHealth>() : null;
-                if (e == null && (p == null || p.Dead || p.transform == self))
+                // Soin lié Mythique (H8, D-100) : un allié à terre (pas spectateur) est une cible : le lien le relève.
+                bool downedOk = allowDowned && p != null && p.Downed && !p.Spectating;
+                if (e == null && (p == null || (p.Dead && !downedOk) || p.transform == self))
                     continue;
                 if (e != null && !Targetable(e))
                     continue;

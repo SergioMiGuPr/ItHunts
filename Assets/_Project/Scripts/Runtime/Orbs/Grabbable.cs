@@ -173,6 +173,12 @@ namespace ItHunts.Orbs
                 LastOwnerId = playerId;
         }
 
+        /// <summary>
+        /// Langue de caméléon Argent (C8, D-100) : harponné par ce joueur, l'objet file vers son orbe (0 : non). La prise automatique à
+        /// l'arrivée reste à faire (TelekinesisOrb) : pour l'instant l'objet arrive aux pieds du joueur.
+        /// </summary>
+        public int HarpoonedBy { get; set; }
+
         /// <summary>Poussé par la répulsion (onde ou poussée continue) à ce temps, par ce joueur (0 : inconnu).</summary>
         public void MarkPushed(float time, int byPlayer = 0)
         {
@@ -351,6 +357,13 @@ namespace ItHunts.Orbs
             InStraightFlight = false;
             if (!Held)
                 Body.useGravity = true;
+        }
+
+        /// <summary>Modèle de la DA posé sur la greybox (PropArt) : ses rendus remplacent ceux de la greybox (lueur, présence).</summary>
+        public void UseRenderers(Renderer[] renderers)
+        {
+            if (renderers != null && renderers.Length > 0)
+                _renderers = renderers;
         }
 
         /// <summary>Couleur d'émission (HDR) de tous ses rendus.</summary>

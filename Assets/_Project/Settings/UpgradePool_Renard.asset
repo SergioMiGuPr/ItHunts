@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3acb984585714184b9f2883f6df4009f, type: 3}
+  m_Name: UpgradePool_Renard
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradePool
+  upgrades:
+  - {fileID: 11400000, guid: a0865a3bed3455a64722078fa6dc28a5, type: 2}
+  - {fileID: 11400000, guid: fb1373f43994f97b0ef6e5652a2cd9ec, type: 2}
+  - {fileID: 11400000, guid: 26befee8eb793974ca541bb97013450d, type: 2}
+  - {fileID: 11400000, guid: becd6a958a4543e4b8ce71014fa32230, type: 2}
+  - {fileID: 11400000, guid: f1f9bebbe5f3b7a46a3b67663c8c1224, type: 2}
+  - {fileID: 11400000, guid: 8972aed93f1f47449b6c1d219ad6a9f6, type: 2}
+  - {fileID: 11400000, guid: 5f05b69bbfe2379b561670834e9a1ec3, type: 2}
+  - {fileID: 11400000, guid: d843b9965ed0d390f01d2fac44fb03e8, type: 2}
+  - {fileID: 11400000, guid: 31c1abdde04eabd5fa5a97aef78cb5c9, type: 2}
+  - {fileID: 11400000, guid: b8f02b76288488e60cc0d7a9eab80e28, type: 2}

@@ -164,7 +164,10 @@ namespace ItHunts.Combat
 
             if (g.IsEnemy)
                 return;                                                  // pas de durabilité pour un ennemi
-            bool breaks = fragileImpact || g.ConsumeDurability();
+            // Projectiles lourds Or (D-100) : les objets de ce joueur ne se brisent plus au premier impact d'un lancer.
+            bool spared = thrownImpact && !fragileImpact && g.LastOwnerId != 0 && OwnerKeepsDurability != null && OwnerKeepsDurability(g.LastOwnerId)
+                          && g.ThrowsLeft > 0 && g.ThrowsLeft >= g.MaxDurability;
+            bool breaks = fragileImpact || (!spared && g.ConsumeDurability());
             if (breaks)
                 g.Break();
         }
@@ -174,6 +177,9 @@ namespace ItHunts.Combat
         /// Branchée par l'économie (Economy.PlayerUpgrades) ; 1 sans amélioration.
         /// </summary>
         public static System.Func<int, float> OwnerDamageMultiplier;
+
+        /// <summary>Projectiles lourds Or (D-100) : vrai si les objets de ce joueur gardent leur durabilité au premier impact.</summary>
+        public static System.Func<int, bool> OwnerKeepsDurability;
 
         private static float OwnerMultiplier(Grabbable g) =>
             g == null || g.IsEnemy || g.LastOwnerId == 0 || OwnerDamageMultiplier == null ? 1f : OwnerDamageMultiplier(g.LastOwnerId);

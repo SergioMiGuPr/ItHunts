@@ -26,8 +26,15 @@ namespace ItHunts.Level.Acts
                 foreach (Collider c in go.GetComponentsInChildren<Collider>(true))
                     Destroy(c);
             foreach (Light l in go.GetComponentsInChildren<Light>(true))
+            {
                 if (l.GetComponent<AmbianceLight>() == null && l.type == LightType.Point)
                     l.gameObject.AddComponent<AmbianceLight>().kind = AmbianceLight.Kind.Torche;
+                // Nuit 4 (perf) : les 100 et quelques torches d'un acte ne projettent pas d'ombre (l'atlas d'ombres URP saturait :
+                // « Reduced additional punctual light shadows resolution by 8 » à chaque image).
+                if (l.type == LightType.Point || l.type == LightType.Spot)
+                    l.shadows = LightShadows.None;
+            }
+
             return go;
         }
 
@@ -107,11 +114,11 @@ namespace ItHunts.Level.Acts
             return true;
         }
 
-        private bool KitChandelier(Transform root, Vector3 floor, float ceiling)
+        private bool KitChandelier(Transform root, Vector3 floor, float ceiling, float scale = 1f)
         {
             if (Art == null || Art.chandelier == null)
                 return false;
-            KitPiece(Art.chandelier, root, floor + Vector3.up * (ceiling - 0.2f), Vector3.forward, Vector3.one);
+            KitPiece(Art.chandelier, root, floor + Vector3.up * (ceiling - 0.2f), Vector3.forward, Vector3.one * scale);
             return true;
         }
 
@@ -123,7 +130,13 @@ namespace ItHunts.Level.Acts
             if (Art.sky != null)
             {
                 ActRoom start = Plan.Rooms[Plan.Start];
-                KitPiece(Art.sky, _root, Plan.CellCenter(start.CenterCell, 0f), Vector3.forward, Vector3.one, true).name = "Ciel";
+                GameObject sky = KitPiece(Art.sky, _root, Plan.CellCenter(start.CenterCell, 0f), Vector3.forward, Vector3.one, true);
+                sky.name = "Ciel";
+                // Nuit 4, point 9 : la lune du menu (même sprite) ne doit pas réapparaître dans le ciel de l'acte III ; la lumière de lune
+                // reste (Light directionnelle de la scène), seul le disque dessiné est retiré (retour fait à la DA dans ART-HANDOFF).
+                Transform moonDisc = sky.transform.Find("Lune");
+                if (moonDisc != null)
+                    moonDisc.gameObject.SetActive(false);
             }
 
             if (Art.mist != null)
@@ -141,7 +154,36 @@ namespace ItHunts.Level.Acts
             Vector3 off = (c - startAt);
             off.y = 0f;
             Vector3 at = c + (off.sqrMagnitude > 1f ? off.normalized : Vector3.forward) * 7f;
-            KitPiece(Art.startLandmark, root, at, startAt - at, Vector3.one, true);
+            GameObject landmark = KitPiece(Art.startLandmark, root, at, startAt - at, Vector3.one, true);
+            if (landmark != null && landmark.name.Contains("Puits"))
+                DressWell(landmark, at);
+        }
+
+        /// <summary>
+        /// Puits des caves (nuit 4, point 1) : il était vide (conduit noir) et sa margelle à facettes accrochait les sauts. Eau sombre à 1.2 m
+        /// sous la margelle, collisions remplacées par un cylindre lisse (margelle) et deux montants.
+        /// </summary>
+        private void DressWell(GameObject well, Vector3 at)
+        {
+            foreach (Collider c in well.GetComponentsInChildren<Collider>(true))
+                Destroy(c);
+            var rim = well.AddComponent<CapsuleCollider>();
+            rim.radius = 1.58f;
+            rim.height = 4f;
+            rim.center = new Vector3(0f, -1.1f, 0f);                      // cylindre lisse : dessus à 0.9 m, flancs sans arête
+            foreach (float side in new[] { -1f, 1f })
+            {
+                var post = well.AddComponent<BoxCollider>();
+                post.center = new Vector3(side * 1.35f, 1.6f, 0f);
+                post.size = new Vector3(0.3f, 3.2f, 0.3f);
+            }
+
+            if (settings.waterMaterial != null)
+            {
+                GameObject water = Visual(well.transform, "Eau du puits", CylinderMesh, settings.waterMaterial, at + Vector3.up * -1.2f, Quaternion.identity,
+                    new Vector3(2.7f, 0.02f, 2.7f), merge: false);
+                water.name = "Eau du puits";
+            }
         }
 
         /// <summary>Piliers d'une grande salle haute (acte II) : deux rangées symétriques le long du grand axe, hors des voies et des creux.</summary>

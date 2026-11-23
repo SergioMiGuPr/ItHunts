@@ -129,6 +129,7 @@ namespace ItHunts.Tests
         [Test]
         public void Campement_PlacesSuiventLeSalon()
         {
+            RunSession.ResetForTests();                                  // personnages d'une partie précédente (tests PlayMode) : remis à zéro
             (MainMenu menu, MainMenuArt view, GameObject go) = NewMenu();
             try
             {
@@ -165,10 +166,10 @@ namespace ItHunts.Tests
                 Assert.That(camp.transform.Find("Place_2/Corps").gameObject.activeSelf, Is.True, "J2 assis à la place 2");
                 Assert.That(menu.ReadyBlocked, Is.True, "doublon : Prêt grisé");
                 Assert.That(camp.transform.Find("Interface/Pret").GetComponent<Image>().canvasRenderer.GetColor(), Is.EqualTo(MenuArtKit.Disabled));
-                menu.Lobby[1].Character = 1;
+                menu.Lobby[1].Character = (menu.Lobby[0].Character + 1) % 4;   // un autre personnage que J1, quel qu'il soit
                 menu.Lobby[1].Ready = true;
                 view.Sync();
-                Assert.That(menu.ReadyBlocked, Is.False);
+                Assert.That(menu.ReadyBlocked, Is.False, $"J1 {menu.Lobby[0].Character}, J2 {menu.Lobby[1].Character}");
                 Assert.That(camp.transform.Find("Interface/Cartouche_2/Coche").gameObject.activeSelf, Is.True, "J2 prêt : coche");
                 Assert.That(camp.transform.Find("Interface/Cartouche_1/Coche").gameObject.activeSelf, Is.False);
 

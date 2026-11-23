@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_G18
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: G18
+  displayName: Projectiles lourds
+  description: "Objets lanc\xE9s ou repouss\xE9s : plus de d\xE9g\xE2ts (zone comprise)."
+  icon: {fileID: 21300000, guid: b6273136421461a4dbc87839aeddaf95, type: 3}
+  iconSymbol: x1.25
+  color: {r: 3.2, g: 0.5, b: 0.5, a: 1}
+  kind: 17
+  character: 0
+  isPassive: 0
+  rankValues:
+  - 0.25
+  - 0.4
+  - 0.6
+  - 0.85
+  - 1.2
+  rankValues2: []
+  rankValues3: []
+  rankTexts:
+  - +25 %
+  - +40 %
+  - +60 %, les objets ne se brisent plus au premier impact
+  - +85 %
+  - "+120 %, un objet lanc\xE9 revient vers l'orbe apr\xE8s l'impact"
+  synergies: "Onde de choc (G15), Langue de cam\xE9l\xE9on (C8)"
+  amount: 0.25
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_G24
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: G24
+  displayName: Semelles de vent
+  description: "Course plus rapide, \xE9lan au sol gard\xE9 plus longtemps."
+  icon: {fileID: 21300000, guid: 50d27d257a0d45e49b60d6894b858c36, type: 3}
+  iconSymbol: "\u226B"
+  color: {r: 0.4, g: 2.4, b: 3, a: 1}
+  kind: 23
+  character: 0
+  isPassive: 0
+  rankValues:
+  - 0.5
+  - 0.8
+  - 1.1
+  - 1.4
+  - 1.7
+  rankValues2: []
+  rankValues3: []
+  rankTexts:
+  - +0.5 m/s
+  - +0.8 m/s
+  - "+1.1 m/s, perte d'\xE9lan 30 % plus lente"
+  - +1.4 m/s
+  - "+1.7 m/s, plafond de l'\xE9lan au sol +2 m/s"
+  synergies: "\xC2mes gourmandes (G7), Vif-argent (G26)"
+  amount: 0.5
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

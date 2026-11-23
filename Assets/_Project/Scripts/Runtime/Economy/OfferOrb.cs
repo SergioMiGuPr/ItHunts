@@ -7,9 +7,10 @@ using UnityEngine;
 namespace ItHunts.Economy
 {
     /// <summary>
-    /// Orbe flottante d'une amélioration (D-043) : choix au-dessus d'un coffre ouvert (gratuit, pour celui qui l'a ouvert) ou offre
-    /// du marchand (avec son prix, pour tout joueur). Nom et icône en monde ; on la prend avec E / Y ou F en la regardant. Un soin
-    /// du marchand est aussi une orbe (sans amélioration).
+    /// Offre d'une amélioration (D-043, rangs D-100) : choix d'un coffre (gratuit, pour celui qui l'a ouvert) ou offre du marchand
+    /// (avec son prix). Une offre mène à un rang : nouvelle (Bronze, ou Argent direct) ou montée d'un rang d'une amélioration
+    /// possédée (« Nom · Bronze → Argent »). Un soin du marchand est aussi une offre (sans amélioration). Présentée par le menu
+    /// (ShopMenu) ; l'ancienne orbe flottante en monde ne sert plus qu'aux scènes de test (WorldVisible).
     /// </summary>
     public sealed class OfferOrb : MonoBehaviour, IInteractable
     {
@@ -17,7 +18,7 @@ namespace ItHunts.Economy
         /// <summary>Prix de base (0 : gratuit, choix d'un coffre) ; le prix payé monte à chaque achat au marchand (PriceFor).</summary>
         public int Price { get; private set; }
         public EconomySettings Pricing { get; set; }
-        public int PriceFor(PlayerHealth p) => Prices.For(Pricing, p, PriceKind.Marchand, Price);
+        public int PriceFor(PlayerHealth p) => FreeFor(p) ? 0 : Prices.For(Pricing, p, PriceKind.Marchand, Price);
         public float Heal { get; private set; }
         /// <summary>Seul ce joueur peut la prendre (0 : tout joueur).</summary>
         public int RestrictedTo { get; private set; }
@@ -26,31 +27,62 @@ namespace ItHunts.Economy
         public bool AcceptsGrab => true;
         public Vector3 Point => transform.position;
 
+        /// <summary>Rang visé (0 Bronze … 4 Mythique) ; rang de départ (−1 : nouvelle).</summary>
+        public int TargetRank { get; set; }
+        public int FromRank { get; set; } = -1;
+        public bool IsRankUp => Upgrade != null && FromRank >= 0;
+        /// <summary>Titre de l'offre : « Nom · Bronze » ou « Nom · Bronze → Argent » ; « Soin ».</summary>
+        public string Title => Upgrade != null ? Upgrade.OfferTitle(FromRank, TargetRank) : "Soin";
+        /// <summary>Effet du rang visé.</summary>
+        public string Effect => Upgrade != null ? Upgrade.RankText(TargetRank) : $"Rend {Heal:0} PV.";
+
+        /// <summary>Marchandage Mythique : la première montée de rang de chaque acte est gratuite pour ce joueur.</summary>
+        public bool FreeFor(PlayerHealth p)
+        {
+            if (!IsRankUp || p == null || Price <= 0)
+                return false;
+            var up = PlayerUpgrades.OfId(p.PlayerId);
+            RunState run = RunState.Current;
+            return up != null && up.Mythic(UpgradeKind.Marchandage) && run != null && !run.FreeRankUpUsed(p.PlayerId, ItHunts.Level.RunSession.Act);
+        }
+
         /// <summary>Prise (par qui) : le coffre fait disparaître les autres, le marchand retire l'offre.</summary>
         public event Action<OfferOrb, PlayerHealth> TakenBy;
 
         private Vector3 _base;
         private float _phase;
 
+        /// <summary>
+        /// Nuit 4, point 1 : les offres du marchand et des coffres ne flottent plus dans le monde (orbes lumineuses et textes hors DA) ;
+        /// tout passe par le menu du marchand ou du coffre. Vrai : anciennes orbes visibles (mesures, scènes de test).
+        /// </summary>
+        public static bool WorldVisible;
+
         public static OfferOrb Create(Transform parent, Vector3 at, UpgradeDefinition upgrade, int price, float heal, int restrictedTo,
-            float range, Material material)
+            float range, Material material, int fromRank = -1, int targetRank = 0)
         {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            GameObject go;
+            if (WorldVisible)
+            {
+                go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Interactables.Discard(go.GetComponent<Collider>());
+                var r = go.GetComponent<MeshRenderer>();
+                if (material != null)
+                {
+                    r.material = material;
+                    Color c = upgrade != null ? upgrade.color : new Color(0.4f, 3f, 0.6f);
+                    r.material.SetColor("_BaseColor", c);
+                    r.material.SetColor("_EmissionColor", c);
+                }
+
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+            else
+                go = new GameObject();                                    // porteur de données seulement (menu de la DA)
             go.name = upgrade != null ? $"Orbe : {upgrade.displayName}" : "Orbe : soin";
-            Interactables.Discard(go.GetComponent<Collider>());
             go.transform.SetParent(parent, true);
             go.transform.position = at;
             go.transform.localScale = Vector3.one * 0.55f;
-            var r = go.GetComponent<MeshRenderer>();
-            if (material != null)
-            {
-                r.material = material;
-                Color c = upgrade != null ? upgrade.color : new Color(0.4f, 3f, 0.6f);
-                r.material.SetColor("_BaseColor", c);
-                r.material.SetColor("_EmissionColor", c);
-            }
-
-            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             if (restrictedTo != 0)
                 go.AddComponent<ViewerOnly>().PlayerId = restrictedTo;  // choix d'un coffre : vu par ce joueur seul
             var orb = go.AddComponent<OfferOrb>();
@@ -59,10 +91,14 @@ namespace ItHunts.Economy
             orb.Heal = heal;
             orb.RestrictedTo = restrictedTo;
             orb.Range = range;
+            orb.FromRank = fromRank;
+            orb.TargetRank = Mathf.Clamp(targetRank, 0, UpgradeDefinition.MaxRank);
             orb._base = at;
             orb._phase = at.x * 0.37f + at.z * 0.21f;
-            string title = upgrade != null ? $"{upgrade.iconSymbol}\n{upgrade.displayName}" : $"+{heal:0} PV\nSoin";
+            string title = upgrade != null ? $"{upgrade.iconSymbol}\n{orb.Title}" : $"+{heal:0} PV\nSoin";
             string priceText = price > 0 ? $"\n{price} âmes" : string.Empty;
+            if (!WorldVisible)
+                return orb;
             // Texte au-dessus de l'orbe, à l'échelle du monde (l'orbe est réduite).
             var holder = new GameObject("Étiquette").transform;
             holder.SetParent(go.transform, false);
@@ -101,7 +137,7 @@ namespace ItHunts.Economy
 
         public string Prompt(PlayerHealth p)
         {
-            string what = Upgrade != null ? $"{Upgrade.displayName} : {Upgrade.description}" : $"soin, +{Heal:0} PV";
+            string what = Upgrade != null ? $"{Title} : {Effect}" : $"soin, +{Heal:0} PV";
             return Price > 0 ? $"acheter {what} ({PriceFor(p)} âmes)" : $"prendre {what}";
         }
 
@@ -114,14 +150,30 @@ namespace ItHunts.Economy
         private void Take(PlayerHealth p)
         {
             RunState run = RunState.Current;
-            if (Price > 0 && !Prices.TryBuy(Pricing, p, PriceKind.Marchand, Price))
+            bool free = FreeFor(p);
+            if (Price > 0 && !free && !Prices.TryBuy(Pricing, p, PriceKind.Marchand, Price))
                 return;                                                  // refus en rouge (RunState.Refused)
+            if (free && run != null)
+                run.TryUseFreeRankUp(p.PlayerId, ItHunts.Level.RunSession.Act);
             Taken = true;
             if (Upgrade != null)
             {
+                PlayerUpgrades up = PlayerUpgrades.Of(p);
                 if (run != null)
-                    run.Grant(p.PlayerId, Upgrade);
-                PlayerUpgrades.Of(p).Apply(Upgrade);
+                {
+                    // La run fait foi (emplacements, passif, rangs) ; le joueur recopie puis applique ses effets.
+                    UpgradeGrant g = IsRankUp ? run.Grant(p.PlayerId, Upgrade) : run.Grant(p.PlayerId, Upgrade, TargetRank);
+                    if (!g.Ok)
+                    {
+                        Taken = false;
+                        RunState.RaiseRefused(p.PlayerId);
+                        return;
+                    }
+
+                    up?.SyncFrom(run);
+                }
+                else
+                    up?.Apply(Upgrade);
             }
 
             if (Heal > 0f)

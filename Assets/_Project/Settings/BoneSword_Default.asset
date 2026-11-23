@@ -15,7 +15,7 @@ MonoBehaviour:
   id: epee_os
   displayName: "\xC9p\xE9e en os"
   description: Combo de 3 coups ; frappe plus fort en pleine vitesse.
-  upgrades: {fileID: 0}
+  upgrades: {fileID: 11400000, guid: 02a2b5b406e679ec4f8ef39b40d607ac, type: 2}
   viewModel: {fileID: 3435471222887614119, guid: 2e8cb3d42286b324a8b8db805b8b1eff, type: 3}
   viewOffset: {x: 0, y: 0.1, z: 0.08}
   viewEuler: {x: -20, y: 0, z: -25}

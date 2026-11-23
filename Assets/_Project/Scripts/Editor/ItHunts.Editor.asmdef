@@ -3,6 +3,7 @@
     "rootNamespace": "ItHunts.EditorTools",
     "references": [
         "ItHunts.Runtime",
+        "ItHunts.Art.VFX",
         "Unity.InputSystem",
         "Unity.Cinemachine",
         "Unity.RenderPipelines.Core.Runtime",

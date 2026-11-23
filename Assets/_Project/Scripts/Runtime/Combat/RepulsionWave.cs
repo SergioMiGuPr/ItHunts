@@ -90,6 +90,9 @@ namespace ItHunts.Combat
                 float direct = RepelDamageFor != null ? RepelDamageFor(ownerId) : 0f;
                 if (direct > 0f)
                     ImpactDamager.ApplyDirect(d, -ownerId - 11, direct, speed, 0f, point, Time.time, lethal: false);   // D-008
+                float slow = RepelSlowFor != null ? RepelSlowFor(ownerId) : 0f;
+                if (slow > 0f)
+                    d.Slow(0.4f, slow);                                  // Onde blessante Or (D-100) : ralentit 1.5 s
                 pushed++;
             }
 
@@ -115,6 +118,8 @@ namespace ItHunts.Combat
 
         /// <summary>Amélioration « dégâts de la répulsion » (D-043, D-008) : PV retirés par l'onde, par joueur (0 sans).</summary>
         public static System.Func<int, float> RepelDamageFor;
+        /// <summary>Durée (s) du ralentissement des ennemis touchés par l'onde de ce joueur (Onde blessante Or, D-100) ; 0 : aucun.</summary>
+        public static System.Func<int, float> RepelSlowFor;
 
         /// <summary>
         /// Répulsion maintenue (D-029), un tick : chaque cible visible dans le cône reçoit une poussée continue dans l'axe du

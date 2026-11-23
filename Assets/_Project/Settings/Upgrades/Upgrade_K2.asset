@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_K2
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: K2
+  displayName: "Encha\xEEnement"
+  description: "Combo plus rapide, fen\xEAtre plus longue."
+  icon: {fileID: 21300000, guid: 978b183300814df408f6d37fd10e0561, type: 3}
+  iconSymbol: "\u22EF"
+  color: {r: 2.6, g: 2.4, b: 1.8, a: 1}
+  kind: 53
+  character: 3
+  isPassive: 0
+  rankValues:
+  - 0.1
+  - 0.18
+  - 0.25
+  - 0.32
+  - 0.4
+  rankValues2:
+  - 0.2
+  - 0.2
+  - 0.4
+  - 0.4
+  - 0.4
+  rankValues3: []
+  rankTexts:
+  - "\u221210 %, +0.2 s"
+  - "\u221218 %"
+  - "\u221225 %, +0.4 s, le 3e coup ne casse plus le combo"
+  - "\u221232 %"
+  - "\u221240 %, 4e coup : tourbillon (16 PV, 360\xB0, repousse)"
+  synergies: "Lame longue (K1), \xC9lan du b\xFBcheron (K8)"
+  amount: 0.1
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

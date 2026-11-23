@@ -112,14 +112,14 @@ namespace ItHunts.Player
         /// Appelé par une attaque juste avant ses dégâts : vrai si la parade l'annule (la goule est alors étourdie et le
         /// retour visuel et sonore part). Le traqueur n'est jamais paré.
         /// </summary>
-        public static bool TryParry(PlayerHealth player, Component attacker, float now, Vector3 point)
+        public static bool TryParry(PlayerHealth player, Component attacker, float now, Vector3 point, float extraWindow = 0f)
         {
             if (player == null)
                 return false;
             var parry = player.GetComponent<PlayerParry>();
             if (parry == null || parry.settings == null)
                 return false;
-            if (!ParryMath.TryParry(ref parry._state, now, parry.settings, ParryMath.Parryable(attacker)))
+            if (!ParryMath.TryParry(ref parry._state, now, parry.settings, ParryMath.Parryable(attacker), parry.settings.window + Mathf.Max(0f, extraWindow)))
                 return false;
             Succeed(parry, player, attacker, point);
             return true;

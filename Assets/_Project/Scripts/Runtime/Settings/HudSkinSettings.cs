@@ -49,6 +49,37 @@ namespace ItHunts.Settings
         [Min(6)] public int healthFontSize = 20;
         public Color healthTextColor = new Color(0.92f, 0.88f, 0.86f);
 
+        [Header("Améliorations possédées (rangée au-dessus de la barre de vie, D-100)")]
+        [Tooltip("Cadres de rang : cuivre (Bronze), argent, or, bleu-blanc (Diamant), violet-rose (Mythique). À remplacer par les couleurs de la DA.")]
+        public Color[] rankColors =
+        {
+            new Color(0.72f, 0.45f, 0.26f), new Color(0.78f, 0.80f, 0.84f), new Color(0.96f, 0.78f, 0.28f),
+            new Color(0.70f, 0.90f, 1.00f), new Color(0.85f, 0.45f, 0.95f),
+        };
+        [Tooltip("Cadres de rang de la DA (PR #48) : Bronze, Argent, Or, Diamant, Mythique ; posés par-dessus l'icône (à 80 %).")]
+        public Sprite[] rankFrames = new Sprite[0];
+        [Tooltip("Cadres en losange des passifs, mêmes rangs ; l'icône est découpée par le masque en losange (à 62 %).")]
+        public Sprite[] passiveFrames = new Sprite[0];
+        public Sprite passiveMask;
+
+        public Sprite RankFrame(int rank, bool passive)
+        {
+            Sprite[] list = passive ? passiveFrames : rankFrames;
+            return list != null && list.Length > 0 ? list[Mathf.Clamp(rank, 0, list.Length - 1)] : null;
+        }
+
+        [Tooltip("Case d'une amélioration (px 1080p), espace entre deux cases, espace au-dessus de la barre de vie.")]
+        [Min(8f)] public float upgradeIconSize = 58f;
+        [Min(0f)] public float upgradeIconGap = 6f;
+        [Min(0f)] public float upgradeRowGap = 10f;
+
+        public Color RankColor(int rank)
+        {
+            if (rankColors == null || rankColors.Length == 0)
+                return Color.white;
+            return rankColors[Mathf.Clamp(rank, 0, rankColors.Length - 1)];
+        }
+
         [Header("Cartouche des âmes (coin haut gauche)")]
         public Sprite soulsFrame;
         public Sprite soulsBack;
@@ -94,6 +125,21 @@ namespace ItHunts.Settings
         [Min(4f)] public float arrowSize = 24f;
         [Tooltip("Icônes de la carte ouverte (Tab), px 1080p.")]
         [Min(4f)] public float mapIconSize = 30f;
+
+        [Header("Ennemis à vue sur la carte (D-101) : bulle et carte ouverte, seulement dans le champ de vision du joueur")]
+        [Tooltip("Goule vue : point rouge (vide : disque généré, teinté enemyColor).")]
+        public Sprite iconEnemy;
+        [Tooltip("Traqueur vu : symbole (vide : triangle à l'œil généré, teinté stalkerColor).")]
+        public Sprite iconStalker;
+        [Tooltip("Tailles (px 1080p) dans la bulle ; ×1.4 dans la carte ouverte.")]
+        [Min(2f)] public float enemyIconSize = 10f;
+        [Min(4f)] public float stalkerIconSize = 26f;
+        public Color enemyColor = new Color(0.85f, 0.12f, 0.1f);
+        public Color stalkerColor = new Color(0.55f, 0.05f, 0.08f);
+        [Tooltip("Champ de vision : marge au-delà du demi-FOV horizontal de la caméra (°), portée (m), fondu de disparition (s).")]
+        [Range(0f, 45f)] public float enemySightMargin = 5f;
+        [Min(5f)] public float enemySightRange = 60f;
+        [Min(0.05f)] public float enemyFade = 0.5f;
 
         [Header("Carte ouverte (Tab), lot B de la DA (UI-HANDOFF § 2 bis)")]
         [Tooltip("Cadre plein écran (9 tranches, bordure 130 px en 1080p).")]

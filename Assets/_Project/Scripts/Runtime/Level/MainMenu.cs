@@ -101,6 +101,18 @@ namespace ItHunts.Level
             RandomLevel.TestStartInModule = false;
             _playSeed = Random.Range(1, 100000);
             GameSettings.Apply();
+            // Builds de développement : « -ithunts-scene Acte_2_Chateau » ouvre directement cette scène (mesures de performance par acte).
+            if (Debug.isDebugBuild)
+            {
+                string[] args = System.Environment.GetCommandLineArgs();
+                int a = System.Array.IndexOf(args, "-ithunts-scene");
+                if (a >= 0 && a + 1 < args.Length)
+                {
+                    UnityEngine.SceneManagement.SceneManager.LoadScene(args[a + 1]);
+                    return;
+                }
+            }
+
             Build();
             if (StartAtCamp)
             {

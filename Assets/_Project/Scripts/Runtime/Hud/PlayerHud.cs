@@ -561,6 +561,9 @@ namespace ItHunts.Hud
                 float show = _waves != null && _waves.Settings != null ? _waves.Settings.peakAnnounceTime : 1.5f;
                 float since = now - ItHunts.Enemies.WaveDirector.LastPeakTime;
                 bool on = _waves != null && since >= 0f && since < show;
+                // Nuit 4, point 3 : les vagues sont cachées (pression constante) : plus jamais de « VAGUE n » à l'écran.
+                if (_waves != null && _waves.Settings != null && _waves.Settings.continuous)
+                    on = false;
                 _waveText.text = on ? $"VAGUE {_waves.PeakIndex}" : string.Empty;
                 if (on)
                 {

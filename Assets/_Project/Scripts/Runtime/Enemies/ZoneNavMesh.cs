@@ -53,6 +53,8 @@ namespace ItHunts.Enemies
 
         /// <summary>Liens de mur ajoutés pour les goules.</summary>
         public int ClimbLinkCount => _links.Count;
+        /// <summary>Maillages non lisibles remplacés par leur boîte (mesures).</summary>
+        public int UnreadableMeshes { get; private set; }
 
         public int SmallAgent { get; private set; } = EnemyLocomotion.NoAgent;
         public int StalkerAgent { get; private set; } = EnemyLocomotion.NoAgent;
@@ -87,6 +89,21 @@ namespace ItHunts.Enemies
                 if (c == null || IsMoving(c) || c.GetComponentInParent<StalkerPassesThrough>() != null)
                     continue;                                           // objets qui bougent ; anneau des arcs (joueurs seulement)
                 NavMeshBuildSource src = s;
+                if (src.shape == NavMeshBuildSourceShape.Mesh && src.sourceObject is Mesh mesh && !mesh.isReadable)
+                {
+                    // Maillage du kit sans accès en lecture (« Source mesh … does not allow read access », casserait le build, nuit 4) :
+                    // sa boîte englobante remplace le maillage (obstacle ou sol approché).
+                    Collider col = c as Collider;
+                    if (col == null)
+                        continue;
+                    Bounds b = col.bounds;
+                    src.shape = NavMeshBuildSourceShape.Box;
+                    src.sourceObject = null;
+                    src.size = b.size;
+                    src.transform = Matrix4x4.TRS(b.center, Quaternion.identity, Vector3.one);
+                    UnreadableMeshes++;
+                }
+
                 if (c.GetComponentInParent<NotWalkable>() != null)
                     src.area = 1;                                       // plafonds, toits, murs : obstacle, jamais un sol
                 // Porte d'une salle verrouillée : hors du NavMesh des goules (il n'est pas refait à l'ouverture ; fermée, la porte

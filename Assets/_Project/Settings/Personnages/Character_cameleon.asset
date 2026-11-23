@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 022ac51f900dd8c4fbcdf818b745c895, type: 3}
   m_Name: Character_cameleon
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.CharacterDefinition
+  upgrades: {fileID: 11400000, guid: fd7eb9e02f368b644a015ec3ea4167dd, type: 2}
   id: cameleon
   displayName: "Cam\xE9l\xE9on"
   color: {r: 1, g: 0.55, b: 0.12, a: 1}

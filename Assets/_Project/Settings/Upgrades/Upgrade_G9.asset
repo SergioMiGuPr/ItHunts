@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_G9
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: G9
+  displayName: Orbe vorace
+  description: "Chaque \xE2me ramass\xE9e r\xE9duit vos recharges (traction, artefact,
+    dash)."
+  icon: {fileID: 21300000, guid: 33d6d11f23638894e9674d7ee7c22b04, type: 3}
+  iconSymbol: "\u25CC"
+  color: {r: 0.4, g: 2.6, b: 3.2, a: 1}
+  kind: 8
+  character: 0
+  isPassive: 0
+  rankValues:
+  - 0.05
+  - 0.08
+  - 0.11
+  - 0.15
+  - 0.2
+  rankValues2: []
+  rankValues3: []
+  rankTexts:
+  - "0.05 s par \xE2me"
+  - 0.08 s
+  - "0.11 s, aussi la recharge de la r\xE9pulsion"
+  - 0.15 s
+  - 0.2 s, un kill rend une charge de traction
+  synergies: Traction rapide (G10), Main leste (C5)
+  amount: 0.05
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

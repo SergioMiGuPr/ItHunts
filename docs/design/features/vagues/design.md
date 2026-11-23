@@ -71,6 +71,16 @@ ne change pas.
 10. **Réserve :** les ennemis sont créés une fois par le constructeur (80 goules, 20 volants, inactifs) et réutilisés ; plus
    aucun ennemi posé à la main dans `Test_Arena`. Le point de départ plus sûr de la zone viendra à l'étape 8.
 
+11. **Pression constante (nuit 4, D-103).** Les vagues sont **cachées** : plus de pic annoncé ni de « VAGUE n » à l'écran, plus de
+    klaxon. Les points d'apparition remplissent en permanence un **quota de goules en chasse par joueur** (acte I 6, II 8, III 10 ;
+    volants 2 / 3 / 4), une apparition toutes les **2.5 s** sous le quota (1.25 s en Enragé), derrière le joueur et hors de vue
+    (règles 4 et 5 inchangées), **plafond dur 16 vivants par joueur**. **Repos** façon L4D : après une blessure de 30 PV ou plus,
+    aucune apparition pendant 12 s. **Enragé** : quota × 1.5 en une seule marche. **Scaling** (`EnemyScaling`, `Resources/
+    EnemyScaling_Default`) sur la **puissance du joueur** (améliorations possédées + somme des rangs, le plus fort de l'équipe) :
+    PV +12 % et dégâts +6 % par point (exposant 0.9 : le joueur progresse plus vite que les goules), nombre +6 % par point ; par acte
+    PV ×1.25, dégâts ×1.15, nombre ×1.2 (plafond ×2.5). La vitesse n'est jamais scalée. Les habitants des salles suivent le même
+    multiplicateur de nombre (`maxGhoulsPerRoom` + 3).
+
 ## Valeurs
 
 `Waves_Default` (`WaveSettings`), validées le 2026-11-13.

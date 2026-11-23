@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3acb984585714184b9f2883f6df4009f, type: 3}
+  m_Name: UpgradePool_Koala
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradePool
+  upgrades:
+  - {fileID: 11400000, guid: 3a5e1128947e5e57a868cf15beb97bdf, type: 2}
+  - {fileID: 11400000, guid: 48bb409f963cad47df729589a7c591ec, type: 2}
+  - {fileID: 11400000, guid: 7d6aa1472f9321d61d0742a13f7ba31b, type: 2}
+  - {fileID: 11400000, guid: d0c0e5ec3776608d83a62f0ba2dd458e, type: 2}
+  - {fileID: 11400000, guid: e8f336d8ff46c1dd597e429b3c9cddca, type: 2}
+  - {fileID: 11400000, guid: a7aa0c1ae203a6c5667634685c3956c7, type: 2}
+  - {fileID: 11400000, guid: caff3f6c9f6fe7480bb03ab4c6a237f6, type: 2}
+  - {fileID: 11400000, guid: e5b1a553fbb3473e8087f26d2e4e7be8, type: 2}
+  - {fileID: 11400000, guid: 08ee4efd3a144e184808e6b3539b4e48, type: 2}
+  - {fileID: 11400000, guid: bad5d14ba412198e686627f93e1594ec, type: 2}

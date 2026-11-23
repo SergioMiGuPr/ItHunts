@@ -19,6 +19,23 @@ namespace ItHunts.Combat
         /// <summary>Rayons des zones de tête (m), réglés par BarrelModsSettings.</summary>
         public static float GhoulHeadRadius = 0.3f, FlyerHeadRadius = 0.32f;
 
+        /// <summary>Zone de tête × ce facteur (« Œil fendu », C-P2, D-100 : le plus fort des joueurs ; réglé par PlayerUpgrades).</summary>
+        public static float HeadScale = 1f;
+        private float _baseRadius = -1f, _appliedScale = 1f;
+
+        private void LateUpdate()
+        {
+            if (!Head || Mathf.Approximately(_appliedScale, HeadScale))
+                return;
+            var s = GetComponent<SphereCollider>();
+            if (s == null)
+                return;
+            if (_baseRadius < 0f)
+                _baseRadius = s.radius / _appliedScale;
+            s.radius = _baseRadius * HeadScale;
+            _appliedScale = HeadScale;
+        }
+
         /// <summary>
         /// Pose une zone de tête (sphère de touche, déclencheur) sur cet os : elle suit l'animation. Rayon en mètres (monde).
         /// </summary>

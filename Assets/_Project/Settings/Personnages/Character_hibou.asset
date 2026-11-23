@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 022ac51f900dd8c4fbcdf818b745c895, type: 3}
   m_Name: Character_hibou
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.CharacterDefinition
+  upgrades: {fileID: 11400000, guid: 1e082f4e310b9b1448b596c0e6426314, type: 2}
   id: hibou
   displayName: Hibou
   color: {r: 0.25, g: 0.5, b: 1, a: 1}

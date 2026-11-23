@@ -18,6 +18,30 @@ namespace ItHunts.EditorTools
         private static GameObject P(string path) => AssetDatabase.LoadAssetAtPath<GameObject>(Kits + path + ".prefab");
         private static Material M(string name) => AssetDatabase.LoadAssetAtPath<Material>(Bib + name + ".mat");
 
+        /// <summary>Matériau du château (PR #47, nuit 4) : M_Chateau_name ; repli sur la bibliothèque (M_Bib_name).</summary>
+        private static Material C(string name) =>
+            AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Chateau/M_Chateau_" + name + ".mat") ?? M(name);
+
+        private static FunctionMaterials FC(string function, string wall, string floor, string ceiling) =>
+            new FunctionMaterials { function = function, wall = C(wall), floor = C(floor), ceiling = C(ceiling) };
+
+        /// <summary>Réapplique les kits d'art aux réglages des 3 actes (sans reconstruire les scènes).</summary>
+        [MenuItem("ItHunts/Actes : réappliquer les kits d'art aux réglages")]
+        public static void ApplyAll()
+        {
+            for (int i = 1; i <= 3; i++)
+            {
+                var s = AssetDatabase.LoadAssetAtPath<ActLayoutSettings>("Assets/_Project/Settings/Actes/Act_" + i + ".asset");
+                if (s == null)
+                    continue;
+                Apply(s);
+                EditorUtility.SetDirty(s);
+            }
+
+            AssetDatabase.SaveAssets();
+            Debug.Log("Kits d'art réappliqués aux réglages des actes.");
+        }
+
         private static FunctionMaterials F(string function, string wall, string floor, string ceiling) =>
             new FunctionMaterials { function = function, wall = wall != null ? M(wall) : null, floor = floor != null ? M(floor) : null, ceiling = ceiling != null ? M(ceiling) : null };
 
@@ -114,19 +138,23 @@ namespace ItHunts.EditorTools
                         ("Prop_Caisse", "KitChateau/Chateau_Chaise_Renversee"));
                     k.functionMaterials = new List<FunctionMaterials>
                     {
-                        F("Salle de bal", "PierreTaillee_Sale", "Marbre", "PlatreFissure_Sale"), F("Bibliothèque", "PlatreFissure_Sale", "Tapis", "PlatreFissure"),
-                        F("Chapelle", "PierreTaillee", "Marbre", "PierreTaillee_Sale"), F("Salle à manger", "PlatreFissure_Sale", "Dalles", "PlatreFissure"),
-                        F("Galerie des portraits", "PlatreFissure_Sale", "Dalles", "PlatreFissure_Sale"), F("Chambre", "PlatreFissure", "Tapis", "PlatreFissure_Sale"),
-                        F("Armurerie", "PierreTaillee_Sale", "Dalles_Sales", "PierreTaillee"), F("Salle du trône", "PierreTaillee", "Marbre", "PierreTaillee_Sale"),
-                        F("Bains", "PierreTaillee_Salpetre", "Marbre", "PierreTaillee_Salpetre"), F("Tour effondrée", "Moellons", "Dalles_Sales", "Moellons_Salpetre"),
-                        F("Grand escalier", "PierreTaillee", "Marbre", "PlatreFissure_Sale"), F("Salon de musique", "PlatreFissure_Sale", "Tapis", "PlatreFissure"),
-                        F("Palier", "PierreTaillee_Sale", "Dalles", "PlatreFissure_Sale"),
+                        // Château de l'acte II (PR #47, tableau de l'ART-HANDOFF) : pierre claire, dalles claires, marbre, parquet,
+                        // boiseries, plâtre peint au pochoir, tapis.
+                        FC("Salle de bal", "PierreClaire", "Marbre", "PlatrePeint"), FC("Salle du trône", "PierreClaire", "Marbre", "PlatrePeint"),
+                        FC("Grand escalier", "PierreClaire", "Marbre", "PlatrePeint"),
+                        FC("Chapelle", "PierreClaire", "Marbre", "PierreClaire"), FC("Bains", "PierreClaire", "Marbre", "PierreClaire"),
+                        FC("Bibliothèque", "Boiserie", "Tapis", "PlatrePeint"),
+                        FC("Salle à manger", "Boiserie", "Parquet", "PlatrePeint"), FC("Salon de musique", "Boiserie", "Parquet", "PlatrePeint"),
+                        FC("Galerie des portraits", "PlatrePeint", "Parquet", "PlatrePeint"), FC("Chambre", "PlatrePeint", "Tapis", "PlatrePeint"),
+                        FC("Armurerie", "PierreClaire", "Dalles", "PierreClaire"), FC("Tour effondrée", "PierreClaire", "Dalles", "PierreClaire"),
+                        FC("Palier", "PierreClaire", "Dalles", "PlatrePeint"),
                     };
-                    s.wallMaterial = M("PierreTaillee_Sale");
-                    s.floorMaterial = M("Dalles");
-                    s.ceilingMaterial = M("PlatreFissure_Sale");
-                    s.trimMaterial = M("PierreTaillee");
-                    s.moonWindowSpacing = 0f;                             // fenêtres posées avec les murs du kit
+                    s.wallMaterial = C("PierreClaire");
+                    s.floorMaterial = C("Dalles");
+                    s.ceilingMaterial = C("PlatrePeint");
+                    s.trimMaterial = C("PierreClaire");
+                    // Nuit 4 : vraies fenêtres à rayons de lune sur les murs extérieurs, tous les 18 m (les murs du kit n'en portent pas).
+                    s.moonWindowSpacing = 18f;
                     break;
                 case ActTheme.Jardin:
                     k.outerWalls = new List<GameObject> { P("KitJardin/Jardin_Foret_Lisiere_20m"), P("KitJardin/Jardin_Falaise_16m"), P("KitJardin/Jardin_Foret_Lisiere_20m") };

@@ -9,10 +9,10 @@ namespace ItHunts.Artifacts
     /// <summary>État de l'épée en os d'un joueur : données seulement, copiables (réseau). Délais en ticks.</summary>
     public struct SwordState
     {
-        /// <summary>Prochain coup du combo (0, 1, 2).</summary>
+        /// <summary>Prochain coup du combo (0, 1, 2 ; 3 avec le tourbillon).</summary>
         public int Combo;
         public int LastSwingTick;
-        /// <summary>Pas de coup avant ce tick (intervalle, pause après le 3e).</summary>
+        /// <summary>Pas de coup avant ce tick (intervalle, pause après le dernier).</summary>
         public int ReadyTick;
         public int LastConsumedPressTick;
         public int Swings;
@@ -30,7 +30,7 @@ namespace ItHunts.Artifacts
     public struct SwordStep
     {
         public bool Swung;
-        /// <summary>Coup du combo (0, 1, 2).</summary>
+        /// <summary>Coup du combo (0, 1, 2 ; 3 : tourbillon, Enchaînement Mythique).</summary>
         public int Index;
         public bool Lunge;
     }
@@ -47,6 +47,8 @@ namespace ItHunts.Artifacts
     /// L'épée en os du koala (D-077), logique pure et testable. Même clic que le lancer (D-024) : sans objet tenu, un clic donne
     /// le coup suivant du combo (1, 2, 3) ; plus de comboWindow sans frapper : le combo repart du 1er. Pendant un dash ou une
     /// glissade, le coup est une fente. La vitesse du joueur augmente les dégâts (plafonnés). Rien ne touche au mouvement.
+    /// Améliorations (D-100) : 4e coup tourbillon, 3e coup en cercle, saignement, fente qui étourdit, onde de taille, bonus contre
+    /// les étourdis (PlayerUpgrades.Outgoing).
     /// </summary>
     public static class BoneSword
     {
@@ -68,8 +70,9 @@ namespace ItHunts.Artifacts
             if (s.ReadyTick != MovementState.NeverTick && tick < s.ReadyTick)
                 return step;                                         // trop tôt : l'appui reste mémorisé (buffer)
 
+            int hits = Mathf.Clamp(cfg.comboHits, 3, 4);
             int window = MovementSettings.SecondsToTicks(cfg.comboWindow, dt);
-            if (s.LastSwingTick == MovementState.NeverTick || tick - s.LastSwingTick > window)
+            if (s.LastSwingTick == MovementState.NeverTick || tick - s.LastSwingTick > window || s.Combo >= hits)
                 s.Combo = 0;
             step.Swung = true;
             step.Index = s.Combo;
@@ -80,10 +83,10 @@ namespace ItHunts.Artifacts
             s.LastIndex = step.Index;
             s.LastLunge = lunge;
             int wait = MovementSettings.SecondsToTicks(cfg.swingInterval, dt);
-            if (step.Index == 2)
+            if (step.Index == hits - 1)
                 wait += MovementSettings.SecondsToTicks(cfg.comboRecovery, dt);
             s.ReadyTick = tick + Mathf.Max(1, wait);
-            s.Combo = (s.Combo + 1) % 3;
+            s.Combo = (s.Combo + 1) % hits;
             return step;
         }
 
@@ -94,11 +97,11 @@ namespace ItHunts.Artifacts
             return 1f + k * (cfg.speedMaxMultiplier - 1f);
         }
 
-        /// <summary>Dégâts d'un coup (index 0..2, fente) à cette vitesse.</summary>
+        /// <summary>Dégâts d'un coup (index 0..3, fente) à cette vitesse ; le 4e coup (tourbillon) vaut 16 PV.</summary>
         public static float Damage(int index, bool lunge, float speed, BoneSwordSettings cfg)
         {
             float[] d = cfg.comboDamage;
-            float baseDamage = d != null && d.Length > 0 ? d[Mathf.Clamp(index, 0, d.Length - 1)] : 10f;
+            float baseDamage = index >= 3 ? 16f : d != null && d.Length > 0 ? d[Mathf.Clamp(index, 0, d.Length - 1)] : 10f;
             if (lunge)
                 baseDamage = (d != null && d.Length > 0 ? d[d.Length - 1] : baseDamage) * cfg.lungeDamageFactor;
             return baseDamage * SpeedMultiplier(speed, cfg);
@@ -169,19 +172,23 @@ namespace ItHunts.Artifacts
 
         /// <summary>
         /// Touche le monde : arc devant les yeux (portée, demi-angle), ou fente le long du déplacement (capsule). Chaque ennemi
-        /// au plus une fois par coup ; le 3e coup fait reculer. Le traqueur n'est jamais touché.
+        /// au plus une fois par coup ; le 3e coup fait reculer ; le 4e (tourbillon) frappe tout autour et repousse. Le traqueur
+        /// n'est jamais touché. up : améliorations du joueur (saignement, fente qui étourdit, onde de taille).
         /// </summary>
         public static int Strike(Vector3 eye, Vector3 aim, Vector3 velocity, SwordStep step, float speed, BoneSwordSettings cfg,
-            Transform shooter, int shooterId, float time, List<SwordHit> hits = null)
+            Transform shooter, int shooterId, float time, List<SwordHit> hits = null, ItHunts.Economy.PlayerUpgrades up = null)
         {
             Vector3 dir = aim.normalized;
             var flat = new Vector3(velocity.x, 0f, velocity.z);
             Vector3 lungeDir = flat.sqrMagnitude > 0.25f ? flat.normalized : new Vector3(dir.x, 0f, dir.z).normalized;
+            bool whirl = step.Index >= 3;
+            bool fullCircle = whirl || (step.Index == 2 && cfg.thirdHitFullCircle);
             int count = step.Lunge
                 ? Physics.OverlapCapsuleNonAlloc(eye, eye + lungeDir * cfg.lungeLength, cfg.lungeRadius, Overlaps, cfg.hitMask, QueryTriggerInteraction.Collide)
                 : Physics.OverlapSphereNonAlloc(eye, cfg.range + 1f, Overlaps, cfg.hitMask, QueryTriggerInteraction.Collide);
             var done = new HashSet<Damageable>();
             float damage = Damage(step.Index, step.Lunge, speed, cfg);
+            bool lungeStun = step.Lunge && up != null && up.Mythic(UpgradeKind.Fente);
             int touched = 0;
             for (int i = 0; i < count; i++)
             {
@@ -195,29 +202,76 @@ namespace ItHunts.Artifacts
                 if (!step.Lunge)
                 {
                     Vector3 to = point - eye;
-                    if (to.magnitude > cfg.range || (to.sqrMagnitude > 0.04f && Vector3.Angle(dir, to) > cfg.arcHalfAngle))
+                    if (to.magnitude > cfg.range || (!fullCircle && to.sqrMagnitude > 0.04f && Vector3.Angle(dir, to) > cfg.arcHalfAngle))
                         continue;
                 }
 
                 enemy.NoteAttacker(shooterId);
-                float taken = enemy.ApplyDamage(damage, time, out bool killed);
+                float taken = enemy.ApplyDamage(ItHunts.Economy.PlayerUpgrades.Outgoing(shooterId, enemy, damage, melee: true), time, out bool killed);
                 if (taken > 0f)
                     DamageEvents.Raise(new DamageEvent
                     {
                         Target = enemy, Damage = taken, Point = point, Killed = killed,
-                        Tier = step.Index == 2 || step.Lunge ? HitTier.Gros : HitTier.Moyen, Time = time, Melee = true,
+                        Tier = step.Index >= 2 || step.Lunge ? HitTier.Gros : HitTier.Moyen, Time = time, Melee = true, AttackerId = shooterId,
                     });
-                if (!killed && step.Index == 2 && !step.Lunge && cfg.knockback > 0f)
+                if (!killed)
                 {
-                    var body = enemy.GetComponent<EnemyBody>();
-                    Vector3 away = enemy.transform.position - eye;
-                    away.y = 0f;
-                    if (body != null && away.sqrMagnitude > 1e-4f)
-                        body.Push(away.normalized * cfg.knockback + Vector3.up * 1.5f);
+                    bool knock = (step.Index == 2 && !step.Lunge && cfg.knockback > 0f) || whirl;
+                    if (knock)
+                    {
+                        var body = enemy.GetComponent<EnemyBody>();
+                        Vector3 away = enemy.transform.position - eye;
+                        away.y = 0f;
+                        if (body != null && away.sqrMagnitude > 1e-4f)
+                            body.Push(away.normalized * Mathf.Max(cfg.knockback, whirl ? 6f : 0f) + Vector3.up * 1.5f);
+                    }
+
+                    if (up != null)
+                    {
+                        // Os brisé (K5) : saignement ; Fente Mythique (K3) : étourdit.
+                        if (up.Has(UpgradeKind.OsBrise))
+                            Bleeding.Apply(enemy, up.V(UpgradeKind.OsBrise), up.V2(UpgradeKind.OsBrise), shooterId, Mathf.RoundToInt(up.V3(UpgradeKind.OsBrise)), time);
+                        if (lungeStun && enemy.Body != null)
+                            enemy.Body.StunFor(1f);
+                    }
                 }
 
                 touched++;
                 hits?.Add(new SwordHit { Target = enemy, Damage = taken, Killed = killed });
+            }
+
+            // Onde de taille (K4) : un coup porté à plus de 12 m/s envoie une onde tranchante devant.
+            if (up != null && up.Has(UpgradeKind.OndeDeTaille) && speed > 12f && !step.Lunge)
+                touched += Wave(eye, dir, up.V(UpgradeKind.OndeDeTaille), up.V2(UpgradeKind.OndeDeTaille), up.Mythic(UpgradeKind.OndeDeTaille) ? 1f : 0f,
+                    shooter, shooterId, time, done);
+            return touched;
+        }
+
+        /// <summary>Onde tranchante : capsule devant les yeux (longueur m, rayon 1 m), dégâts à chaque ennemi non déjà touché par le coup.</summary>
+        public static int Wave(Vector3 eye, Vector3 dir, float length, float damage, float stun, Transform shooter, int shooterId, float time,
+            HashSet<Damageable> except = null)
+        {
+            int count = Physics.OverlapCapsuleNonAlloc(eye, eye + dir * length, 1f, Overlaps, ~0, QueryTriggerInteraction.Collide);
+            var done = new HashSet<Damageable>();
+            int touched = 0;
+            for (int i = 0; i < count; i++)
+            {
+                Collider c = Overlaps[i];
+                if (c == null || (shooter != null && c.transform.IsChildOf(shooter)))
+                    continue;
+                var enemy = c.GetComponentInParent<Damageable>();
+                if (enemy == null || enemy.Dead || enemy.ImmuneToOrbs || !done.Add(enemy) || (except != null && except.Contains(enemy)))
+                    continue;
+                enemy.NoteAttacker(shooterId);
+                float taken = enemy.ApplyDamage(ItHunts.Economy.PlayerUpgrades.Outgoing(shooterId, enemy, damage, melee: true), time, out bool killed);
+                if (taken > 0f)
+                    DamageEvents.Raise(new DamageEvent
+                    {
+                        Target = enemy, Damage = taken, Point = c.ClosestPoint(eye), Killed = killed, Tier = HitTier.Moyen, Time = time, Melee = true, AttackerId = shooterId,
+                    });
+                if (!killed && stun > 0f && enemy.Body != null)
+                    enemy.Body.StunFor(stun);
+                touched++;
             }
 
             return touched;

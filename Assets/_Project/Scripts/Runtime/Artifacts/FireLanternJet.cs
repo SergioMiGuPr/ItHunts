@@ -31,9 +31,12 @@ namespace ItHunts.Artifacts
         private static readonly Collider[] Overlaps = new Collider[128];
         private static readonly RaycastHit[] Rays = new RaycastHit[32];
 
-        /// <summary>Brûle les nouvelles cibles du cône ; renvoie le nombre de cibles touchées ce tick.</summary>
+        /// <summary>
+        /// Brûle les nouvelles cibles du cône ; renvoie le nombre de cibles touchées ce tick. burnBonus : part de brûlure en plus
+        /// (Souffle double Or : 2e jet consécutif) ; les dégâts passent par les améliorations du tireur (PlayerUpgrades.Outgoing).
+        /// </summary>
         public static int Sweep(Vector3 eye, Vector3 aim, FireLanternSettings cfg, Transform shooter, int shooterId,
-            HashSet<int> burned, float time, int tick, List<LanternHit> hits = null, PhysicsScene? scene = null)
+            HashSet<int> burned, float time, int tick, List<LanternHit> hits = null, PhysicsScene? scene = null, float burnBonus = 0f)
         {
             Vector3 dir = aim.normalized;
             PhysicsScene physics = scene ?? Physics.defaultPhysicsScene;
@@ -65,13 +68,24 @@ namespace ItHunts.Artifacts
                 {
                     enemy.NoteAttacker(shooterId);                       // coop : il se retourne contre le tireur (D-041)
                     // Dégâts immédiats (0 par défaut : tout passe par la brûlure) ; un volant meurt quand même en un coup.
-                    float dmg = enemy.ProjectileDamage(cfg.damage > 0f ? cfg.damage : enemy.DiesOnProjectileHit ? 1f : 0f);
+                    float dmg = enemy.ProjectileDamage(cfg.damage > 0f ? ItHunts.Economy.PlayerUpgrades.Outgoing(shooterId, enemy, cfg.damage) : enemy.DiesOnProjectileHit ? 1f : 0f);
                     bool killed = false;
                     float taken = dmg > 0f ? enemy.ApplyDamage(dmg, time, out killed) : 0f;
                     hit.Damage = taken;
                     hit.Killed = killed;
                     if (!killed && cfg.burnDps > 0f)
-                        Burning.Apply(enemy, cfg.burnDps, cfg.burnDuration, shooterId, cfg.burnTick, cfg.burnEffect, time);   // brûlure (point 8)
+                    {
+                        float dps = ItHunts.Economy.PlayerUpgrades.Outgoing(shooterId, enemy, cfg.burnDps * (1f + burnBonus));
+                        Burning.Apply(enemy, dps, cfg.burnDuration, shooterId, cfg.burnTick, cfg.burnEffect, time, cfg.burnMaxStacks);   // brûlure (point 8), cumul (R4)
+                    }
+
+                    if (!killed && cfg.pushOnHit > 0f && enemy.Body != null)
+                    {
+                        Vector3 away = enemy.Center - eye;                   // Flamme large Or (D-100) : le jet pousse légèrement
+                        away.y = 0f;
+                        if (away.sqrMagnitude > 1e-4f)
+                            enemy.Body.Push(away.normalized * cfg.pushOnHit);
+                    }
                     if (taken > 0f)
                         DamageEvents.Raise(new DamageEvent
                         {

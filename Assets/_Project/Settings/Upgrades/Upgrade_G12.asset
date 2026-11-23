@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_G12
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: G12
+  displayName: "\xC9lan de traction"
+  description: "La traction acc\xE9l\xE8re plus vite et garde plus d'\xE9lan \xE0
+    l'arriv\xE9e (plafond 18 inchang\xE9)."
+  icon: {fileID: 21300000, guid: 0cfc5be6f0aaa5e42abbd121e8b42e07, type: 3}
+  iconSymbol: "\u2192\u2192"
+  color: {r: 0.3, g: 0.9, b: 3.2, a: 1}
+  kind: 11
+  character: 0
+  isPassive: 0
+  rankValues:
+  - 0.25
+  - 0.5
+  - 0.75
+  - 1
+  - 1.25
+  rankValues2: []
+  rankValues3: []
+  rankTexts:
+  - "acc\xE9l\xE9ration +25 %"
+  - +50 %
+  - "+75 %, l'\xE9lan de sortie est gard\xE9 1 s de plus"
+  - +100 %
+  - "+125 %, 4 s de tractions sans charge apr\xE8s une parade r\xE9ussie"
+  synergies: Garde large (G2), Vif-argent (G26)
+  amount: 0.25
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

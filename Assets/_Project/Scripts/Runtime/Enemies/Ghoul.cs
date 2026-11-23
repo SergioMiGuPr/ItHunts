@@ -154,7 +154,7 @@ namespace ItHunts.Enemies
         private Animator _anim;
         private string _clip;
         private GhoulMode _animMode;
-        private float _landedAt = -9f, _strikeAt = -9f, _crouch = 1f;
+        private float _landedAt = -9f, _strikeAt = -9f, _crouch = 1f, _leapStartedAt = -9f;
         private string _forcedClip;
 
         /// <summary>Clip joué (tests, vitrine) ; null sans modèle animé.</summary>
@@ -362,6 +362,10 @@ namespace ItHunts.Enemies
                 ClearSignals();                                           // morte pendant l'annonce : yeux, gueule, corps et disque éteints
                 return;
             }
+
+            // Ralentissements des améliorations (Sillage, Onde blessante Or, feu, flaques, liens : D-100) sur la difficulté.
+            if (_damageable != null)
+                _move.SpeedScale = ItHunts.Level.RunSession.EnemySpeed * _damageable.SpeedScale;
             // Coup au contact en cours : résolu à chaque pas fixe, quoi qu'il arrive ensuite (nuit 3, point 7). Avant, il ne l'était
             // que si la goule passait par ContactDamage : l'impact tombait à un instant variable (ou jamais), la parade semblait
             // ne pas marcher.
@@ -495,8 +499,9 @@ namespace ItHunts.Enemies
                     continue;
                 float d = Vector3.Distance(pos, p.transform.position);
                 nearest = Mathf.Min(nearest, d);
-                if (!seen && (d <= settings.aggroProximity
-                              || (d <= settings.aggroSightRange && LineOfSight(pos + Vector3.up * Height * 0.8f, p))))
+                float detect = EnemySenses.DetectionScale(p);              // Souffle court, Peau changeante (D-100)
+                if (!seen && (d <= settings.aggroProximity * detect
+                              || (d <= settings.aggroSightRange * detect && LineOfSight(pos + Vector3.up * Height * 0.8f, p))))
                     seen = true;
             }
 
@@ -679,7 +684,7 @@ namespace ItHunts.Enemies
         /// </summary>
         private bool TryStartLeap(Vector3 pos, Vector3 targetPos, float now)
         {
-            if (now < _nextLeap)
+            if (now < _nextLeap || (_damageable != null && _damageable.LeapBlocked))   // Lien vorace Mythique (D-100) : plus de bond
                 return false;
             float distance = new Vector3(targetPos.x - pos.x, 0f, targetPos.z - pos.z).magnitude;
             float drop = pos.y - targetPos.y;
@@ -730,6 +735,7 @@ namespace ItHunts.Enemies
             Vector3 aim = EnemyMath.Predict(_target.transform.position, EnemySenses.VelocityOf(_target), settings.leapLead);
             _leapVelocity = EnemyMath.LeapVelocityTo(pos, aim, settings.leapSpeed, settings.leapHeight, settings.gravity);
             _leapHit = false;
+            _leapStartedAt = Time.time;
             LeapCount++;
             LastLeapStart = pos;
             _move.Clear();
@@ -809,17 +815,19 @@ namespace ItHunts.Enemies
                     _leapHit = true;
                     LeapHits++;
                     AttackSound();
-                    if (ItHunts.Player.PlayerParry.TryParry(p, this, now, p.Center))
+                    // Bond (nuit 4, point 1) : tout appui fait pendant le vol (ou dans la fenêtre normale avant son envol) le pare ; avant,
+                    // le contact tombait 0.2 à 0.45 s après l'envol et un appui à la vue de l'annonce était toujours « trop tôt ».
+                    if (ItHunts.Player.PlayerParry.TryParry(p, this, now, p.Center, now - _leapStartedAt))
                     {
                         Parried++;                                     // paré (D-075) : ni dégâts ni poussée, elle est étourdie
                         _nextContact = now + settings.contactInterval;
                         break;
                     }
 
-                    if (p.TakeEnemyDamage(settings.leapDamage, p.Center, now, "Bond d'une goule"))
+                    if (p.TakeEnemyDamage(settings.leapDamage, p.Center, now, "Bond d'une goule", this))
                         _nextContact = now + settings.contactInterval;
                     Vector3 push = flat.sqrMagnitude > 0.01f ? flat.normalized * settings.leapPush : Vector3.zero;
-                    if (p.Motor != null)
+                    if (p.Motor != null && !p.KnockbackImmune)              // Peau épaisse Or (D-100) : pas de recul
                         p.Motor.AddVelocity(push + Vector3.up * settings.leapPush * 0.25f);
                     break;
                 }
@@ -1284,7 +1292,7 @@ namespace ItHunts.Enemies
                 else if (now - _pendingImpact >= ItHunts.Player.PlayerParry.LateWindowOf(p))
                 {
                     _pendingHit = null;
-                    p.TakeEnemyDamage(settings.contactDamage, p.Center, now, "Griffes d'une goule");
+                    p.TakeEnemyDamage(settings.contactDamage, p.Center, now, "Griffes d'une goule", this);
                 }
 
                 return;
@@ -1306,7 +1314,7 @@ namespace ItHunts.Enemies
                         _pendingImpact = now;
                     }
                     else
-                        target.TakeEnemyDamage(settings.contactDamage, target.Center, now, "Griffes d'une goule");
+                        target.TakeEnemyDamage(settings.contactDamage, target.Center, now, "Griffes d'une goule", this);
                 }
 
                 return;

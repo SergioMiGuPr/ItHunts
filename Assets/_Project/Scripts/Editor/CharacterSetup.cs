@@ -68,7 +68,7 @@ namespace ItHunts.EditorTools
             return $"{list} ; {pools} ; {prefab} ; scènes : {scenes}";
         }
 
-        public const string LanternPoolPath = SettingsDir + "/UpgradePool_Lanterne.asset";
+        public const string LanternPoolPath = SettingsDir + "/UpgradePool_Renard.asset";
 
         /// <summary>
         /// Améliorations vendues par le marchand de l'artefact, une liste par artefact (point 6) : celles du barillet (D-050) et 4
@@ -84,13 +84,7 @@ namespace ItHunts.EditorTools
                 EditorUtility.SetDirty(barrel);
             }
 
-            var pool = LoadOrCreate<UpgradePool>(LanternPoolPath);
-            pool.upgrades.Clear();
-            pool.upgrades.Add(Upgrade("Upgrade_Lanterne_Portee", "Long souffle", "Jet de la lanterne : +1,5 m de portée.", "+1,5", new Color(3.2f, 1.2f, 0.3f), UpgradeKind.PorteeLanterne, 1.5f, 45));
-            pool.upgrades.Add(Upgrade("Upgrade_Lanterne_Cone", "Flamme large", "Cône du jet : +15°.", "<>", new Color(3.4f, 1.6f, 0.4f), UpgradeKind.ConeLanterne, 15f, 50));
-            pool.upgrades.Add(Upgrade("Upgrade_Lanterne_Recharge", "Mèche vive", "Recharge de la lanterne : -0,5 s.", "-0,5", new Color(3f, 2f, 0.5f), UpgradeKind.RechargeLanterne, 0.5f, 55));
-            pool.upgrades.Add(Upgrade("Upgrade_Lanterne_Brulure", "Braises", "Brûlure de la lanterne : +2 s.", "+2 s", new Color(3.6f, 0.7f, 0.2f), UpgradeKind.DureeBrulureLanterne, 2f, 60));
-            EditorUtility.SetDirty(pool);
+            var pool = AssetDatabase.LoadAssetAtPath<UpgradePool>(LanternPoolPath);   // table générée (D-100)
             FireLanternSettings lantern = Lantern();
             if (lantern.upgrades != pool)
             {

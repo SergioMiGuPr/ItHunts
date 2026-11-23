@@ -20,6 +20,7 @@ namespace ItHunts.Hud
         private RectTransform _fullMap, _fullMapArea, _fullMapIcons, _legend;
         private RawImage _fullMapImage, _fullFog;
         private Image _fullArrow;
+        private bool _fullInkPainted;
         private readonly List<Image> _fullMarks = new List<Image>(), _fullAllies = new List<Image>();
         private ItHunts.Input.PlayerInputReader _reader;
 
@@ -241,6 +242,14 @@ namespace ItHunts.Hud
             _fullMapImage.rectTransform.sizeDelta = size;
             _fullMapImage.texture = tex;
             _fullMapImage.uvRect = new Rect(0f, 0f, 1f, 1f);
+            // D-101 : dans un acte, la texture est déjà à l'encre (même peintre, mêmes couleurs que la bulle) : affichée telle quelle ;
+            // sans plan, le matériau d'encre de la DA trace les bords des rectangles comme avant.
+            bool ink = mm.InkPainted;
+            if (ink != _fullInkPainted)
+            {
+                _fullInkPainted = ink;
+                _fullMapImage.material = ink || _skin.mapInkMaterial == null ? null : _skin.mapInkMaterial;
+            }
             if (_fullFog.enabled && _fullFog.material != null)
             {
                 Vector2 fogArea = ((RectTransform)_fullFog.transform).rect.size;
@@ -283,6 +292,10 @@ namespace ItHunts.Hud
 
             for (int i = used; i < _fullAllies.Count; i++)
                 _fullAllies[i].enabled = false;
+
+            // Ennemis vus par ce joueur (D-101) : même règle et même fondu que dans la bulle, icônes ×1.4.
+            UpdateEnemySight();
+            DrawEnemyMarks(_enemyIconsFull, _fullMapIcons, P, 0f, 1.4f);
 
             _fullArrow.rectTransform.SetAsLastSibling();
             _fullArrow.rectTransform.anchoredPosition = P(_health.transform.position);

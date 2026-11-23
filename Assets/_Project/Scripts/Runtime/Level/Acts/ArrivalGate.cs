@@ -28,6 +28,32 @@ namespace ItHunts.Level.Acts
             lift = height;
         }
 
+        private Transform _leftHinge, _rightHinge;
+        private Collider[] _leafColliders;
+
+        /// <summary>Porte pleine à deux battants (nuit 4) : les gonds pivotent de 110° vers le vestibule quand le traqueur l'enfonce.</summary>
+        public void ConfigureLeaves(Transform leftHinge, Transform rightHinge)
+        {
+            _leftHinge = leftHinge;
+            _rightHinge = rightHinge;
+            bars = null;
+            _leafColliders = GetComponentsInChildren<Collider>(true);
+        }
+
+        private void ApplyLeaves(float open, float shake)
+        {
+            if (_leftHinge == null || _rightHinge == null)
+                return;
+            float jitter = shake > 0f ? Mathf.Sin(Time.time * 43f) * 1.5f * shake : 0f;
+            _leftHinge.localRotation = Quaternion.Euler(0f, -110f * open + jitter, 0f);
+            _rightHinge.localRotation = Quaternion.Euler(0f, 110f * open - jitter, 0f);
+            bool passable = open > 0.3f;
+            if (_leafColliders != null)
+                foreach (Collider c in _leafColliders)
+                    if (c != null)
+                        c.enabled = !passable;
+        }
+
         private void Start()
         {
             _zone = FindFirstObjectByType<ZoneState>();
@@ -42,7 +68,7 @@ namespace ItHunts.Level.Acts
 
         private void Update()
         {
-            if (_zone == null || bars == null)
+            if (_zone == null || (bars == null && _leftHinge == null))
                 return;
             float release = _zone.Settings != null ? _zone.Settings.gracePeriod : 60f;
             float t = _zone.Started ? _zone.Elapsed : 0f;
@@ -50,14 +76,18 @@ namespace ItHunts.Level.Acts
             {
                 Opened = false;
                 OpenAmount = 0f;
-                bars.localPosition = _closed;
+                if (bars != null)
+                    bars.localPosition = _closed;
+                ApplyLeaves(0f, 0f);
                 return;
             }
 
             float warnStart = release - warn - rise;
             if (t < warnStart)
             {
-                bars.localPosition = _closed;
+                if (bars != null)
+                    bars.localPosition = _closed;
+                ApplyLeaves(0f, 0f);
                 OpenAmount = 0f;
                 return;
             }
@@ -66,7 +96,9 @@ namespace ItHunts.Level.Acts
             {
                 // Tremblement : il pousse derrière.
                 float k = Mathf.InverseLerp(warnStart, release - rise, t);
-                bars.localPosition = _closed + new Vector3(Mathf.Sin(Time.time * 47f) * 0.05f * k, Mathf.Abs(Mathf.Sin(Time.time * 31f)) * 0.08f * k, 0f);
+                if (bars != null)
+                    bars.localPosition = _closed + new Vector3(Mathf.Sin(Time.time * 47f) * 0.05f * k, Mathf.Abs(Mathf.Sin(Time.time * 31f)) * 0.08f * k, 0f);
+                ApplyLeaves(0f, k);
                 if (!_shook)
                 {
                     _shook = true;
@@ -78,12 +110,16 @@ namespace ItHunts.Level.Acts
 
             float u = Mathf.Clamp01(Mathf.InverseLerp(release - rise, release, t));
             OpenAmount = u * u * (3f - 2f * u);
-            bars.localPosition = _closed + Vector3.up * (lift * OpenAmount);
+            if (bars != null)
+                bars.localPosition = _closed + Vector3.up * (lift * OpenAmount);
+            ApplyLeaves(OpenAmount, 0f);
             if (!Opened && OpenAmount > 0.01f)
             {
                 Opened = true;
                 ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings?.stalkerArrival, transform.position, 1f, 120f);
-                ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Pick(ItHunts.Audio.GameAudio.Settings?.stalkerEnragedCries), transform.position, 1f);
+                var art = ItHunts.Audio.GameAudio.Settings;
+                AudioClip appear = art != null ? ItHunts.Audio.GameAudio.Pick(art.stalkerAppearCries) : null;
+                ItHunts.Audio.GameAudio.PlayAt(appear != null ? appear : ItHunts.Audio.GameAudio.Pick(art?.stalkerEnragedCries), transform.position, 1f, 160f);
             }
         }
 

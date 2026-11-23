@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_G23
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: G23
+  displayName: Charge en plus
+  description: Charges de mouvement (dash, saut en l'air).
+  icon: {fileID: 21300000, guid: 759ce8c9e6f70e44496d6003023c54c0, type: 3}
+  iconSymbol: +1
+  color: {r: 0.4, g: 2.4, b: 3, a: 1}
+  kind: 22
+  character: 0
+  isPassive: 0
+  rankValues:
+  - 1
+  - 1
+  - 2
+  - 2
+  - 3
+  rankValues2:
+  - 0
+  - 0.5
+  - 0.5
+  - 0.5
+  - 0.5
+  rankValues3:
+  - 0
+  - 0
+  - 0
+  - 1
+  - 1
+  rankTexts:
+  - +1
+  - "recharge au sol \u22120.5 s"
+  - +2
+  - "recharge en l'air \u22121 s"
+  - "+3, 2 s de dashs gratuits apr\xE8s un kill"
+  synergies: "Second souffle (G3), \xC9lan du b\xFBcheron (K8)"
+  amount: 1
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

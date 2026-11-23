@@ -64,16 +64,17 @@ namespace ItHunts.Economy
             }
 
             _placedForSeed = seed;
-            int count = settings != null ? settings.merchantOffers : 3;
-            UpgradeDefinition[] drawn = run != null ? run.DrawUpgradesFor(count, null, PlayerHealth.All.Count > 0 ? PlayerHealth.All[0] : null) : new UpgradeDefinition[0];
+            // Offres à rangs (D-100) : une nouvelle, une montée, le soin ; tirées pour le premier joueur (ancien marchand, peu utilisé).
+            PlayerHealth first = PlayerHealth.All.Count > 0 ? PlayerHealth.All[0] : null;
+            var drawn = ArtifactMerchant.OffersFor(run, first);
             float range = settings != null ? settings.orbInteractRange : 8f;
-            int n = drawn.Length + 1;
+            int n = drawn.Count + 1;
             for (int i = 0; i < n; i++)
             {
                 float x = (i - (n - 1) * 0.5f) * 2.4f;
                 Vector3 at = transform.position + transform.forward * 1.6f + transform.right * x + Vector3.up * (1.6f + (i % 2 == 1 ? 0.6f : 0f));
-                OfferOrb orb = i < drawn.Length
-                    ? OfferOrb.Create(transform, at, drawn[i], drawn[i].merchantPrice, 0f, 0, range, orbMaterial)
+                OfferOrb orb = i < drawn.Count
+                    ? OfferOrb.Create(transform, at, drawn[i].u, settings != null ? settings.RankPrice(drawn[i].to) : drawn[i].u.merchantPrice, 0f, 0, range, orbMaterial, drawn[i].from, drawn[i].to)
                     : OfferOrb.Create(transform, at, null, settings != null ? settings.healPrice : 35, settings != null ? settings.healAmount : 40f, 0, range, orbMaterial);
                 orb.Pricing = settings;
                 orb.MenuOnly = true;

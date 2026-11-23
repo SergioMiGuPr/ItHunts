@@ -35,6 +35,15 @@ namespace ItHunts.Settings
         public Material burnEffect;
         [Tooltip("Un clic arrivé un peu trop tôt (fin de recharge) part dès que possible pendant ce délai (s).")]
         [Min(0f)] public float pressBuffer = 0.12f;
+
+        [Header("Améliorations (D-100) : réglées par PlayerUpgrades sur la copie du joueur")]
+        [Tooltip("Brûlures qui se cumulent sur un même ennemi (Braises, R4) ; 1 : relance sans cumul.")]
+        [Min(1)] public int burnMaxStacks = 1;
+        [Tooltip("Charges de jet en plus (Souffle double, R7) : un jet peut partir pendant la recharge tant qu'il en reste ; chacune revient en cooldown × 1 / facteur.")]
+        [Min(0)] public int jetExtraCharges;
+        [Range(0.1f, 2f)] public float extraChargeRechargeFactor = 1f;
+        [Tooltip("Poussée (m/s) des ennemis touchés par le jet (Flamme large Or) ; 0 : aucune.")]
+        [Min(0f)] public float pushOnHit;
         [Tooltip("Ce que le jet peut toucher ou ce qui l'arrête (décor solide sans Rigidbody). Le joueur qui tire est toujours ignoré.")]
         public LayerMask hitMask = ~0;
 

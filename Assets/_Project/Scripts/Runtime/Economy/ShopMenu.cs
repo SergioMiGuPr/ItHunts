@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ItHunts.Hud;
 using ItHunts.Level;
 using ItHunts.Player;
+using ItHunts.Settings;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -119,22 +120,35 @@ namespace ItHunts.Economy
             OfferOrb o = i >= 0 && i < Offers.Count ? Offers[i] : null;
             if (o == null)
                 return "—";
-            string name = o.Upgrade != null ? o.Upgrade.displayName : $"Soin (+{o.Heal:0} PV)";
-            return o.Price > 0 ? $"{name}  ({o.PriceFor(Player)} âmes)" : name;
+            string name = o.Upgrade != null ? o.Title : $"Soin (+{o.Heal:0} PV)";
+            int price = o.PriceFor(Player);
+            return o.Price > 0 ? (price > 0 ? $"{name}  ({price} âmes)" : $"{name}  (gratuit)") : name;
         }
 
+        /// <summary>Nom de l'offre avec son rang : « Nom · Bronze » (nouvelle), « Nom · Bronze → Argent » (montée), « Soin ».</summary>
         public string Name(int i)
         {
             OfferOrb o = i >= 0 && i < Offers.Count ? Offers[i] : null;
-            return o == null ? string.Empty : o.Upgrade != null ? o.Upgrade.displayName : "Soin";
+            return o == null ? string.Empty : o.Title;
         }
 
+        /// <summary>Effet du rang visé (texte du tableau) ; un passif le dit, et prévient s'il remplace le passif porté.</summary>
         public string Description(int i)
         {
             OfferOrb o = i >= 0 && i < Offers.Count ? Offers[i] : null;
             if (o == null)
                 return string.Empty;
-            return o.Upgrade != null ? o.Upgrade.description : $"Rend {o.Heal:0} PV.";
+            if (o.Upgrade == null)
+                return $"Rend {o.Heal:0} PV.";
+            string text = o.IsRankUp ? o.Effect : $"{o.Upgrade.description} {o.Effect}".Trim();
+            if (o.Upgrade.isPassive && !o.IsRankUp)
+            {
+                var run = ItHunts.Artifacts.RunState.Current;
+                UpgradeDefinition worn = run != null && Player != null ? run.Slots(Player.PlayerId).Passive : null;
+                text = worn != null && worn != o.Upgrade ? $"Passif : remplace {worn.displayName} (son rang est perdu). {text}" : $"Passif (un seul porté). {text}";
+            }
+
+            return text;
         }
 
         /// <summary>Prix affiché (0 : choix gratuit d'un coffre).</summary>

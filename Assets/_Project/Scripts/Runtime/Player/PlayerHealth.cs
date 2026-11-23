@@ -14,6 +14,8 @@ namespace ItHunts.Player
         public Vector3 Point;
         public bool Killed;
         public float Time;
+        /// <summary>Ennemi qui a frappé (goule, volant), s'il s'est nommé ; null sinon (Fourrure de braise, D-100).</summary>
+        public Component Attacker;
     }
 
     /// <summary>
@@ -128,15 +130,71 @@ namespace ItHunts.Player
         {
             if (damage <= 0f || _health.Dead || DebugInvulnerable || !FriendlyFire.Allows(attackerId, PlayerId, coop))
                 return false;
-            float taken = HealthState.Apply(ref _health, FriendlyFire.Scale(damage, coop), time, out bool killed);
+            float scaled = Mitigate(FriendlyFire.Scale(damage, coop));
+            LastHurtTime = Time.time;
+            if (scaled <= 0f || TryCheatDeath(scaled))
+                return false;
+            float taken = HealthState.Apply(ref _health, scaled, time, out bool killed);
             if (taken <= 0f)
                 return false;
             Raise(attackerId, taken, point, killed, time);
             return true;
         }
 
+        // ---------- Crochets des améliorations (nuit 4, D-100), posés par Economy.PlayerUpgrades ----------
+
+        /// <summary>Dégâts reçus × ce facteur (Peau épaisse, Fourrure de braise Or) ; null : 1.</summary>
+        public System.Func<float> IncomingScale { get; set; }
+        /// <summary>Dégâts du décor (chute dans le vide) → dégâts réels (Chute amortie, Plumes) ; null : inchangés.</summary>
+        public System.Func<float, float> FallDamageScale { get; set; }
+        /// <summary>Un coup qui tuerait : vrai pour revenir à 50 % de PV à la place (Cœur solide Mythique, une fois par run) ; jamais face à la prise du traqueur.</summary>
+        public System.Func<bool> SecondChance { get; set; }
+        /// <summary>Bouclier (Sangsue Or) : absorbe les dégâts avant les PV, jusqu'à ShieldMax ; se recharge par le drain du livre.</summary>
+        public float Shield { get; private set; }
+        public float ShieldMax { get; set; }
+        /// <summary>Sangsue Mythique dans l'arène du boss : le bouclier absorbe un coup mortel du traqueur.</summary>
+        public bool ShieldBlocksKill { get; set; }
+        /// <summary>Peau épaisse Or : pas de recul quand on est touché (bond de la goule).</summary>
+        public bool KnockbackImmune { get; set; }
+        /// <summary>Dernier coup reçu (régénération hors combat).</summary>
+        public float LastHurtTime { get; private set; } = float.NegativeInfinity;
+
+        /// <summary>Ajoute du bouclier (jamais au-delà de ShieldMax) ; renvoie la part gardée.</summary>
+        public float AddShield(float amount)
+        {
+            if (amount <= 0f || ShieldMax <= 0f)
+                return 0f;
+            float before = Shield;
+            Shield = Mathf.Min(ShieldMax, Shield + amount);
+            return Shield - before;
+        }
+
+        /// <summary>Dégâts après réduction et bouclier.</summary>
+        private float Mitigate(float damage)
+        {
+            if (IncomingScale != null)
+                damage *= Mathf.Clamp01(IncomingScale());
+            if (Shield > 0f && damage > 0f)
+            {
+                float absorbed = Mathf.Min(Shield, damage);
+                Shield -= absorbed;
+                damage -= absorbed;
+            }
+
+            return damage;
+        }
+
+        /// <summary>Seconde chance (Cœur solide Mythique) : si ce coup tue et qu'elle est due, le joueur revient à 50 % ; vrai alors.</summary>
+        private bool TryCheatDeath(float damage)
+        {
+            if (damage < _health.Current || SecondChance == null || !SecondChance())
+                return false;
+            _health.Current = Mathf.Max(1f, _health.Max * 0.5f);
+            return true;
+        }
+
         /// <summary>Coup d'un ennemi (goule, volant) : pas de tir ami, il blesse toujours. Vrai si des PV ont été retirés.</summary>
-        public bool TakeEnemyDamage(float damage, Vector3 point, float time, string cause = null)
+        public bool TakeEnemyDamage(float damage, Vector3 point, float time, string cause = null, Component attacker = null)
         {
             if (damage <= 0f || _health.Dead)
                 return false;
@@ -149,11 +207,15 @@ namespace ItHunts.Player
                 DebugBlockedHits++;
                 return false;
             }
-            damage *= ItHunts.Level.RunSession.EnemyDamage;                 // difficulté (D-048)
+            damage *= ItHunts.Level.RunSession.EnemyDamage * ItHunts.Enemies.EnemyScaling.DamageMultiplier();   // difficulté (D-048) et scaling (nuit 4)
+            damage = Mitigate(damage);                                      // améliorations (D-100) : réduction, bouclier
+            LastHurtTime = Time.time;
+            if (damage <= 0f || TryCheatDeath(damage))
+                return false;
             float taken = HealthState.Apply(ref _health, damage, time, out bool killed);
             if (taken <= 0f)
                 return false;
-            Raise(EnemyAttacker, taken, point, killed, time);
+            Raise(EnemyAttacker, taken, point, killed, time, attacker);
             return true;
         }
 
@@ -164,6 +226,10 @@ namespace ItHunts.Player
                 return false;
             if (!string.IsNullOrEmpty(cause))
                 LastCause = cause;
+            if (FallDamageScale != null)
+                damage = FallDamageScale(damage);                          // Chute amortie, Plumes (D-100)
+            if (damage <= 0f || TryCheatDeath(damage))
+                return false;
             float taken = HealthState.Apply(ref _health, damage, time, out bool killed);
             if (taken <= 0f)
                 return false;
@@ -184,9 +250,18 @@ namespace ItHunts.Player
 
             if (_health.Dead)
                 return false;
+            if (ShieldBlocksKill && Shield > 0f)
+            {
+                Shield = 0f;                                             // Sangsue Mythique : le bouclier encaisse le coup du boss
+                InvulnerableUntil = Mathf.Max(InvulnerableUntil, Time.time + 1f);
+                return false;
+            }
+
             float taken = _health.Current;
             HealthState.Apply(ref _health, float.PositiveInfinity, time, out bool killed);
             Raise(EnemyAttacker, taken, point, killed, time);
+            if (killed && cause == "Le traqueur")
+                StalkerDeathCam.Begin(this);                             // screamer de la prise (nuit 4, point 7)
             return true;
         }
 
@@ -274,7 +349,7 @@ namespace ItHunts.Player
             return true;
         }
 
-        private void Raise(int attacker, float taken, Vector3 point, bool killed, float time)
+        private void Raise(int attacker, float taken, Vector3 point, bool killed, float time, Component by = null)
         {
             if (killed && !Downed && OthersStanding() > 0)
             {
@@ -286,7 +361,7 @@ namespace ItHunts.Player
 
             Hurt?.Invoke(new PlayerHurtEvent
             {
-                Victim = this, AttackerId = attacker, Damage = taken, Point = point, Killed = killed, Time = time,
+                Victim = this, AttackerId = attacker, Damage = taken, Point = point, Killed = killed, Time = time, Attacker = by,
             });
             if (killed)
                 Died?.Invoke(this);

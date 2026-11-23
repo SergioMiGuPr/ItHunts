@@ -49,6 +49,95 @@ namespace ItHunts.Combat
         public EnemyBody Body => _body;
         public bool Stunned => _body != null && _body.Stunned;
 
+        // ---------- Les 5 états lisibles par les synergies (nuit 4, D-100) : étourdi, paralysé, en feu, saignant, lié ----------
+
+        /// <summary>Paralysé (balles paralysantes, Mythiques) jusqu'à cet instant : un étourdissement marqué « paralysie ».</summary>
+        public float ParalyzedUntil { get; private set; } = float.NegativeInfinity;
+        public bool Paralyzed => Time.time < ParalyzedUntil;
+        public bool StunnedOrParalyzed => Stunned || Paralyzed;
+
+        /// <summary>Paralyse (étourdit, et marque l'état) pendant duration s ; faux pour le traqueur ou sans corps.</summary>
+        public bool Paralyze(float duration)
+        {
+            if (_body == null || duration <= 0f || !_body.StunFor(duration))
+                return false;
+            ParalyzedUntil = Mathf.Max(ParalyzedUntil, Time.time + duration);
+            return true;
+        }
+
+        /// <summary>Prolonge l'étourdissement en cours (Briseur d'os Or, Brise-garde Or).</summary>
+        public void ExtendStun(float seconds)
+        {
+            if (_body != null)
+                _body.ExtendStun(seconds);
+        }
+
+        private Burning _burning;
+        private Bleeding _bleeding;
+
+        /// <summary>En feu (lanterne, braises, Allumette…) ; vrai aussi à l'instant de la mort pour les effets « meurt en feu ».</summary>
+        public bool Burning
+        {
+            get
+            {
+                if (_burning == null)
+                    _burning = GetComponent<Burning>();
+                return _burning != null && _burning.Lit;
+            }
+        }
+
+        public int BurnStacks
+        {
+            get
+            {
+                if (_burning == null)
+                    _burning = GetComponent<Burning>();
+                return _burning != null && _burning.Lit ? _burning.Stacks : 0;
+            }
+        }
+
+        /// <summary>Saignant (épée en os, Os brisé).</summary>
+        public bool Bleeding
+        {
+            get
+            {
+                if (_bleeding == null)
+                    _bleeding = GetComponent<Bleeding>();
+                return _bleeding != null && _bleeding.Lit;
+            }
+        }
+
+        /// <summary>Lié par le livre du hibou (drain en cours) : l'artefact le renouvelle à chaque tick du lien.</summary>
+        public float BoundUntil { get; set; } = float.NegativeInfinity;
+        public bool Bound => Time.time < BoundUntil;
+        /// <summary>Joueur dont le lien le tient (0 : aucun).</summary>
+        public int BoundBy { get; set; }
+
+        /// <summary>Ralenti (Sillage, Onde blessante Or, feu d'Allumette, flaques, liens) : part de vitesse retirée jusqu'à SlowUntil.</summary>
+        public float SlowUntil { get; private set; } = float.NegativeInfinity;
+        public float SlowShare { get; private set; }
+        /// <summary>Facteur de vitesse de déplacement (1 : pas de ralentissement), lu par la locomotion des ennemis.</summary>
+        public float SpeedScale => Time.time < SlowUntil ? 1f - Mathf.Clamp01(SlowShare) : 1f;
+
+        public void Slow(float share, float duration)
+        {
+            if (immuneToOrbs || share <= 0f || duration <= 0f)
+                return;                                                 // le traqueur n'est jamais ralenti (D-035)
+            float until = Time.time + duration;
+            if (until >= SlowUntil || share >= SlowShare)
+            {
+                SlowShare = Time.time < SlowUntil ? Mathf.Max(SlowShare, share) : share;
+                SlowUntil = Mathf.Max(SlowUntil, until);
+            }
+        }
+
+        /// <summary>Ne peut plus bondir (Lien vorace Mythique) jusqu'à cet instant.</summary>
+        public float LeapBlockedUntil { get; set; } = float.NegativeInfinity;
+        public bool LeapBlocked => Time.time < LeapBlockedUntil;
+
+        /// <summary>Contour « Vision nocturne » du hibou (H-P1) : lueur douce quand aucune autre lueur d'état ne l'emporte.</summary>
+        public Color VisionGlow { get; set; } = Color.black;
+
         /// <summary>Traqueur : jamais blessé (aucun dégât), repoussé, étourdi, blessé par une zone ni attrapé.</summary>
         public bool ImmuneToOrbs => immuneToOrbs;
 
@@ -85,7 +174,8 @@ namespace ItHunts.Combat
         }
 
         /// <summary>PV max × multiplicateur de la difficulté (D-048) ; pas pour le traqueur (ImmuneToOrbs).</summary>
-        private float ScaledMaxHealth => (settings != null ? settings.maxHealth : 100f) * (ImmuneToOrbs ? 1f : ItHunts.Level.RunSession.EnemyHealth);
+        private float ScaledMaxHealth => (settings != null ? settings.maxHealth : 100f)
+                                          * (ImmuneToOrbs ? 1f : ItHunts.Level.RunSession.EnemyHealth * ItHunts.Enemies.EnemyScaling.HealthMultiplier());   // puissance du joueur et acte (nuit 4)
 
         private void OnEnable()
         {
@@ -150,6 +240,7 @@ namespace ItHunts.Combat
             _health = HealthState.Create(ScaledMaxHealth);
             if (_body != null)
                 _body.ResetToHome();
+            ParalyzedUntil = SlowUntil = BoundUntil = LeapBlockedUntil = float.NegativeInfinity;
             SetAlive(true);
         }
 
@@ -214,8 +305,9 @@ namespace ItHunts.Combat
                 return;                                                  // tenu : sa lueur vient de la télékinésie
             bool whole = Time.time < _flashUntil || Stunned;
             Color glow = Time.time < _flashUntil ? _flashColor
-                : Stunned ? stunColor * (stunGlowIntensity * (0.6f + 0.4f * Mathf.Sin(Time.time * 18f)))
-                : ExtraGlow;
+                : Stunned ? (Paralyzed ? new Color(0.5f, 0.9f, 1f) : stunColor) * (stunGlowIntensity * (0.6f + 0.4f * Mathf.Sin(Time.time * 18f)))
+                : ExtraGlow.maxColorComponent > 0f ? ExtraGlow
+                : VisionGlow;
             foreach (Renderer r in _renderers)
                 if (r != null && _perMaterial.Contains(r))
                 {

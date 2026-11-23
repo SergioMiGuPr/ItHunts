@@ -101,8 +101,12 @@ namespace ItHunts.Orbs
         public MagnetRefusal LastRefusal;
         public MagnetMode LastRefusalMode;
 
+        /// <summary>Charges de répulsion en plus (Charge de répulsion, G17, D-100) : −1 avant le premier tick (pleines).</summary>
+        public float RepelCharges;
+
         public static MagnetismState Create() => new MagnetismState
         {
+            RepelCharges = -1f,
             Status = OrbStatus.Prete,
             AttractStatus = OrbStatus.Prete,
             RepelStatus = OrbStatus.Prete,

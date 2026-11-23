@@ -64,6 +64,12 @@ namespace ItHunts.Player
         /// <summary>Facteur de FOV posé par l'écran partagé selon la découpe (1 en solo).</summary>
         public float FovScale { get; set; } = 1f;
 
+        /// <summary>Décalage de la caméra (m, monde) posé par une mise en scène (mort par le traqueur, nuit 4) ; zéro sinon.</summary>
+        public Vector3 ViewOffset { get; set; }
+
+        /// <summary>FOV imposé (°) par une mise en scène ; 0 : le FOV normal (vitesse, dash).</summary>
+        public float FovOverride { get; set; }
+
         private void Awake()
         {
             if (settings == null || viewRig == null)
@@ -132,7 +138,7 @@ namespace ItHunts.Player
             _eyeHeight = _eyeHeight < 0f ? targetEye : Mathf.Lerp(_eyeHeight, targetEye, 1f - Mathf.Exp(-EyeHeightLerpSpeed * dt));
 
             Vector3 feet = _motor != null ? _motor.InterpolatedPosition : transform.position;
-            viewRig.SetPositionAndRotation(feet + Vector3.up * _eyeHeight, Quaternion.Euler(_pitch, _yaw, 0f));
+            viewRig.SetPositionAndRotation(feet + Vector3.up * _eyeHeight + ViewOffset, Quaternion.Euler(_pitch, _yaw, 0f));
 
             UpdateFov(dt);
         }
@@ -189,7 +195,8 @@ namespace ItHunts.Player
             if (virtualCamera != null)
             {
                 LensSettings lens = virtualCamera.Lens;
-                lens.FieldOfView = Mathf.Clamp((_fov + FovPunch) * FovScale, 20f, 150f);
+                float fov = FovOverride > 0f ? FovOverride : _fov + FovPunch;
+                lens.FieldOfView = Mathf.Clamp(fov * FovScale, 20f, 150f);
                 virtualCamera.Lens = lens;
             }
         }

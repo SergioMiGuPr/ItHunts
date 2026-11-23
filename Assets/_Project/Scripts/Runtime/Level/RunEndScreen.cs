@@ -62,6 +62,32 @@ namespace ItHunts.Level
             return $"{s / 60}:{s % 60:00}";
         }
 
+        /// <summary>
+        /// Lignes « Améliorations » de l'écran de fin (D-100, pur) : les noms avec leur rang, 3 par ligne au plus ; plusieurs lignes
+        /// « Améliorations (1/3) » quand il y en a beaucoup, pour que la ligne ne déborde plus du cadre de la DA.
+        /// </summary>
+        public static List<(string label, string value)> UpgradeLines(IReadOnlyList<string> owned, int perLine = 3)
+        {
+            var r = new List<(string, string)>();
+            if (owned == null || owned.Count == 0)
+            {
+                r.Add(("Améliorations", "aucune"));
+                return r;
+            }
+
+            int chunks = Mathf.CeilToInt(owned.Count / (float)Mathf.Max(1, perLine));
+            for (int c = 0; c < chunks; c++)
+            {
+                var part = new List<string>();
+                for (int i = c * perLine; i < Mathf.Min(owned.Count, (c + 1) * perLine); i++)
+                    part.Add(owned[i]);
+                string label = chunks == 1 ? $"Améliorations ({owned.Count})" : $"Améliorations ({c + 1}/{chunks})";
+                r.Add((label, string.Join(", ", part)));
+            }
+
+            return r;
+        }
+
         private void Fill()
         {
             string act = RunSession.Active && RunSession.Definition != null && RunSession.Act < RunSession.Definition.levels.Count
@@ -79,8 +105,10 @@ namespace ItHunts.Level
             if (run != null)
                 foreach (PlayerHealth p in PlayerHealth.All)
                     if (p != null)
-                        owned.AddRange(run.UpgradesOf(p.PlayerId).Where(u => u != null).Select(u => u.displayName));
-            Lines.Add(("Améliorations", owned.Count == 0 ? "aucune" : $"{owned.Count} : {string.Join(", ", owned.GroupBy(x => x).Select(g => g.Count() > 1 ? $"{g.Key} ×{g.Count()}" : g.Key))}"));
+                        foreach (var u in run.Slots(p.PlayerId).Sorted())
+                            owned.Add($"{u.displayName} ({ItHunts.Settings.UpgradeDefinition.RankName(run.RankOf(p.PlayerId, u))})");
+            foreach (var line in UpgradeLines(owned))
+                Lines.Add(line);
             Lines.Add(("Artefact", string.IsNullOrEmpty(RunStats.Artifact) ? "—" : RunStats.Artifact));
             Lines.Add(("Caisses lancées", RunStats.CratesThrown.ToString()));
             Lines.Add(("Headshots", RunStats.Headshots.ToString()));

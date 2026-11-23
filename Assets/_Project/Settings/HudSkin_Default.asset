@@ -38,6 +38,28 @@ MonoBehaviour:
   trailDelay: 0.25
   healthFontSize: 17
   healthTextColor: {r: 0.92, g: 0.88, b: 0.86, a: 1}
+  rankColors:
+  - {r: 0.72, g: 0.45, b: 0.26, a: 1}
+  - {r: 0.78, g: 0.8, b: 0.84, a: 1}
+  - {r: 0.96, g: 0.78, b: 0.28, a: 1}
+  - {r: 0.7, g: 0.9, b: 1, a: 1}
+  - {r: 0.85, g: 0.45, b: 0.95, a: 1}
+  rankFrames:
+  - {fileID: 21300000, guid: 01fe2998094f1804cb8de6d99e289c01, type: 3}
+  - {fileID: 21300000, guid: 2181ddd07e358f44cab2d8f7ed4d1524, type: 3}
+  - {fileID: 21300000, guid: cf7003a7f3e63914499a640a6bb7a018, type: 3}
+  - {fileID: 21300000, guid: 690e873a0957d604c99986dff6c49612, type: 3}
+  - {fileID: 21300000, guid: 35feb9c652272d543bd33b9da1836a42, type: 3}
+  passiveFrames:
+  - {fileID: 21300000, guid: 41f6ba7fc48f6194b84c42744674dc3a, type: 3}
+  - {fileID: 21300000, guid: 1801f230c0bda4b499978b94afe6f992, type: 3}
+  - {fileID: 21300000, guid: 66bffd9c8eb14ed4a96b8863be8f31e0, type: 3}
+  - {fileID: 21300000, guid: 07244eabd5e40804e82fe0cf5fd0451a, type: 3}
+  - {fileID: 21300000, guid: fc1b1787ed8fe8f479b8009430186577, type: 3}
+  passiveMask: {fileID: 21300000, guid: ff8d894e2b9013947b3f84593aef739a, type: 3}
+  upgradeIconSize: 58
+  upgradeIconGap: 6
+  upgradeRowGap: 10
   soulsFrame: {fileID: 21300000, guid: 1363ac126e66e004fbb1f7fd33be3c24, type: 3}
   soulsBack: {fileID: 21300000, guid: d7601ed05cf354b40b08fb858ae33a27, type: 3}
   soulsFlame: {fileID: 21300000, guid: 4cf33678fb7ce0e4b853d1b293b0b55e, type: 3}
@@ -74,6 +96,15 @@ MonoBehaviour:
   allySize: 16
   arrowSize: 24
   mapIconSize: 30
+  iconEnemy: {fileID: 0}
+  iconStalker: {fileID: 0}
+  enemyIconSize: 10
+  stalkerIconSize: 26
+  enemyColor: {r: 0.85, g: 0.12, b: 0.1, a: 1}
+  stalkerColor: {r: 0.55, g: 0.05, b: 0.08, a: 1}
+  enemySightMargin: 5
+  enemySightRange: 60
+  enemyFade: 0.5
   mapFrame: {fileID: 21300000, guid: 5bc608c5e5fd83b4b865b783357f1a1d, type: 3}
   mapParchment: {fileID: 21300000, guid: 2778339c8a5b33e4a935a37a5269484e, type: 3}
   mapVignette: {fileID: 21300000, guid: 0c60ab2c5f852bf4fb2f825f6ac91d49, type: 3}

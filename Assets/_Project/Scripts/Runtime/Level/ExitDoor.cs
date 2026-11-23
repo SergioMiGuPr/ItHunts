@@ -25,6 +25,8 @@ namespace ItHunts.Level
 
         public bool Open { get; private set; }
         public bool Unlocked => Zone != null && Zone.ExitUnlocked;
+        /// <summary>Temps avant l'ouverture (s) ; 0 si ouverte ou sans zone.</summary>
+        public float UnlockLeft => Zone != null ? Zone.ExitUnlockLeft : 0f;
         public int Price => Zone != null && Zone.Settings != null ? Zone.Settings.exitPrice : 200;
         public Vector3 Point => transform.position + Vector3.up * 1.8f;   // à hauteur des yeux (porte posée au sol)
         public float Range => interactRange;
@@ -122,6 +124,22 @@ namespace ItHunts.Level
 
         public void SetOpen(bool open)
         {
+            // Portes du kit de la DA (nuit 4, lot 3, PR #52) : leur animation OuverturePorte (battants à leurs gonds, courbe douce).
+            var anim = GetComponent<ItHunts.Art.VFX.OuverturePorte>();
+            if (anim != null && FindLeaves())
+            {
+                Open = open;
+                if (open)
+                    anim.Ouvre();
+                else
+                    anim.Pose(0f);
+                foreach (Collider c in _leftLeaf.GetComponentsInChildren<Collider>(true))
+                    c.enabled = !open;
+                foreach (Collider c in _rightLeaf.GetComponentsInChildren<Collider>(true))
+                    c.enabled = !open;
+                return;
+            }
+
             if (FindLeaves())
             {
                 if (!_closedKnown)

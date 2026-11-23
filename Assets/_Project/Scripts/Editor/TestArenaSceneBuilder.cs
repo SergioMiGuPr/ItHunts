@@ -38,7 +38,7 @@ namespace ItHunts.EditorTools
         private const string EconomyPath = SettingsDir + "/Economy_Default.asset";
         private const string UpgradePoolPath = SettingsDir + "/UpgradePool_Default.asset";
         private const string UpgradesDir = SettingsDir + "/Upgrades";
-        private const string BarrelPoolPath = SettingsDir + "/UpgradePool_Barillet.asset";
+        private const string BarrelPoolPath = SettingsDir + "/UpgradePool_Cameleon.asset";
         private static EconomySettings _economy;
         private static Material _offerOrb;
         private const string StalkerPath = SettingsDir + "/Stalker_Default.asset";
@@ -854,54 +854,14 @@ namespace ItHunts.EditorTools
 
         // ---------- Économie (étape 7, D-043) ----------
 
-        private static UpgradePool UpgradePoolAsset()
-        {
-            if (!AssetDatabase.IsValidFolder(UpgradesDir))
-                AssetDatabase.CreateFolder(SettingsDir, "Upgrades");
-            var pool = LoadOrCreate<UpgradePool>(UpgradePoolPath);
-            pool.upgrades.Clear();
-            pool.upgrades.Add(Upgrade("Upgrade_Charge", "Charge en plus", "+1 charge de mouvement (dash, saut en l'air).", "+1", new Color(0.4f, 2.4f, 3f), UpgradeKind.ChargeDeMouvement, 1f, 70));
-            pool.upgrades.Add(Upgrade("Upgrade_Traction", "Traction rapide", "Une charge de traction revient 1 s plus vite.", "-1s", new Color(0.3f, 0.9f, 3.2f), UpgradeKind.RechargeTraction, 1f, 60));
-            pool.upgrades.Add(Upgrade("Upgrade_Collecte", "Grande orbe", "Rayon de collecte des âmes +50 %.", "R+", new Color(0.3f, 3f, 2.2f), UpgradeKind.RayonDeCollecte, 0.5f, 40));
-            pool.upgrades.Add(Upgrade("Upgrade_Projectiles", "Projectiles lourds", "Objets lancés ou repoussés : +25 % de dégâts.", "x1.25", new Color(2f, 0.6f, 3f), UpgradeKind.DegatsObjetsLances, 0.25f, 70));
-            pool.upgrades.Add(Upgrade("Upgrade_Repulsion", "Onde blessante", "La répulsion blesse les ennemis touchés (10 PV).", "10", new Color(3.2f, 1.3f, 0.3f), UpgradeKind.DegatsRepulsion, 10f, 60));
-            pool.upgrades.Add(Upgrade("Upgrade_PV", "Cœur solide", "+25 PV max (et 25 PV tout de suite).", "PV+", new Color(3.2f, 0.4f, 0.4f), UpgradeKind.PvMax, 25f, 50));
-            pool.upgrades.Add(Upgrade("Upgrade_Aspiration", "Aspiration", "Les âmes viennent à l'orbe 50 % plus vite.", ">>", new Color(1.2f, 2.6f, 3.2f), UpgradeKind.AspirationAmes, 0.5f, 40));
-            // Caméléon (nuit 3, point 6) : ses 8 améliorations avancées, réservées au barillet, restent dans la table.
-            foreach (string g in AssetDatabase.FindAssets("Upgrade_Cameleon_ t:UpgradeDefinition", new[] { UpgradesDir }))
-            {
-                var u = AssetDatabase.LoadAssetAtPath<UpgradeDefinition>(AssetDatabase.GUIDToAssetPath(g));
-                if (u != null && !pool.upgrades.Contains(u))
-                    pool.upgrades.Add(u);
-            }
+        /// <summary>
+        /// Table des 30 améliorations génériques (nuit 4, D-100) : générée par docs/design/outils/gen_upgrades.py depuis AMELIORATIONS.md ;
+        /// les constructeurs ne fabriquent plus d'améliorations, ils lisent la table.
+        /// </summary>
+        private static UpgradePool UpgradePoolAsset() => AssetDatabase.LoadAssetAtPath<UpgradePool>(UpgradePoolPath);
 
-            EditorUtility.SetDirty(pool);
-            return pool;
-        }
-
-        /// <summary>Améliorations du barillet (D-050, provisoires) : vendues par le marchand de la salle de départ.</summary>
-        public static UpgradePool BarrelPoolAsset()
-        {
-            if (!AssetDatabase.IsValidFolder(UpgradesDir))
-                AssetDatabase.CreateFolder(SettingsDir, "Upgrades");
-            var pool = LoadOrCreate<UpgradePool>(BarrelPoolPath);
-            pool.upgrades.Clear();
-            pool.upgrades.Add(Upgrade("Upgrade_Barillet", "Barillet garni", "+2 balles au barillet.", "+2", new Color(3f, 2.5f, 0.4f), UpgradeKind.BallesBarillet, 2f, 50));
-            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Degats", "Balles lourdes", "Balles du barillet : +30 % de dégâts.", "x1.3", new Color(3.2f, 0.9f, 0.3f), UpgradeKind.DegatsBarillet, 0.3f, 60));
-            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Cadence", "Gâchette vive", "Tir du barillet 25 % plus rapide.", ">>>", new Color(3f, 1.8f, 0.3f), UpgradeKind.CadenceBarillet, 0.25f, 55));
-            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Rechargement", "Rechargement éclair", "Rechargement du barillet 35 % plus court.", "R", new Color(2.6f, 2.6f, 0.6f), UpgradeKind.RechargementBarillet, 0.35f, 45));
-            pool.upgrades.Add(Upgrade("Upgrade_Barillet_Portee", "Long canon", "Portée du barillet +25 m.", "+25", new Color(2.2f, 2.8f, 0.8f), UpgradeKind.PorteeBarillet, 25f, 40));
-            // Caméléon (nuit 3, point 6) : ses 8 améliorations avancées, réservées au barillet, restent dans la table.
-            foreach (string g in AssetDatabase.FindAssets("Upgrade_Cameleon_ t:UpgradeDefinition", new[] { UpgradesDir }))
-            {
-                var u = AssetDatabase.LoadAssetAtPath<UpgradeDefinition>(AssetDatabase.GUIDToAssetPath(g));
-                if (u != null && !pool.upgrades.Contains(u))
-                    pool.upgrades.Add(u);
-            }
-
-            EditorUtility.SetDirty(pool);
-            return pool;
-        }
+        /// <summary>Améliorations du caméléon (barillet), table générée (D-100).</summary>
+        public static UpgradePool BarrelPoolAsset() => AssetDatabase.LoadAssetAtPath<UpgradePool>(BarrelPoolPath);
 
         /// <summary>Marchand de l'artefact dans la salle de départ (D-050) : silhouette violette, enseigne, offres par joueur.</summary>
         public static void BuildArtifactMerchant(Transform parent, Vector3 at, Quaternion rotation, EconomySettings economy, Material orb)

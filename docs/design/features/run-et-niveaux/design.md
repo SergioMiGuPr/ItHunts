@@ -157,12 +157,26 @@ une scène construite comme `Level_01_Aleatoire` (*ItHunts > Carte aléatoire : 
       passage se rouvre et la cible reste éteinte.
     - **Piège raté :** le piège se réarme en 4 s.
     - **Au troisième piège réussi**, il tombe : le niveau est gagné.
-11. **Minimap (D-053).** Elle est dans la vue de chaque joueur, nord en haut, sur 320 m autour de lui ; Tab maintenu affiche
-    toute la carte.
-    - Une salle ou un tronçon se découvre quand un joueur y entre, et les découvertes sont communes en coop.
-    - Une fois découverts, les points clés s'affichent : coffres (gris une fois ouverts par ce joueur), marchand, salle
-      verrouillée, sortie (rouge, puis verte), départ.
-    - Les alliés apparaissent en bleu.
+11. **Minimap (D-053, D-101).** Dans la vue de chaque joueur, nord en haut : la **bulle ronde** du HUD de la DA (200 m de
+    diamètre autour du joueur) et, Tab maintenu, la **carte ouverte** (toute la zone). Les deux affichent **la même texture,
+    peinte par le même peintre** (`ActMapPainter`), aux mêmes couleurs : plus de rendu différent entre la bulle et la carte.
+    - **Dessin précis dans les actes (D-101)** : déduit du plan (`ActPlan`), pas des volumes de salle. Sol des salles
+      découvertes en teinte sombre (plus claire par étage de sol) ; **murs en traits d'encre nets** (contours des salles,
+      biseaux à 45° compris, épaisseur 1 m, soit une demi-case) ; **portes = ouvertures dans le trait** (barre orange en
+      travers : verrouillée ; grise : herse du traqueur ; rouge : sortie) ; terrasses hachurées plus claires ; bassins en
+      teinte eau ; fosses très sombres ; ponts et îlots plus clairs ; rampes en dégradé (clair au sommet, côté porte).
+      Résolution ≥ 4 px/m (texture de 512 à 2048 px selon l'emprise, pixels isotropes). Dans les scènes sans plan
+      (Level_01, Test_Arena), les rectangles des volumes de salle comme avant.
+    - **Brume par salle** : une salle se découvre quand un joueur y entre (découverte par volume ; dans un acte, un volume
+      connu découvre toute la salle) ; découvertes communes en coop par défaut. Une fois découverts, les points clés
+      s'affichent : coffres (gris une fois ouverts par ce joueur), marchand, salle verrouillée, sortie (visible dès le
+      départ, rouge puis verte), départ. Les alliés apparaissent en pastilles de leur personnage.
+    - **Ennemis à vue (D-101)** : goules en **point rouge**, traqueur en **symbole** (triangle à l'œil, rouge sombre ;
+      sprites `iconEnemy` / `iconStalker` de la DA dès qu'ils sont livrés), **seulement quand ils sont dans le champ de
+      vision du joueur** : angle à plat ≤ demi-FOV horizontal de sa caméra + 5°, distance ≤ 60 m, aucun décor entre ses
+      yeux et le centre de l'ennemi (lancer de rayon ; le joueur et l'ennemi visé ne comptent pas). Hors du champ, la marque
+      **s'efface en 0.5 s** à la dernière position vue. Pas de radar : en coop, la vue de chaque joueur montre ce que CE
+      joueur voit, sans partage. Réglages dans `HudSkin_Default` (tailles, couleurs, marge d'angle, portée, fondu).
 13. **Population (après le playtest de l'étape 8).**
     - **Habitants :** en plus des vagues, chaque grande salle (pas la salle de départ) a dès le départ 2 à 5 goules selon sa
       taille, plus 1 à 2 volants si elle est au niveau haut. Ils attendent, avec l'aggro habituelle. Tués, ils ne reviennent
@@ -258,6 +272,25 @@ une scène construite comme `Level_01_Aleatoire` (*ItHunts > Carte aléatoire : 
       - **Estimation** pour un joueur rapide : 35 à 45 s, sous la cible de 60 à 90 s (à valider).
 12. **Tronçons de couloir (D-047).** Ils font 40 m au plus. Aucun ennemi n'apparaît dans le tronçon d'un joueur ni dans les
     tronçons voisins.
+18. **Actes de la nuit 4 (D-102 : plus grands, à boucles, à étages).** Règles tirées de `RECHERCHE-NUIT-4.md` (Pac-Man, Dead by
+    Daylight, Unexplored, Titanfall) :
+    - **Zéro impasse** : toute salle de combat a **au moins 2 portes** (`minDoorsPerRoom`) ; après les boucles (`loopChance` 0.8),
+      `EnsureExits` force une porte vers une voisine de contact pour les salles qui en manquent ; au plus 1 impasse tolérée par
+      carte (test `ZeroImpasse…`). Seules les salles verrouillées et le hall de sortie sont des culs-de-sac.
+    - **Taille** : 20 à 22 salles de 800 à 4 200 m² selon l'acte (16 avant), `gridSize` 220 cases de 2 m.
+    - **Étages** : `floorStep` 4 m (5 au château), changement de sol dans 50 à 60 % des rattachements, sols de −8 à +12 / +15 m.
+      Une porte entre deux étages est **soit une rampe, soit un palier** (`landingChance` 0.5) : dans la salle basse, une terrasse à
+      la hauteur de la salle haute devant la porte (porte + 1 case de chaque côté, 3 cases de profondeur), un **escalier** réservé
+      de 3 cases de large qui y monte (pente 28°), un anneau de traction au-dessus ; c'est la « porte en hauteur qui mène à la salle
+      d'au-dessus ». Les paliers n'ont ni creux ni terrasse au hasard en plus.
+    - **Terrasses** (mezzanines, galeries) : part 0.7 à 0.8 ; chaque composante connexe a son escalier et, quand la place le permet,
+      son mur de wall jump. Le traqueur les atteint par ses bonds (6 m) et ses escalades.
+    - **Traqueur caché** : dans les trois actes il attend derrière une **porte pleine à deux battants** qu'il enfonce à la fin de la
+      période de grâce (plus de herse à barreaux ni de cellule visible) ; son vestibule n'a aucune torche.
+    - **Murs sans faces confondues** : un demi-mur ne se prolonge d'une demi-épaisseur qu'aux coins ; linteau et seuil à la largeur
+      exacte de l'ouverture, seuil affleurant 2 cm sous le sol haut.
+    - **Acte II** : fenêtres à rayons de lune tous les 18 m sur les murs extérieurs, lustres 1.5 / 1 000 m² à l'échelle de la salle,
+      appliques tous les 6 m. **Acte III** : plus de cimes-sphères (la lisière et les falaises du kit suffisent).
 
 ## Valeurs
 
@@ -301,3 +334,5 @@ une scène construite comme `Level_01_Aleatoire` (*ItHunts > Carte aléatoire : 
 ## Historique
 
 - 2026-11-13 : création (étape 8, blocs 1 à 6).
+- 2026-11-23 : D-101, minimap précise déduite du plan de l'acte (murs, portes, reliefs), même texture pour la bulle et la
+  carte ouverte, ennemis à vue (règle 11).

@@ -81,3 +81,7 @@ Desktop.ini
 # Python (scripts Blender)
 __pycache__/
 *.pyc
+
+# Captures brutes de la nuit 4 (57 Mo, planches commitées à la place)
+docs/design/nuit-4/captures/apres/
+docs/design/nuit-4/captures/da/

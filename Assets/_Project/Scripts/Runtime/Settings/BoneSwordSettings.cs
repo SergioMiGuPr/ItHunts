@@ -72,6 +72,12 @@ namespace ItHunts.Settings
         [Tooltip("Calques touchés.")]
         public LayerMask hitMask = ~0;
 
+        [Header("Améliorations (D-100) : réglées par PlayerUpgrades sur la copie du joueur")]
+        [Tooltip("Coups du combo (3 ; 4 avec Enchaînement Mythique : le 4e est un tourbillon à 360° qui repousse).")]
+        [Range(3, 4)] public int comboHits = 3;
+        [Tooltip("Le 3e coup frappe en cercle complet (Lame longue Mythique).")]
+        public bool thirdHitFullCircle;
+
         [Header("Vue : l'épée flottante frappe (mains gelées) : taille horizontale, diagonale, estoc")]
         [Tooltip("Durée de l'animation d'un coup (s).")]
         [Min(0.05f)] public float swingAnimDuration = 0.26f;

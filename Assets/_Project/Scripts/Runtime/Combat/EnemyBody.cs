@@ -72,14 +72,34 @@ namespace ItHunts.Combat
         public float LastWallDamage { get; private set; }
 
         /// <summary>
+        /// Améliorations du joueur qui a repoussé cet ennemi (nuit 4, D-100), branchées par Economy.PlayerUpgrades : multiplicateur
+        /// des dégâts d'impact contre un mur (« Rebond », G16) et secondes ajoutées à ses étourdissements (« Briseur d'os » Or).
+        /// Argument : identifiant du dernier joueur à l'avoir attaqué ; null ou 0 : rien.
+        /// </summary>
+        public static System.Func<int, float> WallDamageMultiplierFor;
+        public static System.Func<int, float> StunBonusFor;
+
+        /// <summary>Prolonge l'étourdissement en cours (et l'immunité qui le suit) ; rien s'il n'est pas étourdi.</summary>
+        public void ExtendStun(float seconds)
+        {
+            if (seconds <= 0f || !Stunned || Held)
+                return;
+            _stunnedUntil += seconds;
+            _immuneUntil += seconds;
+        }
+
+        /// <summary>
         /// Dégâts contre un mur d'un ennemi repoussé (D-031) : 5 PV par m/s au-delà de 6 m/s, au plus 40 ; appelé avec
         /// l'étourdissement réussi (donc une fois par impact, jamais pendant l'immunité ; traqueur exclu). Renvoie les dégâts.
+        /// « Rebond » (G16) : × le multiplicateur du joueur qui l'a repoussé.
         /// </summary>
         public float ApplyWallDamage(float impactSpeed, Vector3 point)
         {
             if (settings == null || _damageable == null || _damageable.ImmuneToOrbs)
                 return 0f;
             float damage = AreaEffects.WallDamage(impactSpeed, settings);
+            if (WallDamageMultiplierFor != null && _damageable.LastAttackerId != 0 && Time.time - _damageable.LastAttackTime < 3f)
+                damage *= Mathf.Max(0f, WallDamageMultiplierFor(_damageable.LastAttackerId));
             float before = _damageable.Health.Current;
             ImpactDamager.ApplyDirect(_damageable, -GetInstanceID() - 1, damage, impactSpeed, Mass, point, Time.time);
             return before - _damageable.Health.Current;
@@ -143,7 +163,10 @@ namespace ItHunts.Combat
             }
 
             _velocity += velocity;
+            bool was = _knocked;
             _knocked = _velocity.sqrMagnitude > RestSpeed * RestSpeed;
+            if (_knocked && !was)
+                _knockedSince = Time.time;
             _wallHitThisKnock = false;
             _pushedAt = Time.time;
         }
@@ -159,6 +182,16 @@ namespace ItHunts.Combat
                 return false;
             float duration = settings.stunDuration;
             AreaEffects.StunTimes(Time.time, settings, out _stunnedUntil, out _immuneUntil);
+            // Briseur d'os Or (D-100) : les étourdissements infligés par ce joueur durent plus longtemps.
+            float bonus = StunBonusFor != null && _damageable != null && _damageable.LastAttackerId != 0 && Time.time - _damageable.LastAttackTime < 3f
+                ? Mathf.Max(0f, StunBonusFor(_damageable.LastAttackerId)) : 0f;
+            if (bonus > 0f)
+            {
+                duration += bonus;
+                _stunnedUntil += bonus;
+                _immuneUntil += bonus;
+            }
+
             LastStunImpactSpeed = impactSpeed;
             AreaEvents.RaiseStunned(new StunEvent { Target = transform, Point = transform.position + Vector3.up * 1f, Duration = duration });
             return true;
@@ -223,7 +256,8 @@ namespace ItHunts.Combat
             if (!slow && Time.time - _flightStart < 4f)
                 return;
             _inFlight = false;
-            _body.linearVelocity = Vector3.zero;
+            if (!_body.isKinematic)
+                _body.linearVelocity = Vector3.zero;
             _body.isKinematic = true;
             _body.constraints = RigidbodyConstraints.None;
             transform.rotation = Quaternion.identity;
@@ -264,10 +298,17 @@ namespace ItHunts.Combat
             _inFlight = false;
             _knocked = false;
             _velocity = Vector3.zero;
-            _body.linearVelocity = Vector3.zero;
+            if (!_body.isKinematic)
+                _body.linearVelocity = Vector3.zero;                      // (un corps cinématique n'a pas de vitesse : avertissement Unity)
             _body.isKinematic = true;
             _body.constraints = RigidbodyConstraints.None;
         }
+
+        /// <summary>Recul qui n'en finit pas (coincé dans un décor, tombé hors du monde) : relâché au bout de ce temps (s).</summary>
+        public const float KnockTimeout = 4f;
+        private float _knockedSince = float.NegativeInfinity;
+        /// <summary>Reculs relâchés par le délai de sécurité (mesures : « goules figées après une répulsion », nuit 4 point 1).</summary>
+        public static int KnockTimeouts { get; private set; }
 
         /// <summary>Un pas de recul (public pour les tests en scène isolée).</summary>
         public void Step(float dt)
@@ -275,6 +316,18 @@ namespace ItHunts.Combat
             if (!_knocked)
             {
                 ReturnHome(dt);
+                return;
+            }
+
+            // Sécurité (nuit 4, point 1) : un corps repoussé qui ne se pose jamais (coincé entre deux volumes, tombé dans un trou du
+            // décor, posé sur une pente où le rayon de sol ne touche rien) restait « Busy » pour toujours : goule figée. Au-delà du délai,
+            // il est considéré posé ; la goule reprend (et son déblocage la ramène sur le NavMesh).
+            if (Time.time - _knockedSince > KnockTimeout)
+            {
+                _velocity = Vector3.zero;
+                _knocked = false;
+                _restSince = Time.time;
+                KnockTimeouts++;
                 return;
             }
 

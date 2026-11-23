@@ -14,6 +14,10 @@ namespace ItHunts.Settings
         public AudioClip stalkerBreath;
         public AudioClip stalkerGrowl;
         public AudioClip[] stalkerEnragedCries = new AudioClip[0];
+        [Tooltip("Cri quand il apparaît (porte enfoncée, entrée du boss), PR #50.")]
+        public AudioClip[] stalkerAppearCries = new AudioClip[0];
+        [Tooltip("Cri « je t'ai vu » quand il repère un joueur (au plus toutes les 8 s), PR #50.")]
+        public AudioClip[] stalkerSpottedCries = new AudioClip[0];
         public AudioClip stalkerGrabCry;
         [Range(0f, 1f)] public float stalkerStepsVolume = 0.9f;
         [Range(0f, 1f)] public float stalkerCryVolume = 1f;

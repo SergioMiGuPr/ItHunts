@@ -14,12 +14,17 @@ namespace ItHunts.Artifacts
         /// <summary>Lanterne inactive : l'orbe tient un objet (pas de jet).</summary>
         public bool Inactive;
         public int LastConsumedFirePressTick;
+        /// <summary>Charges de jet en plus (Souffle double, R7, D-100) : −1 avant le premier tick (pleines) ; un jet pendant la recharge en dépense une.</summary>
+        public float ExtraCharges;
+        /// <summary>Jets enchaînés sans laisser finir la recharge (le 2e jet consécutif brûle plus, R7 Or).</summary>
+        public int Consecutive;
 
         public static LanternState Create() => new LanternState
         {
             JetStartTick = MovementState.NeverTick,
             JetEndTick = MovementState.NeverTick,
             LastConsumedFirePressTick = MovementState.NeverTick,
+            ExtraCharges = -1f,
         };
     }
 
@@ -36,7 +41,8 @@ namespace ItHunts.Artifacts
     /// La lanterne de feu, un tick à la fois (D-065), logique pure et testable. Même clic que le lancer (D-024) : sans objet tenu,
     /// un clic lance un jet de jetDuration ; à la fin du jet, recharge de cooldown avant le suivant. Un clic un peu trop tôt part
     /// dès que possible (pressBuffer). Attraper un objet pendant le jet l'arrête (la recharge commence) ; pendant que l'orbe tient
-    /// un objet, le clic est un lancer et la lanterne ne part pas.
+    /// un objet, le clic est un lancer et la lanterne ne part pas. Charges en plus (R7, D-100) : un jet peut partir pendant la
+    /// recharge tant qu'il reste une charge en plus ; elles reviennent une par une.
     /// </summary>
     public static class FireLantern
     {
@@ -46,6 +52,12 @@ namespace ItHunts.Artifacts
             var step = new LanternStep();
             int bufferTicks = MovementSettings.SecondsToTicks(cfg.pressBuffer, dt);
             int jetTicks = System.Math.Max(1, MovementSettings.SecondsToTicks(cfg.jetDuration, dt));
+            if (s.ExtraCharges < 0f)
+                s.ExtraCharges = cfg.jetExtraCharges;
+            if (cfg.jetExtraCharges > 0 && cfg.cooldown > 0f)
+                s.ExtraCharges = UnityEngine.Mathf.Min(cfg.jetExtraCharges, s.ExtraCharges + dt / cfg.cooldown * UnityEngine.Mathf.Max(0.1f, cfg.extraChargeRechargeFactor));
+            else
+                s.ExtraCharges = UnityEngine.Mathf.Min(s.ExtraCharges, cfg.jetExtraCharges);
             bool fire = IsFresh(firePressTick, s.LastConsumedFirePressTick, tick, bufferTicks);
             if (fire && (heldAtTickStart || holdingNow))
             {
@@ -63,8 +75,12 @@ namespace ItHunts.Artifacts
 
             if (!holdingNow && fire)
             {
-                if (!s.Jetting && Ready(s, tick, cfg, dt))
+                bool cooled = CooldownProgress(s, tick, cfg, dt) >= 1f;
+                if (!s.Jetting && (cooled || s.ExtraCharges >= 1f))
                 {
+                    if (!cooled)
+                        s.ExtraCharges -= 1f;                            // jet pendant la recharge : une charge en plus
+                    s.Consecutive = cooled ? 0 : s.Consecutive + 1;
                     s.LastConsumedFirePressTick = firePressTick;
                     s.Jetting = true;
                     s.JetStartTick = tick;
@@ -81,9 +97,9 @@ namespace ItHunts.Artifacts
             return step;
         }
 
-        /// <summary>Prête : pas de jet en cours et recharge finie.</summary>
+        /// <summary>Prête : pas de jet en cours et recharge finie (ou une charge en plus disponible).</summary>
         public static bool Ready(in LanternState s, int tick, FireLanternSettings cfg, float dt) =>
-            !s.Jetting && CooldownProgress(s, tick, cfg, dt) >= 1f;
+            !s.Jetting && (CooldownProgress(s, tick, cfg, dt) >= 1f || s.ExtraCharges >= 1f);
 
         /// <summary>Recharge (0..1) : 0 pendant le jet et juste après, 1 quand un nouveau jet peut partir.</summary>
         public static float CooldownProgress(in LanternState s, int tick, FireLanternSettings cfg, float dt)
@@ -103,6 +119,13 @@ namespace ItHunts.Artifacts
                 return 0f;
             int ticks = System.Math.Max(1, MovementSettings.SecondsToTicks(cfg.jetDuration, dt));
             return UnityEngine.Mathf.Clamp01((tick - s.JetStartTick) / (float)ticks);
+        }
+
+        /// <summary>Avance la recharge de seconds s (Mèche vive Or et Mythique, Orbe vorace).</summary>
+        public static void ReduceCooldown(ref LanternState s, float seconds, float dt)
+        {
+            if (s.JetEndTick != MovementState.NeverTick && seconds > 0f)
+                s.JetEndTick -= MovementSettings.SecondsToTicks(seconds, dt);
         }
 
         private static bool IsFresh(int pressTick, int consumedTick, int tick, int bufferTicks)

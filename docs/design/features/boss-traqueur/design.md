@@ -68,6 +68,21 @@ Piliers : « le mouvement est la survie », « risque contre butin » (D-002). D
     accessibles au magnétisme) et les dégâts ajoutés par les améliorations. Les règles détaillées iront dans « Combat
     final », à concevoir.
 
+13. **Cri de repérage et mort par la prise (nuit 4, D-104).** Quand il **repère un joueur** (passage en Chasse depuis Rôde, Alerte ou
+    Recherche, au plus toutes les 6 s), il **hurle** (une variante des cris de la DA, gueule ouverte) et la caméra des joueurs proches
+    tremble. **Mort par le traqueur** (`StalkerDeathCam`, 3 s) : le joueur perd le contrôle, la vue se tourne de force vers sa tête en
+    0.25 s, la caméra s'avance jusqu'à 1.2 m du visage (FOV 46°), il hurle (cri de prise + cri enragé), éclair rouge 0.3 s, secousse,
+    morsure à 1.3 s, fondu au noir sur les 0.6 dernières secondes, puis l'écran de fin (le message « Mort » n'est pas affiché pendant la
+    scène). **Option « Réduire les animations »** : la caméra reste à distance, FOV normal, fondu doux au lieu de l'éclair, cris à
+    −12 dB, secousse × 0.3, même durée. Aussi dans l'arène du boss.
+14. **Boss final revu (nuit 4, D-105).** Marquages au sol **ambre éteint** (0.85, 0.58, 0.32), **anneau net = bord exact des dégâts** et
+    fond très léger (plus de disque rouge vif) ; le secteur du **balayage tourne avec le boss** pendant l'annonce (± 45°, portée du
+    balayage) ; **tout se fige 300 ms avant l'impact** (visée et marquage) ; les dégâts tombent **à l'extinction du marquage**.
+    **Enchaînements** (phases 2 et 3, 35 % puis 55 %) : balayage → prise, charge → cri, bond → balayage, annonce ×0.85 jamais sous
+    0.45 s. **Arène** : centre dégagé sur 20 m (couverts à 31 et 36 m, statue à 32 m), collisions sur candélabres et braseros, piliers
+    et anneau de traction conservés. **Entrée** : il est perché au sommet de la falaise sud, hors de vue ; quand le joueur descend
+    l'escalier, cri, bond de 1.4 s dans la cuvette, poussière et secousse, puis le combat commence.
+
 ## Valeurs
 
 ScriptableObject `Stalker_Default` (`StalkerSettings`) ; zone : `Zone_Test` ; arènes : `ArenaLayout_Test`. Repères :

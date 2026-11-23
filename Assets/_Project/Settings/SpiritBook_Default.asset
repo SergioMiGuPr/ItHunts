@@ -15,7 +15,7 @@ MonoBehaviour:
   id: livre_lien
   displayName: "Livre \xE0 lien"
   description: "Lien qui draine un ennemi ou soigne un alli\xE9."
-  upgrades: {fileID: 0}
+  upgrades: {fileID: 11400000, guid: 1e082f4e310b9b1448b596c0e6426314, type: 2}
   viewModel: {fileID: 35118990822220267, guid: 476a796f41ce9bb4280d20212b11caeb, type: 3}
   viewOffset: {x: 0, y: 0.16, z: 0.06}
   viewEuler: {x: 0, y: 0, z: 0}

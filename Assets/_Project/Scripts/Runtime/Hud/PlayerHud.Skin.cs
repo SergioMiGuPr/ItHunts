@@ -317,6 +317,10 @@ namespace ItHunts.Hud
             for (int i = used; i < _allyIcons.Count; i++)
                 _allyIcons[i].enabled = false;
 
+            // Ennemis dans le champ de vision de ce joueur (D-101) : point rouge (goule), symbole (traqueur), fondu hors du champ.
+            UpdateEnemySight();
+            DrawEnemyMarks(_enemyIconsMini, _mapIcons, P, radius, 1f);
+
             Vector3 fwd = _worldCamera != null ? _worldCamera.transform.forward : _health.transform.forward;
             _arrow.rectTransform.localEulerAngles = new Vector3(0f, 0f, -Mathf.Atan2(fwd.x, fwd.z) * Mathf.Rad2Deg);
         }

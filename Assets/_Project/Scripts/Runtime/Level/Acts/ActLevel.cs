@@ -207,6 +207,7 @@ namespace ItHunts.Level.Acts
             Progress = 0.88f;
             if (async)
                 yield return null;
+            (PropsSwapped, PropsKept) = PropArt.DressAll(_root);      // props en 3D de la DA (PR #51) sur les greybox
             Batch();
             Physics.SyncTransforms();
             BuildMs = (float)sw.Elapsed.TotalMilliseconds;
@@ -365,6 +366,10 @@ namespace ItHunts.Level.Acts
         /// Fusion des pièces du kit (visuel seulement), par salle : un maillage par matériau (comme la carte aléatoire). Les maillages non
         /// lisibles restent tels quels.
         /// </summary>
+        /// <summary>Props remplacés par un modèle de la DA, greybox gardées (forme trop différente).</summary>
+        public int PropsSwapped { get; private set; }
+        public int PropsKept { get; private set; }
+
         private void Batch()
         {
             foreach (Transform group in _root.Cast<Transform>().ToList())
