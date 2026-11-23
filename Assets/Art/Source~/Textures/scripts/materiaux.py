@@ -747,12 +747,24 @@ def reliures(r):
     return np.clip(c, 0, 1), np.clip(h, 0, 1)
 
 
-RES.update({"Moellons": 2048, "PierreTaillee": 2048, "Dalles": 2048, "RocheCave": 2048, "PierreClaire": 2048})
+@tuile("DallesClaires", 4, 4)
+def dalles_claires(r):
+    """Dalles de calcaire clair du château (sols de l'acte II) : 7 rangées de 57 cm, joints fins, pierre chaude et propre,
+    usure douce au centre ; plus aucune pierre bleue de cave."""
+    ID, D, LU, LV = P.courses(N, 7, r, 0.10, 0.24, row_jit=0.12)
+    pal = [col("#8e8574"), col("#968c7a"), col("#877e6e"), col("#9b917e"), col("#8a8272")]
+    c, h = maconnerie(r, ID, D, pal, gap=2.4, bev=10, ink_w=1.5, fiss=5, mortier=col("#5a5348"), val_var=0.07,
+                      ecl=0.16, creux=0.15, marbrure=0.06)
+    use = smooth(0.55, 0.95, P.fbm(N, r, 2.4, 1, 10)) * 0.08
+    return c * (1 + use[..., None]), h
+
+
+RES.update({"DallesClaires": 2048, "Moellons": 2048, "PierreTaillee": 2048, "Dalles": 2048, "RocheCave": 2048, "PierreClaire": 2048})
 
 
 TOUS = [moellons, pierre_taillee, dalles, roche_cave, briques, mortier, mousse, salpetre, humidite,
         bois_neuf, bois_pourri, bois_mouille, fer_rouille, platre_fissure, marbre, tapis, tenture,
-        terre, herbe_seche, ecorce, racines, gravier, pierre_claire, parquet, boiserie, platre_peint, reliures]
+        terre, herbe_seche, ecorce, racines, gravier, pierre_claire, parquet, boiserie, platre_peint, reliures, dalles_claires]
 
 
 def main(noms=None):

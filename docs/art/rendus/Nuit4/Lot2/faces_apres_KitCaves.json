@@ -277,7 +277,8 @@
   "superposees": 0,
   "aire_m2": 0.0,
   "partielles": 0,
-  "aire_partielle_m2": 0.0
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
  },
  "SM_Cave_Puits.fbx": {
   "faces": 364,

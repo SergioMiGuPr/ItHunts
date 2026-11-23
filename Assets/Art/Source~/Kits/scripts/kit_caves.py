@@ -540,8 +540,9 @@ def SM_Cave_PorteSortie():
         # planches verticales
         for i in range(8):
             x = sx * (i + 0.5) * w / 8
-            hh = 7.0 + 3.6 * math.sqrt(max(0.0, 1 - ((abs(x)) / 4.0) ** 2)) - 0.05
-            kb.box((x, 0, hh / 2), (w / 8 - 0.02, 0.35, hh), BOISN)
+            hh = 7.0 + 3.6 * math.sqrt(max(0.0, 1 - ((abs(x)) / 4.0) ** 2)) - 0.05 - 0.21
+            # nuit 4 : le battant commence au-dessus de la dalle de seuil (0.2 m) : plus de faces confondues avec elle
+            kb.box((x, 0, 0.21 + hh / 2), (w / 8 - 0.02, 0.35, hh), BOISN)
         for z in (1.2, 4.0, 6.8):
             kb.box((sx * w / 2, -0.2, z), (w - 0.2, 0.06, 0.28), FER)
             for i in range(7):

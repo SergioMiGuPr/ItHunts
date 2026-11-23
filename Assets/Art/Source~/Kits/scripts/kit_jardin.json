@@ -267,9 +267,9 @@
   "taille": [
    10.4,
    6.4,
-   5.27
+   5.26
   ],
-  "bas": -0.01,
+  "bas": -0.0,
   "triangles": 508,
   "materiaux": [
    "M_Bib_Briques_Peint",

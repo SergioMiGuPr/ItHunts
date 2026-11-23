@@ -172,7 +172,7 @@
   "doc": "Grande arche brisée : ouverture 8 × 11 m (porte des modules, le traqueur passe), massif de 14 × 15 m.",
   "taille": [
    14.0,
-   3.16,
+   3.17,
    15.0
   ],
   "bas": 0.0,
@@ -185,7 +185,7 @@
   "doc": "Arche brisée en ruine (moitié droite effondrée), ouverture 6 m : cadre de vue, repère.",
   "taille": [
    11.28,
-   3.38,
+   3.39,
    9.0
   ],
   "bas": 0.0,
@@ -448,9 +448,9 @@
   "taille": [
    3.11,
    1.37,
-   2.61
+   2.6
   ],
-  "bas": -0.01,
+  "bas": -0.0,
   "triangles": 216,
   "materiaux": [
    "M_Bib_BoisPourri",

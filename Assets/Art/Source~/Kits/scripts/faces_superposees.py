@@ -98,12 +98,26 @@ def analyse(obj, corrige):
             fmap = dup["face_map"]
             nouvelles = [(fmap[f], n) for f, n in zip(fl, normales) if f in fmap]
             bmesh.ops.delete(bm, geom=fl, context="FACES")
+            # îlots de faces poussées (reliées par leurs sommets) : un décalage constant par îlot (la face reste plane, l'îlot
+            # reste soudé), différent d'un îlot à l'autre (2, 4, 6 ou 8 mm) : deux îlots poussés ensemble ne restent pas
+            # coplanaires
+            parent = {}
+            def racine(x):
+                while parent.setdefault(x, x) != x:
+                    parent[x] = parent[parent[x]]; x = parent[x]
+                return x
+            for f, n in nouvelles:
+                vs = [v.index for v in f.verts]
+                for v in vs[1:]:
+                    parent[racine(v)] = racine(vs[0])
+            ilots = {}
             bouge = {}
             for f, n in nouvelles:
+                k = ilots.setdefault(racine(f.verts[0].index), len(ilots))
                 for v in f.verts:
-                    bouge.setdefault(v, n)
-            for v, n in bouge.items():
-                v.co += n * 0.002 * (1 + (v.index % 4))   # décalage varié : des faces poussées ensemble ne restent pas coplanaires
+                    bouge.setdefault(v, n * 0.002 * (1 + k % 4))
+            for v, d in bouge.items():
+                v.co += d
         bmesh.ops.delete(bm, geom=[f for f in (ote | set(degen)) if f.is_valid], context="FACES")
         bm.transform(obj.matrix_world.inverted())
         bm.to_mesh(me); me.update()
@@ -113,7 +127,7 @@ def analyse(obj, corrige):
 
 
 
-def nettoie(obj, passes=8):
+def nettoie(obj, passes=16):
     """Appelé par kitlib.export avant l'export : corrige l'objet jusqu'à ce qu'il ne reste aucune face superposée."""
     tot = None
     for _ in range(passes):
@@ -137,6 +151,15 @@ if __name__ == "__main__":
         for o in [o for o in bpy.context.scene.objects if o.type == "MESH"]:
             r = analyse(o, CORR is not None)
             for k in tot: tot[k] += r[k]
+        # contrôle de la pièce entière : tous ses objets réunis (recouvrements entre objets d'une même pièce)
+        meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+        if not CORR and len(meshes) > 1:
+            bpy.ops.object.select_all(action="DESELECT")
+            for o in meshes: o.select_set(True)
+            bpy.context.view_layer.objects.active = meshes[0]
+            bpy.ops.object.join()
+            r = analyse(bpy.context.view_layer.objects.active, False)
+            tot["piece_entiere_superposees"] = r["superposees"] + r["partielles"]
         rapport[fn] = tot
         print(fn, tot, flush=True)
         if CORR and (tot["superposees"] or tot["degenerees"] or tot["partielles"]):

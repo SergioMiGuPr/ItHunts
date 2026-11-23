@@ -2,11 +2,11 @@
  "SM_Chateau_Mur_8x12": {
   "doc": "Mur de salle 8 × 12 m (1 m d'épaisseur, face vers +Z) : pierre de taille, plinthe, corniche à 11 m.",
   "taille": [
-   8.01,
+   8.0,
    1.7,
-   12.01
+   12.0
   ],
-  "bas": -0.01,
+  "bas": -0.0,
   "triangles": 60,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint"
@@ -15,11 +15,11 @@
  "SM_Chateau_Mur_8x20": {
   "doc": "Mur de grand hall 8 × 20 m : pierre de taille, plinthe, corniche à 19 m.",
   "taille": [
-   8.02,
+   8.01,
    1.7,
-   20.01
+   20.0
   ],
-  "bas": -0.01,
+  "bas": -0.0,
   "triangles": 60,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint"
@@ -28,11 +28,11 @@
  "SM_Chateau_Mur_Platre_8x12": {
   "doc": "Mur d'appartement 8 × 12 m : plâtre fissuré au-dessus d'un lambris de pierre de 3.2 m (chambres, bibliothèque).",
   "taille": [
-   8.02,
+   8.01,
    1.7,
-   12.01
+   12.0
   ],
-  "bas": -0.01,
+  "bas": -0.0,
   "triangles": 71,
   "materiaux": [
    "M_Bib_PlatreFissure_Sale",
@@ -42,11 +42,11 @@
  "SM_Chateau_Fenetre_Haute": {
   "doc": "Haute fenêtre en lancette dans un mur de 8 × 20 m : baie de 3.2 m de large, de 4 m à 15 m, remplage et vitrage",
   "taille": [
-   8.02,
+   8.0,
    1.7,
-   20.01
+   20.0
   ],
-  "bas": -0.01,
+  "bas": -0.0,
   "triangles": 228,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
@@ -97,7 +97,7 @@
   "doc": "Arcade de passage entre deux halls : baie en arc brisé de 6 × 10 m dans un mur de 8 × 14 m.",
   "taille": [
    8.0,
-   1.96,
+   1.97,
    14.0
   ],
   "bas": 0.0,
@@ -141,7 +141,7 @@
    20.45,
    9.39
   ],
-  "bas": 0.0,
+  "bas": -0.0,
   "triangles": 6116,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
@@ -213,8 +213,8 @@
   "doc": "Grand tableau sombre de 2 × 2.8 m dans un cadre doré éteint (accroché au mur, pivot au clou, face vers +Z).",
   "taille": [
    2.16,
-   0.16,
-   2.92
+   0.15,
+   2.91
   ],
   "bas": -2.86,
   "triangles": 60,
@@ -267,9 +267,9 @@
   "taille": [
    3.83,
    3.99,
-   0.71
+   0.7
   ],
-  "bas": -0.01,
+  "bas": -0.0,
   "triangles": 72,
   "materiaux": [
    "M_Bib_BoisNeuf",

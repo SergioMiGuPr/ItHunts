@@ -994,7 +994,7 @@ Tous les matériaux du décor sont en **UV monde** (shader `ItHunts/Toon`, `_Wor
 **Acte II : matériaux du château** (`Assets/Art/Materials/Chateau/`). Plus aucune texture de cave :
 
 - `M_Chateau_PierreClaire` : la couche de salpêtre est retirée ;
-- `M_Chateau_Dalles` : dalles de calcaire clair ;
+- `M_Chateau_Dalles` : dalles de calcaire clair (texture `T_Mat_DallesClaires`, 57 cm, propre au château) ;
 - `M_Chateau_Parquet` ;
 - `M_Chateau_Boiserie` ;
 - `M_Chateau_PlatrePeint` ;
@@ -1018,7 +1018,20 @@ l'aperçu d'intégration (`docs/art/rendus/Nuit4/Lot2/`) :
 | Armurerie, Tour effondrée | PierreClaire | Chateau_Dalles | PierreClaire |
 | Palier | PierreClaire | Chateau_Dalles | PlatrePeint |
 
-**Faces superposées :** 0 dans les 98 pièces des 3 kits. Contrôle : `Assets/Art/Source~/Kits/scripts/faces_superposees.py`.
+**Bug à corriger sur main (`ActLevel.Geometry.cs`).** Les sols (« Sol », « Sol (rampe) », bassins, îlots) reçoivent
+`settings.floorMaterial` en paramètre explicite, et `Solid` ne regarde le matériau de la fonction que si ce paramètre est
+nul. Les sols ne prennent donc jamais celui de leur fonction (marbre de la salle de bal, tapis de la bibliothèque…). Il
+faut passer `null` pour ces sols : le sol de la fonction est alors utilisé, avec `floorMaterial` en repli.
+
+**Anciens matériaux du niveau 1 en UV monde** (`M_Dalles_Monde`, `M_Pierre_Monde`, `M_Voute_Briques_Monde`, encore
+utilisés dans quelques salles) : ils étaient à 256 et 341 px/m. Ils prennent maintenant les tuiles de la bibliothèque
+(512 px/m).
+
+**Après la fusion de la PR #45 (lot 0)**, Écorce, HerbeSeche, Tapis et Tenture passent à 2 × 2 m. Sur cette branche,
+partie de main avant #45, ils gardent leurs anciennes tailles.
+
+**Faces superposées :** 0 dans les 98 pièces des 3 kits, y compris entre les objets d'une même pièce : les battants de la
+porte de sortie de l'acte I sont remontés au-dessus de la dalle de seuil. Contrôle : `Assets/Art/Source~/Kits/scripts/faces_superposees.py`.
 Avant correction, il y en avait :
 
 - 80 entièrement recouvertes ;
