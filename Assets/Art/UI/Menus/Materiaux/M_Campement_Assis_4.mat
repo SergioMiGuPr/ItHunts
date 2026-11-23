@@ -49,7 +49,7 @@ Material:
     - _LisereFace: 3
     - _LisereForce: 0.6
     - _LisereLargeur: 1
-    - _Luminosite: 1
+    - _Luminosite: 1.15
     - _OmbreForce: 0.5
     - _OmbreSeuil: 0.12
     - _Opaque: 0
@@ -72,10 +72,10 @@ Material:
     - _Centre: {r: 0.5, g: 0.5, b: 0.45, a: 0}
     - _ChaudCouleur: {r: 1.25, g: 1.02, b: 0.82, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _FeuUV: {r: -1.6297675, g: -0.32695433, b: 0, a: 0}
+    - _FeuUV: {r: 2.76093, g: -0.32695433, b: 0, a: 0}
     - _FroidCouleur: {r: 0.62, g: 0.66, b: 0.86, a: 1}
     - _LanterneCouleur: {r: 0.6535, g: 0.7525, b: 0.7365, a: 1}
-    - _LanterneUV: {r: 0.92837197, g: 0.05228682, b: 0.27557576, a: 0}
+    - _LanterneUV: {r: 0.20279056, g: 0.05228682, b: 0.27557576, a: 0}
     - _LisereCouleur: {r: 1, g: 0.48, b: 0.16, a: 1}
     - _OmbreCouleur: {r: 0.34, g: 0.33, b: 0.62, a: 1}
   m_BuildTextureStacks: []

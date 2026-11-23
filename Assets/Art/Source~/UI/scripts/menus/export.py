@@ -23,6 +23,7 @@ CIBLES = {1: {"capuche": 352, "cx": 569, "lanterne": (510, 676), "sol": 657, "f"
           2: {"capuche": 346, "cx": 807, "lanterne": (918, 596), "sol": 640, "f": 1.0},
           3: {"capuche": 315, "cx": 1150, "lanterne": (1267, 607), "sol": 640, "f": 0.85, "miroir": True},
           4: {"capuche": 310, "cx": 1462, "lanterne": (1540, 635), "sol": 650, "f": 0.85, "miroir": True}}
+ASSISE = {("Renard", 3): 10, ("Renard", 4): 20}
 # nuit 4 : aux places 3 et 4, le feu est à gauche : le personnage est retourné (il regarde le feu, et la lumière chaude
 # peinte sur son côté droit tombe du côté du feu)
 # cartouche de nom par place (rect de la pièce Campement_Cartouche_Nom, étirée en 9 tranches pour la place 1)
@@ -70,7 +71,8 @@ def main():
                     else:
                         x = c["cx"] - (pl1["centre_epaules_x"] - rx) * s
                         p0, p1 = x + pied_u0 * rw * s, x + pied_u1 * rw * s
-                    y = c["capuche"] - (a["capuche_image"] - ry) * s
+                    # nuit 4 : le renard (dessous de cape droit) flottait au-dessus du rocher et du banc : il s'assoit plus bas
+                    y = c["capuche"] - (a["capuche_image"] - ry) * s + ASSISE.get((name, place), 0)
                     lx, ly, lw, lh = a["lanterne"]["rect_image"]
                     print("  %s place %d : échelle %.3f (épaules %.3f), pieds à y %.0f" % (name, place, s, s_epaules, c["capuche"] - (a["capuche_image"] - ry) * s + (pied_img - ry) * s))
                     L.append("place %s %d %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %d" % (

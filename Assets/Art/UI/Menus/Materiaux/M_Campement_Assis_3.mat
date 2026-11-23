@@ -72,10 +72,10 @@ Material:
     - _Centre: {r: 0.5, g: 0.5, b: 0.45, a: 0}
     - _ChaudCouleur: {r: 1.25, g: 1.02, b: 0.82, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _FeuUV: {r: 0.06735583, g: -0.215118, b: 0, a: 0}
+    - _FeuUV: {r: 1.1343783, g: -0.1971915, b: 0, a: 0}
     - _FroidCouleur: {r: 0.62, g: 0.66, b: 0.86, a: 1}
     - _LanterneCouleur: {r: 0.9285, g: 0.47199997, b: 0.3625, a: 1}
-    - _LanterneUV: {r: 0.9909971, g: 0.22181053, b: 0.2602928, a: 0}
+    - _LanterneUV: {r: 0.21073705, g: 0.23973703, b: 0.2602928, a: 0}
     - _LisereCouleur: {r: 1, g: 0.48, b: 0.16, a: 1}
     - _OmbreCouleur: {r: 0.34, g: 0.33, b: 0.62, a: 1}
   m_BuildTextureStacks: []

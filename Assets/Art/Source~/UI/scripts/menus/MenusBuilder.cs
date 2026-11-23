@@ -632,7 +632,7 @@ public static class MenusBuilder
         ca.margeOmbre = new Vector3(0.9f, 0.5f, 0.12f);
         ca.valeurOmbre = 0.3f;
         ca.cisaillement = 1.1f;
-        ca.eclairageLanterne = new Vector3(1.1f, 0.4f, 0.35f);   // nuit 4 : lueur au sol serrée au pied de la lanterne, couleur adoucie (plus de taches)
+        ca.eclairageLanterne = new Vector3(1.1f, 0.4f, 0.2f);   // nuit 4 : lueur au sol serrée au pied de la lanterne, couleur adoucie (plus de taches)
         var fondu = LitFondu();
         foreach (var pc in ca.placements)
             foreach (var f in fondu)
@@ -693,7 +693,7 @@ public static class MenusBuilder
             }
             pl.eclairage = Couche("Eclairage", "M_Campement_Eclairage", "ItHunts/UI/Eclaire", m =>
             {
-                m.SetFloat("_Force", 0.45f); m.SetVector("_Centre", new Vector4(0.5f, 0.45f, 0.05f, 0)); m.SetFloat("_Durete", 1.8f);
+                m.SetFloat("_Force", 0.32f); m.SetVector("_Centre", new Vector4(0.5f, 0.45f, 0.05f, 0)); m.SetFloat("_Durete", 1.8f);
                 m.SetFloat("_Vacille", 0.25f); m.SetFloat("_Vitesse", 1.2f); m.SetFloat("_Graine", 11 + ip * 3.7f);
             });
             pl.ombrePortee = Couche("Ombre_Portee", "M_Campement_Ombre", "ItHunts/UI/OmbrePortee", m =>

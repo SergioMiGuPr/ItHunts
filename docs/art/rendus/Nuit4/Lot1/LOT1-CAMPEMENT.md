@@ -65,6 +65,20 @@ Autres corrections :
 - ombres de contact du corps et des lanternes plus nettes ;
 - zoom ×3 en agrandissement lissé.
 
+## Seconde relecture
+
+La seconde relecture a relevé trois défauts. Corrections :
+
+1. **Bottes du renard.** Les trous ne venaient pas de la règle des trous, mais de la règle ancienne qui retire la caisse en
+   planches du renard. Les petits trous entièrement entourés par le personnage sont maintenant rebouchés après le retrait du
+   siège.
+2. **Bande grise sous les cuisses du caméléon.** Ce personnage n'a aucune partie grise : tout gris peu saturé situé dans le
+   contour de sa caisse est donc retiré (`gris_caisse`).
+3. **Bande bleue sous le renard aux places 3 et 4.** C'était le dessus du rocher, visible sous une cape au bord droit. Le
+   renard s'y assoit maintenant plus bas, de 10 et 20 px (`ASSISE` dans `export.py`).
+
+Les lueurs au sol sont aussi encore plus discrètes (force 0,32, couleur à 20 % de celle du personnage).
+
 ## Contrôle
 
 - `Campement_Places.jpg` : chaque place en grand, avec la maquette à gauche puis les 4 personnages.

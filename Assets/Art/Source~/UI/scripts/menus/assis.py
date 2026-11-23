@@ -31,7 +31,8 @@ PERSOS = {
     "Koala": {"capuche": 121, "caisse": [(722, 978), (1100, 900), (1795, 905), (1795, 1260), (1040, 1378), (722, 1312)],
               "lanterne": (1818, 1045, 2045, 1445), "couleur": (0.33, 0.78, 0.32)},
     "Cameleon": {"capuche": 79, "caisse": [(664, 985), (1100, 925), (1880, 912), (1885, 1242), (1050, 1388), (664, 1288)],
-                 "lanterne": (1036, 1036, 1245, 1491), "couleur": (0.87, 0.63, 0.25), "texture": True},
+                 "lanterne": (1036, 1036, 1245, 1491), "couleur": (0.87, 0.63, 0.25), "texture": True,
+                 "gris_caisse": True},
     "Hibou": {"capuche": 136, "caisse": [(215, 1003), (760, 1010), (1065, 1030), (1072, 1250), (645, 1405), (215, 1332)],
               "lanterne": (1304, 1036, 1532, 1464), "couleur": (0.37, 0.73, 0.93), "xmax": 1600,
               # l'aile déployée élargit la silhouette à hauteur d'épaules : échelle prise à largeur de capuche égale
@@ -135,7 +136,7 @@ def ecart_local(I, r=2.0):
     return np.sqrt(np.maximum(reg.blur(L * L, r) - m * m, 0))
 
 
-def retire_restes_caisse(a, poly, I, B, passes=6):
+def retire_restes_caisse(a, poly, I, B, passes=6, gris_large=False):
     """Nuit 4 : restes de la caisse et du fond collés au personnage (faces gris lavande sous la cape, éclats au bord du
     siège). Dans le contour de la caisse (élargi), on ronge depuis le bord de l'alpha les pixels gris clairs peu saturés
     (faces de la caisse) ou proches du fond, passe après passe : ce qui est relié au personnage par un pont de gris part,
@@ -150,6 +151,9 @@ def retire_restes_caisse(a, poly, I, B, passes=6):
     # faces de la caisse : grises claires, ou aplats lisses peu saturés à n'importe quelle valeur (face à l'ombre, mauve ;
     # face éclairée bleutée), ou couleur du fond
     gris = (lisse & (((S < 0.16) & (V > 0.40)) | (e < 0.06))) | (tres_lisse & (S < 0.55) & (V > 0.12))
+    if gris_large:
+        # personnage sans aucune partie grise (caméléon) : tout gris peu saturé du contour de la caisse est de la caisse
+        gris |= (S < 0.22) & (V > 0.28)
     m = a > 0.5
     for _ in range(passes):
         bord = m & ~(reg.erode(m.astype(np.float32), 1) > 0.5)
@@ -408,6 +412,14 @@ def main():
         if "xmax" in p:
             core[:, p["xmax"] // K:] = False
         char, seat = remove_seat(I, core, p["caisse"], p.get("texture", False), p["lanterne"], p.get("couleurs", False))
+        # nuit 4 : petits trous entièrement entourés par le personnage (entre les sangles des bottes, plis) rebouchés : la
+        # règle de la caisse les prenait pour du siège ; les trous de fond (spirale, entre les jambes) sont déjà hors de core
+        tr = reg.fill_holes(char) & ~char & core
+        lab, n = composantes(tr)
+        for k in range(1, n + 1):
+            px = lab == k
+            if px.sum() < 600:
+                char |= px
         if CTRL:
             vis = I * 0.4 + np.stack([seat, char, np.zeros_like(char)], -1) * 0.6
             reg.save(os.path.join(CTRL, "assis_%s.png" % name), vis[::2, ::2], "RGB")
@@ -424,7 +436,7 @@ def main():
         a_l, _ = extrait_lanterne(Ifull, p["lanterne"])
         a_c = a * (1 - lm) * (1 - a_l)
         a_c = retire_bandes_caisse(a_c, p["caisse"], Ifull)
-        a_c = retire_restes_caisse(a_c, p["caisse"], Ifull, Bf)
+        a_c = retire_restes_caisse(a_c, p["caisse"], Ifull, Bf, gris_large=p.get("gris_caisse", False))
         # couleur démêlée du gris
         F = reg.unmix(Ifull, Bf, a)
         # échelle (mi-définition pour la mesure)
