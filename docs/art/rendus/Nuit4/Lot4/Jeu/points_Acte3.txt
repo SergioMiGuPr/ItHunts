@@ -1,0 +1,6 @@
+Prop_Statue (Prop_Statue) -> Statue × 2,05 rot 0 écart 0,15 ; greybox (1.60, 4.96, 1.60) -> modèle (1.55, 5.34, 1.53) ; vue (0.00, 0.00, 1.00) près 3,1 m, jeu 9,0 m
+Coffre (Coffre : Allée des statues) -> Coffre × 2,18 rot 0 écart 0,72 ; greybox (1.72, 1.00, 1.80) -> modèle (1.20, 1.31, 1.96) ; vue (-0.78, 0.00, -0.62) près 3,2 m, jeu 9,0 m
+Prop_Banc (Prop_Banc) -> Banc × 0,77 rot 0 écart 0,28 ; greybox (2.00, 0.48, 0.40) -> modèle (1.90, 0.43, 0.46) ; vue (0.00, 0.00, 1.00) près 3,4 m, jeu 9,0 m
+Prop_Tonneau_Attrapable (Prop_Tonneau_Attrapable) -> Tonneau × 1,17 rot 90 écart 0,31 ; greybox (0.76, 0.90, 0.76) -> modèle (0.70, 1.05, 0.70) ; vue (0.31, 0.00, 0.95) près 2,4 m, jeu 9,0 m
+CoffreVerrou (Coffre de la salle verrouillée) -> CoffreVerrou × 2,08 rot 0 écart 0,56 ; greybox (1.77, 1.00, 1.51) -> modèle (1.87, 1.25, 1.15) ; vue (0.80, 0.00, -0.60) près 3,2 m, jeu 9,0 m
+Prop_Table (Prop_Table) -> Table × 0,89 rot 0 écart 0,23 ; greybox (1.00, 0.95, 2.20) -> modèle (1.07, 0.85, 2.31) ; vue (0.00, 0.00, -1.00) près 3,6 m, jeu 9,0 m

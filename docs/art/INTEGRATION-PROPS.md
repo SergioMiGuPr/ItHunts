@@ -608,6 +608,141 @@ leur `Grabbable` et leur lueur ; leur modèle doit rester dans la boîte (la col
 | Lustre (salles) | 1.6 × 0.3 × 1.6, suspendu | — | **attrapable** (25 kg, tombe) | pivot au point d'accroche |
 | Lustre géant (arène) | 12 × 1.5 × 12, à 24 m | 1 | piège | |
 
+## Nuit 4, lot 4 : props en 3D (2026-11-23, branche `art-props-3d`)
+
+Huit props encore en primitives greybox deviennent de vrais modèles. Chaîne : image concept dans la DA (Higgsfield,
+Nano Banana 2.1, 2K) → **Tripo H3.1** image vers 3D (texture, sans PBR) → nettoyage par script dans Blender 5.0
+(`Assets/Art/Source~/Props/scripts/nettoyer_prop.py`, réglages relevés dans `docs/art/props/sources/reglages_props.json`,
+un rapport `rapport_<Nom>.json` par prop). Sources (images, GLB, journal des dépenses : 88 crédits) dans
+`docs/art/props/sources/`. Contrôle : `docs/art/rendus/Nuit4/Lot4/Planche_Props.jpg` (FBX réimporté, mannequin de 1.8 m,
+coffres couvercle ouvert à 70°).
+
+Conventions communes : FBX dans `Assets/Art/Models/Props/SM_Prop_<Nom>.fbx` (réglages d'export de `kitlib.export` :
+**+Y en haut, +Z en avant dans Unity**, échelle 1, 1 unité = 1 m), pivot **au sol, au centre de l'emprise** ; une texture
+de base `Assets/Art/Textures/Props/T_Prop_<Nom>_BaseColor.png` par prop (couleurs peintes par Tripo : un peu d'ombre
+douce est restée dans la texture, à surveiller avec le shader toon) ; un matériau par prop `M_Prop_<Nom>` (à refaire
+dans Unity avec `ItHunts/Toon`). Aucun collider dans les FBX.
+
+**Deuxième passe (branche `art-props-3d-b`)** : ce tableau est à jour (triangles LOD0 / LOD1, textures 1024, poutre refaite,
+coffres creusés) ; les nouveaux props sont au § « Deuxième passe » plus bas. Chaque FBX contient maintenant
+`SM_Prop_<Nom>_LOD0` et `SM_Prop_<Nom>_LOD1` (à 50 %) ; `Props4.Construit` en fait un `LODGroup` sur la racine du prefab.
+
+| Prop | Fichier | Dimensions l × p × h (m) | Pivot | Triangles LOD0 / LOD1 | Texture | Remplace (greybox) | Réglage dans le prefab |
+|---|---|---|---|---|---|---|---|
+| Tonneau | `SM_Prop_Tonneau.fbx` | 0.6 × 0.6 × 0.9 | sol, centre | 3 667 / 1 833 | 1024 | `Prop_Tonneau_Attrapable` (0.6 × 0.9 × 0.6) et `Prop_Tonneau` (0.9 × 1.1 × 0.9) | attrapable : échelle 1, pivot de la greybox au centre → modèle à (0, −0.45, 0) si la greybox est centrée ; fixe : échelle (1.5, 1.22, 1.5) |
+| Chaise | `SM_Prop_Chaise.fbx` | 0.45 × 0.45 × 1.0 | sol, centre | 1 959 / 979 (décimée de 3 511) | 1024 | `Prop_Chaise_Attrapable` (0.55 × 1 × 0.55) | échelle 1 : tient dans la boîte de collision de la greybox (garder sa boîte, son Rigidbody, `Grabbable` et la lueur) |
+| Poutre tombée (**refaite**, v02) | `SM_Prop_Poutre.fbx` | 3.97 × 0.58 × 0.50 (ferrure comprise ; bout cassé et éclaté à une extrémité) | sol, centre | 2 952 / 1 476 | 1024 | `Prop_Poutre` (6 × 0.5 × 0.5) quand elle est posée au sol | longueur sur X ; **échelle uniforme 1** (section ≈ celle de la greybox, 4 m au lieu de 6 : la greybox n'est pas utilisée dans le niveau, 0 instance). La poutre suspendue à crochet reste `SM_Poutre` (§ 2) |
+| Sarcophage | `SM_Prop_Sarcophage.fbx` | 2.2 × 0.9 × 0.8 | sol, centre | 5 879 / 2 939 (décimé de 6 513) | 1024 | `Prop_Sarcophage` (1.2 × 1 × 2.5, long sur Z) | longueur sur X : rotation (0, 90, 0) ; échelle (1.14, 1.25, 1.33) pour remplir la boîte, ou échelle 1 |
+| Râtelier d'armes | `SM_Prop_Ratelier.fbx` | 1.6 × 0.5 × 1.8 | sol, centre | 5 670 / 2 834 | 1024 | `Prop_Ratelier` (2.6 × 2.1 × 0.5) | échelle (1.625, 1.17, 1) ; armes soudées au râtelier (un seul objet) |
+| Coffre de récompense | `SM_Prop_Coffre.fbx` + vide **`Couvercle`** (enfants `Couvercle_LOD0`, `Couvercle_LOD1`) | 0.9 × 0.55 × 0.6 (corps 0.38 de haut) | corps : sol, centre ; `Couvercle` : **axe de la charnière arrière**, (0, 0.381, −0.262) dans le repère du coffre | 4 963 / 2 616 (couvercle 1466 / 748 ; fond creusé compris) | 1024 + `M_Prop_Coffre_Interieur` (rebord, parois et fond intérieurs, sombre) | coffre greybox « Economy_Chest » de `TestArenaSceneBuilder.BuildChest` (corps 1.4 × 0.8 × 0.9, couvercle 1.5 × 0.2 × 1, collider 1.4 × 0.9 × 0.9) | échelle 1.5 pour garder l'encombrement de la greybox (1.35 × 0.83 × 0.9) ; brancher `Chest.lid` sur l'enfant `Couvercle`. Ouverture : rotation locale **X ≈ −70°** (le bord avant monte et part vers l'arrière) |
+| Coffre de salle verrouillée | `SM_Prop_CoffreVerrou.fbx` + vide **`Couvercle`** (enfants `Couvercle_LOD0`, `Couvercle_LOD1`) | 0.9 × 0.55 × 0.6 (corps 0.42 de haut) | corps : sol, centre ; `Couvercle` : axe de la charnière, (0, 0.42, −0.274) | 5 937 / 3 021 (couvercle 1934 ; décimé de 6 491, fond creusé compris) | 1024 + `M_Prop_CoffreVerrou_Interieur` | coffre de la salle verrouillée (`G_SalleVerrouillee`, `LockedRoomSpot`) | même règle ; le cadenas et sa chaîne sont sur le corps (ils restent en place à l'ouverture) |
+| Statue gothique | `SM_Prop_Statue.fbx` | 0.76 × 0.75 × 2.6 (échelle uniforme réglée sur la hauteur) | sol, centre | 5 880 / 2 940 (décimée de 6 646) | 1024 | `Prop_Statue` (1.4 × 3.6 × 1.4) | échelle uniforme 1.385 pour la hauteur de 3.6 m (socle 1.05 m de côté) |
+
+Remarques :
+
+- **Couvercle des coffres.** Aujourd'hui `Chest` cache les renderers du couvercle pour le joueur qui l'a ouvert ; avec le
+  pivot sur la charnière on peut animer l'ouverture (rotation X de 0 à −70° du vide `Couvercle`, qui porte les deux LOD
+  du couvercle, par caméra comme le masquage actuel). **Deuxième passe** : le corps est **creusé d'un fond intérieur de
+  0.25 m** (rebord de 5 cm, parois et fond en `*_Interieur`), fond à 0.13 m (coffre) ou 0.17 m (coffre verrouillé) du sol ;
+  l'ouverture du couvercle est refermée par une face plane (rectangle de deux triangles et rebord triangulé en Delaunay
+  contraint, plus de remplissage en éventail). Le moraillon n'est pas coupé : sa plaque haute et sa charnière sont sur le
+  couvercle, la plaque de serrure sur le corps, la découpe passe à leur jointure. Une lueur dorée de butin (ART-HANDOFF :
+  coffres en doré / orangé) se pose bien dans le creux.
+- **Déformations dues à la mise aux cotes** (rapport : `echelle_appliquee`, `etirement_max`) : la poutre v01 étirée de
+  × 3.1 est remplacée (v02, étirement × 1.3 au plus) ; restent de la première passe le sarcophage et le râtelier (rapport
+  × 1.73 entre leurs axes : gisant plus long et plus plat que sur l'image) et le coffre verrouillé (× 1.42), gardés tels
+  quels pour ne pas changer leurs cotes déjà intégrées ; les autres restent sous × 1.25.
+- **Pièces de kit à la place de primitives** (aucun nouveau modèle) : `Prop_MurEffondre` → `SM_Cave_MurBrise_*` ;
+  `Prop_Gravats` → `SM_Cave_Eboulis_*` ; caisses (`Prop_Caisse`, `Prop_Caisse_Attrapable`, `Prop_PileDeCaisses`) → modèle de
+  caisse existant `SM_Caisse` (§ 4 bis).
+- **Fait dans Unity (lot 4, branche `art-props-3d`)** avec `Assets/Art/Source~/Props/scripts/Props4.cs` (`Props4.Construit`) :
+  - **Textures éclaircies** pour la lecture en jeu (gamma 0,8 puis gain 1,08, script `eclaircir_props.py`) ; les ombres peintes par Tripo s'ouvrent, les teintes restent.
+  - **Matériaux toon** `Assets/Art/Materials/Props/M_Prop_<Nom>.mat`, copiés de `M_Caisse` (`ItHunts/Toon`, UV du modèle). S'y ajoutent `M_Prop_Coffre_Interieur` et `M_Prop_CoffreVerrou_Interieur` : **toon copiés de `M_Caisse`** eux aussi, sans texture, couleur de base très sombre (0.035, 0.028, 0.024), donc éclairés comme le reste (rebord, parois et fond intérieurs).
+  - **Lueur dorée des coffres** (« tout ce qui est interactif brille ») : rim chaud du shader toon, HDR (1, 0.62, 0.25) × 1,6, largeur 0,22, intensité 0,65. Pas de masque d'émission : l'atlas de Tripo mêle le laiton et le bois clair.
+  - **Prefabs** `Assets/Art/Prefabs/Props/P_Prop_<Nom>.prefab` : modèle, matériaux et colliders simples. Une boîte pour la plupart ; boîte de socle et capsule pour la statue ; **une seule boîte** pour le râtelier (montants, barre et armes, 60 % de la profondeur) ; pour chaque coffre, une boîte sur la racine à la taille du coffre fermé : **elle ne couvre pas le couvercle ouvert** (aucun collider sur `Couvercle`, la boîte ne suit pas l'ouverture). Pas de Rigidbody, de `Grabbable` ni de lueur : c'est main qui les ajoute en remplaçant le maillage des greybox, avec les réglages du tableau.
+  - **Captures en jeu** (actes I et II, seed 4242), greybox remplacée sur place avec ces réglages : `docs/art/rendus/Nuit4/Lot4/Planche_Jeu_Acte1.jpg`, `Planche_Jeu_Acte2.jpg` et les images de `Jeu/`. Les tailles mesurées sont dans `Jeu/points_Acte*.txt`.
+  - **Écarts relevés.** Dans l'acte II, un `Prop_Ratelier` greybox mesure 0,6 × 1,4 × 0,48 m, et non 2,6 × 2,1 × 0,5 : l'échelle fixe du tableau le grossit. Pour main : régler l'échelle d'après la boîte de la greybox de chaque instance (hauteur et emprise), pas une échelle fixe par type. Même remarque pour `Prop_Tonneau` de l'acte I (groupe de 3,1 × 0,95 × 1,2 m).
+  - **Éléments de main sur les captures.** Les étiquettes « Coffre / 30 âmes » (police de main) et la lueur violette des attrapables sont du ressort de main ; les étiquettes sont masquées sur les captures.
+
+### Deuxième passe (2026-11-23, branche `art-props-3d-b`)
+
+Neuf props de plus (par ordre d'usage dans le niveau) et la poutre refaite ; LOD1 ajoutés aux huit props de la première
+passe (tableau ci-dessus mis à jour), textures toutes en 1024, coffres creusés. Même chaîne : concept Nano Banana 2.1 en
+2K (deux concepts du lot 4 en référence de style), Tripo H3.1, `nettoyer_prop.py` ; la paille est modélisée par script
+(`paille.py`, texture Nano Banana 2.1). Dépense : voir `docs/art/props/sources/JOURNAL-DEPENSES.md`.
+
+Nouveautés de la chaîne :
+
+- **Étirement non uniforme limité à × 1,3** (rapport entre la plus grande et la plus petite échelle des axes) : quand Tripo
+  donne d'autres proportions que la greybox, le modèle s'en rapproche sans dépasser cette limite (la hauteur compte double ;
+  pour la poutre, la longueur). Écart aux cotes visées : colonne « Dimensions » contre « Remplace ».
+- **LOD1 à 50 %** (`SM_Prop_<Nom>_LOD1`, décimation par fusion d'arêtes), sauf la paille. `Props4.Lods` crée un seul
+  `LODGroup` sur la racine du prefab : LOD0 jusqu'à 25 % de hauteur d'écran, LOD1 jusqu'à 1,5 %, puis rien.
+- **Contrôles** : faces superposées corrigées à la source (`faces_superposees.nettoie`, copie du module des kits), puis
+  contrôle de chaque maillage exporté (sommets isolés, arêtes nulles, faces dégénérées, faces superposées : **0 partout**,
+  `docs/art/rendus/Nuit4/Lot4/controle_<Nom>.json`). Les arêtes non manifold restantes (0 à 41 par prop) viennent des
+  maillages de Tripo (pièces soudées en T) : sans effet sur le rendu ni sur les colliders (boîtes).
+- **Rendus** : `docs/art/rendus/Nuit4/Lot4/Planche_Props_2.jpg` (FBX réimportés, silhouette humaine de 1.80 m, éclairage
+  sombre et chaud, vignette du LOD1) et les images de `Props2/` ; cotes mesurées sur les FBX réimportés dans
+  `Props2/mesures_fbx.json`.
+
+| Prop | Fichier | Dimensions l × p × h (m) | Pivot | Triangles LOD0 / LOD1 | Étirement | Remplace (greybox, l × h × p) | Réglage dans le prefab (échelles **uniformes** seulement) |
+|---|---|---|---|---|---|---|---|
+| Lanterne | `SM_Prop_Lanterne.fbx` | 0.39 × 0.40 × 0.80 | sol, centre | 1 470 / 734 | × 1.00 | `Prop_Lanterne` (0.5 × 0.8 × 0.5), posée ou suspendue | échelle **1** ; aucun collider ; vide **`Feu`** à (0, 0.288, 0) (lumière ponctuelle chaude, ombres coupées : les vitres sont opaques) et **`Accroche`** à (0, 0.8, 0) en haut de l'anneau : suspendue, placer `Accroche` au point d'attache (modèle à −0.8 m sous lui). Émission des vitres et de la bougie : `T_Prop_Lanterne_Emission` (masque), couleur HDR (1, 0.55, 0.2) × 2.2 |
+| Étagère | `SM_Prop_Etagere.fbx` | 2.52 × 0.81 × 3.03 | sol, centre | 5 389 / 2 693 | × 1.30 | `Prop_Etagere` (2.6 × 3.2 × 0.7) | échelle uniforme **1** (ou 1.05 pour toucher 3.2 m) ; une boîte ; 11 cm plus profonde que la greybox : la reculer de 5 cm contre le mur ; pots et livres soudés |
+| Coffre décoratif | `SM_Prop_CoffreDeco.fbx` | 1.20 × 0.80 × 0.80 | sol, centre | 2 939 / 1 469 | × 1.16 | `Prop_CoffreDeco` (1.2 × 0.8 × 0.8) | échelle **1** ; une boîte ; fermé, bois très sombre, ferrures noires, couvercle plat : **sans rim doré** ni lueur (il ne doit pas passer pour un coffre de récompense) |
+| Table | `SM_Prop_Table.fbx` | 2.60 × 1.20 × 0.95 | sol, centre | 2 940 / 1 470 | × 1.11 | `Prop_Table` (2.6 × 0.95 × 1.2) | échelle **1** ; une boîte (ou plateau + deux tréteaux si on veut glisser dessous) |
+| Banc | `SM_Prop_Banc.fbx` | 2.48 × 0.60 × 0.56 | sol, centre | 1 958 / 978 | × 1.30 | `Prop_Banc` (2.6 × 0.55 × 0.6) | échelle **1** ; une boîte |
+| Paille (litière) | `SM_Prop_Paille.fbx` | 2.00 × 1.93 × 0.27 | sol, centre | 1 080 (sans LOD1) | × 1 (modélisée) | `Prop_Paille` (2 × 0.3 × 2) | échelle **1** ; **aucun collider**, pas d'ombre portée utile ; nappe à 3 mm du sol (pas de z-fighting) ; sans LOD1 |
+| Armoire | `SM_Prop_Armoire.fbx` | 1.60 × 0.85 × 2.62 | sol, centre | 4 209 / 2 103 | × 1.30 | `Prop_Armoire` (1.6 × 2.7 × 0.8) | échelle uniforme **1** (ou 1.03 pour 2.7 m) ; une boîte ; portes fermées (un seul maillage) |
+| Lit de cachot | `SM_Prop_Lit.fbx` | 1.30 × 2.24 × 0.71 | sol, centre | 3 920 / 1 960 | × 1.30 | `Prop_Lit` (1.3 × 0.7 × 2.3, long sur Z) | échelle **1** ; longueur sur Z (avant = pied du lit) ; une boîte |
+| Chaudron | `SM_Prop_Chaudron.fbx` | 1.30 × 1.30 × 1.00 | sol, centre | 3 430 / 1 714 | × 1.00 | `Prop_Chaudron` (1.3 × 1 × 1.3) | échelle **1** ; une boîte (ou capsule) ; rempli d'un liquide sombre (pas de creux) |
+| Poutre tombée (v02) | `SM_Prop_Poutre.fbx` | 3.97 × 0.58 × 0.50 | sol, centre | 2 952 / 1 476 | × 1.30 | `Prop_Poutre` (6 × 0.5 × 0.5), posée au sol | échelle **1** (voir le tableau du lot 4) ; une boîte |
+
+Dans Unity (session art, avant que main remplace les greybox) : **relancer `Props4.Construit`** (copier `Props4.cs` dans un dossier Editor) :
+les FBX de la première passe ont changé de hiérarchie (`SM_Prop_<Nom>` est devenu `SM_Prop_<Nom>_LOD0` + `_LOD1` ; le
+`Couvercle` des coffres est un vide sur la charnière qui porte `Couvercle_LOD0` et `Couvercle_LOD1`), les prefabs
+`P_Prop_*` sont reconstruits au même chemin (mêmes GUID) et les neuf nouveaux sont créés. `Chest.lid` se branche sur le
+vide `Couvercle`. Unity crée les `.meta` des nouveaux FBX et textures à l'import.
+
+### Intégration Unity, deuxième passe (lot 4, relecture) — **ce tableau et ces règles font foi**
+
+Les échelles du premier tableau (dont les échelles non uniformes) et la planche `Planche_Props.jpg` (rendu Blender de la
+première passe, poutre v01) sont **historiques** ; la référence est `Planche_Props_2.jpg` (Blender) et surtout les captures
+en jeu `Planche_Jeu_Acte1.jpg`, `Planche_Jeu_Acte2.jpg`, `Planche_Jeu_Acte3.jpg`.
+
+- **Prefabs** (`Props4.Construit`, `Assets/Art/Source~/Props/scripts/Props4.cs`) : 17 `P_Prop_<Nom>` (mêmes chemins, mêmes GUID
+  pour les 8 premiers) + 3 **variantes assemblées** sans génération : `P_Prop_Tonneaux_Couches` (4 tonneaux couchés en rang,
+  2,7 × 0,63 × 1,6 m), `P_Prop_Table_Banquet` (2 tables bout à bout, 6 × 1,09 × 1,38 m), `P_Prop_Banc_Eglise` (2 bancs, 4 ×
+  0,46 × 0,49 m). Matériaux toon, **LODGroup** (LOD0 jusqu'à 25 % de l'écran, LOD1 jusqu'à 1,5 %), colliders simples (aucun pour
+  la lanterne et la paille ; la paille n'a pas de LOD1), lumière chaude sur le vide `Feu` de la lanterne (1,5 ; 6 m) et vitres
+  émissives.
+- **Lueur des coffres** (`M_Prop_Coffre`, `M_Prop_CoffreVerrou`) : émission chaude modulée par la texture peinte (HDR (1 ; 0,58 ;
+  0,18) × 1,1 et × 0,9), le laiton et le bois clair brillent : le coffre se lit dans le noir à distance de jeu, même sans la
+  lueur de main. Le coffre décoratif ne brille pas (ce n'est pas un objet interactif).
+- **Attrapables** (tonneau, chaise) : la lueur reste celle de main (`EmissionGlow.Set(renderer, couleur, wholeModel: true)`,
+  qui marche sur ItHunts/Toon) ; les captures « après » la posent sur le modèle (couleur de prise à portée), comme en jeu.
+  Échelle 1 : le modèle tient dans la boîte physique de la greybox.
+- **Règle de pose par instance (pour main)** : pour chaque greybox, choisir parmi le modèle et ses variantes (tonneau → rang
+  couché ; table → banquet ; banc → banc d'église) celui dont les proportions sont les plus proches, tourner de 90° si l'axe
+  long diffère, échelle **uniforme** = moyenne géométrique des rapports d'axes (coffres ≤ × 1,6 ; attrapables × 1), posé au
+  centre de la boîte, au sol. C'est la fonction `Props4.Ajuste` (écart de forme = somme des |log| des rapports restants ;
+  au-delà de 0,9 l'instance n'a pas de modèle adapté).
+- **Couverture mesurée** (seed 4242, `Jeu/points_Acte*.txt`) : actes I et III, toutes les instances ont un modèle ou une
+  variante adaptés ; acte II, 15 instances restent sans modèle : `Prop_Armoire` en plaque de 3,9 × 0,7 × 3,9 m (armoire couchée :
+  utiliser la pièce de kit `Chateau_Armoire_Tombee`) et `Prop_Ratelier` en petit support de 0,6 × 1,4 × 0,5 m (garder la
+  greybox ou poser un `P_Prop_Tonneau` / caisse ; un petit présentoir est à modéliser plus tard).
+- **Lanterne et lit** : aucune instance dans les trois actes à la seed 4242 (ils existent dans le catalogue de main) ; rendus de
+  contrôle dans `Planche_Props_2.jpg`.
+- **Étirements résiduels** de la première passe (rapports `rapport_*.json`) : sarcophage et râtelier × 1,73, coffre verrouillé
+  × 1,42 (gisant un peu aplati) ; les nouveaux props restent sous × 1,3. À reprendre dans `nettoyer_prop.py` si l'utilisateur
+  le demande (sans nouvelle génération).
+- **Densité de texels** : textures en 1024 ; ≈ 400 px/m pour l'étagère (2,5 m) et la table, ≈ 280 px/m pour la statue à 3,6 m
+  (sous la référence de 512 px/m du lot 2 ; acceptable pour des props vus de 3 à 20 m, à passer en 2048 si l'on veut des gros
+  plans).
+- **Journal Unity** : `docs/art/rendus/Nuit4/Lot4/journal_unity.txt` (aucune erreur ni aucun avertissement venant des assets du
+  lot 4).
+
 ## Salles d'exemple des trois actes (lot 5, nuit du 2026-11-22, PR art-salles-exemple)
 
 Onze salles entièrement habillées et éclairées, assemblées avec les kits des lots 2 à 4, prêtes à servir de modèles. Prefabs dans `Assets/Art/Levels/Exemples/<Acte>/<Nom>.prefab` (pièces des kits avec collisions, blocs de sol et de plafond, lumières) ; scènes de contrôle `Assets/Art/Scenes/Exemples_<Acte>.unity` (éclairage de l'acte) ; captures dans `docs/art/rendus/Exemples/<Acte>/`. Les plans sont générés par `Assets/Art/Source~/Kits/scripts/salles.py` (texte lisible dans `Assets/Art/Source~/Kits/plans/`), assemblés par `SalleBuilder.cs`. **Pour `main` :** y ajouter le gameplay (points d'apparition, vagues, coffres, portes de module, NavMesh) ; les repères `Accroche_*` des pièces marquent les points de traction et les rebords. Coordonnées dans le repère du prefab (m), +Z vers le nord.

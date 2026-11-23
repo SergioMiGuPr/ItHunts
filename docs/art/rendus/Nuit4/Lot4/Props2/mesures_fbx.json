@@ -1,0 +1,315 @@
+{
+ "Tonneau": {
+  "dimensions": [
+   0.6,
+   0.6,
+   0.9
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 3667,
+  "triangles_lod1": 1831,
+  "objets": [
+   "SM_Prop_Tonneau_LOD0",
+   "SM_Prop_Tonneau_LOD1"
+  ]
+ },
+ "Chaise": {
+  "dimensions": [
+   0.45,
+   0.45,
+   1.0
+  ],
+  "bas": 0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 1959,
+  "triangles_lod1": 979,
+  "objets": [
+   "SM_Prop_Chaise_LOD0",
+   "SM_Prop_Chaise_LOD1"
+  ]
+ },
+ "Poutre": {
+  "dimensions": [
+   3.969,
+   0.577,
+   0.5
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 2952,
+  "triangles_lod1": 1476,
+  "objets": [
+   "SM_Prop_Poutre_LOD0",
+   "SM_Prop_Poutre_LOD1"
+  ]
+ },
+ "Sarcophage": {
+  "dimensions": [
+   2.2,
+   0.9,
+   0.8
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 5879,
+  "triangles_lod1": 2939,
+  "objets": [
+   "SM_Prop_Sarcophage_LOD0",
+   "SM_Prop_Sarcophage_LOD1"
+  ]
+ },
+ "Ratelier": {
+  "dimensions": [
+   1.6,
+   0.5,
+   1.8
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 5670,
+  "triangles_lod1": 2834,
+  "objets": [
+   "SM_Prop_Ratelier_LOD0",
+   "SM_Prop_Ratelier_LOD1"
+  ]
+ },
+ "Coffre": {
+  "dimensions": [
+   0.9,
+   0.55,
+   0.6
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 4963,
+  "triangles_lod1": 2616,
+  "objets": [
+   "Couvercle",
+   "Couvercle_LOD0",
+   "Couvercle_LOD1",
+   "SM_Prop_Coffre_LOD0",
+   "SM_Prop_Coffre_LOD1"
+  ]
+ },
+ "CoffreVerrou": {
+  "dimensions": [
+   0.9,
+   0.55,
+   0.6
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 5935,
+  "triangles_lod1": 3019,
+  "objets": [
+   "Couvercle",
+   "Couvercle_LOD0",
+   "Couvercle_LOD1",
+   "SM_Prop_CoffreVerrou_LOD0",
+   "SM_Prop_CoffreVerrou_LOD1"
+  ]
+ },
+ "Statue": {
+  "dimensions": [
+   0.756,
+   0.746,
+   2.6
+  ],
+  "bas": 0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 5880,
+  "triangles_lod1": 2940,
+  "objets": [
+   "SM_Prop_Statue_LOD0",
+   "SM_Prop_Statue_LOD1"
+  ]
+ },
+ "Lanterne": {
+  "dimensions": [
+   0.393,
+   0.395,
+   0.8
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   -0.0
+  ],
+  "triangles_lod0": 1470,
+  "triangles_lod1": 734,
+  "objets": [
+   "Accroche",
+   "Feu",
+   "SM_Prop_Lanterne_LOD0",
+   "SM_Prop_Lanterne_LOD1"
+  ]
+ },
+ "Etagere": {
+  "dimensions": [
+   2.519,
+   0.807,
+   3.026
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 5389,
+  "triangles_lod1": 2693,
+  "objets": [
+   "SM_Prop_Etagere_LOD0",
+   "SM_Prop_Etagere_LOD1"
+  ]
+ },
+ "CoffreDeco": {
+  "dimensions": [
+   1.2,
+   0.8,
+   0.8
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 2938,
+  "triangles_lod1": 1467,
+  "objets": [
+   "SM_Prop_CoffreDeco_LOD0",
+   "SM_Prop_CoffreDeco_LOD1"
+  ]
+ },
+ "Table": {
+  "dimensions": [
+   2.6,
+   1.2,
+   0.95
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 2940,
+  "triangles_lod1": 1470,
+  "objets": [
+   "SM_Prop_Table_LOD0",
+   "SM_Prop_Table_LOD1"
+  ]
+ },
+ "Banc": {
+  "dimensions": [
+   2.475,
+   0.6,
+   0.564
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 1958,
+  "triangles_lod1": 978,
+  "objets": [
+   "SM_Prop_Banc_LOD0",
+   "SM_Prop_Banc_LOD1"
+  ]
+ },
+ "Paille": {
+  "dimensions": [
+   2.0,
+   1.925,
+   0.274
+  ],
+  "bas": 0.003,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 1080,
+  "triangles_lod1": 0,
+  "objets": [
+   "SM_Prop_Paille"
+  ]
+ },
+ "Armoire": {
+  "dimensions": [
+   1.6,
+   0.852,
+   2.616
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 4209,
+  "triangles_lod1": 2103,
+  "objets": [
+   "SM_Prop_Armoire_LOD0",
+   "SM_Prop_Armoire_LOD1"
+  ]
+ },
+ "Lit": {
+  "dimensions": [
+   1.3,
+   2.238,
+   0.709
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 3920,
+  "triangles_lod1": 1960,
+  "objets": [
+   "SM_Prop_Lit_LOD0",
+   "SM_Prop_Lit_LOD1"
+  ]
+ },
+ "Chaudron": {
+  "dimensions": [
+   1.3,
+   1.3,
+   1.0
+  ],
+  "bas": -0.0,
+  "centre": [
+   0.0,
+   0.0
+  ],
+  "triangles_lod0": 3430,
+  "triangles_lod1": 1714,
+  "objets": [
+   "SM_Prop_Chaudron_LOD0",
+   "SM_Prop_Chaudron_LOD1"
+  ]
+ }
+}

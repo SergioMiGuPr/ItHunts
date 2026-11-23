@@ -1,0 +1,45 @@
+{
+ "nom": "Lit",
+ "glb": "tripo_lit_v01.glb",
+ "alignement_deg": 0.0,
+ "rot_z": -90,
+ "sommets_soudes": 1254,
+ "faces_degenerees": 0,
+ "ilots": 1,
+ "ilots_flottants_retires": 0,
+ "echelle_appliquee": [
+  1.2868,
+  1.5365,
+  1.1819
+ ],
+ "etirement_max": 1.3,
+ "cotes_visees": [
+  1.3,
+  2.3,
+  0.7
+ ],
+ "triangles_tripo": 4084,
+ "texture_tripo": [
+  2048,
+  2048
+ ],
+ "texture": "Assets/Art/Textures/Props/T_Prop_Lit_BaseColor.png",
+ "texture_taille": 1024,
+ "dimensions": [
+  1.3,
+  2.238,
+  0.709
+ ],
+ "pivot_bas": 0.0,
+ "centre_emprise": [
+  0.0,
+  0.0
+ ],
+ "triangles": 3920,
+ "triangles_lod1": 1960,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Lit.fbx",
+ "objets_fbx": [
+  "SM_Prop_Lit_LOD0",
+  "SM_Prop_Lit_LOD1"
+ ]
+}

@@ -1,0 +1,32 @@
+{
+ "nom": "Paille",
+ "objets": {
+  "SM_Prop_Paille": {
+   "avant": {
+    "faces": 1080,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 1080,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0
+   }
+  }
+ },
+ "dimensions": [
+  2.0,
+  1.925,
+  0.274
+ ],
+ "triangles_lod0": 1080,
+ "triangles_lod1": 0,
+ "lod1": "aucun (prop plat)",
+ "ok": true
+}

@@ -1,0 +1,24 @@
+Prop_Chaise_Attrapable (Prop_Chaise_Attrapable) -> Chaise × 1,32 rot 90 écart 0,56 ; greybox (0.69, 1.00, 0.69) -> modèle (0.60, 1.33, 0.60) ; vue (-0.96, 0.00, -0.29) près 2,3 m, jeu 9,0 m
+Prop_Armoire : instance Prop_Armoire écartée (greybox (3.99, 0.70, 3.83), écart de forme 3,37 avec Armoire)
+Prop_Statue (Prop_Statue) -> Statue × 1,68 rot 0 écart 0,40 ; greybox (1.40, 3.58, 1.40) -> modèle (1.26, 4.38, 1.27) ; vue (1.00, 0.00, 0.00) près 2,9 m, jeu 9,0 m
+Prop_Armoire : instance Prop_Armoire écartée (greybox (3.99, 0.70, 3.83), écart de forme 3,37 avec Armoire)
+Prop_Armoire : instance Prop_Armoire écartée (greybox (3.83, 0.70, 3.99), écart de forme 3,37 avec Armoire)
+Prop_Ratelier : instance Prop_Ratelier écartée (greybox (0.48, 1.40, 0.60), écart de forme 1,10 avec Ratelier)
+Prop_Ratelier : instance Prop_Ratelier écartée (greybox (0.60, 1.40, 0.48), écart de forme 1,10 avec Ratelier)
+Prop_Armoire : instance Prop_Armoire écartée (greybox (3.99, 0.70, 3.83), écart de forme 3,37 avec Armoire)
+Prop_Etagere (Prop_Etagere) -> Etagere × 1,57 rot 0 écart 0,47 ; greybox (1.00, 5.65, 4.20) -> modèle (1.27, 4.75, 3.95) ; vue (-0.50, 0.00, -0.87) près 5,2 m, jeu 6,2 m
+Prop_Ratelier : instance Prop_Ratelier écartée (greybox (0.60, 1.40, 0.48), écart de forme 1,10 avec Ratelier)
+Prop_CoffreDeco (Prop_CoffreDeco) -> CoffreDeco × 1,02 rot 0 écart 0,01 ; greybox (0.82, 0.82, 1.22) -> modèle (0.82, 0.82, 1.23) ; vue (1.00, 0.00, 0.00) près 2,8 m, jeu 9,0 m
+Prop_Ratelier : instance Prop_Ratelier écartée (greybox (0.60, 1.40, 0.48), écart de forme 1,10 avec Ratelier)
+Prop_Table (Prop_Table) -> Table_Banquet × 1,10 rot 0 écart 0,21 ; greybox (1.50, 1.34, 6.00) -> modèle (1.52, 1.20, 6.59) ; vue (-0.50, 0.00, 0.87) près 6,6 m, jeu 9,0 m
+Coffre (Coffre : Galerie des portraits) -> Coffre × 1,87 rot 0 écart 0,31 ; greybox (1.63, 1.00, 1.20) -> modèle (1.69, 1.12, 1.03) ; vue (-0.14, 0.00, -0.99) près 3,1 m, jeu 9,0 m
+CoffreVerrou (Coffre de la salle verrouillée) -> CoffreVerrou × 1,77 rot 0 écart 0,19 ; greybox (1.07, 1.00, 1.55) -> modèle (0.98, 1.06, 1.60) ; vue (0.54, 0.00, 0.84) près 3,0 m, jeu 9,0 m
+Prop_Tonneau (Prop_Tonneau) -> Tonneau × 1,44 rot 0 écart 0,33 ; greybox (0.94, 1.10, 0.94) -> modèle (0.86, 1.29, 0.86) ; vue (0.00, 0.00, -1.00) près 2,5 m, jeu 9,0 m
+Prop_Banc (Prop_Banc) -> Banc × 2,16 rot 0 écart 0,53 ; greybox (1.64, 1.25, 4.10) -> modèle (1.29, 1.22, 5.34) ; vue (0.98, 0.00, 0.21) près 5,1 m, jeu 9,0 m
+Prop_Ratelier : instance Prop_Ratelier écartée (greybox (0.60, 1.40, 0.48), écart de forme 1,10 avec Ratelier)
+Prop_Ratelier : instance Prop_Ratelier écartée (greybox (0.48, 1.40, 0.60), écart de forme 1,10 avec Ratelier)
+Prop_Ratelier : instance Prop_Ratelier écartée (greybox (0.60, 1.40, 0.48), écart de forme 1,10 avec Ratelier)
+Prop_Armoire : instance Prop_Armoire écartée (greybox (3.99, 0.70, 3.83), écart de forme 3,37 avec Armoire)
+Prop_Armoire : instance Prop_Armoire écartée (greybox (3.99, 0.70, 3.83), écart de forme 3,37 avec Armoire)
+Prop_Poutre : instance Prop_Poutre écartée (greybox (1.74, 0.50, 5.97), écart de forme 1,20 avec Poutre)
+Prop_Poutre : instance Prop_Poutre écartée (greybox (2.43, 0.50, 5.84), écart de forme 1,66 avec Poutre)

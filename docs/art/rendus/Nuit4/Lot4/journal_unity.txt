@@ -1,0 +1,10 @@
+Journal Unity (console, niveau erreur), branche art-props-3d, après Props4.Construit (17 FBX réimportés, 20 prefabs) et les captures en Play Mode des actes I, II et III (seed 4242).
+Aucune erreur ni aucun avertissement ne vient des assets du lot 4 (Assets/Art/Models/Props, Textures/Props, Materials/Props, Prefabs/Props).
+- « Destroying assets is not permitted » : ItHunts.Audio.MagnetismAudio.OnDestroy (Assets/_Project, côté main).
+- « RuntimeNavMeshBuilder: Source mesh … does not allow read access » : pièces des kits (SM_Arene_*, SM_Cave_Puits, SM_Jardin_*), hors lot 4 ; corrigé par la PR du lot 2 (#47, Read/Write sur tous les FBX des kits), que cette branche n'inclut pas.
+
+Nombre  message
+     36       "message": "Destroying assets is not permitted to avoid data loss.\nIf you really want to remove an asset use DestroyImmediate (theObject, true);",
+      4       "message": "RuntimeNavMeshBuilder: Source mesh SM_Arene_EscalierDescente does not allow read access. This will work in playmode in the editor but not in p
+      4       "message": "RuntimeNavMeshBuilder: Source mesh SM_Cave_Puits does not allow read access. This will work in playmode in the editor but not in player",
+      4       "message": "RuntimeNavMeshBuilder: Source mesh SM_Jardin_Statue_Pleureuse does not allow read access. This will work in playmode in the editor but not in 

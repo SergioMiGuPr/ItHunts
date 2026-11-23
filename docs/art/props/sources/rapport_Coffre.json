@@ -1,0 +1,69 @@
+{
+ "nom": "Coffre",
+ "glb": "tripo_coffre_v01.glb",
+ "alignement_deg": 0.0,
+ "rot_z": -90,
+ "sommets_soudes": 1852,
+ "faces_degenerees": 0,
+ "ilots": 1,
+ "ilots_flottants_retires": 0,
+ "echelle_appliquee": [
+  1.4033,
+  1.1807,
+  1.2
+ ],
+ "etirement_max": 1.189,
+ "cotes_visees": [
+  0.9,
+  0.55,
+  0.6
+ ],
+ "triangles_tripo": 4490,
+ "texture_tripo": [
+  1024,
+  1024
+ ],
+ "texture": "Assets/Art/Textures/Props/T_Prop_Coffre_BaseColor.png",
+ "texture_taille": 1024,
+ "couvercle": {
+  "hauteur_coupe": 0.381,
+  "charniere": [
+   0.0,
+   0.262,
+   0.381
+  ],
+  "triangles": 1466,
+  "ouverture_corps": {
+   "boucles": 2,
+   "paroi_m": 0.05,
+   "fond_m": 0.25,
+   "faces_ajoutees": 122
+  },
+  "ouverture_couvercle": {
+   "boucles": 2,
+   "paroi_m": 0.05,
+   "fond_m": null,
+   "faces_ajoutees": 119
+  }
+ },
+ "dimensions": [
+  0.9,
+  0.55,
+  0.6
+ ],
+ "pivot_bas": 0.0,
+ "centre_emprise": [
+  0.0,
+  0.0
+ ],
+ "triangles": 4963,
+ "triangles_lod1": 2616,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Coffre.fbx",
+ "objets_fbx": [
+  "Couvercle",
+  "Couvercle_LOD0",
+  "Couvercle_LOD1",
+  "SM_Prop_Coffre_LOD0",
+  "SM_Prop_Coffre_LOD1"
+ ]
+}

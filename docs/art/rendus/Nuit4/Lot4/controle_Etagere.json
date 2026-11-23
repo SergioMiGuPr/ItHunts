@@ -1,0 +1,53 @@
+{
+ "nom": "Etagere",
+ "objets": {
+  "SM_Prop_Etagere_LOD0": {
+   "avant": {
+    "faces": 5389,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 5389,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 9,
+    "aretes_de_bord": 14
+   }
+  },
+  "SM_Prop_Etagere_LOD1": {
+   "avant": {
+    "faces": 2693,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 2693,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 9,
+    "aretes_de_bord": 14
+   }
+  }
+ },
+ "dimensions": [
+  2.519,
+  0.807,
+  3.026
+ ],
+ "triangles_lod0": 5389,
+ "triangles_lod1": 2693,
+ "ok": true
+}

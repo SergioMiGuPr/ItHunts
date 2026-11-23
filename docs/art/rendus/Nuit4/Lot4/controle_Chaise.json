@@ -1,0 +1,53 @@
+{
+ "nom": "Chaise",
+ "objets": {
+  "SM_Prop_Chaise_LOD0": {
+   "avant": {
+    "faces": 1959,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 1959,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 5,
+    "aretes_de_bord": 6
+   }
+  },
+  "SM_Prop_Chaise_LOD1": {
+   "avant": {
+    "faces": 979,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 979,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 5,
+    "aretes_de_bord": 6
+   }
+  }
+ },
+ "dimensions": [
+  0.45,
+  0.45,
+  1.0
+ ],
+ "triangles_lod0": 1959,
+ "triangles_lod1": 979,
+ "ok": true
+}

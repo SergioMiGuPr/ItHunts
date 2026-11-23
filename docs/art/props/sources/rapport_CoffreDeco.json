@@ -1,0 +1,45 @@
+{
+ "nom": "CoffreDeco",
+ "glb": "tripo_coffredeco_v01.glb",
+ "alignement_deg": 0.0,
+ "rot_z": -90,
+ "sommets_soudes": 1135,
+ "faces_degenerees": 0,
+ "ilots": 1,
+ "ilots_flottants_retires": 0,
+ "echelle_appliquee": [
+  1.581,
+  1.379,
+  1.6
+ ],
+ "etirement_max": 1.16,
+ "cotes_visees": [
+  1.2,
+  0.8,
+  0.8
+ ],
+ "triangles_tripo": 3071,
+ "texture_tripo": [
+  2048,
+  2048
+ ],
+ "texture": "Assets/Art/Textures/Props/T_Prop_CoffreDeco_BaseColor.png",
+ "texture_taille": 1024,
+ "dimensions": [
+  1.2,
+  0.8,
+  0.8
+ ],
+ "pivot_bas": 0.0,
+ "centre_emprise": [
+  0.0,
+  0.0
+ ],
+ "triangles": 2939,
+ "triangles_lod1": 1469,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_CoffreDeco.fbx",
+ "objets_fbx": [
+  "SM_Prop_CoffreDeco_LOD0",
+  "SM_Prop_CoffreDeco_LOD1"
+ ]
+}

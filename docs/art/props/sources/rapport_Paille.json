@@ -1,0 +1,27 @@
+{
+ "nom": "Paille",
+ "source": "maillage construit par paille.py (graine 4242) ; texture Nano Banana 2.1",
+ "dimensions": [
+  2.0,
+  1.925,
+  0.274
+ ],
+ "pivot_bas": 0.003,
+ "centre_emprise": [
+  0.0,
+  0.0
+ ],
+ "triangles": 1080,
+ "triangles_lod1": 0,
+ "echelle_appliquee": [
+  1,
+  1,
+  1
+ ],
+ "texture": "Assets/Art/Textures/Props/T_Prop_Paille_BaseColor.png",
+ "texture_taille": 1024,
+ "fbx": "Assets/Art/Models/Props/SM_Prop_Paille.fbx",
+ "objets_fbx": [
+  "SM_Prop_Paille"
+ ]
+}
