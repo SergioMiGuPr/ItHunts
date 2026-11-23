@@ -15,7 +15,7 @@ MonoBehaviour:
   timer: 720
   gracePeriod: 150
   exitUnlockAt: 240
-  exitPrice: 200
+  exitPrice: 150
   timerWaitsForStartRoom: 1
   deathEndsRun: 1
   resetDelay: 1.5

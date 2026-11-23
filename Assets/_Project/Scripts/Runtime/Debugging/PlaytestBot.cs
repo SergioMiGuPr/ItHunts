@@ -405,6 +405,9 @@ namespace ItHunts.Debugging
 
                         if (price > souls || c.GetComponentInParent<LockedDoor>() != null)
                             continue;
+                        int cr = _level.Plan.RoomAt(c.transform.position);
+                        if (cr >= 0 && _level.Plan.Rooms[cr].Role == RoomRole.Verrouillee)
+                            continue;                                  // derrière une porte payante : pas pour l'exploration
                         float d = Vector3.Distance(c.transform.position, pos);
                         if (d < bestD && Reachable(pos, c.transform.position))
                         {
@@ -796,6 +799,13 @@ namespace ItHunts.Debugging
                     Report.Note("blocage en fuite", text);
                 else
                     Report.Fail("blocage", text);
+                if (Current == Task.Coffre && _targetChest != null)
+                {
+                    _chestsDone.Add(_targetChest);                     // coffre inatteignable : abandonné (le défaut est noté)
+                    _targetChest = null;
+                    Current = Task.Explorer;
+                    _hasGoal = false;
+                }
                 Vector3 jump = _corner < _corners.Count ? _corners[_corner] : _goal;
                 _motor.Teleport(jump + Vector3.up * 0.2f);
                 _lastProgress = Time.time;
