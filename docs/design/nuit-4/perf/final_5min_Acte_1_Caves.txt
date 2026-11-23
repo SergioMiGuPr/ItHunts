@@ -1,7 +1,7 @@
 Niveau Acte_1_Caves, 1920×1080, 1 joueur ; salle Gouffre ; timer à 5:00, pic non
-image : médiane 9,6 ms, 95 % 12,0 ms, max 62,6 ms ; images > 16.6 ms : 20/2051
-fil principal (FrameTiming) : médiane 8,4 ms, 95 % 11,7 ms ; fil de rendu : médiane 3,1 ms ; GPU : médiane 7,1 ms, 95 % 7,4 ms
-Main Thread (profileur) médiane 9,6 ms ; physique 0,18 ms ; draw calls 1918, batches 1922
-marqueurs (médiane ms) : Ghoul 0,25, Stalker 0,04, Waves 0,00, Flyer 0,03, Souls 0,00, PlayerHud 0,08, FixedUpdate.ScriptRunBehaviourFixedUpdate 0,74, Update.ScriptRunBehaviourUpdate 1,20, PreLateUpdate.ScriptRunBehaviourLateUpdate 0,84, FixedUpdate.PhysicsFixedUpdate 0,35, PostLateUpdate.FinishFrameRendering 3,43, Camera.Render 0,00, CullScriptable 0,41, RenderPipelineManager.DoRenderLoop_Internal() 0,00, UpdateRendererBoundingVolumes 0,59, GUI.Repaint 0,17, UGUI.Rendering.UpdateBatches 0,11
+image : médiane 9,5 ms, 95 % 11,1 ms, max 33,7 ms ; images > 16.6 ms : 5/2108
+fil principal (FrameTiming) : médiane 8,4 ms, 95 % 10,7 ms ; fil de rendu : médiane 3,1 ms ; GPU : médiane 7,0 ms, 95 % 7,3 ms
+Main Thread (profileur) médiane 9,4 ms ; physique 0,18 ms ; draw calls 1926, batches 1930
+marqueurs (médiane ms) : Ghoul 0,24, Stalker 0,04, Waves 0,00, Flyer 0,03, Souls 0,00, PlayerHud 0,08, FixedUpdate.ScriptRunBehaviourFixedUpdate 0,74, Update.ScriptRunBehaviourUpdate 1,17, PreLateUpdate.ScriptRunBehaviourLateUpdate 0,83, FixedUpdate.PhysicsFixedUpdate 0,34, PostLateUpdate.FinishFrameRendering 3,46, Camera.Render 0,00, CullScriptable 0,40, RenderPipelineManager.DoRenderLoop_Internal() 0,00, UpdateRendererBoundingVolumes 0,59, GUI.Repaint 0,17, UGUI.Rendering.UpdateBatches 0,11
 ennemis actifs 81 ; au pic False ; lumières 450 ; joueurs 1
 #fin

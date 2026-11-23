@@ -10,7 +10,7 @@ planches des captures à points fixes : [captures/planches-da/](captures/planche
 
 - **La nuit a débordé sur la journée** : arrêt vers 1 h (limite d'usage atteinte par un sous-agent), reprise à 12 h 18, fin vers 19 h.
 - **Toutes les PR de la DA sont fusionnées et branchées** (#45 à #53), dont les props en 3D sur les greybox et les portes animées.
-- **Le build tient les 60 images par seconde avec de la marge** : 90 à 105 en médiane à 1920 × 1080 (l'acte II était à 36 avant
+- **Le build tient les 60 images par seconde avec de la marge** : 92 à 105 en médiane à 1920 × 1080 (l'acte II était à 36 avant
   une correction de cette journée : 3 400 systèmes de particules de flammes simulés en permanence).
 - **Trois bugs du playtest sont reproduits, expliqués et corrigés avec preuve en jeu** : porte de sortie (9 cartes sur 9), parade
   (la vraie cause est le bond), goules figées.
@@ -60,7 +60,7 @@ verts (557 réussis, 1 non concluant connu), fusion normale (conflits du manifes
 | 2 | HUD : améliorations au-dessus de la barre de vie | ✅ code | rangée de 10 cases, cadres de la DA, passif en losange ; à regarder en jeu |
 | 3 | Vagues cachées, pression constante | ✅ | plus de « VAGUE n » ; quota par acte, repos après blessure (D-103) |
 | 3 | Scaling sur la puissance du joueur, plus lent | ✅ | `EnemyScaling` (exposant 0.9), par acte |
-| 3 | Aucune salle vide ; performances | ✅ | 81 à 112 ennemis actifs par carte ; **build : 9,6 / 11,1 / 9,5 ms** en médiane (voir « Mesures ») |
+| 3 | Aucune salle vide ; performances | ✅ | 81 à 112 ennemis actifs par carte ; **build : 9,5 / 10,9 / 9,6 ms** en médiane (voir « Mesures ») |
 | 4 | Cartes plus grandes, boucles, plusieurs routes | ✅ | 24 à 26 salles (16 avant), 5 à 13 boucles, 0 ou 1 impasse sur 15 cartes (test `ZeroImpasse…`) |
 | 4 | Verticalité : étages, portes en hauteur | ✅ | sols de −8 à +15 m, 3 à 11 paliers par carte |
 | 4 | Plus de cellule d'apparition du traqueur | ✅ | porte pleine qu'il enfonce, vestibule sans lumière |
@@ -78,7 +78,7 @@ verts (557 réussis, 1 non concluant connu), fusion normale (conflits du manifes
 | V | Bot : chaque acte, 3 graines, puis boss et écran de fin | ⚠️ | 6 cartes finies sur 9, boss lancé sur 3 graines mais pas vaincu en 9 min, écran de fin non atteint par le bot |
 | V | Captures à points fixes avant/après | ✅ | 9 cartes × 50 vues : `captures/planches/` (avant les PR #51-52) et `captures/planches-da/` (après) |
 | V | Journaux à 0 erreur (éditeur et build) | ✅ | bot : 0 erreur sur 12 passages ; build : 0 exception sur les 3 actes |
-| V | FPS du build (60) | ✅ | 90 à 105 en médiane ; 95e centile 12 à 15,5 ms |
+| V | FPS du build (60) | ✅ | 92 à 105 en médiane ; 95e centile 11 à 15 ms |
 | V | Relecture indépendante | ✅ | sous-agent qui n'avait rien vu ; 4 bugs corrigés après coup (voir « Relecture ») |
 
 ## Résultats du bot (3 graines par acte, temps réel, vitesse ×1)
@@ -112,9 +112,9 @@ maintenant au centre, ce qui lance le combat.
 
   | Acte | Avant (5 min de jeu) | Après correction, build final (5 min) | Pire cas (timer avancé à 24 min), après |
   |---|---|---|---|
-  | I (caves) | 12,3 ms (81 i/s) | **9,6 ms (104 i/s)**, 95 % : 12,0 ms | 10,5 ms |
-  | II (château) | 28,2 ms (35 i/s) | **11,1 ms (90 i/s)**, 95 % : 15,5 ms | 12,9 ms, 95 % : 23,0 ms |
-  | III (jardin) | 19,6 ms (51 i/s) | **9,5 ms (105 i/s)**, 95 % : 12,8 ms | 12,6 ms |
+  | I (caves) | 12,3 ms (81 i/s) | **9,5 ms (105 i/s)**, 95 % : 11,1 ms | 10,5 ms |
+  | II (château) | 28,2 ms (35 i/s) | **10,9 ms (92 i/s)**, 95 % : 13,1 ms | 12,9 ms, 95 % : 23,0 ms |
+  | III (jardin) | 19,6 ms (51 i/s) | **9,6 ms (104 i/s)**, 95 % : 15,1 ms | 12,6 ms |
 
   Cause trouvée : les flammes de la DA (appliques à 3 flammes, lustres à 12 flammes) faisaient 1 700 effets, soit 3 400 systèmes
   de particules simulés en permanence, même hors de l'écran. Ils sont maintenant coupés au-delà de 30 m du joueur (la lumière reste ;
@@ -171,12 +171,16 @@ Un sous-agent qui n'avait rien vu du travail a relu le brief, le code récent, l
   payée : refusée » était lue une image trop tôt. Corrigé (les rapports déjà écrits gardent ces erreurs : seul leur temps de jeu fait foi).
 
 **Contesté, avec la réponse :**
-- « Les FPS ont été mesurés avant les props » : refait sur le build final avec les props (9,6 / 11,1 / 9,5 ms, `perf/final_*`).
+- « Les FPS ont été mesurés avant les props » : refait sur le build final avec les props et les correctifs (9,5 / 10,9 / 9,6 ms, `perf/final_*`).
 - « 60 i/s non tenus au pire cas de l'acte II » : vrai pour le 95e centile (23 ms à 24 min de timer, 119 ennemis) ; la médiane reste
   à 12,9 ms. Noté dans « Ce qui reste ».
 - « Ouvertures de porte noires » : ce sont les couloirs entre deux salles, sans lumière par choix (lueur chaude au seuil seulement).
   À juger en jeu : si c'est encore gênant, une lumière par couloir coûte en performance (lumières limitées par Forward+).
 - « Coffres à l'échelle fixe 1,5 » : c'est la règle de la DA pour les coffres (`Props4.Regle`) ; le collider de la greybox reste.
+
+- **Bot qui se croyait en marche** (trouvé en relançant le contrôle) : chaque recalcul de chemin comptait comme un progrès, donc un
+  blocage contre un mur n'était jamais détecté. Corrigé ; passage de contrôle, acte II graine 22 : fini à 5:54, porte payée puis
+  ouverte, 855 parades réussies, 5 blocages notés, 0 erreur.
 
 **Gardé tel quel (mineur)** : l'indicateur `StalkerDeathCam.Active` est commun aux deux joueurs en écran partagé ; la caméra de mort
 vise le premier traqueur trouvé (un seul par niveau aujourd'hui).
