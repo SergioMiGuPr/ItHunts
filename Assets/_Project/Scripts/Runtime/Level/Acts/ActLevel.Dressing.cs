@@ -133,18 +133,21 @@ namespace ItHunts.Level.Acts
             if (settings.chandeliersPer1000 > 0f && r.Ceiling > 0f)
             {
                 int n = Mathf.Max(1, Mathf.RoundToInt(r.Area(Plan.Cell) / 1000f * settings.chandeliersPer1000));
+                // Lustre proportionné à la salle (nuit 4) : grand dans un hall de 30 m, modeste dans une chambre.
+                float chandelierScale = Mathf.Clamp(Mathf.Sqrt(r.Area(Plan.Cell) / 1400f) * (r.Ceiling / 24f), 0.7f, 1.8f);
                 for (int k = 0; k < n; k++)
                     if (FreeCell(r, out Vector2Int c, clearance: 2))
                     {
                         _occupied.Remove(c);
-                        Chandelier(root, Plan.CellCenter(c, r.Floor), r.Ceiling);
+                        Chandelier(root, Plan.CellCenter(c, r.Floor), r.Ceiling, chandelierScale);
                     }
             }
 
             if (settings.moonWindowSpacing > 0f)
                 MoonWindows(r, root, segs);
-            // Garde-fou du jardin ouvert : la forêt dense le long des falaises (limite naturelle).
-            if (settings.theme == ActTheme.Jardin)
+            // Garde-fou du jardin ouvert : la forêt dense le long des falaises (limite naturelle). Avec le kit (lisière de forêt, falaises),
+            // plus de cimes en sphères : elles faisaient de grosses formes noires ellipsoïdales dans le ciel (nuit 4, point 1).
+            if (settings.theme == ActTheme.Jardin && (Art == null || Art.outerWalls.Count == 0))
                 ForestEdge(r, root, segs);
         }
 
@@ -283,6 +286,8 @@ namespace ItHunts.Level.Acts
             GameObject torchPrefab = Art != null && Art.torch != null ? Art.torch : settings.kit != null ? settings.kit.torche : null;
             if (torchPrefab == null)
                 return;
+            if (r.Role == RoomRole.Arrivee || r.Role == RoomRole.Repaire)
+                return;                                                 // le traqueur attend dans le noir : rien ne le montre avant l'heure (nuit 4)
             float spacing = settings.sconceSpacing * (r.Special ? 1.6f : 1f);
             int i = 0;
             foreach (ActContour.Segment s in _contours[r.Id])
@@ -341,9 +346,9 @@ namespace ItHunts.Level.Acts
         }
 
         /// <summary>Lustre (acte II) : couronne de fer, bougies, chaîne jusqu'au plafond, une lumière chaude.</summary>
-        private void Chandelier(Transform root, Vector3 floor, float ceiling)
+        private void Chandelier(Transform root, Vector3 floor, float ceiling, float scale = 1f)
         {
-            if (KitChandelier(root, floor, ceiling))
+            if (KitChandelier(root, floor, ceiling, scale))
                 return;
             float y = floor.y + Mathf.Max(8f, ceiling - 7f);
             var go = new GameObject("Lustre");

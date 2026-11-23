@@ -133,8 +133,11 @@ namespace ItHunts.Enemies
             _horn = ItHunts.Audio.GameAudio.Or(s => s.wavePeak, ItHunts.Audio.ProceduralSfx.ToClip("Vagues : pic", ItHunts.Audio.ProceduralSfx.WaveHorn()));
         }
 
+        private void OnEnable() => PlayerHealth.Hurt += OnPlayerHurt;
+
         private void OnDisable()
         {
+            PlayerHealth.Hurt -= OnPlayerHurt;
             foreach (IHunter h in HuntDirector.Gather())
                 h.Hunt.Release();
         }
@@ -383,6 +386,29 @@ namespace ItHunts.Enemies
             UpdateKind(_ghouls, now);
             UpdateKind(_flyers, now);
 
+            if (settings.continuous)
+            {
+                // Pression constante (nuit 4) : pas de pic ni de klaxon ; sous le quota, une apparition toutes les continuousInterval s,
+                // derrière le joueur et hors de vue (Begin), jamais pendant le repos qui suit une grosse blessure.
+                InPeak = false;
+                int act = Mathf.Clamp(ItHunts.Level.RunSession.Act, 0, 2);
+                float enraged = elapsed >= timer ? settings.enragedQuotaScale : 1f;
+                float scale = PlayerMultiplier * EnemyScaling.CountMultiplier() * enraged;
+                int players = Mathf.Max(1, _players.Count);
+                int quotaG = Mathf.RoundToInt(Quota(settings.continuousQuota, act) * players * scale);
+                int quotaF = Mathf.RoundToInt(Quota(settings.continuousFlyerQuota, act) * players * scale);
+                int cap = settings.hardCapPerPlayer * players;
+                _ghouls.Wanted = Mathf.Min(cap, Mathf.Max(quotaG, _ghouls.Wanted));
+                _flyers.Wanted = Mathf.Min(cap / 3, Mathf.Max(quotaF, _flyers.Wanted));
+                UpdatePending(now);
+                if (_players.Count == 0 || now < _relaxUntil)
+                    return;
+                float interval = settings.continuousInterval / (elapsed >= timer ? 2f : 1f);
+                ContinuousStep(_ghouls, quotaG, interval, now);
+                ContinuousStep(_flyers, quotaF, interval * 1.5f, now);
+                return;
+            }
+
             // Début d'un pic : une fournée par type (D-060), sous le plafond de population.
             if (InPeak && index != _peakIndex)
             {
@@ -401,6 +427,27 @@ namespace ItHunts.Enemies
                 return;
             WaveStep(_ghouls, now);
             WaveStep(_flyers, now);
+        }
+
+        private float _relaxUntil;
+        private static int Quota(int[] perAct, int act) => perAct == null || perAct.Length == 0 ? 6 : perAct[Mathf.Clamp(act, 0, perAct.Length - 1)];
+
+        /// <summary>Repos (cycle L4D) : un joueur vient de perdre beaucoup de PV : aucune apparition pendant relaxAfterHurt s.</summary>
+        private void OnPlayerHurt(PlayerHurtEvent e)
+        {
+            if (settings == null || !settings.continuous || e.Damage < 30f)
+                return;
+            _relaxUntil = Mathf.Max(_relaxUntil, Time.time + settings.relaxAfterHurt);
+        }
+
+        /// <summary>Mode continu : sous le quota de chasseurs vivants, une apparition par intervalle.</summary>
+        private void ContinuousStep(Kind k, int quota, float interval, float now)
+        {
+            if (k.Present + k.Pending >= quota || now < k.NextSpawn)
+                return;
+            k.NextSpawn = now + interval;
+            if (Begin(k, now, settings.telegraph))
+                k.Spawns++;
         }
 
         private void StartWave(Kind k, float spawns, float now)

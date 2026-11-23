@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 022ac51f900dd8c4fbcdf818b745c895, type: 3}
   m_Name: Character_koala
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.CharacterDefinition
+  upgrades: {fileID: 11400000, guid: 02a2b5b406e679ec4f8ef39b40d607ac, type: 2}
   id: koala
   displayName: Koala
   color: {r: 0.35, g: 0.78, b: 0.35, a: 1}

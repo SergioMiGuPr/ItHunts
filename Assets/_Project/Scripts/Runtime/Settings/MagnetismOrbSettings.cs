@@ -43,6 +43,22 @@ namespace ItHunts.Settings
         [Tooltip("Recharge de la répulsion (s) : une seule charge, qui ne s'accumule pas ; elle revient ce temps après " +
                  "chaque usage.")]
         [Min(0f)] public float repelCooldown = 5f;
+
+        [Header("Améliorations (D-100) : réglées par PlayerUpgrades sur la copie du joueur")]
+        [Tooltip("Charges de répulsion en plus de la recharge normale (Charge de répulsion, G17) : utilisées quand la recharge n'est pas finie ; " +
+                 "chacune revient en repelCooldown s.")]
+        [Min(0)] public int repelExtraCharges;
+        [Tooltip("Répulsion sur le sol : propulsion verticale jusqu'à cette hauteur (m) sans dépenser de charge de mouvement (G17 Mythique) ; 0 : rien.")]
+        [Min(0f)] public float repelGroundLaunchHeight;
+        [Tooltip("Ennemis sur lesquels la traction s'accroche (masque : 1 goules, 2 volants, 4 cible liée par le livre) ; 0 : jamais (D-021).")]
+        public int tractionEnemyMask;
+
+        public const int TractionGhouls = 1, TractionFlyers = 2, TractionBound = 4;
+
+        /// <summary>La traction peut-elle s'accrocher à cet ennemi (Harpon G11, Lien d'ancrage H6) ?</summary>
+        public bool TractionAllowedOn(byte enemyKind, bool bound) =>
+            (bound && (tractionEnemyMask & TractionBound) != 0) || (enemyKind == 1 && (tractionEnemyMask & TractionGhouls) != 0)
+            || (enemyKind == 2 && (tractionEnemyMask & TractionFlyers) != 0);
         [Tooltip("Durée de l'état « En usage » après une répulsion (s) : retour visuel.")]
         [Min(0f)] public float repelUseDuration = 0.15f;
         [Header("Répulsion : onde en cône depuis le joueur (D-029)")]

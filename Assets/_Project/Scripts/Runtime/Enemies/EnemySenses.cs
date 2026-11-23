@@ -10,12 +10,24 @@ namespace ItHunts.Enemies
         private static readonly RaycastHit[] Hits = new RaycastHit[16];
 
         /// <summary>
+        /// Facteur de détection d'un joueur (nuit 4, D-100 : Souffle court, Peau changeante ; 0 : invisible), branché par
+        /// Economy.PlayerUpgrades ; null : 1. Il réduit la portée de vue des ennemis sur ce joueur, jamais leur vitesse.
+        /// </summary>
+        public static Func<PlayerHealth, float> DetectionScaleFor;
+
+        public static float DetectionScale(PlayerHealth p) => DetectionScaleFor != null && p != null ? Mathf.Clamp01(DetectionScaleFor(p)) : 1f;
+
+        /// <summary>
         /// Le joueur est-il vu : dans le cône et à portée, et rien de solide entre les yeux et lui (les colliders de
         /// l'ennemi et les déclencheurs ne bloquent pas ; les objets attrapables non plus : on voit entre les caisses).
+        /// La portée est réduite par la détection du joueur (améliorations).
         /// </summary>
         public static bool Sees(Vector3 eye, Vector3 forward, PlayerHealth p, float range, float angleTotal, Transform self)
         {
             if (p == null || p.Dead || !p.isActiveAndEnabled)
+                return false;
+            range *= DetectionScale(p);
+            if (range <= 0f)
                 return false;
             Vector3 target = p.Center + Vector3.up * 0.5f;
             if (!EnemyMath.InSightCone(eye, forward, target, range, angleTotal))

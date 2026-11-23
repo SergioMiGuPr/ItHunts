@@ -16,19 +16,19 @@ MonoBehaviour:
   displayName: 'Acte III : le jardin'
   cell: 2
   gridSize: 220
-  rooms: 16
-  roomArea: {x: 1200, y: 3400}
+  rooms: 22
+  roomArea: {x: 1400, y: 4200}
   minWidth: 12
   mainPathShare: 0.4
-  loopChance: 0.55
+  loopChance: 0.8
   minStartExit: 6
   doorWidth: 12
   doorHeight: 9
   ceiling: {x: 0, y: 0}
-  floorStep: 3
-  floorChangeChance: 0.3
-  minFloor: -6
-  maxFloor: 6
+  floorStep: 4
+  floorChangeChance: 0.5
+  minFloor: -8
+  maxFloor: 12
   rampSlope: 22
   openInnerWall: 8
   openOuterWall: 55
@@ -37,7 +37,7 @@ MonoBehaviour:
   voidShare: 0.2
   voidDamage: 20
   waterDepth: 3
-  terraceShare: 0.5
+  terraceShare: 0.7
   terraceHeight: {x: 3.5, y: 5.5}
   wallJumpGap: 3.6
   sconceSpacing: 16

@@ -71,21 +71,17 @@ namespace ItHunts.Economy
             Damageable.Died += OnDied;
             RenderPipelineManager.beginCameraRendering += Draw;
             // Améliorations (D-043) branchées sur les dégâts des objets lancés et de la répulsion.
-            ImpactDamager.OwnerDamageMultiplier = PlayerUpgrades.ThrowMultiplier;
-            RepulsionWave.RepelDamageFor = id =>
-            {
-                PlayerUpgrades u = PlayerUpgrades.OfId(id);
-                return u != null ? u.RepelDamage : 0f;
-            };
+            PlayerUpgrades.InstallHooks();                                   // dégâts, répulsion, murs, détection (D-043, D-100)
         }
 
         private void OnDisable()
         {
             Damageable.Died -= OnDied;
             RenderPipelineManager.beginCameraRendering -= Draw;
-            ImpactDamager.OwnerDamageMultiplier = null;
-            RepulsionWave.RepelDamageFor = null;
         }
+
+        /// <summary>Une âme ramassée par l'orbe de ce joueur (identifiant) : Orbe vorace, Aspiration Mythique (D-100).</summary>
+        public static event System.Action<int> SoulCollected;
 
         /// <summary>Remise à zéro (zone) : plus d'éclats au sol.</summary>
         public void Clear() => _shards.Clear();
@@ -107,6 +103,7 @@ namespace ItHunts.Economy
             if (_zone == null)
                 _zone = FindFirstObjectByType<ZoneState>();
             int souls = SoulMath.SoulsAtDeath(d.Settings.soulValue, _zone != null && _zone.Enraged, settings.enragedMultiplier);
+            souls = PlayerUpgrades.SoulsOnKill(d.LastAttackerId, souls, d);   // Âmes gourmandes, Pages brûlantes (D-100)
             Spawn(d.Center, souls, now);
         }
 
@@ -195,6 +192,7 @@ namespace ItHunts.Economy
                                 run.AddSouls(p.PlayerId, 1);
                         Collected++;
                         _collectedBy[collector.PlayerId] = CollectedBy(collector.PlayerId) + 1;
+                        SoulSystem.SoulCollected?.Invoke(collector.PlayerId);
                         if (_pickup != null && now >= _nextPickupSound && Application.isPlaying)
                         {
                             _nextPickupSound = now + 0.06f;

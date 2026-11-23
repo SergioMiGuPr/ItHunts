@@ -64,19 +64,18 @@ namespace ItHunts.Orbs
                 : transform.position + Vector3.up * 1.6f;
             foreach (Grabbable g in Grabbable.All)
             {
-                // Ennemi (volant, goule) : jamais de surbrillance au survol de la visée (nuit 3, point 1) ; sa lueur vient de Damageable
-                // (étourdi, coups), et la couleur de prise seulement quand il est tenu.
-                if (g.IsEnemy && g.Id != t.HeldId)
-                    continue;
-                Color glow;
-                if (g.IsEnemy && g.Id == t.HeldId
-                    && Time.time >= g.HeldSince + g.HoldDuration(cfg) - cfg.enemyStruggleWarning)
+                // Ennemi (volant, goule) : jamais de surbrillance au survol (nuit 3, point 1) ni de violet quand il est tenu (nuit 4, point 9) :
+                // sa lueur vient de Damageable (étourdi, coups) ; le débattement se lit sur son animation, pas sur sa couleur.
+                if (g.IsEnemy)
                 {
-                    // Il va se libérer : il clignote (violet / blanc).
-                    bool on = Mathf.Repeat(Time.time * 12f, 1f) < 0.5f;
-                    g.SetGlow(on ? Color.white * settings.glowHeld * 2f : settings.grabColor * settings.glowHeld);
+                    if (g.Id == t.HeldId && Time.time >= g.HeldSince + g.HoldDuration(cfg) - cfg.enemyStruggleWarning)
+                        g.SetGlow(Mathf.Repeat(Time.time * 12f, 1f) < 0.5f ? Color.white * settings.glowHeld : Color.black);   // il va se libérer : clignote blanc
+                    else
+                        g.SetGlow(Color.black);
                     continue;
                 }
+
+                Color glow;
 
                 float sinceThrow = Time.time - g.ThrownAt;
                 if (g.Id == t.HeldId)

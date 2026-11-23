@@ -30,7 +30,10 @@ retouches ([ART-HANDOFF](../../../art/ART-HANDOFF.md)). Décision D-028.
      rouge pour la télékinésie), charges de mouvement, charges d'attraction, répulsion avec le temps restant, refus
      en rouge ;
    - **dans le monde** : chiffres de dégâts, barres de PV, carrés de durabilité de l'objet tenu ;
-   - **coins réservés, sans contenu** : âmes (haut gauche), timer (haut droite), traqueur enragé (sous le timer).
+   - **coins réservés, sans contenu** : âmes (haut gauche), timer (haut droite), traqueur enragé (sous le timer) ;
+   - **mini-carte ronde** (haut droite, habillage de la DA) et **carte ouverte** (Tab maintenu) : même texture peinte depuis
+     le plan de l'acte, ennemis marqués seulement dans le champ de vision du joueur (D-101) ; règles détaillées dans
+     [run et niveaux](../run-et-niveaux/design.md), règle 11.
 6. **HUD discret** (jauges seulement) : une jauge **pleine et inutilisée** s'estompe à 40 % après 1.5 s ; toute
    charge utilisée, tout refus et toute recharge en cours la ramènent **tout de suite à 100 %** ; une charge qui
    revient **clignote une fois**.
@@ -90,3 +93,4 @@ retouches ([ART-HANDOFF](../../../art/ART-HANDOFF.md)). Décision D-028.
 - 2026-11-12 : in progress : caméra des mains, mains greybox, gestes, HUD uGUI, HUD discret, debug en pages (D-028).
 - 2026-11-12 : barres de PV, chiffres et durabilité collés à leur cible en mouvement (position calculée sans rayon vers le canvas).
 - 2026-11-12 : option 2 après mesure dans un build (passe de rendu « Render Objects », sans caméra en plus) ; implemented.
+- 2026-11-23 : D-101, mini-carte et carte ouverte : même texture à l'encre déduite du plan, ennemis à vue (renvoi à la règle 11 de run et niveaux).

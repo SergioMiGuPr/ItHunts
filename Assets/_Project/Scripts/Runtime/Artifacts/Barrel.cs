@@ -123,6 +123,33 @@ namespace ItHunts.Artifacts
             return step;
         }
 
+        /// <summary>
+        /// Éventail (C7, D-100) : le clic tenu vide le barillet en rafale, à rateFactor × la cadence. Vrai si une balle part ce
+        /// tick (une munition de moins) ; faux pendant un rechargement, un objet tenu ou avant l'intervalle.
+        /// </summary>
+        public static bool TryBurstFire(ref BarrelState b, int tick, bool held, bool holdingNow, float rateFactor, BarrelSettings cfg, float dt)
+        {
+            if (!held || holdingNow || b.Reloading || b.Rounds <= 0 || rateFactor <= 0f)
+                return false;
+            int interval = System.Math.Max(1, MovementSettings.SecondsToTicks(cfg.fireInterval / rateFactor, dt));
+            if (b.LastShotTick != MovementState.NeverTick && tick - b.LastShotTick < interval)
+                return false;
+            if (b.LastShotTick == tick)
+                return false;
+            b.Rounds--;
+            b.LastShotTick = tick;
+            b.ShotCount++;
+            return true;
+        }
+
+        /// <summary>Rechargement instantané (Sixième chambre Mythique, Main leste Mythique).</summary>
+        public static void InstantReload(ref BarrelState b, int tick, BarrelSettings cfg)
+        {
+            b.Reloading = false;
+            b.Rounds = cfg.rounds;
+            b.LastReloadDoneTick = tick;
+        }
+
         /// <summary>Avancement du rechargement (0..1) ; 0 s'il n'y en a pas.</summary>
         public static float ReloadProgress(in BarrelState b, int tick, BarrelSettings cfg, float dt)
         {

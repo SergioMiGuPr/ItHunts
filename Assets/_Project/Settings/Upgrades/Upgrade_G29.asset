@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_G29
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: "G29"
+  displayName: "Souffle court"
+  description: "Le traqueur vous d\xE9tecte de moins loin et perd votre trace plus vite (sa vitesse ne change pas)."
+  icon: {fileID: 0}
+  iconSymbol: "\u25CD"
+  color: {r: 1.4, g: 2.8, b: 1.2, a: 1}
+  kind: 28
+  character: 0
+  isPassive: 0
+  rankValues:
+  - 0.1
+  - 0.16
+  - 0.22
+  - 0.28
+  - 0.33
+  rankValues2: []
+  rankValues3: []
+  rankTexts:
+  - "\u221210 %"
+  - "\u221216 %"
+  - "\u221222 %, les goules alertent le traqueur 1 s plus tard"
+  - "\u221228 %"
+  - "\u221233 %, 2 s d'invisibilit\xE9 pour le traqueur apr\xE8s une parade r\xE9ussie"
+  synergies: "Peau changeante (C-P1), Vision nocturne (H-P1)"
+  amount: 0.1
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

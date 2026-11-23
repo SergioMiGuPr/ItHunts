@@ -966,3 +966,30 @@ Mesures à respecter pour les prochains kits et salles d'exemple (le générateu
 
 Sons : `Sfx_Impact_Lourd` joue pour un objet de 15 kg ou plus (caisse), `Sfx_Boss_Attaque_Morsure` à la réception du bond du
 boss. Les 51 sons de la nuit sont tous branchés.
+
+## Actes de la nuit 4 dans le jeu (main, 2026-11-23, D-100 à D-105)
+
+Ce qui a changé côté jeu et ce que la DA peut fournir pour remplacer les formes simples :
+
+| Élément | Mesure ou règle | Réglage / code | Demande à la DA |
+|---|---|---|---|
+| Salles | 20 à 22 par acte, 800 à 4 200 m² ; **au moins 2 portes par salle de combat** (zéro impasse) | `rooms`, `roomArea`, `minDoorsPerRoom` | — |
+| Étages | pas de **4 m** (5 au château), sols de −8 à +12 / +15 m ; une porte entre étages est une rampe **ou un palier** (terrasse à la hauteur de la salle haute + escalier de 6 m de large, pente 28°) | `floorStep`, `landingChance` | pièce d'**escalier droit** de 6 m de large pour 4 et 5 m de montée ; garde-corps de palier |
+| Porte d'arrivée du traqueur | **porte pleine à deux battants** (bois, ferrures), gonds aux bords de l'ouverture de 12 × 9 m ; il l'enfonce (battants à 110°) à la fin de la grâce ; vestibule sans torche | `BuildArrivalGate`, `ArrivalGate.ConfigureLeaves` | modèle de **double porte 12 × 9 m** à battants séparés (`Battant_G` / `Battant_D`, pivots aux gonds) ; variante enfoncée / fendue |
+| Salle verrouillée | **grille de fer** (barreaux tous les 0.5 m, 4 traverses, cadenas 0.6 × 0.8 m à 1.7 m) qui **se lève** en 1.8 s une fois payée | `BuildLockedDoor`, `LockedDoor.ConfigureGrille` | grille 12 × 9 m avec cadenas, pivot au sol |
+| Porte de sortie scellée | le panneau de porte affiche **le temps restant** et « survivez jusque-là » avant l'ouverture | `PlayerHudArt.UpdateDoorPanel` | une ligne « invite » plus longue dans `Panneau_Porte` (texte de 50 caractères) |
+| Lustres (acte II) | échelle **0.7 à 1.8** selon la surface et la hauteur de la salle | `ActLevel.Dressing` | — |
+| Torches du kit | **aucune ombre projetée** (plus de 100 sources par acte saturaient l'atlas d'ombres) | `KitPiece` | ne pas cocher les ombres dans les prefabs de lumière |
+| Puits des caves | eau sombre à −1.2 m dans le conduit, collision lisse (cylindre Ø 3.16 m, 0.9 m) | `DressWell` | un plan d'eau dans `SM_Cave_Puits` et une margelle sans facettes saillantes |
+| Ciel du jardin | l'enfant **`Lune`** de `Jardin_Ciel` est désactivé par le jeu (c'est la lune du menu ; la lumière de lune reste) | `DressSky` | une lune propre à l'acte III, plus petite et plus haute, si on en veut une |
+| Cimes en sphères | retirées (les falaises et la lisière du kit suffisent) | `ForestEdge` | — |
+| Volants | plus de boule rouge d'annonce ni de violet quand on les attrape : yeux + corps qui luit | `Flyer`, `TelekinesisView` | — |
+| Boss | marquages au sol **ambre éteint** (0.85, 0.58, 0.32), **anneau = bord exact des dégâts**, figés 300 ms avant l'impact ; entrée par bond depuis la falaise sud ; centre de l'arène dégagé sur 20 m | `FinalBoss`, `BossArena` | décalcomanie d'anneau au sol (pierre fendue, braises) à la place de l'anneau tracé |
+| Mort par le traqueur | gros plan du visage à 1.2 m, cri de prise + cri enragé, éclair rouge 0.3 s, morsure à 1.3 s, fondu, 3 s | `StalkerDeathCam` | un clip de **cri face caméra** (mâchoire grande ouverte 2 s) rendrait le screamer plus fort que la forme pilotée |
+| Minimap | murs d'encre, portes, terrasses, bassins, fosses dessinés depuis le plan ; goules en points rouges et traqueur en symbole seulement à vue | `ActMapPainter`, `PlayerHud.Enemies` | sprites `MiniCarte_Ennemi` (point) et `MiniCarte_Traqueur` (œil) |
+| Améliorations | **70** à rangs (Bronze, Argent, Or, Diamant, Mythique), 10 emplacements, 1 passif ; HUD : rangée au-dessus de la barre de vie | `UpgradeDefinition`, `PlayerUpgrades` | **70 icônes** + **5 cadres de rang** (voir `docs/design/AMELIORATIONS.md` § « Pour la DA ») |
+
+Avertissement vu dans le journal à chaque création de matériau toon : « Failed to create material drawer Header with arguments
+'Decor (variation, bas des murs sale et humide, couche melangee en hauteur)' » : l'attribut `[Header(...)]` du shader `ItHunts/Toon`
+contient des parenthèses que l'inspecteur ne sait pas lire ; sans effet en jeu, mais il remplit la console (à remplacer par un titre
+sans parenthèses).

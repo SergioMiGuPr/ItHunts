@@ -63,14 +63,45 @@ namespace ItHunts.Tests
                     }
 
                     bool stepped = Mathf.Abs(p.Rooms[d.A].Floor - p.Rooms[d.B].Floor) > 0.05f;
-                    Assert.That(d.RampRoom >= 0, Is.EqualTo(stepped), "rampe si et seulement si les sols diffèrent");
-                    if (stepped)
+                    // Sols différents : une rampe, ou un palier (porte en hauteur, nuit 4) ; jamais rien.
+                    Assert.That(d.RampRoom >= 0 || d.Landing, Is.EqualTo(stepped), $"acte {act} seed {seed} : rampe ou palier si et seulement si les sols diffèrent");
+                    if (stepped && d.RampRoom >= 0)
                     {
                         float rise = Mathf.Abs(p.Rooms[d.A].Floor - p.Rooms[d.B].Floor);
                         float slope = Mathf.Atan2(rise, d.RampCellsDeep * p.Cell) * Mathf.Rad2Deg;
                         Assert.That(slope, Is.LessThanOrEqualTo(Act(act).rampSlope + 0.5f), "pente de rampe");
                     }
+
+                    if (d.Landing)
+                    {
+                        int low = p.Rooms[d.A].Floor < p.Rooms[d.B].Floor ? d.A : d.B;
+                        ActRoom r = p.Rooms[low];
+                        Landing l = r.Landings.FirstOrDefault(x => x.Door == p.Doors.IndexOf(d));
+                        Assert.IsNotNull(l, $"acte {act} seed {seed} : palier de la porte en hauteur");
+                        Assert.That(r.TerraceHeight, Is.EqualTo(l.Height).Within(0.01f), "la terrasse du palier est à la hauteur de la salle haute");
+                        Assert.That(l.Stairs.Count, Is.GreaterThanOrEqualTo(3), "escalier réservé");
+                        foreach (Vector2Int c in l.Cells)
+                            Assert.That(r.Use[c], Is.EqualTo(CellUse.Terrasse), "cases du palier");
+                    }
                 }
+            }
+        }
+
+        [Test]
+        public void ZeroImpasse_ChaqueSalleDeCombatADeuxSorties_Nuit4()
+        {
+            foreach ((int act, int seed) in Cases())
+            {
+                ActPlan p = ActPlan.Make(Act(act), seed);
+                int deadEnds = p.DeadEnds;
+                // Règle Pac-Man (recherche nuit 4) : au plus une impasse tolérée par carte (forme sans contact possible), signalée.
+                Assert.That(deadEnds, Is.LessThanOrEqualTo(1), $"acte {act} seed {seed} : {deadEnds} salle(s) de combat en impasse : "
+                    + string.Join(", ", p.Rooms.Where(r => !r.Special && r.Role != RoomRole.Depart && r.Doors.Count < 2).Select(r => r.Name)) + " | " + string.Join(" | ", p.DeadEndNotes));
+                int loops = p.Doors.Count(d => d.Loop);
+                Assert.That(loops, Is.GreaterThanOrEqualTo(4), $"acte {act} seed {seed} : {loops} boucles seulement");
+                int landings = p.Doors.Count(d => d.Landing);
+                int stepped = p.Doors.Count(d => Mathf.Abs(p.Rooms[d.A].Floor - p.Rooms[d.B].Floor) > 0.05f);
+                TestContext.WriteLine($"acte {act} seed {seed} : {p.Rooms.Count} salles, {p.Doors.Count} portes, {loops} boucles, {stepped} portes entre étages dont {landings} paliers, {deadEnds} impasse(s)");
             }
         }
 

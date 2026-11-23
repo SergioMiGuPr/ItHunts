@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_R6
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: "R6"
+  displayName: "Combustion"
+  description: "Un ennemi qui meurt en feu explose en flammes."
+  icon: {fileID: 0}
+  iconSymbol: "\u2739"
+  color: {r: 3.4, g: 1.2, b: 0.3, a: 1}
+  kind: 37
+  character: 1
+  isPassive: 0
+  rankValues:
+  - 15
+  - 22
+  - 30
+  - 40
+  - 55
+  rankValues2:
+  - 2.5
+  - 3
+  - 3.5
+  - 4
+  - 4.5
+  rankValues3: []
+  rankTexts:
+  - "15 PV, 2.5 m"
+  - "22 PV, 3 m"
+  - "30 PV, 3.5 m, les voisins br\xFBlent"
+  - "40 PV, 4 m"
+  - "55 PV, 4.5 m, cha\xEEne (3 maillons)"
+  synergies: "Allumette (G28), D\xE9tonateur (G20)"
+  amount: 15
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

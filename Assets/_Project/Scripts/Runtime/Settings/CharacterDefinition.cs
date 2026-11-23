@@ -25,6 +25,8 @@ namespace ItHunts.Settings
         public ArtifactDefinition artifact;
         [Tooltip("Nom de l'artefact affiché quand il n'existe pas encore.")]
         public string artifactLabel = "artefact à concevoir";
+        [Tooltip("Ses 10 améliorations (2 passifs + 8 de l'artefact, D-100) : proposées à son porteur seulement, avec les 30 génériques.")]
+        public UpgradePool upgrades;
         [Tooltip("Jouable : choisissable dans le menu. Décoché : affiché grisé (« bientôt »).")]
         public bool playable = true;
         [Tooltip("Description courte du personnage et de son artefact (écran de choix du personnage).")]

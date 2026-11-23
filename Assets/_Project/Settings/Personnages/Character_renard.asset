@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 022ac51f900dd8c4fbcdf818b745c895, type: 3}
   m_Name: Character_renard
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.CharacterDefinition
+  upgrades: {fileID: 11400000, guid: e7242932d72fd4a4b84f89f607f1a2c6, type: 2}
   id: renard
   displayName: Renard
   color: {r: 0.9, g: 0.22, b: 0.16, a: 1}

@@ -141,17 +141,19 @@ namespace ItHunts.Level.Acts
                 _cratePiles.Add(at - d * 4f);
             }
 
-            GameObject st = Piece(statue, new Vector3(-12f, 0f, -14f), new Vector3(0.6f, 0f, 1f), Vector3.one, true);
+            // Nuit 4, point 8 : le centre (20 m) reste dégagé pour les charges et les esquives ; statue et couverts sur l'anneau extérieur.
+            Vector3 statueAt = new Vector3(-23f, 0f, -22f);
+            GameObject st = Piece(statue, statueAt, new Vector3(0.6f, 0f, 1f), Vector3.one, true);
             if (st != null)
             {
-                Box("Socle de la statue (plateforme)", new Vector3(-12f, 7.5f, -14f), new Vector3(3.6f, 0.5f, 3.6f), null);
-                PillarTops.Add(new Vector3(-12f, 7.8f, -14f));
+                Box("Socle de la statue (plateforme)", statueAt + Vector3.up * 7.5f, new Vector3(3.6f, 0.5f, 3.6f), null);
+                PillarTops.Add(statueAt + Vector3.up * 7.8f);
             }
 
             for (int i = 0; i < 5; i++)
             {
                 Vector3 d = Quaternion.Euler(0f, i * 72f + 12f, 0f) * Vector3.forward;
-                Piece(cover, d * (i % 2 == 0 ? 15f : 34f), -d, Vector3.one, true);
+                Piece(cover, d * (i % 2 == 0 ? 31f : 36f), -d, Vector3.one, true);
             }
 
             for (int i = 0; i < 3; i++)
@@ -164,7 +166,16 @@ namespace ItHunts.Level.Acts
             for (int i = 0; i < 10; i++)
             {
                 Vector3 d = Quaternion.Euler(0f, i * 36f + 18f, 0f) * Vector3.forward;
-                Piece(i % 2 == 0 ? brazier : candelabra, d * (radius - 4f), -d, Vector3.one * (i % 2 == 0 ? 1.6f : 1.4f), false);
+                GameObject lamp = Piece(i % 2 == 0 ? brazier : candelabra, d * (radius - 4f), -d, Vector3.one * (i % 2 == 0 ? 1.6f : 1.4f), false);
+                if (lamp != null)
+                {
+                    // Collision simple (nuit 4 : collisions sur tous les décors) ; le boss l'enjambe.
+                    var cc = lamp.AddComponent<CapsuleCollider>();
+                    cc.radius = i % 2 == 0 ? 0.9f : 0.5f;
+                    cc.height = 3f;
+                    cc.center = Vector3.up * 1.5f;
+                    lamp.AddComponent<StalkerPassesThrough>();
+                }
             }
 
             Piece(sky, Vector3.zero, Vector3.forward, Vector3.one, true);
@@ -179,7 +190,9 @@ namespace ItHunts.Level.Acts
                 zoneNav.Configure(new Vector3(0f, 5f, 8f), new Vector3(radius * 2.6f, 40f, radius * 2.8f));
             if (stalker != null)
             {
-                stalker.position = Vector3.back * 18f;
+                // Nuit 4, point 1 : on ne le voit pas attendre au milieu ; il est perché au sommet de la falaise sud, hors de vue, et bondit
+                // dans la cuvette quand le joueur descend l'escalier (Entrance).
+                stalker.position = Vector3.back * (radius + 6f) + Vector3.up * 14f;
                 stalker.rotation = Quaternion.LookRotation(Vector3.forward);
             }
 
@@ -211,7 +224,7 @@ namespace ItHunts.Level.Acts
                     {
                         Boss = stalker.gameObject.GetComponent<FinalBoss>() ?? stalker.gameObject.AddComponent<FinalBoss>();
                         Boss.GhoulPrefab = ghoul;
-                        Boss.Begin(boss, Vector3.zero, radius);
+                        StartCoroutine(Entrance());
                         break;
                     }
             }
@@ -221,6 +234,39 @@ namespace ItHunts.Level.Acts
                 _nextCrates = Time.time + 15f;
                 SpawnCrates();
             }
+        }
+
+        /// <summary>
+        /// Entrée du boss (nuit 4, point 8) : cri depuis la falaise sud, bond de 1.4 s dans la cuvette (arc de 10 m), poussière et secousse à
+        /// la réception, puis le combat commence (barre de vie, annonces).
+        /// </summary>
+        private System.Collections.IEnumerator Entrance()
+        {
+            Vector3 from = stalker.position, to = new Vector3(0f, 0f, -14f);
+            var art = ItHunts.Audio.GameAudio.Settings;
+            ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Pick(art != null ? art.stalkerEnragedCries : null), from + Vector3.up * 10f, 1f, 160f);
+            foreach (Player.CameraShake sh in FindObjectsByType<Player.CameraShake>(FindObjectsSortMode.None))
+                sh.AddTrauma(0.35f);
+            yield return new WaitForSeconds(0.9f);
+            float t = 0f;
+            while (t < 1.4f)
+            {
+                t += Time.deltaTime;
+                float u = Mathf.Clamp01(t / 1.4f);
+                stalker.position = Vector3.Lerp(from, to, u) + Vector3.up * (Mathf.Sin(u * Mathf.PI) * 10f);
+                stalker.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
+                yield return null;
+            }
+
+            stalker.position = to;
+            var vfx = ItHunts.Combat.GameVfx.Settings;
+            if (vfx != null)
+                ItHunts.Combat.GameVfx.Spawn(vfx.bossGroundImpact != null ? vfx.bossGroundImpact : vfx.stalkerLandingDust, to, Quaternion.identity, 2.5f, null, 3f);
+            ItHunts.Audio.GameAudio.PlayAt(art != null ? art.bossSlam : null, to, 1f, 120f);
+            foreach (Player.CameraShake sh in FindObjectsByType<Player.CameraShake>(FindObjectsSortMode.None))
+                sh.AddTrauma(0.7f);
+            yield return new WaitForSeconds(0.4f);
+            Boss.Begin(boss, Vector3.zero, radius);
         }
 
         private void OnDefeated(FinalBoss b)

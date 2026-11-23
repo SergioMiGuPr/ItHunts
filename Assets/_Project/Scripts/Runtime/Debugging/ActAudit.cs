@@ -34,7 +34,7 @@ namespace ItHunts.Debugging
             Physics.SyncTransforms();
             ActPlan p = level.Plan;
             var sb = new StringBuilder();
-            sb.Append($"seed {seed} : {p.Rooms.Count} salles, {p.Doors.Count} portes ({p.Doors.Count(d => d.Loop)} boucles), départ–sortie {p.StartExitDepth}, ");
+            sb.Append($"seed {seed} : {p.Rooms.Count} salles, {p.Doors.Count} portes ({p.Doors.Count(d => d.Loop)} boucles, {p.Doors.Count(d => d.Landing)} paliers, {p.DeadEnds} impasse(s)), départ–sortie {p.StartExitDepth}, ");
             sb.Append($"génération {gen} ms, NavMesh {navMs} ms, liens du traqueur {nav.StalkerLinkCount}, escalades des goules {nav.ClimbLinkCount}");
 
             // Salles atteignables (traqueur depuis son repaire ou sa porte d'arrivée ; goules depuis le départ).

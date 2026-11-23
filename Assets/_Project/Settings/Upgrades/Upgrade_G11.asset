@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_G11
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: "G11"
+  displayName: "Harpon"
+  description: "La traction vise aussi les ennemis : vous \xEAtes tir\xE9 vers eux."
+  icon: {fileID: 0}
+  iconSymbol: "\u2693"
+  color: {r: 0.3, g: 0.9, b: 3.2, a: 1}
+  kind: 10
+  character: 0
+  isPassive: 0
+  rankValues:
+  - 0
+  - 0
+  - 20
+  - 35
+  - 50
+  rankValues2:
+  - 0
+  - 0
+  - 0
+  - 1
+  - 1
+  rankValues3:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 3
+  rankTexts:
+  - "goules"
+  - "goules et volants"
+  - "l'arriv\xE9e frappe 20 PV"
+  - "35 PV et \xE9tourdit 1 s"
+  - "50 PV, l'arriv\xE9e explose (3 m)"
+  synergies: "Briseur d'os (G21), D\xE9tonateur (G20), Fente (K3)"
+  amount: 0
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

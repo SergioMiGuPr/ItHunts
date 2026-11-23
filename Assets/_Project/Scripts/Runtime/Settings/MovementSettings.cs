@@ -232,6 +232,14 @@ namespace ItHunts.Settings
         [Tooltip("Distance maximale de « collage » au sol en descendant une pente (m).")]
         [Min(0f)] public float groundSnapDistance = 0.5f;
 
+        [Header("Plané (Plumes, H-P2, D-100 : réglé par les améliorations sur la copie du joueur)")]
+        [Tooltip("En l'air, saut tenu, en train de tomber : gravité × ce facteur (1 : pas de plané).")]
+        [Range(0.05f, 1f)] public float glideGravityScale = 1f;
+        [Tooltip("Pendant le plané, la vitesse horizontale ne baisse pas.")]
+        public bool glideKeepsSpeed;
+        [Tooltip("Pendant le plané, contrôle complet de la direction en l'air.")]
+        public bool glideSteer;
+
         /// <summary>Impulsion verticale d'un saut complet (m/s).</summary>
         public float JumpVelocity => Mathf.Sqrt(2f * gravity * jumpHeight);
 

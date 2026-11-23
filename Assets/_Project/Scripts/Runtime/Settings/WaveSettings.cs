@@ -24,6 +24,22 @@ namespace ItHunts.Settings
         [Min(0)] public int ghoulEnraged = 80;
         [Min(0)] public int flyerEnraged = 20;
 
+        [Header("Pression constante (nuit 4, point 3) : vagues cachées, quota + intervalle")]
+        [Tooltip("Vrai : plus de pics annoncés ; les points d'apparition remplissent en permanence un quota de goules en chasse autour de chaque joueur (recherche nuit 4 : Vampire Survivors, L4D).")]
+        public bool continuous = true;
+        [Tooltip("Goules en chasse voulues par joueur, par acte (I, II, III) : remplies dès qu'on passe sous le quota.")]
+        public int[] continuousQuota = { 6, 8, 10 };
+        [Tooltip("Volants voulus par joueur, par acte.")]
+        public int[] continuousFlyerQuota = { 2, 3, 4 };
+        [Tooltip("Intervalle entre deux apparitions (s) quand on est sous le quota ; divisé par 2 en Enragé.")]
+        [Min(0.2f)] public float continuousInterval = 2.5f;
+        [Tooltip("Plafond dur d'ennemis vivants par joueur (quota compris).")]
+        [Min(1)] public int hardCapPerPlayer = 16;
+        [Tooltip("Repos : après une mort de goule, pas d'apparition pendant ce temps si le joueur a perdu plus de 30 PV dans les 10 s (cycle L4D).")]
+        [Min(0f)] public float relaxAfterHurt = 12f;
+        [Tooltip("Enragé : quota × ce facteur (une seule marche, annoncée).")]
+        [Min(1f)] public float enragedQuotaScale = 1.5f;
+
         [Header("Pics et accalmies")]
         [Tooltip("Durée d'un pic de vague (s), annoncé par un son et une indication dans le HUD.")]
         [Min(1f)] public float peakDuration = 20f;

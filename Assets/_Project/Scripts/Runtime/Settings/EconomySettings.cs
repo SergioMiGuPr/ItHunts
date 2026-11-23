@@ -37,10 +37,13 @@ namespace ItHunts.Settings
         [Tooltip("Soin du marchand : prix (âmes) et PV rendus.")]
         [Min(0)] public int healPrice = 35;
         [Min(0f)] public float healAmount = 40f;
-        [Tooltip("Hausse du prix à chaque achat (%, composée, par joueur) : coffres, marchand, portes. 0 : prix fixes.")]
+        [Tooltip("Hausse du prix à chaque achat (% du prix de base, ajoutée par achat, par joueur) : coffres, marchand, portes. 0 : prix fixes. " +
+                 "Nuit 4 (D-100) : +10 % par achat au marchand, plafonnée à ×2 (avant : +25 % composés, qui donnait 7 000 à 16 000 âmes).")]
         [Min(0f)] public float chestPriceIncrease;
-        [Min(0f)] public float merchantPriceIncrease;
+        [Min(0f)] public float merchantPriceIncrease = 10f;
         [Min(0f)] public float doorPriceIncrease;
+        [Tooltip("Plafond de la hausse (× le prix de base) ; 0 : sans plafond.")]
+        [Min(0f)] public float priceIncreaseCap = 2f;
 
         public float IncreaseFor(ItHunts.Economy.PriceKind kind) => kind switch
         {
@@ -48,6 +51,20 @@ namespace ItHunts.Settings
             ItHunts.Economy.PriceKind.Marchand => merchantPriceIncrease,
             _ => doorPriceIncrease
         };
+
+        [Header("Améliorations à rangs (D-100)")]
+        [Tooltip("Prix d'une amélioration selon le rang visé : nouvelle (Bronze) 60 ; montée vers Argent 90, Or 140, Diamant 220, Mythique 350.")]
+        public int[] rankPrices = { 60, 90, 140, 220, 350 };
+        [Tooltip("Acte (0 = acte I) à partir duquel un coffre peut proposer une montée de rang (Œil du collectionneur Or : dès l'acte I).")]
+        [Min(0)] public int chestRankUpFromAct = 1;
+
+        /// <summary>Prix d'une offre qui mène au rang donné (0 Bronze = nouvelle).</summary>
+        public int RankPrice(int targetRank)
+        {
+            if (rankPrices == null || rankPrices.Length == 0)
+                return 60;
+            return rankPrices[Mathf.Clamp(targetRank, 0, rankPrices.Length - 1)];
+        }
 
         [Header("Coffres, marchand, interaction")]
         [Tooltip("Choix d'amélioration : nombre d'orbes au-dessus d'un coffre ouvert ; elles restent ce temps si personne ne choisit (s).")]

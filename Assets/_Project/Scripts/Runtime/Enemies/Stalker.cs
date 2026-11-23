@@ -472,6 +472,15 @@ namespace ItHunts.Enemies
         public StalkerFace Face => _face;
         /// <summary>Dernier cri (passage en Enragé, juste avant une prise) et dernier grognement de proximité : visage et sons.</summary>
         public float LastCryTime { get; private set; } = float.NegativeInfinity;
+        /// <summary>Dernier cri de repérage (il vient de voir un joueur) : son fort et secousse (StalkerAudio).</summary>
+        public float LastSpotCryTime { get; private set; } = float.NegativeInfinity;
+
+        /// <summary>Cri forcé (mise en scène de la mort, nuit 4) : visage et son.</summary>
+        public void ForceCry(float seconds)
+        {
+            LastCryTime = Time.time;
+            LastSpotCryTime = Time.time;
+        }
         public float LastGrowlTime { get; private set; } = float.NegativeInfinity;
         private float _nextGrowl;
         private readonly List<BoneSpringChain> _hair = new List<BoneSpringChain>();
@@ -1011,6 +1020,11 @@ namespace ItHunts.Enemies
             Mode = enraged ? StalkerMode.Enrage : StalkerMode.Chasse;
             if (before == StalkerMode.Repaire || (Mode == StalkerMode.Enrage && before != StalkerMode.Enrage))
                 LastRoarTime = now;
+            if (before != StalkerMode.Chasse && before != StalkerMode.Enrage && now - LastCryTime > 6f)
+            {
+                LastCryTime = now;                                       // il repère un joueur : cri marquant (nuit 4, point 7), gueule ouverte
+                LastSpotCryTime = now;
+            }
             if (Mode == StalkerMode.Enrage && before != StalkerMode.Enrage)
             {
                 _enragedSince = now;

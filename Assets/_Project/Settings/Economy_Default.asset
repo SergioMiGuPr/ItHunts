@@ -30,7 +30,9 @@ MonoBehaviour:
   healPrice: 35
   healAmount: 40
   chestPriceIncrease: 0
-  merchantPriceIncrease: 25
+  merchantPriceIncrease: 10
+  priceIncreaseCap: 2
+  rankPrices: 3c0000005a0000008c000000dc0000005e010000
   doorPriceIncrease: 0
   choiceCount: 3
   choiceLifetime: 30

@@ -204,6 +204,8 @@ namespace ItHunts.Enemies
             if (settings == null || Dead || ZoneState.Asleep)
                 return;                                                    // salle de départ pas encore quittée (D-048)
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
+            if (_damageable != null)
+                _path.SpeedScale = ItHunts.Level.RunSession.EnemySpeed * _damageable.SpeedScale;   // ralentissements (D-100)
             float now = Time.time, dt = Time.fixedDeltaTime;
             if (_nav == null)
                 _nav = FindFirstObjectByType<ZoneNavMesh>();
@@ -370,9 +372,9 @@ namespace ItHunts.Enemies
                 if (Vector3.Distance(onPlayer, c) > settings.radius + settings.contactRange)
                     continue;
                 DiveHits++;
-                p.TakeEnemyDamage(settings.diveDamage, onPlayer, now, "Piqué d'un volant");
+                p.TakeEnemyDamage(settings.diveDamage, onPlayer, now, "Piqué d'un volant", this);
                 Vector3 flat = new Vector3(_velocity.x, 0f, _velocity.z);
-                if (p.Motor != null)
+                if (p.Motor != null && !p.KnockbackImmune)                 // Peau épaisse Or (D-100)
                     p.Motor.AddVelocity((flat.sqrMagnitude > 0.01f ? flat.normalized : Vector3.zero) * settings.divePush);
                 return true;
             }
@@ -570,7 +572,8 @@ namespace ItHunts.Enemies
                     continue;
                 float d = Vector3.Distance(pos, p.transform.position);
                 nearest = Mathf.Min(nearest, d);
-                if (d <= settings.aggroProximity || (d <= settings.aggroSightRange && Clear(pos, p.Center)))
+                float detect = EnemySenses.DetectionScale(p);              // Souffle court, Peau changeante (D-100)
+                if (d <= settings.aggroProximity * detect || (d <= settings.aggroSightRange * detect && Clear(pos, p.Center)))
                     seen = true;
             }
 
@@ -691,8 +694,12 @@ namespace ItHunts.Enemies
 
         private void UpdateVisual(float now)
         {
-            if (telegraph != null)
-                telegraph.enabled = Mode == FlyerMode.Annonce && !Dead;
+            // Nuit 4, point 9 : plus de boule rouge greybox pendant l'annonce du piqué ; le signal, c'est la lueur des yeux (EyeGlow) et le
+            // corps qui luit légèrement (ExtraGlow, couleur du piqué).
+            if (telegraph != null && telegraph.enabled)
+                telegraph.enabled = false;
+            if (_damageable != null && settings != null)
+                _damageable.ExtraGlow = Mode == FlyerMode.Annonce && !Dead ? settings.diveGlowColor * 0.35f : Color.black;
             EyeGlow(Mode == FlyerMode.Annonce && !Dead);
             float flap = Mode == FlyerMode.AuSol ? 0f : Mode == FlyerMode.Tenu ? 18f : Mode == FlyerMode.Pique ? 4f : 10f;
             float angle = Mathf.Sin(now * flap * Mathf.PI * 2f) * (Mode == FlyerMode.Pique ? 8f : 35f);

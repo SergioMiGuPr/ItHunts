@@ -438,7 +438,23 @@ namespace ItHunts.Audio
                 return Silence;
             var clip = AudioClip.Create(name, samples.Length, 1, SampleRate, false);
             clip.SetData(samples, 0);
+            Created.Add(clip);
             return clip;
+        }
+
+        /// <summary>Clips créés à l'exécution (les seuls qu'on a le droit de détruire : les sons de la DA sont des assets).</summary>
+        private static readonly System.Collections.Generic.HashSet<AudioClip> Created = new System.Collections.Generic.HashSet<AudioClip>();
+
+        /// <summary>Vrai si ce clip a été synthétisé ici (destructible) ; faux pour un asset ou le silence partagé.</summary>
+        public static bool IsRuntime(AudioClip clip) => clip != null && Created.Contains(clip);
+
+        /// <summary>Détruit un clip s'il a été synthétisé ici (nuit 4, point 1 : « Destroying assets is not permitted »).</summary>
+        public static void DestroyIfRuntime(AudioClip clip)
+        {
+            if (!IsRuntime(clip))
+                return;
+            Created.Remove(clip);
+            Object.Destroy(clip);
         }
 
         private static int Samples(float seconds) => Mathf.CeilToInt(seconds * SampleRate);

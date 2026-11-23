@@ -69,6 +69,56 @@ namespace ItHunts.Player
         /// <summary>Numéro du prochain tick simulé : sert à horodater les appuis.</summary>
         public int NextTick => _state.Tick + 1;
 
+        // ---------- Crochets des améliorations (nuit 4, D-100) : événements et petites commandes sur l'état ----------
+
+        /// <summary>Atterrissage (vitesse de chute, m/s).</summary>
+        public event System.Action<float> Landed;
+        /// <summary>Traction finie (raison, vitesse à la fin, point visé).</summary>
+        public event System.Action<TractionEnd, float, Vector3> TractionEnded;
+        /// <summary>Répulsion partie (yeux, direction, départ visuel, objet tenu).</summary>
+        public event System.Action<Vector3, Vector3, Vector3, Rigidbody> Repelled;
+        /// <summary>Un tick simulé, après le mouvement et l'artefact.</summary>
+        public event System.Action Ticked;
+
+        /// <summary>Rend des charges (mouvement, traction), sans dépasser les maximums (Second souffle, Élan du bûcheron, Orbe vorace…).</summary>
+        public void GrantCharges(float movement, float attract)
+        {
+            if (movement > 0f && settings != null)
+                _state.Charges = Mathf.Min(settings.movementCharges, Mathf.Max(0f, _state.Charges) + movement);
+            if (attract > 0f && magnetism != null)
+                _magnet.AttractCharges = Mathf.Min(magnetism.attractCharges, Mathf.Max(0f, _magnet.AttractCharges) + attract);
+        }
+
+        /// <summary>Charges de mouvement pleines (dashs gratuits).</summary>
+        public void RefillMovementCharges()
+        {
+            if (settings != null)
+                _state.Charges = settings.movementCharges;
+        }
+
+        /// <summary>Charges de traction pleines (tractions sans charge).</summary>
+        public void RefillAttractCharges()
+        {
+            if (magnetism != null)
+                _magnet.AttractCharges = magnetism.attractCharges;
+        }
+
+        /// <summary>Avance les recharges de seconds s : traction, charges de mouvement, et la répulsion si repelToo (Orbe vorace).</summary>
+        public void ReduceCooldowns(float seconds, bool repelToo)
+        {
+            if (seconds <= 0f)
+                return;
+            if (magnetism != null)
+            {
+                _magnet.AttractCharges = Mathf.Min(magnetism.attractCharges, _magnet.AttractCharges + seconds / Mathf.Max(0.1f, magnetism.attractChargeRechargeTime));
+                if (repelToo && _magnet.LastRepelEndTick != MovementState.NeverTick)
+                    _magnet.LastRepelEndTick -= MovementSettings.SecondsToTicks(seconds, Time.fixedDeltaTime);
+            }
+
+            if (settings != null)
+                _state.Charges = Mathf.Min(settings.movementCharges, _state.Charges + seconds / Mathf.Max(0.1f, settings.chargeRechargeTimeGround));
+        }
+
         /// <summary>Position entre les deux derniers ticks, pour un affichage fluide à toute fréquence d'image.</summary>
         public Vector3 InterpolatedPosition
         {
@@ -144,12 +194,17 @@ namespace ItHunts.Player
 
             // Même tick, même entrée. Orbe unique (D-024) : magnétisme et télékinésie reçoivent tous les boutons, chacun
             // sur sa touche ; puis le mouvement, puis le côté physique de la télékinésie.
+            bool wasTracting = _magnet.Tracting;
+            Vector3 tractionPoint = _state.TractionPoint;
             if (magnetism != null)
             {
                 _aim.Mask = magnetism.aimMask;
                 _aim.IgnoreBody = _holder.Held != null ? _holder.Held.Body : null;   // l'objet tenu ne bloque pas la visée
                 MagnetismOrb.Step(ref _magnet, ref _state, input, magnetism, settings, dt, _aim);
             }
+
+            if (wasTracting && !_magnet.Tracting)
+                TractionEnded?.Invoke(_magnet.LastTractionEnd, _magnet.LastTractionEndSpeed, tractionPoint);
 
             var command = new TelekinesisCommand();
             bool heldAtTickStart = _tk.Holding;
@@ -177,6 +232,7 @@ namespace ItHunts.Player
             {
                 LastLandingSpeed = fallSpeed;                               // sensations de jeu (plongeon, secousse)
                 LandingCount++;
+                Landed?.Invoke(fallSpeed);
             }
             if (!wasGrounded && _state.Grounded && fallSpeed >= ItHunts.Enemies.NoiseEvents.HardLandingSpeed)
                 ItHunts.Enemies.NoiseEvents.Raise(new ItHunts.Enemies.Noise
@@ -197,8 +253,10 @@ namespace ItHunts.Player
                 if (_view == null)
                     _view = GetComponent<FirstPersonView>();
                 Vector3 aim = MagnetismOrb.AimDirection(input.Yaw, input.Pitch);
-                ItHunts.Combat.RepulsionWave.Apply(eyeAtClick, aim, _view != null ? _view.LineStart : eyeAtClick, magnetism,
-                    _holder != null && _holder.Held != null ? _holder.Held.Body : null, transform);
+                Rigidbody heldBody = _holder != null && _holder.Held != null ? _holder.Held.Body : null;
+                Vector3 origin = _view != null ? _view.LineStart : eyeAtClick;
+                ItHunts.Combat.RepulsionWave.Apply(eyeAtClick, aim, origin, magnetism, heldBody, transform);
+                Repelled?.Invoke(eyeAtClick, aim, origin, heldBody);
             }
             else if (magnetism != null && _magnet.RepelHolding)
             {
@@ -229,6 +287,7 @@ namespace ItHunts.Player
             }
 
             _lastEye = MagnetismOrb.EyePosition(_state, settings);
+            Ticked?.Invoke();
             if (_currentPosition.y < killHeight)
                 Teleport(_spawnPosition);
         }

@@ -298,6 +298,20 @@ namespace ItHunts.Movement
                 }
 
                 g = s.Velocity.y > 0f ? cfg.gravity : cfg.gravity * cfg.fallGravityMultiplier;
+                // Plané (Plumes, D-100) : saut tenu pendant la chute, gravité réduite ; la vitesse horizontale est gardée si réglé.
+                bool gliding = cfg.glideGravityScale < 1f && input.JumpHeld && s.Velocity.y < 0f && !s.JumpRising;
+                if (gliding)
+                {
+                    g *= cfg.glideGravityScale;
+                    if (cfg.glideSteer && input.Move.sqrMagnitude > 0.01f)
+                    {
+                        Vector3 glideWish = Quaternion.Euler(0f, input.Yaw, 0f) * new Vector3(input.Move.x, 0f, input.Move.y);
+                        var flat = new Vector3(s.Velocity.x, 0f, s.Velocity.z);
+                        Vector3 steered = Vector3.RotateTowards(flat, glideWish.normalized * Mathf.Max(flat.magnitude, 0.1f), 2.5f * dt, 0f);
+                        s.Velocity = new Vector3(steered.x, s.Velocity.y, steered.z);
+                    }
+                }
+
                 s.Velocity.y -= 0.5f * g * dt;
             }
 

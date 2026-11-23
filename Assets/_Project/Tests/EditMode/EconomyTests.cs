@@ -16,30 +16,17 @@ namespace ItHunts.Tests
     public class EconomyTests
     {
         [Test]
-        public void CoffreRare_MeilleurButin_UnChoixEnPlus_ValeursRenforcees()
+        public void PrixParRang_CroissantsEtRaisonnables()
         {
-            // D-071 : coffres des parcours, meilleur butin, réglable dans Economy_Default.
+            // Nuit 4 (D-100) : une nouvelle amélioration et chaque montée de rang ont un prix croissant ; la hausse par achat est douce.
             var eco = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
-            Assert.That(eco.rareExtraChoices, Is.GreaterThanOrEqualTo(1));
-            Assert.That(eco.rareAmountMultiplier, Is.GreaterThan(1f));
-            UpgradeDefinition Up(UpgradeKind k, float a, string sym)
-            {
-                var u = ScriptableObject.CreateInstance<UpgradeDefinition>();
-                u.kind = k; u.amount = a; u.iconSymbol = sym; u.displayName = "Test";
-                return u;
-            }
-
-            var hp = Up(UpgradeKind.PvMax, 25f, "PV+");
-            var rare = Chest.RareVersion(hp, eco);
-            Assert.That(rare.amount, Is.EqualTo(25f * eco.rareAmountMultiplier).Within(1e-4f));
-            Assert.That(hp.amount, Is.EqualTo(25f), "l'asset d'origine ne change pas");
-            Assert.That(rare.displayName, Does.Contain("★"));
-            var charge = Up(UpgradeKind.ChargeDeMouvement, 1f, "+1");
-            Assert.That(Chest.RareVersion(charge, eco).amount, Is.EqualTo(2f), "entier : au moins +1");
-            var cad = Up(UpgradeKind.CadenceBarillet, 0.5f, ">>>");
-            Assert.That(Chest.RareVersion(cad, eco).amount, Is.LessThanOrEqualTo(Mathf.Max(0.5f, eco.rareCutCap) + 1e-4f), "réduction plafonnée");
-            foreach (Object o in new Object[] { hp, rare, charge, cad })
-                Object.DestroyImmediate(o);
+            Assert.That(eco.rankPrices, Is.Not.Null);
+            Assert.That(eco.rankPrices.Length, Is.EqualTo(5));
+            for (int i = 1; i < eco.rankPrices.Length; i++)
+                Assert.That(eco.rankPrices[i], Is.GreaterThan(eco.rankPrices[i - 1]), "prix croissant avec le rang");
+            Assert.That(eco.merchantPriceIncrease, Is.LessThanOrEqualTo(15f), "plus de hausse composée de 25 % par achat");
+            Assert.That(SoulMath.RaisedPrice(eco.rankPrices[4], eco.merchantPriceIncrease, 20), Is.LessThan(2000),
+                "même après 20 achats, un Mythique reste sous 2 000 âmes (avant : 7 000 à 16 000)");
         }
 
         private readonly List<Object> _made = new List<Object>();
@@ -97,16 +84,19 @@ namespace ItHunts.Tests
                 Is.EqualTo(new[] { 30f, 5f, 8f, 25f, 5f, 2f }));
             Assert.That(new[] { e.chestPrice, e.lockedDoorPrice, e.healPrice, e.choiceCount, e.merchantOffers }, Is.EqualTo(new[] { 30, 50, 35, 3, 3 }));
             Assert.That(e.healAmount, Is.EqualTo(40f));
+            // Nuit 4 (D-100) : 30 génériques dans la table commune, 10 par personnage (2 passifs) dans la sienne.
             var pool = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_Default.asset");
-            Assert.That(pool.upgrades.Count(u => u.forArtifact == null), Is.EqualTo(7), "7 améliorations de stats dans les coffres (le barillet passe au marchand, D-050)");
-            Assert.That(pool.upgrades.Count(u => u.forArtifact != null), Is.EqualTo(8), "+ 8 améliorations du caméléon, réservées à son porteur (nuit 3)");
-            Assert.That(pool.upgrades.All(u => u != null && !string.IsNullOrEmpty(u.description) && !u.description.Contains("\n")), Is.True, "une ligne chacune");
-            Assert.That(pool.upgrades.Select(u => u.kind).Distinct().Count(), Is.EqualTo(15), "une par effet");
-            var barrel = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_Barillet.asset");
-            Assert.That(barrel.upgrades.Count, Is.EqualTo(13), "5 améliorations du barillet (D-050) + 8 avancées (nuit 3)");
-            Assert.That(barrel.upgrades.All(u => u.kind.ToString().EndsWith("Barillet") || u.forArtifact != null), Is.True);
-            Assert.That(pool.upgrades.Where(u => u.forArtifact == null).All(u => u.merchantPrice >= 40 && u.merchantPrice <= 80), Is.True, "prix au marchand 40 à 80");
-            Assert.That(pool.upgrades.Where(u => u.forArtifact != null).All(u => u.merchantPrice >= 70 && u.merchantPrice <= 120), Is.True, "caméléon : 70 à 120");
+            Assert.That(pool.upgrades.Count, Is.EqualTo(30));
+            Assert.That(pool.upgrades.All(u => u != null && u.character == UpgradeCharacter.Aucun && !u.isPassive), Is.True, "génériques");
+            Assert.That(pool.upgrades.All(u => !string.IsNullOrEmpty(u.description) && !u.description.Contains("\n")), Is.True, "une ligne chacune");
+            Assert.That(pool.upgrades.Select(u => u.kind).Distinct().Count(), Is.EqualTo(30), "une par effet");
+            foreach (string c in new[] { "Renard", "Cameleon", "Koala", "Hibou" })
+            {
+                var cp = AssetDatabase.LoadAssetAtPath<UpgradePool>($"Assets/_Project/Settings/UpgradePool_{c}.asset");
+                Assert.That(cp.upgrades.Count, Is.EqualTo(10), c);
+                Assert.That(cp.upgrades.Count(u => u.isPassive), Is.EqualTo(2), c + " : 2 passifs");
+            }
+
             var ghoul = AssetDatabase.LoadAssetAtPath<GhoulSettings>("Assets/_Project/Settings/Ghoul_Default.asset");
             var flyer = AssetDatabase.LoadAssetAtPath<FlyerSettings>("Assets/_Project/Settings/Flyer_Default.asset");
             var stalker = AssetDatabase.LoadAssetAtPath<StalkerSettings>("Assets/_Project/Settings/Stalker_Default.asset");
@@ -161,10 +151,11 @@ namespace ItHunts.Tests
         public void HausseDuPrix_ParAchatParJoueurEtParCategorie()
         {
             var e = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
-            Assert.That(new[] { e.chestPriceIncrease, e.merchantPriceIncrease, e.doorPriceIncrease }, Is.EqualTo(new[] { 0f, 25f, 0f }), "marchand de l artefact : +25 % par achat (D-050), le reste à 0 %");
+            Assert.That(new[] { e.chestPriceIncrease, e.merchantPriceIncrease, e.doorPriceIncrease }, Is.EqualTo(new[] { 0f, 10f, 0f }), "marchand : +10 % par achat, plafonné (nuit 4, D-100), le reste à 0 %");
             Assert.That(SoulMath.RaisedPrice(30, 0f, 5), Is.EqualTo(30), "0 % : prix fixe");
             Assert.That(SoulMath.RaisedPrice(30, 20f, 1), Is.EqualTo(36));
-            Assert.That(SoulMath.RaisedPrice(30, 20f, 2), Is.EqualTo(43), "composée : 30 × 1,2²");
+            Assert.That(SoulMath.RaisedPrice(30, 20f, 2), Is.EqualTo(42), "linéaire (D-100) : 30 × (1 + 2 × 0,2)");
+            Assert.That(SoulMath.RaisedPrice(30, 20f, 20, 2f), Is.EqualTo(60), "plafonné à × 2");
             Assert.That(SoulMath.RaisedPrice(0, 50f, 3), Is.EqualTo(0), "coffre gratuit");
 
             var go = Track(new GameObject("Run (test)"));
@@ -352,45 +343,47 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Coffre_TexteParJoueur_OuvertPourToiOuSonPrix()
+        public void Coffre_SansTexteFlottant_InviteParJoueur()
         {
+            // Nuit 4, point 1 : plus de texte flottant au-dessus des coffres ; l'invite d'interaction de la DA donne l'état par joueur.
             RunState run = Run();
             PlayerHealth a = Player(Vector3.zero), b = Player(Vector3.right);
             run.AddSouls(a.PlayerId, 50);
             Chest chest = MakeChest(-1);
-            WorldLabel label = chest.GetComponentInChildren<WorldLabel>();
-            Assert.That(label.TextFor(a), Is.EqualTo("Coffre\n30 âmes"));
-            chest.TryOpen(a);
-            Assert.That(label.TextFor(a), Is.EqualTo("Coffre\nouvert"), "ouvert pour a");
-            Assert.That(label.TextFor(b), Is.EqualTo("Coffre\n30 âmes"), "fermé pour b, avec son prix");
+            Assert.That(chest.GetComponentInChildren<WorldLabel>(), Is.Null, "aucun texte en monde");
             Assert.That(chest.Prompt(b), Is.EqualTo("ouvrir le coffre (30 âmes)"));
+            chest.TryOpen(a);
+            Assert.That(chest.OpenedFor(a.PlayerId), Is.True);
+            Assert.That(chest.OpenedFor(b.PlayerId), Is.False, "fermé pour b");
         }
-    
+
         [Test]
-        public void MarchandDeLArtefact_TroisOffresEtLeSoinEnQuatrieme()
+        public void Marchand_UneNouvelle_UneMonteeDeRang_EtLeSoin()
         {
-            var go = new GameObject("Marchand (test)");
-            try
-            {
-                var m = go.AddComponent<ArtifactMerchant>();
-                var so = new SerializedObject(m);
-                so.FindProperty("settings").objectReferenceValue = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
-                so.FindProperty("pool").objectReferenceValue = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_Barillet.asset");
-                so.ApplyModifiedPropertiesWithoutUndo();
-                m.Stock(42);
-                var offers = m.OffersFor(42);
-                Assert.That(offers.Count, Is.EqualTo(4), "3 améliorations du barillet + le soin");
-                Assert.That(offers.Take(3).All(o => o.Upgrade != null && (o.Upgrade.kind.ToString().EndsWith("Barillet") || o.Upgrade.forArtifact != null)), Is.True);
-                Assert.That(offers[3].Upgrade, Is.Null);
-                Assert.That(offers[3].Heal, Is.EqualTo(40f), "soin +40 PV (D-050 révisée)");
-                Assert.That(offers[3].Price, Is.EqualTo(35));
-                Assert.That(offers.All(o => o.RestrictedTo == 42), Is.True, "offres de ce joueur seulement");
-                m.ResetMerchant();
-            }
-            finally
-            {
-                Object.DestroyImmediate(go);
-            }
+            RunState run = Run();
+            PlayerHealth p = Player(Vector3.zero);
+            var go = Track(new GameObject("Marchand (test)"));
+            var m = go.AddComponent<ArtifactMerchant>();
+            var so = new SerializedObject(m);
+            var eco = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
+            so.FindProperty("settings").objectReferenceValue = eco;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            // Rien de possédé : deux nouvelles (Bronze, prix 60) + le soin.
+            m.Stock(p.PlayerId);
+            var offers = m.OffersFor(p.PlayerId);
+            Assert.That(offers.Count, Is.EqualTo(3));
+            Assert.That(offers.Take(2).All(o => o.Upgrade != null && o.Price == eco.RankPrice(0)), Is.True, "deux nouvelles au prix Bronze");
+            Assert.That(offers[2].Upgrade, Is.Null);
+            Assert.That(offers[2].Heal, Is.EqualTo(40f));
+            // Une amélioration possédée : une nouvelle + sa montée vers Argent (prix Argent).
+            UpgradeDefinition owned = offers[0].Upgrade;
+            run.Grant(p.PlayerId, owned);
+            m.Stock(p.PlayerId);
+            offers = m.OffersFor(p.PlayerId);
+            Assert.That(offers.Count, Is.EqualTo(3));
+            Assert.That(offers.Any(o => o.Upgrade == owned && o.Price == eco.RankPrice(1)), Is.True, "montée vers Argent");
+            Assert.That(offers.Any(o => o.Upgrade != null && o.Upgrade != owned), Is.True, "une nouvelle");
+            Assert.That(offers.All(o => o.RestrictedTo == p.PlayerId), Is.True, "offres de ce joueur seulement");
         }
 
         [Test]

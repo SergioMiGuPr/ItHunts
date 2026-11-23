@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_G15
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: "G15"
+  displayName: "Onde de choc"
+  description: "R\xE9pulsion plus large et plus longue."
+  icon: {fileID: 0}
+  iconSymbol: "\u25E0"
+  color: {r: 3.2, g: 1.3, b: 0.3, a: 1}
+  kind: 14
+  character: 0
+  isPassive: 0
+  rankValues:
+  - 10
+  - 15
+  - 20
+  - 25
+  - 30
+  rankValues2:
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  rankValues3: []
+  rankTexts:
+  - "+10\xB0, +2 m"
+  - "+15\xB0, +3 m"
+  - "+20\xB0, +4 m, les objets repouss\xE9s vont 20 % plus vite"
+  - "+25\xB0, +5 m"
+  - "+30\xB0, +6 m, renvoie les d\xE9bris et projectiles du boss"
+  synergies: "Projectiles lourds (G18)"
+  amount: 10
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

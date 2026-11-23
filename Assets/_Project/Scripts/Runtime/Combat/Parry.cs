@@ -107,13 +107,20 @@ namespace ItHunts.Combat
         /// Un impact maintenant est-il paré ? Oui si l'appui est au plus <c>window</c> avant, et si l'attaquant peut être paré
         /// (pas le traqueur : <paramref name="attackerParryable"/> faux).
         /// </summary>
-        public static bool TryParry(ref ParryState s, float now, ParrySettings cfg, bool attackerParryable)
+        public static bool TryParry(ref ParryState s, float now, ParrySettings cfg, bool attackerParryable) =>
+            TryParry(ref s, now, cfg, attackerParryable, cfg != null ? cfg.window : 0f);
+
+        /// <summary>
+        /// Variante à fenêtre donnée (nuit 4, point 1) : le bond d'une goule se pare par un appui fait pendant son vol ou la fin de son annonce
+        /// (fenêtre = temps depuis la fin de l'annonce + window), car son contact tombe 0.2 à 0.45 s après l'envol.
+        /// </summary>
+        public static bool TryParry(ref ParryState s, float now, ParrySettings cfg, bool attackerParryable, float window)
         {
             if (!attackerParryable || cfg == null)
                 return false;
             float since = now - s.LastPress;
             s.LastImpact = now;
-            if (since < 0f || since > cfg.window)
+            if (since < 0f || since > window)
             {
                 // Raté : trop tôt (appui récent), ou pas d'appui (un appui juste après dira de combien c'était trop tard).
                 if (since >= 0f && since <= MissReport)

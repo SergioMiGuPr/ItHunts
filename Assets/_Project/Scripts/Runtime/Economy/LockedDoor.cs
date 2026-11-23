@@ -45,14 +45,47 @@ namespace ItHunts.Economy
             SetOpen(true);
         }
 
+        private Transform _grille;
+        private Vector3 _grilleClosed;
+        private float _lift, _openedAt = float.NegativeInfinity;
+
+        /// <summary>Grille de fer (nuit 4, point 5) : elle se lève de lift m en 1.8 s à l'ouverture, au lieu de disparaître.</summary>
+        public void ConfigureGrille(Transform grille, float lift)
+        {
+            _grille = grille;
+            _grilleClosed = grille.localPosition;
+            _lift = lift;
+        }
+
+        private void Update()
+        {
+            if (_grille == null || float.IsNegativeInfinity(_openedAt))
+                return;
+            float u = Mathf.Clamp01((Time.time - _openedAt) / 1.8f);
+            float k = Open ? u * u * (3f - 2f * u) : 0f;
+            _grille.localPosition = _grilleClosed + Vector3.up * (_lift * k) + (Open && u < 1f ? new Vector3(Mathf.Sin(Time.time * 41f) * 0.03f, 0f, 0f) : Vector3.zero);
+            if (u >= 1f)
+                _openedAt = float.NegativeInfinity;
+        }
+
         public void SetOpen(bool open)
         {
             Open = open;
             foreach (Collider c in GetComponentsInChildren<Collider>(true))
                 c.enabled = !open;
-            foreach (Renderer r in GetComponentsInChildren<Renderer>(true))
-                if (r.GetComponent<TextMesh>() == null)
-                    r.enabled = !open;
+            if (_grille != null)
+            {
+                // La grille reste visible : elle monte dans le linteau (son d'ouverture de porte de la DA).
+                _openedAt = Time.time;
+                if (!open)
+                    _grille.localPosition = _grilleClosed;
+                if (open)
+                    ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings?.doorOpen, transform.position, 1f);
+            }
+            else
+                foreach (Renderer r in GetComponentsInChildren<Renderer>(true))
+                    if (r.GetComponent<TextMesh>() == null)
+                        r.enabled = !open;
             if (_labels != null)
                 foreach (WorldLabel l in _labels)
                     if (l != null)

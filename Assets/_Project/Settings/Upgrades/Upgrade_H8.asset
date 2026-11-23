@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_H8
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: "H8"
+  displayName: "Soin li\xE9"
+  description: "Le soin d'alli\xE9 est plus fort ; pendant un drain, vous r\xE9g\xE9n\xE9rez aussi."
+  icon: {fileID: 0}
+  iconSymbol: "\u271A"
+  color: {r: 2, g: 1, b: 3.2, a: 1}
+  kind: 69
+  character: 4
+  isPassive: 0
+  rankValues:
+  - 10
+  - 12
+  - 14
+  - 16
+  - 20
+  rankValues2:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 6
+  rankValues3: []
+  rankTexts:
+  - "soin 10 PV/s, +1 PV/s pour vous"
+  - "12 PV/s, +2"
+  - "14 PV/s, +3, le soin a 2 charges"
+  - "16 PV/s, +4"
+  - "20 PV/s, +6, le soin ressuscite un alli\xE9 tomb\xE9 (coop) une fois par acte"
+  synergies: "Sangsue (H4), C\u0153ur solide (G19)"
+  amount: 10
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

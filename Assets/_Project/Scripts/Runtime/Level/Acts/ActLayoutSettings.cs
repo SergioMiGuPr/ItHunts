@@ -42,6 +42,10 @@ namespace ItHunts.Level.Acts
         [Range(0f, 1f)] public float loopChance = 0.55f;
         [Tooltip("Salles au moins entre le départ et la sortie.")]
         [Range(2, 20)] public int minStartExit = 6;
+        [Tooltip("Sorties au moins par salle de combat (nuit 4 : zéro impasse, règle Pac-Man) : une porte est forcée vers une voisine sinon.")]
+        [Range(1, 4)] public int minDoorsPerRoom = 2;
+        [Tooltip("Porte entre deux étages : chance d'un palier (terrasse devant la porte, escalier + wall jump) au lieu d'une rampe : portes en hauteur.")]
+        [Range(0f, 1f)] public float landingChance = 0.5f;
 
         [Header("Portes : le traqueur (7 m de large, 8.5 m baissé) passe sans passage spécial (nuit 3)")]
         [Range(4f, 20f)] public float doorWidth = 12f;

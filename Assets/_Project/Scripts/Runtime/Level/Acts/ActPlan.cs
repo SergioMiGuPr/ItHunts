@@ -61,9 +61,27 @@ namespace ItHunts.Level.Acts
         public float TerraceHeight;
         public readonly List<int> Doors = new List<int>();
         public Vector2 CenterCell;
+        /// <summary>Paliers (nuit 4) : terrasse devant une porte vers une salle plus haute, avec son escalier réservé (cases Passage).</summary>
+        public readonly List<Landing> Landings = new List<Landing>();
+        public bool HasLanding => Landings.Count > 0;
 
         public bool Special => Role == RoomRole.HallDeSortie || Role == RoomRole.Repaire || Role == RoomRole.Arrivee || Role == RoomRole.Verrouillee;
         public float Area(float cell) => Cells.Count * cell * cell;
+    }
+
+    /// <summary>
+    /// Palier (nuit 4, portes en hauteur) : dans la salle basse, une terrasse à la hauteur de la salle haute devant la porte, et un
+    /// escalier réservé qui y monte depuis le sol (cases Passage, construites en escalier par ActLevel) ; un mur de wall jump en plus
+    /// quand la place le permet.
+    /// </summary>
+    public sealed class Landing
+    {
+        public int Door;
+        public readonly List<Vector2Int> Cells = new List<Vector2Int>();
+        public readonly List<Vector2Int> Stairs = new List<Vector2Int>();
+        /// <summary>Direction de l'escalier : du haut (palier) vers le bas (sol), axe de la grille.</summary>
+        public Vector2Int StairsDir;
+        public float Height;
     }
 
     /// <summary>Porte entre deux salles : une ouverture droite sur la limite commune.</summary>
@@ -76,6 +94,8 @@ namespace ItHunts.Level.Acts
         public Vector2Int First;
         public int Length;
         public bool Locked, Gate, Exit, Loop;
+        /// <summary>Porte en hauteur (nuit 4) : la salle basse y accède par un palier (Landing) au lieu d'une rampe.</summary>
+        public bool Landing;
         /// <summary>Salle qui porte la rampe (la plus basse ; −1 : même hauteur) et ses cases.</summary>
         public int RampRoom = -1;
         public readonly List<Vector2Int> RampCells = new List<Vector2Int>();
@@ -107,7 +127,10 @@ namespace ItHunts.Level.Acts
         public int StartExitDepth;
 
         private System.Random _rng;
-        private int DoorCells => Mathf.Max(2, Mathf.RoundToInt(Settings.doorWidth / Cell));
+        private int DoorCells => _narrow ? NarrowCells : Mathf.Max(2, Mathf.RoundToInt(Settings.doorWidth / Cell));
+        /// <summary>Porte étroite de dernier recours (8 m : le traqueur fait 7 m) pour casser une impasse au contact court.</summary>
+        private const int NarrowCells = 4;
+        private bool _narrow;
 
         public Vector3 CellCenter(Vector2Int c, float y = 0f) => Origin + new Vector3((c.x + 0.5f) * Cell, y, (c.y + 0.5f) * Cell);
         public Vector3 CellCenter(Vector2 c, float y = 0f) => Origin + new Vector3((c.x + 0.5f) * Cell, y, (c.y + 0.5f) * Cell);
@@ -139,10 +162,17 @@ namespace ItHunts.Level.Acts
             Vector3 c = DoorCenter(d);
             Vector3 n = DoorNormal(d) * (room == d.A ? -1f : 1f);
             Vector3 p = c + n * distance;
-            p.y = Rooms[room].Floor;
+            p.y = GroundAt(room, CellOf(p));
             if (d.RampRoom == room)
                 p += n * (d.RampCellsDeep * Cell);
             return p;
+        }
+
+        /// <summary>Hauteur du sol de la salle à cette case (terrasse ou palier compris).</summary>
+        public float GroundAt(int room, Vector2Int cell)
+        {
+            ActRoom r = Rooms[room];
+            return r.Use.TryGetValue(cell, out CellUse u) && u == CellUse.Terrasse ? r.Floor + r.TerraceHeight : r.Floor;
         }
 
         // ---------- Tirage ----------
@@ -258,11 +288,15 @@ namespace ItHunts.Level.Acts
             }
 
             AddLoops();
+            EnsureExits();
             AssignFunctions(depth);
             foreach (ActRoom r in Rooms)
                 PlanInterior(r);
             return true;
         }
+
+        /// <summary>Salles sans assez de sorties (impasses) après les boucles : mesure.</summary>
+        public int DeadEnds => Rooms.Count(r => !r.Special && r.Role != RoomRole.Depart && r.Doors.Count < 2);
 
         private int Cells(float meters) => Mathf.Max(2, Mathf.RoundToInt(meters / Cell));
 
@@ -685,7 +719,7 @@ namespace ItHunts.Level.Acts
                 door.Exit = exitDoor;
                 door.Gate = gate;
                 door.Locked = locked;
-                if (!PlanRamp(door))
+                if (!PlanConnection(door, role == RoomRole.Normale))
                 {
                     Rooms[id].Floor = pr.Floor;                                  // pas de place pour la rampe : même hauteur
                     door.RampRoom = -1;
@@ -984,16 +1018,23 @@ namespace ItHunts.Level.Acts
         private bool Swappable(Vector2Int c, int a, int b)
         {
             int o = OwnerAt(c);
+            if (o == -1)
+                return _narrow && InsideMargin(c, 3);                 // impasse (nuit 4) : le seuil peut mordre dans la roche
             if (o != a && o != b)
                 return false;
-            return Rooms[o].Use.TryGetValue(c, out CellUse u) && u == CellUse.Sol;
+            return Rooms[o].Use.TryGetValue(c, out CellUse u) && (u == CellUse.Sol || (_narrow && u == CellUse.Passage));
         }
 
         private void Move(Vector2Int c, int from, int to)
         {
+            int was = OwnerAt(c);
             Owner[c.x, c.y] = to;
-            Rooms[from].Cells.Remove(c);
-            Rooms[from].Use.Remove(c);
+            if (was >= 0)
+            {
+                Rooms[was].Cells.Remove(c);
+                Rooms[was].Use.Remove(c);
+            }
+
             Rooms[to].Cells.Add(c);
             Rooms[to].Use[c] = CellUse.Sol;
         }
@@ -1023,6 +1064,88 @@ namespace ItHunts.Level.Acts
                 r.Use[c] = use;
         }
 
+        /// <summary>
+        /// Liaison entre deux salles d'étages différents : un palier (porte en hauteur, nuit 4) quand le tirage et la place le permettent,
+        /// sinon une rampe. Même hauteur : rien à faire. Faux si ni l'un ni l'autre ne tient.
+        /// </summary>
+        private bool PlanConnection(ActDoor d, bool allowLanding)
+        {
+            float fa = Rooms[d.A].Floor, fb = Rooms[d.B].Floor;
+            if (Mathf.Abs(fa - fb) < 0.05f)
+            {
+                d.RampRoom = -1;
+                return true;
+            }
+
+            if (allowLanding && _rng.NextDouble() < Settings.landingChance && PlanLanding(d))
+                return true;
+            return PlanRamp(d);
+        }
+
+        /// <summary>
+        /// Palier (nuit 4) : devant la porte, côté bas, une terrasse à la hauteur de la salle haute (porte + 1 case de chaque côté, 3 cases
+        /// de profondeur) ; un escalier de 3 cases de large part du palier vers le fond de la salle (pente 28°) et ses cases sont
+        /// réservées (Passage). La hauteur doit être entre 3 et 6.5 m (escalier et wall jump raisonnables, main du traqueur à portée).
+        /// </summary>
+        private bool PlanLanding(ActDoor d)
+        {
+            float fa = Rooms[d.A].Floor, fb = Rooms[d.B].Floor;
+            float h = Mathf.Abs(fa - fb);
+            if (h < 3f || h > 6.5f)
+                return false;
+            int lowId = fa < fb ? d.A : d.B;
+            ActRoom low = Rooms[lowId];
+            if (low.Special || (low.TerraceHeight > 0.01f && Mathf.Abs(low.TerraceHeight - h) > 0.05f))
+                return false;
+            Vector2Int inward = lowId == d.A ? -d.Dir : d.Dir;
+            Vector2Int edge0 = lowId == d.A ? d.First : d.First + d.Dir;
+            var band = new List<Vector2Int>();
+            for (int i = -1; i <= d.Length; i++)
+            for (int k = 0; k < 3; k++)
+            {
+                Vector2Int c = edge0 + d.Along * i + inward * k;
+                if (OwnerAt(c) != lowId || !low.Use.TryGetValue(c, out CellUse u) || u != CellUse.Sol)
+                    return false;
+                band.Add(c);
+            }
+
+            // Escalier : 3 cases de large, depuis le milieu du palier vers l'intérieur ; longueur selon la pente.
+            float run = h / Mathf.Tan(28f * Mathf.Deg2Rad);
+            int deep = Mathf.CeilToInt(run / Cell);
+            Vector2Int mid = edge0 + d.Along * (d.Length / 2) + inward * 3;
+            var stairs = new List<Vector2Int>();
+            for (int k = 0; k < deep + 1; k++)
+            for (int s = -1; s <= 1; s++)
+            {
+                Vector2Int c = mid + inward * k + d.Along * s;
+                if (OwnerAt(c) != lowId || !low.Use.TryGetValue(c, out CellUse u) || u != CellUse.Sol)
+                    return false;
+                if (k < deep)
+                    stairs.Add(c);
+            }
+
+            foreach (Vector2Int c in band)
+                low.Use[c] = CellUse.Terrasse;
+            foreach (Vector2Int c in stairs)
+                low.Use[c] = CellUse.Passage;                              // sol construit, rien de posé : l'escalier vient dessus
+            low.TerraceHeight = h;
+            low.Landings.Add(new Landing { Door = Doors.Count, Cells = { }, Stairs = { }, StairsDir = inward, Height = h });
+            low.Landings[low.Landings.Count - 1].Cells.AddRange(band);
+            low.Landings[low.Landings.Count - 1].Stairs.AddRange(stairs);
+            d.Landing = true;
+            d.RampRoom = -1;
+            d.RampCells.Clear();
+            return true;
+        }
+
+        private static bool InLandingStairs(ActRoom r, Vector2Int c)
+        {
+            foreach (Landing l in r.Landings)
+                if (l.Stairs.Contains(c) || l.Cells.Contains(c))
+                    return true;
+            return false;
+        }
+
         /// <summary>Rampe dans la plus basse des deux salles, devant la porte (largeur de la porte). Faux s'il n'y a pas la place.</summary>
         private bool PlanRamp(ActDoor d)
         {
@@ -1050,8 +1173,11 @@ namespace ItHunts.Level.Acts
             }
 
             foreach (Vector2Int c in d.RampCells)
-                if (Rooms[low].Use.TryGetValue(c, out CellUse u) && u == CellUse.Rampe)
-                    return false;
+                if (Rooms[low].Use.TryGetValue(c, out CellUse u) && (u == CellUse.Rampe || u == CellUse.Terrasse || InLandingStairs(Rooms[low], c)))
+                {
+                    d.RampCells.Clear();
+                    return false;                                       // ni sur une autre rampe, ni sur un palier ou son escalier
+                }
             d.RampRoom = low;
             d.RampCellsDeep = deep;
             foreach (Vector2Int c in d.RampCells)
@@ -1062,9 +1188,319 @@ namespace ItHunts.Level.Acts
         /// <summary>Boucles : portes en plus entre salles voisines non reliées (chance loopChance), si la rampe a la place.</summary>
         private void AddLoops()
         {
-            var linked = new HashSet<(int, int)>();
-            foreach (ActDoor d in Doors)
-                linked.Add((Mathf.Min(d.A, d.B), Mathf.Max(d.A, d.B)));
+            var contacts = ContactMap(out HashSet<(int, int)> linked);
+            foreach (KeyValuePair<(int a, int b), Dictionary<(Vector2Int d, int line), List<int>>> kv in contacts.OrderBy(k => k.Key.a).ThenBy(k => k.Key.b))
+            {
+                if (_rng.NextDouble() >= Settings.loopChance)
+                    continue;
+                TryLoopDoor(kv.Key.a, kv.Key.b, kv.Value);
+            }
+        }
+
+        /// <summary>
+        /// Zéro impasse (nuit 4, règle Pac-Man / DbD) : toute salle de combat a au moins minDoorsPerRoom sorties. Les salles qui en manquent
+        /// reçoivent une porte vers une voisine de contact (la plus profonde d'abord : elle casse le plus de culs-de-sac) ; sans contact,
+        /// l'impasse reste et compte dans DeadEnds (le bot et l'audit la signalent).
+        /// </summary>
+        private void EnsureExits()
+        {
+            for (int pass = 0; pass < 3; pass++)
+            {
+                var contacts = ContactMap(out HashSet<(int, int)> linked);
+                bool changed = false;
+                DeadEndNotes.Clear();
+                foreach (ActRoom r in Rooms.Where(x => !x.Special && x.Role != RoomRole.Depart && x.Doors.Count < Settings.minDoorsPerRoom).ToList())
+                {
+                    var options = contacts.Where(kv => kv.Key.a == r.Id || kv.Key.b == r.Id)
+                        .OrderByDescending(kv => Rooms[kv.Key.a == r.Id ? kv.Key.b : kv.Key.a].Doors.Count)
+                        .ToList();
+                    bool done = false;
+                    foreach (KeyValuePair<(int a, int b), Dictionary<(Vector2Int d, int line), List<int>>> kv in options)
+                    {
+                        if (TryLoopDoor(kv.Key.a, kv.Key.b, kv.Value))
+                        {
+                            changed = done = true;
+                            break;
+                        }
+                    }
+
+                    // Contact trop court pour 12 m : une porte de 8 m (le traqueur fait 7 m de large).
+                    if (!done)
+                    {
+                        _narrow = true;
+                        foreach (KeyValuePair<(int a, int b), Dictionary<(Vector2Int d, int line), List<int>>> kv in ContactMap(out _)
+                                     .Where(kv => kv.Key.a == r.Id || kv.Key.b == r.Id).ToList())
+                            if (TryLoopDoor(kv.Key.a, kv.Key.b, kv.Value))
+                            {
+                                changed = done = true;
+                                break;
+                            }
+
+                        _narrow = false;
+                    }
+
+                    // Enclavée dans sa seule voisine : une seconde porte vers elle, à 16 m au moins de la première (petite boucle autour du
+                    // mur commun : deux issues).
+                    if (!done)
+                    {
+                        _narrow = true;
+                        foreach (KeyValuePair<(int a, int b), Dictionary<(Vector2Int d, int line), List<int>>> kv in ContactMap(out _, includeLinked: true)
+                                     .Where(kv => kv.Key.a == r.Id || kv.Key.b == r.Id).ToList())
+                        {
+                            var doorsAt = Doors.Where(d => (d.A == kv.Key.a && d.B == kv.Key.b) || (d.A == kv.Key.b && d.B == kv.Key.a))
+                                .Select(d => (Vector2)d.First + (Vector2)d.Along * (d.Length * 0.5f)).ToList();
+                            var far = new Dictionary<(Vector2Int d, int line), List<int>>();
+                            foreach (var e in kv.Value)
+                            {
+                                var keep = e.Value.Where(pos =>
+                                {
+                                    Vector2 c = e.Key.d.x != 0 ? new Vector2(e.Key.line, pos) : new Vector2(pos, e.Key.line);
+                                    return doorsAt.All(dc => (dc - c).magnitude >= 8f);
+                                }).ToList();
+                                if (keep.Count > 0)
+                                    far[e.Key] = keep;
+                            }
+
+                            if (far.Count > 0 && TryLoopDoor(kv.Key.a, kv.Key.b, far))
+                            {
+                                changed = done = true;
+                                break;
+                            }
+                        }
+
+                        _narrow = false;
+                    }
+
+                    // Étages trop éloignés : la salle en impasse (une seule porte) prend l'étage de son voisin si sa porte d'origine
+                    // se replanifie (rampe ou palier) ; sinon tout est rendu.
+                    if (!done && r.Doors.Count == 1)
+                        foreach (KeyValuePair<(int a, int b), Dictionary<(Vector2Int d, int line), List<int>>> kv in ContactMap(out _)
+                                     .Where(kv => kv.Key.a == r.Id || kv.Key.b == r.Id).ToList())
+                        {
+                            int other = kv.Key.a == r.Id ? kv.Key.b : kv.Key.a;
+                            if (Mathf.Abs(Rooms[other].Floor - r.Floor) < 0.05f || !Refloor(r, Rooms[other].Floor))
+                                continue;
+                            var fresh = ContactMap(out _);
+                            int lo = Mathf.Min(r.Id, other), hi = Mathf.Max(r.Id, other);
+                            if (fresh.TryGetValue((lo, hi), out var e2) && TryLoopDoor(lo, hi, e2))
+                            {
+                                changed = done = true;
+                                break;
+                            }
+                        }
+
+                    // Aucun voisin de contact : un court passage (au plus 14 cases, 28 m) est creusé dans la roche jusqu'à la salle de combat la
+                    // plus proche qui n'est pas déjà reliée ; il appartient à la salle en impasse (sol à sa hauteur, rien de posé dessus).
+                    if (!done && CarvePassage(r))
+                        changed = true;
+                    else if (!done)
+                        DeadEndNotes.Add($"{r.Id} ({r.Floor} m) : {options.Count} voisin(s) de contact ; {_lastLoopFailure}");
+                }
+
+                if (!changed)
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Passage creusé (nuit 4, zéro impasse) : plus court chemin à travers des cases libres (4-voisinage) du bord de la salle r jusqu'à une
+        /// case voisine d'une autre salle de combat non reliée à r ; le chemin est élargi à la largeur d'une porte + 2 cases et rattaché à r,
+        /// puis une porte est ouverte au bout. Faux s'il n'y a rien à moins de 14 cases ou pas la place.
+        /// </summary>
+        private bool CarvePassage(ActRoom r)
+        {
+            var linked = new HashSet<int>(r.Doors.Select(di => Doors[di].Other(r.Id)));
+            var prev = new Dictionary<Vector2Int, Vector2Int>();
+            var dist = new Dictionary<Vector2Int, int>();
+            var q = new Queue<Vector2Int>();
+            foreach (Vector2Int c in r.Cells)
+                foreach (Vector2Int d in Dirs)
+                {
+                    Vector2Int n = c + d;
+                    if (OwnerAt(n) == -1 && InsideMargin(n, 4) && !dist.ContainsKey(n))
+                    {
+                        dist[n] = 1;
+                        prev[n] = c;
+                        q.Enqueue(n);
+                    }
+                }
+
+            Vector2Int end = default;
+            int target = -1;
+            while (q.Count > 0 && target < 0)
+            {
+                Vector2Int c = q.Dequeue();
+                foreach (Vector2Int d in Dirs)
+                {
+                    Vector2Int n = c + d;
+                    int o = OwnerAt(n);
+                    if (o >= 0 && o != r.Id && !Rooms[o].Special && !linked.Contains(o) && Mathf.Abs(Rooms[o].Floor - r.Floor) < 0.05f)
+                    {
+                        end = c;
+                        target = o;
+                        break;
+                    }
+
+                    if (o == -1 && InsideMargin(n, 4) && !dist.ContainsKey(n) && dist[c] < 14)
+                    {
+                        dist[n] = dist[c] + 1;
+                        prev[n] = c;
+                        q.Enqueue(n);
+                    }
+                }
+            }
+
+            if (target < 0)
+                return false;
+            var path = new List<Vector2Int>();
+            for (Vector2Int c = end; OwnerAt(c) != r.Id; c = prev[c])
+                path.Add(c);
+            int half = (DoorCells + 2) / 2;
+            var carve = new HashSet<Vector2Int>();
+            foreach (Vector2Int c in path)
+                for (int dx = -half; dx <= half; dx++)
+                for (int dy = -half; dy <= half; dy++)
+                {
+                    Vector2Int n = c + new Vector2Int(dx, dy);
+                    if (OwnerAt(n) == -1 && InsideMargin(n, 3))
+                        carve.Add(n);
+                }
+
+            foreach (Vector2Int c in carve)
+            {
+                Owner[c.x, c.y] = r.Id;
+                r.Cells.Add(c);
+                r.Use[c] = CellUse.Passage;
+            }
+
+            RecomputeBox(r);
+            var contacts = ContactMap(out _);
+            int lo = Mathf.Min(r.Id, target), hi = Mathf.Max(r.Id, target);
+            if (contacts.TryGetValue((lo, hi), out var edges) && TryLoopDoor(lo, hi, edges))
+            {
+                CarvedPassages++;
+                return true;
+            }
+
+            // Pas de porte possible : le passage est rendu à la roche.
+            foreach (Vector2Int c in carve)
+            {
+                Owner[c.x, c.y] = -1;
+                r.Cells.Remove(c);
+                r.Use.Remove(c);
+            }
+
+            RecomputeBox(r);
+            return false;
+        }
+
+        /// <summary>
+        /// Change l'étage d'une salle à une seule porte (nuit 4, impasses) : sa liaison d'origine (rampe ou palier) est défaite puis
+        /// replanifiée à la nouvelle hauteur ; si elle ne tient pas, tout est rendu tel quel. Vrai si la salle a changé d'étage.
+        /// </summary>
+        private bool Refloor(ActRoom r, float floor)
+        {
+            if (r.Doors.Count != 1 || floor < Settings.minFloor - 0.01f || floor > Settings.maxFloor + 0.01f)
+                return false;
+            int di = r.Doors[0];
+            ActDoor d = Doors[di];
+            ActRoom other = Rooms[d.Other(r.Id)];
+            // Sauvegarde.
+            var useR = new Dictionary<Vector2Int, CellUse>(r.Use);
+            var useO = new Dictionary<Vector2Int, CellUse>(other.Use);
+            var landR = new List<Landing>(r.Landings);
+            var landO = new List<Landing>(other.Landings);
+            float floorR = r.Floor, terR = r.TerraceHeight, terO = other.TerraceHeight;
+            int rampRoom = d.RampRoom, rampDeep = d.RampCellsDeep;
+            var rampCells = new List<Vector2Int>(d.RampCells);
+            bool landing = d.Landing;
+            // Défaire la liaison.
+            foreach (ActRoom x in new[] { r, other })
+            {
+                foreach (Landing l in x.Landings.Where(l => l.Door == di).ToList())
+                {
+                    foreach (Vector2Int c in l.Cells.Concat(l.Stairs))
+                        x.Use[c] = CellUse.Sol;
+                    x.Landings.Remove(l);
+                    if (x.Landings.Count == 0)
+                        x.TerraceHeight = 0f;
+                }
+            }
+
+            if (d.RampRoom >= 0)
+                foreach (Vector2Int c in d.RampCells)
+                    if (Rooms[d.RampRoom].Use.ContainsKey(c))
+                        Rooms[d.RampRoom].Use[c] = CellUse.Sol;
+            d.RampRoom = -1;
+            d.RampCells.Clear();
+            d.Landing = false;
+            r.Floor = floor;
+            int count = Doors.Count;
+            // PlanLanding note l'index de porte « Doors.Count » : on le fait pointer sur la porte replanifiée.
+            bool ok = PlanConnection(d, true);
+            foreach (ActRoom x in new[] { r, other })
+                foreach (Landing l in x.Landings)
+                    if (l.Door == count)
+                        l.Door = di;
+            if (ok)
+                return true;
+            // Rendu.
+            r.Use.Clear();
+            foreach (var kv in useR) r.Use[kv.Key] = kv.Value;
+            other.Use.Clear();
+            foreach (var kv in useO) other.Use[kv.Key] = kv.Value;
+            r.Landings.Clear();
+            r.Landings.AddRange(landR);
+            other.Landings.Clear();
+            other.Landings.AddRange(landO);
+            r.Floor = floorR;
+            r.TerraceHeight = terR;
+            other.TerraceHeight = terO;
+            d.RampRoom = rampRoom;
+            d.RampCellsDeep = rampDeep;
+            d.RampCells.Clear();
+            d.RampCells.AddRange(rampCells);
+            d.Landing = landing;
+            return false;
+        }
+
+        /// <summary>Passages creusés pour casser une impasse (mesure).</summary>
+        public int CarvedPassages { get; private set; }
+
+        private bool InsideMargin(Vector2Int c, int m) => c.x >= m && c.y >= m && c.x < Size - m && c.y < Size - m;
+
+        /// <summary>Pourquoi la dernière porte de boucle n'a pas pu s'ouvrir (diagnostic des impasses).</summary>
+        public readonly List<string> DeadEndNotes = new List<string>();
+        private string _lastLoopFailure = "";
+
+        private bool TryLoopDoor(int a, int b, Dictionary<(Vector2Int d, int line), List<int>> edges)
+        {
+            if (!PickRun(edges, DoorCells + 2, out Vector2Int first, out Vector2Int dir, out int len)
+                && !SquarePair(a, b, edges, out first, out dir, out len))
+            {
+                _lastLoopFailure = $"pas de seuil droit ({edges.Values.Sum(l => l.Count)} cases de contact)";
+                return false;
+            }
+
+            ActDoor door = MakeDoor(a, b, first, dir, len);
+            door.Loop = true;
+            if (!PlanConnection(door, true))
+            {
+                _lastLoopFailure = $"étages {Rooms[a].Floor} / {Rooms[b].Floor} : ni rampe ni palier";
+                return false;
+            }
+
+            AddDoor(door);
+            return true;
+        }
+
+        /// <summary>Contacts (cases voisines) entre salles de combat non encore reliées, par paire ordonnée (lo, hi).</summary>
+        private Dictionary<(int a, int b), Dictionary<(Vector2Int d, int line), List<int>>> ContactMap(out HashSet<(int, int)> linked, bool includeLinked = false)
+        {
+            linked = new HashSet<(int, int)>();
+            if (!includeLinked)
+                foreach (ActDoor d in Doors)
+                    linked.Add((Mathf.Min(d.A, d.B), Mathf.Max(d.A, d.B)));
             var contacts = new Dictionary<(int a, int b), Dictionary<(Vector2Int d, int line), List<int>>>();
             for (int x = 0; x < Size - 1; x++)
             for (int y = 0; y < Size - 1; y++)
@@ -1092,19 +1528,7 @@ namespace ItHunts.Level.Acts
                 }
             }
 
-            foreach (KeyValuePair<(int a, int b), Dictionary<(Vector2Int d, int line), List<int>>> kv in contacts.OrderBy(k => k.Key.a).ThenBy(k => k.Key.b))
-            {
-                if (_rng.NextDouble() >= Settings.loopChance)
-                    continue;
-                if (!PickRun(kv.Value, DoorCells + 2, out Vector2Int first, out Vector2Int dir, out int len)
-                    && !SquarePair(kv.Key.a, kv.Key.b, kv.Value, out first, out dir, out len))
-                    continue;
-                ActDoor door = MakeDoor(kv.Key.a, kv.Key.b, first, dir, len);
-                door.Loop = true;
-                if (!PlanRamp(door))
-                    continue;
-                AddDoor(door);
-            }
+            return contacts;
         }
 
         public int[] Depths(int from)
@@ -1215,7 +1639,7 @@ namespace ItHunts.Level.Acts
                 (string name, RoomFeature feature, bool terrace, float minArea) f = list[fi];
                 r.Function = f.name;
                 r.Name = f.name;
-                bool featureOk = r.Role != RoomRole.Sortie;
+                bool featureOk = r.Role != RoomRole.Sortie && !r.HasLanding;   // un palier a besoin de son sol (escalier, anneau)
                 if (featureOk && f.feature == RoomFeature.Eau && _rng.NextDouble() < Mathf.Max(0.7f, Settings.waterShare))
                     r.Feature = RoomFeature.Eau;
                 else if (featureOk && f.feature == RoomFeature.Vide && _rng.NextDouble() < Mathf.Max(0.7f, Settings.voidShare))
@@ -1229,7 +1653,7 @@ namespace ItHunts.Level.Acts
                         r.Feature = RoomFeature.Vide;
                 }
 
-                if ((f.terrace || _rng.NextDouble() < 0.3f) && _rng.NextDouble() < Settings.terraceShare + (f.terrace ? 0.25f : 0f))
+                if (r.TerraceHeight <= 0.01f && (f.terrace || _rng.NextDouble() < 0.3f) && _rng.NextDouble() < Settings.terraceShare + (f.terrace ? 0.25f : 0f))
                     r.TerraceHeight = Mathf.Lerp(Settings.terraceHeight.x, Settings.terraceHeight.y, (float)_rng.NextDouble());
             }
 
@@ -1350,10 +1774,11 @@ namespace ItHunts.Level.Acts
                 }
             }
 
-            // Terrasse : bande de 3 à 4 cases le long du bord, loin des portes, d'un seul tenant.
-            if (r.TerraceHeight > 0f && r.Feature != RoomFeature.Aucun)
+            // Terrasse : bande de 3 à 4 cases le long du bord, loin des portes, d'un seul tenant. Un palier (porte en hauteur) garde sa
+            // terrasse telle quelle : pas de bande au hasard en plus.
+            if (r.TerraceHeight > 0f && r.Feature != RoomFeature.Aucun && !r.HasLanding)
                 r.TerraceHeight = 0f;                                   // pas de terrasse qui rétrécit l'anneau autour d'un creux
-            if (r.TerraceHeight > 0f)
+            if (r.TerraceHeight > 0f && !r.HasLanding)
             {
                 int depth = 3;
                 var candidates = r.Cells.Where(x => edge.TryGetValue(x, out int e) && e < depth && r.Use[x] == CellUse.Sol).ToList();

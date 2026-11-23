@@ -16,19 +16,19 @@ MonoBehaviour:
   displayName: "Acte II : les \xE9tages du ch\xE2teau"
   cell: 2
   gridSize: 220
-  rooms: 15
-  roomArea: {x: 800, y: 2600}
+  rooms: 20
+  roomArea: {x: 900, y: 3600}
   minWidth: 10
   mainPathShare: 0.4
-  loopChance: 0.55
+  loopChance: 0.8
   minStartExit: 6
   doorWidth: 12
   doorHeight: 10
   ceiling: {x: 22, y: 30}
-  floorStep: 4
-  floorChangeChance: 0.4
-  minFloor: -6
-  maxFloor: 6
+  floorStep: 5
+  floorChangeChance: 0.6
+  minFloor: -8
+  maxFloor: 15
   rampSlope: 22
   openInnerWall: 8
   openOuterWall: 55
@@ -37,15 +37,15 @@ MonoBehaviour:
   voidShare: 0.2
   voidDamage: 20
   waterDepth: 3
-  terraceShare: 0.7
+  terraceShare: 0.8
   terraceHeight: {x: 4, y: 5.5}
   wallJumpGap: 3.6
-  sconceSpacing: 8
+  sconceSpacing: 6
   torchColor: {r: 1, g: 0.62, b: 0.32, a: 1}
   torchIntensity: 3.2
   torchRange: 16
-  chandeliersPer1000: 1.2
-  moonWindowSpacing: 0
+  chandeliersPer1000: 1.5
+  moonWindowSpacing: 18
   moonColor: {r: 0.55, g: 0.65, b: 1, a: 1}
   moonlight: 0
   ambientScale: 1.35

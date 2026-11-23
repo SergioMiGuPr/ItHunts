@@ -28,7 +28,7 @@ namespace ItHunts.Enemies
         private AudioSource _steps, _stepsLoop, _breath, _voice, _explore, _enraged;
         private AudioClip _step, _roar;
         private float _stepPhase;
-        private float _seenRoar = float.NegativeInfinity, _seenGrab = float.NegativeInfinity, _seenGrowl = float.NegativeInfinity;
+        private float _seenRoar = float.NegativeInfinity, _seenGrab = float.NegativeInfinity, _seenGrowl = float.NegativeInfinity, _seenSpot = float.NegativeInfinity;
         private StalkerMode _lastMode;
         private int _seenKills;
         private bool _artSteps;
@@ -139,6 +139,15 @@ namespace ItHunts.Enemies
 
             // Cris : passage en Enragé (une variante au hasard), prise d'un joueur.
             float cry = art != null ? art.stalkerCryVolume : 1f;
+            // Repérage d'un joueur (nuit 4, point 7) : cri marquant, portée longue, secousse pour qui est proche.
+            if (_stalker.LastSpotCryTime > _seenSpot)
+            {
+                _seenSpot = _stalker.LastSpotCryTime;
+                if (art != null)
+                    GameAudio.PlayOn(_voice, GameAudio.Pick(art.stalkerEnragedCries), null, cry);
+                Cry?.Invoke(transform.position);
+            }
+
             if (_stalker.Mode == StalkerMode.Enrage && _lastMode != StalkerMode.Enrage)
             {
                 if (art != null)

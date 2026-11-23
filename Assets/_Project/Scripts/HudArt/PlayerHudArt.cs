@@ -69,8 +69,124 @@ namespace ItHunts.HudArt
             ParryEvents.Parried += OnParried;
             DamageEvents.Hit += OnHit;
             BuildMarker();
+            BuildUpgradeRow(skin);
             hud.UseArtGauges();
             return true;
+        }
+
+        // ---------- Améliorations possédées (nuit 4, D-100) : rangée au-dessus de la barre de vie, façon Ravenswatch ----------
+
+        private sealed class UpgradeCell
+        {
+            public GameObject Root;
+            public Image Frame, Back, Icon;
+            public Text Symbol;
+        }
+
+        private readonly System.Collections.Generic.List<UpgradeCell> _cells = new System.Collections.Generic.List<UpgradeCell>();
+        private RectTransform _upgradeRow;
+        private PlayerUpgrades _upgrades;
+        private int _upgradeVersion = -1;
+        /// <summary>Cases affichées (tests).</summary>
+        public int UpgradeCellsShown { get; private set; }
+
+        /// <summary>Dix cases (icône de la DA ou symbole sur fond sombre, cadre à la couleur du rang), le passif en premier (losange).</summary>
+        private void BuildUpgradeRow(HudSkinSettings skin)
+        {
+            if (skin == null || _canvas == null)
+                return;
+            var go = new GameObject("Améliorations (rangée)", typeof(RectTransform));
+            go.layer = _canvas.gameObject.layer;
+            go.transform.SetParent(_canvas.transform, false);
+            _upgradeRow = (RectTransform)go.transform;
+            _upgradeRow.anchorMin = _upgradeRow.anchorMax = Vector2.zero;
+            _upgradeRow.pivot = Vector2.zero;
+            float size = skin.upgradeIconSize, gap = skin.upgradeIconGap;
+            _upgradeRow.anchoredPosition = new Vector2(skin.healthCorner.x, skin.healthCorner.y + skin.healthNativeHeight * skin.healthScale + skin.upgradeRowGap);
+            _upgradeRow.sizeDelta = new Vector2(UpgradeSlots.MaxSlots * (size + gap), size);
+            for (int i = 0; i < UpgradeSlots.MaxSlots; i++)
+            {
+                var cell = new UpgradeCell { Root = new GameObject($"Case {i + 1}", typeof(RectTransform)) };
+                cell.Root.layer = go.layer;
+                var r = (RectTransform)cell.Root.transform;
+                r.SetParent(_upgradeRow, false);
+                r.anchorMin = r.anchorMax = Vector2.zero;
+                r.pivot = new Vector2(0.5f, 0.5f);
+                r.anchoredPosition = new Vector2(i * (size + gap) + size * 0.5f, size * 0.5f);
+                r.sizeDelta = new Vector2(size, size);
+                cell.Frame = Square("Cadre", r, 0f, Color.white);
+                cell.Back = Square("Fond", r, 3f, new Color(0.06f, 0.04f, 0.07f, 0.92f));
+                cell.Icon = Square("Icône", r, 6f, Color.white);
+                cell.Icon.preserveAspect = true;
+                var tgo = new GameObject("Symbole", typeof(RectTransform));
+                tgo.layer = go.layer;
+                tgo.transform.SetParent(r, false);
+                cell.Symbol = tgo.AddComponent<Text>();
+                cell.Symbol.font = skin.textFont != null ? skin.textFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                cell.Symbol.fontSize = Mathf.RoundToInt(size * 0.42f);
+                cell.Symbol.alignment = TextAnchor.MiddleCenter;
+                cell.Symbol.color = new Color(0.95f, 0.92f, 0.88f);
+                cell.Symbol.raycastTarget = false;
+                cell.Symbol.horizontalOverflow = HorizontalWrapMode.Overflow;
+                var tr = cell.Symbol.rectTransform;
+                tr.anchorMin = Vector2.zero;
+                tr.anchorMax = Vector2.one;
+                tr.offsetMin = tr.offsetMax = Vector2.zero;
+                cell.Root.SetActive(false);
+                _cells.Add(cell);
+            }
+        }
+
+        private static Image Square(string name, RectTransform parent, float inset, Color color)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.layer = parent.gameObject.layer;
+            go.transform.SetParent(parent, false);
+            var img = go.AddComponent<Image>();
+            img.color = color;
+            img.raycastTarget = false;
+            var r = img.rectTransform;
+            r.anchorMin = Vector2.zero;
+            r.anchorMax = Vector2.one;
+            r.offsetMin = new Vector2(inset, inset);
+            r.offsetMax = new Vector2(-inset, -inset);
+            return img;
+        }
+
+        private void UpdateUpgradeRow()
+        {
+            if (_upgradeRow == null)
+                return;
+            if (_upgrades == null)
+                _upgrades = GetComponent<PlayerUpgrades>();
+            int version = _upgrades != null ? _upgrades.Version : 0;
+            if (version == _upgradeVersion)
+                return;
+            _upgradeVersion = version;
+            HudSkinSettings skin = _hud != null ? _hud.HudSkin : null;
+            var list = _upgrades != null ? _upgrades.Slots.Sorted() : new System.Collections.Generic.List<UpgradeDefinition>();
+            UpgradeCellsShown = Mathf.Min(list.Count, _cells.Count);
+            for (int i = 0; i < _cells.Count; i++)
+            {
+                UpgradeCell cell = _cells[i];
+                bool on = i < list.Count && list[i] != null;
+                cell.Root.SetActive(on);
+                if (!on)
+                    continue;
+                UpgradeDefinition u = list[i];
+                int rank = _upgrades.RankOf(u);
+                cell.Frame.color = skin != null ? skin.RankColor(rank) : Color.white;
+                bool sprite = u.icon != null;
+                cell.Icon.enabled = sprite;
+                cell.Icon.sprite = u.icon;
+                cell.Symbol.enabled = !sprite;
+                cell.Symbol.text = u.iconSymbol;
+                // Le passif se lit à sa forme : losange (cadre et fond tournés de 45°), l'icône reste droite.
+                float angle = u.isPassive ? 45f : 0f;
+                cell.Frame.rectTransform.localRotation = cell.Back.rectTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
+                float k = u.isPassive ? 0.78f : 1f;
+                cell.Frame.rectTransform.localScale = cell.Back.rectTransform.localScale = Vector3.one * k;
+            }
         }
 
         private T Spawn<T>(GameObject prefab, string name) where T : Component
@@ -162,7 +278,20 @@ namespace ItHunts.HudArt
             int souls = run != null && hp != null ? run.Souls(hp.PlayerId) : 0;
             if (f is ItHunts.Level.ExitDoor exit && !exit.Open)
             {
-                _door.Montre(exit.Unlocked ? "Porte de sortie" : "Sortie verrouillée", exit.Unlocked ? exit.Price : 0, souls);
+                if (exit.Unlocked)
+                    _door.Montre("Porte de sortie", exit.Price, souls);
+                else
+                {
+                    // Nuit 4, point 5 : avant la fin du temps, le temps restant et l'explication (pas « Ouvrir » sur une porte scellée).
+                    int left = Mathf.CeilToInt(exit.UnlockLeft);
+                    _door.Montre($"Sortie scellée · {left / 60}:{left % 60:00}", 0, souls);
+                    if (_door.invite != null)
+                    {
+                        _door.invite.text = $"S'ouvre dans {left / 60}:{left % 60:00} · survivez jusque-là ({exit.Price} âmes)";
+                        _door.invite.color = new Color(0.78f, 0.72f, 0.66f);
+                    }
+                }
+
                 PlayerHud.DoorPanelShown = true;
             }
             else if (f is LockedDoor locked && !locked.Open)
@@ -216,6 +345,7 @@ namespace ItHunts.HudArt
                 _parade.Regle(_parry.Fill);
             UpdateMarker();
             UpdateDoorPanel();
+            UpdateUpgradeRow();
 
             if (_reticle != null)
             {

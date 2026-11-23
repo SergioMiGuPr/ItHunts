@@ -384,13 +384,15 @@ namespace ItHunts.Tests
                 UpgradeDefinition d = Asset<UpgradeDefinition>();
                 d.kind = k;
                 d.amount = amount;
+                d.character = UpgradeCharacter.Renard;
                 return d;
             }
 
-            up.Apply(U(UpgradeKind.PorteeLanterne, 1.5f));
-            up.Apply(U(UpgradeKind.ConeLanterne, 15f));
-            up.Apply(U(UpgradeKind.RechargeLanterne, 0.5f));
-            up.Apply(U(UpgradeKind.DureeBrulureLanterne, 2f));
+            // Nuit 4 (D-100) : Long souffle, Flamme large, Mèche vive, Braises au rang Bronze.
+            up.Apply(U(UpgradeKind.LongSouffle, 1.5f));
+            up.Apply(U(UpgradeKind.FlammeLarge, 15f));
+            up.Apply(U(UpgradeKind.MecheVive, 0.5f));
+            up.Apply(U(UpgradeKind.Braises, 2f));
             FireLanternSettings c = holder.LanternSettings;
             Assert.That(c, Is.Not.SameAs(_cfg), "copie pour ce joueur seul");
             Assert.That(c.range, Is.EqualTo(16.5f).Within(1e-4f));
@@ -445,7 +447,8 @@ namespace ItHunts.Tests
             Assert.That(ItHunts.Economy.ArtifactMerchant.PoolFor(_cfg, barrelPool), Is.Null, "artefact sans liste : le soin seulement");
             var project = AssetDatabase.LoadAssetAtPath<FireLanternSettings>("Assets/_Project/Settings/FireLantern_Default.asset");
             Assert.That(project.upgrades, Is.Not.Null);
-            Assert.That(project.upgrades.upgrades.Select(u => u.kind), Is.EquivalentTo(new[] { UpgradeKind.PorteeLanterne, UpgradeKind.ConeLanterne, UpgradeKind.RechargeLanterne, UpgradeKind.DureeBrulureLanterne }));
+            Assert.That(project.upgrades.upgrades.Count, Is.EqualTo(10), "10 améliorations du renard (D-100)");
+            Assert.That(project.upgrades.upgrades.Select(u => u.kind), Is.SupersetOf(new[] { UpgradeKind.LongSouffle, UpgradeKind.FlammeLarge, UpgradeKind.MecheVive, UpgradeKind.Braises }));
         }
 
         // ---------- Assets du projet ----------

@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_K3
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: "K3"
+  displayName: "Fente"
+  description: "La fente (dash, glissade) va plus loin et frappe plus fort."
+  icon: {fileID: 0}
+  iconSymbol: "\u27F6"
+  color: {r: 2.6, g: 2.4, b: 1.8, a: 1}
+  kind: 54
+  character: 3
+  isPassive: 0
+  rankValues:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  rankValues2:
+  - 1.3
+  - 1.4
+  - 1.5
+  - 1.6
+  - 1.8
+  rankValues3: []
+  rankTexts:
+  - "+1 m, \xD71.3"
+  - "+2 m, \xD71.4"
+  - "+3 m, \xD71.5, traverse un ennemi"
+  - "+4 m, \xD71.6"
+  - "+5 m, \xD71.8, la fente traverse tous les ennemis et les \xE9tourdit"
+  synergies: "Harpon (G11), Briseur d'os (G21)"
+  amount: 1
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

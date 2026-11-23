@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_R2
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: "R2"
+  displayName: "Flamme large"
+  description: "C\xF4ne du jet."
+  icon: {fileID: 0}
+  iconSymbol: "<>"
+  color: {r: 3.4, g: 1.2, b: 0.3, a: 1}
+  kind: 33
+  character: 1
+  isPassive: 0
+  rankValues:
+  - 15
+  - 25
+  - 35
+  - 45
+  - 60
+  rankValues2: []
+  rankValues3: []
+  rankTexts:
+  - "+15\xB0"
+  - "+25\xB0"
+  - "+35\xB0, le jet pousse l\xE9g\xE8rement (1 m)"
+  - "+45\xB0"
+  - "+60\xB0, cercle complet autour du renard"
+  synergies: "Long souffle (R1), Fourrure de braise (R-P1)"
+  amount: 15
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

@@ -25,6 +25,8 @@ namespace ItHunts.Level
 
         public bool Open { get; private set; }
         public bool Unlocked => Zone != null && Zone.ExitUnlocked;
+        /// <summary>Temps avant l'ouverture (s) ; 0 si ouverte ou sans zone.</summary>
+        public float UnlockLeft => Zone != null ? Zone.ExitUnlockLeft : 0f;
         public int Price => Zone != null && Zone.Settings != null ? Zone.Settings.exitPrice : 200;
         public Vector3 Point => transform.position + Vector3.up * 1.8f;   // à hauteur des yeux (porte posée au sol)
         public float Range => interactRange;

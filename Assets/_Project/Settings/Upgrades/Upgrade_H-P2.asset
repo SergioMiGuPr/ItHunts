@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfd449386b98ff941b363613b07b1571, type: 3}
+  m_Name: Upgrade_H-P2
+  m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.UpgradeDefinition
+  code: "H-P2"
+  displayName: "Plumes"
+  description: "Chute ralentie en tenant saut (plan\xE9), pas de d\xE9g\xE2ts de chute."
+  icon: {fileID: 0}
+  iconSymbol: "\u25C6"
+  color: {r: 2, g: 1, b: 3.2, a: 1}
+  kind: 61
+  character: 4
+  isPassive: 1
+  rankValues:
+  - 0.7
+  - 0.55
+  - 0.4
+  - 0.3
+  - 0.3
+  rankValues2: []
+  rankValues3: []
+  rankTexts:
+  - "plan\xE9 \xD70.7 de gravit\xE9"
+  - "\xD70.55"
+  - "\xD70.4, le plan\xE9 garde la vitesse horizontale"
+  - "\xD70.3"
+  - "+1 saut en l'air et le plan\xE9 dirige (contr\xF4le complet)"
+  synergies: "Pas de chat (G25)"
+  amount: 0.7
+  forArtifact: {fileID: 0}
+  rarity: 0
+  merchantPrice: 60

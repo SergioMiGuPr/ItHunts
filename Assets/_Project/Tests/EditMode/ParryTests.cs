@@ -104,5 +104,20 @@ namespace ItHunts.Tests
             Assert.That(typeof(ItHunts.Player.PlayerParry).GetField("_motor",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance), Is.Null);
         }
+
+        [Test]
+        public void Bond_AppuiPendantLeVol_Pare_CoupDeGriffes_Non()
+        {
+            // Nuit 4, point 1 (« 0 parade sur toute une run ») : le bond se pare par un appui fait pendant son vol.
+            var s = ParryState.Create();
+            ParryMath.Press(ref s, 10f, _cfg);                                    // appui à l'envol
+            Assert.That(ParryMath.TryParry(ref s, 10.4f, _cfg, true), Is.False, "griffes : 400 ms avant, trop tôt");
+            var t = ParryState.Create();
+            ParryMath.Press(ref t, 10f, _cfg);
+            Assert.That(ParryMath.TryParry(ref t, 10.4f, _cfg, true, _cfg.window + 0.4f), Is.True, "bond : appui pendant le vol, paré");
+            var u = ParryState.Create();
+            ParryMath.Press(ref u, 9.0f, _cfg);
+            Assert.That(ParryMath.TryParry(ref u, 10.4f, _cfg, true, _cfg.window + 0.4f), Is.False, "appui bien avant l'annonce : raté");
+        }
     }
 }

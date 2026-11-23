@@ -36,6 +36,10 @@ namespace ItHunts.Orbs
             if (m.AttractCharges < 0f)
                 m.AttractCharges = cfg.attractCharges;
             m.AttractCharges = Mathf.Min(cfg.attractCharges, m.AttractCharges + dt / cfg.attractChargeRechargeTime);
+            // Charges de répulsion en plus (G17, D-100) : elles reviennent une par une en repelCooldown s.
+            if (m.RepelCharges < 0f)
+                m.RepelCharges = cfg.repelExtraCharges;
+            m.RepelCharges = Mathf.Min(cfg.repelExtraCharges, m.RepelCharges + (cfg.repelCooldown > 0f ? dt / cfg.repelCooldown : 1f));
 
             // Traction terminée par le moteur au tick précédent (dash, obstacle) ou par une téléportation.
             if (m.Tracting && s.Mode != MovementMode.Traction)
@@ -93,8 +97,9 @@ namespace ItHunts.Orbs
             // 2. Répulsion : impulsion instantanée (la seule propulsion du joueur), puis maintien possible.
             if (repelPress)
             {
-                bool ready = !m.RepelHolding
-                             && (m.LastRepelEndTick == MovementState.NeverTick || tick - m.LastRepelEndTick >= repelCooldownTicks);
+                bool cooled = m.LastRepelEndTick == MovementState.NeverTick || tick - m.LastRepelEndTick >= repelCooldownTicks;
+                bool extra = !cooled && m.RepelCharges >= 1f;              // une charge en plus (G17) quand la recharge n'est pas finie
+                bool ready = !m.RepelHolding && (cooled || extra);
                 if (!ready)
                 {
                     // Appui mémorisé : il part dès la fin de la recharge, ou il est refusé à la fin de la mémorisation.
@@ -112,11 +117,16 @@ namespace ItHunts.Orbs
                     if (s.DashTicksLeft > 0)
                         MovementMotor.EndDash(ref s, s.Position, dashGraceTicks);   // vitesse de sortie, pas le pic
 
+                    if (extra)
+                        m.RepelCharges -= 1f;
                     Vector3 toPoint = h.Point - eye;
                     Vector3 dir = toPoint.sqrMagnitude > 1e-6f ? -toPoint.normalized : -aimDir;
                     Vector3 before = s.Velocity;
                     s.Velocity = MovementMath.RepelVelocity(s.Velocity, dir, cfg.repelImpulse, move.movementGainCap);
                     s.Velocity = MovementMath.ClampHorizontal(s.Velocity, move.maxHorizontalSpeed);
+                    // Charge de répulsion Mythique (G17) : sur le sol, propulsion verticale jusqu'à repelGroundLaunchHeight m.
+                    if (cfg.repelGroundLaunchHeight > 0f && h.Normal.y > 0.7f)
+                        s.Velocity.y = Mathf.Max(s.Velocity.y, Mathf.Sqrt(2f * move.gravity * cfg.repelGroundLaunchHeight));
                     s.JumpRising = false;                               // pas de coupe au relâchement du saut
                     if (s.Velocity.y > 1e-3f)
                     {
@@ -157,9 +167,9 @@ namespace ItHunts.Orbs
                 {
                     m.LastConsumedAttractPressTick = input.AttractPressedTick;   // déjà relâché : rien
                 }
-                else if (!hit || h.Enemy)
+                else if (!hit || (h.Enemy && !cfg.TractionAllowedOn(h.EnemyKind, h.EnemyBound)))
                 {
-                    // Jamais de traction vers un ennemi (D-021).
+                    // Jamais de traction vers un ennemi (D-021), sauf Harpon (G11) et Lien d'ancrage (H6), D-100.
                     Refuse(ref m, tick, MagnetMode.Attraction, MagnetRefusal.RienAPortee, ref m.LastConsumedAttractPressTick, input.AttractPressedTick);
                 }
                 else if (h.NonMagnetic)
@@ -205,7 +215,7 @@ namespace ItHunts.Orbs
             m.RepelStatus = m.RepelHolding ? OrbStatus.EnUsage
                 : m.LastRepelEndTick == MovementState.NeverTick ? OrbStatus.Prete
                 : tick - m.LastRepelTick < repelUseTicks ? OrbStatus.EnUsage
-                : tick - m.LastRepelEndTick < repelCooldownTicks ? OrbStatus.Recharge
+                : tick - m.LastRepelEndTick < repelCooldownTicks && m.RepelCharges < 1f ? OrbStatus.Recharge
                 : OrbStatus.Prete;
             m.Status = m.AttractStatus == OrbStatus.EnUsage || m.RepelStatus == OrbStatus.EnUsage ? OrbStatus.EnUsage
                 : m.AttractStatus == OrbStatus.Recharge || m.RepelStatus == OrbStatus.Recharge ? OrbStatus.Recharge

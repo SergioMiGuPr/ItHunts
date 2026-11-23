@@ -14,6 +14,11 @@ namespace ItHunts.Orbs
 
         /// <summary>Surface non magnétique (D-051) : la traction ne s'y accroche pas, la répulsion oui.</summary>
         public bool NonMagnetic;
+
+        /// <summary>Type d'ennemi touché (améliorations D-100 : Harpon) : 0 aucun, 1 goule, 2 volant, 3 autre (traqueur, factice).</summary>
+        public byte EnemyKind;
+        /// <summary>Ennemi lié par le livre du joueur qui vise (Lien d'ancrage, H6).</summary>
+        public bool EnemyBound;
     }
 
     /// <summary>

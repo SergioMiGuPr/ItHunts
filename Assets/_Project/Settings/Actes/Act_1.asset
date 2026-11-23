@@ -16,19 +16,19 @@ MonoBehaviour:
   displayName: 'Acte I : les caves'
   cell: 2
   gridSize: 220
-  rooms: 16
-  roomArea: {x: 700, y: 2300}
+  rooms: 22
+  roomArea: {x: 800, y: 2800}
   minWidth: 10
   mainPathShare: 0.4
-  loopChance: 0.55
+  loopChance: 0.8
   minStartExit: 6
   doorWidth: 12
   doorHeight: 9
   ceiling: {x: 16, y: 22}
-  floorStep: 3
-  floorChangeChance: 0.35
-  minFloor: -6
-  maxFloor: 6
+  floorStep: 4
+  floorChangeChance: 0.55
+  minFloor: -8
+  maxFloor: 12
   rampSlope: 22
   openInnerWall: 8
   openOuterWall: 55
@@ -37,10 +37,10 @@ MonoBehaviour:
   voidShare: 0.25
   voidDamage: 20
   waterDepth: 3
-  terraceShare: 0.55
+  terraceShare: 0.7
   terraceHeight: {x: 3.5, y: 5.5}
   wallJumpGap: 3.6
-  sconceSpacing: 8
+  sconceSpacing: 7
   torchColor: {r: 1, g: 0.55, b: 0.25, a: 1}
   torchIntensity: 3.2
   torchRange: 16
@@ -57,7 +57,7 @@ MonoBehaviour:
   chests: 9
   lockedRooms: 2
   merchants: 1
-  stalkerFromArrival: 0
+  stalkerFromArrival: 1
   wallMaterial: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
   floorMaterial: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
   ceilingMaterial: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}

@@ -47,9 +47,20 @@ namespace ItHunts.Orbs
                 return false;
             RaycastHit h = _hits[best];
             // Un ennemi arrête le rayon et le signale : la traction ne s'y accroche jamais, la répulsion y part (onde).
-            bool enemy = h.collider.GetComponentInParent<ItHunts.Combat.Damageable>() != null;
+            var damageable = h.collider.GetComponentInParent<ItHunts.Combat.Damageable>();
+            bool enemy = damageable != null;
             bool nonMagnetic = h.collider.GetComponentInParent<NonMagneticSurface>() != null;   // D-051
-            hit = new AimHit { Point = h.point, Normal = h.normal, Distance = h.distance, Enemy = enemy, NonMagnetic = nonMagnetic };
+            // Améliorations (D-100) : la traction peut s'accrocher aux goules et volants (Harpon) ou à la cible liée (Lien d'ancrage).
+            byte kind = 0;
+            bool bound = false;
+            if (enemy && !damageable.ImmuneToOrbs && !damageable.Dead)
+            {
+                kind = damageable.GetComponent<ItHunts.Enemies.Ghoul>() != null ? (byte)1
+                    : damageable.GetComponent<ItHunts.Enemies.Flyer>() != null ? (byte)2 : (byte)3;
+                bound = damageable.Bound;
+            }
+
+            hit = new AimHit { Point = h.point, Normal = h.normal, Distance = h.distance, Enemy = enemy, NonMagnetic = nonMagnetic, EnemyKind = kind, EnemyBound = bound };
             return true;
         }
     }

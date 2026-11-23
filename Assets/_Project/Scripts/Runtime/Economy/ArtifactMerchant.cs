@@ -115,7 +115,34 @@ namespace ItHunts.Economy
             return null;
         }
 
-        /// <summary>Tire les offres d'un joueur (orbes vues par lui seul).</summary>
+        /// <summary>
+        /// Offres du marchand pour un joueur (pur, D-100) : 1 amélioration nouvelle (générique ou de son personnage, passif possible)
+        /// + 1 montée de rang d'une amélioration possédée non Mythique ; sans rien à monter, 2 nouvelles ; emplacements pleins, 2
+        /// montées. Renvoie (amélioration, rang de départ, rang visé).
+        /// </summary>
+        public static List<(UpgradeDefinition u, int from, int to)> OffersFor(RunState run, PlayerHealth p)
+        {
+            var r = new List<(UpgradeDefinition, int, int)>();
+            if (run == null || p == null)
+                return r;
+            UpgradeDefinition[] news = run.DrawNewFor(p, 1);
+            UpgradeDefinition[] ups = run.DrawRankUpFor(p.PlayerId, 1);
+            if (ups.Length == 0)
+                news = run.DrawNewFor(p, 2);
+            else if (news.Length == 0)
+                ups = run.DrawRankUpFor(p.PlayerId, 2);
+            foreach (UpgradeDefinition u in news)
+                r.Add((u, -1, 0));
+            foreach (UpgradeDefinition u in ups)
+            {
+                int rank = run.RankOf(p.PlayerId, u);
+                r.Add((u, rank, rank + 1));
+            }
+
+            return r;
+        }
+
+        /// <summary>Tire les offres d'un joueur (orbes vues par lui seul) : une nouvelle, une montée de rang, le soin.</summary>
         public void Stock(int playerId)
         {
             if (_offers.TryGetValue(playerId, out List<OfferOrb> old))
@@ -124,29 +151,29 @@ namespace ItHunts.Economy
                         Interactables.Discard(o.gameObject);
             var list = new List<OfferOrb>();
             _offers[playerId] = list;
-            if (pool == null || pool.upgrades.Count == 0)
-                return;
             RunState run = RunState.Current;
-            int seed = (run != null ? run.Seed : 1) * 31 + playerId;
-            // Améliorations de l'artefact du joueur qui achète (barillet, lanterne de feu…) ; sans liste : le soin seulement.
-            UpgradePool own = PoolFor(ArtifactOf(playerId), pool);
-            int n = own != null ? own.upgrades.Count : 0;
-            int[] idx = n > 0 ? SoulMath.Draw(seed, _draws++, n, Mathf.Min(offers, n)) : new int[0];
+            PlayerHealth player = PlayerHealth.Find(playerId);
+            List<(UpgradeDefinition u, int from, int to)> drawn = OffersFor(run, player);
+            _draws++;
             float range = settings != null ? settings.orbInteractRange : 8f;
-            for (int i = 0; i < idx.Length; i++)
+            for (int i = 0; i < drawn.Count; i++)
             {
-                UpgradeDefinition u = own.upgrades[idx[i]];
-                Vector3 at = transform.TransformPoint(OfferOffset(i, idx.Length));
-                OfferOrb orb = OfferOrb.Create(transform, at, u, u.merchantPrice, 0f, playerId, range, orbMaterial);
+                (UpgradeDefinition u, int from, int to) = drawn[i];
+                Vector3 at = transform.TransformPoint(OfferOffset(i, drawn.Count));
+                int price = settings != null ? settings.RankPrice(to) : u.merchantPrice;
+                OfferOrb orb = OfferOrb.Create(transform, at, u, price, 0f, playerId, range, orbMaterial, from, to);
                 orb.Pricing = settings;
                 orb.MenuOnly = true;
                 orb.TakenBy += (o, p) =>
                 {
                     Purchases++;
-                    Stock(p.PlayerId);                                    // nouveau choix parmi 3, prix plus haut
+                    Stock(p.PlayerId);                                    // nouvelles offres, prix un peu plus haut
                 };
                 list.Add(orb);
             }
+
+            int idxLength = drawn.Count;
+            int[] idx = new int[idxLength];
 
             // 4e offre fixe : le soin (+40 PV pour 35 âmes, EconomySettings) ; seul moyen de se soigner pendant une zone.
             if (withHeal)

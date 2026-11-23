@@ -14,7 +14,7 @@ namespace ItHunts.Combat
     public sealed class Burning : MonoBehaviour
     {
         private Damageable _target;
-        private float _dps, _until, _tick = 0.25f, _nextTick, _pending, _shownAt;
+        private float _dps, _until, _tick = 0.25f, _nextTick, _pending, _shownAt, _slow;
         private int _attacker;
         private ParticleSystem _fx;
 
@@ -22,14 +22,25 @@ namespace ItHunts.Combat
         public float TickInterval => _tick;
         public float Remaining => Mathf.Max(0f, _until - Time.time);
         public bool Active => enabled && _target != null && !_target.Dead && Time.time < _until;
+        /// <summary>Brûle (même mort depuis cet instant : les effets « meurt en feu » lisent l'état au moment du coup fatal).</summary>
+        public bool Lit => enabled && _target != null && Time.time < _until;
+        /// <summary>Brûlures cumulées (« Braises », R4) ; 1 d'ordinaire.</summary>
+        public int Stacks { get; private set; }
         /// <summary>PV retirés par cette brûlure depuis le dernier jet (mesures).</summary>
         public float Dealt { get; private set; }
         /// <summary>Flammes visibles sur l'ennemi (mesures, tests).</summary>
         public bool EffectOn => _fx != null && _fx.isEmitting;
 
-        /// <summary>Allume (ou relance, sans cumuler) la brûlure de cet ennemi.</summary>
+        /// <summary>Un ennemi prend feu ou reprend feu (cible, joueur, brûlures cumulées, première brûlure ?) : synergies (D-100).</summary>
+        public static event System.Action<Damageable, int, int, bool> Ignited;
+
+        /// <summary>
+        /// Allume (ou relance) la brûlure de cet ennemi. Sans cumul par défaut (la durée repart, le dps est celui du nouveau jet) ;
+        /// avec maxStacks &gt; 1 (« Braises »), une relance ajoute une brûlure jusqu'au plafond (le dps s'ajoute). slow : part de
+        /// vitesse retirée tant qu'il brûle (« Allumette » Or).
+        /// </summary>
         public static Burning Apply(Damageable target, float dps, float duration, int attackerId, float tick = 0.25f,
-            Material effect = null, float now = -1f)
+            Material effect = null, float now = -1f, int maxStacks = 1, float slow = 0f)
         {
             if (target == null || target.Dead || target.ImmuneToOrbs || dps <= 0f)
                 return null;
@@ -40,16 +51,28 @@ namespace ItHunts.Combat
                 b = target.gameObject.AddComponent<Burning>();
             bool running = b.enabled && b._target != null && now < b._until;
             b._target = target;
-            b._dps = dps;                                                // relance sans cumuler
             b._tick = Mathf.Max(0.02f, tick);
             if (!running)
+            {
                 b._nextTick = now + b._tick;                             // premier tick un pas après le contact
+                b._dps = dps;
+                b.Stacks = 1;
+            }
+            else if (b.Stacks < Mathf.Max(1, maxStacks))
+            {
+                b._dps += dps;                                           // cumul (Braises)
+                b.Stacks++;
+            }
+            else
+                b._dps = Mathf.Max(dps, b._dps);                         // relance sans cumuler
             b._until = now + duration;
             b._attacker = attackerId;
+            b._slow = Mathf.Max(b._slow, slow);
             b.Dealt = 0f;
             b.enabled = true;
             if (effect != null)
                 b.ShowEffect(effect);
+            Ignited?.Invoke(target, attackerId, b.Stacks, !running);
             return b;
         }
 
@@ -57,6 +80,8 @@ namespace ItHunts.Combat
         public float Step(float dt, float now)
         {
             float total = 0f;
+            if (_slow > 0f && _target != null && !_target.Dead && now < _until)
+                _target.Slow(_slow, _tick * 2f);
             while (_target != null && !_target.Dead && _nextTick <= now && _nextTick <= _until + 1e-4f)
             {
                 _target.NoteAttacker(_attacker);
@@ -84,6 +109,8 @@ namespace ItHunts.Combat
         private void Stop()
         {
             enabled = false;
+            Stacks = 0;
+            _slow = 0f;
             if (_fx != null)
                 _fx.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             if (_painted != null)

@@ -59,8 +59,12 @@ namespace ItHunts.Economy
 
         private void Awake()
         {
-            _label = WorldLabel.Create(transform, new Vector3(0f, 1.7f, 0f), BaseText(), new Color(1f, 0.85f, 0.4f));
-            _label.TextFor = p => OpenedFor(p.PlayerId) ? "Coffre\nouvert" : PriceFor(p) > 0 ? $"Coffre\n{PriceFor(p)} âmes" : "Coffre";
+            if (OfferOrb.WorldVisible)
+            {
+                // Texte flottant greybox (nuit 4, point 1 : retiré ; l'invite d'interaction de la DA donne le prix).
+                _label = WorldLabel.Create(transform, new Vector3(0f, 1.7f, 0f), BaseText(), new Color(1f, 0.85f, 0.4f));
+                _label.TextFor = p => OpenedFor(p.PlayerId) ? "Coffre\nouvert" : PriceFor(p) > 0 ? $"Coffre\n{PriceFor(p)} âmes" : "Coffre";
+            }
             if (lid != null)
                 _lidRenderers = lid.GetComponentsInChildren<Renderer>(true);
         }
@@ -129,23 +133,21 @@ namespace ItHunts.Economy
                 return false;
             var opening = new Opening { At = Time.time };
             _openings[p.PlayerId] = opening;
-            int count = settings != null ? settings.choiceCount : 3;
-            UpgradeDefinition[] drawn;
+            int count = (settings != null ? settings.choiceCount : 3) + PlayerUpgrades.ExtraChestChoices(p.PlayerId);
             if (rare && settings != null)
-            {
-                // Coffre rare (D-071) : table dédiée, un choix en plus, améliorations renforcées.
-                drawn = run.DrawUpgradesFor(count + settings.rareExtraChoices, settings.rarePool, p);
-                for (int i = 0; i < drawn.Length; i++)
-                    drawn[i] = RareVersion(drawn[i], settings);
-            }
-            else
-                drawn = run.DrawUpgradesFor(count, null, p);
-            for (int i = 0; i < drawn.Length; i++)
+                count += settings.rareExtraChoices;                        // coffre rare (D-071) : un choix en plus
+            int act = ItHunts.Level.RunSession.Act;
+            var up = PlayerUpgrades.OfId(p.PlayerId);
+            bool rankUps = act >= (settings != null ? settings.chestRankUpFromAct : 1) || (up != null && up.AtLeast(UpgradeKind.OeilDuCollectionneur, 2));
+            int startRank = rare || (up != null && up.Mythic(UpgradeKind.OeilDuCollectionneur)) ? 1 : 0;   // coffre rare / Collectionneur Mythique : Argent direct
+            var drawn = ChestOffers(run, p, count, rankUps, startRank);
+            for (int i = 0; i < drawn.Count; i++)
             {
                 // Espacées de 2.4 m et en quinconce : les noms (deux lignes) ne se chevauchent pas, lisibles à 10 m.
-                float x = (i - (drawn.Length - 1) * 0.5f) * 2.4f;
+                float x = (i - (drawn.Count - 1) * 0.5f) * 2.4f;
                 Vector3 at = transform.position + transform.right * x + Vector3.up * (2.2f + (i % 2 == 1 ? 0.6f : 0f));
-                OfferOrb orb = OfferOrb.Create(transform, at, drawn[i], 0, 0f, p.PlayerId, settings != null ? settings.orbInteractRange : 8f, orbMaterial);
+                OfferOrb orb = OfferOrb.Create(transform, at, drawn[i].u, 0, 0f, p.PlayerId, settings != null ? settings.orbInteractRange : 8f, orbMaterial,
+                    drawn[i].from, drawn[i].to);
                 orb.TakenBy += (chosen, by) => OnChosen(opening, chosen);
                 orb.MenuOnly = true;                                   // choix dans le menu du coffre (point 4, 2026-11-21)
                 opening.Choices.Add(orb);
@@ -156,33 +158,26 @@ namespace ItHunts.Economy
         }
 
         /// <summary>
-        /// Version rare d'une amélioration (D-071, pur, testable) : valeur × rareAmountMultiplier ; nombres entiers (charges, balles)
-        /// arrondis au-dessus ; réductions en part (cadence, rechargement) plafonnées ; marquée ★. Copie faite à la volée : l'asset
-        /// d'origine ne change pas.
+        /// Choix d'un coffre (D-100, pur) : count offres, au moins une nouvelle ; une montée de rang possible (dès l'acte II, ou avec
+        /// Œil du collectionneur Or) ; emplacements pleins : montées seulement. startRank : la première nouvelle arrive directement
+        /// à ce rang (coffre rare, Collectionneur Mythique). Renvoie (amélioration, rang de départ, rang visé).
         /// </summary>
-        public static UpgradeDefinition RareVersion(UpgradeDefinition d, EconomySettings s)
+        public static List<(UpgradeDefinition u, int from, int to)> ChestOffers(RunState run, PlayerHealth p, int count, bool rankUps, int startRank = 0)
         {
-            if (d == null || s == null)
-                return d;
-            UpgradeDefinition r = Instantiate(d);
-            r.name = d.name + " (rare)";
-            float a = d.amount * s.rareAmountMultiplier;
-            switch (d.kind)
+            var r = new List<(UpgradeDefinition, int, int)>();
+            if (run == null || p == null || count <= 0)
+                return r;
+            int ups = rankUps ? 1 : 0;
+            UpgradeDefinition[] news = run.DrawNewFor(p, count - ups);
+            UpgradeDefinition[] raised = ups > 0 || news.Length < count ? run.DrawRankUpFor(p.PlayerId, count - news.Length) : new UpgradeDefinition[0];
+            for (int i = 0; i < news.Length; i++)
+                r.Add((news[i], -1, i == 0 ? Mathf.Clamp(startRank, 0, UpgradeDefinition.MaxRank) : 0));
+            foreach (UpgradeDefinition u in raised)
             {
-                case UpgradeKind.ChargeDeMouvement:
-                case UpgradeKind.BallesBarillet:
-                    a = Mathf.Max(Mathf.Round(d.amount) + 1f, Mathf.Ceil(a));
-                    break;
-                case UpgradeKind.CadenceBarillet:
-                case UpgradeKind.RechargementBarillet:
-                    a = Mathf.Min(a, Mathf.Max(d.amount, s.rareCutCap));
-                    break;
+                int rank = run.RankOf(p.PlayerId, u);
+                r.Add((u, rank, rank + 1));
             }
 
-            r.amount = a;
-            r.displayName = "★ " + d.displayName;
-            r.iconSymbol = d.iconSymbol + " ★";
-            r.description = string.IsNullOrEmpty(d.description) ? "rare : effet renforcé" : d.description + " (rare : effet renforcé)";
             return r;
         }
 

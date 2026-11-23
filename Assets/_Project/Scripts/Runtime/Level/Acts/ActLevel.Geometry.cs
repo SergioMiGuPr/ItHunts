@@ -173,6 +173,64 @@ namespace ItHunts.Level.Acts
         /// </summary>
         private void BuildTerraceRoutes(ActRoom r, Transform root, HashSet<Vector2Int> terrace)
         {
+            // Paliers (nuit 4) : leur escalier est réservé par le plan (cases Passage devant le palier) ; wall jump en plus si la place.
+            foreach (Landing l in r.Landings)
+            {
+                Vector3 dir = new Vector3(l.StairsDir.x, 0f, l.StairsDir.y);      // du palier vers le fond : l'escalier descend
+                Vector2Int top = l.Stairs.OrderBy(c => Vector2.Dot(c, (Vector2)l.StairsDir)).First();
+                Vector3 topEdge = Plan.CellCenter(top, r.Floor) - dir * (Plan.Cell * 0.5f);
+                float len = Mathf.Max(1, l.Stairs.Count / 3) * Plan.Cell;
+                KitBuild.Ramp(root, "Escalier du palier", topEdge + dir * len, -dir, len, l.Height, Plan.Cell * 3f, settings.kit);
+                foreach (Vector2Int c in l.Stairs)
+                    r.Use[c] = CellUse.Rampe;
+                // Garde-corps bas du palier (lisible) : une margelle le long du bord libre, côté escalier exclu.
+                TractionAnchor(root, Plan.CellCenter(top, r.Floor + l.Height + 3.5f) - dir * 0.2f, -dir);
+            }
+
+            var done = new HashSet<Vector2Int>();
+            foreach (Landing l in r.Landings)
+                foreach (Vector2Int c in l.Cells)
+                    done.Add(c);
+            // Autres terrasses : par composante connexe, un escalier lisse (le traqueur et les goules le prennent) et un mur de wall jump.
+            foreach (HashSet<Vector2Int> component in Components(terrace.Where(c => !done.Contains(c))))
+                TerraceComponentRoutes(r, root, component);
+        }
+
+        /// <summary>Composantes connexes (4-voisinage) d'un ensemble de cases.</summary>
+        public static List<HashSet<Vector2Int>> Components(IEnumerable<Vector2Int> cells)
+        {
+            var left = new HashSet<Vector2Int>(cells);
+            var result = new List<HashSet<Vector2Int>>();
+            while (left.Count > 0)
+            {
+                var comp = new HashSet<Vector2Int>();
+                var q = new Queue<Vector2Int>();
+                Vector2Int seed = left.First();
+                left.Remove(seed);
+                q.Enqueue(seed);
+                comp.Add(seed);
+                while (q.Count > 0)
+                {
+                    Vector2Int c = q.Dequeue();
+                    foreach (Vector2Int d in ActPlan.Dirs)
+                    {
+                        Vector2Int n = c + d;
+                        if (left.Remove(n))
+                        {
+                            comp.Add(n);
+                            q.Enqueue(n);
+                        }
+                    }
+                }
+
+                result.Add(comp);
+            }
+
+            return result;
+        }
+
+        private void TerraceComponentRoutes(ActRoom r, Transform root, HashSet<Vector2Int> terrace)
+        {
             float h = r.TerraceHeight;
             float run = h / Mathf.Tan(28f * Mathf.Deg2Rad);
             int cells = Mathf.CeilToInt(run / Plan.Cell);
@@ -276,9 +334,36 @@ namespace ItHunts.Level.Acts
                         cuts.Add((from, from + d.Length));
                     }
 
-                foreach ((Vector2 a, Vector2 b) in Split(s, cuts))
-                    WallPiece(root, a, b, s.Out, s.Diagonal, bottom, top, nb == null, r);
+                // Prolongement d'un demi-mur aux bouts qui tournent (coin fermé) ; jamais à un bout coupé par une porte ni à une jonction
+                // colinéaire (deux murs dans le même plan se chevaucheraient : faces confondues qui scintillent, nuit 4 point 1).
+                List<(Vector2, Vector2)> pieces = Split(s, cuts).ToList();
+                for (int i = 0; i < pieces.Count; i++)
+                {
+                    (Vector2 a, Vector2 b) = pieces[i];
+                    bool extA = (a - s.A).sqrMagnitude < 1e-4f && Turns(segs, s, s.A);
+                    bool extB = (b - s.B).sqrMagnitude < 1e-4f && Turns(segs, s, s.B);
+                    WallPiece(root, a, b, s.Out, s.Diagonal, bottom, top, nb == null, r, extA, extB);
+                }
             }
+        }
+
+        /// <summary>Un autre segment du contour touche ce bout avec une autre direction (coin ou biseau) : le mur se prolonge pour fermer.</summary>
+        private static bool Turns(List<ActContour.Segment> segs, ActContour.Segment self, Vector2 end)
+        {
+            Vector2 dir = (self.B - self.A).normalized;
+            foreach (ActContour.Segment o in segs)
+            {
+                if (o.A == self.A && o.B == self.B)
+                    continue;
+                bool touches = (o.A - end).sqrMagnitude < 1e-4f || (o.B - end).sqrMagnitude < 1e-4f;
+                if (!touches)
+                    continue;
+                Vector2 od = (o.B - o.A).normalized;
+                if (Mathf.Abs(Vector2.Dot(dir, od)) < 0.99f)
+                    return true;                                          // perpendiculaire ou à 45° : coin
+            }
+
+            return false;
         }
 
         private static IEnumerable<(Vector2, Vector2)> Split(ActContour.Segment s, List<(float a, float b)> cuts)
@@ -304,16 +389,21 @@ namespace ItHunts.Level.Acts
                 yield return (At(cur), At(hi));
         }
 
-        private void WallPiece(Transform root, Vector2 a, Vector2 b, Vector2 outN, bool diagonal, float bottom, float top, bool outer, ActRoom r)
+        private void WallPiece(Transform root, Vector2 a, Vector2 b, Vector2 outN, bool diagonal, float bottom, float top, bool outer, ActRoom r,
+            bool extendA = true, bool extendB = true)
         {
             Vector3 pa = World(a, 0f), pb = World(b, 0f);
-            float len = Vector3.Distance(pa, pb);
-            if (len < 0.05f)
+            float len0 = Vector3.Distance(pa, pb);
+            if (len0 < 0.05f)
                 return;
             float t = diagonal ? TDiag : T;
-            Vector3 dir = (pb - pa) / len;
+            Vector3 dir = (pb - pa) / len0;
+            // Bouts prolongés d'une demi-épaisseur seulement là où le mur tourne (coin fermé) : plus de chevauchement avec le linteau, le
+            // seuil ou le mur colinéaire voisin.
+            Vector3 qa = pa - dir * (extendA ? t * 0.5f : 0f), qb = pb + dir * (extendB ? t * 0.5f : 0f);
+            float len = Vector3.Distance(qa, qb) - t;                     // Solid ajoute t à la longueur : on compense
             float yaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
-            Vector3 mid = (pa + pb) * 0.5f + new Vector3(outN.x, 0f, outN.y).normalized * (outer ? t * 0.5f : 0f);
+            Vector3 mid = (qa + qb) * 0.5f + new Vector3(outN.x, 0f, outN.y).normalized * (outer ? t * 0.5f : 0f);
             float h = top - bottom;
             // Ciel ouvert : la falaise extérieure n'est magnétique qu'en bas (on ne l'escalade pas en traction).
             if (outer && r.Ceiling <= 0f && top - r.Floor > settings.outerMagneticTop + 1f)
@@ -354,10 +444,12 @@ namespace ItHunts.Level.Acts
             float bottom = Mathf.Min(Bottom(a), Bottom(b));
             float top = Mathf.Max(WallTop(a), WallTop(b));
             float yaw = Mathf.Atan2(n.x, n.z) * Mathf.Rad2Deg;
+            // Linteau et seuil à la largeur exacte de l'ouverture (les murs s'arrêtent net à la coupe) ; le seuil affleure 2 cm sous le sol
+            // haut : plus de faces confondues qui scintillent sur les rebords de portes (nuit 4, point 1).
             if (openTop < top - 0.05f)
-                Solid(root, "Linteau", new Vector3(c.x, (openTop + top) * 0.5f, c.z), new Vector3(w + T, top - openTop, T), yaw, KitBuild.Kind.Mur, null, walkable: false);
+                Solid(root, "Linteau", new Vector3(c.x, (openTop + top) * 0.5f, c.z), new Vector3(w + 0.04f, top - openTop, T), yaw, KitBuild.Kind.Mur, null, walkable: false);
             if (sill > bottom + 0.05f)
-                Solid(root, "Seuil", new Vector3(c.x, (bottom + sill) * 0.5f, c.z), new Vector3(w + T, sill - bottom, T), yaw, KitBuild.Kind.Bloc, null);
+                Solid(root, "Seuil", new Vector3(c.x, (bottom + sill - 0.02f) * 0.5f, c.z), new Vector3(w + 0.04f, sill - 0.02f - bottom, T), yaw, KitBuild.Kind.Bloc, null);
             // Encadrement (lisibilité : une porte se voit de loin) : piédroits et linteau en pierre de taille.
             Vector3 lat = new Vector3(-n.z, 0f, n.x);
             Material trim = settings.trimMaterial;
