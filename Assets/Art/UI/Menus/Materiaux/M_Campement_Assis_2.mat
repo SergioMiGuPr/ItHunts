@@ -46,9 +46,9 @@ Material:
     - _GardeLumiere: 2
     - _LanterneForce: 0.8
     - _LisereFace: 3
-    - _LisereForce: 0.35
+    - _LisereForce: 0.6
     - _LisereLargeur: 1
-    - _Luminosite: 1
+    - _Luminosite: 1.15
     - _OmbreForce: 0.5
     - _OmbreSeuil: 0.12
     - _Opaque: 0

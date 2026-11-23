@@ -85,8 +85,13 @@ def zoom3(apres, sortie):
             cons[(t[1], int(t[2]))] = [float(v) for v in t[3:]]
     tuiles = []
     for pl in range(1, 5):
-        x, y, w, h = cons[("Cameleon", pl)][:4]
-        tuiles.append(("Caméléon place %d : queue" % pl, config_de("Cameleon", pl), (int(x), int(y + h * 0.55), int(x + w * 0.45), int(y + h))))
+        v = cons[("Cameleon", pl)]
+        x, y, w, h = v[:4]
+        if len(v) >= 11 and v[10] > 0.5:   # retourné : la queue est à droite
+            r = (int(x + w * 0.55), int(y + h * 0.55), int(x + w), int(y + h))
+        else:
+            r = (int(x), int(y + h * 0.55), int(x + w * 0.45), int(y + h))
+        tuiles.append(("Caméléon place %d : queue" % pl, config_de("Cameleon", pl), r))
     for p in PERSOS:
         x, y, w, h = cons[(p, 1)][:4]
         c = config_de(p, 1)
@@ -99,7 +104,7 @@ def zoom3(apres, sortie):
     d.text((16, 10), "Campement : zoom x3 (queue du caméléon, bords de chaque personnage, contact avec le siège)", font=pol(26, "SemiBold"), fill=ENCRE)
     for k, (leg, c, r) in enumerate(tuiles):
         im = Image.open(os.path.join(apres, "cfg_%s.png" % c)).convert("RGB").crop(r)
-        im = im.resize((im.width * 3, im.height * 3), Image.NEAREST)
+        im = im.resize((im.width * 3, im.height * 3), Image.LANCZOS)
         im.thumbnail((cw, cw))
         x, y = 16 + (k % 3) * (cw + 8), 60 + (k // 3) * (cw + 34)
         d.text((x, y), leg, font=pol(18), fill=ENCRE)

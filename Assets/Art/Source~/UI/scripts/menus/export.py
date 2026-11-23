@@ -21,8 +21,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 # dépasse jamais l'échelle des épaules (on ne fait que réduire).
 CIBLES = {1: {"capuche": 352, "cx": 569, "lanterne": (510, 676), "sol": 657, "f": 1.0},
           2: {"capuche": 346, "cx": 807, "lanterne": (918, 596), "sol": 640, "f": 1.0},
-          3: {"capuche": 315, "cx": 1150, "lanterne": (1267, 607), "sol": 640, "f": 0.85},
-          4: {"capuche": 310, "cx": 1462, "lanterne": (1540, 635), "sol": 650, "f": 0.85}}
+          3: {"capuche": 315, "cx": 1150, "lanterne": (1267, 607), "sol": 640, "f": 0.85, "miroir": True},
+          4: {"capuche": 310, "cx": 1462, "lanterne": (1540, 635), "sol": 650, "f": 0.85, "miroir": True}}
+# nuit 4 : aux places 3 et 4, le feu est à gauche : le personnage est retourné (il regarde le feu, et la lumière chaude
+# peinte sur son côté droit tombe du côté du feu)
 # cartouche de nom par place (rect de la pièce Campement_Cartouche_Nom, étirée en 9 tranches pour la place 1)
 CARTOUCHES = {1: (438.6, 666, 239, 71), 2: (718, 663, 212, 72), 3: (1079, 663, 212, 72), 4: (1361, 663, 212, 72)}
 
@@ -60,13 +62,20 @@ def main():
                     s_sol = (c["sol"] - c["capuche"]) / (pied_img - a["capuche_image"])
                     s = min(s_epaules, s_sol)
                     rx, ry, rw, rh = a["corps"]["rect_image"]
-                    x = c["cx"] - (pl1["centre_epaules_x"] - rx) * s
+                    miroir = c.get("miroir", False)
+                    if miroir:
+                        # sprite retourné : l'épaule (à rel px du bord gauche du sprite) se retrouve à rel px du bord droit
+                        x = c["cx"] - (rw * s - (pl1["centre_epaules_x"] - rx) * s)
+                        p0, p1 = x + (1 - pied_u1) * rw * s, x + (1 - pied_u0) * rw * s
+                    else:
+                        x = c["cx"] - (pl1["centre_epaules_x"] - rx) * s
+                        p0, p1 = x + pied_u0 * rw * s, x + pied_u1 * rw * s
                     y = c["capuche"] - (a["capuche_image"] - ry) * s
                     lx, ly, lw, lh = a["lanterne"]["rect_image"]
                     print("  %s place %d : échelle %.3f (épaules %.3f), pieds à y %.0f" % (name, place, s, s_epaules, c["capuche"] - (a["capuche_image"] - ry) * s + (pied_img - ry) * s))
-                    L.append("place %s %d %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f" % (
+                    L.append("place %s %d %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %d" % (
                         name, place, x, y, rw * s, rh * s, c["lanterne"][0] - lw * s / 2, c["lanterne"][1] - lh * s, lw * s, lh * s,
-                        x + pied_u0 * rw * s, x + pied_u1 * rw * s))
+                        p0, p1, 1 if miroir else 0))
             for place, r in CARTOUCHES.items():
                 L.append("valeur Campement_cartouche_%d %.1f %.1f %.1f %.1f" % (place, *r))
         if ecran == "Choix":

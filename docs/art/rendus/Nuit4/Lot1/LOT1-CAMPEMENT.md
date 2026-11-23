@@ -43,6 +43,28 @@ personnages.
 - **Ordre de dessin** : les places se dessinent de droite à gauche (4, 3, 2, 1). La queue d'un caméléon passe derrière la
   lanterne du banc et derrière la botte de son voisin, au lieu de passer devant.
 
+## Après la relecture indépendante
+
+La relecture a relevé 4 points bloquants. Tous sont corrigés :
+
+1. **Trous dans les bottes du renard.** La règle des trous prenait l'encre lisse entre les sangles pour du fond. Un trou
+   n'est plus vidé que s'il a aussi la **valeur du gris de fond**.
+2. **Restes de caisse sous les cuisses et à la base de la queue du caméléon.** Les zones grises connexes qui touchent le bord
+   sont maintenant retirées en entier, en plus du grignotage depuis le bord.
+3. **Queue du caméléon fantomatique sous le halo de la place 3.** Les lueurs au sol et les ombres de toutes les places
+   passent dans un calque commun (`Sol_Lumieres_Ombres`), **sous** tous les personnages.
+4. **Lumière à contresens aux places 3 et 4.** Les sprites portent une lumière chaude peinte à droite, alors que le feu est à
+   gauche de ces places. Les personnages y sont donc **retournés** (`Placement.miroir`) : ils regardent le feu, et leur
+   lumière chaude tombe de son côté. L'éclairage du shader et les ombres sont retournés aussi.
+
+Autres corrections :
+
+- liseré du feu plus marqué (0,35 → 0,6) ;
+- koala et hibou un peu plus lumineux (×1,15) ;
+- lueurs de lanterne plus discrètes et moins colorées ;
+- ombres de contact du corps et des lanternes plus nettes ;
+- zoom ×3 en agrandissement lissé.
+
 ## Contrôle
 
 - `Campement_Places.jpg` : chaque place en grand, avec la maquette à gauche puis les 4 personnages.

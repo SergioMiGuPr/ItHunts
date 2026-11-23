@@ -54,6 +54,8 @@ namespace ItHunts.Art.Menus
             public Vector2 reglageLanterne = new Vector2(1f, 1f);
             [Tooltip("Contraste du corps à cette place (exposant de la luminance ; 0 = celui du personnage).")]
             public float contraste;
+            [Tooltip("Personnage retourné (places où le feu est à sa gauche : il regarde le feu, sa lumière chaude tombe du bon côté).")]
+            public bool miroir;
         }
 
         [Serializable]
@@ -166,13 +168,14 @@ namespace ItHunts.Art.Menus
             {
                 pl.corps.sprite = p.corps;
                 MenuEcran.Pose(pl.corps.rectTransform, pc.corps.x, pc.corps.y, pc.corps.width, pc.corps.height);
+                if (pc.miroir) Retourne(pl.corps.rectTransform);
                 pl.corps.gameObject.SetActive(true);
                 Eclaire(pl, p, pc);
             }
             if (pl.ombre != null && pl.ombrePortee != null)
                 pl.ombre.gameObject.SetActive(false);
             if (pc != null && pl.ombrePortee != null)
-                PoseOmbre(ref pl.matOmbreJeu, pl.ombrePortee, p.corps, pc.corps, place, false);
+                PoseOmbre(ref pl.matOmbreJeu, pl.ombrePortee, p.corps, pc.corps, place, false, pc.miroir);
             if (pc != null && pl.ombreLanterne != null)
                 PoseOmbre(ref pl.matOmbreLanterneJeu, pl.ombreLanterne, p.lanterne, pc.lanterne, place, true);
             if (pc != null && pl.eclairage != null)
@@ -268,8 +271,10 @@ namespace ItHunts.Art.Menus
             Rect r = pc.corps;
             Vector2 Uv(Vector2 px) => new Vector2((px.x - r.x) / r.width, 1f - (px.y - r.y) / r.height);
             Vector2 f = Uv(foyer);
+            if (pc.miroir) f.x = 1f - f.x;
             m.SetVector("_FeuUV", new Vector4(f.x, f.y, 0, 0));
             Vector2 l = Uv(new Vector2(pc.lanterne.center.x, pc.lanterne.y + pc.lanterne.height * 0.45f));
+            if (pc.miroir) l.x = 1f - l.x;
             m.SetVector("_LanterneUV", new Vector4(l.x, l.y, pc.lanterne.height * rayonLanterneCorps / r.height, 0));
             Color chaud = new Color(1f, 0.78f, 0.5f);
             m.SetColor("_LanterneCouleur", Color.Lerp(chaud, p.couleur, teinteLanterne));
@@ -307,14 +312,25 @@ namespace ItHunts.Art.Menus
         }
 
         /// <summary>Ombre (contact et portée) d'un sprite posé dans le rect r : image élargie, uv du sprite aux coins.</summary>
-        private void PoseOmbre(ref Material matJeu, Image im, Sprite spr, Rect r, int place, bool estLanterne)
+        /// <summary>Retourne horizontalement un rect posé par MenuEcran.Pose (même emprise à l'écran).</summary>
+        private static void Retourne(RectTransform rt)
+        {
+            Vector2 pos = rt.anchoredPosition, size = rt.sizeDelta;
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(pos.x + size.x * 0.5f, pos.y);
+            rt.localScale = new Vector3(-1f, 1f, 1f);
+        }
+
+        private void PoseOmbre(ref Material matJeu, Image im, Sprite spr, Rect r, int place, bool estLanterne, bool miroir = false)
         {
             if (spr == null)
                 return;
             im.sprite = spr;
             float gx = margeOmbre.x * r.width, dx = margeOmbre.y * r.width, by = margeOmbre.z * r.height;
             if (estLanterne) { gx *= 0.8f; dx *= 0.8f; by *= 0.6f; }
-            MenuEcran.Pose(im.rectTransform, r.x - gx, r.y, r.width + gx + dx, r.height + by);
+            // retourné : la marge gauche des uv (gx) tombe à droite à l'écran
+            if (miroir) { MenuEcran.Pose(im.rectTransform, r.x - dx, r.y, r.width + gx + dx, r.height + by); Retourne(im.rectTransform); }
+            else MenuEcran.Pose(im.rectTransform, r.x - gx, r.y, r.width + gx + dx, r.height + by);
             Material m = im.material;
             if (m == null)
                 return;
@@ -328,7 +344,7 @@ namespace ItHunts.Art.Menus
                 m = matJeu;
             }
             m.SetVector("_Cadre", new Vector4(-gx / r.width, -by / r.height, 1f + dx / r.width, 1f));
-            float cote = Mathf.Sign(foyer.x - r.center.x);   // +1 : feu à droite
+            float cote = Mathf.Sign(foyer.x - r.center.x) * (miroir ? -1f : 1f);   // +1 : feu à droite (dans les uv du sprite)
             Color oc = place < ombresPlaces.Length ? ombresPlaces[place] : new Color(0.5f, 0.5f, 1f);
             float lum = oc.r * 0.2126f + oc.g * 0.7152f + oc.b * 0.0722f;
             Color mul = oc * (valeurOmbre / Mathf.Max(lum, 1e-3f));

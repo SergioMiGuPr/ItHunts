@@ -67,6 +67,8 @@ def silhouette(I, B):
     trous = filled & ~core
     e0 = reg.err_map(I, B)
     lisse = ecart_local(I, 1.0) < 0.01
+    Lg = reg.gray(I)
+    g0 = float(np.median(Lg))
     lab, n = composantes(trous)
     fond = np.zeros_like(trous)
     for k in range(1, n + 1):
@@ -77,7 +79,9 @@ def silhouette(I, B):
         # trou ; la peinture a toujours des touches ou de l'encre). Mesuré sur les 4 personnages : spirale de la queue,
         # entre les jambes, sous l'aile, entre les serres ; fourrure grise, visages et oreilles restent.
         inn = px & (reg.erode(px.astype(np.float32), 2) > 0.5)
-        if inn.sum() >= 20 and (e0[px] < 0.04).mean() >= 0.88 and lisse[inn].mean() >= 0.85:
+        # et la valeur du gris de fond (le modèle de fond peut être faux entre deux sangles sombres : bottes du renard)
+        proche = np.abs(Lg[px] - g0) < 0.08
+        if inn.sum() >= 20 and (e0[px] < 0.04).mean() >= 0.88 and lisse[inn].mean() >= 0.85 and proche.mean() >= 0.85:
             fond |= px
     return filled & ~fond, fg
 
@@ -155,6 +159,18 @@ def retire_restes_caisse(a, poly, I, B, passes=6):
         # on ronge en largeur (6 px par passe) dans les zones grises connexes au bord
         zone = reg.dilate(ote.astype(np.float32), 6) > 0.5
         m = m & ~(zone & gris & P)
+    # puis les zones grises entières (connexes) qui touchent le bord : faces de caisse enclavées sous la cape ou les cuisses
+    bord = m & ~(reg.erode(m.astype(np.float32), 1) > 0.5)
+    g2 = (m & gris & P)[::2, ::2]
+    lab, n = composantes(g2)
+    b2 = reg.dilate(bord.astype(np.float32), 2)[::2, ::2] > 0.5
+    ote = np.zeros_like(g2)
+    for k in range(1, n + 1):
+        px = lab == k
+        if 30 <= px.sum() <= 20000 and (px & b2).any():
+            ote |= px
+    ote = np.repeat(np.repeat(ote, 2, 0), 2, 1)[:H, :W]
+    m = m & ~(reg.dilate(ote.astype(np.float32), 1) > 0.5)
     m = keep_large(m[::2, ::2], 3000)
     m = np.repeat(np.repeat(m, 2, 0), 2, 1)[:H, :W]
     return np.where(m, a, 0.0).astype(np.float32)
