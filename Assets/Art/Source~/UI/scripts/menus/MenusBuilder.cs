@@ -586,7 +586,7 @@ public static class MenusBuilder
 
     // fondu_reglages.json (écrit par fondu.py --ajuste) : une ligne par personnage et par place, luminosité, saturation et
     // netteté égales à celles du décor peint autour de la place
-    public class ReglageFondu { public string perso; public int place; public float lum, sat, douceur, detail = 1, lanterneLum = 1, lanterneSat = 1; }
+    public class ReglageFondu { public string perso; public int place; public float lum, sat, douceur, detail = 1, lanterneLum = 1, lanterneSat = 1, contraste; }
 
     // lecture simple (JsonUtility ne lit pas les types d'un script chargé à la volée) : un objet { } par réglage
     static List<ReglageFondu> LitFondu()
@@ -607,7 +607,7 @@ public static class MenusBuilder
             res.Add(new ReglageFondu
             {
                 perso = Brut("perso"), place = (int)F("place", 0), lum = F("lum", 0), sat = F("sat", 0), douceur = F("douceur", 1), detail = F("detail", 1),
-                lanterneLum = F("lanterneLum", 1), lanterneSat = F("lanterneSat", 1)
+                lanterneLum = F("lanterneLum", 1), lanterneSat = F("lanterneSat", 1), contraste = F("contraste", 0)
             });
         }
         return res;
@@ -631,14 +631,22 @@ public static class MenusBuilder
         ca.margeOmbre = new Vector3(0.9f, 0.5f, 0.12f);
         ca.valeurOmbre = 0.3f;
         ca.cisaillement = 1.1f;
-        ca.eclairageLanterne = new Vector3(1.6f, 0.55f, 0.85f);
+        ca.eclairageLanterne = new Vector3(1.15f, 0.42f, 0.55f);   // nuit 4 : lueur au sol serrée au pied de la lanterne, couleur adoucie (plus de taches)
         var fondu = LitFondu();
         foreach (var pc in ca.placements)
             foreach (var f in fondu)
                 if (f.perso == pc.perso && f.place == pc.place)
                 {
-                    pc.luminosite = f.lum; pc.saturation = f.sat; pc.douceur = f.douceur; pc.detail = f.detail; pc.reglageLanterne = new Vector2(f.lanterneLum, f.lanterneSat);
+                    pc.luminosite = f.lum; pc.saturation = f.sat; pc.douceur = f.douceur; pc.detail = f.detail; pc.reglageLanterne = new Vector2(f.lanterneLum, f.lanterneSat); pc.contraste = f.contraste;
                 }
+        // nuit 4 : la place 4 (rocher) se dessine derrière la place 3 (banc) : la lanterne posée au bout du banc passe devant
+        // la queue d'un caméléon assis sur le rocher, au lieu d'être masquée par elle
+        // (de même entre les places 2 et 1) : ordre de dessin 4, 3, 2, 1, la place 1 au-dessus
+        if (ca.places.Length >= 4 && ca.places.All(p => p.racine != null))
+        {
+            int baseIdx = ca.places.Min(p => p.racine.GetSiblingIndex());
+            for (int k = 3; k >= 0; k--) ca.places[k].racine.SetSiblingIndex(baseIdx + (3 - k));
+        }
         var mBase = AssetDatabase.LoadAssetAtPath<Material>($"{MAT}/M_Campement_Assis.mat");
         if (mBase != null) { ReglesEclairage(mBase); EditorUtility.SetDirty(mBase); }
         var ui = e.transform.Find("Interface");
@@ -670,7 +678,7 @@ public static class MenusBuilder
             }
             pl.eclairage = Couche("Eclairage", "M_Campement_Eclairage", "ItHunts/UI/Eclaire", m =>
             {
-                m.SetFloat("_Force", 0.9f); m.SetVector("_Centre", new Vector4(0.5f, 0.45f, 0.05f, 0)); m.SetFloat("_Durete", 1.5f);
+                m.SetFloat("_Force", 0.6f); m.SetVector("_Centre", new Vector4(0.5f, 0.45f, 0.05f, 0)); m.SetFloat("_Durete", 1.8f);
                 m.SetFloat("_Vacille", 0.25f); m.SetFloat("_Vitesse", 1.2f); m.SetFloat("_Graine", 11 + ip * 3.7f);
             });
             pl.ombrePortee = Couche("Ombre_Portee", "M_Campement_Ombre", "ItHunts/UI/OmbrePortee", m =>

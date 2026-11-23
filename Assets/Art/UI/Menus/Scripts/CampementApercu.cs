@@ -52,6 +52,8 @@ namespace ItHunts.Art.Menus
             public float detail = 1f;
             [Tooltip("Luminosité et saturation de la lanterne (hors verre allumé).")]
             public Vector2 reglageLanterne = new Vector2(1f, 1f);
+            [Tooltip("Contraste du corps à cette place (exposant de la luminance ; 0 = celui du personnage).")]
+            public float contraste;
         }
 
         [Serializable]
@@ -273,7 +275,7 @@ namespace ItHunts.Art.Menus
             m.SetColor("_LanterneCouleur", Color.Lerp(chaud, p.couleur, teinteLanterne));
             m.SetFloat("_Luminosite", pc.luminosite > 0f ? pc.luminosite : p.luminosite);
             m.SetFloat("_Saturation", pc.saturation > 0f ? pc.saturation : p.saturation);
-            m.SetFloat("_Contraste", p.contraste);
+            m.SetFloat("_Contraste", pc.contraste > 0f ? pc.contraste : p.contraste);
             m.SetFloat("_Douceur", pc.douceur);
             m.SetFloat("_Detail", pc.detail);
             int i = Array.IndexOf(places, pl);

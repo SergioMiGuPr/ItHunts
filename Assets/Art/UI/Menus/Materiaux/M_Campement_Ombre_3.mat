@@ -47,7 +47,7 @@ Material:
     - _StencilReadMask: 255
     - _StencilWriteMask: 255
     m_Colors:
-    - _Cadre: {r: -0.9, g: -0.12, b: 1.5, a: 1}
+    - _Cadre: {r: -0.8999999, g: -0.12, b: 1.5, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _ContactDecal: {r: 0.012, g: -0.018, b: 0, a: 0}
     - _Couleur: {r: 0.31360567, g: 0.26535866, b: 0.60308784, a: 1}
