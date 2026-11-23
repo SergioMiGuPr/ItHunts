@@ -884,3 +884,22 @@ Corrections faites dans Blender seulement (Unity n'a pas été ouvert, aucun `.m
 1. Réimporter les FBX de la liste du rapport et relancer `KitBuilder.Construit` pour les trois kits, avec `KitBuilder.cs` à jour. Il crée `M_Kit_Cristal` et lit `Feu_Torche`. Il faut aussi la règle « pas de collider au rendu d'une pièce qui a des `Col_*` ».
 2. Faire générer les `.meta` des deux nouveaux FBX.
 3. Les prefabs des portes de sortie changent de pivot : si une animation ou une scène a déjà été posée, la reprendre.
+
+### Fait dans Unity (lot 3, relecture) — remplace « Reste à faire côté Unity » ci-dessus
+
+- **Prefabs** reconstruits par `KitBuilder.Construit` pour les trois kits (`.meta` générés et commités).
+  - Les objets `Col_*` sont des collisions seules (rendu retiré) ; les `Deco_*` (eau des puits, etc.) n'en ont pas.
+  - **Une pièce qui a des `Col_*` (les 9 escaliers) n'a plus de collider sur son maillage visuel** (les nez de marche doublaient la rampe) ; `Col_Rampe` + `Col_Escalier` couvrent les marches, paliers, joues, noyaux et murs d'échiffre ; les `Garde_Corps` gardent leur collider.
+  - Parties mobiles non statiques ; torchère et candélabre sur pied avec une boîte de collision.
+- **Animation d'ouverture** : composant `ItHunts.Art.VFX.OuverturePorte` (assembly `ItHunts.Art.VFX`, déjà référencée par `ItHunts.Runtime`) posé par KitBuilder sur les 13 portes et cellules.
+  - Genres : `Battants` (portes de sortie, −90° / +90° en Y, 1,8 s) ; `Guillotine` (porte verrouillée : serrure +90° en Z sur 30 % de la course, puis vantail +3,1 m, rebond de fin, 2,2 s) ; `Herse` (+9,2 m, 2,6 s) ; `Trappes` (fosse, −110° / +110° en Z) ; `Vantaux` (barricade et volière, ±100° en Y, 0,9 s).
+  - API : `Ouvre()`, `Ferme()`, `Pose(0..1)` (aperçu, chargement), `EstOuverte`, `ouvrirAuDemarrage`. Les colliders des parties mobiles suivent.
+  - Contrôle de course (Blender) : 0 intersection à 0, 50 et 100 % (`controle_parties_mobiles.json`).
+- **Matériaux** : `M_Kit_Vitrail*` en verre vieilli aux teintes sourdes (le toon accentue les écarts de teinte : valeurs proches, saturation de la lumière 0,4) ; `M_Kit_Cristal` (gouttes du lustre) ; `M_Kit_Sceau_Ame` ; `M_Collision_Invisible` (jamais rendu).
+- **Ciel** : `M_Kit_Ciel` utilise la **lune peinte du menu principal** (`Assets/Art/Textures/Ciel/T_Ciel_Lune.png`, extraite de `Titre_Fond.png` par `Assets/Art/Source~/Kits/scripts/lune_menu.py`) ; **halo et dégradé continus** (plus de paliers, shader `ItHunts/Ciel`). Le ciel de l'acte III en jeu (captures `docs/art/rendus/Nuit4/Jeu/Acte3/*_lot3.jpg`) ne passe pas par `Jardin_Ciel` : son halo en paliers vient du ciel de la scène de main. **Pour main :** utiliser le prefab `Jardin_Ciel` (ou `M_Kit_Ciel`) comme ciel des actes.
+- **Grosses formes noires ellipsoïdales** :
+  - celles des kits (touffes de lierre et d'herbe en boule, buissons) sont **supprimées** (cartes de lierre plates, blocs de feuillage) ;
+  - celles de l'acte III en jeu sont les **arbres de secours de main** (`ActLevel.Dressing.Tree` : tronc cylindre + 3 sphères de feuillage) utilisés quand `Act_3.asset` ne contient pas les pièces `Jardin_ArbreMort_Grand`, `_Penche`, `_Tordu` dans sa liste `pieces`. **Pour main :** ajouter ces trois prefabs à `Act_3.asset > pieces` ; les sphères disparaissent.
+- **Lumières** : les torches murales, appliques, lustres et chandeliers portent leur feu et leur lumière ponctuelle (KitBuilder). En jeu, plusieurs pièces lumineuses dans une même salle s'ajoutent aux torches de main : à doser dans le niveau (limite de 4 lumières par objet du `PC_RPAsset`, rendu Forward+).
+- **Captures en jeu** : pièces posées dans des salles générées des actes II et I (seed 4242), fenêtre et appliques au mur, lustre au plafond, portes à 0 / 50 / 100 % d'ouverture : `docs/art/rendus/Nuit4/Lot3/Planche_Jeu_Lot3.jpg` et `Jeu/` (outil `Assets/Art/Source~/Kits/scripts/CapturesLot3.cs`). Vitrines des trois kits : `Planche_Unity_KitCaves.jpg`, `_KitChateau.jpg`, `_KitJardin.jpg`.
+- **Journal Unity** : 0 erreur et 0 avertissement à l'import des FBX et à la construction des prefabs des trois kits (seules erreurs de la console : `MagnetismAudio.OnDestroy`, côté main).
