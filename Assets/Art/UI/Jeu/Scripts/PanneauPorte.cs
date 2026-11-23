@@ -20,6 +20,10 @@ namespace ItHunts.Art.UIJeu
         [Header("Aperçu")] public string nomApercu = "Porte scellée";
         public int prixApercu = 40, amesApercu = 65;
 
+        [Header("Sortie d'acte encore scellée (nuit 4)")]
+        public Text temps, explication;
+        public float secondesApercu = 161f;
+
         public event Action Ouvrir;
         private bool _payable;
         private float _cible = 1f;
@@ -27,6 +31,10 @@ namespace ItHunts.Art.UIJeu
         public void Montre(string nomPorte, int prixAmes, int ames)
         {
             nom.text = nomPorte;
+            if (temps) temps.gameObject.SetActive(false);
+            if (explication) explication.gameObject.SetActive(false);
+            invite.gameObject.SetActive(true);
+            if (touche && touche.transform.parent) touche.transform.parent.gameObject.SetActive(true);
             _payable = ames >= prixAmes;
             bool gratuit = prixAmes <= 0;
             prix.gameObject.SetActive(!gratuit);
@@ -39,6 +47,23 @@ namespace ItHunts.Art.UIJeu
             touche.text = toucheTexte;
             _cible = 1f;
             gameObject.SetActive(true);
+        }
+
+        /// <summary>Porte de sortie pas encore ouverte : temps restant (mm:ss) et explication ; pas d'achat possible.</summary>
+        public void MontreSortieScellee(float secondesRestantes, int prixAmes)
+        {
+            Montre("Sortie scellée", prixAmes, 0);
+            _payable = false;
+            int s = Mathf.Max(0, Mathf.CeilToInt(secondesRestantes));
+            if (temps) { temps.gameObject.SetActive(true); temps.text = "S'ouvre dans " + (s / 60) + ":" + (s % 60).ToString("00"); }
+            if (explication)
+            {
+                explication.gameObject.SetActive(true);
+                explication.text = "Le passage vers l'acte suivant se descelle avec le temps. Il faudra alors " + prixAmes + " âmes pour le franchir.";
+            }
+            prix.color = prixOk; flamme.color = Color.white;
+            invite.gameObject.SetActive(false);                                  // scellée : ni touche ni invite
+            if (touche && touche.transform.parent) touche.transform.parent.gameObject.SetActive(false);
         }
 
         public void Cache() => _cible = 0f;
