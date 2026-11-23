@@ -21,6 +21,16 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", "..", ".."))
 OUT = os.path.join(ROOT, "Assets", "Art", "Textures", "Materiaux")
 DOC = os.path.join(ROOT, "docs", "art", "rendus", "Materiaux")
 N = 1024
+# Nuit 4 : densité de référence 512 px/m (ART-HANDOFF). Les tuiles de 4 m sont peintes en 2048 px : K = N / 1024 met à
+# l'échelle les longueurs écrites en pixels (joints, biseaux, traits d'encre, fissures) pour garder leur taille réelle.
+K = 1.0
+RES = {}   # nom -> résolution (px) de la tuile, 1024 par défaut
+
+
+def resolution(n):
+    """Change la résolution de travail (N) et le facteur K des longueurs en pixels."""
+    global N, K
+    N, K = n, n / 1024.0
 
 # taille de la tuile en mètres (x, y) : UV monde du shader (_TileSize)
 TAILLE = {}
@@ -36,13 +46,15 @@ def tuile(nom, tx, ty):
 
 # ------------------------------------------------------------------ peinture d'une maçonnerie (commun)
 def maconnerie(r, ID, D, pal, gap=5.0, bev=26.0, ink_w=2.2, mortier=col("#2a2630"), fiss=10, mottle=3,
-               creux=0.35, lum=1.0, sat_var=0.012, val_var=0.14, ecl=0.3, coulures=0.0, M=None, ink_part=1.0):
+               creux=0.35, lum=1.0, sat_var=0.012, val_var=0.14, ecl=0.3, coulures=0.0, M=None, ink_part=1.0,
+               marbrure=0.2):
     """Peint des pierres d'après un id par pierre et la distance au joint (pixels)."""
     M = M or N
+    gap, bev, ink_w = gap * K, bev * K, ink_w * K
     # bord irrégulier : la distance au joint est bruitée (pierres ébréchées)
     nb = fbm(N, r, 1.6, 6, 120, M=M)
     nb2 = fbm(N, r, 2.2, 2, 30, M=M)
-    Dn = D + (nb - 0.5) * 7.0 + (nb2 - 0.5) * 5.0
+    Dn = D + ((nb - 0.5) * 7.0 + (nb2 - 0.5) * 5.0) * K
     stone = Dn > gap
     # hauteur : dôme au bord, bosses internes
     bump = fbm(N, r, 2.0, 3, 60, M=M)
@@ -63,12 +75,12 @@ def maconnerie(r, ID, D, pal, gap=5.0, bev=26.0, ink_w=2.2, mortier=col("#2a2630
     # marbrure posterisée (2-3 tons) et coups de pinceau
     mo = poster(fbm(N, r, 2.0, 3, 34, M=M), mottle, 0.15)
     st = fbm(N, r, 1.2, 3, 160, aniso=(1.0, 5.0), M=M)
-    shade = 0.86 + 0.2 * mo + (st - 0.5) * 0.07
+    shade = 1.06 - marbrure + marbrure * mo + (st - 0.5) * 0.07
     c = base * shade[..., None]
     # lumière peinte : arête haute claire, bas sombre
     c = c * (1 + ecl * light[..., None] * np.where(light[..., None] > 0, 1.0, 1.6))
     # creux de la pierre près du joint (ombre portée sous l'arête)
-    c = c * (1 - creux * (1 - smooth(gap, gap + 7, Dn))[..., None] * stone[..., None])
+    c = c * (1 - creux * (1 - smooth(gap, gap + 7 * K, Dn))[..., None] * stone[..., None])
     # mortier
     mt = mortier * (0.8 + 0.4 * poster(fbm(N, r, 1.5, 8, 200, M=M), 3))[..., None]
     c = np.where(stone[..., None], c, mt)
@@ -80,11 +92,11 @@ def maconnerie(r, ID, D, pal, gap=5.0, bev=26.0, ink_w=2.2, mortier=col("#2a2630
         ink = ink & (fbm(N, r, 2.0, 3, 40, M=M) < ink_part)
     # fissures dans les pierres
     I = P.Ink(N, M)
-    P.cracks(I, r, fiss, N, length=(30, 140), width=(1.0, 2.2), M=M, inside=stone)
+    P.cracks(I, r, fiss, N, length=(30 * K, 140 * K), width=(1.0 * K, 2.2 * K), M=M, inside=stone)
     cr = I.get(0.4)
     ink_m = np.maximum(ink.astype(np.float32), cr * stone)
     # lèvre claire sous la fissure (aplat éclairé)
-    lip = np.roll(cr, 2, 0) * (1 - cr) * stone
+    lip = np.roll(cr, max(1, int(round(2 * K))), 0) * (1 - cr) * stone
     c = c * (1 + 0.18 * lip[..., None])
     c = lerp(c, P.INK, np.clip(ink_m, 0, 1))
     h = np.where(cr > 0.3, h * 0.4, h)
@@ -111,16 +123,17 @@ def moellons(r):
 @tuile("PierreTaillee", 4, 3)
 def pierre_taillee(r):
     """Pierre de taille : assises régulières, joints fins (château)."""
-    ID, D, _, _ = P.courses(N, 6, r, 0.16, 0.34, M=768, row_jit=0.08)
+    M = N * 3 // 4
+    ID, D, _, _ = P.courses(N, 6, r, 0.16, 0.34, M=M, row_jit=0.08)
     pal = [col("#77706d"), col("#6f6a6a"), col("#7c756e"), col("#726c70")]
     return maconnerie(r, ID, D, pal, gap=3.0, bev=18, ink_w=2.0, fiss=8, mortier=col("#3a3436"), val_var=0.1,
-                      creux=0.25, M=768)
+                      creux=0.25, M=M)
 
 
 @tuile("Dalles", 4, 4)
 def dalles(r):
     """Dalles de sol irrégulières (rectangles de tailles variées, usés au centre)."""
-    ID, D, LU, LV = P.courses(N, 5, r, 0.12, 0.38, row_jit=0.35)
+    ID, D, LU, LV = P.courses(N, 7, r, 0.10, 0.24, row_jit=0.25)
     pal = [col("#5e5a62"), col("#635e5e"), col("#5a5860"), col("#666062")]
     c, h = maconnerie(r, ID, D, pal, gap=4.0, bev=14, fiss=12, mortier=col("#201d22"), val_var=0.12, ecl=0.14)
     # usure : centre des dalles plus clair et plus lisse (passage)
@@ -129,12 +142,12 @@ def dalles(r):
     return c, h
 
 
-@tuile("RocheCave", 6, 6)
+@tuile("RocheCave", 4, 4)
 def roche_cave(r):
     """Roche de cave humide : strates inclinées, gros pans en aplats, fissures, suintements brillants."""
     big = fbm(N, r, 2.6, 1, 12)
-    wx = (fbm(N, r, 2.4, 1, 12) - 0.5) * 120
-    wy = (fbm(N, r, 2.4, 1, 12) - 0.5) * 120
+    wx = (fbm(N, r, 2.4, 1, 12) - 0.5) * 120 * K
+    wy = (fbm(N, r, 2.4, 1, 12) - 0.5) * 120 * K
     F1, F2, ID, _, _ = P.cells(N, 4, 5, r, jitter=1.0, wx=wx * 1.5, wy=wy * 0.7)
     D = P.edge_dist(F1, F2) * N / 4.5
     yy = np.mgrid[0:N, 0:N][0].astype(np.float32)
@@ -158,16 +171,16 @@ def roche_cave(r):
         x = r.uniform(0, N)
         pts = []
         for s_ in range(40):
-            pts.append((x + s_ * N / 38, y0 + (big[int(y0) % N, int(x + s_ * N / 38) % N] - 0.5) * 80 + r.normal(0, 2)))
+            pts.append((x + s_ * N / 38, y0 + (big[int(y0) % N, int(x + s_ * N / 38) % N] - 0.5) * 80 * K + r.normal(0, 2 * K)))
         seg = 0
         while seg < len(pts) - 2:
             L = r.integers(3, 9)
             for i in range(seg, min(seg + L, len(pts) - 1)):
-                I.line([pts[i], pts[i + 1]], r.uniform(1.4, 3.0))
+                I.line([pts[i], pts[i + 1]], r.uniform(1.4, 3.0) * K)
             seg += L + r.integers(2, 6)
     sl = I.get(0.4)
     c = lerp(c, P.INK, sl * 0.85)
-    c = c * (1 + 0.12 * np.roll(sl, -3, 0)[..., None] * (1 - sl[..., None]))
+    c = c * (1 + 0.12 * np.roll(sl, -int(round(3 * K)), 0)[..., None] * (1 - sl[..., None]))
     h = np.clip(h * 0.7 + big * 0.3 - sl * 0.2, 0, 1)
     return c, h
 
@@ -175,9 +188,9 @@ def roche_cave(r):
 @tuile("Briques", 2, 2)
 def briques(r):
     """Briques de voûte (assises fines, sombres et rouges éteintes)."""
-    ID, D, _, _ = P.courses(N, 14, r, 0.11, 0.16, row_jit=0.05)
+    ID, D, _, _ = P.courses(N, 24, r, 0.11, 0.14, row_jit=0.05)
     pal = [col("#5c3d36"), col("#6a463b"), col("#4f3532"), col("#5a4a44")]
-    return maconnerie(r, ID, D, pal, gap=3.5, bev=9, ink_w=1.6, fiss=6, mortier=col("#2b2626"), val_var=0.14, ecl=0.18)
+    return maconnerie(r, ID, D, pal, gap=2.6, bev=6, ink_w=1.4, fiss=6, mortier=col("#2b2626"), val_var=0.14, ecl=0.18)
 
 
 # ------------------------------------------------------------------ couches (mortier, mousse, salpêtre, humidité)
@@ -395,7 +408,7 @@ def fer_rouille(r):
     return c, np.clip(0.5 + m1 * 0.2 - I.get(0.3) * 0.4, 0, 1)
 
 
-@tuile("PlatreFissure", 3, 3)
+@tuile("PlatreFissure", 2, 2)
 def platre_fissure(r):
     """Plâtre fissuré : enduit pâle sali, écaillé par plaques (la pierre apparaît), fissures en réseau."""
     base = col("#8f877b")
@@ -497,7 +510,7 @@ def tenture(r):
 
 
 # ------------------------------------------------------------------ sols naturels
-@tuile("Terre", 3, 3)
+@tuile("Terre", 2, 2)
 def terre(r):
     """Terre battue : mottes en aplats, cailloux, traces, flaques sombres."""
     f = fbm(N, r, 2.0, 2, 120)
@@ -608,9 +621,150 @@ def gravier(r):
     return c, h
 
 
+# ------------------------------------------------------------------ château (acte II, nuit 4) : plus aucune texture de cave
+@tuile("PierreClaire", 4, 3)
+def pierre_claire(r):
+    """Pierre de taille claire (calcaire) du château : assises de 43 cm, blocs de 60 cm à 1.2 m, joints fins et clairs,
+    arêtes nettes, peu de fissures ; une pierre plus chaude ou plus grise de temps en temps (appareil soigné)."""
+    M = N * 3 // 4
+    ID, D, _, _ = P.courses(N, 7, r, 0.15, 0.30, M=M, row_jit=0.04)
+    pal = [col("#9a9182"), col("#a39a89"), col("#938a7c"), col("#a89d8a"), col("#8f877b")]
+    return maconnerie(r, ID, D, pal, gap=2.2, bev=14, ink_w=1.6, fiss=3, mortier=col("#6d665c"), val_var=0.07,
+                      creux=0.18, ecl=0.32, M=M, mottle=3, marbrure=0.06)
+
+
+@tuile("Parquet", 2, 2)
+def parquet(r):
+    """Parquet de château : lames de 15 cm de large et 0.6 à 1.2 m de long, joints décalés, fil du bois, cire usée."""
+    yy, xx = np.mgrid[0:N, 0:N].astype(np.float32)
+    n = 13                                      # 13 lames sur 2 m (15.4 cm)
+    w = N / n
+    row = np.floor(xx / w).astype(int)
+    off = r.uniform(0, N, n)
+    lens = r.uniform(0.3, 0.6, n) * N           # 0.6 à 1.2 m
+    v = (yy + off[row]) % N
+    seg = np.floor(v / lens[row]).astype(int)
+    ID = row * 64 + seg
+    dx = np.minimum(xx - row * w, (row + 1) * w - xx)
+    dv = np.minimum(v % lens[row], lens[row] - v % lens[row])
+    D = np.minimum(dx, dv)
+    pal = [col("#5a3b23"), col("#64432a"), col("#4f341f"), col("#6b4a2e"), col("#573a24")]
+    k = P.per_id(ID, r)
+    base = np.zeros((N, N, 3), np.float32)
+    for i, c0 in enumerate(pal):
+        base[(k * len(pal)).astype(int).clip(0, len(pal) - 1) == i] = c0
+    g = fbm(N, r, 1.0, 4, 300, aniso=(30.0, 1.0))            # fil du bois le long des lames (vertical)
+    tone = poster(g, 4, 0.1)
+    c = base * (0.82 + 0.28 * tone)[..., None]
+    wax = smooth(0.45, 0.8, fbm(N, r, 2.2, 1, 8))            # cire usée : zones plus mates
+    c = c * (1 + 0.08 * wax[..., None])
+    h = smooth(0, 6 * K, D)
+    light = P.bevel_light(P.blur(h, 1.0), strength=6.0, levels=2)
+    c = c * (1 + 0.15 * light[..., None])
+    c = np.where((D < 1.6 * K)[..., None], col("#1a110b"), c)
+    return np.clip(c, 0, 1), np.clip(h * (0.7 + 0.3 * g), 0, 1)
+
+
+@tuile("Boiserie", 2, 2)
+def boiserie(r):
+    """Boiseries (lambris) : panneaux de 0.8 x 1 m à cadre mouluré (montants et traverses de 10 cm), panneau en creux à
+    biseau ; chêne sombre ciré."""
+    yy, xx = np.mgrid[0:N, 0:N].astype(np.float32)
+    pw, ph = N / 2.5, N / 2.0                       # 0.8 x 1 m
+    fx, fy = xx % pw, yy % ph
+    cad = 0.1 * N / 2                               # cadre de 10 cm
+    d_bord = np.minimum(np.minimum(fx, pw - fx), np.minimum(fy, ph - fy))
+    cadre = d_bord < cad
+    biseau = (d_bord >= cad) & (d_bord < cad + 0.035 * N / 2)
+    base = fill(col("#4a3020"))
+    g = fbm(N, r, 1.0, 4, 260, aniso=(1.0, 26.0))
+    c = base * (0.84 + 0.26 * poster(g, 4, 0.1))[..., None]
+    c = np.where(cadre[..., None], c * 1.12, c)
+    # biseau : côtés haut et gauche éclairés, bas et droit à l'ombre (lumière d'en haut à gauche) ; le côté est celui
+    # dont le bord du panneau est le plus proche
+    dists = np.stack([fx, pw - fx, fy, ph - fy])              # gauche, droite, haut, bas
+    haut = np.isin(dists.argmin(0), (0, 2))
+    c = np.where((biseau & haut)[..., None], c * 1.25, c)
+    c = np.where((biseau & ~haut)[..., None], c * 0.62, c)
+    ink = (np.abs(d_bord - cad) < 1.2 * K) | (np.abs(d_bord - cad - 0.035 * N / 2) < 1.0 * K) | (d_bord < 1.4 * K)
+    c = lerp(c, P.INK, ink.astype(np.float32)[..., None] * 0.85)
+    h = np.where(cadre, 0.85, np.where(biseau, 0.55, 0.45)) * (0.9 + 0.1 * g)
+    return np.clip(c, 0, 1), np.clip(h, 0, 1)
+
+
+@tuile("PlatrePeint", 2, 2)
+def platre_peint(r):
+    """Plâtre peint : enduit lisse teinté vert-de-gris sombre, motif au pochoir effacé (fleurons en losange de 50 cm),
+    usure et quelques fissures fines."""
+    yy, xx = np.mgrid[0:N, 0:N].astype(np.float32)
+    base = fill(col("#3e4a44"))
+    mo = poster(fbm(N, r, 2.2, 2, 40), 3, 0.2)
+    c = base * (0.86 + 0.22 * mo)[..., None]
+    # pochoir : losanges et fleurons (période 50 cm), estompés
+    per = N / 4
+    u, v = (xx % per) / per - 0.5, (yy % per) / per - 0.5
+    los = np.abs(u) + np.abs(v)
+    motif = (np.abs(los - 0.32) < 0.025) | ((u * u + v * v) < 0.012) | ((np.abs(u) < 0.012) & (np.abs(v) < 0.2)) | ((np.abs(v) < 0.012) & (np.abs(u) < 0.2))
+    efface = smooth(0.35, 0.65, fbm(N, r, 2.0, 2, 30))
+    c = lerp(c, col("#6f7a63"), (motif * efface * 0.55)[..., None])
+    I = P.Ink(N)
+    P.cracks(I, r, 6, N, length=(60, 220), width=(1.0, 1.8), branch=0.5)
+    c = lerp(c, P.INK, I.get(0.3) * 0.8)
+    dr = fbm(N, r, 1.0, 2, 220, aniso=(0.3, 10.0))
+    c = c * (1 - 0.2 * smooth(0.66, 0.74, dr))[..., None]
+    return np.clip(c, 0, 1), np.clip(0.55 + 0.1 * mo - I.get(0.3) * 0.3, 0, 1)
+
+
+@tuile("Reliures", 0.5, 0.5)
+def reliures(r):
+    """Dos de livres (rayons de la bibliothèque) : reliures de 3 à 7 cm, cuir sombre rouge, vert, brun, bleu nuit, nerfs et
+    filets dorés ternis, titres en traits. Tuile de 50 cm (les livres ne portent plus le motif du tapis)."""
+    yy, xx = np.mgrid[0:N, 0:N].astype(np.float32)
+    ws = []
+    while sum(ws) < N:
+        ws.append(r.uniform(0.06, 0.14) * N)
+    ws = np.array(ws) * N / sum(ws)
+    xs = np.concatenate([[0], np.cumsum(ws)])
+    pal = [col("#4a1c1a"), col("#22331f"), col("#3b2716"), col("#1d2436"), col("#5a3a1c"), col("#2b1a22")]
+    c = np.zeros((N, N, 3), np.float32)
+    h = np.zeros((N, N), np.float32)
+    for i in range(len(ws)):
+        inb = (xx >= xs[i]) & (xx < xs[i + 1])
+        c[inb] = pal[r.integers(0, len(pal))] * r.uniform(0.85, 1.15)
+        u = (xx - xs[i]) / max(ws[i], 1)
+        rond = 0.75 + 0.35 * np.sin(np.clip(u, 0, 1) * math.pi)       # dos arrondi
+        c[inb] *= rond[inb][..., None]
+        h[inb] = rond[inb] * 0.8
+        for y0 in r.uniform(0.1, 0.9, r.integers(2, 4)) * N:          # nerfs et filets dorés
+            band = inb & (np.abs(yy - y0) < 0.008 * N)
+            c[band] = col("#8a7240")
+    g = fbm(N, r, 1.2, 3, 200, aniso=(1.0, 4.0))
+    c = c * (0.9 + 0.2 * g)[..., None]
+    edge = np.zeros((N, N), bool)
+    for x0 in xs:
+        edge |= np.abs(xx - x0) < 1.6 * K
+    c = np.where(edge[..., None], P.INK, c)
+    return np.clip(c, 0, 1), np.clip(h, 0, 1)
+
+
+@tuile("DallesClaires", 4, 4)
+def dalles_claires(r):
+    """Dalles de calcaire clair du château (sols de l'acte II) : 7 rangées de 57 cm, joints fins, pierre chaude et propre,
+    usure douce au centre ; plus aucune pierre bleue de cave."""
+    ID, D, LU, LV = P.courses(N, 7, r, 0.10, 0.24, row_jit=0.12)
+    pal = [col("#8e8574"), col("#968c7a"), col("#877e6e"), col("#9b917e"), col("#8a8272")]
+    c, h = maconnerie(r, ID, D, pal, gap=2.4, bev=10, ink_w=1.5, fiss=5, mortier=col("#5a5348"), val_var=0.07,
+                      ecl=0.16, creux=0.15, marbrure=0.06)
+    use = smooth(0.55, 0.95, P.fbm(N, r, 2.4, 1, 10)) * 0.08
+    return c * (1 + use[..., None]), h
+
+
+RES.update({"DallesClaires": 2048, "Moellons": 2048, "PierreTaillee": 2048, "Dalles": 2048, "RocheCave": 2048, "PierreClaire": 2048})
+
+
 TOUS = [moellons, pierre_taillee, dalles, roche_cave, briques, mortier, mousse, salpetre, humidite,
         bois_neuf, bois_pourri, bois_mouille, fer_rouille, platre_fissure, marbre, tapis, tenture,
-        terre, herbe_seche, ecorce, racines, gravier]
+        terre, herbe_seche, ecorce, racines, gravier, pierre_claire, parquet, boiserie, platre_peint, reliures, dalles_claires]
 
 
 def main(noms=None):
@@ -621,6 +775,7 @@ def main(noms=None):
         if noms and f.nom not in noms:
             continue
         r = P.rng(1000 + i)
+        resolution(RES.get(f.nom, 1024))
         c, h = f(r)
         P.save(os.path.join(OUT, f"T_Mat_{f.nom}_BaseColor.png"), c, height=h)
         faits.append(f.nom)

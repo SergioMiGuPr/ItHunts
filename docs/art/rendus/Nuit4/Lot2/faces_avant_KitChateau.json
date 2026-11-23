@@ -1,0 +1,242 @@
+{
+ "SM_Chateau_Arcade_8x12.fbx": {
+  "faces": 440,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 36,
+  "aire_partielle_m2": 0.181
+ },
+ "SM_Chateau_Armoire_Tombee.fbx": {
+  "faces": 72,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Chateau_Autel.fbx": {
+  "faces": 224,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 7,
+  "aire_partielle_m2": 13.0
+ },
+ "SM_Chateau_Balcon.fbx": {
+  "faces": 1196,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 26,
+  "aire_partielle_m2": 2.742
+ },
+ "SM_Chateau_Banc_Eglise.fbx": {
+  "faces": 60,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 2,
+  "aire_partielle_m2": 0.002
+ },
+ "SM_Chateau_Bibliotheque.fbx": {
+  "faces": 3780,
+  "degenerees": 0,
+  "superposees": 8,
+  "aire_m2": 1.079,
+  "partielles": 1147,
+  "aire_partielle_m2": 12.081
+ },
+ "SM_Chateau_Chaise.fbx": {
+  "faces": 72,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 3,
+  "aire_partielle_m2": 0.002
+ },
+ "SM_Chateau_Chaise_Renversee.fbx": {
+  "faces": 72,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 3,
+  "aire_partielle_m2": 0.002
+ },
+ "SM_Chateau_Chandelier.fbx": {
+  "faces": 1106,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 202,
+  "aire_partielle_m2": 0.047
+ },
+ "SM_Chateau_Coffre.fbx": {
+  "faces": 48,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Chateau_Colonne_12m.fbx": {
+  "faces": 200,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Chateau_Estrade_Musiciens.fbx": {
+  "faces": 1700,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 24,
+  "aire_partielle_m2": 5.807
+ },
+ "SM_Chateau_Fauteuil.fbx": {
+  "faces": 72,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 14,
+  "aire_partielle_m2": 0.087
+ },
+ "SM_Chateau_Fenetre_Haute.fbx": {
+  "faces": 228,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 156,
+  "aire_partielle_m2": 14.4
+ },
+ "SM_Chateau_Galerie_8m.fbx": {
+  "faces": 1470,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 76,
+  "aire_partielle_m2": 4.42
+ },
+ "SM_Chateau_GrandEscalier.fbx": {
+  "faces": 6116,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 469,
+  "aire_partielle_m2": 1047.478
+ },
+ "SM_Chateau_GrandeEntree.fbx": {
+  "faces": 1448,
+  "degenerees": 0,
+  "superposees": 24,
+  "aire_m2": 2.16,
+  "partielles": 571,
+  "aire_partielle_m2": 115.832
+ },
+ "SM_Chateau_LitBaldaquin.fbx": {
+  "faces": 320,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 14,
+  "aire_partielle_m2": 0.073
+ },
+ "SM_Chateau_Lutrin.fbx": {
+  "faces": 88,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 4,
+  "aire_partielle_m2": 0.004
+ },
+ "SM_Chateau_MiroirBrise.fbx": {
+  "faces": 156,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 28,
+  "aire_partielle_m2": 0.174
+ },
+ "SM_Chateau_Mur_8x12.fbx": {
+  "faces": 60,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 21,
+  "aire_partielle_m2": 6.495
+ },
+ "SM_Chateau_Mur_8x20.fbx": {
+  "faces": 60,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 21,
+  "aire_partielle_m2": 6.495
+ },
+ "SM_Chateau_Mur_Platre_8x12.fbx": {
+  "faces": 72,
+  "degenerees": 0,
+  "superposees": 1,
+  "aire_m2": 0.592,
+  "partielles": 39,
+  "aire_partielle_m2": 7.613
+ },
+ "SM_Chateau_Pilier_20m.fbx": {
+  "faces": 428,
+  "degenerees": 0,
+  "superposees": 3,
+  "aire_m2": 0.062,
+  "partielles": 98,
+  "aire_partielle_m2": 1.072
+ },
+ "SM_Chateau_Rosace.fbx": {
+  "faces": 696,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Chateau_TableBanquet.fbx": {
+  "faces": 784,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 70,
+  "aire_partielle_m2": 6.232
+ },
+ "SM_Chateau_Table_Renversee.fbx": {
+  "faces": 72,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Chateau_Tableau.fbx": {
+  "faces": 60,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 36,
+  "aire_partielle_m2": 0.368
+ },
+ "SM_Chateau_Tenture.fbx": {
+  "faces": 892,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Chateau_Voute_8x8.fbx": {
+  "faces": 990,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 246,
+  "aire_partielle_m2": 0.874
+ }
+}

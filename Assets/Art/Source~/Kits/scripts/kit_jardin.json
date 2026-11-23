@@ -139,9 +139,9 @@
   "taille": [
    8.2,
    2.4,
-   9.3
+   9.31
   ],
-  "bas": 0.0,
+  "bas": -0.01,
   "triangles": 48,
   "materiaux": [
    "M_Bib_Moellons_Peint",
@@ -167,9 +167,9 @@
   "taille": [
    8.0,
    3.3,
-   0.22
+   0.23
   ],
-  "bas": -0.05,
+  "bas": -0.06,
   "triangles": 204,
   "materiaux": [
    "M_Bib_Gravier_Herbe",
@@ -252,9 +252,9 @@
   "taille": [
    5.6,
    6.67,
-   5.6
+   5.61
   ],
-  "bas": 0.0,
+  "bas": -0.01,
   "triangles": 158,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
@@ -269,7 +269,7 @@
    6.4,
    5.26
   ],
-  "bas": 0.0,
+  "bas": -0.0,
   "triangles": 508,
   "materiaux": [
    "M_Bib_Briques_Peint",
@@ -325,7 +325,7 @@
    3.39,
    3.44
   ],
-  "bas": 0.0,
+  "bas": -0.01,
   "triangles": 312,
   "materiaux": [
    "M_Bib_Moellons_Peint"
