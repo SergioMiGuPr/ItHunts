@@ -99,7 +99,13 @@ namespace ItHunts.Debugging
             if (b == null)
                 b = p.gameObject.AddComponent<PlaytestBot>();
             if (report != null)
+            {
+                // Relecture de la nuit 4 : AddComponent a déjà lancé OnEnable sur le rapport par défaut ; le vrai rapport démarre ici
+                // (sinon temps réel cumulé d'un passage à l'autre).
                 b.Report = report;
+                report.Begin(report.Act > 0 ? report.Act : RunSession.Act);
+            }
+
             return b;
         }
 
@@ -608,7 +614,8 @@ namespace ItHunts.Debugging
                         f.Interact = true;
                     else
                         _level.ExitDoorObject.Interact(_health);
-                    Report.Note("sortie", $"porte payée à {Clock()} : {(_level.ExitDoorObject.Open ? "ouverte" : "refusée")}");
+                    // L'appui (f.Interact) n'agit qu'à l'image suivante : on note l'état d'avant, pas un refus (relecture nuit 4).
+                    Report.Note("sortie", $"demande d'ouverture à {Clock()} (porte {(_level.ExitDoorObject.Open ? "déjà ouverte" : "fermée avant l'appui")})");
                 }
 
                 return;

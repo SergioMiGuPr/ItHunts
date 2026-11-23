@@ -792,6 +792,9 @@ namespace ItHunts.Level
                     Transform t = ps.transform;
                     if (t.parent != null && t.parent.GetComponent<ParticleSystem>() != null)
                         continue;                                       // sous-système : on coupe sa racine
+                    if (ps.GetComponent<Light>() != null || ps.GetComponent<AudioSource>() != null || ps.GetComponent<MeshRenderer>() != null
+                        || t.GetComponentInParent<ItHunts.Economy.SoulSystem>() != null)
+                        continue;                                       // objet partagé (lumière, son, maillage) ou âme du pool : on n'y touche pas
                     if (!ps.main.loop || t.GetComponentInParent<Rigidbody>() != null || t.GetComponentInParent<Damageable>() != null
                         || t.GetComponentInParent<PlayerMotor>() != null || t.GetComponentInParent<EnemyBody>() != null)
                         continue;

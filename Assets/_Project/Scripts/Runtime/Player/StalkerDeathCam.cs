@@ -76,6 +76,8 @@ namespace ItHunts.Player
         private void OnDisable()
         {
             Active = false;
+            if (_reader != null)
+                _reader.Override = null;                                // relecture : sinon un joueur relevé en coop ne répond plus
             if (_screamer != null)
             {
                 _screamer.Arrete();

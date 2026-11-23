@@ -28,7 +28,7 @@ namespace ItHunts.Enemies
         private void OnTriggerEnter(Collider other)
         {
             var p = other.GetComponentInParent<PlayerHealth>();
-            if (p == null || Zone == null || Zone.Finished)
+            if (p == null || Zone == null || Zone.Finished || DoorClosed())
                 return;
             ByTrigger++;
             Zone.ExitReached(p);
@@ -36,9 +36,25 @@ namespace ItHunts.Enemies
 
         private ZoneState Zone => _zone != null ? _zone : _zone = FindFirstObjectByType<ZoneState>();
 
+        // Relecture de la nuit 4 : la boîte du hall ne compte que porte ouverte (sinon une téléportation ou une traction à travers
+        // les battants faisait gagner l'acte sans payer la sortie).
+        private ItHunts.Level.ExitDoor _door;
+        private bool _doorSearched;
+
+        private bool DoorClosed()
+        {
+            if (!_doorSearched)
+            {
+                _doorSearched = true;
+                _door = FindFirstObjectByType<ItHunts.Level.ExitDoor>();
+            }
+
+            return _door != null && !_door.Open;
+        }
+
         private void FixedUpdate()
         {
-            if (Zone == null || Zone.Finished || _box == null)
+            if (Zone == null || Zone.Finished || _box == null || DoorClosed())
                 return;
             Bounds b = _box.bounds;
             foreach (PlayerHealth p in PlayerHealth.All)

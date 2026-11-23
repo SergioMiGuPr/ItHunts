@@ -66,6 +66,17 @@ namespace ItHunts.Tests
             p.Motor.Teleport(level.ExitPoint + Vector3.up * 0.2f);
             yield return new WaitForSeconds(0.5f);
             zone.DebugAdvance(1f);
+            // Relecture de la nuit 4 : porte fermée, un joueur posé dans la boîte du hall ne termine pas l'acte.
+            var closedTrigger = Object.FindObjectsByType<ZoneExit>(FindObjectsSortMode.None).FirstOrDefault();
+            if (closedTrigger != null)
+            {
+                p.Motor.Teleport(closedTrigger.GetComponent<BoxCollider>().bounds.center - Vector3.up * 1.5f);
+                yield return new WaitForSeconds(0.4f);
+                Assert.IsFalse(zone.Won, $"acte {act + 1} seed {seed} : acte gagné porte fermée");
+                p.Motor.Teleport(level.ExitPoint + Vector3.up * 0.2f);
+                yield return new WaitForSeconds(0.3f);
+            }
+
             level.ExitDoorObject.SetOpen(true);
             yield return new WaitForSeconds(0.3f);
             var trigger = Object.FindObjectsByType<ZoneExit>(FindObjectsSortMode.None).FirstOrDefault();

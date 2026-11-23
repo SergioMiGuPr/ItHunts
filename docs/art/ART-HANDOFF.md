@@ -996,6 +996,18 @@ Avertissement vu dans le journal à chaque création de matériau toon : « Fail
 contient des parenthèses que l'inspecteur ne sait pas lire ; sans effet en jeu, mais il remplit la console (à remplacer par un titre
 sans parenthèses).
 
+### Fin de la nuit 4 : PR #51 et #52 dans le jeu (main, D-109)
+
+- **Props en 3D** : le jeu pose le modèle de la DA sur chaque greybox au chargement (`PropArt`, réglages `PropArt_Default`, une entrée
+  par greybox), selon votre règle de pose (`Props4.Ajuste`). La greybox garde ses colliders : le modèle n'en a pas en jeu. Coffres :
+  échelle 1,5, l'enfant `Couvercle` est caché pour qui a ouvert. Mesuré, graine 11 : 219 / 152 / 45 props par acte ; 38 restent en
+  greybox à l'acte II (armoires couchées, petits râteliers), comme prévu dans INTEGRATION-PROPS.
+- **Flammes lointaines coupées** : les systèmes de particules qui bouclent (flammes des appliques et des lustres, poussière des rayons
+  de lune) sont désactivés au-delà de 30 m du joueur ; la lumière reste. Un effet partagé avec une lumière, un son ou un maillage
+  sur le même objet n'est jamais coupé : gardez les particules sur leur propre objet, comme aujourd'hui.
+- **Portes de sortie** : `OuverturePorte.Ouvre()` au paiement, `Pose(0)` à la remise à zéro.
+- **Pas encore branché** : la porte guillotine (porte verrouillée), les `Accroche_*`, les perçages du puits et de la fosse.
+
 ## Densité de texels et échelle des matériaux (nuit 4, lot 2, branche `art-materiaux-2`)
 
 **Densité de référence pour tout le jeu : 512 px/m** (tuile de 1024 px pour 2 m, ou de 2048 px pour 4 m). Les objets tenus
