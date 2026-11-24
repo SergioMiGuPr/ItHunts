@@ -644,15 +644,15 @@ public static class MenusBuilder
         // la queue d'un caméléon assis sur le rocher, au lieu d'être masquée par elle
         // lumières et ombres au sol (lueur de lanterne sur le décor, ombres portées) : calque commun sous tous les personnages,
         // sinon la lueur d'une place passe par-dessus le personnage de la place voisine
+        // nuit 5 : le calque est créé ici, rempli après la boucle des places (avant, les calques déplacés n'étaient plus
+        // retrouvés sous leur place et chaque reconstruction en recréait : les anciens restaient orphelins dans le calque
+        // commun, toujours visibles, et dessinaient des silhouettes noires derrière les « + » et autour des personnages)
         var solParent = ca.places[0].racine != null ? ca.places[0].racine.parent : null;
+        RectTransform sol = null;
         if (solParent != null)
         {
-            var sol = solParent.Find("Sol_Lumieres_Ombres") as RectTransform;
+            sol = solParent.Find("Sol_Lumieres_Ombres") as RectTransform;
             if (sol == null) { sol = Noeud("Sol_Lumieres_Ombres", solParent); MenuEcran.Pose(sol, 0, 0, _valeurs["Campement_taille"][0], _valeurs["Campement_taille"][1]); }
-            foreach (var pl in ca.places)
-                foreach (var im in new Image[] { pl.eclairage, pl.ombrePortee, pl.ombreLanterne })
-                    if (im != null && im.transform.parent != sol) im.transform.SetParent(sol, false);
-            sol.SetSiblingIndex(ca.places.Min(p => p.racine.GetSiblingIndex()));
         }
         // (de même entre les places 2 et 1) : ordre de dessin 4, 3, 2, 1, la place 1 au-dessus
         if (ca.places.Length >= 4 && ca.places.All(p => p.racine != null))
@@ -686,6 +686,7 @@ public static class MenusBuilder
             Image Couche(string nom, string mat, string shader, Action<Material> regle)
             {
                 var tr = racine.Find(nom);
+                if (tr == null && sol != null) tr = sol.Find(nom + "_" + (ip + 1));
                 Image im = tr != null ? tr.GetComponent<Image>() : Img(racine, nom, null, R(0, 0, 10, 10));
                 im.material = Mat(mat + "_" + (ip + 1), shader, regle);
                 im.raycastTarget = false;
@@ -708,9 +709,6 @@ public static class MenusBuilder
                 m.SetFloat("_PorteeForce", 0.6f); m.SetFloat("_Ecrase", 0.3f); m.SetFloat("_PorteeFlou", 2f); m.SetFloat("_PorteeFlouHaut", 8f);
                 m.SetFloat("_PorteeLongueur", 0.8f); m.SetFloat("_Max", 0.75f);
             });
-            pl.eclairage.transform.SetSiblingIndex(0);
-            pl.ombrePortee.transform.SetSiblingIndex(1);
-            pl.ombreLanterne.transform.SetSiblingIndex(2);
             if (pl.lanterne != null)
                 pl.lanterne.material = Mat("M_Campement_Lanterne_" + (ip + 1), "ItHunts/UI/Deformation", m =>
                 {
@@ -742,6 +740,31 @@ public static class MenusBuilder
                 if (p3go != null) pi.transform.SetSiblingIndex(p3go.GetSiblingIndex());
                 pl.plus = pi.gameObject;
             }
+        }
+        // calque commun : les calques de chaque place (nom unique par place), puis plus aucun orphelin
+        if (sol != null)
+        {
+            var gardes = new HashSet<Transform>();
+            for (int i = 0; i < ca.places.Length; i++)
+            {
+                var pl = ca.places[i];
+                foreach (var im in new Image[] { pl.eclairage, pl.ombrePortee, pl.ombreLanterne })
+                {
+                    if (im == null) continue;
+                    string nom = im.name.EndsWith("_" + (i + 1)) ? im.name : im.name + "_" + (i + 1);
+                    im.name = nom;
+                    if (im.transform.parent != sol) im.transform.SetParent(sol, false);
+                    gardes.Add(im.transform);
+                }
+            }
+            for (int c = sol.childCount - 1; c >= 0; c--)
+                if (!gardes.Contains(sol.GetChild(c))) UnityEngine.Object.DestroyImmediate(sol.GetChild(c).gameObject);
+            // ordre : lumières au sol de toutes les places, puis ombres (une ombre ne s'éclaire pas par la lueur voisine)
+            int k = 0;
+            foreach (var pl in ca.places) if (pl.eclairage != null) pl.eclairage.transform.SetSiblingIndex(k++);
+            foreach (var pl in ca.places) if (pl.ombrePortee != null) pl.ombrePortee.transform.SetSiblingIndex(k++);
+            foreach (var pl in ca.places) if (pl.ombreLanterne != null) pl.ombreLanterne.transform.SetSiblingIndex(k++);
+            sol.SetSiblingIndex(ca.places.Min(p => p.racine.GetSiblingIndex()));
         }
     }
 
