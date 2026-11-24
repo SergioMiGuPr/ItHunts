@@ -633,7 +633,6 @@ public static class MenusBuilder
         ca.valeurOmbre = 0.3f;
         ca.cisaillement = 1.1f;
         ca.eclairageLanterne = new Vector3(1.1f, 0.4f, 0.1f);   // nuit 5 : moitié moins de couleur du personnage (aplat vert du koala sur la bûche)
-        //   // nuit 4 : lueur au sol serrée au pied de la lanterne, couleur adoucie (plus de taches)
         var fondu = LitFondu();
         foreach (var pc in ca.placements)
             foreach (var f in fondu)
@@ -698,7 +697,9 @@ public static class MenusBuilder
             });
             pl.ombrePortee = Couche("Ombre_Portee", "M_Campement_Ombre", "ItHunts/UI/OmbrePortee", m =>
             {
-                m.SetFloat("_ContactForce", 2.0f); m.SetFloat("_ContactFlou", 9f); m.SetFloat("_ContactHaut", 0.6f); m.SetFloat("_Sol", 0.03f);
+                m.SetFloat("_ContactForce", ip >= 2 ? 2.6f : 2.0f); m.SetFloat("_ContactFlou", 9f); m.SetFloat("_ContactHaut", ip >= 2 ? 0.95f : 0.6f); m.SetFloat("_Sol", 0.03f);
+                // nuit 5 : places 3 et 4 (banc, rocher), contact plus haut et plus fort : le dessus du siège éclairé par la lune
+                // ne se voit plus sous les cuisses
                 m.SetFloat("_PorteeForce", 0.8f); m.SetFloat("_Ecrase", 0.3f); m.SetFloat("_PorteeFlou", 4f); m.SetFloat("_PorteeFlouHaut", 18f);
                 m.SetFloat("_PorteeLongueur", 0.7f); m.SetFloat("_Max", 0.8f);
             });
@@ -786,7 +787,7 @@ public static class MenusBuilder
             foreach (var pl in ca.places) if (pl.ombreLanterne != null) pl.ombreLanterne.transform.SetSiblingIndex(k++);
             // sous tous les personnages : juste avant la place dessinée en premier (place 4). Retirer le calque avant de lire
             // l'index (sinon décalage d'un cran : il passait au-dessus de la place 4)
-            var premiere = ca.places.OrderBy(p => p.racine.GetSiblingIndex()).First().racine;
+            var premiere = ca.places.Where(p => p.racine != null).OrderBy(p => p.racine.GetSiblingIndex()).First().racine;
             sol.SetAsLastSibling();
             sol.SetSiblingIndex(premiere.GetSiblingIndex());
         }
@@ -799,6 +800,10 @@ public static class MenusBuilder
             if (le.parent != pl.racine.parent) continue;
             le.SetAsLastSibling();
             le.SetSiblingIndex(pl.racine.GetSiblingIndex());
+            if (le.GetComponent<CanvasGroup>() == null) le.gameObject.AddComponent<CanvasGroup>();
+            var lf = pl.racine.GetComponent<LanterneEteinteFondu>();
+            if (lf == null) lf = pl.racine.gameObject.AddComponent<LanterneEteinteFondu>();
+            lf.campement = ca; lf.place = i; lf.eteinte = le.gameObject; lf.groupePlace = pl.racine.GetComponent<CanvasGroup>();
         }
     }
 

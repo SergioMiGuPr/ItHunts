@@ -32,6 +32,16 @@
   au sol (`eclairageLanterne.z` 0,2 → 0,1).
 - Robustesse : un personnage sans placement laisse la place vide ; un sprite manquant cache son ombre.
 
+## Seconde relecture
+
+Aucun point bloquant. Corrigé :
+- lueur de lanterne mêlée de 45 % de lumière chaude puis ramenée à la luminance commune (`chaleurLueur`) : plus de nuage vert
+  saturé autour de la lanterne du koala, ni de tache rouge pour le renard ;
+- places 3 et 4 : ombre de contact plus haute et plus forte (le dessus du siège éclairé par la lune sous les cuisses) ;
+- arrivée d'un joueur : le corps a son pivot en bas (les pieds restent sur le siège pendant l'écrasement du fondu) et la
+  lanterne éteinte s'efface en fondu croisé avec la lanterne allumée (`LanterneEteinteFondu`, aussi avec le fondu de main) ;
+- nettoyage : commentaire en double, résumés déplacés, test de racine nulle.
+
 ## Contrôle (vrai menu, `MainMenu.unity` en Play Mode, 1920 × 1080)
 
 - `Campement_Places_Vides.jpg` : J1 seul, coop à 2, coop à 3, place 2 vide avec 3 et 4 occupées ; maquette, avant (prefab de
@@ -45,4 +55,6 @@
 ## Reste connu
 
 - La place 1 n'est jamais vide en jeu (joueur 1) : pas de capture « vide » pour elle.
+- Renard aux places 3 et 4 : un peu du dessus bleu du rocher reste visible entre les pans de la cape, sous les cuisses
+  (décor peint vu à travers le personnage, atténué par l'ombre de contact).
 - Le caméléon de la place 4 a la queue qui s'étend vers le bord droit de l'écran (sprite retourné), sans être coupée en 16:9.
