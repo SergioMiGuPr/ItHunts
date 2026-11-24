@@ -102,3 +102,9 @@ Cadres : « Game UI asset sheet on a perfectly flat pure white background: a sin
 | H8 | Soin lié | `ICO_H8.png` | grille_17 case 1 |
 
 La variante de « Âmes gourmandes » (grille 17) n'est pas retenue : elle reste dans `sources/` (hors du jeu).
+
+## Nuit 5 (lot 2) : couleur du personnage, rang en étoiles
+
+Le rang ne se lit plus au métal du cadre : le cadre prend la couleur du personnage (lanterne), les génériques restent en fer, et le
+rang s'affiche en **étoiles** (1 à 5). Cadres `Cadre_<Neutre|Renard|Cameleon|Koala|Hibou>.png` et `Cadre_Passif_<…>.png`, étoiles
+`Etoile_Rang.png` : `cadres5.py`, planche `planche_cadres_5.png`. Détails et API : UI-HANDOFF § 10.
