@@ -46,7 +46,10 @@ namespace ItHunts.Art.UIJeu
             rang = Mathf.Clamp(rang, 0, 4);
             Rang = rang;
             if (icone) { icone.sprite = illustration; icone.enabled = illustration != null; }
-            bool couleurs = catalogue && catalogue.etoile != null && catalogue.CadrePersonnage(proprietaire, passif) != null;
+            // couleurs du personnage + étoiles seulement pour une case qui a ses étoiles (nuit 5) ; les prefabs sans étoiles
+            // (Panneau_FinDeRun, Panneau_MarchandRangs de la nuit 4) gardent les cadres de rang
+            bool couleurs = catalogue && catalogue.etoile != null && etoiles != null && etoiles.Length > 0 &&
+                            catalogue.CadrePersonnage(proprietaire, passif) != null;
             if (cadre && catalogue)
             {
                 if (couleurs) cadre.sprite = catalogue.CadrePersonnage(proprietaire, passif);
@@ -57,9 +60,12 @@ namespace ItHunts.Art.UIJeu
                 }
                 cadre.enabled = cadre.sprite != null;
             }
-            if (masque) masque.enabled = passif;
+            // masque : losange (passif) ; coins arrondis de l'intérieur du cadre (carré, nuit 5 : les coins de l'illustration
+            // ne dépassent plus du cadre)
             var m = masque ? masque.GetComponent<Image>() : null;
-            if (m) m.enabled = passif;
+            bool carre = couleurs && catalogue.masqueCarre != null;
+            if (m) { m.sprite = passif ? catalogue.masquePassif : (carre ? catalogue.masqueCarre : m.sprite); m.enabled = passif || carre; }
+            if (masque) masque.enabled = passif || carre;
             if (zoneIcone)
             {
                 float f = passif ? 0.62f : 0.80f;

@@ -40,6 +40,8 @@ namespace ItHunts.Art.UIJeu
         public Sprite[] cadresPassifsPersonnage = new Sprite[5];
         [Tooltip("Étoile de rang (or vieilli) et emplacement éteint.")]
         public Sprite etoile, etoileVide;
+        [Tooltip("Masque de l'illustration sous un cadre carré : intérieur à coins arrondis du cadre.")]
+        public Sprite masqueCarre;
         [Tooltip("Couleur de chaque personnage (lanterne) : onglets, liserés, lueurs. Générique : fer pâle.")]
         public Color[] couleursPersonnage =
         {

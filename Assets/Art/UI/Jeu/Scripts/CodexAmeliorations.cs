@@ -37,9 +37,17 @@ namespace ItHunts.Art.UIJeu
         public IconeAmelioration ficheIcone;
         public Text ficheNom, ficheType, ficheEffet, ficheSynergies, compteur;
         public Text[] ficheRangs = new Text[5];
-        public Image[] ficheEtoilesRang = new Image[0];
         public Graphic[] teintes = new Graphic[0];
         public Button fermer;
+        [Tooltip("Ligne d'aide (touches) : main la règle selon le périphérique.")]
+        public Text aide;
+        [Header("Mise en page de la grille")]
+        public Text titrePassifs, titreAmeliorations;
+        [Tooltip("Communes (beaucoup d'entrées) : taille et pas des cases, colonnes.")]
+        public float tailleCase = 94f, pasCase = 114f;
+        [Tooltip("Personnage (12 entrées au plus) : grandes cases, passifs sur une rangée à part, colonnes.")]
+        public float tailleGrande = 124f, pasGrand = 154f, ecartTitre = 44f;
+        public int colonnesGrandes = 4;
 
         public event Action Ferme;
 
@@ -79,7 +87,50 @@ namespace ItHunts.Art.UIJeu
             ChoisitOnglet(_onglet, Selection);
         }
 
-        public void OngletSuivant(int d) => ChoisitOnglet(((_onglet + d) % onglets.Length + onglets.Length) % onglets.Length);
+        public void OngletSuivant(int d)
+        {
+            if (onglets == null || onglets.Length == 0) return;
+            ChoisitOnglet(((_onglet + d) % onglets.Length + onglets.Length) % onglets.Length);
+        }
+
+        /// <summary>Place les cases : grande mise en page pour un personnage, grille serrée pour les communes.</summary>
+        private void Agence()
+        {
+            bool grand = _vues.Count <= 12;
+            int nPassifs = 0;
+            foreach (var f in _vues) if (catalogue && catalogue.EstPassif(f.id)) nPassifs++;
+            float y = 0f;
+            if (titrePassifs) titrePassifs.gameObject.SetActive(grand && nPassifs > 0);
+            if (titreAmeliorations) titreAmeliorations.gameObject.SetActive(grand);
+            int k = 0;
+            void Pose(int i, float x, float yy, float t)
+            {
+                if (i >= cases.Length || cases[i] == null) return;
+                var rt = (RectTransform)cases[i].transform;
+                rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f); rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.sizeDelta = new Vector2(t, t); rt.anchoredPosition = new Vector2(x, -yy);
+            }
+            if (grand)
+            {
+                if (nPassifs > 0)
+                {
+                    if (titrePassifs) titrePassifs.rectTransform.anchoredPosition = new Vector2(0f, -y);
+                    y += ecartTitre;
+                    for (int i = 0; i < nPassifs; i++, k++) Pose(k, pasGrand * (i + 0.5f), y + pasGrand / 2f, tailleGrande);
+                    y += pasGrand + 12f;
+                }
+                if (titreAmeliorations) titreAmeliorations.rectTransform.anchoredPosition = new Vector2(0f, -y);
+                y += ecartTitre;
+                for (int i = 0; k < _vues.Count; i++, k++)
+                    Pose(k, pasGrand * (i % colonnesGrandes + 0.5f), y + pasGrand * (i / colonnesGrandes + 0.5f), tailleGrande);
+                colonnes = colonnesGrandes;
+            }
+            else
+            {
+                for (; k < _vues.Count; k++) Pose(k, pasCase * (k % 6 + 0.5f), pasCase * (k / 6 + 0.5f), tailleCase);
+                colonnes = 6;
+            }
+        }
 
         public void ChoisitOnglet(int i, string garder = null)
         {
@@ -103,6 +154,7 @@ namespace ItHunts.Art.UIJeu
                 if (o.souligne) o.souligne.enabled = on;
                 if (o.libelle) o.libelle.color = on ? new Color(0.969f, 0.882f, 0.702f) : new Color(0.6f, 0.57f, 0.55f);
             }
+            Agence();
             for (int k = 0; k < cases.Length; k++)
             {
                 if (cases[k] == null) continue;
@@ -138,15 +190,16 @@ namespace ItHunts.Art.UIJeu
                 rt.SetSiblingIndex(0);
                 rt.anchorMin = cible.anchorMin; rt.anchorMax = cible.anchorMax; rt.pivot = cible.pivot;
                 rt.anchoredPosition = cible.anchoredPosition;
+                rt.pivot = cible.pivot;
                 rt.sizeDelta = cible.sizeDelta * 1.3f;
                 Color c = catalogue ? catalogue.Couleur(CatalogueAmeliorations.Proprietaire(f.id)) : Color.white;
                 selection.color = new Color(c.r, c.g, c.b, 0.38f);
             }
             bool passif = catalogue && catalogue.EstPassif(f.id);
             int prop = CatalogueAmeliorations.Proprietaire(f.id);
-            if (ficheIcone) ficheIcone.Configure(f.id, 4);
+            if (ficheIcone) { ficheIcone.Configure(f.id, 4); ficheIcone.PoseEtoiles(0); }   // les 5 rangs sont dans le tableau
             if (ficheNom) ficheNom.text = f.nom;
-            if (ficheType) ficheType.text = (prop == 0 ? "Commune" : CatalogueAmeliorations.Personnages[prop]) + "  ·  " + (passif ? "passif (un seul porté à la fois)" : "amélioration");
+            if (ficheType) ficheType.text = (prop == 0 ? "Tous les personnages" : CatalogueAmeliorations.Personnages[prop]) + "  ·  " + (passif ? "passif (un seul porté à la fois)" : "amélioration");
             if (ficheEffet) ficheEffet.text = f.effet;
             for (int r = 0; r < ficheRangs.Length; r++)
                 if (ficheRangs[r]) ficheRangs[r].text = f.rangs != null && r < f.rangs.Length ? f.rangs[r] : "";

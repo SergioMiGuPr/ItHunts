@@ -27,6 +27,13 @@ namespace ItHunts.Art.UIJeu
 
         public int Visibles { get; private set; }
 
+        /// <summary>
+        /// Textes de main pour l'infobulle : (code, rang) → { nom, effet, effet au rang } (UpgradeDefinition.displayName,
+        /// description, RankText(rang)). Sans source, les fiches de la DA (catalogue) servent.
+        /// </summary>
+        public Func<string, int, string[]> SourceTextes;
+        private int _survol = -1;
+
         /// <summary>ids et rangs (0 Bronze … 4 Mythique) ; le passif est mis en bas quel que soit son index.</summary>
         public void Remplit(string[] ids, int[] rangs)
         {
@@ -76,13 +83,21 @@ namespace ItHunts.Art.UIJeu
         /// <summary>Infobulle de la case i (survol souris ou sélection à la manette dans la pause).</summary>
         public void Survole(int i)
         {
+            _survol = i >= 0 && i < Visibles && i < cases.Length && cases[i] != null ? i : -1;
             if (infobulle == null) return;
-            if (i < 0 || i >= Visibles) { infobulle.Cache(); return; }
-            infobulle.Montre(_ids[i], _rangs[i], (RectTransform)cases[i].transform);
+            if (_survol < 0) { infobulle.Cache(); return; }
+            var ancre = (RectTransform)cases[i].transform;
+            var t = SourceTextes?.Invoke(_ids[i], _rangs[i]);
+            if (t != null && t.Length >= 3) infobulle.Montre(_ids[i], _rangs[i], t[0], t[1], t[2], ancre);
+            else infobulle.Montre(_ids[i], _rangs[i], ancre);
         }
 
         private void Update()
         {
+            // case survolée ou sélectionnée à la manette : lueur douce à la couleur du personnage
+            for (int i = 0; i < lueurs.Length && i < _ids.Length; i++)
+                if (lueurs[i] && (i >= _pop.Length || _pop[i] <= 0))
+                    lueurs[i].color = Teinte(_ids[i], i == _survol ? 0.4f : 0f);
             for (int i = 0; i < _pop.Length && i < cases.Length; i++)
             {
                 if (_pop[i] <= 0 || cases[i] == null) continue;

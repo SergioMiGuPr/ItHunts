@@ -45,17 +45,36 @@ namespace ItHunts.Art.UIJeu
             if (rang)
             {
                 string r = CatalogueAmeliorations.Rangs[Mathf.Clamp(rangIndex, 0, 4)];
-                string qui = prop == 0 ? "Commune" : CatalogueAmeliorations.Personnages[prop];
-                rang.text = r + "  ·  " + qui + (passif ? "  ·  passif" : "");
+                string qui = prop == 0 ? "tous les personnages" : CatalogueAmeliorations.Personnages[prop];
+                rang.text = "Rang " + r + "  ·  " + qui + (passif ? "  ·  passif" : "");
             }
             if (effet) effet.text = effetGeneral;
             if (effetRang) effetRang.text = string.IsNullOrEmpty(effetAuRang) ? "" :
                 "<b>" + CatalogueAmeliorations.Rangs[Mathf.Clamp(rangIndex, 0, 4)] + "</b> : " + effetAuRang;
+            Agence();
             Color c = catalogue ? catalogue.Couleur(prop) : Color.white;
             foreach (var g in teintes) if (g) g.color = new Color(c.r, c.g, c.b, g.color.a);
             Place(ancre);
             _cible = 1;
             if (!gameObject.activeSelf) gameObject.SetActive(true);
+        }
+
+        [Tooltip("Haut de l'effet, écart entre l'effet et l'effet au rang, marge du bas (pixels de la boîte).")]
+        public float hautEffet = 152f, ecartTextes = 12f, margeBas = 30f, hauteurMin = 220f;
+
+        /// <summary>La boîte prend la hauteur de ses textes (effets longs sur 3 ou 4 lignes, effets courts sans vide).</summary>
+        private void Agence()
+        {
+            if (boite == null || effet == null || effetRang == null) return;
+            Canvas.ForceUpdateCanvases();
+            float he = string.IsNullOrEmpty(effet.text) ? 0f : effet.preferredHeight;
+            float hr = string.IsNullOrEmpty(effetRang.text) ? 0f : effetRang.preferredHeight;
+            var re = effet.rectTransform; re.sizeDelta = new Vector2(re.sizeDelta.x, he);
+            re.anchoredPosition = new Vector2(re.anchoredPosition.x, -hautEffet);
+            var rr = effetRang.rectTransform; rr.sizeDelta = new Vector2(rr.sizeDelta.x, hr);
+            rr.anchoredPosition = new Vector2(rr.anchoredPosition.x, -(hautEffet + he + (he > 0 ? ecartTextes : 0f)));
+            float h = Mathf.Max(hauteurMin, hautEffet + he + ecartTextes + hr + margeBas);
+            boite.sizeDelta = new Vector2(boite.sizeDelta.x, h);
         }
 
         public void Cache() => _cible = 0;

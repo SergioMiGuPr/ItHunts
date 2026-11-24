@@ -27,7 +27,7 @@ COULEURS = {
     "Neutre":   None,
     "Renard":   (0xDD, 0x37, 0x3F),
     "Koala":    (0x55, 0xC8, 0x51),
-    "Cameleon": (0xE6, 0xAA, 0x2E),
+    "Cameleon": (0xF2, 0x8C, 0x1A),
     "Hibou":    (0x5F, 0xB9, 0xED),
 }
 
@@ -88,12 +88,36 @@ def teinte(a, rgb):
     sourd = col * 0.97 + gris * 0.03                     # couleur un peu désaturée : métal émaillé, pas néon
     sombre = sourd * 0.10 + 0.004                        # ombres : presque noires, teintées
     moyen = sourd * 0.7
-    clair = sourd * 0.5 + np.array([1.0, 0.97, 0.92]) * 0.5   # reflets : pâles, chauds
+    clair = sourd * 0.68 + np.array([1.0, 0.97, 0.92]) * 0.32   # reflets : teintés (l'émail ne se lit pas comme un métal doré)
     # L de l'argent : ~0 (encre) à ~0.6 (reflets)
     t = np.clip(L / 0.55, 0, 1)
     out = np.where(t < 0.5, sombre + (moyen - sombre) * (t / 0.5), moyen + (clair - moyen) * ((t - 0.5) / 0.5))
     out = out * np.clip(L / 0.04, 0, 1) + L * (1 - np.clip(L / 0.04, 0, 1))   # l'encre reste noire
     return np.dstack([(srgb(out) * 255).astype(np.uint8), a[..., 3]])
+
+
+def masque_carre(cadre):
+    """Intérieur du cadre carré (remplissage depuis le centre jusqu'au métal), rétréci de 3 px : l'illustration y est
+    découpée, ses coins ne dépassent plus des coins arrondis du cadre."""
+    libre = cadre[..., 3] <= 40
+    h, w = libre.shape
+    dedans = np.zeros_like(libre)
+    dedans[h // 2, w // 2] = True
+    while True:                                   # remplissage par dilatation, borné par le métal
+        n = dedans.copy()
+        n[1:, :] |= dedans[:-1, :]; n[:-1, :] |= dedans[1:, :]; n[:, 1:] |= dedans[:, :-1]; n[:, :-1] |= dedans[:, 1:]
+        n &= libre
+        if (n == dedans).all():
+            break
+        dedans = n
+    for _ in range(3):                            # érosion de 3 px
+        e = dedans.copy()
+        e[1:, :] &= dedans[:-1, :]; e[:-1, :] &= dedans[1:, :]; e[:, 1:] &= dedans[:, :-1]; e[:, :-1] &= dedans[:, 1:]
+        dedans = e
+    out = np.zeros(cadre.shape, np.uint8)
+    out[..., :3] = 255
+    out[..., 3] = (dedans * 255).astype(np.uint8)
+    Image.fromarray(out).save(os.path.join(CAD, "Masque_Carre.png"))
 
 
 def etoile(taille=128, eteinte=False):
@@ -114,13 +138,14 @@ def etoile(taille=128, eteinte=False):
         d.polygon(pts(S * 0.40, S * 0.12), fill=(46, 42, 50, 255))
         d.polygon(pts(S * 0.22, S * 0.07), fill=(64, 58, 66, 255))
     else:
-        d.polygon(pts(S * 0.40, S * 0.12), fill=(176, 128, 52, 255))               # or vieilli
-        d.polygon(pts(S * 0.30, S * 0.09), fill=(222, 178, 92, 255))
-        d.polygon(pts(S * 0.15, S * 0.05), fill=(250, 232, 178, 255))              # cœur clair
+        # ivoire d'os (nuit 5, relecture) : ni or ni couleur de personnage, le rang ne se confond avec aucun cadre
+        d.polygon(pts(S * 0.40, S * 0.12), fill=(170, 160, 142, 255))
+        d.polygon(pts(S * 0.30, S * 0.09), fill=(222, 214, 196, 255))
+        d.polygon(pts(S * 0.15, S * 0.05), fill=(252, 248, 236, 255))              # cœur clair
         # moitié basse droite plus sombre : relief
         mask = Image.new("L", (S, S), 0)
         ImageDraw.Draw(mask).polygon([(c, c), (S, c), (S, S), (c, S)], fill=70)
-        ombre = Image.new("RGBA", (S, S), (60, 30, 8, 255))
+        ombre = Image.new("RGBA", (S, S), (40, 34, 30, 255))
         base = im.copy()
         im = Image.composite(Image.blend(base, ombre, 0.35), base, mask)
         # garder l'alpha d'origine
@@ -139,6 +164,7 @@ def main():
             p = os.path.join(CAD, forme + nom + ".png")
             Image.fromarray(teinte(base, rgb)).save(p)
             sorties.append(p)
+    masque_carre(carre)
     etoile(128).save(os.path.join(CAD, "Etoile_Rang.png"))
     etoile(128, True).save(os.path.join(CAD, "Etoile_Rang_Vide.png"))
     planche()

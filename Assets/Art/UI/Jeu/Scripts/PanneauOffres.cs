@@ -112,7 +112,9 @@ namespace ItHunts.Art.UIJeu
         private void RemplitCarte(Carte c, Offre o, int ames)
         {
             bool montee = !o.soin && o.rangActuel >= 0;
+            int actuel = Mathf.Clamp(o.rangActuel, 0, 4);
             int suivant = Mathf.Clamp(o.rangActuel + 1, 0, 4);
+            if (montee && o.rangActuel >= 4) { c.racine.gameObject.SetActive(false); return; }   // déjà Mythique : rien à monter
             c.proprietaire = o.soin ? 0 : CatalogueAmeliorations.Proprietaire(o.id);
             if (c.avant)
             {
@@ -134,19 +136,22 @@ namespace ItHunts.Art.UIJeu
             }
             else
             {
-                if (c.avant) c.avant.Configure(o.id, montee ? o.rangActuel : 0);
+                if (c.avant) c.avant.Configure(o.id, montee ? actuel : 0);
                 if (c.apres) { if (montee) c.apres.Configure(o.id, suivant); else c.apres.Vide(); }
                 if (c.fleche) c.fleche.gameObject.SetActive(montee);
                 if (c.rang)
                 {
-                    string a = montee ? CatalogueAmeliorations.Rangs[o.rangActuel] : "Nouvelle";
-                    c.rang.text = "<color=#" + ColorUtility.ToHtmlStringRGB(rangAvant) + ">" + a + "</color>  →  <color=#" +
-                                  ColorUtility.ToHtmlStringRGB(rangApres) + ">" + CatalogueAmeliorations.Rangs[suivant] + "</color>";
+                    string a = montee ? CatalogueAmeliorations.Rangs[actuel] : "Nouvelle";
+                    bool ok = o.prix <= ames || coffre || o.prix <= 0;
+                    // carte trop chère : texte uni (les balises de couleur l'emporteraient sur la teinte éteinte)
+                    c.rang.text = ok ? "<color=#" + ColorUtility.ToHtmlStringRGB(rangAvant) + ">" + a + "</color>  →  <color=#" +
+                                       ColorUtility.ToHtmlStringRGB(rangApres) + ">" + CatalogueAmeliorations.Rangs[suivant] + "</color>"
+                                     : a + "  →  " + CatalogueAmeliorations.Rangs[suivant];
                 }
                 if (c.etiquette)
                 {
                     bool passif = catalogue && catalogue.EstPassif(o.id);
-                    string qui = c.proprietaire == 0 ? "Commune" : CatalogueAmeliorations.Personnages[c.proprietaire];
+                    string qui = c.proprietaire == 0 ? "tous les personnages" : CatalogueAmeliorations.Personnages[c.proprietaire];
                     c.etiquette.text = (montee ? "Montée de rang" : passif ? "Nouveau passif" : "Nouvelle amélioration") + "  ·  " + qui;
                 }
             }

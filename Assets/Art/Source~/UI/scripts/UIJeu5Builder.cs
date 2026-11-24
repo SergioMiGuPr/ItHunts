@@ -51,6 +51,14 @@ public static class UIJeu5Builder
         rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
         return rt;
     }
+    /// <summary>Pivot au centre sans déplacer le rect (une échelle de survol ou d'apparition grandit autour du centre).</summary>
+    static RectTransform Centre(RectTransform rt)
+    {
+        Vector2 p0 = rt.pivot, d = new Vector2(0.5f, 0.5f) - p0;
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition += new Vector2(d.x * rt.sizeDelta.x, d.y * rt.sizeDelta.y);
+        return rt;
+    }
     static Image Img(RectTransform rt, Sprite sp, Color? c = null, bool ray = false, bool aspect = true)
     {
         var im = rt.gameObject.AddComponent<Image>(); im.sprite = sp; im.raycastTarget = ray; im.color = c ?? Color.white; im.preserveAspect = aspect;
@@ -106,7 +114,9 @@ public static class UIJeu5Builder
     {
         var fichiers = new List<string>();
         foreach (var n in FICHIERS_PERSO) { fichiers.Add($"{AM}/Cadres/Cadre_{n}.png"); fichiers.Add($"{AM}/Cadres/Cadre_Passif_{n}.png"); }
-        fichiers.Add($"{AM}/Cadres/Etoile_Rang.png"); fichiers.Add($"{AM}/Cadres/Etoile_Rang_Vide.png");
+        fichiers.Add($"{AM}/Cadres/Etoile_Rang.png"); fichiers.Add($"{AM}/Cadres/Etoile_Rang_Vide.png"); fichiers.Add($"{AM}/Cadres/Masque_Carre.png");
+        fichiers.Add($"{AM}/Icones/ICO_Soin.png");
+        fichiers.Add($"{AM}/Codex_Vignette_Communes_Discrete.png"); fichiers.Add($"{AM}/Codex_Vignette_Communes_Illuminee.png");
         if (Directory.Exists($"{J}/Fonds")) fichiers.AddRange(Directory.GetFiles($"{J}/Fonds", "*.jpg").Select(f => f.Replace('\\', '/')));
         int n0 = 0;
         foreach (var f in fichiers)
@@ -131,6 +141,7 @@ public static class UIJeu5Builder
         c.cadresPassifsPersonnage = FICHIERS_PERSO.Select(n => Spr($"{AM}/Cadres/Cadre_Passif_{n}.png")).ToArray();
         c.etoile = Spr($"{AM}/Cadres/Etoile_Rang.png");
         c.etoileVide = Spr($"{AM}/Cadres/Etoile_Rang_Vide.png");
+        c.masqueCarre = Spr($"{AM}/Cadres/Masque_Carre.png");
         var fiches = new List<CatalogueAmeliorations.Fiche>();
         foreach (var l in File.ReadAllLines(TSV))
         {
@@ -159,6 +170,7 @@ public static class UIJeu5Builder
         var et = Plein("Etoiles", rt);
         ia.etoiles = Enumerable.Range(0, 5).Select(i => Img(N("Etoile_" + (i + 1), et, new Vector2(0.5f, 0), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(12, 12)), cat.etoile)).ToArray();
         ia.Configure("G1", 0);
+        Centre(rt);
         return ia;
     }
 
@@ -172,8 +184,8 @@ public static class UIJeu5Builder
         ib.groupe = r.gameObject.AddComponent<CanvasGroup>();
         var b = N("Boite", r, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, new Vector2(W, H));
         ib.boite = b;
-        Img(HG("Fond", b, 10, 10, W - 20, H - 20), null, FOND, false, false);
-        Cadre(b, W, H, "Cadre", 1.6f);
+        var fd = Plein("Fond", b); fd.offsetMin = new Vector2(10, 10); fd.offsetMax = new Vector2(-10, -10); Img(fd, null, FOND, false, false);
+        var cdr = Img(Plein("Cadre", b), Spr(CADRE), null, false, false); cdr.type = Image.Type.Sliced; cdr.pixelsPerUnitMultiplier = 1.6f;
         var filet = Filet(b, "Filet", 150, 96, W - 180, 6, new Color(1, 1, 1, 0.75f));
         var lueur = Img(HG("Lueur", b, -30, -30, 250, 250), Spr(LUEUR), new Color(1, 1, 1, 0.35f), false, false);
         ib.icone = Icone(b, "Illustration", 26, 26, 112, cat);
@@ -207,7 +219,7 @@ public static class UIJeu5Builder
             var c = N("Case_" + (i + 1), r, Vector2.zero, Vector2.zero, new Vector2(0, i * PAS + 6), new Vector2(T, T));
             lueurs.Add(Img(C("Lueur", c, 0, 0, T * 2.2f, T * 2.2f), Spr(LUEUR), Color.clear, false, false));
             var ia = Icone(c, "Icone", 0, 0, T, cat);
-            ia.tailleEtoile = 0.3f; ia.pasEtoile = 0.21f;              // HUD : étoiles lisibles à 58 px
+            ia.tailleEtoile = 0.28f; ia.pasEtoile = 0.18f;              // HUD : étoiles lisibles à 58 px
             var hit = Img(Plein("Survol", c), null, new Color(0, 0, 0, 0), true, false);
             var sv = c.gameObject.AddComponent<SurvolCase>(); sv.colonne = col; sv.index = i;
             cases.Add(ia);
@@ -235,10 +247,13 @@ public static class UIJeu5Builder
         c.nom = Txt(HG("Nom", rt, 0, 254, w, 42), GG("SemiBold"), 31, OR, TextAnchor.MiddleCenter, "Nom");
         c.liseré = Filet(rt, "Filet", w * 0.2f, 298, w * 0.6f, 5, new Color(1, 1, 1, 0.8f));
         c.rang = Txt(HG("Rang", rt, 0, 306, w, 32), EB("SemiBold"), 23, AME, TextAnchor.MiddleCenter, "Nouvelle → Bronze");
-        c.description = Txt(HG("Description", rt, 26, 344, w - 52, 120), EB("Italic"), 20, DESC, TextAnchor.UpperCenter, "", true, true);
+        c.description = Txt(HG("Description", rt, 26, 344, w - 52, h - 344 - 70), EB("Italic"), 20, DESC, TextAnchor.UpperCenter, "", true, true);
+        c.description.resizeTextForBestFit = true; c.description.resizeTextMinSize = 15; c.description.resizeTextMaxSize = 20;
+        c.description.verticalOverflow = VerticalWrapMode.Truncate;
         c.flamme = Img(HG("Flamme", rt, w / 2f - 44, h - 60, 22, 36), Spr(FLAMME));
         c.prix = Txt(HG("Prix", rt, w / 2f - 14, h - 64, 120, 44), EB("SemiBold"), 32, AME, TextAnchor.MiddleLeft, "60");
         c.corps = new Graphic[] { cad };
+        Centre(rt);
         return c;
     }
 
@@ -257,13 +272,13 @@ public static class UIJeu5Builder
         po.solde = Txt(HG("Solde", r, W - 160, 46, 120, 44), EB("SemiBold"), 34, AME, TextAnchor.MiddleLeft, "120");
         float gx = (W - 3 * CW - 2 * 36) / 2f;
         po.cartes = Enumerable.Range(0, 3).Select(i => Carte(r, "Carte_" + (i + 1), gx + i * (CW + 36), 138, CW, CH, cat)).ToArray();
-        po.illustrationSoin = Spr($"{AM}/Icones/ICO_G19.png");
+        po.illustrationSoin = Spr($"{AM}/Icones/ICO_Soin.png");
         if (coffre)
         {
-            po.relancer = Cartouche(r, "Relancer", W / 2f - 300, H - 98, 260, 62, "Relancer");
-            po.flammeRelance = Img(HG("Flamme_Relance", r, W / 2f - 300 + 270, H - 86, 20, 34), Spr(FLAMME));
-            po.prixRelance = Txt(HG("Prix_Relance", r, W / 2f - 300 + 296, H - 90, 90, 40), EB("SemiBold"), 28, AME, TextAnchor.MiddleLeft, "25");
-            po.fermer = Cartouche(r, "Fermer", W / 2f + 60, H - 98, 260, 62, "Fermer");
+            po.relancer = Cartouche(r, "Relancer", W / 2f - 350, H - 98, 260, 62, "Relancer");
+            po.flammeRelance = Img(HG("Flamme_Relance", r, W / 2f - 76, H - 86, 20, 34), Spr(FLAMME));
+            po.prixRelance = Txt(HG("Prix_Relance", r, W / 2f - 50, H - 90, 96, 40), EB("SemiBold"), 26, AME, TextAnchor.MiddleLeft, "25");
+            po.fermer = Cartouche(r, "Fermer", W / 2f + 70, H - 98, 260, 62, "Fermer");
             po.apercu = new[]
             {
                 new PanneauOffres.Offre { id = "K3", nom = Nom(cat, "K3"), rangActuel = -1, description = Desc(cat, "K3", 0) },
@@ -300,7 +315,8 @@ public static class UIJeu5Builder
     {
         const float W = 1760, H = 1010;
         var r = C("Menu_Codex", null, 0, 0, 1920, 1080);
-        Img(Plein("Fond_Peint", r), Spr("Assets/Art/UI/Menus/Choix/Choix_Fond.png"), new Color(0.42f, 0.4f, 0.46f), false, false);
+        // fond : le campement assombri (le fond du choix du personnage porte son propre cadre, qui doublait celui du codex)
+        Img(Plein("Fond_Peint", r), Spr("Assets/Art/UI/Menus/Campement/Campement_Fond.png"), new Color(0.3f, 0.28f, 0.32f), false, false);
         Img(Plein("Voile", r), null, new Color(0.02f, 0.01f, 0.03f, 0.45f), true, false);
         var p = C("Panneau", r, 0, 0, W, H);
         Img(HG("Fond", p, 14, 14, W - 28, H - 28), null, FOND, false, false);
@@ -308,7 +324,7 @@ public static class UIJeu5Builder
         var cx = r.gameObject.AddComponent<CodexAmeliorations>();
         cx.catalogue = cat;
         Txt(HG("Titre", p, 0, 26, W, 72), GG("Bold"), 62, OR, TextAnchor.MiddleCenter, "Codex");
-        Txt(HG("SousTitre", p, 0, 92, W, 26), EB("Italic"), 21, DESC, TextAnchor.MiddleCenter, "Les améliorations de chaque compagnon, et celles de tous");
+        Txt(HG("SousTitre", p, 0, 92, W, 26), EB("Italic"), 21, DESC, TextAnchor.MiddleCenter, "Les améliorations de chaque personnage, et celles de tous");
         // onglets
         var onglets = new List<CodexAmeliorations.Onglet>();
         float ox = 80, ow = 150, og = 22;
@@ -326,13 +342,12 @@ public static class UIJeu5Builder
             }
             else
             {
-                // Communes : l'orbe (Grande orbe) dans le cadre de fer, à la taille des vignettes
-                var ia = Icone(t, "Vignette_Commune", 15, 2, 120, cat);
-                ia.Configure("G5", 0); ia.PoseEtoiles(0);
-                o.vignette = ia.cadre;
-                o.discrete = o.illuminee = ia.cadre.sprite;
-                o.autres = new Graphic[] { ia.icone };
+                // Communes : vignette de même facture (cadre de vignette en fer, l'orbe au centre ; vignette_communes.py)
+                o.discrete = Spr($"{AM}/Codex_Vignette_Communes_Discrete.png");
+                o.illuminee = Spr($"{AM}/Codex_Vignette_Communes_Illuminee.png");
+                o.vignette = Img(HG("Vignette", t, 13, 0, 124, 124), o.discrete);
             }
+            var oc = t.gameObject.AddComponent<OngletCodex>(); oc.codex = cx; oc.index = i;
             o.libelle = Txt(HG("Libelle", t, 0, 128, ow, 30), EB("SemiBold"), 23, OR, TextAnchor.MiddleCenter, CatalogueAmeliorations.Personnages[i]);
             o.souligne = Filet(t, "Souligne", 20, 162, ow - 40, 6, cat.Couleur(i));
             onglets.Add(o);
@@ -343,6 +358,8 @@ public static class UIJeu5Builder
         const float T = 94, PAS = 114;
         var grille = HG("Grille", p, 96, 344, 6 * PAS, 5 * PAS);
         cx.selection = Img(HG("Selection", grille, 0, 0, T * 1.3f, T * 1.3f), Spr(LUEUR), new Color(1, 1, 1, 0.35f), false, false);
+        cx.titrePassifs = Txt(HG("Titre_Passifs", grille, 0, 0, 600, 34), EB("SemiBold"), 23, OR, TextAnchor.MiddleLeft, "Passifs  —  un seul porté à la fois");
+        cx.titreAmeliorations = Txt(HG("Titre_Ameliorations", grille, 0, 0, 600, 34), EB("SemiBold"), 23, OR, TextAnchor.MiddleLeft, "Améliorations");
         cx.cases = Enumerable.Range(0, 30).Select(i =>
         {
             var ia = Icone(grille, "Case_" + (i + 1), (i % 6) * PAS + (PAS - T) / 2f, (i / 6) * PAS + 4, T, cat);
@@ -353,7 +370,7 @@ public static class UIJeu5Builder
         // séparation et fiche
         Filet(p, "Separation", 920, 150, 4, H - 260, new Color(0.6f, 0.55f, 0.62f, 0.35f));
         var f = HG("Fiche", p, 960, 140, W - 1040, H - 250);
-        var fl = Img(HG("Lueur", f, -60, -50, 340, 340), Spr(LUEUR), new Color(1, 1, 1, 0.3f), false, false);
+        var fl = Img(HG("Lueur", f, -20, -10, 260, 260), Spr(LUEUR), new Color(1, 1, 1, 0.22f), false, false);
         cx.ficheIcone = Icone(f, "Illustration", 0, 10, 220, cat, true);
         float fx = 250, fw = W - 1040 - 250;
         cx.ficheNom = Txt(HG("Nom", f, fx, 20, fw, 60), GG("SemiBold"), 46, OR, TextAnchor.MiddleLeft, "Nom");
@@ -373,7 +390,7 @@ public static class UIJeu5Builder
         cx.ficheSynergies = Txt(HG("Synergies", f, 0, ry + 5 * 64 + 16, W - 1040, 60), EB("Italic"), 21, DESC, TextAnchor.UpperLeft, "", true, true);
         cx.teintes = new Graphic[] { filet, fl };
         cx.fermer = Cartouche(p, "Retour", W - 330, H - 96, 250, 60, "Retour");
-        Txt(HG("Aide", p, 80, H - 82, 800, 40), EB("Italic"), 20, new Color(0.6f, 0.57f, 0.55f), TextAnchor.MiddleLeft, "Q / E ou gâchettes : onglet   ·   flèches ou stick : choisir");
+        cx.aide = Txt(HG("Aide", p, 80, H - 82, 800, 40), EB("Italic"), 20, new Color(0.6f, 0.57f, 0.55f), TextAnchor.MiddleLeft, "Q / E ou gâchettes : onglet   ·   flèches ou stick : choisir");
         cx.Remplit(cat.fiches);
         cx.ChoisitOnglet(0);
         return r.gameObject;
