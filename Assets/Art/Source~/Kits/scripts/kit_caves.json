@@ -620,12 +620,12 @@
  "SM_Cave_PorteVerrouillee": {
   "doc": "Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure).",
   "taille": [
-   6.0,
+   6.01,
    1.43,
    6.65
   ],
   "bas": -0.05,
-  "triangles": 1120,
+  "triangles": 1680,
   "materiaux": [
    "M_Bib_Moellons_Peint",
    "M_Bib_PierreTaillee_Peint",
@@ -846,6 +846,111 @@
    "M_Bib_PierreTaillee_Peint",
    "M_Bib_BoisNeuf",
    "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Cave_PontSuspendu_12m": {
+  "doc": "Pont suspendu de 12 m (planches de bois pourri sur cordes, flèche de 0.8 m, deux planches manquantes), poteaux aux bouts.",
+  "taille": [
+   12.7,
+   2.02,
+   2.57
+  ],
+  "bas": -0.97,
+  "triangles": 1916,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Corde"
+  ]
+ },
+ "SM_Cave_Rebord_3m": {
+  "doc": "Rebord de mur de 3 × 0.9 m : dalle brute sur trois corbeaux, dessus plat à 0 (saut, hissage, wall jump).",
+  "taille": [
+   3.0,
+   0.9,
+   1.03
+  ],
+  "bas": -1.03,
+  "triangles": 120,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Moellons_Peint"
+  ]
+ },
+ "SM_Cave_PlateformeTraction": {
+  "doc": "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant.",
+  "taille": [
+   3.0,
+   3.01,
+   4.47
+  ],
+  "bas": -0.45,
+  "triangles": 1192,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Cave_SalleHaute_8x8": {
+  "doc": "Salle en hauteur de 8 × 8 m, plancher à 6 m sur quatre poteaux : fenêtre au fond, porte à gauche, garde-corps, passage d'échelle.",
+  "taille": [
+   8.3,
+   8.3,
+   9.82
+  ],
+  "bas": 0.0,
+  "triangles": 1884,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint"
+  ]
+ },
+ "SM_Cave_Passerelle_Pente_10m": {
+  "doc": "Passerelle en pente : monte de 3 m sur 10 m (16.7°), rampe lisse, garde-corps de corde.",
+  "taille": [
+   10.11,
+   2.6,
+   3.5
+  ],
+  "bas": -0.51,
+  "triangles": 2004,
+  "materiaux": [
+   "M_Bib_BoisPourri"
+  ]
+ },
+ "SM_Cave_Sol_Puits_8x8": {
+  "doc": "Dalle de sol de 8 × 8 m percée, avec le puits dans son ouverture (eau à -1.5 m, fond à -2.4 m).",
+  "taille": [
+   4.58,
+   3.2,
+   6.45
+  ],
+  "bas": -2.41,
+  "triangles": 1120,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Terre",
+   "M_Bib_BoisNeuf",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Cave_Sol_Fosse_8x8": {
+  "doc": "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter.",
+  "taille": [
+   8.0,
+   8.0,
+   4.09
+  ],
+  "bas": -4.01,
+  "triangles": 462,
+  "materiaux": [
+   "M_Bib_Dalles_Sales",
+   "M_Bib_Moellons_Peint",
+   "M_Bib_Terre",
+   "M_Bib_RocheCave_Peint",
+   "M_Bib_BoisPourri",
+   "M_Bib_PierreTaillee_Peint"
   ]
  }
 }

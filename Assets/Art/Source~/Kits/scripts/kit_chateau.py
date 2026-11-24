@@ -575,6 +575,9 @@ def SM_Chateau_Estrade_Musiciens():
 
 # nuit 4, lot 3 : hauteur, fenêtres, chandeliers (kit_hauteur.py)
 H.enregistre(PIECES, H.CHATEAU, H.pieces_chateau(H.CHATEAU))
+import kit_nuit5 as N5
+importlib.reload(N5)
+H.enregistre(PIECES, H.CHATEAU, N5.pieces_chateau(H.CHATEAU))   # nuit 5, lot 3
 
 
 def premiere_phrase(doc):

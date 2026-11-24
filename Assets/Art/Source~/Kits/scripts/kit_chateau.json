@@ -575,12 +575,12 @@
  "SM_Chateau_PorteVerrouillee": {
   "doc": "Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure).",
   "taille": [
-   6.0,
+   6.01,
    1.43,
    6.65
   ],
   "bas": -0.05,
-  "triangles": 1120,
+  "triangles": 1680,
   "materiaux": [
    "M_Chateau_PierreClaire",
    "M_Bib_Trim",
@@ -816,6 +816,172 @@
    "M_Bib_FerRouille",
    "M_Bib_Trim",
    "M_Chiffon_Brule"
+  ]
+ },
+ "SM_Chateau_PontSuspendu_12m": {
+  "doc": "Pont suspendu de 12 m (planches sur chaînes, flèche de 0.8 m), piliers de pierre aux bouts.",
+  "taille": [
+   12.78,
+   2.28,
+   2.62
+  ],
+  "bas": -0.97,
+  "triangles": 2024,
+  "materiaux": [
+   "M_Bib_BoisNeuf",
+   "M_Bib_FerRouille",
+   "M_Chateau_PierreClaire"
+  ]
+ },
+ "SM_Chateau_Rebord_3m": {
+  "doc": "Rebord de mur de 3 × 0.9 m : corniche moulurée sur trois consoles, dessus plat à 0.",
+  "taille": [
+   3.0,
+   0.9,
+   1.25
+  ],
+  "bas": -1.25,
+  "triangles": 72,
+  "materiaux": [
+   "M_Chateau_PierreClaire"
+  ]
+ },
+ "SM_Chateau_PlateformeTraction": {
+  "doc": "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant.",
+  "taille": [
+   3.0,
+   3.0,
+   4.47
+  ],
+  "bas": -0.45,
+  "triangles": 1066,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Chateau_Dalles",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Chateau_SalleHaute_8x8": {
+  "doc": "Salle en hauteur de 8 × 8 m, plancher à 6 m sur quatre piliers : fenêtre au fond, porte à gauche, balustrade, passage d'échelle.",
+  "taille": [
+   8.3,
+   8.3,
+   9.82
+  ],
+  "bas": 0.0,
+  "triangles": 2608,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Chateau_Parquet",
+   "M_Bib_BoisNeuf"
+  ]
+ },
+ "SM_Chateau_Passerelle_Pente_10m": {
+  "doc": "Passerelle en pente : monte de 3 m sur 10 m (16.7°), dallée, balustrade, rampe lisse.",
+  "taille": [
+   10.11,
+   2.6,
+   3.5
+  ],
+  "bas": -0.51,
+  "triangles": 4036,
+  "materiaux": [
+   "M_Chateau_Dalles",
+   "M_Chateau_PierreClaire"
+  ]
+ },
+ "SM_Chateau_Balcon_Pierre_4m": {
+  "doc": "Balcon de pierre de 4 × 1.8 m en encorbellement, trois consoles moulurées, balustrade.",
+  "taille": [
+   4.1,
+   1.88,
+   1.46
+  ],
+  "bas": -1.45,
+  "triangles": 1240,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_Marbre"
+  ]
+ },
+ "SM_Chateau_Sol_Fosse_8x8": {
+  "doc": "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter.",
+  "taille": [
+   8.0,
+   8.0,
+   4.11
+  ],
+  "bas": -4.01,
+  "triangles": 462,
+  "materiaux": [
+   "M_Chateau_Dalles",
+   "M_Chateau_PierreClaire",
+   "M_Bib_BoisNeuf"
+  ]
+ },
+ "SM_Chateau_Fenetre_Vue_Simple": {
+  "doc": "Fenêtre en lancette simple qui montre l'extérieur (ciel étoilé, lune, paysage lointain) : baie de 1.6 × 6.6 m dans un panneau de 4 × 12 m.",
+  "taille": [
+   4.01,
+   1.68,
+   12.0
+  ],
+  "bas": 0.0,
+  "triangles": 864,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_FerRouille",
+   "M_Kit_VitreVue",
+   "M_Kit_VitreVue_Ambre",
+   "M_Kit_VitreVue_Rouge"
+  ]
+ },
+ "SM_Chateau_Fenetre_Vue_Double": {
+  "doc": "Fenêtre à deux lancettes et oculus qui montre l'extérieur : baie de 4 × 7.3 m dans un panneau de 8 × 12 m.",
+  "taille": [
+   8.02,
+   1.68,
+   12.0
+  ],
+  "bas": 0.0,
+  "triangles": 1794,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_FerRouille",
+   "M_Kit_VitreVue",
+   "M_Kit_VitreVue_Ambre",
+   "M_Kit_VitreVue_Rouge"
+  ]
+ },
+ "SM_Chateau_Fenetre_Vue_Triple": {
+  "doc": "Haute fenêtre à trois lancettes et rose qui montre l'extérieur : baie de 5.6 × 14.3 m dans un panneau de 8 × 20 m.",
+  "taille": [
+   8.01,
+   1.68,
+   20.0
+  ],
+  "bas": 0.0,
+  "triangles": 2560,
+  "materiaux": [
+   "M_Chateau_PierreClaire",
+   "M_Bib_FerRouille",
+   "M_Kit_VitreVue",
+   "M_Kit_VitreVue_Ambre",
+   "M_Kit_VitreVue_Rouge"
+  ]
+ },
+ "SM_Chateau_SupportRatelier": {
+  "doc": "Petit support de râtelier de 0.6 × 0.5 × 1.4 m : deux lances et une hallebarde.",
+  "taille": [
+   0.6,
+   0.5,
+   1.59
+  ],
+  "bas": -0.01,
+  "triangles": 140,
+  "materiaux": [
+   "M_Bib_BoisNeuf",
+   "M_Bib_FerRouille"
   ]
  }
 }

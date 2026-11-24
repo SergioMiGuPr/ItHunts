@@ -152,7 +152,7 @@ if __name__ == "__main__":
             r = analyse(o, CORR is not None)
             for k in tot: tot[k] += r[k]
         # contrôle de la pièce entière : tous ses objets réunis (recouvrements entre objets d'une même pièce)
-        meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+        meshes = [o for o in bpy.context.scene.objects if o.type == "MESH" and not o.name.startswith("Col_")]   # collisions invisibles exclues (nuit 5)
         if not CORR and len(meshes) > 1:
             bpy.ops.object.select_all(action="DESELECT")
             for o in meshes: o.select_set(True)

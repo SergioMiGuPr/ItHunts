@@ -622,6 +622,9 @@ def SM_Cave_Candelabre():
 
 # ------------------------------------------------------------------ nuit 4, lot 3 : hauteur (kit_hauteur.py)
 H.enregistre(PIECES, H.CAVE, H.pieces_caves(H.CAVE))
+import kit_nuit5 as N5
+importlib.reload(N5)
+H.enregistre(PIECES, H.CAVE, N5.pieces_caves(H.CAVE))   # nuit 5, lot 3
 
 
 # ------------------------------------------------------------------ principal

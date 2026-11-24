@@ -73,6 +73,17 @@ Shader "ItHunts/Toon"
         _LayerTop ("Couche : sur les dessus", Range(0, 1)) = 0
         _HeightBlend ("Mélange en hauteur : largeur de la transition", Range(0.01, 0.5)) = 0.06
 
+        [Header(Sol melange (nuit 5))]
+        [Toggle(_SOLMELANGE)] _SolMelange ("Sol mélangé : terre (base), gravier, herbe sèche, mousse", Float) = 0
+        [NoScaleOffset] _SolGravier ("Gravier (alpha = hauteur)", 2D) = "gray" {}
+        [NoScaleOffset] _SolHerbe ("Herbe sèche (alpha = hauteur)", 2D) = "gray" {}
+        [NoScaleOffset] _SolMousse ("Mousse (alpha = hauteur)", 2D) = "gray" {}
+        _SolQuantite ("Quantité : x gravier, y herbe, z mousse", Vector) = (0.35, 0.45, 0.2, 0)
+        _SolEchelle ("Taille des plaques (m) : x gravier, y herbe, z mousse", Vector) = (7, 9, 5, 0)
+        _SolTuile ("Taille des tuiles (m) : x gravier, y herbe, z mousse, w terre", Vector) = (2, 2, 2, 2)
+        _SolDouceur ("Largeur des transitions", Range(0.02, 0.5)) = 0.16
+        _SolAntiRepet ("Anti-répétition", Range(0, 1)) = 1
+
         [Header(Rendu)]
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Faces", Float) = 2
         // Translucide (verre de la lanterne) : SrcAlpha / OneMinusSrcAlpha, ZWrite Off, file 3000, et passes
@@ -105,6 +116,7 @@ Shader "ItHunts/Toon"
             #pragma shader_feature_local_fragment _RECEIVE_SHADOWS_OFF
             #pragma shader_feature_local_fragment _WORLD_UV
             #pragma shader_feature_local _DECOR
+            #pragma shader_feature_local_fragment _SOLMELANGE
 
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS

@@ -1,0 +1,717 @@
+# -*- coding: utf-8 -*-
+"""Nuit 5, lot 3 : pièces pour de vraies cartes en 3 dimensions (importé par kit_caves.py, kit_chateau.py et kit_jardin.py).
+
+La session main construit de grandes cartes faites à la main avec les kits ; ce module fournit ce qui manquait :
+- verticalité : pont suspendu, rebord de mur, plateforme de traction (plaque magnétique qui luit), salle en hauteur,
+  passerelle en pente, balcon de pierre ;
+- acte II : fenêtres dont les vitres montrent l'extérieur (ciel, lune, paysage lointain : matériaux `M_Kit_VitreVue*`,
+  shader ItHunts/VueExterieure) ;
+- acte III : lisière de forêt dense (droite et en angle), sous-bois, rochers, grand arbre praticable ;
+- sols percés : puits dans sa dalle, fosse dans sa dalle ;
+- acte II : support de râtelier (petit présentoir).
+
+Mesures (ART-HANDOFF § 3) : saut 1.3 m, hissage 3.7 m (un saut) ou 5.3 m (double saut), dessus d'au moins 0.6 m, pente
+de marche 35° au plus ; traqueur : plateformes de moins de 10 m de profondeur. Conventions de kitlib : Z en haut, avant vers
+-Y (Unity +Z), pivot au sol sauf mention ; `Col_*` = collision seule ; `Garde_Corps` ; `Deco_SansCollision`.
+"""
+import math, random
+from mathutils import Vector
+import kitlib as L
+import kit_hauteur as H
+
+COL = H.COL
+MAGNET = "M_Kit_Magnetique"            # plaque de traction : fer sombre, runes bleu pâle qui luisent (créé par KitBuilder)
+VUE = {"M_Kit_Vitrail": "M_Kit_VitreVue", "M_Kit_Vitrail_Rouge": "M_Kit_VitreVue_Rouge", "M_Kit_Vitrail_Ambre": "M_Kit_VitreVue_Ambre"}
+FEUIL_SOMBRE = "M_Kit_Feuillage_Sombre"   # feuillage du fond de la lisière (créé par KitBuilder)
+FEUIL_FORET = "M_Kit_Feuillage_Foret"     # feuillage de la forêt (lisière, arbre, fougères) : plus vert que le lierre
+FOND = "M_Fond_Noir"
+
+
+def _catenaire(x, Lx, sag):
+    u = 2 * x / Lx
+    return -sag * (1 - u * u)
+
+
+# =================================================================== 1. pont suspendu
+def pont_suspendu(S, nom, Lx=12.0, W=1.7, sag=0.8):
+    """Pont suspendu de Lx m entre deux plateformes (dessus à 0 aux deux bouts, pivot au centre) : tablier de planches qui
+    fléchit de `sag` au milieu, deux mains courantes et des suspentes ; poteaux aux bouts. Collision : `Col_Tablier` (bande
+    lisse qui suit la flèche) et `Garde_Corps` (mains courantes)."""
+    k = L.K(nom)
+    kg = L.K("Garde_Corps")
+    kc = L.K("Col_Tablier")
+    rnd = random.Random(S["seed"] + 501)
+    act = S["act"]
+    lien = S["fer"] if act == "Chateau" else S["corde"]
+    planche = S["planche"] if act != "Chateau" else S["bois"]
+    n = int(Lx / 0.34)
+    for i in range(n):
+        x = -Lx / 2 + (i + 0.5) * Lx / n
+        z = _catenaire(x, Lx, sag)
+        x2 = x + 0.01
+        pente = math.atan2(_catenaire(x2, Lx, sag) - z, 0.01)
+        manque = act == "Cave" and rnd.random() < 0.06 and 2 < i < n - 3
+        if manque:
+            continue
+        w = W + rnd.uniform(-0.12, 0.08)
+        # planche inclinée selon la flèche : obox entre deux points du câble
+        a = Vector((x - Lx / n * 0.45, rnd.uniform(-0.04, 0.04), _catenaire(x - Lx / n * 0.45, Lx, sag) - 0.05))
+        b = Vector((x + Lx / n * 0.45, a.y, _catenaire(x + Lx / n * 0.45, Lx, sag) - 0.05))
+        k.obox(a, b, w, 0.08, planche, up=(0, 0, 1))
+    up = Vector((0, 0, 1))
+    seg = 24
+    for sy in (-1, 1):
+        y = sy * (W / 2 - 0.05)
+        bas = [Vector((-Lx / 2 + Lx * t / seg, y, _catenaire(-Lx / 2 + Lx * t / seg, Lx, sag) - 0.14)) for t in range(seg + 1)]
+        haut = [Vector((-Lx / 2 + Lx * t / seg, y, _catenaire(-Lx / 2 + Lx * t / seg, Lx, sag * 0.55) + 1.15)) for t in range(seg + 1)]
+        for t in range(seg):
+            k.obox(bas[t], bas[t + 1], 0.07, 0.07, lien)
+            kg.obox(haut[t], haut[t + 1], 0.07, 0.07, lien)
+        for t in range(0, seg + 1, 2):
+            k.obox(bas[t], haut[t], 0.035, 0.035, lien)
+    # poteaux et ancrages aux bouts
+    for sx in (-1, 1):
+        x = sx * (Lx / 2 + 0.15)
+        for sy in (-1, 1):
+            y = sy * (W / 2 + 0.05)
+            if act == "Chateau":
+                k.box((x, y, 0.65), (0.34, 0.34, 1.4), S["pierre"])
+                k.lathe((x, y, 1.35), [(0.2, 0), (0.24, 0.06), (0.12, 0.22), (0.0, 0.3)], S["pierre"], n=8)
+            else:
+                k.cyl((x, y, -0.4), 0.11, 2.0, S["bois"], n=8, rough=0.08, seed=rnd.randint(0, 99))
+        k.box((x, 0, -0.08), (0.4, W + 0.3, 0.16), S["bois"] if act != "Chateau" else S["pierre"])
+    # collision : bande lisse (dessous des planches au plus haut)
+    for t in range(seg):
+        x0, x1 = -Lx / 2 + Lx * t / seg, -Lx / 2 + Lx * (t + 1) / seg
+        z0, z1 = _catenaire(x0, Lx, sag) - 0.01, _catenaire(x1, Lx, sag) - 0.01
+        H.rampe_col(kc, [(x0, -W / 2, z0), (x1, -W / 2, z1), (x1, W / 2, z1), (x0, W / 2, z0)])
+    k.empty("Appui_A", (-Lx / 2, 0, 0))
+    k.empty("Appui_B", (Lx / 2, 0, 0))
+    ob = k.finish(S["seed"] + 501, H.PEINT_OBJET)
+    H.enfant(ob, kg, S["seed"] + 502)
+    H.enfant(ob, kc, 0)
+    return ob
+
+
+# =================================================================== 2. rebord de mur
+def rebord(S, nom, Lx=3.0, D=0.9):
+    """Rebord de mur de Lx × D m : dessus plat à 0 (pivot au ras du mur, au centre du bord arrière), saillie vers l'avant
+    (-Y), consoles dessous. À poser en quinconce tous les 2.2 à 3.5 m pour monter (saut et hissage, wall jump)."""
+    k = L.K(nom)
+    rnd = random.Random(S["seed"] + 511)
+    act = S["act"]
+    ep = 0.3
+    if act == "Chateau":
+        # corniche moulurée : talon, tablette, larmier
+        prof = [(0.0, 0.0), (-D, 0.0), (-D, -0.12), (-D + 0.08, -0.16), (-D + 0.08, -ep), (-0.25, -ep - 0.12), (0.0, -ep - 0.12)]
+        H.prism(k, list(reversed(prof)), -Lx / 2, Lx / 2, S["pierre"], axis="x")
+        for x in (-Lx / 2 + 0.35, 0.0, Lx / 2 - 0.35):
+            prof_c = [(0.0, -ep - 0.12), (-D + 0.2, -ep - 0.12), (-D + 0.25, -ep - 0.3), (-0.3, -ep - 0.85), (0.0, -ep - 0.95)]
+            H.prism(k, list(reversed(prof_c)), x - 0.14, x + 0.14, S["pierre"], axis="x")
+    else:
+        # dalle brute sur trois corbeaux de pierre (jardin : avec cartes de lierre qui pendent)
+        k.box((0, -D / 2, -ep / 2 + H.dz()), (Lx, D, ep), S["pierre"])
+        for i, x in enumerate((-Lx / 2 + 0.4, 0.0, Lx / 2 - 0.4)):
+            for j in range(3):
+                d = D * (0.82 - j * 0.24)
+                k.box((x, -d / 2, -ep - 0.13 - j * 0.24), (0.32, d, 0.24), S["mur"], rot=rnd.uniform(-0.02, 0.02))
+        if act == "Jardin":
+            for x in (-Lx / 2 + 0.7, Lx / 2 - 0.9):
+                H.lierre(k, S, [Vector((x, -D - 0.02, 0.02)), Vector((x + 0.1, -D - 0.03, -0.6)), Vector((x - 0.05, -D - 0.03, -1.3))],
+                         lambda p: Vector((0, -1, 0)), l=0.28, seed=rnd.randint(0, 999))
+    ob = k.finish(S["seed"] + 511, H.PEINT_ARCHI)
+    return ob
+
+
+# =================================================================== 3. plateforme de traction
+def plateforme_traction(S, nom, A=3.0, chute=4.0):
+    """Plateforme de traction de A × A m, suspendue par quatre chaînes (pivot au centre du dessus ; accroches des chaînes à
+    `chute` m au-dessus) : sous elle et sur sa tranche avant, une plaque de fer gravée de runes qui luisent d'un bleu pâle
+    (surface magnétique : on s'y tracte). Repère `Accroche_Traction` au centre de la plaque du dessous."""
+    k = L.K(nom)
+    km = L.K("Plaque_Magnetique")
+    act = S["act"]
+    ep = 0.45
+    if act == "Chateau":
+        k.box((0, 0, -ep / 2), (A, A, ep), S["pierre"])
+        k.box((0, 0, 0.004), (A - 0.24, A - 0.24, 0.008), S["sol"], skip=("-z",))
+    elif act == "Cave":
+        n = 9
+        for i in range(n):
+            x = -A / 2 + (i + 0.5) * A / n
+            k.box((x, 0, -0.06), (A / n - 0.03, A, 0.12), S["planche"])
+        for sx in (-1, 1):
+            k.box((sx * (A / 2 - 0.12), 0, -ep / 2 - 0.06), (0.24, A, ep - 0.12), S["bois"])
+            k.box((0, sx * (A / 2 - 0.12), -ep / 2 - 0.06), (A, 0.24, ep - 0.12), S["bois"])
+    else:
+        k.box((0, 0, -ep / 2), (A, A, ep), S["pierre"])
+        k.box((0, 0, 0.004), (A - 0.2, A - 0.2, 0.008), S["sol"], skip=("-z",))
+    # plaque dessous : disque de fer sombre, anneau et glyphes de runes qui luisent (géométrie : pas de disque lumineux plein)
+    R = A * 0.36
+    nr = 32
+    zp = -ep - 0.012
+    for i in range(nr):
+        a0, a1 = 2 * math.pi * i / nr, 2 * math.pi * (i + 1) / nr
+        km.face([(0, 0, zp), (R * math.cos(a1), R * math.sin(a1), zp), (R * math.cos(a0), R * math.sin(a0), zp)], S["fer"])
+        # anneau lumineux (R × 0.78 à 0.84), juste sous le disque
+        r0, r1 = R * 0.78, R * 0.84
+        km.face([(r0 * math.cos(a0), r0 * math.sin(a0), zp - 0.004), (r0 * math.cos(a1), r0 * math.sin(a1), zp - 0.004),
+                 (r1 * math.cos(a1), r1 * math.sin(a1), zp - 0.004), (r1 * math.cos(a0), r1 * math.sin(a0), zp - 0.004)][::-1], MAGNET)
+    # huit glyphes : losanges et traits entre 0.4 et 0.68 R
+    for g in range(8):
+        a = 2 * math.pi * g / 8 + math.pi / 8
+        d = Vector((math.cos(a), math.sin(a), 0)); n_ = Vector((-d.y, d.x, 0))
+        c = d * R * 0.55 + Vector((0, 0, zp - 0.004))
+        if g % 2 == 0:
+            q = [c + d * 0.11, c + n_ * 0.05, c - d * 0.11, c - n_ * 0.05]
+        else:
+            q = [c + d * 0.13 + n_ * 0.018, c - d * 0.13 + n_ * 0.018, c - d * 0.13 - n_ * 0.018, c + d * 0.13 - n_ * 0.018]
+        km.face([tuple(v) for v in q][::-1], MAGNET)
+    # tranche avant : bandeau de fer et filet lumineux
+    km.box((0, -A / 2 - 0.012, -ep / 2), (A * 0.7, 0.02, ep * 0.55), S["fer"], skip=("+y",))
+    km.box((0, -A / 2 - 0.024, -ep / 2), (A * 0.62, 0.006, 0.035), MAGNET, skip=("+y",))
+    # chaînes
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            a = Vector((sx * (A / 2 - 0.2), sy * (A / 2 - 0.2), 0.0))
+            b = Vector((sx * (A / 2 - 0.5), sy * (A / 2 - 0.5), chute))
+            H._maillons(k, a, b, int(chute / 0.22), 0.09, S["fer"])
+            k.box((a.x, a.y, 0.06), (0.2, 0.2, 0.12), S["fer"])
+    k.empty("Accroche_Traction", (0, 0, -ep - 0.02))
+    k.empty("Accroche_Plafond", (0, 0, chute))
+    ob = k.finish(S["seed"] + 521, H.PEINT_OBJET)
+    H.enfant(ob, km, 0)
+    return ob
+
+
+# =================================================================== 4. salle en hauteur
+def salle_haute(S, nom, A=8.0, Hs=6.0, Hm=3.4):
+    """Salle en hauteur de A × A m, plancher à Hs m sur quatre appuis (pivot au sol, au centre) : mur du fond percé d'une
+    fenêtre, mur gauche percé d'une porte de 2.4 × 3.2 m (vers une coursive ou un pont), côté droit ouvert à garde-corps,
+    devant ouvert avec un passage de 1.2 m pour une échelle (`Accroche_Echelle`), plafond à poutres à Hs + Hm."""
+    k = L.K(nom)
+    kg = L.K("Garde_Corps")
+    act = S["act"]
+    rnd = random.Random(S["seed"] + 531)
+    ep = 0.5
+    # plancher
+    if act == "Cave":
+        n = int(A / 0.3)
+        for i in range(n):
+            x = -A / 2 + (i + 0.5) * A / n
+            k.box((x, 0, Hs - 0.06), (A / n - 0.025, A, 0.12), S["planche"])
+        for y in (-A / 2 + 0.2, 0, A / 2 - 0.2):
+            k.box((0, y, Hs - 0.32), (A, 0.3, 0.4), S["bois"])
+    else:
+        k.box((0, 0, Hs - ep / 2), (A, A, ep), S["pierre"], skip=("+z",))
+        k.box((0, 0, Hs + 0.004), (A, A, 0.008), S.get("parquet", S["sol"]), skip=("-z",))
+    # appuis
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            x, y = sx * (A / 2 - 0.45), sy * (A / 2 - 0.45)
+            if act == "Cave":
+                k.box((x, y, (Hs - 0.5) / 2), (0.4, 0.4, Hs - 0.5), S["bois"], rot=rnd.uniform(-0.03, 0.03))
+                k.obox((x, y, Hs - 1.6), (x - sx * 1.2, y, Hs - 0.5), 0.2, 0.2, S["bois"])
+            else:
+                k.box((x, y, (Hs - ep) / 2), (0.9, 0.9, Hs - ep), S["mur"])
+                k.box((x, y, Hs - ep - 0.2), (1.1, 1.1, 0.4), S["pierre"])
+                k.box((x, y, 0.2), (1.1, 1.1, 0.4), S["pierre"])
+    # murs : fond (+Y) avec fenêtre, gauche (-X) avec porte
+    t = 0.45
+    zb, zt = Hs, Hs + Hm
+    _mur_ouvert(k, (-A / 2, A / 2 - t), (A / 2, A / 2), zb, zt, [(-0.8, 0.8, zb + 1.1, zb + 2.6)], S)
+    _mur_ouvert(k, (-A / 2, -A / 2), (-A / 2 + t, A / 2 - t), zb, zt, [(-1.2, 1.2, zb, zb + 3.2)], S, axe="y")
+    # plafond : poutres + planches (château : caissons de pierre)
+    for i in range(5):
+        y = -A / 2 + 0.6 + i * (A - 1.2) / 4
+        k.box((0, y, zt + 0.15), (A, 0.3, 0.3), S["bois"])
+    k.box((0, 0, zt + 0.36), (A + 0.3, A + 0.3, 0.12), S["planche"] if act != "Chateau" else S["pierre"])
+    # garde-corps : côté droit (+X) et devant (-Y) sauf le passage de l'échelle
+    garde_kind = None
+    H.garde(kg, S, (A / 2 - 0.25, -A / 2 + 0.25, Hs), (A / 2 - 0.25, A / 2 - t - 0.3, Hs), kind=garde_kind)
+    H.garde(kg, S, (-A / 2 + t + 0.3, -A / 2 + 0.25, Hs), (-0.6, -A / 2 + 0.25, Hs), kind=garde_kind)
+    H.garde(kg, S, (0.6, -A / 2 + 0.25, Hs), (A / 2 - 0.55, -A / 2 + 0.25, Hs), kind=garde_kind)
+    k.empty("Accroche_Echelle", (0, -A / 2, Hs))
+    k.empty("Passage_Porte", (-A / 2, 0, Hs))
+    ob = k.finish(S["seed"] + 531, H.PEINT_ARCHI)
+    H.enfant(ob, kg, S["seed"] + 532)
+    return ob
+
+
+def _mur_ouvert(k, a, b, z0, z1, ouvertures, S, axe="x"):
+    """Mur en boîte de a=(x0, y0) à b=(x1, y1), de z0 à z1, percé d'ouvertures (u0, u1, zb, zh) le long de son axe (u = 0
+    au milieu). Construit en blocs (montants, allège, linteau) : aucune face confondue."""
+    (x0, y0), (x1, y1) = a, b
+    m = S["mur"]
+    if axe == "x":
+        L_, c, ep = x1 - x0, (x0 + x1) / 2, y1 - y0
+        def B(u0, u1, za, zb_, mm=m):
+            k.box((c + (u0 + u1) / 2, (y0 + y1) / 2, (za + zb_) / 2), (u1 - u0, ep, zb_ - za), mm)
+    else:
+        L_, c, ep = y1 - y0, (y0 + y1) / 2, x1 - x0
+        def B(u0, u1, za, zb_, mm=m):
+            k.box(((x0 + x1) / 2, c + (u0 + u1) / 2, (za + zb_) / 2), (ep, u1 - u0, zb_ - za), mm)
+    bords = [-L_ / 2]
+    for (u0, u1, za, zh) in sorted(ouvertures):
+        B(bords[-1], u0, z0, z1)
+        if za > z0 + 0.01:
+            B(u0, u1, z0, za, S["pierre"])
+        if zh < z1 - 0.01:
+            B(u0, u1, zh, z1, S["pierre"])
+        bords.append(u1)
+    B(bords[-1], L_ / 2, z0, z1)
+
+
+# =================================================================== 5. passerelle en pente
+def passerelle_pente(S, nom, Lx=10.0, Hm=3.0, W=2.4):
+    """Passerelle en pente entre deux étages : monte de Hm m sur Lx m (16.7° pour 3 sur 10), dessus à 0 au bas (pivot au
+    milieu du bord bas), garde-corps des deux côtés, appuis aux bouts. Collision : `Col_Rampe` lisse."""
+    k = L.K(nom)
+    kg = L.K("Garde_Corps")
+    kc = L.K("Col_Rampe")
+    act = S["act"]
+    pente = Hm / Lx
+    n = int(Lx / 0.32)
+    for i in range(n):
+        x0 = i * Lx / n + 0.015
+        x1 = (i + 1) * Lx / n - 0.015
+        a = Vector((x0, 0, x0 * pente - 0.05))
+        b = Vector((x1, 0, x1 * pente - 0.05))
+        k.obox(a, b, W, 0.1, S["planche"] if act != "Chateau" else S["sol"])
+    for sy in (-1, 1):
+        a = Vector((0, sy * (W / 2 - 0.15), -0.32))
+        b = Vector((Lx, sy * (W / 2 - 0.15), Hm - 0.32))
+        k.obox(a, b, 0.26, 0.4, S["bois"] if act != "Chateau" else S["pierre"])
+    for x in (0.2, Lx - 0.2):
+        k.box((x, 0, x * pente - 0.35), (0.3, W + 0.2, 0.3), S["bois"] if act != "Chateau" else S["pierre"])
+    kind = {"Cave": "corde", "Chateau": "balustre", "Jardin": "bois"}[act]
+    e = 0.22 if kind == "balustre" else 0.1
+    for sy in (-1, 1):
+        H.garde(kg, S, (0.1, sy * (W / 2 - e), 0.1 * pente), (Lx - 0.1, sy * (W / 2 - e), (Lx - 0.1) * pente), kind=kind)
+    H.rampe_col(kc, [(0, -W / 2, -0.005), (Lx, -W / 2, Hm - 0.005), (Lx, W / 2, Hm - 0.005), (0, W / 2, -0.005)])
+    k.empty("Appui_Bas", (0, 0, 0))
+    k.empty("Appui_Haut", (Lx, 0, Hm))
+    ob = k.finish(S["seed"] + 541, H.PEINT_OBJET)
+    H.enfant(ob, kg, S["seed"] + 542)
+    H.enfant(ob, kc, 0)
+    return ob
+
+
+# =================================================================== 6. balcon de pierre (château)
+def balcon_pierre(S, nom, Lx=4.0, D=1.8):
+    """Balcon de pierre de Lx × D m en encorbellement (dessus à 0, pivot au ras du mur), trois consoles moulurées,
+    balustrade sur trois côtés."""
+    k = L.K(nom)
+    kg = L.K("Garde_Corps")
+    k.box((0, -D / 2, -0.15), (Lx, D, 0.3), S["pierre"], skip=("+z",))
+    k.box((0, -D / 2, 0.004), (Lx - 0.06, D - 0.06, 0.008), S.get("marbre", S["sol"]), skip=("-z",))
+    k.box((0, -D / 2, -0.32), (Lx + 0.1, D + 0.08, 0.06), S["pierre"])
+    for x in (-Lx / 2 + 0.4, 0.0, Lx / 2 - 0.4):
+        prof = [(0.0, -0.35), (-D + 0.25, -0.35), (-D + 0.3, -0.55), (-0.4, -1.3), (0.0, -1.45)]
+        H.prism(k, list(reversed(prof)), x - 0.17, x + 0.17, S["pierre"], axis="x")
+    H.garde(kg, S, (-Lx / 2 + 0.22, -0.02, 0), (-Lx / 2 + 0.22, -D + 0.22, 0), kind="balustre", bout=True)
+    H.garde(kg, S, (-Lx / 2 + 0.22, -D + 0.22, 0), (Lx / 2 - 0.22, -D + 0.22, 0), kind="balustre", bout=True)
+    H.garde(kg, S, (Lx / 2 - 0.22, -D + 0.22, 0), (Lx / 2 - 0.22, -0.02, 0), kind="balustre", bout=True)
+    ob = k.finish(S["seed"] + 551, H.PEINT_ARCHI)
+    H.enfant(ob, kg, S["seed"] + 552)
+    return ob
+
+
+# =================================================================== 7. fenêtres avec vue (acte II)
+def fenetre_vue(S, nom, **kw):
+    """Même fenêtre que les lancettes du lot 3 (nuit 4), mais ses vitres ouvrent sur l'extérieur : matériaux
+    `M_Kit_VitreVue*` (shader ItHunts/VueExterieure : ciel étoilé, lune et paysage lointain vus selon la direction du
+    regard, comme à l'infini ; jamais le mur ou la salle qui est derrière). Plombs et meneaux inchangés."""
+    ob = H.fenetre(S, nom, **kw)
+    for o in [ob] + [c for c in ob.children_recursive if c.type == "MESH"]:
+        for i, m in enumerate(o.data.materials):
+            if m is not None and m.name in VUE:
+                o.data.materials[i] = L.mat(VUE[m.name])
+    # posée contre un mur plein (cas des cartes de main) : la vitre doit être DEVANT la surface du mur, sinon le mur de la
+    # salle la cache et l'on voit le papier peint dans la baie. Toute la pièce avance de 0.77 m vers la salle : le dos du
+    # panneau entre de 0.23 m dans le mur, la vitre est à 5 cm devant lui, la baie dépasse de 0.77 m (embrasure profonde).
+    d = Vector((0, -0.77, 0))
+    for v in ob.data.vertices:
+        v.co += d
+    for c in ob.children:
+        c.location += d
+    return ob
+
+
+# =================================================================== 8. lisière de forêt (acte III)
+def _feuillage(k, c, r, h, m, rnd, n=7, dents=11, aplat=0.35, normale=None):
+    """Masse de feuillage en cartes croisées dentelées (silhouette encrée lisible, jamais en boule) : n cartes verticales
+    tournées autour de c, contour en dents irrégulières, épaisseur nulle (deux faces)."""
+    for i in range(n):
+        ang = math.pi * i / n + rnd.uniform(-0.15, 0.15)
+        d = Vector((math.cos(ang), math.sin(ang), 0))
+        pts = []
+        for j in range(dents * 2):
+            t = j / (dents * 2)
+            a = 2 * math.pi * t
+            rr = (1.0 if j % 2 == 0 else 0.8 + rnd.uniform(-0.1, 0.08)) * r * (1 + rnd.uniform(-0.16, 0.16))
+            x = math.cos(a) * rr
+            z = math.sin(a) * rr * (h / (2 * r))
+            if z < -h * aplat:
+                z = -h * aplat + (z + h * aplat) * 0.25
+            pts.append(Vector(c) + d * x + Vector((0, 0, z)))
+        k.face(pts, m)
+        k.face(list(reversed(pts)), m)
+
+
+def lisiere(S, nom, Lx=12.0, coin=False):
+    """Lisière de forêt dense de Lx m (pivot au sol, au milieu du bord avant ; la forêt s'étend vers +Y sur 6 m) : rang de
+    troncs (Ø 0.35 à 1.1 m, 10 à 17 m), trois couches de feuillage dentelé de plus en plus sombres, sous-bois, racines,
+    fond noir à 6 m. Infranchissable : `Col_Lisiere` (8 m de haut). `coin` : quart de cercle de 90° (angle d'une clairière)."""
+    k = L.K(nom)
+    kc = L.K("Col_Lisiere")
+    rnd = random.Random(S["seed"] + 561 + (7 if coin else 0))
+    def place(u, prof):
+        """u : abscisse le long de la lisière (0..1) ; prof : profondeur (m) ; renvoie (point, normale vers l'avant)."""
+        if not coin:
+            return Vector((-Lx / 2 + u * Lx, prof, 0)), Vector((0, -1, 0))
+        R = Lx * 0.66
+        a = math.pi / 2 * u
+        n_ = Vector((-math.cos(a), -math.sin(a), 0))
+        return Vector((R * math.cos(a), R * math.sin(a), 0)) + Vector((-R, -R, 0)) - n_ * prof, n_
+    # troncs sur deux rangs
+    for rang, (prof, nb) in enumerate(((0.8, int(Lx / 1.6)), (3.2, int(Lx / 1.3)))):
+        for i in range(nb):
+            u = (i + 0.5 + rnd.uniform(-0.35, 0.35)) / nb
+            p, n_ = place(u, prof + rnd.uniform(-0.5, 0.5))
+            r = rnd.uniform(0.18, 0.55) * (1.0 if rang == 0 else 0.85)
+            h = rnd.uniform(10, 17)
+            pts = [p + Vector((0, 0, -0.3))]
+            lean = Vector((rnd.uniform(-0.6, 0.6), rnd.uniform(-0.3, 0.6), 0))
+            for s in range(1, 6):
+                t = s / 5
+                pts.append(p + lean * t * t + Vector((rnd.uniform(-0.1, 0.1), rnd.uniform(-0.1, 0.1), h * t)))
+            L.tube(k, pts, [r * 1.5, r, r * 0.9, r * 0.75, r * 0.6, r * 0.45], S["ecorce"], sides=9, rough=0.12, seed=rnd.randint(0, 999))
+            for a_ in range(4):
+                ang = rnd.uniform(0, 2 * math.pi)
+                d = Vector((math.cos(ang), math.sin(ang), 0))
+                L.tube(k, [p + d * r * 0.6 + Vector((0, 0, 0.5)), p + d * (r + 0.9) + Vector((0, 0, -0.1)), p + d * (r + 1.5) + Vector((0, 0, -0.35))],
+                       [r * 0.35, r * 0.22, r * 0.08], S["ecorce"], sides=6, rough=0.15, seed=rnd.randint(0, 999))
+    # feuillage : trois couches (devant plus clair, fond sombre)
+    couches = ((1.5, 4.0, 7.5, FEUIL_FORET, 1.7), (3.6, 5.5, 11.0, FEUIL_FORET, 1.5), (5.4, 7.5, 13.0, FEUIL_SOMBRE, 1.3))
+    for prof, r, zc, m, dens in couches:
+        nb = int(Lx / r * dens) + 1
+        for i in range(nb):
+            u = (i + 0.5) / nb + rnd.uniform(-0.04, 0.04)
+            p, n_ = place(min(max(u, 0.0), 1.0), prof + rnd.uniform(-0.6, 0.6))
+            _feuillage(k, p + Vector((0, 0, zc + rnd.uniform(-2.5, 2.5))), r * rnd.uniform(0.75, 1.15), r * rnd.uniform(1.1, 1.6), m, rnd,
+                       n=5, dents=13)
+    # sous-bois : fougères et buissons bas en cartes, devant les troncs
+    nb = int(Lx / 0.9)
+    for i in range(nb):
+        u = (i + rnd.uniform(0.1, 0.9)) / nb
+        p, n_ = place(u, rnd.uniform(-0.2, 1.6))
+        _feuillage(k, p + Vector((0, 0, 0.35)), rnd.uniform(0.6, 1.1), rnd.uniform(0.7, 1.3), FEUIL_FORET, rnd, n=4, dents=9, aplat=0.0)
+    # fond noir : on ne voit jamais au travers
+    if coin:
+        R = Lx * 0.66 + 6.5
+        for s in range(8):
+            a0, a1 = math.pi / 2 * s / 8, math.pi / 2 * (s + 1) / 8
+            P0 = Vector((R * math.cos(a0), R * math.sin(a0), 0)) + Vector((-Lx * 0.66, -Lx * 0.66, 0))
+            P1 = Vector((R * math.cos(a1), R * math.sin(a1), 0)) + Vector((-Lx * 0.66, -Lx * 0.66, 0))
+            k.face([P0, P1, P1 + Vector((0, 0, 18)), P0 + Vector((0, 0, 18))], FOND)
+    else:
+        k.face([(-Lx / 2, 6.5, -0.5), (-Lx / 2, 6.5, 18), (Lx / 2, 6.5, 18), (Lx / 2, 6.5, -0.5)], FOND)
+    # collision : boîte(s) infranchissable(s) juste derrière le sous-bois
+    if coin:
+        for s in range(6):
+            p0, _ = place(s / 6, 2.4)
+            p1, _ = place((s + 1) / 6, 2.4)
+            c = (p0 + p1) / 2
+            d = p1 - p0
+            kc.box((c.x, c.y, 4.0), (d.length + 0.6, 3.0, 8.0), COL, rot=math.atan2(d.y, d.x))
+    else:
+        kc.box((0, 2.4, 4.0), (Lx, 3.0, 8.0), COL)
+    ob = k.finish(S["seed"] + 561, dict(sale_h=0.6, mousse=0.3))
+    H.enfant(ob, kc, 0)
+    return ob
+
+
+# =================================================================== 9. sous-bois, rochers, grand arbre
+def _fougere(k, base, r, h, m, rnd, n=11):
+    """Touffe de fougère : n frondes arquées (rachis qui monte puis retombe), folioles en triangles alternés le long du
+    rachis, double face. Silhouette ajourée et dentelée, lisible au contour encré (jamais une boule ni une tache)."""
+    for f in range(n):
+        a = 2 * math.pi * f / n + rnd.uniform(-0.2, 0.2)
+        d = Vector((math.cos(a), math.sin(a), 0))
+        L_ = r * rnd.uniform(0.75, 1.1)
+        hh = h * rnd.uniform(0.7, 1.05)
+        pts = []
+        for i in range(9):
+            t = i / 8
+            pts.append(base + d * L_ * t + Vector((0, 0, hh * (math.sin(t * math.pi * 0.85)) - t * t * hh * 0.35)))
+        side = Vector((-d.y, d.x, 0))
+        for i in range(1, 8):
+            p0, p1 = pts[i], pts[i + 1]
+            lg = (1 - i / 8) * L_ * 0.3 + 0.06
+            for sgn in (-1, 1):
+                tip = p0.lerp(p1, 0.5) + side * sgn * lg + Vector((0, 0, -0.04))
+                k.face([p0, p1, tip] if sgn > 0 else [p1, p0, tip], m)     # matériau double face : une seule face
+
+
+def sous_bois(S, nom, R=2.5, var=0):
+    """Sous-bois de Ø 2R m (pivot au sol, au centre) : touffes de fougères (frondes arquées à folioles), herbes hautes en
+    lames, branche morte au sol. Feuillage traversable (`Deco_SansCollision`) ; la branche garde sa collision."""
+    k = L.K(nom)
+    kd = L.K("Deco_SansCollision")
+    rnd = random.Random(S["seed"] + 571 + var * 13)
+    for i in range(4 + var * 2):
+        a = rnd.uniform(0, 2 * math.pi)
+        dd = rnd.uniform(0, R * 0.7)
+        _fougere(kd, Vector((math.cos(a) * dd, math.sin(a) * dd, 0.0)), rnd.uniform(0.7, 1.2), rnd.uniform(0.6, 0.95), FEUIL_FORET, rnd,
+                 n=rnd.randint(9, 13))
+    for i in range(18 + var * 6):
+        a = rnd.uniform(0, 2 * math.pi)
+        dd = rnd.uniform(0.2, R)
+        b = Vector((math.cos(a) * dd, math.sin(a) * dd, 0.0))
+        hh = rnd.uniform(0.35, 0.8)
+        pench = Vector((rnd.uniform(-0.2, 0.2), rnd.uniform(-0.2, 0.2), 0))
+        w = 0.035
+        tri = [b + Vector((-w, 0, 0)), b + Vector((w, 0, 0)), b + pench + Vector((0, 0, hh))]
+        kd.face(tri, S["herbe"]); kd.face(list(reversed(tri)), S["herbe"])
+    a = rnd.uniform(0, math.pi)
+    L.tube(k, [Vector((-math.cos(a) * R * 0.8, -math.sin(a) * R * 0.8, 0.08)), Vector((0, 0, 0.14)), Vector((math.cos(a) * R * 0.7, math.sin(a) * R * 0.7, 0.1))],
+           [0.08, 0.06, 0.03], S["ecorce"], sides=6, rough=0.15, seed=rnd.randint(0, 99))
+    k.empty("Centre", (0, 0, 0))
+    ob = k.finish(S["seed"] + 571)
+    H.enfant(ob, kd, S["seed"] + 572)
+    return ob
+
+
+def rocher(S, nom, taille=2.5, var=0):
+    """Rocher taillé de `taille` m (pivot au sol, au centre) : bloc organique recoupé par 6 à 8 plans de clivage (facettes
+    nettes, arêtes vives, lisibles au cel-shading), base enfoncée de 10 cm ; mousse et herbe sèche sur le dessus par
+    peinture de sommets ; collision par le maillage."""
+    k = L.K(nom)
+    rnd = random.Random(S["seed"] + 581 + var)
+    def bloc(c, sz, nb):
+        k.bm.verts.ensure_lookup_table()
+        n0 = len(k.bm.verts)
+        L.rock_blob(k, c, sz, S["roche"], seed=rnd.randint(0, 999), res=20, amp=0.22)
+        k.bm.verts.ensure_lookup_table()
+        vs = [k.bm.verts[i] for i in range(n0, len(k.bm.verts))]
+        cc = Vector(c) + Vector((0, 0, sz[2] * 0.3))
+        for _ in range(nb):
+            az = rnd.uniform(0, 2 * math.pi); el = rnd.uniform(-0.15, 0.9)
+            nrm = Vector((math.cos(az) * math.cos(el), math.sin(az) * math.cos(el), math.sin(el))).normalized()
+            ext = abs(nrm.x) * sz[0] / 2 + abs(nrm.y) * sz[1] / 2 + abs(nrm.z) * sz[2] / 2
+            dmax = ext * rnd.uniform(0.62, 0.8)
+            for v in vs:
+                t = (v.co - cc).dot(nrm)
+                if t > dmax:
+                    v.co -= nrm * (t - dmax)
+    bloc((0, 0, taille * 0.32 - 0.1), (taille, taille * rnd.uniform(0.75, 0.95), taille * 0.68), 8)
+    if taille > 3:
+        bloc((taille * 0.42, taille * 0.2, taille * 0.12), (taille * 0.42, taille * 0.38, taille * 0.32), 6)
+    ob = k.finish(S["seed"] + 581 + var, dict(sale_h=0.4, mousse=0.6))
+    return ob
+
+
+def grand_arbre(S, nom, h=20.0):
+    """Grand arbre praticable (pivot au sol, au centre du tronc) : tronc de Ø 2.2 m, racines en contreforts, trois grosses
+    branches **plates sur le dessus** (largeur 1.4 m) à 3.4, 6.6 et 9.8 m qui montent en spirale (on saute de l'une à l'autre,
+    3.2 m d'écart vertical : saut et hissage), couronne de feuillage dentelé au-dessus de 12 m. Collision : tronc par le
+    maillage, `Col_Branche_*` (dessus des branches)."""
+    k = L.K(nom)
+    kc = L.K("Col_Branches")
+    rnd = random.Random(S["seed"] + 591)
+    R0 = 1.1
+    pts = [Vector((0, 0, -0.4))] + [Vector((rnd.uniform(-0.15, 0.15), rnd.uniform(-0.15, 0.15), h * t)) for t in (0.2, 0.45, 0.7, 0.88, 1.0)]
+    L.tube(k, pts, [R0 * 1.35, R0, R0 * 0.88, R0 * 0.7, R0 * 0.5, R0 * 0.28], S["ecorce"], sides=14, rough=0.1, seed=7)
+    for i in range(7):
+        a = 2 * math.pi * i / 7 + rnd.uniform(-0.2, 0.2)
+        d = Vector((math.cos(a), math.sin(a), 0))
+        L.tube(k, [d * R0 * 0.7 + Vector((0, 0, 1.6)), d * (R0 + 1.1) + Vector((0, 0, 0.3)), d * (R0 + 2.4) + Vector((0, 0, -0.3))],
+               [0.7, 0.42, 0.12], S["ecorce"], sides=8, rough=0.15, seed=rnd.randint(0, 999))
+    # branches praticables : poutre organique + dessus plat (planche d'écorce) ; montée en spirale
+    for i, (z, ang, Lb) in enumerate(((3.4, 0.3, 5.5), (6.6, 2.4, 5.0), (9.8, 4.4, 4.6))):
+        d = Vector((math.cos(ang), math.sin(ang), 0))
+        a = d * R0 * 0.6 + Vector((0, 0, z - 0.55))
+        b = d * (R0 + Lb) + Vector((0, 0, z - 0.25))
+        L.tube(k, [a, a.lerp(b, 0.5) + Vector((0, 0, 0.12)), b], [0.75, 0.55, 0.35], S["ecorce"], sides=10, rough=0.08, seed=rnd.randint(0, 999))
+        # dessus plat : dalle d'écorce aplanie 1.4 m de large
+        n_ = Vector((-d.y, d.x, 0))
+        p0 = d * (R0 * 0.9) + Vector((0, 0, z))
+        p1 = d * (R0 + Lb - 0.2) + Vector((0, 0, z))
+        w = 1.4
+        k.face([p0 - n_ * w / 2, p1 - n_ * w * 0.35, p1 + n_ * w * 0.35, p0 + n_ * w / 2], S["ecorce"])
+        H.rampe_col(kc, [p0 - n_ * w / 2 + Vector((0, 0, 0.01)), p1 - n_ * w * 0.35 + Vector((0, 0, 0.01)),
+                         p1 + n_ * w * 0.35 + Vector((0, 0, 0.01)), p0 + n_ * w / 2 + Vector((0, 0, 0.01))])
+        k.empty(f"Appui_Branche_{i + 1}", tuple(p1))
+        # petites branches et feuillage au bout
+        _feuillage(k, b + Vector((0, 0, 1.2)), 1.6, 1.8, FEUIL_FORET, rnd, n=5, dents=12)
+    # couronne
+    for i in range(9):
+        a = 2 * math.pi * i / 9
+        d = Vector((math.cos(a), math.sin(a), 0))
+        L.tube(k, [Vector((0, 0, 11 + i * 0.5)), d * 3.5 + Vector((0, 0, 13 + i * 0.4))], [0.4, 0.15], S["ecorce"], sides=6, rough=0.1, seed=i)
+        _feuillage(k, d * rnd.uniform(3.0, 5.0) + Vector((0, 0, rnd.uniform(13.5, 17.5))), rnd.uniform(2.4, 3.4), rnd.uniform(2.5, 3.5),
+                   FEUIL_FORET if i % 3 else FEUIL_SOMBRE, rnd, n=6, dents=14)
+    _feuillage(k, Vector((0, 0, h - 0.5)), 3.6, 3.8, FEUIL_SOMBRE, rnd, n=6, dents=15)
+    ob = k.finish(S["seed"] + 591, dict(sale_h=0.8, mousse=0.5))
+    H.enfant(ob, kc, 0)
+    return ob
+
+
+# =================================================================== 10. sols percés : puits et fosse
+def _dalle_percee(k, A, ep, trou, m_dessus, m_tranche, rond=False, n=24):
+    """Dalle de A × A m (dessus à 0) percée au centre : carré de côté `trou` ou disque de Ø `trou` (rond). Faces en
+    éventail entre le bord carré et le contour du trou (aucune face confondue)."""
+    h = A / 2
+    contour = []
+    if rond:
+        for i in range(n):
+            a = 2 * math.pi * i / n + math.pi / 4
+            contour.append(Vector((math.cos(a) * trou / 2, math.sin(a) * trou / 2, 0)))
+    else:
+        t = trou / 2
+        for (x, y) in ((t, t), (-t, t), (-t, -t), (t, -t)):
+            contour.append(Vector((x, y, 0)))
+    coins = [Vector((h, h, 0)), Vector((-h, h, 0)), Vector((-h, -h, 0)), Vector((h, -h, 0))]
+    # chaque point du contour est relié au coin du même quadrant
+    per = len(contour) // 4
+    for q in range(4):
+        c0, c1 = coins[q], coins[(q + 1) % 4]
+        seg = contour[q * per:(q + 1) * per + 1] if q < 3 else contour[3 * per:] + [contour[0]]
+        # éventail : coin c0 vers la moitié du segment, coin c1 vers l'autre moitié
+        mid = len(seg) // 2
+        for i in range(mid):
+            k.face([c0, seg[i], seg[i + 1]][::-1], m_dessus)
+        for i in range(mid, len(seg) - 1):
+            k.face([c1, seg[i], seg[i + 1]][::-1], m_dessus)
+        k.face([c0, seg[mid], c1][::-1], m_dessus)
+    # dessous et tranches extérieures
+    for q in range(4):
+        c0, c1 = coins[q], coins[(q + 1) % 4]
+        k.face([c0, c1, c1 - Vector((0, 0, ep)), c0 - Vector((0, 0, ep))], m_tranche)
+    return contour
+
+
+def sol_puits(S, nom, A=8.0):
+    """Dalle de sol de A × A m (dessus à 0, pivot au centre) percée au Ø 3.2 m du puits, avec le puits du lot 3 (margelle,
+    eau `Deco_Eau` à -1.5 m, fond à -2.4 m) posé dans l'ouverture : à poser à la place d'une dalle de sol, le puits a son trou."""
+    ob = H.puits(S, nom)
+    k = L.K("Dalle")
+    contour = _dalle_percee(k, A, 0.6, 3.25, S["sol"], S["mur"], rond=True)
+    for v in k.bm.verts:          # dessus à -4 mm : jamais confondu avec la base de la margelle
+        v.co.z -= 0.004
+    # paroi du trou sous la dalle (jusqu'au fût du puits)
+    for i in range(len(contour)):
+        a, b = contour[i], contour[(i + 1) % len(contour)]
+        k.face([a, b, b - Vector((0, 0, 0.6)), a - Vector((0, 0, 0.6))], S["mur"])
+    H.enfant(ob, k, S["seed"] + 601, peinture=H.PEINT_ARCHI)
+    return ob
+
+
+def sol_fosse(S, nom, A=8.0, B=4.0, prof=4.0):
+    """Dalle de sol de A × A m (dessus à 0, pivot au centre) percée d'une fosse de B × B m et `prof` m : parois appareillées,
+    fond de terre et d'éboulis, quatre pieux, une échelle pour remonter (`Accroche_Echelle`). On peut y tomber et en
+    ressortir (échelle, ou double saut depuis un rebord)."""
+    k = L.K(nom)
+    _dalle_percee(k, A, 0.6, B, S["sol"], S["mur"])
+    t = B / 2
+    for (x0, y0, x1, y1) in ((t, t, -t, t), (-t, t, -t, -t), (-t, -t, t, -t), (t, -t, t, t)):
+        k.face([(x0, y0, 0), (x1, y1, 0), (x1, y1, -prof), (x0, y0, -prof)], S["mur"])
+    k.face([(-t, -t, -prof), (t, -t, -prof), (t, t, -prof), (-t, t, -prof)], S.get("terre", S["sol"]))
+    rnd = random.Random(S["seed"] + 611)
+    for i in range(7):
+        L.rock_blob(k, (rnd.uniform(-t + 0.4, t - 0.4), rnd.uniform(-t + 0.4, t - 0.4), -prof + 0.1), (rnd.uniform(0.3, 0.7),) * 3,
+                    S.get("roche", S["mur"]), seed=rnd.randint(0, 999), res=6, amp=0.3)
+    for i in range(4):
+        x, y = rnd.uniform(-t + 0.6, t - 0.6), rnd.uniform(-t + 0.6, t - 0.6)
+        k.cyl((x, y, -prof), 0.07, 1.1, S["bois"], n=6, r2=0.0)
+    # bordure de la fosse : pierres de taille (lisible de loin : on voit le trou)
+    for (cx, cy, sx, sy) in ((0, t + 0.2, B + 0.8, 0.4), (0, -t - 0.2, B + 0.8, 0.4), (t + 0.2, 0, 0.4, B), (-t - 0.2, 0, 0.4, B)):
+        k.box((cx, cy, 0.05 + H.dz()), (sx, sy, 0.1), S["pierre"])
+    # échelle contre la paroi nord
+    kg = L.K("Echelle")
+    for sx in (-1, 1):
+        kg.box((sx * 0.3, t - 0.12, -prof / 2 + 0.4), (0.08, 0.08, prof + 0.8), S["bois"])
+    for i in range(int(prof / 0.3)):
+        kg.box((0, t - 0.12, -prof + 0.3 + i * 0.3), (0.6, 0.05, 0.05), S["bois"])
+    k.empty("Accroche_Echelle", (0, t - 0.2, -prof))
+    ob = k.finish(S["seed"] + 611, H.PEINT_ARCHI)
+    H.enfant(ob, kg, S["seed"] + 612)
+    return ob
+
+
+# =================================================================== 11. support de râtelier (acte II)
+def support_ratelier(S, nom):
+    """Petit support de râtelier (présentoir) de 0.6 × 0.5 × 1.4 m : pied en croix, montant, traverse à trois encoches où
+    reposent deux lances et une hallebarde (pivot au sol, au centre). Remplace la boîte greybox `Prop_Ratelier` de petite
+    taille (acte II)."""
+    k = L.K(nom)
+    b, fer = S["bois"], S["fer"]
+    k.box((0, 0, 0.04), (0.6, 0.1, 0.08), b)
+    k.box((0, 0, 0.04), (0.1, 0.5, 0.08), b)
+    k.box((0, 0, 0.62), (0.09, 0.09, 1.16), b)
+    k.box((0, 0, 1.18), (0.56, 0.12, 0.08), b)
+    k.box((0, 0, 0.36), (0.5, 0.1, 0.06), b)
+    for i, x in enumerate((-0.18, 0.0, 0.18)):
+        y = -0.08
+        k.cyl((x, y, 0.08), 0.022, 1.32, b, n=6)
+        if i == 1:
+            k.face([(x, y, 1.4), (x + 0.12, y, 1.32), (x + 0.12, y, 1.22), (x, y, 1.3)], fer)
+            k.face([(x, y, 1.3), (x + 0.12, y, 1.22), (x + 0.12, y, 1.32), (x, y, 1.4)], fer)
+            k.cyl((x, y, 1.4), 0.03, 0.12, fer, n=4, r2=0.0)
+        else:
+            k.cyl((x, y, 1.4), 0.035, 0.18, fer, n=4, r2=0.0)
+    ob = k.finish(S["seed"] + 621, H.PEINT_OBJET)
+    return ob
+
+
+# =================================================================== enregistrement par acte
+def pieces_caves(S):
+    return [
+        ("SM_Cave_PontSuspendu_12m", pont_suspendu, dict(), "Pont suspendu de 12 m (planches de bois pourri sur cordes, flèche de 0.8 m, deux planches manquantes), poteaux aux bouts."),
+        ("SM_Cave_Rebord_3m", rebord, dict(), "Rebord de mur de 3 × 0.9 m : dalle brute sur trois corbeaux, dessus plat à 0 (saut, hissage, wall jump)."),
+        ("SM_Cave_PlateformeTraction", plateforme_traction, dict(), "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant."),
+        ("SM_Cave_SalleHaute_8x8", salle_haute, dict(), "Salle en hauteur de 8 × 8 m, plancher à 6 m sur quatre poteaux : fenêtre au fond, porte à gauche, garde-corps, passage d'échelle."),
+        ("SM_Cave_Passerelle_Pente_10m", passerelle_pente, dict(), "Passerelle en pente : monte de 3 m sur 10 m (16.7°), rampe lisse, garde-corps de corde."),
+        ("SM_Cave_Sol_Puits_8x8", sol_puits, dict(), "Dalle de sol de 8 × 8 m percée, avec le puits dans son ouverture (eau à -1.5 m, fond à -2.4 m)."),
+        ("SM_Cave_Sol_Fosse_8x8", sol_fosse, dict(), "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter."),
+    ]
+
+
+def pieces_chateau(S):
+    return [
+        ("SM_Chateau_PontSuspendu_12m", pont_suspendu, dict(), "Pont suspendu de 12 m (planches sur chaînes, flèche de 0.8 m), piliers de pierre aux bouts."),
+        ("SM_Chateau_Rebord_3m", rebord, dict(), "Rebord de mur de 3 × 0.9 m : corniche moulurée sur trois consoles, dessus plat à 0."),
+        ("SM_Chateau_PlateformeTraction", plateforme_traction, dict(), "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant."),
+        ("SM_Chateau_SalleHaute_8x8", salle_haute, dict(), "Salle en hauteur de 8 × 8 m, plancher à 6 m sur quatre piliers : fenêtre au fond, porte à gauche, balustrade, passage d'échelle."),
+        ("SM_Chateau_Passerelle_Pente_10m", passerelle_pente, dict(), "Passerelle en pente : monte de 3 m sur 10 m (16.7°), dallée, balustrade, rampe lisse."),
+        ("SM_Chateau_Balcon_Pierre_4m", balcon_pierre, dict(), "Balcon de pierre de 4 × 1.8 m en encorbellement, trois consoles moulurées, balustrade."),
+        ("SM_Chateau_Sol_Fosse_8x8", sol_fosse, dict(), "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter."),
+        ("SM_Chateau_Fenetre_Vue_Simple", fenetre_vue, dict(w=4.0, h=12.0, bw=1.6, sill=3.0, top=9.6, nl=1),
+         "Fenêtre en lancette simple qui montre l'extérieur (ciel étoilé, lune, paysage lointain) : baie de 1.6 × 6.6 m dans un panneau de 4 × 12 m."),
+        ("SM_Chateau_Fenetre_Vue_Double", fenetre_vue, dict(w=8.0, h=12.0, bw=4.0, sill=2.5, top=9.8, nl=2, oculus=(8.95, 0.5, 4)),
+         "Fenêtre à deux lancettes et oculus qui montre l'extérieur : baie de 4 × 7.3 m dans un panneau de 8 × 12 m."),
+        ("SM_Chateau_Fenetre_Vue_Triple", fenetre_vue, dict(w=8.0, h=20.0, bw=5.6, sill=3.5, top=17.8, nl=3, oculus=(16.0, 0.85, 6)),
+         "Haute fenêtre à trois lancettes et rose qui montre l'extérieur : baie de 5.6 × 14.3 m dans un panneau de 8 × 20 m."),
+        ("SM_Chateau_SupportRatelier", support_ratelier, dict(), "Petit support de râtelier de 0.6 × 0.5 × 1.4 m : deux lances et une hallebarde."),
+    ]
+
+
+def pieces_jardin(S):
+    return [
+        ("SM_Jardin_PontSuspendu_12m", pont_suspendu, dict(), "Pont suspendu de 12 m (planches sur cordes, flèche de 0.8 m), poteaux de rondins aux bouts."),
+        ("SM_Jardin_Rebord_3m", rebord, dict(), "Rebord de mur de 3 × 0.9 m : dalle sur trois corbeaux, lierre qui pend, dessus plat à 0."),
+        ("SM_Jardin_PlateformeTraction", plateforme_traction, dict(), "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant."),
+        ("SM_Jardin_SalleHaute_8x8", salle_haute, dict(), "Salle en hauteur de 8 × 8 m (pavillon), plancher à 6 m sur quatre piliers : fenêtre, porte, garde-corps, passage d'échelle."),
+        ("SM_Jardin_Passerelle_Pente_10m", passerelle_pente, dict(), "Passerelle en pente : monte de 3 m sur 10 m (16.7°), planches, garde-corps de bois, rampe lisse."),
+        ("SM_Jardin_Lisiere_12m", lisiere, dict(), "Lisière de forêt dense de 12 m : troncs sur deux rangs, trois couches de feuillage, sous-bois, fond noir ; infranchissable."),
+        ("SM_Jardin_Lisiere_Coin", lisiere, dict(coin=True), "Lisière de forêt en quart de cercle (angle d'une clairière, rayon 8 m) ; infranchissable."),
+        ("SM_Jardin_SousBois_A", sous_bois, dict(var=0), "Touffe de sous-bois de Ø 5 m : fougères et buissons bas, branche morte ; traversable."),
+        ("SM_Jardin_SousBois_B", sous_bois, dict(R=1.6, var=1), "Petite touffe de sous-bois de Ø 3.2 m ; traversable."),
+        ("SM_Jardin_Rocher_Petit", rocher, dict(taille=1.2, var=0), "Rocher de 1.2 m (s'enjambe d'un saut), mousse sur le dessus."),
+        ("SM_Jardin_Rocher_Moyen", rocher, dict(taille=2.6, var=1), "Rocher de 2.6 m (on s'y hisse), mousse et herbe sèche sur le dessus."),
+        ("SM_Jardin_Rocher_Grand", rocher, dict(taille=5.0, var=2), "Gros rocher de 5 m à épaulement (double saut), mousse sur le dessus."),
+        ("SM_Jardin_GrandArbre_Praticable", grand_arbre, dict(), "Grand arbre de 20 m, tronc de Ø 2.2 m : trois branches plates à 3.4, 6.6 et 9.8 m qui montent en spirale."),
+        ("SM_Jardin_Sol_Puits_8x8", sol_puits, dict(), "Dalle de sol de 8 × 8 m percée, avec le puits de jardin dans son ouverture."),
+        ("SM_Jardin_Sol_Fosse_8x8", sol_fosse, dict(), "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter."),
+    ]

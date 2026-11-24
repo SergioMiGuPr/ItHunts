@@ -500,6 +500,9 @@ def SM_Arene_Butte():
 
 # nuit 4, lot 3 : hauteur, falaises, terrasses, ponts, enceinte (kit_hauteur.py)
 H.enregistre(PIECES, H.JARDIN, H.pieces_jardin(H.JARDIN))
+import kit_nuit5 as N5
+importlib.reload(N5)
+H.enregistre(PIECES, H.JARDIN, N5.pieces_jardin(H.JARDIN))   # nuit 5, lot 3
 
 
 def premiere_phrase(doc):

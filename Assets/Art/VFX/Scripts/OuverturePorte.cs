@@ -5,8 +5,8 @@ namespace ItHunts.Art.VFX
     /// <summary>
     /// Animation d'ouverture des portes et cellules des kits (nuit 4, lot 3), posée par KitBuilder sur les prefabs :
     /// - Battants : portes de sortie, deux battants qui pivotent autour de Y (gauche -90°, droit +90°) ;
-    /// - Guillotine : porte verrouillée, la serrure tourne de +90° autour de Z (déverrouillage), puis le vantail de fer monte
-    ///   de 3,1 m ;
+    /// - Guillotine : porte verrouillée, la serrure et sa barre de verrou tournent de +90° autour de Z (déverrouillage), puis le
+    ///   vantail monte de 3,1 m par à-coups (treuil à cliquet), poussière optionnelle au décollage ;
     /// - Herse : herses des cellules du traqueur, montée de 9,2 m ;
     /// - Trappes : trappes de la fosse, -110° et +110° autour de Z ;
     /// - Vantaux : barricade et volière, deux vantaux qui pivotent de -100° et +100° autour de Y (vers la salle).
@@ -25,6 +25,9 @@ namespace ItHunts.Art.VFX
         [Min(0.1f)] public float duree = 1.6f;
         [Range(0, 1)] public float ouverture;
         public bool ouvrirAuDemarrage;
+        [Tooltip("Poussière jouée quand le vantail ou la herse décolle (nuit 5) ; vide : aucune.")]
+        public ParticleSystem poussiere;
+        float _avant;
 
         Quaternion _rotA, _rotB;
         Vector3 _posA, _posB;
@@ -56,8 +59,11 @@ namespace ItHunts.Art.VFX
         void Update()
         {
             if (Mathf.Approximately(ouverture, _cible)) return;
+            _avant = ouverture;
             ouverture = Mathf.MoveTowards(ouverture, _cible, Time.deltaTime / duree);
             Applique();
+            float seuil = genre == Genre.Guillotine ? 0.3f : 0.02f;
+            if (poussiere && _avant < seuil && ouverture >= seuil && (genre == Genre.Guillotine || genre == Genre.Herse)) poussiere.Play();
         }
 
         static float Douce(float t) => t * t * (3f - 2f * t);
@@ -81,9 +87,15 @@ namespace ItHunts.Art.VFX
                     if (partieB) partieB.localRotation = _rotB * Quaternion.Euler(0f, 90f * Douce(t), 0f);
                     break;
                 case Genre.Guillotine:
-                    // 0-30 % : la serrure tourne ; 30-100 % : le vantail monte
+                    // 0-30 % : la serrure et sa barre tournent d'un quart de tour (déverrouillage) ; 30-100 % : le vantail monte par
+                    // à-coups, comme tiré par un treuil à cliquet (nuit 5), puis rebondit en fin de course
                     if (partieB) partieB.localRotation = _rotB * Quaternion.Euler(0f, 0f, 90f * Douce(Mathf.Clamp01(t / 0.3f)));
-                    if (partieA) partieA.localPosition = _posA + Vector3.up * 3.1f * Lourde(Mathf.Clamp01((t - 0.3f) / 0.7f));
+                    if (partieA)
+                    {
+                        float u = Mathf.Clamp01((t - 0.3f) / 0.7f);
+                        float k = Lourde(u) + Mathf.Sin(u * Mathf.PI * 7f) * 0.012f * (1f - u) * (u > 0f ? 1f : 0f);
+                        partieA.localPosition = _posA + Vector3.up * 3.1f * k;
+                    }
                     break;
                 case Genre.Herse:
                     if (partieA) partieA.localPosition = _posA + Vector3.up * 9.2f * Lourde(t);

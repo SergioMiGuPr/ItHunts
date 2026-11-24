@@ -513,12 +513,12 @@
  "SM_Jardin_PorteVerrouillee": {
   "doc": "Porte de salle payante : ouverture carrée de 3 × 3 m, vantail de fer en guillotine (Vantail), sceau d'âme qui tourne (Serrure).",
   "taille": [
-   6.0,
+   6.01,
    1.43,
    6.65
   ],
   "bas": -0.05,
-  "triangles": 1147,
+  "triangles": 1707,
   "materiaux": [
    "M_Bib_Moellons_Peint",
    "M_Bib_PierreTaillee_Peint",
@@ -722,6 +722,183 @@
    "M_Bib_Dalles_Sales",
    "M_Bib_PierreTaillee_Peint",
    "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_SousBois_A": {
+  "doc": "Touffe de sous-bois de Ø 5 m : fougères et buissons bas, branche morte ; traversable.",
+  "taille": [
+   2.94,
+   2.5,
+   0.18
+  ],
+  "bas": 0.01,
+  "triangles": 732,
+  "materiaux": [
+   "M_Bib_Ecorce"
+  ]
+ },
+ "SM_Jardin_SousBois_B": {
+  "doc": "Petite touffe de sous-bois de Ø 3.2 m ; traversable.",
+  "taille": [
+   1.58,
+   1.95,
+   0.18
+  ],
+  "bas": 0.01,
+  "triangles": 1018,
+  "materiaux": [
+   "M_Bib_Ecorce"
+  ]
+ },
+ "SM_Jardin_Rocher_Petit": {
+  "doc": "Rocher de 1.2 m (s'enjambe d'un saut), mousse sur le dessus.",
+  "taille": [
+   1.27,
+   1.15,
+   0.65
+  ],
+  "bas": 0.28,
+  "triangles": 360,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint"
+  ]
+ },
+ "SM_Jardin_Rocher_Moyen": {
+  "doc": "Rocher de 2.6 m (on s'y hisse), mousse et herbe sèche sur le dessus.",
+  "taille": [
+   2.7,
+   2.15,
+   1.52
+  ],
+  "bas": 0.73,
+  "triangles": 360,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint"
+  ]
+ },
+ "SM_Jardin_Rocher_Grand": {
+  "doc": "Gros rocher de 5 m à épaulement (double saut), mousse sur le dessus.",
+  "taille": [
+   5.53,
+   3.92,
+   3.68
+  ],
+  "bas": 0.6,
+  "triangles": 720,
+  "materiaux": [
+   "M_Bib_RocheCave_Peint"
+  ]
+ },
+ "SM_Jardin_GrandArbre_Praticable": {
+  "doc": "Grand arbre de 20 m, tronc de Ø 2.2 m : trois branches plates à 3.4, 6.6 et 9.8 m qui montent en spirale.",
+  "taille": [
+   14.65,
+   14.15,
+   22.02
+  ],
+  "bas": -0.45,
+  "triangles": 2614,
+  "materiaux": [
+   "M_Bib_Ecorce",
+   "M_Kit_Feuillage_Foret",
+   "M_Kit_Feuillage_Sombre"
+  ]
+ },
+ "SM_Jardin_Sol_Puits_8x8": {
+  "doc": "Dalle de sol de 8 × 8 m percée, avec le puits de jardin dans son ouverture.",
+  "taille": [
+   4.4,
+   3.2,
+   6.55
+  ],
+  "bas": -2.41,
+  "triangles": 1380,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Terre_Racines",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Jardin_Sol_Fosse_8x8": {
+  "doc": "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter.",
+  "taille": [
+   8.0,
+   8.0,
+   4.09
+  ],
+  "bas": -4.01,
+  "triangles": 462,
+  "materiaux": [
+   "M_Bib_Dalles_Sales",
+   "M_Bib_Moellons_Peint",
+   "M_Bib_Terre_Racines",
+   "M_Bib_RocheCave_Peint",
+   "M_Bib_BoisPourri",
+   "M_Bib_PierreTaillee_Peint"
+  ]
+ },
+ "SM_Jardin_PlateformeTraction": {
+  "doc": "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant.",
+  "taille": [
+   3.0,
+   3.0,
+   4.47
+  ],
+  "bas": -0.45,
+  "triangles": 1066,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Dalles_Sales",
+   "M_Bib_FerRouille"
+  ]
+ },
+ "SM_Jardin_Lisiere_12m": {
+  "doc": "Lisière de forêt dense de 12 m : troncs sur deux rangs, trois couches de feuillage, sous-bois, fond noir ; infranchissable.",
+  "taille": [
+   22.59,
+   16.79,
+   21.49
+  ],
+  "bas": -0.5,
+  "triangles": 5738,
+  "materiaux": [
+   "M_Bib_Ecorce",
+   "M_Kit_Feuillage_Foret",
+   "M_Kit_Feuillage_Sombre",
+   "M_Fond_Noir"
+  ]
+ },
+ "SM_Jardin_Lisiere_Coin": {
+  "doc": "Lisière de forêt en quart de cercle (angle d'une clairière, rayon 8 m) ; infranchissable.",
+  "taille": [
+   22.69,
+   22.93,
+   21.26
+  ],
+  "bas": -0.38,
+  "triangles": 5752,
+  "materiaux": [
+   "M_Bib_Ecorce",
+   "M_Kit_Feuillage_Foret",
+   "M_Kit_Feuillage_Sombre",
+   "M_Fond_Noir"
+  ]
+ },
+ "SM_Jardin_SalleHaute_8x8": {
+  "doc": "Salle en hauteur de 8 × 8 m (pavillon), plancher à 6 m sur quatre piliers : fenêtre, porte, garde-corps, passage d'échelle.",
+  "taille": [
+   8.3,
+   8.3,
+   9.82
+  ],
+  "bas": 0.0,
+  "triangles": 1744,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Dalles_Sales",
+   "M_Bib_Moellons_Peint",
+   "M_Bib_BoisPourri"
   ]
  }
 }
