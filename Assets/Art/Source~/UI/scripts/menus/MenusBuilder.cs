@@ -632,7 +632,8 @@ public static class MenusBuilder
         ca.margeOmbre = new Vector3(0.9f, 0.5f, 0.12f);
         ca.valeurOmbre = 0.3f;
         ca.cisaillement = 1.1f;
-        ca.eclairageLanterne = new Vector3(1.1f, 0.4f, 0.2f);   // nuit 4 : lueur au sol serrée au pied de la lanterne, couleur adoucie (plus de taches)
+        ca.eclairageLanterne = new Vector3(1.1f, 0.4f, 0.1f);   // nuit 5 : moitié moins de couleur du personnage (aplat vert du koala sur la bûche)
+        //   // nuit 4 : lueur au sol serrée au pied de la lanterne, couleur adoucie (plus de taches)
         var fondu = LitFondu();
         foreach (var pc in ca.placements)
             foreach (var f in fondu)
@@ -659,13 +660,11 @@ public static class MenusBuilder
         {
             int baseIdx = ca.places.Min(p => p.racine.GetSiblingIndex());
             for (int k = 3; k >= 0; k--) ca.places[k].racine.SetSiblingIndex(baseIdx + (3 - k));
-            var solCalque = ca.places[0].racine.parent.Find("Sol_Lumieres_Ombres");
-            if (solCalque != null) solCalque.SetSiblingIndex(ca.places.Min(p => p.racine.GetSiblingIndex()));
         }
         var mBase = AssetDatabase.LoadAssetAtPath<Material>($"{MAT}/M_Campement_Assis.mat");
         if (mBase != null) { ReglesEclairage(mBase); EditorUtility.SetDirty(mBase); }
         var ui = e.transform.Find("Interface");
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < ca.places.Length; i++)
         {
             var pl = ca.places[i];
             var racine = pl.racine;
@@ -757,14 +756,49 @@ public static class MenusBuilder
                     gardes.Add(im.transform);
                 }
             }
+            // seuls les calques de place inconnus (restes des anciennes reconstructions) sont détruits
             for (int c = sol.childCount - 1; c >= 0; c--)
-                if (!gardes.Contains(sol.GetChild(c))) UnityEngine.Object.DestroyImmediate(sol.GetChild(c).gameObject);
+            {
+                var t = sol.GetChild(c);
+                bool calque = t.name.StartsWith("Eclairage") || t.name.StartsWith("Ombre_Portee") || t.name.StartsWith("Ombre_Lanterne");
+                if (calque && !gardes.Contains(t)) UnityEngine.Object.DestroyImmediate(t.gameObject);
+            }
+            // l'ombre et la lumière d'une place suivent le fondu de sa place (apparition d'un joueur)
+            for (int i = 0; i < ca.places.Length; i++)
+            {
+                var pl = ca.places[i];
+                var cgPlace = pl.racine.GetComponent<CanvasGroup>();
+                if (cgPlace == null) cgPlace = pl.racine.gameObject.AddComponent<CanvasGroup>();
+                foreach (var im in new Image[] { pl.eclairage, pl.ombrePortee, pl.ombreLanterne })
+                {
+                    if (im == null) continue;
+                    if (im.GetComponent<CanvasGroup>() == null) im.gameObject.AddComponent<CanvasGroup>();
+                    var sg = im.GetComponent<SuitGroupe>();
+                    if (sg == null) sg = im.gameObject.AddComponent<SuitGroupe>();
+                    sg.source = cgPlace;
+                    var g = im.GetComponent<CanvasGroup>(); g.interactable = false; g.blocksRaycasts = false;
+                }
+            }
             // ordre : lumières au sol de toutes les places, puis ombres (une ombre ne s'éclaire pas par la lueur voisine)
             int k = 0;
             foreach (var pl in ca.places) if (pl.eclairage != null) pl.eclairage.transform.SetSiblingIndex(k++);
             foreach (var pl in ca.places) if (pl.ombrePortee != null) pl.ombrePortee.transform.SetSiblingIndex(k++);
             foreach (var pl in ca.places) if (pl.ombreLanterne != null) pl.ombreLanterne.transform.SetSiblingIndex(k++);
-            sol.SetSiblingIndex(ca.places.Min(p => p.racine.GetSiblingIndex()));
+            // sous tous les personnages : juste avant la place dessinée en premier (place 4). Retirer le calque avant de lire
+            // l'index (sinon décalage d'un cran : il passait au-dessus de la place 4)
+            var premiere = ca.places.OrderBy(p => p.racine.GetSiblingIndex()).First().racine;
+            sol.SetAsLastSibling();
+            sol.SetSiblingIndex(premiere.GetSiblingIndex());
+        }
+        // lanternes éteintes : chacune juste sous sa place (sous le personnage de la place voisine dessinée après)
+        for (int i = 0; i < ca.places.Length; i++)
+        {
+            var pl = ca.places[i];
+            if (pl.lanterneEteinte == null || pl.racine == null) continue;
+            var le = pl.lanterneEteinte.transform;
+            if (le.parent != pl.racine.parent) continue;
+            le.SetAsLastSibling();
+            le.SetSiblingIndex(pl.racine.GetSiblingIndex());
         }
     }
 
