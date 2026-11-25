@@ -433,3 +433,58 @@ captures `docs/art/rendus/Nuit4/Lot6/`. Illustrations et cadres : lot 5 (`docs/a
   minuteur en or.
 - **Scripts robustes** aux références nulles, aux rangs hors bornes, aux identifiants inconnus (avertissement dans la console) et
   à un catalogue absent (case vidée).
+
+## 10. Lot 2 de la nuit 5 : améliorations par personnage, colonne du HUD, infobulle, coffre et marchand, codex (2026-11-24, branche `art-ui-5`)
+
+Constructeur : `Assets/Art/Source~/UI/scripts/UIJeu5Builder.cs` (`Importe`, `Construit`, `Capture`) ; cadres : `ameliorations/cadres5.py` ;
+textes des aperçus : `ameliorations/fiches.py` → `fiches.tsv` (tirés de `docs/design/AMELIORATIONS.md`). Scène d'aperçu
+`Assets/Art/Scenes/Test_UI_Jeu5.unity`. Captures **dans le vrai jeu** (actes I à III, seed 4242, HUD de main) et dans le vrai menu
+principal : `docs/art/rendus/Nuit5/Lot2/`.
+
+### Règle visuelle (remplace les cadres de rang)
+
+| Lecture | Porté par | Valeurs |
+|---|---|---|
+| **Personnage** | couleur du cadre (celle de sa lanterne) | générique : fer neutre ; renard `#DD373F` ; caméléon `#F28C1A` (jaune-orangé franc, plus aucun air de « rang or ») ; koala `#55C851` ; hibou `#5FB9ED` (émail sur les valeurs du cadre argent) |
+| **Rang** | **étoiles ivoire** (1 à 5), à cheval sur le bas du cadre | Bronze 1 … Mythique 5 ; ivoire d'os : ni or ni couleur de personnage ; seules les étoiles gagnées s'affichent (le codex montre les 5 rangs dans la fiche) |
+| **Forme** | cadre | **carré** = amélioration ; **losange** = passif (illustration à 62 %, découpée en losange) |
+
+Sprites : `Assets/Art/UI/Ameliorations/Cadres/Cadre_<Neutre|Renard|Cameleon|Koala|Hibou>.png`, `Cadre_Passif_<…>.png`, `Etoile_Rang.png`,
+`Etoile_Rang_Vide.png`, `Masque_Carre.png` (intérieur à coins arrondis : l'illustration ne dépasse plus du cadre) ; planche :
+`docs/art/ameliorations/planche_cadres_5.png`. Plus aucun violet dans les nouveaux cadres.
+
+**Compatibilité** : une case **sans étoiles** (`IconeAmelioration.etoiles` vide : `Panneau_FinDeRun` et `Panneau_MarchandRangs` de la
+nuit 4, déjà branchés par main) garde exactement l'ancien rendu (cadre de rang Bronze à Mythique). Pour passer l'écran de fin aux
+couleurs, main remplace ses cases par celles de la colonne (ou la DA reconstruit ce prefab dans un lot suivant).
+
+### Code (assemblée `ItHunts.Art.UIJeu`)
+
+- **`CatalogueAmeliorations`** : `Proprietaire(id)` (G → 0, R → 1, C → 2, K → 3, H → 4 : **même ordre que `UpgradeCharacter`**),
+  `CadrePersonnage(proprietaire, passif)`, `Couleur(proprietaire)`, `etoile`, `fiches` (textes de la DA pour les aperçus).
+- **`IconeAmelioration.Configure(id, rang)`** : illustration **du catalogue** (par code) + cadre du personnage + étoiles ;
+  `Configure(sprite, rang, passif, proprietaire)` pour l'icône de main (`UpgradeDefinition.icon`, `(int)character`, `isPassive`).
+  `PoseEtoiles(0)` masque les étoiles.
+- **Identifiants** : partout, l'`id` est le **code** de AMELIORATIONS.md (`UpgradeDefinition.code` : G1…, R-P1…) ; la première lettre
+  donne le personnage et « -P » le passif (le codex range ses onglets ainsi).
+
+### Prefabs (`Assets/Art/UI/Jeu/Prefabs/`) et ce que main branche
+
+| Prefab | Placement | API | Remplace |
+|---|---|---|---|
+| `HUD_ColonneAmeliorations` | bas gauche, pivot en bas : x 36, y 164 (au-dessus de la barre de vie : coin 32 + 131 × 0,9 + 14) ; 10 cases de 58 px tous les 68 px, **de bas en haut** ; le passif toujours en bas | `Remplit(string[] codes, int[] rangs)` à chaque changement de `PlayerUpgrades.Version` (codes = `UpgradeDefinition.code`) ; une case qui change grandit et luit 0,35 s | la rangée horizontale de `PlayerHudArt.BuildUpgradeRow` |
+| (dans la colonne) `Infobulle` | à droite de la case survolée, jamais hors écran ; hauteur ajustée aux textes | survol souris (`SurvolCase`, curseur libre : pause, carte) ; manette : `Survole(i)` (la case luit), `Survole(-1)` ; **textes de main** : `colonne.SourceTextes = (code, rang) => new[] { nom, description, RankText(rang) }` (sans elle, les fiches de la DA) | — |
+| `HUD_InfobulleAmelioration` | n'importe où | `Montre(code, rang, nom, effet, effetAuRang, ancre)` avec les textes de main (`displayName`, `description`, `RankText(rang)`), `Cache()` | — |
+| `Panneau_Offres_Coffre` | centre, 1260 × 750 | `Remplit("Coffre", Offre[3], ames, prixRelance)` (`Offre` : code, nom, `rangActuel` −1 = nouvelle, description au rang proposé, prix) ; événements `Achat(i)`, `Relance`, `Ferme` ; `Focus(i)` pour la manette ; `prixRelance` −1 masque le bouton, 0 = gratuit | `Panneau_Coffre` (liste) |
+| `Panneau_Offres_Marchand` | centre, 1260 × 780 | idem, avec le prix (rouge et carte éteinte si trop cher) ; la carte de soin : `Offre { soin = true, soinPV }` | `Panneau_Marchand` et `Panneau_MarchandRangs` |
+| `Menu_Codex` | page plein écran du menu principal (canvas du menu), fond du campement assombri | `Remplit(Fiche[])` (fiches construites depuis les `UpgradeDefinition` de main, `id` = code ; sinon le catalogue sert), `OngletSuivant(±1)`, `Deplace(dx, dy)`, `Choisit(i)`, événement `Ferme`, `aide.text` (touches du périphérique) ; souris : clic sur onglet, survol des cases ; manette : onglets et cases sélectionnables (`OngletCodex`, `SurvolCodex`) ; un personnage : passifs puis améliorations en grandes cases ; communes : grille de 6 × 5 | nouvelle entrée « Codex » du menu titre (texte Unity, comme Jouer / Paramètres / Quitter) |
+
+Points d'attention pour main :
+- **Survol dans le HUD** : la souris est capturée en jeu ; l'infobulle sert dans la pause, sur la carte (Tab) et à la manette (case
+  sélectionnée). Dans les panneaux d'offre, la description est sur la carte : pas d'infobulle nécessaire.
+- **Relance du coffre** : prix à fixer dans `EconomySettings` (aperçu : 25 âmes) ; une relance tire 3 nouvelles offres.
+- **Cartes** : la description se resserre seule (taille 20 à 15) pour tenir ; une montée au-delà de Mythique est masquée ; une carte
+  trop chère s'éteint entièrement (illustration, cadre, étoiles, nom, rangs) et son prix passe en rouge.
+- **Soin** : illustration propre `ICO_Soin.png` (fiole de sang bandée), sans cadre ni étoiles.
+- **Textes** des aperçus : virgule décimale, aucun anglicisme (« ennemi tué », « tir à la tête », « glissade murale »), aucune note
+  de développement ; à reprendre dans les `UpgradeDefinition` de main pour que le jeu dise la même chose.
+- Écran partagé : les tailles sont en unités du canvas 1920 × 1080 (*match height*) ; la colonne tient dans 960 × 1080.

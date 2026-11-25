@@ -166,3 +166,760 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 07244eabd5e40804e82fe0cf5fd0451a, type: 3}
   - {fileID: 21300000, guid: fc1b1787ed8fe8f479b8009430186577, type: 3}
   masquePassif: {fileID: 21300000, guid: ff8d894e2b9013947b3f84593aef739a, type: 3}
+  cadresPersonnage:
+  - {fileID: 21300000, guid: 5e612b48757887948979ce96125a9280, type: 3}
+  - {fileID: 21300000, guid: 6571c6575ba7bcc4cbfb281ce6ea0f0c, type: 3}
+  - {fileID: 21300000, guid: be747b4acf3051d4fa0e924fc64ebcba, type: 3}
+  - {fileID: 21300000, guid: 6b90668d381aee3458a93b42a7b7ec87, type: 3}
+  - {fileID: 21300000, guid: a464ade3b9e4f1b42b2ddd0f5713f91b, type: 3}
+  cadresPassifsPersonnage:
+  - {fileID: 21300000, guid: 0459697784eeb85439d8ca4c672f2022, type: 3}
+  - {fileID: 21300000, guid: 1b30da249eeec4b4dbdb47bc4cb40f16, type: 3}
+  - {fileID: 21300000, guid: 9b145d299f2e1e04bbd5c42b509c7907, type: 3}
+  - {fileID: 21300000, guid: dc7e2ad5a21f79141b75a42378f934f2, type: 3}
+  - {fileID: 21300000, guid: ca6c58605d63d24418638ef1a216b8a5, type: 3}
+  etoile: {fileID: 21300000, guid: ad50e56f2d6408f41bfb74921c66967c, type: 3}
+  etoileVide: {fileID: 21300000, guid: 8dfdad3c0690af543a49d33ea59dca7e, type: 3}
+  masqueCarre: {fileID: 21300000, guid: 22611503dfc61164b80ef7afc2dd6f55, type: 3}
+  couleursPersonnage:
+  - {r: 0.8, g: 0.78, b: 0.74, a: 1}
+  - {r: 0.867, g: 0.216, b: 0.247, a: 1}
+  - {r: 0.902, g: 0.667, b: 0.18, a: 1}
+  - {r: 0.333, g: 0.784, b: 0.318, a: 1}
+  - {r: 0.373, g: 0.725, b: 0.929, a: 1}
+  fiches:
+  - id: G1
+    nom: Riposte
+    effet: "Une parade r\xE9ussie renvoie une onde qui blesse les ennemis autour"
+    rangs:
+    - 15 PV, 3 m
+    - 22 PV, 3,5 m
+    - 30 PV, 4 m, repousse
+    - 40 PV, 4,5 m
+    - "55 PV, 5 m, <b>l'onde \xE9tourdit 1,5 s</b>"
+    synergies: "D\xE9tonateur (G20), Briseur d'os (G21)"
+  - id: G2
+    nom: Garde large
+    effet: "Fen\xEAtre de parade plus longue"
+    rangs:
+    - +40 ms
+    - +60 ms
+    - "+80 ms, la tol\xE9rance tardive double"
+    - +100 ms
+    - "+120 ms, <b>pare aussi les d\xE9bris et les projectiles (boss compris)</b>"
+    synergies: Rythme de fer (G4)
+  - id: G3
+    nom: Second souffle
+    effet: "Une parade r\xE9ussie rend des PV"
+    rangs:
+    - 6 PV
+    - 9 PV
+    - 12 PV + une charge de mouvement
+    - 16 PV
+    - 22 PV, <b>+ une charge de traction</b>
+    synergies: Charge en plus (G23), Traction rapide (G10)
+  - id: G4
+    nom: Rythme de fer
+    effet: "Chaque parade r\xE9ussie d'affil\xE9e (6 s) augmente vos d\xE9g\xE2ts"
+    rangs:
+    - +10 % par parade, max 3
+    - +15 %, max 3
+    - +20 %, max 4
+    - +25 %, max 4
+    - "+30 %, max 5, <b>\xE0 3 parades : le temps ralentit 1 s autour de vous</b>"
+    synergies: "Pr\xE9dateur (G22)"
+  - id: G5
+    nom: Grande orbe
+    effet: "Rayon de collecte des \xE2mes"
+    rangs:
+    - +25 % (10 m)
+    - +40 %
+    - +60 %
+    - +85 %
+    - "+120 % (17,6 m), <b>collecte \xE0 travers les murs</b>"
+    synergies: Aspiration (G6), Flair (R-P2)
+  - id: G6
+    nom: Aspiration
+    effet: "Les \xE2mes viennent plus vite, les coffres offrent leur choix plus longtemps"
+    rangs:
+    - +50 %
+    - +80 %
+    - "+110 %, les \xE2mes au sol durent 45 s"
+    - +150 %
+    - "+200 %, <b>chaque \xE2me ramass\xE9e soigne 1 PV</b>"
+    synergies: "Grande orbe (G5), \xC2mes gourmandes (G7)"
+  - id: G7
+    nom: "\xC2mes gourmandes"
+    effet: "Plus d'\xE2mes par ennemi tu\xE9"
+    rangs:
+    - +10 %
+    - +18 %
+    - "+25 %, +1 \xE2me par ennemi tu\xE9 \xE0 plus de 14 m/s"
+    - +35 %
+    - "+50 %, <b>ennemi tu\xE9 \xE0 plus de 14 m/s : \xE2mes doubl\xE9es</b>"
+    synergies: Vif-argent (G26), Semelles de vent (G24)
+  - id: G8
+    nom: Marchandage
+    effet: "Prix du marchand r\xE9duits"
+    rangs:
+    - "\u22128 %"
+    - "\u221214 %"
+    - "\u221220 %, la hausse par achat est divis\xE9e par 2"
+    - "\u221226 %"
+    - "\u221233 %, <b>la premi\xE8re mont\xE9e de rang de chaque acte est gratuite</b>"
+    synergies: "\u0152il du collectionneur (G30)"
+  - id: G9
+    nom: Orbe vorace
+    effet: "Chaque \xE2me ramass\xE9e r\xE9duit vos recharges (traction, artefact,
+      ru\xE9e)"
+    rangs:
+    - "0,05 s par \xE2me"
+    - 0,08 s
+    - "0,11 s, aussi la recharge de la r\xE9pulsion"
+    - 0,15 s
+    - "0,2 s, <b>un ennemi tu\xE9 rend une charge de traction</b>"
+    synergies: Traction rapide (G10), Main leste (C5)
+  - id: G10
+    nom: Traction rapide
+    effet: Une charge de traction revient plus vite
+    rangs:
+    - "\u22121 s (5 s)"
+    - "\u22121,6 s"
+    - "\u22122,2 s"
+    - "\u22122,8 s"
+    - "\u22123,4 s, <b>l'arriv\xE9e d'une traction rend la charge si vous atterrissez
+      \xE0 plus de 12 m/s</b>"
+    synergies: Second souffle (G3), Orbe vorace (G9)
+  - id: G11
+    nom: Harpon
+    effet: "La traction vise aussi les <b>ennemis</b> : vous \xEAtes tir\xE9 vers
+      eux"
+    rangs:
+    - goules
+    - goules et volants
+    - "l'arriv\xE9e frappe 20 PV"
+    - "35 PV et \xE9tourdit 1 s"
+    - "50 PV, <b>l'arriv\xE9e explose (3 m)</b>"
+    synergies: "Briseur d'os (G21), D\xE9tonateur (G20), Fente (K3)"
+  - id: G12
+    nom: "\xC9lan de traction"
+    effet: "La traction acc\xE9l\xE8re plus vite et garde plus d'\xE9lan \xE0 l'arriv\xE9e
+      (plafond de 18 m/s inchang\xE9)"
+    rangs:
+    - "acc\xE9l\xE9ration +25 %"
+    - +50 %
+    - "+75 %, l'\xE9lan de sortie est gard\xE9 1 s de plus"
+    - +100 %
+    - "+125 %, <b>4 s de tractions sans charge apr\xE8s une parade r\xE9ussie</b>"
+    synergies: Garde large (G2), Vif-argent (G26)
+  - id: G13
+    nom: Sillage
+    effet: "Pendant une traction, vous laissez une tra\xEEn\xE9e qui blesse et ralentit
+      les ennemis travers\xE9s"
+    rangs:
+    - "8 PV, \u221220 % 2 s"
+    - 12 PV
+    - "16 PV, \u221235 %"
+    - 22 PV
+    - "30 PV, <b>la tra\xEEn\xE9e enflamme</b>"
+    synergies: Allumette (G28), Fourrure de braise (R-P1)
+  - id: G14
+    nom: Onde blessante
+    effet: "L'onde de r\xE9pulsion blesse les ennemis touch\xE9s"
+    rangs:
+    - 10 PV
+    - 15 PV
+    - 20 PV, ralentit 1,5 s
+    - 28 PV
+    - "38 PV, <b>double onde (une seconde 0,3 s apr\xE8s)</b>"
+    synergies: Rebond (G16), Onde de choc (G15)
+  - id: G15
+    nom: Onde de choc
+    effet: "R\xE9pulsion plus large et plus longue"
+    rangs:
+    - "+10\xB0, +2 m"
+    - "+15\xB0, +3 m"
+    - "+20\xB0, +4 m, les objets repouss\xE9s vont 20 % plus vite"
+    - "+25\xB0, +5 m"
+    - "+30\xB0, +6 m, <b>renvoie les d\xE9bris et projectiles du boss</b>"
+    synergies: Projectiles lourds (G18)
+  - id: G16
+    nom: Rebond
+    effet: "Un ennemi repouss\xE9 contre un mur ou un autre ennemi prend des d\xE9g\xE2ts
+      d'impact"
+    rangs:
+    - "\xD71,5"
+    - "\xD71,8"
+    - "\xD72,1, \xE9tourdit 1 s"
+    - "\xD72,5"
+    - "\xD73, <b>l'ennemi projet\xE9 qui meurt explose (3,5 m)</b>"
+    synergies: "D\xE9tonateur (G20), Briseur d'os (G21)"
+  - id: G17
+    nom: "Charge de r\xE9pulsion"
+    effet: "La r\xE9pulsion a une charge en plus ; sa recharge est plus courte"
+    rangs:
+    - +1 charge
+    - "recharge \u22121 s"
+    - "\u22121,5 s"
+    - +2 charges
+    - "<b>la r\xE9pulsion sur le sol vous propulse en hauteur (saut de 4 m) sans
+      d\xE9penser de charge de mouvement</b>"
+    synergies: Pas de chat (G25), Chute amortie (G27)
+  - id: G18
+    nom: Projectiles lourds
+    effet: "Objets lanc\xE9s ou repouss\xE9s : plus de d\xE9g\xE2ts (zone comprise)"
+    rangs:
+    - +25 %
+    - +40 %
+    - +60 %, les objets ne se brisent plus au premier impact
+    - +85 %
+    - "+120 %, <b>un objet lanc\xE9 revient vers l'orbe apr\xE8s l'impact</b>"
+    synergies: "Onde de choc (G15), Langue de cam\xE9l\xE9on (C8)"
+  - id: G19
+    nom: "C\u0153ur solide"
+    effet: PV max
+    rangs:
+    - +25 (et autant tout de suite)
+    - +40
+    - "+55, r\xE9g\xE9n\xE9ration 1 PV / 4 s hors combat"
+    - +75
+    - "+100, <b>une fois par run, vous revenez \xE0 50 % de PV au lieu de mourir</b>
+      (pas face \xE0 la prise du traqueur)"
+    synergies: "Second souffle (G3), Peau \xE9paisse (K-P1)"
+  - id: G20
+    nom: "D\xE9tonateur"
+    effet: "Un ennemi <b>\xE9tourdi ou paralys\xE9</b> qui meurt explose"
+    rangs:
+    - 20 PV, 3 m
+    - 28 PV, 3,5 m
+    - "36 PV, 4 m, l'explosion \xE9tourdit 0,8 s"
+    - 46 PV, 4,5 m
+    - "60 PV, 5 m, <b>cha\xEEne : les morts par explosion explosent (3 maillons)</b>"
+    synergies: Riposte (G1), Rebond (G16), Balles paralysantes (C1)
+  - id: G21
+    nom: Briseur d'os
+    effet: "D\xE9g\xE2ts contre les ennemis \xE9tourdis ou paralys\xE9s"
+    rangs:
+    - "\xD71,25"
+    - "\xD71,45"
+    - "\xD71,65, l'\xE9tourdissement dure 0,5 s de plus"
+    - "\xD71,9"
+    - "\xD72,2, <b>un \xE9tourdi sous 30 % de PV meurt du coup suivant</b>"
+    synergies: "D\xE9tonateur (G20), Harpon (G11), Brise-garde (K7)"
+  - id: G22
+    nom: "Pr\xE9dateur"
+    effet: "Chaque ennemi tu\xE9 : +d\xE9g\xE2ts pendant 5 s (piles)"
+    rangs:
+    - +6 %, max 5
+    - +8 %, max 5
+    - +10 %, max 6, + vitesse de course +0,5 m/s
+    - +12 %, max 6
+    - "+15 %, max 8, <b>\xE0 5 piles : vos attaques \xE9tourdissent</b>"
+    synergies: "Rythme de fer (G4), \xC9lan du b\xFBcheron (K8)"
+  - id: G23
+    nom: Charge en plus
+    effet: "Charges de mouvement (ru\xE9e, saut en l'air)"
+    rangs:
+    - +1
+    - "recharge au sol \u22120,5 s"
+    - +2
+    - "recharge en l'air \u22121 s"
+    - "+3, <b>2 s de dashs gratuits apr\xE8s un ennemi tu\xE9</b>"
+    synergies: "Second souffle (G3), \xC9lan du b\xFBcheron (K8)"
+  - id: G24
+    nom: Semelles de vent
+    effet: "Course plus rapide, \xE9lan au sol gard\xE9 plus longtemps"
+    rangs:
+    - +0,5 m/s
+    - +0,8 m/s
+    - "+1,1 m/s, perte d'\xE9lan 30 % plus lente"
+    - +1,4 m/s
+    - "+1,7 m/s, <b>plafond de l'\xE9lan au sol +2 m/s</b>"
+    synergies: "\xC2mes gourmandes (G7), Vif-argent (G26)"
+  - id: G25
+    nom: Pas de chat
+    effet: Glissade plus longue, glissade murale plus lent, saut mural plus fort
+    rangs:
+    - "glissade \u221220 % de freinage"
+    - saut mural +1 m/s
+    - "glissade murale 2\xD7 plus lent, hissage +0,5 m"
+    - saut mural +2 m/s
+    - "<b>saut mural sur le m\xEAme mur autoris\xE9</b>, les murs rendent aussi une
+      charge"
+    synergies: Griffes grimpantes (K-P2), Plumes (H-P2)
+  - id: G26
+    nom: Vif-argent
+    effet: "Saut encha\xEEn\xE9 : gain par saut et contr\xF4le en l'air"
+    rangs:
+    - +15 %
+    - +25 %
+    - "+35 %, contr\xF4le en l'air +20 %"
+    - +50 %
+    - "+60 %, <b>au-del\xE0 de 16 m/s vous traversez les goules en les \xE9tourdissant</b>"
+    synergies: "\xC2mes gourmandes (G7), Briseur d'os (G21)"
+  - id: G27
+    nom: Chute amortie
+    effet: Chute dans le vide moins punitive, atterrissage fort qui frappe autour
+    rangs:
+    - "\u221220 \u2192 \u221212 PV"
+    - "\u22128 PV, l'atterrissage fort \xE9tourdit \xE0 2 m"
+    - "\u22124 PV, 15 PV de d\xE9g\xE2ts \xE0 3 m"
+    - 0 PV
+    - <b>l'atterrissage fort explose (30 PV, 4 m) et vous relance d'un petit saut</b>
+    synergies: "Charge de r\xE9pulsion (G17), D\xE9tonateur (G20)"
+  - id: G28
+    nom: Allumette
+    effet: Un ennemi <b>en feu</b> qui meurt enflamme ses voisins
+    rangs:
+    - 2 m, 3 s
+    - 2,5 m, 4 s
+    - 3 m, 5 s, le feu ralentit 20 %
+    - 3,5 m, 6 s
+    - "4 m, 7 s, <b>le feu \xE9tourdit 0,5 s \xE0 la premi\xE8re br\xFBlure</b>"
+    synergies: "Sillage (G13), lanterne (R1 \xE0 R8), Feu gr\xE9geois (R5)"
+  - id: G29
+    nom: Souffle court
+    effet: "Le traqueur vous d\xE9tecte de moins loin et perd votre trace plus vite
+      (sa vitesse ne change pas)"
+    rangs:
+    - "\u221210 %"
+    - "\u221216 %"
+    - "\u221222 %, les goules alertent le traqueur 1 s plus tard"
+    - "\u221228 %"
+    - "\u221233 %, <b>2 s d'invisibilit\xE9 pour le traqueur apr\xE8s une parade
+      r\xE9ussie</b>"
+    synergies: Peau changeante (C-P1), Vision nocturne (H-P1)
+  - id: G30
+    nom: "\u0152il du collectionneur"
+    effet: "Les coffres offrent un choix en plus ; les salles verrouill\xE9es sont
+      moins ch\xE8res"
+    rangs:
+    - +1 choix
+    - "porte \u221225 %"
+    - "+1 choix, les coffres proposent une mont\xE9e de rang d\xE8s l'acte I"
+    - "porte \u221250 %"
+    - "+2 choix, <b>un coffre peut offrir une am\xE9lioration directement en Argent</b>"
+    synergies: Marchandage (G8)
+  - id: R-P1
+    nom: Fourrure de braise
+    effet: Insensible au feu ; un ennemi qui vous frappe s'enflamme
+    rangs:
+    - "br\xFBlure 2 s"
+    - 3 s
+    - "4 s, le coup re\xE7u est r\xE9duit de 10 %"
+    - 5 s
+    - "6 s, <b>l'ennemi est repouss\xE9 de 4 m et \xE9tourdi 0,8 s</b>"
+    synergies: 
+  - id: R-P2
+    nom: Flair
+    effet: "Coffres, marchand et \xE2mes brillent \xE0 travers les murs ; rayon de
+      collecte"
+    rangs:
+    - 20 m, +10 %
+    - 30 m, +15 %
+    - "40 m, +20 %, la sortie d'acte est marqu\xE9e d\xE8s l'entr\xE9e"
+    - 50 m, +25 %
+    - "partout, +30 %, <b>une goule qui porte des \xE2mes \xE0 moins de 20 m les
+      l\xE2che d'avance (1 \xE2me) quand elle vous voit</b>"
+    synergies: 
+  - id: R1
+    nom: Long souffle
+    effet: "Port\xE9e du jet"
+    rangs:
+    - +1,5 m
+    - +2,5 m
+    - +3,5 m, le jet traverse un objet
+    - +4,5 m
+    - "+6 m, <b>le jet rebondit sur le d\xE9cor (une fois)</b>"
+    synergies: Flamme large (R2)
+  - id: R2
+    nom: Flamme large
+    effet: "C\xF4ne du jet"
+    rangs:
+    - "+15\xB0"
+    - "+25\xB0"
+    - "+35\xB0, le jet pousse l\xE9g\xE8rement (1 m)"
+    - "+45\xB0"
+    - "+60\xB0, <b>cercle complet autour du renard</b>"
+    synergies: Long souffle (R1), Fourrure de braise
+  - id: R3
+    nom: "M\xE8che vive"
+    effet: Recharge du jet
+    rangs:
+    - "\u22120,5 s"
+    - "\u22120,8 s"
+    - "\u22121,1 s, un ennemi tu\xE9 en feu rend 0,5 s"
+    - "\u22121,4 s"
+    - "\u22121,7 s, <b>un ennemi tu\xE9 en feu finit la recharge</b>"
+    synergies: Souffle double (R7), Orbe vorace (G9)
+  - id: R4
+    nom: Braises
+    effet: "Dur\xE9e de la br\xFBlure ; les br\xFBlures se cumulent (plafond)"
+    rangs:
+    - +2 s
+    - +3 s
+    - "+4 s, 2 br\xFBlures se cumulent"
+    - +5 s
+    - "+6 s, <b>3 br\xFBlures se cumulent, \xE0 3 l'ennemi est paralys\xE9 1 s</b>"
+    synergies: "Allumette (G28), D\xE9tonateur (G20)"
+  - id: R5
+    nom: "Feu gr\xE9geois"
+    effet: Le jet laisse des flaques de feu au sol
+    rangs:
+    - 3 s, 1,5 m
+    - 4 s, 2 m
+    - 5 s, 2,5 m, les flaques ralentissent 30 %
+    - 6 s, 3 m
+    - "8 s, 3,5 m, <b>la premi\xE8re entr\xE9e dans une flaque \xE9tourdit 0,6 s</b>"
+    synergies: Allumette (G28), Briseur d'os (G21)
+  - id: R6
+    nom: Combustion
+    effet: Un ennemi qui meurt <b>en feu</b> explose en flammes
+    rangs:
+    - 15 PV, 2,5 m
+    - 22 PV, 3 m
+    - "30 PV, 3,5 m, les voisins br\xFBlent"
+    - 40 PV, 4 m
+    - "55 PV, 4,5 m, <b>cha\xEEne (3 maillons)</b>"
+    synergies: "Allumette (G28), D\xE9tonateur (G20)"
+  - id: R7
+    nom: Souffle double
+    effet: Charges de jet
+    rangs:
+    - "2 charges (la 2e revient 2\xD7 plus lentement)"
+    - "la 2e revient \xE0 vitesse normale"
+    - "2 charges, le 2e jet cons\xE9cutif +25 % de br\xFBlure"
+    - 3 charges
+    - "3 charges, <b>un jet tenu encha\xEEne les charges sans pause (jet long)</b>"
+    synergies: "M\xE8che vive (R3)"
+  - id: R8
+    nom: "Foul\xE9e ardente"
+    effet: "Au-dessus de 14 m/s, vos pas laissent une tra\xEEn\xE9e de feu"
+    rangs:
+    - 1,5 s, 6 PV/s
+    - 2 s
+    - 2,5 s, 9 PV/s, aussi pendant une glissade
+    - 3 s
+    - "4 s, 12 PV/s, <b>le ru\xE9e l\xE2che une boule de feu devant (20 PV, 2,5 m)</b>"
+    synergies: Vif-argent (G26), Sillage (G13), Semelles de vent (G24)
+  - id: C-P1
+    nom: Peau changeante
+    effet: "Immobile et sans tirer, vous vous fondez : les goules vous perdent, le
+      traqueur vous d\xE9tecte de moins loin"
+    rangs:
+    - "apr\xE8s 1,5 s, \u221230 % de d\xE9tection"
+    - "1,2 s, \u221240 %"
+    - "1 s, \u221250 %, les goules proches s'arr\xEAtent de chercher"
+    - "0,8 s, \u221260 %"
+    - "0,6 s, \u221270 %, <b>le premier tir depuis le camouflage est un critique
+      \xD73 garanti</b>"
+    synergies: 
+  - id: C-P2
+    nom: "\u0152il fendu"
+    effet: "Zone de t\xEAte des ennemis plus grande ; les critiques s'encha\xEEnent
+      (2,5 s) : chacun augmente le suivant"
+    rangs:
+    - "zone +20 %, +0,25 par cha\xEEne (max 3)"
+    - +30 %, +0,35
+    - +40 %, +0,45 (max 4), 8 % de chance de critique sur tout le corps
+    - +50 %, +0,55
+    - "+60 %, +0,7 (max 5), 15 % de critique sur le corps, <b>tir \xE0 la t\xEAte
+      sur un paralys\xE9 = ennemi tu\xE9 (goule et volant)</b>"
+    synergies: 
+  - id: C1
+    nom: Balles paralysantes
+    effet: Chaque touche fige l'ennemi
+    rangs:
+    - 0,35 s
+    - 0,5 s
+    - "0,65 s, un paralys\xE9 prend +15 %"
+    - 0,8 s
+    - "1 s, <b>un paralys\xE9 touch\xE9 3 fois d'affil\xE9e est projet\xE9 (rebond,
+      G16)</b>"
+    synergies: "D\xE9tonateur (G20), Briseur d'os (G21), \u0152il fendu"
+  - id: C2
+    nom: Cadavre explosif
+    effet: La balle qui tue fait exploser l'ennemi
+    rangs:
+    - 16 PV, 3,5 m
+    - 24 PV, 4 m
+    - "32 PV, 4,5 m, cha\xEEne 2"
+    - 40 PV, 5 m
+    - "50 PV, 5,5 m, <b>cha\xEEne 3 et l'explosion paralyse 0,5 s</b>"
+    synergies: "Main leste (C5), D\xE9tonateur (G20)"
+  - id: C3
+    nom: Balle perforante
+    effet: La balle traverse des ennemis
+    rangs:
+    - "+1 (75 % gard\xE9s)"
+    - +2
+    - "+2 (90 % gard\xE9s), traverse les objets"
+    - +3
+    - "+4, <b>100 % gard\xE9s, le dernier travers\xE9 est paralys\xE9</b>"
+    synergies: "Ricochet (C4), \xC9ventail (C7)"
+  - id: C4
+    nom: Ricochet
+    effet: La balle rebondit vers l'ennemi le plus proche
+    rangs:
+    - 1 rebond, 60 %
+    - 1, 75 %
+    - "2 rebonds, 75 %, port\xE9e 18 m"
+    - 2, 90 %
+    - "3 rebonds, <b>100 %, un ricochet sur un tir \xE0 la t\xEAte est un tir \xE0
+      la t\xEAte</b>"
+    synergies: "Perforante (C3), \u0152il fendu"
+  - id: C5
+    nom: Main leste
+    effet: "Un ennemi tu\xE9 remet des balles ; rechargement plus court"
+    rangs:
+    - "+2 balles par ennemi tu\xE9"
+    - "rechargement \u221220 %"
+    - "+3 balles, \u221235 %"
+    - +4 balles
+    - "<b>barillet de 8, un tir \xE0 la t\xEAte qui tue recharge tout</b>"
+    synergies: "Cadavre explosif (C2), Sixi\xE8me chambre (C6)"
+  - id: C6
+    nom: "Sixi\xE8me chambre"
+    effet: "La derni\xE8re balle du barillet est sp\xE9ciale"
+    rangs:
+    - "\xD72 d\xE9g\xE2ts"
+    - "\xD72,5, \xE9tourdit 1 s"
+    - "\xD73, perce tout"
+    - "\xD73,5, explose (4 m)"
+    - "\xD74, <b>si elle tue, rechargement instantan\xE9 et la suivante est aussi
+      une \xAB sixi\xE8me \xBB</b> (une fois)"
+    synergies: Main leste (C5), Briseur d'os (G21)
+  - id: C7
+    nom: "\xC9ventail"
+    effet: "Maintenir le clic vide le barillet en rafale (cadence \xD73, dispersion)"
+    rangs:
+    - "dispersion 6\xB0, d\xE9g\xE2ts \xD70,8"
+    - "5\xB0, \xD70,9"
+    - "4\xB0, \xD71, la rafale pousse les goules"
+    - "3\xB0, \xD71,1"
+    - "2\xB0, \xD71,2, <b>la rafale paralyse</b> et rend 2 balles si elle tue"
+    synergies: Balles paralysantes (C1), Perforante (C3)
+  - id: C8
+    nom: "Langue de cam\xE9l\xE9on"
+    effet: "La balle est un <b>harpon</b> : tirer un objet le ram\xE8ne \xE0 l'orbe
+      (prise \xE0 distance)"
+    rangs:
+    - "objets \xE0 15 m"
+    - "25 m, l'objet arrive d\xE9j\xE0 \xAB tenu \xBB"
+    - "35 m, aussi les volants (tir\xE9s vers vous, \xE9tourdis)"
+    - "45 m, une goule touch\xE9e est tir\xE9e de 3 m"
+    - "60 m, <b>une goule touch\xE9e est tir\xE9e jusqu'\xE0 vous, \xE9tourdie 1
+      s</b>"
+    synergies: Projectiles lourds (G18), Harpon (G11), Briseur d'os (G21)
+  - id: K-P1
+    nom: "Peau \xE9paisse"
+    effet: "D\xE9g\xE2ts re\xE7us r\xE9duits ; PV max"
+    rangs:
+    - "\u22128 %, +10 PV"
+    - "\u221212 %, +15"
+    - "\u221216 %, +20, pas de recul quand vous \xEAtes touch\xE9"
+    - "\u221220 %, +25"
+    - "\u221225 %, +30, <b>sous 25 % de PV : coups re\xE7us divis\xE9s par 2 et d\xE9g\xE2ts
+      \xD71,3</b>"
+    synergies: 
+  - id: K-P2
+    nom: Griffes grimpantes
+    effet: Glissade murale plus lent, saut mural plus haut, hissage plus haut
+    rangs:
+    - "glissade \u221230 %, hissage +0,4 m"
+    - saut mural +0,5 m
+    - "glissade \u221250 %, hissage +0,8 m, les murs rendent une charge"
+    - saut mural +1 m
+    - "<b>s'accrocher au mur (1 s immobile) puis repartir d'un saut mural \xE0 pleine
+      puissance</b>"
+    synergies: 
+  - id: K1
+    nom: Lame longue
+    effet: "Port\xE9e et arc des coups"
+    rangs:
+    - "+0,4 m, +5\xB0"
+    - "+0,7 m, +10\xB0"
+    - "+1 m, +15\xB0, l'aide \xE0 la vis\xE9e porte \xE0 8 m"
+    - "+1,3 m, +20\xB0"
+    - +1,6 m, <b>le 3e coup frappe en cercle complet</b>
+    synergies: "Encha\xEEnement (K2)"
+  - id: K2
+    nom: "Encha\xEEnement"
+    effet: "Combo plus rapide, fen\xEAtre plus longue"
+    rangs:
+    - "\u221210 %, +0,2 s"
+    - "\u221218 %"
+    - "\u221225 %, +0,4 s, le 3e coup ne casse plus le combo"
+    - "\u221232 %"
+    - "\u221240 %, <b>4e coup : tourbillon (16 PV, 360\xB0, repousse)</b>"
+    synergies: "Lame longue (K1), \xC9lan du b\xFBcheron (K8)"
+  - id: K3
+    nom: Fente
+    effet: "La fente (ru\xE9e, glissade) va plus loin et frappe plus fort"
+    rangs:
+    - "+1 m, \xD71,3"
+    - "+2 m, \xD71,4"
+    - "+3 m, \xD71,5, traverse un ennemi"
+    - "+4 m, \xD71,6"
+    - "+5 m, \xD71,8, <b>la fente traverse tous les ennemis et les \xE9tourdit</b>"
+    synergies: Harpon (G11), Briseur d'os (G21)
+  - id: K4
+    nom: Onde de taille
+    effet: "Un coup port\xE9 \xE0 plus de 12 m/s envoie une onde tranchante devant"
+    rangs:
+    - 6 m, 10 PV
+    - 8 m, 14 PV
+    - 10 m, 18 PV, l'onde traverse
+    - 12 m, 24 PV
+    - "14 m, 30 PV, <b>l'onde \xE9tourdit 1 s</b>"
+    synergies: Vif-argent (G26), Semelles de vent (G24)
+  - id: K5
+    nom: "Os bris\xE9"
+    effet: "Les coups font saigner (d\xE9g\xE2ts sur la dur\xE9e)"
+    rangs:
+    - 3 PV/s, 3 s
+    - 4 PV/s, 4 s
+    - 5 PV/s, 5 s, 2 saignements se cumulent
+    - 6 PV/s, 6 s
+    - 8 PV/s, 7 s, <b>un saignant qui meurt vous soigne 8 PV</b>
+    synergies: "Brise-garde (K7) ; saigner et br\xFBler se cumulent (Allumette G28)"
+  - id: K6
+    nom: Garde d'os
+    effet: "La parade avec l'\xE9p\xE9e : fen\xEAtre plus longue, prochain coup critique
+      apr\xE8s une parade"
+    rangs:
+    - "+30 ms, \xD71,5"
+    - "+50 ms, \xD71,75"
+    - "+70 ms, \xD72, la parade frappe (10 PV)"
+    - "+90 ms, \xD72,25"
+    - "+110 ms, \xD72,5, <b>riposte automatique : la parade porte le 3e coup</b>"
+    synergies: Riposte (G1), Rythme de fer (G4)
+  - id: K7
+    nom: Brise-garde
+    effet: "Coups sur un ennemi \xE9tourdi, paralys\xE9 ou saignant"
+    rangs:
+    - "\xD71,3"
+    - "\xD71,5"
+    - "\xD71,7, le coup prolonge l'\xE9tourdissement 0,5 s"
+    - "\xD71,9"
+    - "\xD72,2, <b>ex\xE9cution : un \xE9tourdi sous 40 % de PV meurt</b>"
+    synergies: "Briseur d'os (G21), D\xE9tonateur (G20)"
+  - id: K8
+    nom: "\xC9lan du b\xFBcheron"
+    effet: "Un ennemi tu\xE9 \xE0 l'\xE9p\xE9e rend une charge de mouvement et +vitesse"
+    rangs:
+    - +1 m/s (2 s)
+    - +1,5 m/s
+    - "+2 m/s (3 s), aussi un ru\xE9e gratuit"
+    - +2,5 m/s
+    - "+3 m/s (4 s), <b>un ennemi tu\xE9 rend aussi une charge de traction</b>"
+    synergies: "Charge en plus (G23), Pr\xE9dateur (G22)"
+  - id: H-P1
+    nom: Vision nocturne
+    effet: "Les ennemis ont un contour visible \xE0 travers l'obscurit\xE9 ; le hibou
+      lit l'\xE9tat d'un ennemi (PV)"
+    rangs:
+    - 20 m
+    - 30 m
+    - "40 m, et \xE0 travers les murs \xE0 moins de 15 m"
+    - 50 m
+    - "partout, <b>le traqueur est visible \xE0 travers les murs \xE0 moins de 30
+      m</b>"
+    synergies: 
+  - id: H-P2
+    nom: Plumes
+    effet: "Chute ralentie en tenant saut (plan\xE9), pas de d\xE9g\xE2ts de chute"
+    rangs:
+    - "plan\xE9 \xD70,7 de gravit\xE9"
+    - "\xD70,55"
+    - "\xD70,4, le plan\xE9 garde la vitesse horizontale"
+    - "\xD70,3"
+    - "<b>+1 saut en l'air et le plan\xE9 dirige (contr\xF4le complet)</b>"
+    synergies: 
+  - id: H1
+    nom: Lien multiple
+    effet: "Liens simultan\xE9s sur plusieurs ennemis"
+    rangs:
+    - 2
+    - "2, chacun \xE0 100 %"
+    - 3
+    - 3, +10 % de drain par lien
+    - "4, <b>tous les li\xE9s partagent les d\xE9g\xE2ts re\xE7us (d\xE9g\xE2ts sur
+      l'un = 30 % sur les autres)</b>"
+    synergies: "Cha\xEEnage (H2), Lien vorace (H3)"
+  - id: H2
+    nom: "Cha\xEEnage"
+    effet: "Le drain saute \xE0 l'ennemi le plus proche de la cible"
+    rangs:
+    - 1 saut, 6 m, 50 %
+    - 1 saut, 8 m, 65 %
+    - 2 sauts, 10 m, 75 %
+    - 2 sauts, 90 %
+    - 3 sauts, 12 m, 100 %, <b>la cible morte passe le lien au suivant sans recharge</b>
+    synergies: "Lien multiple (H1), Pages br\xFBlantes (H7)"
+  - id: H3
+    nom: Lien vorace
+    effet: Drain par seconde
+    rangs:
+    - +4 PV/s
+    - +7
+    - +10, la cible ralentit 25 %
+    - +13
+    - +16, <b>la cible ralentit 50 % et ne peut plus bondir</b>
+    synergies: Sangsue (H4), Lien d'ancrage (H6)
+  - id: H4
+    nom: Sangsue
+    effet: Part du drain rendue au hibou
+    rangs:
+    - 30 %
+    - 40 %
+    - 50 %, le surplus au-dessus du max devient un bouclier (max +20)
+    - 60 %
+    - "75 %, <b>bouclier max +40, il absorbe un coup du traqueur dans l'ar\xE8ne
+      du boss</b>"
+    synergies: "Lien vorace (H3), C\u0153ur solide (G19)"
+  - id: H5
+    nom: "Longue port\xE9e"
+    effet: "Port\xE9e de lancement et de maintien"
+    rangs:
+    - +5 m / +5 m
+    - +8 / +8
+    - +12 / +12, la vue peut se perdre 1,5 s
+    - +15 / +15
+    - +20 / +20, <b>le lien traverse les murs 1 s</b>
+    synergies: Vision nocturne (H-P1)
+  - id: H6
+    nom: Lien d'ancrage
+    effet: "La cible li\xE9e sert d'<b>ancre de traction</b> : vous pouvez vous tracter
+      vers elle"
+    rangs:
+    - traction vers la cible
+    - "la cible est frein\xE9e de 30 %"
+    - la traction arrive avec un coup (20 PV)
+    - "la cible est tir\xE9e de 2 m vers vous \xE0 l'accroche"
+    - "<b>la cible est clou\xE9e au sol 2 s \xE0 l'accroche</b>"
+    synergies: "Harpon (G11), \xC9lan de traction (G12)"
+  - id: H7
+    nom: "Pages br\xFBlantes"
+    effet: "Un ennemi qui meurt sous le lien l\xE2che des \xE2mes en plus et rend
+      la recharge"
+    rangs:
+    - "+1 \xE2me, recharge \u221250 %"
+    - "+1, \u221275 %"
+    - "+2, \u2212100 %, le lien se relance sur le voisin (6 m)"
+    - +2
+    - "+3, <b>la mort lib\xE8re une onde qui \xE9tourdit (4 m)</b>"
+    synergies: "Cha\xEEnage (H2), \xC2mes gourmandes (G7)"
+  - id: H8
+    nom: "Soin li\xE9"
+    effet: "Le soin d'alli\xE9 est plus fort ; en solo, le drain soigne aussi un
+      alli\xE9 li\xE9 par le regard\u2026 et vous : +r\xE9g\xE9n\xE9ration pendant
+      un drain"
+    rangs:
+    - soin 10 PV/s, +1 PV/s pour vous
+    - 12 PV/s, +2
+    - 14 PV/s, +3, le soin a 2 charges
+    - 16 PV/s, +4
+    - "20 PV/s, +6, <b>le soin ressuscite un alli\xE9 tomb\xE9 (coop) une fois par
+      acte</b>"
+    synergies: "Sangsue (H4), C\u0153ur solide (G19)"
