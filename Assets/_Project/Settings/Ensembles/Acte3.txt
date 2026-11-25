@@ -43,25 +43,10 @@ Jardin_Clairiere_A 0 0
 [Jardin_Clairiere_B] centre 35x36 fonctions Bosquet, Ravin ; max 1
 Jardin_Clairiere_B 0 0
 
-[Labyrinthe de la DA] centre 48x48 fonctions Labyrinthe de haies ; max 2
-@Jardin_Labyrinthe 0 0
-
 [Allée de la DA] centre 60x50 fonctions Allée des statues ; max 1
 @Jardin_AlleeDesStatues 0 0
 
 # ---- Labyrinthe, roseraie ----
-[Haies en U] centre 14x10 fonctions Labyrinthe de haies, Roseraie
-Jardin_Haie_6m -3 4
-Ens_Habillage_Haie_6m -3 4
-Jardin_Haie_6m 3 4
-Ens_Habillage_Haie_6m 3 4
-Jardin_Haie_6m -6 1 90
-Ens_Habillage_Haie_6m -6 1 90
-Jardin_Haie_6m 6 1 90
-Ens_Habillage_Haie_6m 6 1 90
-Jardin_Statue_Pleureuse 0 1.4
-Cave_Candelabre 1.8 1.4
-
 [Haies croisées] centre 13x13 fonctions Labyrinthe de haies
 Jardin_Haie_6m -3.2 0
 Ens_Habillage_Haie_6m -3.2 0
@@ -134,16 +119,6 @@ Jardin_Muret_4m -2.4 -1.6
 Jardin_Muret_4m 2.4 -1.6
 Prop_Tonneau_Attrapable 4.2 -3 0 0.55
 Prop_Caisse_Attrapable -4 -3 20 0.45
-
-[Enclos] centre 10x10 fonctions Potager, Verger
-Jardin_Palissade_4m -2.2 4.6
-Jardin_Palissade_4m 2.2 4.6
-Jardin_Palissade_4m -4.6 2.2 90
-Jardin_Palissade_4m -4.6 -2.2 90
-Cave_Caisses_Pile 1.6 1.6
-Prop_Caisse_Attrapable -1.4 0 30 0.45
-Cave_Sacs 1 -1.8
-Cave_Brasero -2.6 2.6
 
 [Cueillette] centre 6x6 fonctions Verger, Potager
 Cave_Echelle_6m 0 0 0 0 0.6
