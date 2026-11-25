@@ -16,6 +16,8 @@ namespace ItHunts.Level
         }
 
         public Kind kind;
+        /// <summary>Masquée par DressingOptimizer (salle loin du joueur) : HorrorLook l'éteint.</summary>
+        [System.NonSerialized] public bool Hidden;
 
         /// <summary>Torches et lampes actives (fondu de l'ambiance enragée sans recherche dans la scène).</summary>
         public static readonly System.Collections.Generic.List<AmbianceLight> All = new System.Collections.Generic.List<AmbianceLight>();

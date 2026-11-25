@@ -126,6 +126,7 @@ namespace ItHunts.Level.Acts
             if (sets.Count == 0)
                 return;
             List<Vector2Int> order = ground.OrderBy(_ => _rng.Next()).ToList();
+            FillGrid(r, ground, blocked);
             // Hauts d'abord (il leur faut de la place pour le traqueur), puis grands (salles d'exemple, estrades), puis tour à tour.
             var live = sets.OrderByDescending(s => lib.Tall(s)).ThenByDescending(s => s.Width * s.Depth).ToList();
             var used = new Dictionary<EnsembleLibrary.Set, int>();
@@ -142,7 +143,7 @@ namespace ItHunts.Level.Acts
                     int first = _rng.Next(2);
                     for (int i = from; i < order.Count && n < set.Max && at < 0; i++)
                         for (int k = 0; k < 2 && at < 0; k++)
-                            if (SetFits(r, order[i], set, (first + k) % 2, ring, ground, blocked, example) && !(tall && NearTall(r, order[i], set, (first + k) % 2, ring)))
+                            if (SetFits(order[i], set, (first + k) % 2, ring, example) && !(tall && NearTall(r, order[i], set, (first + k) % 2, ring)))
                             {
                                 at = i;
                                 turn = (first + k) % 2;
@@ -160,7 +161,10 @@ namespace ItHunts.Level.Acts
                     Vector3 center = Plan.Origin + new Vector3((order[at].x + w * 0.5f) * Plan.Cell, r.Floor, (order[at].y + d * 0.5f) * Plan.Cell);
                     Vector3 fwd = turn == 0 ? (_rng.Next(2) == 0 ? Vector3.forward : Vector3.back) : (_rng.Next(2) == 0 ? Vector3.right : Vector3.left);
                     if (example)
+                    {
                         StampExample(set, root, center, fwd, ground, blocked);
+                        FillGrid(r, ground, blocked);
+                    }
                     else
                     {
                         Stamp(set, root, center, fwd);
@@ -168,6 +172,7 @@ namespace ItHunts.Level.Acts
                         for (int y = 0; y < d; y++)
                         {
                             blocked.Add(order[at] + new Vector2Int(x, y));
+                            GridBlock(order[at] + new Vector2Int(x, y));
                             if (tall)
                                 _tallCells.Add(order[at] + new Vector2Int(x, y));
                         }
@@ -198,7 +203,7 @@ namespace ItHunts.Level.Acts
 
         private int Cells(float m) => Mathf.Max(1, Mathf.CeilToInt(m / Plan.Cell - 0.05f));
 
-        private bool SetFits(ActRoom r, Vector2Int c, EnsembleLibrary.Set set, int turn, int ring, HashSet<Vector2Int> ground, HashSet<Vector2Int> blocked, bool example)
+        private bool SetFits(Vector2Int c, EnsembleLibrary.Set set, int turn, int ring, bool example)
         {
             int w = Cells(turn == 0 ? set.Width : set.Depth), d = Cells(turn == 0 ? set.Depth : set.Width);
             if (example)
@@ -207,7 +212,7 @@ namespace ItHunts.Level.Acts
                 int free = 0;
                 for (int x = 0; x < w; x++)
                 for (int y = 0; y < d; y++)
-                    if (ground.Contains(c + new Vector2Int(x, y)) && !blocked.Contains(c + new Vector2Int(x, y)))
+                    if ((GridAt(c.x + x, c.y + y) & (InGround | IsBlocked)) == InGround)
                         free++;
                 return free >= w * d * 0.7f;
             }
@@ -215,13 +220,52 @@ namespace ItHunts.Level.Acts
             for (int x = -ring; x < w + ring; x++)
             for (int y = -ring; y < d + ring; y++)
             {
-                Vector2Int k = c + new Vector2Int(x, y);
+                byte g = GridAt(c.x + x, c.y + y);
                 bool inside = x >= 0 && y >= 0 && x < w && y < d;
-                if (blocked.Contains(k) || (inside ? !ground.Contains(k) : !r.Use.ContainsKey(k)))
+                if ((g & IsBlocked) != 0 || (g & (inside ? InGround : InRoom)) == 0)
                     return false;
             }
 
             return true;
+        }
+
+        // État des cases de la salle en cours (recherche de place rapide).
+        private const byte InRoom = 1, InGround = 2, IsBlocked = 4;
+        private byte[] _grid = new byte[0];
+        private RectInt _gridBox;
+
+        private void FillGrid(ActRoom r, HashSet<Vector2Int> ground, HashSet<Vector2Int> blocked)
+        {
+            int x0 = int.MaxValue, y0 = int.MaxValue, x1 = int.MinValue, y1 = int.MinValue;
+            foreach (Vector2Int c in r.Use.Keys)
+            {
+                x0 = Mathf.Min(x0, c.x);
+                y0 = Mathf.Min(y0, c.y);
+                x1 = Mathf.Max(x1, c.x);
+                y1 = Mathf.Max(y1, c.y);
+            }
+
+            _gridBox = new RectInt(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+            int n = _gridBox.width * _gridBox.height;
+            if (_grid.Length < n)
+                _grid = new byte[n];
+            System.Array.Clear(_grid, 0, _grid.Length);
+            foreach (Vector2Int c in r.Use.Keys)
+                _grid[(c.y - y0) * _gridBox.width + c.x - x0] = (byte)(InRoom | (ground.Contains(c) ? InGround : 0) | (blocked.Contains(c) ? IsBlocked : 0));
+        }
+
+        private byte GridAt(int x, int y)
+        {
+            x -= _gridBox.x;
+            y -= _gridBox.y;
+            return x < 0 || y < 0 || x >= _gridBox.width || y >= _gridBox.height ? (byte)0 : _grid[y * _gridBox.width + x];
+        }
+
+        private void GridBlock(Vector2Int c)
+        {
+            int x = c.x - _gridBox.x, y = c.y - _gridBox.y;
+            if (x >= 0 && y >= 0 && x < _gridBox.width && y < _gridBox.height)
+                _grid[y * _gridBox.width + x] |= IsBlocked;
         }
 
         private void Stamp(EnsembleLibrary.Set set, Transform root, Vector3 at, Vector3 forward)

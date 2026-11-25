@@ -203,6 +203,7 @@ namespace ItHunts.Level.Acts
             Progress = 0.65f;
             if (async)
                 yield return null;
+            long tRooms = sw.ElapsedMilliseconds;
             for (int i = 0; i < n; i++)
             {
                 Dress(Plan.Rooms[i]);
@@ -222,6 +223,7 @@ namespace ItHunts.Level.Acts
             Progress = 0.82f;
             if (async)
                 yield return null;
+            long tDress = sw.ElapsedMilliseconds;
             PlaceGameplay();
             ConfigureScene();
             Stage = "Le décor se fige";
@@ -231,11 +233,21 @@ namespace ItHunts.Level.Acts
             (PropsSwapped, PropsKept) = PropArt.DressAll(_root);      // props en 3D de la DA (PR #51) sur les greybox
             // Revue des cartes de la DA (jour 5, D-115) : lumières sans mur, suspendus sans plafond, lustres en double, props qui se
             // chevauchent, décor traversable, formes provisoires : corrigés ici ; le test DecorAuditTests vérifie qu'il n'en reste aucun.
+            long tGame = sw.ElapsedMilliseconds;
             PaintFoliage();
             DecorFixes = DecorAudit.Run(_root, true, settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial);
+            long tAudit = sw.ElapsedMilliseconds;
             Batch();
+            long tBatch = sw.ElapsedMilliseconds;
+            if (Plan.Hand != null)
+            {
+                Optimizer = _root.gameObject.AddComponent<DressingOptimizer>();
+                Optimizer.Build(Plan, _root, !settings.Open);
+            }
+
             Physics.SyncTransforms();
             BuildMs = (float)sw.Elapsed.TotalMilliseconds;
+            StageMs = $"salles {tRooms}, habillage {tDress - tRooms}, jeu {tGame - tDress}, audit {tAudit - tGame}, fusion {tBatch - tAudit}, dalles {sw.ElapsedMilliseconds - tBatch} ms";
             Debug.Log($"Acte « {settings.displayName} » : seed {seed}, {Plan.Rooms.Count} salles, {Plan.Doors.Count} portes " +
                       $"({Plan.Doors.Count(x => x.Loop)} boucles), départ – sortie {Plan.StartExitDepth} salles, {GhoulsPlaced} goules, " +
                       $"{BuildMs:0} ms, {KitBuild.PieceCount} pièces du kit ; décor corrigé : {DecorFixes}");
@@ -243,6 +255,12 @@ namespace ItHunts.Level.Acts
 
         /// <summary>Défauts du décor corrigés à la construction (lumières sans mur, doublons, chevauchements…).</summary>
         public DecorReport DecorFixes { get; private set; } = new DecorReport();
+
+        /// <summary>Durée de chaque étape de la construction (mesure).</summary>
+        public string StageMs { get; private set; } = "";
+
+        /// <summary>Fusion et masquage du décor (D-119).</summary>
+        public DressingOptimizer Optimizer { get; private set; }
 
         /// <summary>Racine du niveau construit (audit du décor).</summary>
         public Transform Root => _root;

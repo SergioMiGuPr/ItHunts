@@ -744,6 +744,7 @@ namespace ItHunts.Level
                 float d = Near(l.transform.position) - l.range;
                 bool culled = _culled.Contains(l);
                 bool off = culled ? d > fogEnd + s.lightCullMargin - s.lightCullHysteresis : d > fogEnd + s.lightCullMargin;
+                off |= l.TryGetComponent(out AmbianceLight al) && al.Hidden;
                 if (off == culled)
                     continue;
                 if (off)
