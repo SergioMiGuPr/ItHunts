@@ -57,9 +57,19 @@ namespace ItHunts.Tests
             string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "docs", "design", "jour-5", "decor"));
             Directory.CreateDirectory(dir);
             string map = level.Plan != null && level.Plan.Hand != null ? level.Plan.Hand.Name : "?";
+            // Traqueur : il atteint chaque zone accessible au joueur (0 point manqué), une fois le NavMesh construit.
+            float navWait = Time.realtimeSinceStartup + 240f;
+            ItHunts.Enemies.ZoneNavMesh nav = null;
+            while (Time.realtimeSinceStartup < navWait && ((nav = Object.FindFirstObjectByType<ItHunts.Enemies.ZoneNavMesh>()) == null || !nav.Built))
+                yield return null;
+            yield return new WaitForSecondsRealtime(1f);
+            var reach = ItHunts.Debugging.StalkerReachAudit.Run(level);
             File.WriteAllText(Path.Combine(dir, $"{scene}_s{seed}.md"),
-                $"# Décor : {scene}, graine {seed} ({map})\n\nCorrigé à la construction : {level.DecorFixes}\n\nRestant : {left.Text(200)}\n");
+                $"# Décor : {scene}, graine {seed} ({map})\n\nCorrigé à la construction : {level.DecorFixes}\n\nRestant : {left.Text(200)}\n\n" +
+                $"Traqueur : {reach.Summary()}\n\nÎlots de son NavMesh reliés : {nav?.IslandBridges} (restés seuls : {nav?.IslandsLeft}, {nav?.IslandMilliseconds} ms)\n" +(reach.Misses.Count > 0 ? $"\nPoints : {reach.Points()}\n" : ""));
             Assert.AreEqual(0, left.Total, $"{scene} graine {seed} ({map}) : {left.Text(30)}");
+            Assert.Greater(reach.Samples, 0, "audit du traqueur : aucun point");
+            Assert.AreEqual(0, reach.Misses.Count, $"{scene} graine {seed} ({map}) : traqueur, {reach.Summary()}");
 #endif
         }
 

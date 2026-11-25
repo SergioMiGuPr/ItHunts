@@ -97,6 +97,8 @@ namespace ItHunts.Level.Acts
             Stage = "Les ombres s'éveillent";
             Progress = 0.92f;
             yield return null;
+            if (zoneNav != null && Plan != null && Plan.Start >= 0)
+                zoneNav.StalkerOrigin = Plan.CellCenter(Plan.Rooms[Plan.Start].CenterCell, Plan.Rooms[Plan.Start].Floor);
             gameplayRoot.SetActive(true);                                     // ZoneNavMesh se construit ici, puis les systèmes
             if (_residents != null)
                 _residents.gameObject.SetActive(true);

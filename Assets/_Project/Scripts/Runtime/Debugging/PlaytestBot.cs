@@ -125,6 +125,7 @@ namespace ItHunts.Debugging
                 _reader.Override = Fill;
             PlayerHealth.Hurt += OnHurt;
             PlayerHealth.Died += OnDied;
+            ItHunts.Level.FallVoid.PlayerFell += OnFell;
             ParryEvents.Parried += OnParry;
             Application.logMessageReceived += OnLog;
             _startTime = Time.time;
@@ -140,6 +141,7 @@ namespace ItHunts.Debugging
                 _reader.Override = null;
             PlayerHealth.Hurt -= OnHurt;
             PlayerHealth.Died -= OnDied;
+            ItHunts.Level.FallVoid.PlayerFell -= OnFell;
             ParryEvents.Parried -= OnParry;
             Application.logMessageReceived -= OnLog;
         }
@@ -148,6 +150,12 @@ namespace ItHunts.Debugging
         {
             if (e.Victim == _health)
                 Report.Hits++;
+        }
+
+        private void OnFell(PlayerHealth p, Vector3 at)
+        {
+            if (p == _health)
+                Report.Note("chute", $"tombé dans un vide à {Clock()}, position {at:F1} (salle {RoomName(at)}) ; ramené au dernier sol sûr");
         }
 
         private void OnDied(PlayerHealth p)
@@ -311,8 +319,11 @@ namespace ItHunts.Debugging
             ExitDoor exitFirst = _level.ExitDoorObject;
             int soulsNow = RunState.Current != null ? RunState.Current.Souls(_health.PlayerId) : 0;
             bool exitReady = exitFirst != null && _zone != null && _zone.ExitUnlocked && (exitFirst.Open || soulsNow >= exitFirst.Price);
-            bool stalkerClose = _stalker != null && Vector3.Distance(_stalker.transform.position, pos) < 10f;
-            if (exitReady && !stalkerClose && Current == Task.Fuir)
+            // Jour 5 : avec le traqueur toujours sur ses talons, « pas à moins de 10 m » le faisait fuir puis repartir vers la porte
+            // en boucle (12 min sans l'atteindre). Sortie payable : on y file, traqueur ou pas (le bot est invulnérable, ses coups
+            // mortels bloqués sont comptés).
+            bool stalkerClose = false;
+            if (exitReady && Current == Task.Fuir)
             {
                 Current = Task.Explorer;
                 _hasGoal = false;

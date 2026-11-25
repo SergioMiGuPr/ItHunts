@@ -56,6 +56,8 @@ namespace ItHunts.Player
         /// <summary>Invulnérable jusqu'à ce temps (parade réussie, nuit 3 point 7) : les coups des ennemis ne passent pas.</summary>
         public float InvulnerableUntil { get; set; } = float.NegativeInfinity;
         public static int DebugBlockedKills { get; set; }
+        /// <summary>Dégâts d'environnement (chute dans le vide…) bloqués par DebugInvulnerable (bot de playtest).</summary>
+        public static int DebugBlockedEnvironment { get; set; }
         public static int DebugBlockedHits { get; set; }
 
         /// <summary>
@@ -67,6 +69,7 @@ namespace ItHunts.Player
         {
             DebugInvulnerable = false;
             DebugBlockedKills = 0;
+            DebugBlockedEnvironment = 0;
             DebugBlockedHits = 0;
         }
 
@@ -227,6 +230,12 @@ namespace ItHunts.Player
                 return false;
             if (!string.IsNullOrEmpty(cause))
                 LastCause = cause;
+            if (DebugInvulnerable)
+            {
+                DebugBlockedEnvironment++;                                  // bot : la chute est comptée, pas subie
+                return false;
+            }
+
             if (FallDamageScale != null)
                 damage = FallDamageScale(damage);                          // Chute amortie, Plumes (D-100)
             if (damage <= 0f || TryCheatDeath(damage))

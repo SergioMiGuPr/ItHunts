@@ -18,6 +18,9 @@ namespace ItHunts.Level
 
         public int Falls { get; private set; }
 
+        /// <summary>Un joueur est tombé dans un vide (position avant le retour au sol sûr) : le bot de playtest le note.</summary>
+        public static event System.Action<PlayerHealth, Vector3> PlayerFell;
+
         public void Configure(float damagePoints, Transform[] points)
         {
             damage = damagePoints;
@@ -94,6 +97,7 @@ namespace ItHunts.Level
                 if (p.Dead)
                     return;
                 Falls++;
+                PlayerFell?.Invoke(p, p.transform.position);
                 ItHunts.Audio.GameAudio.PlayAt(ItHunts.Audio.GameAudio.Settings?.fallVoid, p.transform.position, 1f, 30f);
                 if (p.Motor != null)
                     p.Motor.Teleport(RespawnFor(p));

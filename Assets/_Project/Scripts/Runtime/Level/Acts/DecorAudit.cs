@@ -88,6 +88,32 @@ namespace ItHunts.Level.Acts
                         Remove(t);
                 }
 
+            // 1 bis. Formes provisoires hors décor étiqueté (revue de la DA : monolithe gris, gravats bleu nuit) : toute surface du niveau
+            // encore au matériau greybox ou sans matériau prend le matériau de repli (le mur de l'acte) ; la collision ne change pas.
+            foreach (MeshRenderer r in root.GetComponentsInChildren<MeshRenderer>(false))
+            {
+                if (!r.enabled || r.GetComponentInParent<DecorTag>() != null || r.GetComponentInParent<ItHunts.Orbs.Grabbable>() != null)
+                    continue;
+                Material[] mats = r.sharedMaterials;
+                bool bad = false;
+                for (int i = 0; i < mats.Length; i++)
+                    if (IsGreyboxMaterial(mats[i]))
+                    {
+                        bad = true;
+                        if (fix && chainMaterial != null)
+                            mats[i] = chainMaterial;
+                    }
+
+                if (!bad)
+                    continue;
+                if (fix && chainMaterial != null)
+                    r.sharedMaterials = mats;
+                else if (fix)
+                    r.enabled = false;
+                report.Greybox++;
+                report.Details.Add($"surface provisoire : {Path(r.transform, root)} en {P(r.bounds.center)}");
+            }
+
             // 2. Lustres : un seul par point, 6 m au moins entre deux.
             var kept = new List<Vector3>();
             foreach (DecorTag t in tags.Where(t => t.kind == DecorKind.Lustre && t.gameObject.activeInHierarchy))
@@ -279,6 +305,26 @@ namespace ItHunts.Level.Acts
             }
 
             return any;
+        }
+
+        /// <summary>Matériau de forme provisoire : absent, Greybox_* (sauf les surfaces de jeu qui doivent se lire : magnétique,
+        /// attrapable) ou matériau par défaut d'Unity.</summary>
+        private static bool IsGreyboxMaterial(Material m)
+        {
+            if (m == null)
+                return true;
+            string n = m.name.Replace(" (Instance)", "");
+            if (n.StartsWith("Greybox_Magnetic") || n.StartsWith("Greybox_NonMagnetic") || n.StartsWith("Greybox_Grabbable"))
+                return false;
+            return n.StartsWith("Greybox_") || n.StartsWith("Default-") || n == "Lit";
+        }
+
+        private static string Path(Transform t, Transform root)
+        {
+            string s = t.name;
+            for (Transform x = t.parent; x != null && x != root; x = x.parent)
+                s = x.name + "/" + s;
+            return s;
         }
 
         private static bool HasGreybox(GameObject go)

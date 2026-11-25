@@ -53,6 +53,22 @@ namespace ItHunts.Debugging
             // Portée de la main (D-034) : bras + fente depuis l'épaule ; un point est atteint si sa main y arrive depuis son NavMesh.
             float reach = stalker.Settings != null ? stalker.Settings.GrabReach : 12f;
             float shoulder = stalker.Settings != null ? stalker.Settings.shoulderHeight : 10.5f;
+            // Même calcul que Stalker.CanReach (jour 5) : poitrine du joueur (pieds + 1 m), épaule avancée vers lui, portée + edgeLean
+            // quand il ne peut pas se placer dessous (bord d'une corniche, d'une fosse).
+            float forward = stalker.Settings != null ? stalker.Settings.shoulderForward : 0.9f;
+            float lean = stalker.Settings != null ? stalker.Settings.edgeLean : 0f;
+            float radius = stalker.Settings != null ? stalker.Settings.width * 0.5f : 1.25f;
+            bool InReach(Vector3 stand, Vector3 feet)
+            {
+                Vector3 chest = feet + Vector3.up;
+                Vector3 fd = feet - stand;
+                fd.y = 0f;
+                float flat = fd.magnitude;
+                fd = flat > 1e-3f ? fd / flat : Vector3.forward;
+                Vector3 sh = stand + Vector3.up * shoulder + fd * forward;
+                return (chest - sh).magnitude <= reach + (flat > radius + 1f ? lean : 0f);
+            }
+
             var path = new NavMeshPath();
             int k = Mathf.Max(1, Mathf.RoundToInt(step / p.Cell));
             foreach (ActRoom r in p.Rooms)
@@ -80,7 +96,7 @@ namespace ItHunts.Debugging
                             int dirIdx = a < 0 ? -1 : a % 13;
                             Vector3 basePos = a < 13 ? h.position : new Vector3(h.position.x, r.Floor, h.position.z);
                             Vector3 probe = dirIdx < 0 || dirIdx == 12 ? basePos : basePos + Quaternion.Euler(0f, dirIdx * 30f, 0f) * Vector3.forward * (dirIdx % 2 == 0 ? 6f : 11f);
-                            if (!NavMesh.SamplePosition(probe, out NavMeshHit t, 6f, big) || Vector3.Distance(t.position + Vector3.up * shoulder, h.position) > reach)
+                            if (!NavMesh.SamplePosition(probe, out NavMeshHit t, 6f, big) || !InReach(t.position, h.position))
                                 continue;
                             any = true;
                             reached = NavMesh.CalculatePath(from.position, t.position, big, path) && path.status == NavMeshPathStatus.PathComplete;

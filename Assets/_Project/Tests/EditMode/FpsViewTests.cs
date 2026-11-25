@@ -560,9 +560,9 @@ namespace ItHunts.Tests
             var mid = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Intermediaire.asset");
             var dark = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Sombre.asset");
             var horror = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.AmbianceSettings>("Assets/_Project/Settings/Ambiance_Horreur.asset");
-            Assert.That(dark.ambient.r, Is.EqualTo(0.022f).Within(1e-4f));
-            Assert.That(dark.fogStart, Is.EqualTo(6f));
-            Assert.That(dark.fogEnd, Is.EqualTo(38f));
+            Assert.That(dark.ambient.r, Is.EqualTo(0.03f).Within(1e-4f), "jour 5 : salles moins sombres (REVUE-CARTES.md)");
+            Assert.That(dark.fogStart, Is.EqualTo(10f));
+            Assert.That(dark.fogEnd, Is.EqualTo(70f));
             Assert.That(dark.ambient.r, Is.LessThan(mid.ambient.r).And.GreaterThan(horror.ambient.r));
             Assert.That(dark.fogEnd, Is.LessThan(mid.fogEnd).And.GreaterThan(horror.fogEnd));
             Assert.That(dark.enraged, Is.EqualTo(horror), "phase enragée : horreur");

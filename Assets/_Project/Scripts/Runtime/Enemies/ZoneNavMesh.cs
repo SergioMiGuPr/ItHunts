@@ -240,8 +240,179 @@ namespace ItHunts.Enemies
                     }
                 }
 
+            if (StalkerAgent != EnemyLocomotion.NoAgent && stalkerSettings != null && stalkerSettings.passagesEnabled && bridgeStalkerIslands
+                && StalkerOrigin.HasValue)
+            {
+                var islands = System.Diagnostics.Stopwatch.StartNew();
+                BridgeStalkerIslands(bounds, StalkerOrigin.Value);
+                IslandMilliseconds = islands.ElapsedMilliseconds;
+            }
+
             BuildMilliseconds = watch.ElapsedMilliseconds;
             Built = true;
+        }
+
+        [Tooltip("Jour 5 : chaque îlot du NavMesh du traqueur sans chemin vers le départ (poche entre colonnes, galerie sans escalade, " +
+                 "îlot de bassin) reçoit un bond ou une escalade vers le reste, pour qu'il atteigne toute zone accessible au joueur.")]
+        [SerializeField] private bool bridgeStalkerIslands = true;
+        [Tooltip("Pas de la grille d'échantillonnage des îlots (m).")]
+        [SerializeField, Min(2f)] private float islandStep = 3f;
+
+        /// <summary>Point de départ du traqueur pour les îlots (posé par ActLevel avant la construction) ; vide : pas de pontage.</summary>
+        public Vector3? StalkerOrigin { get; set; }
+        /// <summary>Îlots reliés et îlots restés seuls (dernière construction).</summary>
+        public int IslandBridges { get; private set; }
+        public int IslandsLeft { get; private set; }
+        public long IslandMilliseconds { get; private set; }
+
+        /// <summary>
+        /// Îlots du NavMesh du traqueur (jour 5) : une grille de points (tous les étages, rayons vers le bas) ; chaque point sans chemin
+        /// vers le départ (chemin calculé depuis le point : la recherche s'arrête vite dans un petit îlot) est regroupé avec les points
+        /// qu'il rejoint ; pour chaque îlot, la paire la plus courte (îlot, reste) qu'un bond ou une escalade permet devient un passage
+        /// typé (StalkerPassage, que Stalker parcourt comme ceux des modules).
+        /// </summary>
+        private void BridgeStalkerIslands(Bounds bounds, Vector3 origin)
+        {
+            IslandBridges = 0;
+            IslandsLeft = 0;
+            var filter = new NavMeshQueryFilter { agentTypeID = StalkerAgent, areaMask = NavMesh.AllAreas };
+            if (!NavMesh.SamplePosition(origin, out NavMeshHit o, 30f, filter))
+                return;
+            var pts = new List<Vector3>();
+            var seen = new HashSet<Vector3Int>();
+            var hits = new RaycastHit[24];
+            float top = bounds.max.y;
+            for (float x = bounds.min.x; x <= bounds.max.x; x += islandStep)
+            for (float z = bounds.min.z; z <= bounds.max.z; z += islandStep)
+            {
+                int n = Physics.RaycastNonAlloc(new Vector3(x, top, z), Vector3.down, hits, bounds.size.y, layers, QueryTriggerInteraction.Ignore);
+                for (int i = 0; i < n; i++)
+                {
+                    if (!NavMesh.SamplePosition(hits[i].point, out NavMeshHit h, 1.5f, filter) || Mathf.Abs(h.position.y - hits[i].point.y) > 1.5f)
+                        continue;
+                    var key = Vector3Int.RoundToInt(h.position / 2f);
+                    if (seen.Add(key))
+                        pts.Add(h.position);
+                }
+            }
+
+            // Composantes : voisins de grille reliés en ligne droite sur le NavMesh (requête locale), puis un chemin par composante.
+            int count = pts.Count;
+            var parent = new int[count];
+            for (int i = 0; i < count; i++)
+                parent[i] = i;
+            int Root(int i)
+            {
+                while (parent[i] != i)
+                    i = parent[i] = parent[parent[i]];
+                return i;
+            }
+
+            var cells = new Dictionary<Vector2Int, List<int>>();
+            for (int i = 0; i < count; i++)
+            {
+                var cell = new Vector2Int(Mathf.FloorToInt(pts[i].x / islandStep), Mathf.FloorToInt(pts[i].z / islandStep));
+                if (!cells.TryGetValue(cell, out List<int> l))
+                    cells[cell] = l = new List<int>();
+                l.Add(i);
+            }
+
+            foreach (KeyValuePair<Vector2Int, List<int>> kv in cells)
+                foreach (int i in kv.Value)
+                    for (int dx = 0; dx <= 1; dx++)
+                    for (int dz = -1; dz <= 1; dz++)
+                    {
+                        if (dx == 0 && dz < 0)
+                            continue;
+                        if (!cells.TryGetValue(kv.Key + new Vector2Int(dx, dz), out List<int> other))
+                            continue;
+                        foreach (int j in other)
+                            if (j != i && Mathf.Abs(pts[j].y - pts[i].y) < 2f && Root(i) != Root(j) && !NavMesh.Raycast(pts[i], pts[j], out _, filter))
+                                parent[Root(i)] = Root(j);
+                    }
+
+            var comps = new Dictionary<int, List<Vector3>>();
+            for (int i = 0; i < count; i++)
+            {
+                int r = Root(i);
+                if (!comps.TryGetValue(r, out List<Vector3> l))
+                    comps[r] = l = new List<Vector3>();
+                l.Add(pts[i]);
+            }
+
+            var path = new NavMeshPath();
+            var main = new List<Vector3>();
+            var groups = new List<List<Vector3>>();
+            foreach (List<Vector3> comp in comps.Values)
+            {
+                if (NavMesh.CalculatePath(comp[0], o.position, filter, path) && path.status == NavMeshPathStatus.PathComplete)
+                    main.AddRange(comp);
+                else
+                    groups.Add(comp);
+            }
+
+            foreach (List<Vector3> g in groups)
+            {
+                // Paire la plus courte que le traqueur sait franchir : bond (montée ≤ leapMaxRise), sinon escalade d'un mur.
+                float best = float.PositiveInfinity;
+                Vector3 a = default, b = default;
+                StalkerLinkKind kind = StalkerLinkKind.Bond;
+                foreach (Vector3 u in g)
+                foreach (Vector3 v in main)
+                {
+                    float d = (u - v).sqrMagnitude;
+                    if (d >= best)
+                        continue;
+                    StalkerLinkKind k = Mathf.Abs(u.y - v.y) <= stalkerSettings.leapMaxRise ? StalkerLinkKind.Bond : StalkerLinkKind.MurGrimpe;
+                    Vector3 low = u.y < v.y ? u : v, high = u.y < v.y ? v : u;
+                    if (!StalkerPassageMath.Allowed(k, low, high, stalkerSettings))
+                        continue;
+                    best = d;
+                    a = low;
+                    b = high;
+                    kind = k;
+                }
+
+                if (float.IsInfinity(best))
+                {
+                    IslandsLeft++;
+                    continue;
+                }
+
+                var go = new GameObject("Passage du traqueur (îlot)");
+                go.transform.SetParent(transform, false);
+                go.transform.position = a;
+                var end = new GameObject("Bout").transform;
+                end.SetParent(go.transform, false);
+                end.position = b;
+                var pass = go.AddComponent<StalkerPassage>();
+                pass.kind = kind;
+                pass.end = end;
+                pass.width = 4f;
+                NavMeshLinkInstance li = NavMesh.AddLink(new NavMeshLinkData
+                {
+                    startPosition = a,
+                    endPosition = b,
+                    width = pass.width,
+                    costModifier = StalkerPassageMath.CostModifier(kind, a, b, stalkerSettings),
+                    bidirectional = true,
+                    area = 0,
+                    agentTypeID = StalkerAgent,
+                });
+                if (!li.valid)
+                {
+                    IslandsLeft++;
+                    Destroy(go);
+                    continue;
+                }
+
+                _links.Add(li);
+                pass.Linked = true;
+                pass.LinkA = a;
+                pass.LinkB = b;
+                StalkerLinkCount++;
+                IslandBridges++;
+            }
         }
 
         [Tooltip("Réglages du traqueur (passages : distances maximales, coût des liens).")]
