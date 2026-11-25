@@ -622,6 +622,9 @@ def SM_Cave_Candelabre():
 
 # ------------------------------------------------------------------ nuit 4, lot 3 : hauteur (kit_hauteur.py)
 H.enregistre(PIECES, H.CAVE, H.pieces_caves(H.CAVE))
+import kit_nuit5 as N5
+importlib.reload(N5)
+H.enregistre(PIECES, H.CAVE, N5.pieces_caves(H.CAVE))   # nuit 5, lot 3
 
 
 # ------------------------------------------------------------------ principal
@@ -643,7 +646,7 @@ def main(noms=None):
         L.reset()
         ob = f()
         L.export([ob], os.path.join(OUT, nom + ".fbx"))
-        (x0, x1), (y0, y1), (z0, z1) = L.bounds(ob)
+        (x0, x1), (y0, y1), (z0, z1) = N5.bornes(ob)   # nuit 5 : toute la pièce (enfants compris)
         t = L.tris(ob) + sum(L.tris(c) for c in ob.children_recursive if c.type == "MESH" and not c.name.startswith("Col_"))
         mesures[nom] = dict(doc=premiere_phrase(f.__doc__), taille=[round(x1 - x0, 2), round(y1 - y0, 2), round(z1 - z0, 2)],
                             bas=round(z0, 2), triangles=t, materiaux=[m.name for m in ob.data.materials])

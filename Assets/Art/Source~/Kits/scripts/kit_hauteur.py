@@ -1229,31 +1229,50 @@ def porte_verrouillee(S, nom):
     for sx in (-1, 1):
         k.box((sx * 1.48, 0.33, 1.49 + dz()), (0.05, 0.06, 2.98), S["fer"])
         k.box((sx * 1.48, 0.67, 1.49 + dz()), (0.05, 0.06, 2.98), S["fer"])
+    # nuit 5 (« finis-la ») : deux contreforts à larmier (enfoncés de 5 cm dans le mur), plinthe ; pas de corniche (elle
+    # redonnait l'air d'une cheminée, relecture)
+    for sx in (-1, 1):
+        prism(k, [(0.05, 0.0), (-0.42, 0.0), (-0.42, 4.2), (-0.2, 4.9), (0.05, 4.9)], sx * 2.62 - 0.3, sx * 2.62 + 0.3, mp, axis="x")
+    k.box((-2.27, -0.06, 0.15 + dz()), (1.46, 0.14, 0.3), mp)
+    k.box((2.27, -0.06, 0.15 + dz()), (1.46, 0.14, 0.3), mp)
     if act == "Jardin":
         lierre_mur(k, S, -2.55, h - 0.02, 3.9, l=0.28, seed=S["seed"] + 152)
         lierre_mur(k, S, 2.6, h - 0.02, 4.6, l=0.26, seed=S["seed"] + 153)
     ob = k.finish(S["seed"] + 151, PEINT_ARCHI)
-    # vantail : plaque de fer de 3.3 × 3.2 m dans la rainure (plaque de 0.45 à 0.55), bandes, montants et rivets devant
+    # vantail (nuit 5) : âme de chêne en planches verticales, bandes et écharpes de fer, gros rivets ronds, dents de fer en bas
     kv = L.K("Vantail")
     yv = t / 2
     kv.box((0, yv, 1.62), (3.3, 0.1, 3.2), S["fer"])
-    for z in (0.35, 0.85, 2.15, 2.82):
-        kv.box((0, 0.435, z), (2.96, 0.04, 0.2), m_or)
-        for i in range(9):
-            if abs(-1.35 + i * 0.3375) > 0.6 or abs(z - 1.5) > 0.6:
-                kv.box((-1.35 + i * 0.3375, 0.409, z), (0.07, 0.022, 0.07), S["fer"])
+    for i in range(9):
+        x = -1.6 + (i + 0.5) * 3.2 / 9
+        kv.box((x, 0.44, 1.62), (3.2 / 9 - 0.025, 0.03, 3.1), S["porte"])
+    for z in (0.35, 1.5, 2.82):
+        kv.box((0, 0.418, z), (3.04, 0.035, 0.22), m_or)
+        for i in range(11):
+            xr = -1.45 + i * 0.29
+            kv.cyl((xr, 0.4, z), 0.045, 0.02, S["fer"], n=8, axis="y")
+    for a, b in (((-1.45, 0.45), (1.45, 1.4)), ((-1.45, 2.72), (1.45, 1.62))):
+        kv.obox((a[0], 0.418, a[1]), (b[0], 0.418, b[1]), 0.16, 0.035, S["fer"], up=(0, 1, 0))
     for sx in (-1, 1):
-        kv.box((sx * 1.2, 0.437, 1.62), (0.16, 0.034, 2.9), S["fer"])
+        kv.box((sx * 1.52, 0.42, 1.62), (0.14, 0.04, 3.1), S["fer"])
+    for sx in (-1, 1):                       # crampons de la barre de verrou, fixés au vantail
+        kv.box((sx * 1.33, 0.38, 1.5), (0.06, 0.07, 0.2), S["fer"])
+    for i in range(10):
+        x = -1.5 + i * 3.0 / 9
+        kv.face([(x - 0.09, 0.42, 0.02), (x + 0.09, 0.42, 0.02), (x, 0.42, -0.16)], S["fer"])
+        kv.face([(x + 0.09, 0.42, 0.02), (x - 0.09, 0.42, 0.02), (x, 0.42, -0.16)], S["fer"])
     enfant(ob, kv, S["seed"] + 153, pivot=(0, yv, 0.02))
-    # serrure : disque du sceau d'âme au milieu du vantail (tourne autour de l'axe de la porte), plaqué contre lui
+    # serrure : disque du sceau d'âme et **barre de verrou** horizontale (2.7 m) prise dans deux crampons du vantail ; elle
+    # tourne d'un quart de tour avec le sceau (déverrouillage) avant que le vantail monte
     ks = L.K("Serrure")
     zs_ = 1.5
     disque = [(math.cos(2 * math.pi * i / 20) * 0.5, zs_ + math.sin(2 * math.pi * i / 20) * 0.5) for i in range(20)]
-    prism(ks, disque, 0.405, 0.447, m_or, axis="y")
-    prism(ks, flamme3(0.0, zs_ - 0.3, 0.62), 0.392, 0.408, SCEAU_AME, axis="y")
+    prism(ks, disque, 0.37, 0.41, m_or, axis="y")
+    prism(ks, flamme3(0.0, zs_ - 0.3, 0.62), 0.357, 0.371, SCEAU_AME, axis="y")
     for i in range(6):
         a = math.pi / 2 + i * math.pi / 3
-        ks.cyl((math.cos(a) * 0.43, 0.392, zs_ + math.sin(a) * 0.43), 0.035, 0.016, S["fer"], n=6, axis="y")
+        ks.cyl((math.cos(a) * 0.43, 0.357, zs_ + math.sin(a) * 0.43), 0.035, 0.016, S["fer"], n=6, axis="y")
+    ks.box((0, 0.392, zs_), (2.7, 0.05, 0.13), S["fer"])
     # enfant direct de la pièce (un enfant de second niveau sort mal orienté du FBX) : KitBuilder la range sous Vantail
     enfant(ob, ks, S["seed"] + 154, pivot=(0, yv - 0.15, zs_))
     return ob

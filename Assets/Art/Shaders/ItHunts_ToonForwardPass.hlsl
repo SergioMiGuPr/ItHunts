@@ -117,6 +117,48 @@ half3 DecorApply(half4 albedo, float3 positionWS, half3 normalWS, half4 vcol)
 }
 
 
+// ---------------------------------------------------------------- sol mélangé (_SOLMELANGE, nuit 5)
+// Lecture d'une tuile du dessus, anti-répétition : une seconde lecture tournée de 37° et décalée, mêlée par un bruit large
+// (plus de motif répété à perte de vue, plus de « paille » en damier).
+half4 SolLit(TEXTURE2D_PARAM(t, s), float2 p, float tuile)
+{
+    float2 uv = p / max(tuile, 0.05);
+    half4 a = SAMPLE_TEXTURE2D(t, s, uv);
+    UNITY_BRANCH if (_SolAntiRepet > 0.001h)
+    {
+        float2x2 r = float2x2(0.7986, -0.6018, 0.6018, 0.7986);
+        half4 b = SAMPLE_TEXTURE2D(t, s, mul(r, uv) * 0.83 + float2(0.37, 0.71));
+        half m = smoothstep(0.35h, 0.65h, (half)DecorNoise(float3(p * 0.21, 3.7)));
+        a = lerp(a, b, m * _SolAntiRepet);
+    }
+    return a;
+}
+// Plaques d'une couche : bruit monde à deux octaves, bord doux et dentelé (jamais une coupure nette)
+half SolPlaques(float2 p, float echelle, float quantite, float graine)
+{
+    float n = DecorFbm(float3(p / max(echelle, 0.1), graine)) * 0.8 + DecorNoise(float3(p / max(echelle, 0.1) * 4.1, graine + 9.1)) * 0.2;
+    return smoothstep(1.0 - quantite - _SolDouceur, 1.0 - quantite + _SolDouceur, n);
+}
+// Dessus seulement (les flancs gardent la base) : terre, puis gravier, herbe sèche et mousse mêlés par leurs hauteurs.
+half4 SolMelange(half4 albedo, float3 positionWS, half3 normalWS)
+{
+    half haut = saturate(normalWS.y * 2.0h - 1.0h);
+    UNITY_BRANCH if (haut <= 0.001h) return albedo;
+    float2 p = positionWS.xz;
+    half4 c = SolLit(TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap), p, _SolTuile.w) * _BaseColor;
+    half4 g = SolLit(TEXTURE2D_ARGS(_SolGravier, sampler_BaseMap), p, _SolTuile.x);
+    half4 h = SolLit(TEXTURE2D_ARGS(_SolHerbe, sampler_BaseMap), p + 13.7, _SolTuile.y);
+    half4 m = SolLit(TEXTURE2D_ARGS(_SolMousse, sampler_BaseMap), p + 29.1, _SolTuile.z);
+    half lg = DecorHeightBlend(c.a, g.a, SolPlaques(p, _SolEchelle.x, _SolQuantite.x, 1.3), _HeightBlend);
+    c = lerp(c, g, lg);
+    half lh = DecorHeightBlend(c.a, h.a, SolPlaques(p, _SolEchelle.y, _SolQuantite.y, 5.9), _HeightBlend);
+    c = lerp(c, h, lh);
+    half lm = DecorHeightBlend(c.a, m.a, SolPlaques(p, _SolEchelle.z, _SolQuantite.z, 11.2), _HeightBlend);
+    c = lerp(c, m, lm);
+    return lerp(albedo, c, haut);
+}
+
+
 // Somme de marches : 0, 1/n, 2/n … 1. La marche k tombe à x = (k - 1 + seuil) / n ; softness : demi-largeur de chaque
 // transition (grande : marches fondues en dégradé).
 half ToonSteps(half x, half steps, half threshold, half softness)
@@ -207,6 +249,9 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
 #endif
 #if defined(_ALPHATEST_ON)
     clip(albedo.a - _Cutoff);
+#endif
+#if defined(_SOLMELANGE)
+    albedo = SolMelange(albedo, input.positionWS, normalize(input.normalWS));
 #endif
 #if defined(_DECOR)
     albedo.rgb = DecorApply(albedo, input.positionWS, normalize(input.normalWS), input.color);

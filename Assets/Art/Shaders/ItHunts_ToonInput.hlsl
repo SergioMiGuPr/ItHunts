@@ -7,6 +7,7 @@
 TEXTURE2D(_BaseMap);        SAMPLER(sampler_BaseMap);
 TEXTURE2D(_EmissionMap);    SAMPLER(sampler_EmissionMap);
 TEXTURE2D(_LayerMap);       SAMPLER(sampler_LayerMap);
+TEXTURE2D(_SolGravier);     TEXTURE2D(_SolHerbe);     TEXTURE2D(_SolMousse);   // sol mélangé (_SOLMELANGE) : sampler de _BaseMap
 
 CBUFFER_START(UnityPerMaterial)
     float4 _BaseMap_ST;
@@ -64,6 +65,14 @@ CBUFFER_START(UnityPerMaterial)
     half   _LayerLow;
     half   _LayerTop;
     half   _HeightBlend;
+
+    // Sol mélangé (_SOLMELANGE, nuit 5) : terre (couleur de base), gravier, herbe sèche, mousse ; masques de bruit monde,
+    // transitions par hauteur peinte, anti-répétition
+    float4 _SolQuantite;      // x gravier, y herbe, z mousse (0..1)
+    float4 _SolEchelle;       // taille des plaques (m) : x gravier, y herbe, z mousse
+    float4 _SolTuile;         // taille des tuiles (m) : x gravier, y herbe, z mousse, w terre
+    half   _SolDouceur;       // largeur des transitions entre plaques
+    half   _SolAntiRepet;     // 0 : tuile simple ; 1 : deuxième lecture tournée mêlée par bruit
 CBUFFER_END
 
 // Projection par face, choisie selon la normale monde (comme it_common.world_uv dans Blender) : faces tournées vers ±X
