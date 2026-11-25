@@ -65,6 +65,9 @@ PROPS = {
     "Armoire":      dict(glb="tripo_armoire_v01.glb",      dims=(1.6, 0.8, 2.7),  rot_z=0, budget=4500, tex=1024, limite=1.3),
     "Lit":          dict(glb="tripo_lit_v01.glb",          dims=(1.3, 2.3, 0.7),  rot_z=0, budget=4000, tex=1024, limite=1.3),
     "Chaudron":     dict(glb="tripo_chaudron_v01.glb",     dims=(1.3, 1.3, 1.0),  rot_z=0, budget=3500, tex=1024, limite=1.3),
+    # nuit 6, lot 1 (ensembles)
+    "AngePleureur": dict(glb="tripo_angepleureur_v01.glb", dims=(1.6, 1.6, 2.4),  rot_z=0, budget=7000, tex=2048, limite=1.3),
+    "Fauteuil":     dict(glb="tripo_fauteuil_v01.glb",     dims=(0.9, 0.9, 1.75), rot_z=0, budget=5000, tex=1024, limite=1.3),
 }
 INSPECT = os.environ.get("PROPS_INSPECT", os.path.join(SRC, "inspect"))  # vues de contrôle (hors dépôt de préférence)
 OVERRIDES = os.path.join(SRC, "reglages_props.json")  # rot_z / couvercle / dims relevés à l'inspection (prioritaires)

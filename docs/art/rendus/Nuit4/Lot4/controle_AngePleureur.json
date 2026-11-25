@@ -1,0 +1,53 @@
+{
+ "nom": "AngePleureur",
+ "objets": {
+  "SM_Prop_AngePleureur_LOD0": {
+   "avant": {
+    "faces": 6467,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 6467,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 9,
+    "aretes_de_bord": 10
+   }
+  },
+  "SM_Prop_AngePleureur_LOD1": {
+   "avant": {
+    "faces": 3233,
+    "degenerees": 0,
+    "superposees": 0,
+    "aire_m2": 0,
+    "partielles": 0,
+    "aire_partielle_m2": 0
+   },
+   "apres": {
+    "triangles": 3233,
+    "sommets_isoles": 0,
+    "aretes_nulles": 0,
+    "faces_degenerees": 0,
+    "superposees": 0,
+    "superposees_partielles": 0,
+    "aretes_non_manifold": 9,
+    "aretes_de_bord": 10
+   }
+  }
+ },
+ "dimensions": [
+  1.416,
+  1.302,
+  2.4
+ ],
+ "triangles_lod0": 6467,
+ "triangles_lod1": 3233,
+ "ok": true
+}

@@ -22,7 +22,6 @@ public static class CapturesJeu
 {
     public static string Prep(string scene, int seed)
     {
-        EditorSettings.asyncShaderCompilation = false;
         EditorSceneManager.OpenScene(scene, OpenSceneMode.Single);
         var lvl = UnityEngine.Object.FindFirstObjectByType<ActLevel>();
         if (lvl == null) return "pas d'ActLevel (scène " + scene + ")";
@@ -92,7 +91,16 @@ public static class CapturesJeu
 
     static string Sanit(string s) => string.IsNullOrEmpty(s) ? "salle" : new string(s.Normalize(System.Text.NormalizationForm.FormD).Where(c => c < 128 && char.IsLetterOrDigit(c)).ToArray());
 
+    // shaders compilés tout de suite pendant les captures (réglage de session, jamais écrit dans ProjectSettings) ; toujours rétabli
     public static async Task<string> Shoot(string dossier, string etiquette, int nbSalles)
+    {
+        bool asyncAvant = UnityEditor.ShaderUtil.allowAsyncCompilation;
+        UnityEditor.ShaderUtil.allowAsyncCompilation = false;
+        try { return await ShootCorps(dossier, etiquette, nbSalles); }
+        finally { UnityEditor.ShaderUtil.allowAsyncCompilation = asyncAvant; }
+    }
+
+    static async Task<string> ShootCorps(string dossier, string etiquette, int nbSalles)
     {
         float t0 = Time.realtimeSinceStartup;
         while (Time.realtimeSinceStartup - t0 < 240f && (ActLevel.Current == null || ActLevel.Current.Loading || ActLevel.Current.Plan == null || PlayerCam() == null))
@@ -168,9 +176,17 @@ public static class VuesFixes
         return sb.ToString();
     }
 
+    // shaders compilés tout de suite pendant les captures (réglage de session, jamais écrit dans ProjectSettings) ; toujours rétabli
     public static string Shoot(string scene, string dossier, string etiquette, string vuesCsv)
     {
-        EditorSettings.asyncShaderCompilation = false;
+        bool asyncAvant = UnityEditor.ShaderUtil.allowAsyncCompilation;
+        UnityEditor.ShaderUtil.allowAsyncCompilation = false;
+        try { return ShootCorps(scene, dossier, etiquette, vuesCsv); }
+        finally { UnityEditor.ShaderUtil.allowAsyncCompilation = asyncAvant; }
+    }
+
+    static string ShootCorps(string scene, string dossier, string etiquette, string vuesCsv)
+    {
         if (!string.IsNullOrEmpty(scene)) EditorSceneManager.OpenScene(scene, OpenSceneMode.Single);
         var go = new GameObject("CaptureCam") { hideFlags = HideFlags.HideAndDontSave };
         try
