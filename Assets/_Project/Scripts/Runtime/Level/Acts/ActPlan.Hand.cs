@@ -245,6 +245,9 @@ namespace ItHunts.Level.Acts
             return true;
         }
 
+        /// <summary>Cases laissées libres devant une galerie (12 m).</summary>
+        private const int GalleryFront = 6;
+
         /// <summary>
         /// Bords organiques (caves, jardin) : les cases au bord d'une salle sont rendues à la roche selon un bruit (jusqu'à depth cases),
         /// sauf les abords des portes (6 cases), les galeries, les paliers et les salles spéciales. Deux salles voisines se retrouvent
@@ -263,10 +266,17 @@ namespace ItHunts.Level.Acts
                 if (r.Special || r.Role == RoomRole.Depart)
                     continue;
                 Dictionary<Vector2Int, int> edge = EdgeDistance(r);
+                // Devant une galerie, jamais de roche (D-117) : elle donne toujours sur la salle, pas de recoin fermé hors de portée du traqueur.
+                var front = new HashSet<Vector2Int>();
+                foreach (Vector2Int c in r.Cells)
+                    if (r.Use.TryGetValue(c, out CellUse cu) && cu == CellUse.Terrasse)
+                        for (int dx = -GalleryFront; dx <= GalleryFront; dx++)
+                        for (int dy = -GalleryFront; dy <= GalleryFront; dy++)
+                            front.Add(c + new Vector2Int(dx, dy));
                 var carve = new List<Vector2Int>();
                 foreach (Vector2Int c in r.Cells)
                 {
-                    if (keep.Contains(c) || !edge.TryGetValue(c, out int e) || e >= depth || r.Use[c] != CellUse.Sol)
+                    if (keep.Contains(c) || front.Contains(c) || !edge.TryGetValue(c, out int e) || e >= depth || r.Use[c] != CellUse.Sol)
                         continue;
                     // Deux octaves : grandes avancées de roche et petites aspérités.
                     float n = Mathf.PerlinNoise(c.x * 0.07f + ox, c.y * 0.07f + oy) * 0.7f + Mathf.PerlinNoise(c.x * 0.23f + oy, c.y * 0.23f + ox) * 0.3f;

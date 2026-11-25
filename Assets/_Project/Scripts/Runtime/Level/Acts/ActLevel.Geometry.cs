@@ -369,7 +369,7 @@ namespace ItHunts.Level.Acts
                         Solid(root, "Mur de wall jump", c, new Vector3(1f, h + 4f, Plan.Cell * 3f), Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg + 90f,
                             KitBuild.Kind.Mur, null, walkable: false);
                         for (int k = 1; k <= 2; k++)
-                        for (int s = -1; s <= 1; s++)
+                        for (int s = -4; s <= 4; s++)   // D-117 : rien devant les deux bouts du couloir (ni fuite bouchée, ni main bloquée)
                             if (r.Use.TryGetValue(t + d * k + side * s, out CellUse u) && u == CellUse.Sol)
                                 r.Use[t + d * k + side * s] = CellUse.Passage;
                         TractionAnchor(root, edge + Vector3.up * (h + 3.5f) - dir * 0.2f, -dir);

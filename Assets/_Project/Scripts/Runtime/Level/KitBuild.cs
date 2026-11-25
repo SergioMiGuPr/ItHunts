@@ -139,6 +139,10 @@ namespace ItHunts.Level
                 wedge.transform.localScale = new Vector3(width, (n - 1) * r, length - run);
                 wedge.AddComponent<MeshFilter>().sharedMesh = WedgeMesh;
                 wedge.AddComponent<MeshRenderer>().sharedMaterial = under;
+                // Massif plein (D-117) : on n'entre plus sous la rampe (cachette où la main du traqueur n'arrivait pas).
+                var solid = wedge.AddComponent<MeshCollider>();
+                solid.sharedMesh = WedgeMesh;
+                solid.convex = true;
             }
 
             return go;

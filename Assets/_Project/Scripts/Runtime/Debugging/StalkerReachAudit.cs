@@ -33,6 +33,20 @@ namespace ItHunts.Debugging
             }
         }
 
+        private static readonly Collider[] Overlap = new Collider[16];
+
+        /// <summary>Le joueur (rayon 0,3 m, même accroupi) ne peut pas tenir ici : décor fixe partout à hauteur de torse.</summary>
+        private static bool InsideSolid(Vector3 feet)
+        {
+            int n = Physics.OverlapSphereNonAlloc(feet + Vector3.up * 0.7f, 0.3f, Overlap, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < n; i++)
+                if (Overlap[i] is MeshCollider mc && mc.convex && mc.name.StartsWith("Kit_Massif"))
+                    return true;
+                else if (Overlap[i].name.StartsWith("Massif de l'escalier"))
+                    return true;
+            return false;
+        }
+
         public static Result Run(ActLevel level, float step = 6f)
         {
             var res = new Result();
@@ -96,6 +110,9 @@ namespace ItHunts.Debugging
                         Vector3 q = p.CellCenter(c, y + 0.5f);
                         if (!NavMesh.SamplePosition(q, out NavMeshHit h, 1.2f, small) || Mathf.Abs(h.position.y - y) > 1.2f)
                             continue;                                   // pas un sol du joueur ici (creux, mur, autre étage)
+                        // Une capsule de joueur ne tient pas ici (intérieur d'un massif plein : le NavMesh y garde un îlot fictif) : pas un sol.
+                        if (InsideSolid(h.position))
+                            continue;
                         res.Samples++;
                         // D'abord la règle du jeu (Stalker.CanReach : 34 essais autour, ou le bord d'un surplomb, D-116).
                         if (stalker.CanReach(h.position, out Vector3 stand, out _)
