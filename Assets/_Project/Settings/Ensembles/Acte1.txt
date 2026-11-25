@@ -1,5 +1,48 @@
 # Ensembles de décor de l'acte I (D-118). Format : voir EnsembleLibrary.cs.
 
+# ---- Ensembles de la DA (PR #59) ----
+[Cave_Cellule_A] mur 10x9 fonctions Cachot, Salle de torture ; max 1
+Cave_Cellule_A 0 0.02
+
+[Cave_Cellule_B] mur 10x9 fonctions Cachot, Salle de torture ; max 1
+Cave_Cellule_B 0 0.02
+
+[Cave_PosteGarde_A] mur 8x6 fonctions Salle des gardes, Cachot ; max 1
+Cave_PosteGarde_A 0 0.02
+
+[Cave_PosteGarde_B] mur 8x5 fonctions Salle des gardes, Cachot, Galerie de mine ; max 1
+Cave_PosteGarde_B 0 0.02
+
+[Cave_Reserve_A] mur 9x6 fonctions Réserve, Cave à vin, Citerne ; max 1
+Cave_Reserve_A 0 0.02
+
+[Cave_Reserve_B] mur 10x6.5 fonctions Réserve, Cave à vin, Galerie de mine, Citerne, Salle du puits ; max 1
+Cave_Reserve_B 0 0.02
+
+[Cave_Eboulis_A] mur 9.5x6 fonctions Galerie de mine, Gouffre, Grotte inondée ; max 1
+Cave_Eboulis_A 0 0.02
+
+[Cave_Eboulis_B] mur 8x9 fonctions Galerie de mine, Gouffre ; max 1
+Cave_Eboulis_B 0 0.02
+
+[Cave_Autel_A] centre 8x8 fonctions Crypte, Chapelle souterraine, Ossuaire ; max 1
+Cave_Autel_A 0 0
+
+[Cave_Autel_B] mur 8x4.5 fonctions Crypte, Chapelle souterraine, Ossuaire ; max 1
+Cave_Autel_B 0 0.02
+
+[Cave_Puits_A] centre 8x8 fonctions Salle du puits, Citerne, Cave à vin, Réserve, Salle des gardes ; max 1
+Cave_Puits_A 0 0
+
+[Cave_Puits_B] centre 8x8 fonctions Citerne, Cachot, Ossuaire, Salle de torture ; max 1
+Cave_Puits_B 0 0
+
+[Cave_Torture_A] mur 8.5x5 fonctions Salle de torture, Cachot ; max 1
+Cave_Torture_A 0 0.02
+
+[Cave_Torture_B] mur 8.5x6 fonctions Salle de torture ; max 1
+Cave_Torture_B 0 0.02
+
 [Poste de garde de la DA] centre 26x18 fonctions Salle des gardes ; max 1
 @Cave_SalleDeGarde 0 0
 

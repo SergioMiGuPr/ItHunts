@@ -1,5 +1,48 @@
 # Ensembles de décor de l'acte III (D-118). Format : voir EnsembleLibrary.cs.
 
+# ---- Ensembles de la DA (PR #59) ----
+[Jardin_Massif_A] centre 15.5x12 fonctions Roseraie, Terrasse du château, Fontaine, Potager ; max 1
+Jardin_Massif_A 0 0
+
+[Jardin_Massif_B] centre 16x8.5 fonctions Roseraie, Labyrinthe de haies, Grand bassin, Kiosque ; max 1
+Jardin_Massif_B 0 0
+
+[Jardin_FontaineBancs_A] centre 14.5x15 fonctions Fontaine, Grand bassin, Terrasse du château, Roseraie ; max 1
+Jardin_FontaineBancs_A 0 0
+
+[Jardin_FontaineBancs_B] centre 14.5x13.5 fonctions Allée des statues, Labyrinthe de haies, Kiosque ; max 1
+Jardin_FontaineBancs_B 0 0
+
+[Jardin_Serre_A] centre 13x10 fonctions Serre en ruine, Potager ; max 1
+Jardin_Serre_A 0 0
+
+[Jardin_Serre_B] centre 13x10 fonctions Serre en ruine ; max 1
+Jardin_Serre_B 0 0
+
+[Jardin_Cimetiere_A] centre 13x10 fonctions Cimetière ; max 1
+Jardin_Cimetiere_A 0 0
+
+[Jardin_Cimetiere_B] centre 13x12 fonctions Cimetière, Allée des statues ; max 1
+Jardin_Cimetiere_B 0 0
+
+[Jardin_KiosqueEns_A] centre 14x13.5 fonctions Kiosque, Roseraie ; max 1
+Jardin_KiosqueEns_A 0 0
+
+[Jardin_KiosqueEns_B] centre 14x13.5 fonctions Kiosque, Terrasse du château, Labyrinthe de haies ; max 1
+Jardin_KiosqueEns_B 0 0
+
+[Jardin_TasBois_A] mur 9.5x6 fonctions Potager, Verger, Bosquet, Grande grille, Serre en ruine ; max 1
+Jardin_TasBois_A 0 0.02
+
+[Jardin_TasBois_B] mur 10.5x6 fonctions Potager, Verger, Bosquet, Ravin ; max 1
+Jardin_TasBois_B 0 0.02
+
+[Jardin_Clairiere_A] centre 35x36 fonctions Bosquet, Verger ; max 1
+Jardin_Clairiere_A 0 0
+
+[Jardin_Clairiere_B] centre 35x36 fonctions Bosquet, Ravin ; max 1
+Jardin_Clairiere_B 0 0
+
 [Labyrinthe de la DA] centre 48x48 fonctions Labyrinthe de haies ; max 2
 @Jardin_Labyrinthe 0 0
 
@@ -9,17 +52,25 @@
 # ---- Labyrinthe, roseraie ----
 [Haies en U] centre 14x10 fonctions Labyrinthe de haies, Roseraie
 Jardin_Haie_6m -3 4
+Ens_Habillage_Haie_6m -3 4
 Jardin_Haie_6m 3 4
+Ens_Habillage_Haie_6m 3 4
 Jardin_Haie_6m -6 1 90
+Ens_Habillage_Haie_6m -6 1 90
 Jardin_Haie_6m 6 1 90
+Ens_Habillage_Haie_6m 6 1 90
 Jardin_Statue_Pleureuse 0 1.4
 Cave_Candelabre 1.8 1.4
 
 [Haies croisées] centre 13x13 fonctions Labyrinthe de haies
 Jardin_Haie_6m -3.2 0
+Ens_Habillage_Haie_6m -3.2 0
 Jardin_Haie_6m 3.2 0
+Ens_Habillage_Haie_6m 3.2 0
 Jardin_Haie_6m 0 3.4 90
+Ens_Habillage_Haie_6m 0 3.4 90
 Jardin_Haie_6m 0 -3.4 90
+Ens_Habillage_Haie_6m 0 -3.4 90
 Cave_Candelabre 1.6 1.6
 
 [Parterre de roses] centre 10x10 fonctions Roseraie, Fontaine, Terrasse du château, Grand bassin, Kiosque
@@ -35,7 +86,7 @@ Jardin_Statue_Pleureuse 0 0
 Cave_Candelabre 1.4 0
 
 [Banc entre deux massifs] centre 8x4 fonctions Roseraie, Kiosque, Fontaine, Terrasse du château, Grand bassin, Allée des statues
-Cave_Banc 0 0
+Ens_Banc_Pierre 0 0
 Jardin_Massif -2.6 0
 Jardin_Massif 2.6 0
 Cave_Candelabre 0 1.4
@@ -118,7 +169,7 @@ Cave_Brasero -2.8 -2.2
 [Kiosque] centre 12x12 fonctions Kiosque, Roseraie, Terrasse du château ; max 1
 Jardin_Kiosque 0 0
 Cave_Candelabre 0 -1
-Cave_Banc 5.4 0 90
+Ens_Banc_Pierre 5.4 0 90
 
 [Fontaine] centre 10x10 fonctions Fontaine, Grand bassin, Allée des statues ; max 1
 Jardin_Fontaine 0 0
@@ -140,8 +191,8 @@ Jardin_SousBois_B 2.4 -2
 
 [Feu de camp] centre 7x7 fonctions Bosquet, Ravin, Verger, Serre en ruine, Grande grille ; max 3
 Cave_Brasero 0 0
-Cave_Banc 0 2
-Cave_Banc 2 -0.4 90
+Ens_Banc_Pierre 0 2
+Ens_Banc_Pierre 2 -0.4 90
 Jardin_Rocher_Petit -2 0 0 -0.4
 Jardin_SousBois_B -2.4 -2.4
 

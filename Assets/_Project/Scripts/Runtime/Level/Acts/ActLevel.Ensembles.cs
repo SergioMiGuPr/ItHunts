@@ -90,7 +90,7 @@ namespace ItHunts.Level.Acts
                 while (t < len - 2f)
                 {
                     bool placed = false;
-                    foreach (EnsembleLibrary.Set set in sets.OrderBy(_ => _rng.Next()))
+                    foreach (EnsembleLibrary.Set set in sets.OrderBy(s0 => s0.Max == 1 ? 0 : 1).ThenBy(_ => _rng.Next()))
                     {
                         used.TryGetValue(set, out int n);
                         if (n >= set.Max || t + set.Width > len - 0.5f)
@@ -128,7 +128,7 @@ namespace ItHunts.Level.Acts
             List<Vector2Int> order = ground.OrderBy(_ => _rng.Next()).ToList();
             FillGrid(r, ground, blocked);
             // Hauts d'abord (il leur faut de la place pour le traqueur), puis grands (salles d'exemple, estrades), puis tour à tour.
-            var live = sets.OrderByDescending(s => lib.Tall(s)).ThenByDescending(s => s.Width * s.Depth).ToList();
+            var live = sets.OrderByDescending(s => s.Max == 1).ThenByDescending(s => lib.Tall(s)).ThenByDescending(s => s.Width * s.Depth).ToList();
             var used = new Dictionary<EnsembleLibrary.Set, int>();
             var cursor = new Dictionary<EnsembleLibrary.Set, int>();
             while (live.Count > 0)
@@ -364,6 +364,12 @@ namespace ItHunts.Level.Acts
         {
             go.name = name;
             Light[] lights = go.GetComponentsInChildren<Light>(true);
+            if (go.transform.Find("Mobilier") != null)
+            {
+                ArtSet(go, lights, group);
+                return;
+            }
+
             DecorKind kind = MuralNames.Any(n => name.Contains(n)) ? DecorKind.Mural
                 : PlantNames.Any(n => name.Contains(n)) ? DecorKind.Vegetal
                 : lights.Length > 0 && !name.Contains("Autel") ? DecorKind.LumiereSol
@@ -384,6 +390,39 @@ namespace ItHunts.Level.Acts
             // Les arbres s'enjambent toujours (règle des arbres de l'acte III).
             if ((top <= settings.ensembles.stepOver || name.Contains("Arbre")) && go.GetComponent<StalkerPassesThrough>() == null)
                 go.AddComponent<StalkerPassesThrough>();
+        }
+
+        /// <summary>Ensemble livré par la DA : sa lumière est gardée telle quelle (deux sources au plus), objets à lancer sur ses repères.</summary>
+        private void ArtSet(GameObject go, Light[] lights, int group)
+        {
+            Tag(go, DecorKind.Prop);
+            go.GetComponent<DecorTag>().group = group;
+            List<Light> strong = lights.OrderByDescending(l => l.intensity * l.range).ToList();
+            for (int i = 0; i < strong.Count; i++)
+            {
+                Light l = strong[i];
+                l.shadows = LightShadows.None;
+                if (i >= 2)
+                {
+                    l.gameObject.SetActive(false);
+                    continue;
+                }
+
+                AmbianceLight al = l.GetComponent<AmbianceLight>();
+                if (al == null)
+                    al = l.gameObject.AddComponent<AmbianceLight>();
+                al.kind = AmbianceLight.Kind.Torche;
+                al.keepOwn = true;
+            }
+
+            if (go.GetComponent<StalkerPassesThrough>() == null)
+                go.AddComponent<StalkerPassesThrough>();
+            Transform marks = go.transform.Find("Reperes");
+            if (marks == null)
+                return;
+            foreach (Transform m in marks)
+                if (m.name.StartsWith("Pose_Attrapable"))
+                    Place(_rng.Next(2) == 0 ? "Prop_Caisse_Attrapable" : "Prop_Tonneau_Attrapable", go.transform.parent, m.position + Vector3.up * 0.6f, m.rotation, 1f, group);
         }
 
         /// <summary>

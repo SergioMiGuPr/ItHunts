@@ -18,7 +18,7 @@ namespace ItHunts.EditorTools
         public static void Apply()
         {
             var byName = new Dictionary<string, GameObject>();
-            foreach (string g in AssetDatabase.FindAssets("t:prefab", new[] { "Assets/_Project/Prefabs/Props", "Assets/Art/Prefabs", "Assets/Art/Levels/Exemples" }))
+            foreach (string g in AssetDatabase.FindAssets("t:prefab", new[] { "Assets/_Project/Prefabs/Props", "Assets/Art/Prefabs", "Assets/Art/Levels/Exemples", "Assets/Art/Levels/Ensembles" }))
             {
                 var go = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(g));
                 if (go != null && !byName.ContainsKey(go.name))

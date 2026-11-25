@@ -18,6 +18,8 @@ namespace ItHunts.Level
         public Kind kind;
         /// <summary>Masquée par DressingOptimizer (salle loin du joueur) : HorrorLook l'éteint.</summary>
         [System.NonSerialized] public bool Hidden;
+        /// <summary>Garde son intensité et sa portée (ensembles éclairés par la DA).</summary>
+        public bool keepOwn;
 
         /// <summary>Torches et lampes actives (fondu de l'ambiance enragée sans recherche dans la scène).</summary>
         public static readonly System.Collections.Generic.List<AmbianceLight> All = new System.Collections.Generic.List<AmbianceLight>();
@@ -58,6 +60,12 @@ namespace ItHunts.Level
             LightViewmodel(l);
             if (a == null || l == null)
                 return;
+            if (keepOwn)
+            {
+                BaseIntensity = l.intensity;
+                return;
+            }
+
             l.intensity = kind == Kind.Torche ? a.torchIntensity : a.lampIntensity;
             BaseIntensity = l.intensity;
             l.range = kind == Kind.Torche ? a.torchRange : a.lampRange;

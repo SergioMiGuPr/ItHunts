@@ -84,7 +84,7 @@ namespace ItHunts.Level.Acts
                 for (int dy = -1; dy <= 1 && !close; dy++)
                     if (kept.TryGetValue(c + new Vector2Int(dx, dy), out List<Vector3> near))
                         close = near.Any(o => (o - p).sqrMagnitude < lightGap * lightGap);
-                if (!close)
+                if (!close || l.keepOwn)
                 {
                     if (!kept.TryGetValue(c, out List<Vector3> list))
                         kept[c] = list = new List<Vector3>();
@@ -111,6 +111,8 @@ namespace ItHunts.Level.Acts
         private static int Priority(AmbianceLight l)
         {
             DecorTag t = l.GetComponentInParent<DecorTag>();
+            if (l.keepOwn)
+                return 4;
             return t == null ? 3 : t.kind == DecorKind.Lustre ? 2 : t.kind == DecorKind.Mural ? 0 : 1;
         }
 

@@ -52,7 +52,7 @@ namespace ItHunts.Level.Acts
             if (_tall.TryGetValue(s, out bool t))
                 return t;
             foreach (Piece p in s.Pieces)
-                t |= !p.Example && !p.Name.Contains("Arbre") && Find(p.Name) is GameObject go && p.Y + Height(go) * p.Scale > stepOver;
+                t |= !p.Example && !p.Name.Contains("Arbre") && Find(p.Name) is GameObject go && go.GetComponent<ItHunts.Enemies.StalkerPassesThrough>() == null && p.Y + Height(go) * p.Scale > stepOver;
             _tall[s] = t;
             return t;
         }

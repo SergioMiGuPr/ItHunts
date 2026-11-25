@@ -1,6 +1,49 @@
 # Ensembles de décor de l'acte II (D-118). Format : voir EnsembleLibrary.cs.
 # Pièce : Prefab x z [lacet] [y] [échelle]. x à droite, z vers l'avant ; mur : z depuis le mur.
 
+# ---- Ensembles de la DA (PR #59) ----
+[Chateau_Bibliotheque_A] mur 12.5x6.5 fonctions Bibliothèque ; max 1
+Chateau_Bibliotheque_A 0 0.02
+
+[Chateau_Bibliotheque_B] mur 10.5x6.5 fonctions Bibliothèque, Salon de musique ; max 1
+Chateau_Bibliotheque_B 0 0.02
+
+[Chateau_SalleManger_A] centre 9.5x5.5 fonctions Salle à manger, Grande salle ; max 1
+Chateau_SalleManger_A 0 0
+
+[Chateau_SalleManger_B] centre 10x7 fonctions Salle à manger, Grande salle ; max 1
+Chateau_SalleManger_B 0 0
+
+[Chateau_Cheminee_A] mur 8x5 fonctions Salle à manger, Grande salle, Chambre, Salon de musique, Salle des gardes, Armurerie ; max 1
+Chateau_Cheminee_A 0 0.02
+
+[Chateau_Cheminee_B] mur 10x5 fonctions Salle à manger, Grande salle, Bibliothèque, Grande entrée, Salle du trône ; max 1
+Chateau_Cheminee_B 0 0.02
+
+[Chateau_Chambre_A] mur 11x5.5 fonctions Chambre ; max 1
+Chateau_Chambre_A 0 0.02
+
+[Chateau_Chambre_B] mur 10x6 fonctions Chambre ; max 1
+Chateau_Chambre_B 0 0.02
+
+[Chateau_Chapelle_A] mur 11x10 fonctions Chapelle ; max 1
+Chateau_Chapelle_A 0 0.02
+
+[Chateau_Chapelle_B] mur 9x10.5 fonctions Chapelle ; max 1
+Chateau_Chapelle_B 0 0.02
+
+[Chateau_Galerie_A] mur 13.5x3 fonctions Galerie des portraits, Palier, Grand escalier ; max 1
+Chateau_Galerie_A 0 0.02
+
+[Chateau_Galerie_B] mur 12.5x3 fonctions Galerie des portraits, Grande entrée, Salle du trône, Salle de bal ; max 1
+Chateau_Galerie_B 0 0.02
+
+[Chateau_Salon_A] centre 9x6.5 fonctions Salon de musique, Bibliothèque, Chambre, Palier ; max 1
+Chateau_Salon_A 0 0
+
+[Chateau_Salon_B] centre 10.5x10 fonctions Salon de musique, Salle de bal, Grande salle ; max 1
+Chateau_Salon_B 0 0
+
 [Salle de bal de la DA] centre 36x24 fonctions Salle de bal ; max 2
 @Chateau_SalleDeBal 0 0
 
@@ -12,8 +55,8 @@
 
 # ---- Salle à manger ----
 [Banquet] centre 16x6 fonctions Salle à manger, Grande salle
-Chateau_TableBanquet -3.1 0
-Chateau_TableBanquet 3.1 0
+Ens_Table_Longue -3.1 0
+Ens_Table_Longue 3.1 0
 Chateau_Chaise -5 1.4 180
 Chateau_Chaise -3.4 1.5 170
 Chateau_Chaise -1.4 1.4 180
@@ -25,14 +68,14 @@ Chateau_Chaise_Renversee -2.2 -2.2 40
 Chateau_Chaise 0.6 -1.4 10
 Chateau_Chaise 2.8 -1.4
 Chateau_Chaise 5 -1.5 -15
-Chateau_Fauteuil 7.2 0 -90
-Chateau_Fauteuil -7.2 0 90
+P_Prop_Fauteuil 7.2 0 -90
+P_Prop_Fauteuil -7.2 0 90
 Chateau_Candelabre_Pied -7 2.2
 Chateau_Candelabre_Pied 7 -2.2
 
 [Banquet renversé] centre 10x8 fonctions Salle à manger, Grande salle, Salle de bal ; max 4
 Chateau_Table_Renversee 0 1.5 20
-Chateau_TableBanquet 0 -1.6 -8
+Ens_Table_Longue 0 -1.6 -8
 Chateau_Chaise_Renversee 3 2 70
 Chateau_Chaise_Renversee -3 1.5 -40
 Chateau_Chaise -2.5 -3 10
@@ -43,7 +86,7 @@ Chateau_Candelabre_Pied 4 -2.8
 [Desserte] mur 8x3 fonctions Salle à manger, Grande salle
 P_Prop_Armoire -2.6 1.2
 Prop_CoffreDeco 0 1.2
-Chateau_Tableau 0 0.15 0 6.5
+Ens_Portrait_2 0 0.15 0 4.4 1.6
 P_Prop_Tonneaux_Couches 2.8 1.6
 Chateau_Torchere 1.3 1
 
@@ -59,10 +102,10 @@ Chateau_Candelabre_Pied 6 0
 
 [Coin de lecture] centre 8x8 fonctions Bibliothèque, Salon de musique, Chambre
 Prop_Table 0 0
-Chateau_Fauteuil 0 2 180
-Chateau_Fauteuil 2.2 -0.4 -90
-Chateau_Fauteuil -2.2 0.4 90
-Chateau_Lutrin -2.6 2.6 140
+P_Prop_Fauteuil 0 2 180
+P_Prop_Fauteuil 2.2 -0.4 -90
+P_Prop_Fauteuil -2.2 0.4 90
+Ens_Pupitre -2.6 2.6 140
 Chateau_Candelabre_Pied 2.4 2.4
 Prop_Chaise_Attrapable 0.4 -2 0 0.55
 
@@ -77,20 +120,20 @@ Chateau_Bibliotheque 2.1 1 0 0 0.95
 
 # ---- Chapelle ----
 [Bancs de chapelle] centre 14x12 fonctions Chapelle
-Chateau_Banc_Eglise -4 4
-Chateau_Banc_Eglise 4 4
-Chateau_Banc_Eglise -4 1.6
-Chateau_Banc_Eglise 4 1.6
-Chateau_Banc_Eglise -4 -0.8
-Chateau_Banc_Eglise 4.3 -0.9 12
-Chateau_Banc_Eglise -4 -3.2
-Chateau_Banc_Eglise 4 -3.2
+Ens_Banc_Chapelle -4 4
+Ens_Banc_Chapelle 4 4
+Ens_Banc_Chapelle -4 1.6
+Ens_Banc_Chapelle 4 1.6
+Ens_Banc_Chapelle -4 -0.8
+Ens_Banc_Chapelle 4.3 -0.9 12
+Ens_Banc_Chapelle -4 -3.2
+Ens_Banc_Chapelle 4 -3.2
 Chateau_Candelabre_Pied -1 4.6
 Chateau_Candelabre_Pied 1 4.6
-Chateau_Lutrin 0 5.4 180
+Ens_Pupitre 0 5.4 180
 
 [Petit autel] centre 8x8 fonctions Chapelle, Salle du trône ; max 3
-Chateau_Autel 0 0
+Ens_Autel_Chapelle 0 0
 Chateau_Candelabre_Pied -3.2 1.4
 Chateau_Candelabre_Pied 3.2 1.4
 Prop_Statue 0 -2.8 180
@@ -105,7 +148,7 @@ Chateau_Tenture 3.1 0.15 0 10
 # ---- Salle de bal, salon de musique ----
 [Estrade des musiciens] mur 11x8 fonctions Salle de bal, Salon de musique ; max 2
 Chateau_Estrade_Musiciens 0 2.8
-Chateau_Lutrin -4.2 6.4 180
+Ens_Pupitre -4.2 6.4 180
 Chateau_Chaise 0 6.8 180
 Chateau_Chaise -1.6 7 190
 Chateau_Chaise 1.6 7 170
@@ -118,21 +161,21 @@ Chateau_Chaise -1.8 2 135
 Chateau_Chaise 0 2.8 180
 Chateau_Chaise 1.8 2 225
 Chateau_Chaise 2.6 0 270
-Chateau_Lutrin 0 -0.6
-Chateau_Lutrin -1.4 -0.2 40
-Chateau_Lutrin 1.4 -0.2 -40
+Ens_Pupitre 0 -0.6
+Ens_Pupitre -1.4 -0.2 40
+Ens_Pupitre 1.4 -0.2 -40
 Chateau_Candelabre_Pied 0 -2.6
 Prop_Chaise_Attrapable -3 -2.4 0 0.55
 
 [Banquettes de bal] centre 8x4 fonctions Salle de bal, Salon de musique, Grande entrée, Palier
-Chateau_Banc_Eglise 0 0.5
-Chateau_Banc_Eglise 0 -0.5 180
+Ens_Banc_Chapelle 0 0.5
+Ens_Banc_Chapelle 0 -0.5 180
 Chateau_Candelabre_Pied -3 0
 Chateau_Candelabre_Pied 3 0
 
 [Banquettes murales] mur 8x2.4 fonctions Salle de bal, Salon de musique, Galerie des portraits, Palier, Grande entrée, Grand escalier
-Chateau_Banc_Eglise 0 1.1
-Chateau_Tableau 0 0.15 0 6.2
+Ens_Banc_Chapelle 0 1.1
+Ens_Portrait_3 0 0.15 0 4.4 1.6
 Chateau_Torchere -3 1
 Chateau_Torchere 3 1
 
@@ -141,7 +184,7 @@ Chateau_Torchere 3 1
 Chateau_LitBaldaquin 0 0
 Prop_CoffreDeco 0 -2.2
 Chateau_Candelabre_Pied 2.4 1.4
-Chateau_Fauteuil -2.8 -1 120
+P_Prop_Fauteuil -2.8 -1 120
 Chateau_MiroirBrise 3 -2 -60
 Prop_Chaise_Attrapable -3 2 20 0.55
 
@@ -151,7 +194,7 @@ Chateau_Coffre -2.4 1.2
 P_Prop_Armoire 3.8 1.1
 Chateau_Torchere 2 1
 Chateau_MiroirBrise -4 1.4 30
-Chateau_Tableau 0 0.15 0 7
+Ens_Portrait_4 0 0.15 0 4.4 1.6
 
 # ---- Armurerie, salle des gardes ----
 [Râteliers en file] centre 12x4 fonctions Armurerie, Salle des gardes
@@ -186,7 +229,7 @@ Chateau_Tenture 0 0.15 0 9.5
 # ---- Salle du trône ----
 [Trône] mur 12x8 fonctions Salle du trône ; max 1
 Chateau_Estrade_Musiciens 0 2.8
-Chateau_Fauteuil 0 3.2 0 1 1.7
+P_Prop_Fauteuil 0 3.2 0 1 1.7
 Chateau_Torchere -2.6 5.4
 Chateau_Torchere 2.6 5.4
 Prop_Statue -5 2
@@ -198,13 +241,13 @@ Chateau_Tenture 3.4 0.15 0 12
 Prop_Statue 0 4
 Prop_Statue 0 -4 180
 Chateau_Torchere 0 1.4
-Chateau_Banc_Eglise 0 -0.6 90
+Ens_Banc_Chapelle 0 -0.6 90
 
 [Courtisans] centre 12x5 fonctions Salle du trône
-Chateau_Banc_Eglise -3.4 1.2
-Chateau_Banc_Eglise 3.4 1.2
-Chateau_Banc_Eglise -3.4 -1.2
-Chateau_Banc_Eglise 3.4 -1.2 -10
+Ens_Banc_Chapelle -3.4 1.2
+Ens_Banc_Chapelle 3.4 1.2
+Ens_Banc_Chapelle -3.4 -1.2
+Ens_Banc_Chapelle 3.4 -1.2 -10
 Chateau_Candelabre_Pied 0 0
 
 # ---- Galeries, entrées, escaliers ----
@@ -214,16 +257,16 @@ Chateau_Torchere 1.2 1.2
 Chateau_Torchere -1.2 -1.2
 
 [Portraits] mur 9x2.4 fonctions Galerie des portraits, Grand escalier, Palier, Grande salle
-Chateau_Tableau -3 0.15 0 6.2
-Chateau_Tableau 0 0.15 0 7 1.3
-Chateau_Tableau 3 0.15 0 6.2
-Chateau_Fauteuil -1.6 1.1
-Chateau_Fauteuil 1.6 1.1
+Ens_Portrait_Grand -3 0.15 0 4.4 1.6
+Ens_Portrait_6 0 0.15 0 4.4 1.6
+Ens_Portrait_7 3 0.15 0 4.4 1.6
+P_Prop_Fauteuil -1.6 1.1
+P_Prop_Fauteuil 1.6 1.1
 Chateau_Torchere 4 0.9
 
 [Galerie abandonnée] centre 7x5 fonctions Galerie des portraits ; max 4
 Chateau_Chaise_Renversee -2 0.5 30
-Chateau_Fauteuil 1.4 -1 -50
+P_Prop_Fauteuil 1.4 -1 -50
 Prop_CoffreDeco 0 1.4 20
 Chateau_MiroirBrise 2.6 1.4 -120
 Chateau_Candelabre_Pied -2.6 -1.4
@@ -258,7 +301,7 @@ P_Prop_Poutre 0 2.8 70
 [Jardin du cloître] centre 10x10 fonctions Cloître, Fontaine
 Jardin_Fontaine 0 0
 Chateau_Torchere 4.4 4.4
-Chateau_Banc_Eglise -4.6 0 90
+Ens_Banc_Chapelle -4.6 0 90
 
 [Massif du cloître] centre 8x5 fonctions Cloître, Fontaine
 Jardin_Massif -2 0
