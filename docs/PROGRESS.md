@@ -1374,3 +1374,21 @@ Télékinésie et orbe unique validées le 2026-11-12 (D-024 à D-027), `Telekin
   Mode provoque des NullReferenceException (état du joueur perdu). Proposé : « recompiler à la
   fin du Play Mode » (Preferences > General > Script Changes While Playing). Claude attend la fin
   du Play Mode avant de compiler.
+
+## Lot 4 branché (nuit 5, PR #57 : plus de rouge, lien du livre, objet tenu, apparitions, sons de l'épée)
+
+Branche `lot4-branchement`, écrit sans Unity (à compiler, lancer les tests EditMode, puis *ItHunts > Brancher les illustrations des
+améliorations* pour resynchroniser les prefabs). **Annonces** : indices sombres de la DA posés au démarrage par le code (donc aussi
+dans les scènes d'acte déjà construites, dont les goules, volants et traqueur ne viennent pas des prefabs) : `GhoulSettings.leapTelegraphMaterial`
+(M_VFX_Indice_Cercle), `StalkerSettings.grabWarningMaterial` (M_VFX_Indice_Rect, cube « Ombre » caché) et `backhandZoneMaterial`,
+`FlyerSettings.contourAnnonce/contourPrise` (ContourDiscret ajouté au volant s'il manque) ; lueurs du bond et du piqué (0.45, 0.36, 0.26),
+éclair avant le coup de la goule (0.5, 0.45, 0.38), colonne de la prise coupée ; `Goule.prefab` sur M_VFX_Indice_Cercle, sphère du piqué
+retirée de `Volant.prefab` et du constructeur. **Objet tenu** : lueur tenue 0, visée 0.5, à portée 0.15 (RenderSetup ne la remonte plus
+à 1), trait `VFX_Trait_Prise` (`GameVfx_Default.heldTrait`, `LienVfx.Regle` chaque image). **Livre** : un lien part à chaque appui, même
+dans le vide (`ArtifactHolder.BookMisses`, portée `castRange` de la copie du joueur) ; sur cible `Lance` puis `Regle` en monde, `Ferme`
+sans `Destroy` ; départ au centre des boîtes des rendus du livre. **Hibou** : lanterne (0.36, 0.44, 0.58). **Halos** : plus de halo
+autour des lanternes des joueurs (`HorrorLookSettings.lanternHalos`, coupé). **Apparitions** : `SpawnPoint.Effect` (Trou par défaut ;
+portes et coins des actes : Ombre) ; trou : la goule monte de 1 m entre 0.25 et 0.9 s (`Ghoul.Emerge`) ; coin sombre : fumée puis goule à
+0.45 s ; grille prête (aucune posée). **Épée** : `swordSwings` / `swordHits` (3 variantes chacun, sans répétition, ±4 %), un impact
+par coup. Tests : `Night5Lot4Tests`. Playtest : bond de goule, piqué de volant, prise et revers du traqueur sans rouge ; caisse tenue
+cernée d'un fin trait ; livre dans le vide et sur un ennemi ; goules qui sortent des coins (fumée) ; sons de l'épée.

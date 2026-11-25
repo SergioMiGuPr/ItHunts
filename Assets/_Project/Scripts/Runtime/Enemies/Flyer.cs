@@ -147,6 +147,24 @@ namespace ItHunts.Enemies
             }
             if (telegraph != null)
                 telegraph.enabled = false;
+            EnsureContour();
+        }
+
+        /// <summary>
+        /// Contour discret de la DA (nuit 5, lot 4) : posé sur la racine s'il manque (volants des scènes déjà construites, qui ne viennent
+        /// pas du prefab), avec les matériaux des réglages ; un contour sans matériau prend aussi ceux des réglages.
+        /// </summary>
+        private void EnsureContour()
+        {
+            if (settings == null || (settings.contourAnnonce == null && settings.contourPrise == null))
+                return;
+            _contour = GetComponent<ItHunts.Art.VFX.ContourDiscret>();
+            if (_contour == null)
+                _contour = gameObject.AddComponent<ItHunts.Art.VFX.ContourDiscret>();
+            if (_contour.annonce == null)
+                _contour.annonce = settings.contourAnnonce;
+            if (_contour.prise == null)
+                _contour.prise = settings.contourPrise;
         }
 
         private void Start()
@@ -699,7 +717,7 @@ namespace ItHunts.Enemies
             // corps qui luit légèrement (ExtraGlow, couleur du piqué).
             if (telegraph != null && telegraph.enabled)
                 telegraph.enabled = false;
-            // Contour de la DA (PR #50, ContourDiscret) : encre rouge sang à l'annonce du piqué, ton d'os quand il est tenu ; sinon rien.
+            // Contour de la DA (ContourDiscret) : encre fumée à l'annonce du piqué (nuit 5, lot 4 : plus de rouge), ton d'os quand il est tenu ; sinon rien.
             _contour ??= GetComponent<ItHunts.Art.VFX.ContourDiscret>();
             if (_contour != null)
             {

@@ -18,16 +18,18 @@ namespace ItHunts.Settings
         [Header("Lueur des objets attrapables (intensité d'émission)")]
         [Tooltip("Objet attrapable hors de portée (repérable de loin).")]
         [Min(0f)] public float glowIdle = 0.08f;
-        [Tooltip("Objet attrapable à portée.")]
-        [Min(0f)] public float glowInRange = 0.35f;
-        [Tooltip("Objet visé et attrapable.")]
-        [Min(0f)] public float glowAimed = 1.6f;
+        [Tooltip("Objet attrapable à portée (nuit 5, lot 4 : au plus 0.15).")]
+        [Min(0f)] public float glowInRange = 0.15f;
+        [Tooltip("Objet visé et attrapable (nuit 5, lot 4 : au plus 0.5).")]
+        [Min(0f)] public float glowAimed = 0.5f;
         [Tooltip("Objet sélectionné (visé ou pris par l'aide à la visée) : pulsation de sa lueur (part de glowAimed) et " +
                  "fréquence (Hz), pour le repérer avant d'appuyer sur F.")]
         [Range(0f, 1f)] public float aimedPulse = 0.3f;
         [Min(0f)] public float aimedPulseFrequency = 4f;
-        [Tooltip("Objet tenu.")]
-        [Min(0f)] public float glowHeld = 1.2f;
+        [Tooltip("Objet tenu (nuit 5, lot 4 : 0, seul le contour discret de la DA le cerne).")]
+        [Min(0f)] public float glowHeld = 0f;
+        [Tooltip("Ennemi tenu qui va se libérer : intensité du clignotement blanc.")]
+        [Min(0f)] public float enemyStruggleGlow = 1.2f;
         [Tooltip("Objet visé mais trop lourd (rouge terne).")]
         [Min(0f)] public float glowTooHeavy = 0.5f;
         [Tooltip("Objet lancé : lueur verte qui s'éteint en ce temps (s).")]

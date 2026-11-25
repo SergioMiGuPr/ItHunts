@@ -342,8 +342,9 @@ namespace ItHunts.Settings
         [Min(0.1f)] public float stepsPerSecondAtChase = 1.6f;
 
         [Header("Signal : colonne de lumière de la zone de prise (bloc 4)")]
-        [Tooltip("Colonne rouge faible au-dessus du disque de la zone de prise pendant l'annonce : lisible à 50 m (un disque au sol vu de loin devient une ligne).")]
-        public bool grabColumn = true;
+        [Tooltip("Colonne rouge faible au-dessus du disque de la zone de prise pendant l'annonce : lisible à 50 m (un disque au sol vu de loin devient une ligne). " +
+                 "Nuit 5, lot 4 : coupée (le danger se lit à l'animation, plus de rouge).")]
+        public bool grabColumn = false;
         [Min(0.5f)] public float grabColumnHeight = 12f;
         [Tooltip("Diamètre de la colonne (m) : celui du disque de la zone de prise.")]
         [Min(0.2f)] public float grabColumnDiameter = 4f;
@@ -351,5 +352,12 @@ namespace ItHunts.Settings
         [ColorUsage(false, true)] public Color grabColumnColor = new Color(1.6f, 0.08f, 0.04f);
         [Tooltip("Matériau additif qui traverse le brouillard (ItHunts/SignalAdditif).")]
         public Material grabColumnMaterial;
+
+        [Header("Indices sombres de la DA (nuit 5, lot 4)")]
+        [Tooltip("Zone visée par la main (« Lueur ») : M_VFX_Indice_Rect ; le cube « Ombre » est caché. Posé au démarrage (scènes déjà " +
+                 "construites comprises). Vide : le matériau de la scène.")]
+        public Material grabWarningMaterial;
+        [Tooltip("Zone du revers : M_VFX_Indice_Cercle. Vide : le matériau de la scène.")]
+        public Material backhandZoneMaterial;
     }
 }

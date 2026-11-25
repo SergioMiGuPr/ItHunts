@@ -24,6 +24,7 @@ MonoBehaviour:
   torchHaloSize: 3
   lampHaloSize: 3.2
   haloIntensity: 0.5
+  lanternHalos: 0
   lanternHaloSize: 1.4
   haloWallOffset: 0.35
   flicker: 1

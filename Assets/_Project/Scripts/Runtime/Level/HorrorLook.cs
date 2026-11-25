@@ -569,9 +569,10 @@ namespace ItHunts.Level
             }
 
             k = _staticHalos;
-            foreach (PlayerLanternLight lantern in _lanterns)
-                if (lantern != null && lantern.Light != null && lantern.Light.enabled)
-                    Add(ref k, lantern.Light.transform.position, s.lanternHaloSize, lantern.Light.color, s.haloIntensity);
+            if (s.lanternHalos)                                          // nuit 5, lot 4 : coupé par défaut (lumières du décor seulement)
+                foreach (PlayerLanternLight lantern in _lanterns)
+                    if (lantern != null && lantern.Light != null && lantern.Light.enabled)
+                        Add(ref k, lantern.Light.transform.position, s.lanternHaloSize, lantern.Light.color, s.haloIntensity);
             _halos.SetParticles(_particles, k);
             HaloCount = k;
         }

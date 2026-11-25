@@ -410,10 +410,14 @@ namespace ItHunts.Combat
 
             // Son 3D au point d'impact : plus grave pour un objet lourd, plus fort pour un gros coup.
             float heavy = Mathf.InverseLerp(5f, 40f, e.SourceMass);
-            // Épée du koala : son de lame de la DA s'il est livré (GameAudio_Default.swordHit), sinon l'impact commun.
-            AudioClip sword = e.Melee && GameAudio.Settings != null ? GameAudio.Settings.swordHit : null;
-            Play(sword != null ? sword : _hitHeavy != null && e.SourceMass >= 15f ? _hitHeavy : _hit, e.Point, settings.hitVolume * Mathf.Lerp(0.5f, 1f, Mathf.InverseLerp(0f, 60f, e.Damage)),
-                Mathf.Lerp(settings.hitPitchLight, settings.hitPitchHeavy, heavy));
+            // Épée du koala : avec les variantes de la DA (swordHits, nuit 5 lot 4), l'impact est joué une fois par coup par la vue de
+            // l'artefact (ArtifactModelView), pas ici une fois par ennemi ; sinon le son unique swordHit, ou l'impact commun.
+            GameAudioSettings audioArt = GameAudio.Settings;
+            bool swordVariants = e.Melee && audioArt != null && audioArt.swordHits != null && audioArt.swordHits.Length > 0;
+            AudioClip sword = e.Melee && audioArt != null ? audioArt.swordHit : null;
+            if (!swordVariants)
+                Play(sword != null ? sword : _hitHeavy != null && e.SourceMass >= 15f ? _hitHeavy : _hit, e.Point, settings.hitVolume * Mathf.Lerp(0.5f, 1f, Mathf.InverseLerp(0f, 60f, e.Damage)),
+                    Mathf.Lerp(settings.hitPitchLight, settings.hitPitchHeavy, heavy));
             if (e.Killed)
             {
                 // Mort d'une goule : son de la DA (PR #20) en plus du coup final ; le volant joue le sien en éclatant.

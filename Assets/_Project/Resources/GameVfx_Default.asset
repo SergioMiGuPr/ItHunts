@@ -42,5 +42,12 @@ MonoBehaviour:
   bossWound: {fileID: 6855287281718509693, guid: 9fb2a71d66a6a6b4c823b9d992f7fb27, type: 3}
   bossWeakPoint: {fileID: 632548221300013328, guid: 19ad3238d380f414ea4261b90b8f751a, type: 3}
   playerDust: {fileID: 4618616091355184599, guid: 79c7ec55fbc14d5498a4d8e2761675b6, type: 3}
+  heldTrait: {fileID: 5621581310704772748, guid: 6c036111a62fb4f49a65f66942558d46, type: 3}
+  spawnHole: {fileID: 2251174522385112784, guid: d27eb0d3756e4f344a7d0caeccbcc8f3, type: 3}
+  spawnShadow: {fileID: 8691618196655774513, guid: 2efb0e34120cf0d4f8b34c053c6b2099, type: 3}
+  spawnGrate: {fileID: 7552915335586437269, guid: 7d617dc4bc956714a99a109c485da04e, type: 3}
+  spawnHoleDepth: 1
+  spawnHoleRise: {x: 0.25, y: 0.9}
+  spawnShadowDelay: 0.45
   soulVfxCap: 32
   burningScale: 0.6

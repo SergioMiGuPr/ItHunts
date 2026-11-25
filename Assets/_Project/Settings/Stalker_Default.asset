@@ -217,9 +217,11 @@ MonoBehaviour:
   shakeRange: 25
   shakeStrength: 0.6
   stepsPerSecondAtChase: 0.9
-  grabColumn: 1
+  grabColumn: 0
   grabColumnHeight: 12
   grabColumnDiameter: 4
   grabColumnIntensity: 0.3
   grabColumnColor: {r: 1.6, g: 0.08, b: 0.04, a: 1}
   grabColumnMaterial: {fileID: 2100000, guid: 5c43649757e142f468eaa83c26afcee2, type: 2}
+  grabWarningMaterial: {fileID: 2100000, guid: 763882243c436704fa4fa4b5866bbf5c, type: 2}
+  backhandZoneMaterial: {fileID: 2100000, guid: a4565c9aec0e5c941a37cc16d80e510f, type: 2}

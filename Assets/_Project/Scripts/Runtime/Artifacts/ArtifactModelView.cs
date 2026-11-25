@@ -27,6 +27,9 @@ namespace ItHunts.Artifacts
         private bool _swingLunge;
         private LienVfx _link;
         private BookLink _linkKind;
+        private int _seenMisses, _seenHitStrikes;
+        private int _lastSwingClip = -1, _lastHitClip = -1;
+        private Renderer[] _bookRenderers;
 
         public Transform Model => _root;
         public bool LinkShown => _link != null && _link.gameObject.activeSelf && _linkKind != BookLink.Aucun;
@@ -35,6 +38,11 @@ namespace ItHunts.Artifacts
         {
             _holder = GetComponent<ArtifactHolder>();
             _view = GetComponent<FirstPersonView>();
+            if (_holder != null)
+            {
+                _seenMisses = _holder.BookMisses;
+                _seenHitStrikes = _holder.SwordHitStrikes;
+            }
         }
 
         private Transform Hand()
@@ -57,6 +65,7 @@ namespace ItHunts.Artifacts
             if (_root != null)
                 Destroy(_root.gameObject);
             _root = null;
+            _bookRenderers = null;
             _shownFor = a;
             if (!(a is BoneSwordSettings) && !(a is SpiritBookSettings))
                 return;
@@ -83,6 +92,8 @@ namespace ItHunts.Artifacts
             foreach (Renderer r in go.GetComponentsInChildren<Renderer>(true))
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _root = go.transform;
+            if (a is SpiritBookSettings)
+                _bookRenderers = go.GetComponentsInChildren<Renderer>(true);
         }
 
         private void LateUpdate()
@@ -109,6 +120,12 @@ namespace ItHunts.Artifacts
                     SwingSound();
                 }
 
+                if (_holder.SwordHitStrikes != _seenHitStrikes)
+                {
+                    _seenHitStrikes = _holder.SwordHitStrikes;
+                    HitSound();
+                }
+
                 float u = (Time.time - _swingAt) / Mathf.Max(0.05f, sw.swingAnimDuration);
                 Transform cam = _view.ViewRoot;
                 bool swinging = u >= 0f && u < 1f && cam != null;
@@ -130,15 +147,35 @@ namespace ItHunts.Artifacts
 
         private bool _artSlash;
 
-        /// <summary>Lame dans le vide (son de la DA, GameAudio_Default.swordSwing / swordSwingHeavy) : silence tant qu'il manque.</summary>
+        /// <summary>
+        /// Lame dans le vide au déclenchement du coup (nuit 5, lot 4 : GameAudio_Default.swordSwings, une variante au hasard sans répéter la
+        /// précédente, hauteur ±swordPitchVariation) ; sans variantes, les anciens champs swordSwing / swordSwingHeavy ; silence s'ils manquent.
+        /// </summary>
         private void SwingSound()
         {
             GameAudioSettings art = ItHunts.Audio.GameAudio.Settings;
             if (art == null)
                 return;
-            bool heavy = _swingLunge || _swingIndex >= 2;
-            AudioClip clip = heavy && art.swordSwingHeavy != null ? art.swordSwingHeavy : art.swordSwing;
-            ItHunts.Audio.GameAudio.PlayAt(clip, transform.position + Vector3.up * 1.4f, art.swordVolume, 25f);
+            AudioClip clip = ItHunts.Audio.GameAudio.PickNoRepeat(art.swordSwings, ref _lastSwingClip);
+            if (clip == null)
+            {
+                bool heavy = _swingLunge || _swingIndex >= 2;
+                clip = heavy && art.swordSwingHeavy != null ? art.swordSwingHeavy : art.swordSwing;
+            }
+
+            ItHunts.Audio.GameAudio.PlayAt(clip, transform.position + Vector3.up * 1.4f, art.swordVolume, 25f, art.swordPitchVariation);
+        }
+
+        /// <summary>La lame touche : un impact par coup, quel que soit le nombre d'ennemis touchés (swordHits ; sans variantes, swordHit).</summary>
+        private void HitSound()
+        {
+            GameAudioSettings art = ItHunts.Audio.GameAudio.Settings;
+            if (art == null)
+                return;
+            AudioClip clip = ItHunts.Audio.GameAudio.PickNoRepeat(art.swordHits, ref _lastHitClip);
+            if (clip == null)
+                clip = art.swordHit;
+            ItHunts.Audio.GameAudio.PlayAt(clip, transform.position + Vector3.up * 1.4f, art.swordVolume, 25f, art.swordPitchVariation);
         }
 
         /// <summary>Traînée de la DA (PR #35) pour ce coup, posée à la caméra : taille horizontale, diagonale, estoc (et fente).</summary>
@@ -260,34 +297,81 @@ namespace ItHunts.Artifacts
             _trail.SetPropertyBlock(_trailBlock);
         }
 
-        /// <summary>Lien du livre : bande peinte entre le livre (vue FPS ramenée dans le monde) et la cible.</summary>
+        /// <summary>
+        /// Départ du lien : centre des boîtes des rendus du modèle du livre, ramené de la vue FPS dans le monde (le pivot du modèle est
+        /// au dos, sous les doigts : le lien en partirait au lieu de partir du livre). Sans modèle : devant le joueur.
+        /// </summary>
+        private Vector3 BookOrigin()
+        {
+            if (_root == null || _view == null)
+                return transform.position + Vector3.up * 1.4f;
+            Vector3 centre = _root.position;
+            bool any = false;
+            Bounds b = default;
+            if (_bookRenderers != null)
+                foreach (Renderer r in _bookRenderers)
+                {
+                    if (r == null || !r.enabled || r is ParticleSystemRenderer || r is TrailRenderer || r is LineRenderer)
+                        continue;
+                    if (!any)
+                    {
+                        b = r.bounds;
+                        any = true;
+                    }
+                    else
+                        b.Encapsulate(r.bounds);
+                }
+
+            if (any)
+                centre = b.center;
+            return _view.ViewToWorld(centre);
+        }
+
+        /// <summary>
+        /// Lien du livre (nuit 5, lot 4) : à chaque appui, la tête du lien de la DA (LienVfx.Lance) file du livre vers la visée. Dans le
+        /// vide, elle va au bout de la portée (castRange de la copie améliorée du joueur), se rétracte et se détruit seule ; sur une
+        /// cible, elle s'accroche, suit la cible (Regle, positions monde, chaque image), puis Ferme la rétracte à la fin du lien.
+        /// </summary>
         private void UpdateLink()
         {
-            BookLink kind = _holder != null && _holder.BookSettings != null ? _holder.Book.Link : BookLink.Aucun;
+            SpiritBookSettings bk = _holder != null ? _holder.BookSettings : null;
+            if (_holder != null && _holder.BookMisses != _seenMisses)
+            {
+                _seenMisses = _holder.BookMisses;
+                GameVfxSettings fx = GameVfx.Settings;
+                if (bk != null && fx != null && fx.drainLink != null)
+                    LienVfx.Lance(fx.drainLink, BookOrigin(), _holder.LastBookMissAim, bk.castRange, null, default);   // drain : le lien « hostile » par défaut
+            }
+
+            BookLink kind = bk != null ? _holder.Book.Link : BookLink.Aucun;
             int links = _holder != null ? _holder.Book.Links : 0;
             Transform target = _holder != null ? _holder.BookTarget : null;
             if ((kind != _linkKind || links != _linkCount) && (_link != null || _fallbackLink != null))
-                DestroyLink();
+                CloseLink();
 
             _linkKind = kind;
             _linkCount = links;
             if (kind == BookLink.Aucun || target == null)
             {
-                DestroyLink();
+                CloseLink();
                 return;
             }
 
+            Vector3 from = BookOrigin();
+            Vector3 to = ArtifactHolder.TargetPoint(target);
             if (_link == null && _fallbackLink == null)
             {
                 _linkAt = Time.time;                                     // un nouveau lancer : le lien part du livre
                 GameVfxSettings vfx = GameVfx.Settings;
                 GameObject prefab = vfx == null ? null : kind == BookLink.Drain ? vfx.drainLink : vfx.healLink;
-                // Le lien de la DA lit ses points dans son propre repère (LienVfx.Regle puis TransformPoint) : il est donc posé à l'origine,
-                // sans rotation (avant : posé sur le joueur, le lien était décalé d'autant et n'apparaissait pas sur la cible).
+                // Durée de vie 0 : un lien tenu ne doit pas être détruit par GameVfx ; il se détruit seul après Ferme.
                 GameObject go = GameVfx.Spawn(prefab, Vector3.zero, Quaternion.identity, 1f, null, 0f);
                 _link = go != null ? go.GetComponent<LienVfx>() : null;
                 if (_link != null)
-                    _link.Ouvre();
+                {
+                    Vector3 dir = to - from;
+                    _link.Lance(from, dir.sqrMagnitude > 1e-6f ? dir.normalized : transform.forward, bk.castRange, target, to);
+                }
                 else
                 {
                     if (go != null)
@@ -296,25 +380,11 @@ namespace ItHunts.Artifacts
                 }
             }
 
-            Vector3 from = _root != null && _view != null ? _view.ViewToWorld(_root.position) : transform.position + Vector3.up * 1.4f;
-            var col = target.GetComponentInChildren<Collider>();
-            Vector3 to = col != null ? col.bounds.center : target.position + Vector3.up;
-            float throwTime = _holder.BookSettings != null ? _holder.BookSettings.linkThrowTime : 0f;
-            Vector3 tip = LinkTip(from, to, Time.time - _linkAt, throwTime);
             if (_link != null)
-            {
-                Transform t = _link.transform;
-                if (t.parent == null && (t.position != Vector3.zero || t.rotation != Quaternion.identity || t.localScale != Vector3.one))
-                {
-                    t.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
-                    t.localScale = Vector3.one;
-                }
-
-                // Drain : le flux va de l'ennemi vers le hibou (source = livre, cible = ennemi ; sens réglé dans le prefab).
-                _link.Regle(from, tip);
-            }
+                _link.Regle(from, to);                                   // drain : sens du flux réglé dans le prefab
             else if (_fallbackLink != null)
             {
+                Vector3 tip = LinkTip(from, to, Time.time - _linkAt, bk.linkThrowTime);
                 _fallbackLink.SetPosition(0, from);
                 _fallbackLink.SetPosition(1, tip);
             }
@@ -346,10 +416,11 @@ namespace ItHunts.Artifacts
             return line;
         }
 
-        private void DestroyLink()
+        /// <summary>Fin du lien : celui de la DA se rétracte vers le livre et se détruit seul (Ferme, sans Destroy) ; le trait de repli disparaît.</summary>
+        private void CloseLink()
         {
             if (_link != null)
-                Destroy(_link.gameObject);
+                _link.Ferme();
             _link = null;
             if (_fallbackLink != null)
             {
@@ -361,6 +432,6 @@ namespace ItHunts.Artifacts
             _fallbackLink = null;
         }
 
-        private void OnDestroy() => DestroyLink();
+        private void OnDestroy() => CloseLink();
     }
 }

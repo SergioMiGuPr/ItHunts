@@ -58,4 +58,7 @@ MonoBehaviour:
   aggroLoseDistance: 50
   aggroLoseTime: 5
   eyeColor: {r: 0.5, g: 0.33, b: 0.07, a: 1}
+  diveGlowColor: {r: 0.45, g: 0.36, b: 0.26, a: 1}
+  contourAnnonce: {fileID: 2100000, guid: 4c1e34e24f91c324690748230e5478ca, type: 2}
+  contourPrise: {fileID: 2100000, guid: fe3f92d3c3c82334ab8f6bd3f3df38ab, type: 2}
   telegraphColor: {r: 4, g: 0.4, b: 0.2, a: 1}

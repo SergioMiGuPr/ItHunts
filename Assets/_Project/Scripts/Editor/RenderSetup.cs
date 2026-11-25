@@ -150,7 +150,7 @@ namespace ItHunts.EditorTools
 
         /// <summary>
         /// Signaux de survie (bloc 4) : matériaux additifs qui traversent le brouillard (colonne de la zone de prise, halo des âmes),
-        /// branchés dans les réglages ; lueur « à portée » des objets attrapables 0.35 → 1.0 (RENDU.md § 3 ter).
+        /// branchés dans les réglages ; lueur « à portée » des objets attrapables plafonnée à 0.15 (nuit 5, lot 4 ; avant : 1.0, RENDU.md § 3 ter).
         /// </summary>
         public static string Signals()
         {
@@ -192,7 +192,7 @@ namespace ItHunts.EditorTools
 
             var tk = AssetDatabase.LoadAssetAtPath<TelekinesisFeedbackSettings>(SettingsDir + "/TelekinesisFeedback_Default.asset");
             float before = tk.glowInRange;
-            tk.glowInRange = 1f;
+            tk.glowInRange = Mathf.Min(tk.glowInRange, 0.15f);           // nuit 5, lot 4 : lueur à portée au plus 0.15 (avant : 1)
             EditorUtility.SetDirty(tk);
             AssetDatabase.SaveAssets();
             return $"signaux : colonne (M_Signal_Colonne), halo des âmes (M_Signal_Halo), lueur à portée {before} → {tk.glowInRange}";

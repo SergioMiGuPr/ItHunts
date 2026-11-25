@@ -57,6 +57,8 @@ namespace ItHunts.Enemies
             public int OwnerId;
             public float At;
             public GameObject Marker;
+            /// <summary>Effet de sortie déjà joué (coin sombre : la goule paraît spawnShadowDelay s après).</summary>
+            public bool ExitPlayed;
         }
 
         private readonly Kind _ghouls = new Kind { Type = SpawnKinds.Goule };
@@ -644,19 +646,76 @@ namespace ItHunts.Enemies
 
                 if (now < p.At)
                     continue;
-                _pending.RemoveAt(i);
                 if (p.Marker != null)
                     p.Marker.SetActive(false);
                 if (ItHunts.Level.RoomVolume.SharesRoomWithAny(p.Point.transform.position, _players))
                 {
+                    _pending.RemoveAt(i);
                     SpawnsCancelled++;                                   // un joueur est entré dans la salle pendant l'annonce (D-045)
                     continue;
                 }
 
+                // Coin sombre (nuit 5, lot 4) : la fumée d'encre converge d'abord, la goule paraît quand elle est la plus dense.
+                if (!p.ExitPlayed && p.Kind == _ghouls && p.Point.Effect == SpawnEffect.Ombre)
+                {
+                    GameVfxSettings fx = GameVfx.Settings;
+                    if (fx != null && fx.spawnShadow != null && fx.spawnShadowDelay > 0f)
+                    {
+                        SpawnExitVfx(fx.spawnShadow, p.Point);
+                        p.ExitPlayed = true;
+                        p.Marker = null;
+                        p.At = now + fx.spawnShadowDelay;
+                        _pending[i] = p;
+                        continue;
+                    }
+                }
+
+                _pending.RemoveAt(i);
                 Activate(p.Member, p.Point);
+                if (!p.ExitPlayed && p.Kind == _ghouls)
+                    PlayExit(p.Member, p.Point);
                 p.Kind.Owner[p.Member] = p.OwnerId;
                 Spawned?.Invoke(p.Point.transform.position, p.Kind.Type);
             }
+        }
+
+        /// <summary>
+        /// Effet de la DA à la sortie d'une goule (nuit 5, lot 4), une fois activée : trou d'ombre au sol (elle monte de spawnHoleDepth m
+        /// entre spawnHoleRise.x et .y s) ou grille ; le coin sombre est joué avant l'activation (UpdatePending).
+        /// </summary>
+        private static void PlayExit(GameObject m, SpawnPoint point)
+        {
+            GameVfxSettings fx = GameVfx.Settings;
+            if (fx == null || point == null)
+                return;
+            switch (point.Effect)
+            {
+                case SpawnEffect.Trou:
+                    if (fx.spawnHole == null)
+                        return;
+                    SpawnExitVfx(fx.spawnHole, point);
+                    var g = m.GetComponent<Ghoul>();
+                    if (g != null)
+                        g.Emerge(fx.spawnHoleDepth, fx.spawnHoleRise.x, fx.spawnHoleRise.y);
+                    break;
+                case SpawnEffect.Grille:
+                    if (fx.spawnGrate != null)
+                        GameVfx.Spawn(fx.spawnGrate, point.transform.position, point.transform.rotation, 1f, null, 4f);   // +Y du point : côté salle
+                    break;
+                case SpawnEffect.Ombre:
+                    if (fx.spawnShadow != null)
+                        SpawnExitVfx(fx.spawnShadow, point);             // sans délai (réglage à 0) : en même temps que la goule
+                    break;
+            }
+        }
+
+        /// <summary>Effet posé au sol sous le point (pivot au sol), tourné comme le point.</summary>
+        private static void SpawnExitVfx(GameObject prefab, SpawnPoint point)
+        {
+            Vector3 at = point.transform.position;
+            if (Physics.Raycast(at + Vector3.up * 0.5f, Vector3.down, out RaycastHit ground, 3f, ~0, QueryTriggerInteraction.Ignore))
+                at = ground.point;
+            GameVfx.Spawn(prefab, at, Quaternion.Euler(0f, point.transform.eulerAngles.y, 0f), 1f, null, 4f);   // filet : il se détruit seul vers 2,5 s
         }
 
         private static void Activate(GameObject m, SpawnPoint point)
