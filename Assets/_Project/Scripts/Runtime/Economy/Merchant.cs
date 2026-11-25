@@ -64,9 +64,9 @@ namespace ItHunts.Economy
             }
 
             _placedForSeed = seed;
-            // Offres à rangs (D-100) : une nouvelle, une montée, le soin ; tirées pour le premier joueur (ancien marchand, peu utilisé).
+            // Offres à rangs (point 3) : des montées de rang seulement, puis le soin ; tirées pour le premier joueur (ancien marchand).
             PlayerHealth first = PlayerHealth.All.Count > 0 ? PlayerHealth.All[0] : null;
-            var drawn = ArtifactMerchant.OffersFor(run, first);
+            var drawn = ArtifactMerchant.OffersFor(run, first, settings != null ? settings.merchantRankUpOffers : 2);
             float range = settings != null ? settings.orbInteractRange : 8f;
             int n = drawn.Count + 1;
             for (int i = 0; i < n; i++)
@@ -77,6 +77,8 @@ namespace ItHunts.Economy
                     ? OfferOrb.Create(transform, at, drawn[i].u, settings != null ? settings.RankPrice(drawn[i].to) : drawn[i].u.merchantPrice, 0f, 0, range, orbMaterial, drawn[i].from, drawn[i].to)
                     : OfferOrb.Create(transform, at, null, settings != null ? settings.healPrice : 35, settings != null ? settings.healAmount : 40f, 0, range, orbMaterial);
                 orb.Pricing = settings;
+                if (orb.Upgrade == null)
+                    orb.Kind = PriceKind.Soin;
                 orb.MenuOnly = true;
                 orb.TakenBy += (o, p) => _offers.Remove(o);
                 _offers.Add(orb);

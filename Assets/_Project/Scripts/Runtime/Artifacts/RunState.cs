@@ -36,6 +36,8 @@ namespace ItHunts.Artifacts
         private readonly Dictionary<int, UpgradeSlots> _slots = new Dictionary<int, UpgradeSlots>();
         private readonly Dictionary<(int, PriceKind), int> _purchases = new Dictionary<(int, PriceKind), int>();
         private readonly HashSet<(int, int)> _freeRankUps = new HashSet<(int, int)>();
+        /// <summary>Coffres ouverts d'affilée sans prendre d'amélioration du personnage, par joueur (pitié, point 3).</summary>
+        private readonly Dictionary<int, int> _dryChests = new Dictionary<int, int>();
         private int _draws;
 
         /// <summary>Âmes d'un joueur changées (identifiant, total, différence).</summary>
@@ -186,6 +188,130 @@ namespace ItHunts.Artifacts
         /// <summary>Tirage de count montées de rang parmi les améliorations possédées non Mythiques de ce joueur.</summary>
         public UpgradeDefinition[] DrawRankUpFor(int playerId, int count) => Pick(SlotsOf(playerId).RankUpCandidates(), count);
 
+        /// <summary>Comme ci-dessus, sans celles de exclude (cartes déjà posées chez le marchand).</summary>
+        public UpgradeDefinition[] DrawRankUpFor(int playerId, int count, ICollection<UpgradeDefinition> exclude)
+        {
+            List<UpgradeDefinition> candidates = SlotsOf(playerId).RankUpCandidates();
+            if (exclude != null)
+                candidates.RemoveAll(u => exclude.Contains(u));
+            return Pick(candidates, count);
+        }
+
+        /// <summary>Tirage à pile ou face (chance de 0 à 1) dans la suite aléatoire de la run (seed + numéro de tirage).</summary>
+        public bool Roll(float chance)
+        {
+            if (chance <= 0f)
+                return false;
+            if (chance >= 1f)
+                return true;
+            var rng = new System.Random(unchecked(Seed * 486187739 + _draws++ * 16777619 + 0x2C4A));
+            return rng.NextDouble() < chance;
+        }
+
+        // ---------- Coffres : choix, garantie des améliorations du personnage (point 3) ----------
+
+        /// <summary>Coffres ouverts d'affilée par ce joueur sans prendre d'amélioration de son personnage.</summary>
+        public int DryChests(int playerId) => _dryChests.TryGetValue(playerId, out int n) ? n : 0;
+
+        /// <summary>Un coffre vient d'être ouvert par ce joueur (compteur de pitié).</summary>
+        public void NoteChestOpened(int playerId) => _dryChests[playerId] = DryChests(playerId) + 1;
+
+        /// <summary>Améliorations du personnage possédées par ce joueur (passifs compris).</summary>
+        public int CharacterUpgradesOwned(int playerId)
+        {
+            int n = 0;
+            if (_slots.TryGetValue(playerId, out UpgradeSlots s))
+                foreach (UpgradeDefinition u in s.Owned)
+                    if (u != null && !u.Generic)
+                        n++;
+            return n;
+        }
+
+        /// <summary>
+        /// Garantie (pur) : moins de guarantee améliorations du personnage, et soit pityChests coffres d'affilée sans en prendre une,
+        /// soit plus assez d'emplacements libres pour atteindre la garantie autrement. Le prochain coffre n'offre alors que les siennes.
+        /// </summary>
+        public bool CharacterPityDue(int playerId, int guarantee, int pityChests)
+        {
+            int missing = guarantee - CharacterUpgradesOwned(playerId);
+            if (missing <= 0)
+                return false;
+            UpgradeSlots s = SlotsOf(playerId);
+            if (s.Full)
+                return false;
+            int free = UpgradeSlots.MaxSlots - s.Count;
+            return DryChests(playerId) >= Mathf.Max(1, pityChests) || free <= missing;
+        }
+
+        public bool CharacterPityDue(int playerId, EconomySettings settings) =>
+            settings != null && CharacterPityDue(playerId, settings.characterUpgradeGuarantee, settings.characterPityChests);
+
+        /// <summary>
+        /// Choix d'un coffre (point 3, pur) : count offres différentes ; chacune a characterChance d'être une amélioration du personnage
+        /// (sinon une commune) ; forceCharacter (garantie) : seulement celles du personnage, sans second passif ; rankUp : la dernière est
+        /// une montée de rang s'il y a de quoi monter ; emplacements pleins : rien que des montées. startRank : la première nouvelle
+        /// arrive à ce rang (coffre rare). Renvoie (amélioration, rang de départ ou -1, rang visé).
+        /// </summary>
+        public List<(UpgradeDefinition u, int from, int to)> DrawChest(int playerId, IEnumerable<UpgradeDefinition> visible, UpgradeCharacter character,
+            int count, float characterChance, bool forceCharacter, bool rankUp, int startRank = 0)
+        {
+            var r = new List<(UpgradeDefinition u, int from, int to)>();
+            if (count <= 0)
+                return r;
+            UpgradeSlots slots = SlotsOf(playerId);
+            var mine = new List<UpgradeDefinition>();
+            var common = new List<UpgradeDefinition>();
+            foreach (UpgradeDefinition u in UpgradeRules.NewCandidates(visible, character, slots))
+            {
+                if (u.Generic)
+                    common.Add(u);
+                else
+                    mine.Add(u);
+            }
+
+            if (forceCharacter && slots.Passive != null)
+            {
+                // Garantie : un passif en remplacerait un autre sans rien ajouter ; on le garde si c'est tout ce qui reste.
+                List<UpgradeDefinition> active = mine.FindAll(u => !u.isPassive);
+                if (active.Count > 0)
+                    mine = active;
+            }
+
+            // Garantie : toutes les cartes pour le personnage (une montée de rang offrirait une échappatoire).
+            int ups = rankUp && !forceCharacter && slots.RankUpCandidates().Count > 0 ? 1 : 0;
+            int newCount = Mathf.Max(0, count - ups);
+            int nMine = 0;
+            for (int i = 0; i < newCount; i++)
+                if (forceCharacter || Roll(characterChance))
+                    nMine++;
+            nMine = Mathf.Min(nMine, mine.Count);
+            int nCommon = Mathf.Min(newCount - nMine, common.Count);
+            if (nMine + nCommon < newCount)
+                nMine = Mathf.Min(mine.Count, newCount - nCommon);           // plus assez de communes : celles du personnage
+            var picked = new List<UpgradeDefinition>(Pick(mine, nMine));
+            picked.AddRange(Pick(common, nCommon));
+            if (picked.Count > 1)
+            {
+                int[] order = SoulMath.Draw(Seed, _draws++, picked.Count, picked.Count);   // l'ordre des cartes ne dit rien du tirage
+                var shuffled = new List<UpgradeDefinition>(picked.Count);
+                foreach (int i in order)
+                    shuffled.Add(picked[i]);
+                picked = shuffled;
+            }
+
+            for (int i = 0; i < picked.Count; i++)
+                r.Add((picked[i], -1, i == 0 ? Mathf.Clamp(startRank, 0, UpgradeDefinition.MaxRank) : 0));
+            int missingOffers = count - r.Count;
+            if (missingOffers > 0)
+                foreach (UpgradeDefinition u in Pick(slots.RankUpCandidates(), missingOffers))
+                {
+                    int rank = slots.RankOf(u);
+                    r.Add((u, rank, rank + 1));
+                }
+
+            return r;
+        }
+
         // ---------- Possédées et rangs ----------
 
         private UpgradeSlots SlotsOf(int playerId)
@@ -212,6 +338,8 @@ namespace ItHunts.Artifacts
             UpgradeGrant g = SlotsOf(playerId).Grant(upgrade, startRank);
             if (g.Ok)
             {
+                if (!upgrade.Generic && g.Kind != UpgradeGrantKind.Montee)
+                    _dryChests[playerId] = 0;                                    // pitié : une amélioration du personnage prise
                 NoteStats(upgrade, g.Rank);
                 UpgradesChanged?.Invoke(playerId);
             }
@@ -282,6 +410,8 @@ namespace ItHunts.Artifacts
 
             foreach (KeyValuePair<(int, PriceKind), int> kv in _purchases)
                 c.Purchases[kv.Key] = kv.Value;
+            foreach (KeyValuePair<int, int> kv in _dryChests)
+                c.DryChests[kv.Key] = kv.Value;
             return c;
         }
 
@@ -293,6 +423,9 @@ namespace ItHunts.Artifacts
             _slots.Clear();
             _purchases.Clear();
             _freeRankUps.Clear();
+            _dryChests.Clear();
+            foreach (KeyValuePair<int, int> kv in c.DryChests)
+                _dryChests[kv.Key] = kv.Value;
             foreach (KeyValuePair<int, int> kv in c.Souls)
                 _souls[kv.Key] = kv.Value;
             foreach (KeyValuePair<int, List<UpgradeDefinition>> kv in c.Owned)
@@ -334,6 +467,13 @@ namespace ItHunts.Artifacts
                 if (p != null)
                     newId[SlotOf(p)] = p.PlayerId;
             RunCarry.Remap(_carrySlots, newId, _souls, _slots, _purchases);
+            // Compteur de pitié : mêmes renommages (ancien identifiant -> emplacement -> nouvel identifiant).
+            var dry = new Dictionary<int, int>();
+            foreach (KeyValuePair<int, int> kv in _dryChests)
+                dry[_carrySlots.TryGetValue(kv.Key, out int slot) && newId.TryGetValue(slot, out int id) ? id : kv.Key] = kv.Value;
+            _dryChests.Clear();
+            foreach (KeyValuePair<int, int> kv in dry)
+                _dryChests[kv.Key] = kv.Value;
             _carrySlots = null;
         }
 
@@ -364,6 +504,7 @@ namespace ItHunts.Artifacts
             _slots.Clear();
             _purchases.Clear();
             _freeRankUps.Clear();
+            _dryChests.Clear();
             _draws = 0;
             Debug.Log($"Run : seed {Seed}");
         }
@@ -410,6 +551,7 @@ namespace ItHunts.Artifacts
             _slots.Clear();
             _purchases.Clear();
             _freeRankUps.Clear();
+            _dryChests.Clear();
             _draws = 0;
         }
     }
@@ -423,6 +565,8 @@ namespace ItHunts.Artifacts
         /// <summary>Rang de chaque amélioration possédée, par joueur (une amélioration sans rang : Bronze).</summary>
         public readonly Dictionary<int, Dictionary<UpgradeDefinition, int>> Ranks = new Dictionary<int, Dictionary<UpgradeDefinition, int>>();
         public readonly Dictionary<(int, PriceKind), int> Purchases = new Dictionary<(int, PriceKind), int>();
+        /// <summary>Compteur de pitié des améliorations du personnage (coffres d'affilée sans en prendre une), par joueur.</summary>
+        public readonly Dictionary<int, int> DryChests = new Dictionary<int, int>();
         /// <summary>Identifiant du joueur à la sortie → son emplacement (0, 1…) : les identifiants changent d'une scène à l'autre.</summary>
         public readonly Dictionary<int, int> Slots = new Dictionary<int, int>();
 

@@ -22,13 +22,15 @@ namespace ItHunts.Economy
         private static float Increase(EconomySettings settings, PlayerHealth p, PriceKind kind) =>
             (settings != null ? settings.IncreaseFor(kind) : 0f) * (p != null ? PlayerUpgrades.IncreaseScale(p.PlayerId, kind) : 1f);
 
+        private static float Cap(EconomySettings settings, PriceKind kind) => settings != null ? settings.CapFor(kind) : 0f;
+
         public static int For(EconomySettings settings, PlayerHealth p, PriceKind kind, int basePrice)
         {
             RunState run = RunState.Current;
             int price = Discounted(p, kind, basePrice);
             if (run == null || p == null)
                 return price;
-            return run.PriceFor(p.PlayerId, kind, price, Increase(settings, p, kind), settings != null ? settings.priceIncreaseCap : 0f);
+            return run.PriceFor(p.PlayerId, kind, price, Increase(settings, p, kind), Cap(settings, kind));
         }
 
         /// <summary>Paie le prix actuel (refus en rouge sinon) ; vrai si payé.</summary>
@@ -36,7 +38,7 @@ namespace ItHunts.Economy
         {
             RunState run = RunState.Current;
             return run != null && p != null && run.TryBuy(p.PlayerId, kind, Discounted(p, kind, basePrice), Increase(settings, p, kind),
-                settings != null ? settings.priceIncreaseCap : 0f);
+                Cap(settings, kind));
         }
     }
 }

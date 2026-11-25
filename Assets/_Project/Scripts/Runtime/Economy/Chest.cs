@@ -11,7 +11,8 @@ namespace ItHunts.Economy
     /// Coffre (D-043), **par joueur** : chaque joueur peut l'ouvrir une fois, en payant son prix (refus en rouge s'il manque des
     /// âmes ; prix monté à chaque achat selon les réglages), seulement avec E / Y. Ouvert pour un joueur : 3 orbes flottent
     /// au-dessus, visibles par lui seul, une par amélioration tirée avec la seed ; il en prend une (F ou E), les autres
-    /// disparaissent ; sans choix, elles restent 30 s. Les autres joueurs peuvent encore l'ouvrir pour eux ; chacun voit son état
+    /// disparaissent ; sans choix, elles restent 30 s. Point 3 : 3 choix (25 % d'amélioration du personnage chacun, garantie d'au
+    /// moins 4 par run), relance payante. Les autres joueurs peuvent encore l'ouvrir pour eux ; chacun voit son état
     /// (couvercle et texte : « ouvert » pour lui ou son prix). Prix 0 : coffre gratuit (salle verrouillée).
     /// </summary>
     public sealed class Chest : MonoBehaviour, IInteractable
@@ -31,6 +32,12 @@ namespace ItHunts.Economy
             public readonly List<OfferOrb> Choices = new List<OfferOrb>();
             public float At;
             public bool Chosen;
+            // Tirage (gardé pour la relance) : nombre de choix, montée possible, rang de départ, garantie du personnage.
+            public int Count;
+            public bool RankUps;
+            public int StartRank;
+            public bool ForceCharacter;
+            public int Rerolls;
         }
 
         private readonly Dictionary<int, Opening> _openings = new Dictionary<int, Opening>();
@@ -123,9 +130,40 @@ namespace ItHunts.Economy
         {
             Opening pending = Pending(p);
             if (pending != null)
-                ShopMenu.Show(p, ShopMenu.Kind.Coffre, rare ? "Coffre rare" : "Coffre", pending.Choices);   // menu refermé sans choisir
+                ShowMenu(p, pending);                                    // menu refermé sans choisir
             else
                 TryOpen(p);
+        }
+
+        /// <summary>Menu du coffre : ses choix (relus après une relance) et la relance (prix de EconomySettings).</summary>
+        private void ShowMenu(PlayerHealth p, Opening o) =>
+            ShopMenu.Show(p, ShopMenu.Kind.Coffre, rare ? "Coffre rare" : "Coffre", () => o.Choices, () => Reroll(p), () => RerollPriceFor(p));
+
+        /// <summary>Prix de la prochaine relance pour ce joueur (-1 : pas de relance, ou pas de choix en attente).</summary>
+        public int RerollPriceFor(PlayerHealth p)
+        {
+            Opening o = Pending(p);
+            if (o == null || settings == null || settings.chestRerollPrice < 0)
+                return -1;
+            return settings.chestRerollPrice + settings.chestRerollIncrease * o.Rerolls;
+        }
+
+        /// <summary>
+        /// Relance (point 3) : paie le prix (refus en rouge sinon) et remplace les choix en attente par de nouveaux, tirés avec les mêmes
+        /// règles (nombre, montée, garantie). Vrai si relancé.
+        /// </summary>
+        public bool Reroll(PlayerHealth p)
+        {
+            Opening o = Pending(p);
+            RunState run = RunState.Current;
+            int price = RerollPriceFor(p);
+            if (o == null || run == null || price < 0 || !run.TrySpend(p.PlayerId, price))
+                return false;
+            o.Rerolls++;
+            DestroyChoices(o, null);
+            o.At = Time.time;
+            Fill(o, p, run);
+            return true;
         }
 
         /// <summary>Ouverture de ce joueur dont le choix n'est pas encore fait (menu fermé sans choisir), sinon null.</summary>
@@ -140,8 +178,6 @@ namespace ItHunts.Economy
             RunState run = RunState.Current;
             if (run == null || !Prices.TryBuy(settings, p, PriceKind.Coffre, Price))
                 return false;
-            var opening = new Opening { At = Time.time };
-            _openings[p.PlayerId] = opening;
             int count = (settings != null ? settings.choiceCount : 3) + PlayerUpgrades.ExtraChestChoices(p.PlayerId);
             if (rare && settings != null)
                 count += settings.rareExtraChoices;                        // coffre rare (D-071) : un choix en plus
@@ -149,7 +185,21 @@ namespace ItHunts.Economy
             var up = PlayerUpgrades.OfId(p.PlayerId);
             bool rankUps = act >= (settings != null ? settings.chestRankUpFromAct : 1) || (up != null && up.AtLeast(UpgradeKind.OeilDuCollectionneur, 2));
             int startRank = rare || (up != null && up.Mythic(UpgradeKind.OeilDuCollectionneur)) ? 1 : 0;   // coffre rare / Collectionneur Mythique : Argent direct
-            var drawn = ChestOffers(run, p, count, rankUps, startRank);
+            // Garantie (point 3) : décidée avant de compter ce coffre ; la relance garde la même règle.
+            bool force = run.CharacterPityDue(p.PlayerId, settings);
+            run.NoteChestOpened(p.PlayerId);
+            var opening = new Opening { At = Time.time, Count = count, RankUps = rankUps, StartRank = startRank, ForceCharacter = force };
+            _openings[p.PlayerId] = opening;
+            Fill(opening, p, run);
+            ShowMenu(p, opening);
+            return true;
+        }
+
+        /// <summary>Tire les choix de cette ouverture (règles gardées dans l'ouverture) et pose leurs orbes (vues par le joueur seul).</summary>
+        private void Fill(Opening opening, PlayerHealth p, RunState run)
+        {
+            float chance = settings != null ? settings.characterUpgradeChance : 0.25f;
+            var drawn = ChestOffers(run, p, opening.Count, opening.RankUps, opening.StartRank, chance, opening.ForceCharacter);
             for (int i = 0; i < drawn.Count; i++)
             {
                 // Espacées de 2.4 m et en quinconce : les noms (deux lignes) ne se chevauchent pas, lisibles à 10 m.
@@ -161,33 +211,21 @@ namespace ItHunts.Economy
                 orb.MenuOnly = true;                                   // choix dans le menu du coffre (point 4, 2026-11-21)
                 opening.Choices.Add(orb);
             }
-
-            ShopMenu.Show(p, ShopMenu.Kind.Coffre, rare ? "Coffre rare" : "Coffre", opening.Choices);
-            return true;
         }
 
         /// <summary>
-        /// Choix d'un coffre (D-100, pur) : count offres, au moins une nouvelle ; une montée de rang possible (dès l'acte II, ou avec
-        /// Œil du collectionneur Or) ; emplacements pleins : montées seulement. startRank : la première nouvelle arrive directement
-        /// à ce rang (coffre rare, Collectionneur Mythique). Renvoie (amélioration, rang de départ, rang visé).
+        /// Choix d'un coffre (D-100, point 3, pur) : count offres ; chacune a characterChance d'être une amélioration du personnage du
+        /// joueur (sinon une commune) ; forceCharacter (garantie) : seulement les siennes ; une montée de rang possible (dès l'acte II,
+        /// ou avec Œil du collectionneur Or) ; emplacements pleins : montées seulement. startRank : la première nouvelle arrive
+        /// directement à ce rang (coffre rare, Collectionneur Mythique). Renvoie (amélioration, rang de départ, rang visé).
         /// </summary>
-        public static List<(UpgradeDefinition u, int from, int to)> ChestOffers(RunState run, PlayerHealth p, int count, bool rankUps, int startRank = 0)
+        public static List<(UpgradeDefinition u, int from, int to)> ChestOffers(RunState run, PlayerHealth p, int count, bool rankUps, int startRank = 0,
+            float characterChance = 0.25f, bool forceCharacter = false)
         {
-            var r = new List<(UpgradeDefinition, int, int)>();
             if (run == null || p == null || count <= 0)
-                return r;
-            int ups = rankUps ? 1 : 0;
-            UpgradeDefinition[] news = run.DrawNewFor(p, count - ups);
-            UpgradeDefinition[] raised = ups > 0 || news.Length < count ? run.DrawRankUpFor(p.PlayerId, count - news.Length) : new UpgradeDefinition[0];
-            for (int i = 0; i < news.Length; i++)
-                r.Add((news[i], -1, i == 0 ? Mathf.Clamp(startRank, 0, UpgradeDefinition.MaxRank) : 0));
-            foreach (UpgradeDefinition u in raised)
-            {
-                int rank = run.RankOf(p.PlayerId, u);
-                r.Add((u, rank, rank + 1));
-            }
-
-            return r;
+                return new List<(UpgradeDefinition u, int from, int to)>();
+            return run.DrawChest(p.PlayerId, run.VisibleUpgrades(p), RunState.CharacterOfPlayer(p), count, characterChance, forceCharacter, rankUps,
+                startRank);
         }
 
         private static void DestroyChoices(Opening o, OfferOrb keep)

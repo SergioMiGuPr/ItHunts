@@ -567,7 +567,7 @@ namespace ItHunts.Economy
                 return 1f;
             return kind switch
             {
-                PriceKind.Marchand => 1f - u.V(UpgradeKind.Marchandage),
+                PriceKind.Marchand or PriceKind.Soin => 1f - u.V(UpgradeKind.Marchandage),
                 PriceKind.Porte => 1f - u.V2(UpgradeKind.OeilDuCollectionneur),
                 _ => 1f,
             };

@@ -358,32 +358,128 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Marchand_UneNouvelle_UneMonteeDeRang_EtLeSoin()
+        public void Marchand_MonteesDeRangSeulement_EtLeSoin()
+        {
+            // Point 3 : le marchand ne vend que des montées de rang des améliorations possédées, plus le soin.
+            RunState run = Run();
+            PlayerHealth p = Player(Vector3.zero);
+            ArtifactMerchant m = MakeMerchant(out EconomySettings eco);
+            // Rien de possédé : le soin seulement.
+            m.Stock(p.PlayerId);
+            var offers = m.OffersFor(p.PlayerId);
+            Assert.That(offers.Count, Is.EqualTo(1));
+            Assert.That(offers[0].Upgrade, Is.Null);
+            Assert.That(offers[0].Heal, Is.EqualTo(40f));
+            // Deux améliorations possédées : leurs deux montées vers Argent (prix Argent) + le soin.
+            var pool = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_Default.asset");
+            run.Grant(p.PlayerId, pool.upgrades[0]);
+            run.Grant(p.PlayerId, pool.upgrades[1]);
+            m.Stock(p.PlayerId);
+            offers = m.OffersFor(p.PlayerId);
+            Assert.That(eco.merchantRankUpOffers, Is.EqualTo(2), "2 montées + le soin : les 3 cartes du panneau");
+            Assert.That(offers.Count, Is.EqualTo(3));
+            Assert.That(offers.Take(2).All(o => o.IsRankUp && o.FromRank == 0 && o.TargetRank == 1 && o.Price == eco.RankPrice(1)), Is.True,
+                "montées vers Argent");
+            Assert.That(offers.Take(2).Select(o => o.Upgrade), Is.EquivalentTo(new[] { pool.upgrades[0], pool.upgrades[1] }));
+            Assert.That(offers.Last().Upgrade, Is.Null, "le soin au bout");
+            Assert.That(offers.All(o => o.RestrictedTo == p.PlayerId), Is.True, "offres de ce joueur seulement");
+        }
+
+        private ArtifactMerchant MakeMerchant(out EconomySettings eco)
+        {
+            var m = Track(new GameObject("Marchand (test)")).AddComponent<ArtifactMerchant>();
+            var so = new SerializedObject(m);
+            eco = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
+            so.FindProperty("settings").objectReferenceValue = eco;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return m;
+        }
+
+        [Test]
+        public void Marchand_ApresUnAchat_LaCarteMonteAuRangSuivant()
         {
             RunState run = Run();
             PlayerHealth p = Player(Vector3.zero);
-            var go = Track(new GameObject("Marchand (test)"));
-            var m = go.AddComponent<ArtifactMerchant>();
-            var so = new SerializedObject(m);
+            run.AddSouls(p.PlayerId, 50000);
+            ArtifactMerchant m = MakeMerchant(out _);
+            var pool = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_Default.asset");
+            run.Grant(p.PlayerId, pool.upgrades[3]);
+            run.Grant(p.PlayerId, pool.upgrades[4]);
+            m.Stock(p.PlayerId);
+            UpgradeDefinition bought = m.OffersFor(p.PlayerId)[0].Upgrade;
+            UpgradeDefinition other = m.OffersFor(p.PlayerId)[1].Upgrade;
+            for (int rank = 1; rank <= UpgradeDefinition.MaxRank; rank++)
+            {
+                OfferOrb card = m.OffersFor(p.PlayerId)[0];
+                Assert.That(card.Upgrade, Is.SameAs(bought), "même carte, même place");
+                Assert.That(card.FromRank, Is.EqualTo(rank - 1));
+                Assert.That(card.TargetRank, Is.EqualTo(rank), UpgradeDefinition.RankName(rank));
+                Assert.That(card.Title, Does.Contain(UpgradeDefinition.RankName(rank - 1) + " → " + UpgradeDefinition.RankName(rank)));
+                Assert.That(card.TakeFromMenu(p), Is.True);
+                Assert.That(run.RankOf(p.PlayerId, bought), Is.EqualTo(rank), "rang monté");
+            }
+
+            var after = m.OffersFor(p.PlayerId);
+            Assert.That(after.Any(o => o.Upgrade == bought), Is.False, "Mythique : plus rien à monter, la carte s'en va");
+            Assert.That(after.Count(o => o.Upgrade != null), Is.EqualTo(1), "l'autre montée reste");
+            Assert.That(after[0].Upgrade, Is.SameAs(other));
+        }
+
+        [Test]
+        public void Marchand_SoinIllimite_PrixCroissantModere()
+        {
+            RunState run = Run();
+            PlayerHealth p = Player(Vector3.zero);
+            run.AddSouls(p.PlayerId, 10000);
+            ArtifactMerchant m = MakeMerchant(out EconomySettings eco);
+            m.Stock(p.PlayerId);
+            var prices = new List<int>();
+            for (int i = 0; i < 12; i++)
+            {
+                OfferOrb heal = m.OffersFor(p.PlayerId).Last();
+                Assert.That(heal.Upgrade, Is.Null, "le soin est toujours là");
+                prices.Add(heal.PriceFor(p));
+                Assert.That(heal.TakeFromMenu(p), Is.True, "soin " + (i + 1));
+            }
+
+            Assert.That(prices[0], Is.EqualTo(eco.healPrice));
+            for (int i = 1; i < prices.Count; i++)
+                Assert.That(prices[i], Is.GreaterThanOrEqualTo(prices[i - 1]), "jamais moins cher");
+            Assert.That(prices[1], Is.GreaterThan(prices[0]), "plus cher dès le 2e");
+            Assert.That(prices[1] - prices[0], Is.LessThanOrEqualTo(Mathf.CeilToInt(eco.healPrice * 0.3f)), "hausse modérée");
+            Assert.That(prices.Last(), Is.LessThanOrEqualTo(Mathf.RoundToInt(eco.healPrice * Mathf.Max(1f, eco.healPriceCap))), "plafonnée");
+            Assert.That(run.Purchases(p.PlayerId, PriceKind.Marchand), Is.EqualTo(0), "les soins ne renchérissent pas les montées de rang");
+        }
+
+        [Test]
+        public void Coffre_Relance_TroisNouvellesOffres_Payante()
+        {
+            RunState run = Run();
+            PlayerHealth a = Player(Vector3.zero);
+            run.AddSouls(a.PlayerId, 100);
             var eco = AssetDatabase.LoadAssetAtPath<EconomySettings>("Assets/_Project/Settings/Economy_Default.asset");
-            so.FindProperty("settings").objectReferenceValue = eco;
-            so.ApplyModifiedPropertiesWithoutUndo();
-            // Rien de possédé : deux nouvelles (Bronze, prix 60) + le soin.
-            m.Stock(p.PlayerId);
-            var offers = m.OffersFor(p.PlayerId);
-            Assert.That(offers.Count, Is.EqualTo(3));
-            Assert.That(offers.Take(2).All(o => o.Upgrade != null && o.Price == eco.RankPrice(0)), Is.True, "deux nouvelles au prix Bronze");
-            Assert.That(offers[2].Upgrade, Is.Null);
-            Assert.That(offers[2].Heal, Is.EqualTo(40f));
-            // Une amélioration possédée : une nouvelle + sa montée vers Argent (prix Argent).
-            UpgradeDefinition owned = offers[0].Upgrade;
-            run.Grant(p.PlayerId, owned);
-            m.Stock(p.PlayerId);
-            offers = m.OffersFor(p.PlayerId);
-            Assert.That(offers.Count, Is.EqualTo(3));
-            Assert.That(offers.Any(o => o.Upgrade == owned && o.Price == eco.RankPrice(1)), Is.True, "montée vers Argent");
-            Assert.That(offers.Any(o => o.Upgrade != null && o.Upgrade != owned), Is.True, "une nouvelle");
-            Assert.That(offers.All(o => o.RestrictedTo == p.PlayerId), Is.True, "offres de ce joueur seulement");
+            Assert.That(eco.chestRerollPrice, Is.EqualTo(25), "25 âmes par défaut");
+            Chest chest = MakeChest(-1);
+            Assert.That(chest.TryOpen(a), Is.True);
+            ShopMenu menu = ShopMenu.Of(a);
+            Assert.That(menu.CanReroll, Is.True);
+            Assert.That(menu.RerollIndex, Is.EqualTo(menu.Offers.Count), "Relancer juste après les offres");
+            Assert.That(menu.Menu.Items.Last().Label, Is.EqualTo("Fermer"));
+            int price = menu.RerollPrice;
+            Assert.That(price, Is.EqualTo(eco.chestRerollPrice));
+            var before = chest.ChoicesFor(a.PlayerId).ToList();
+            int souls = run.Souls(a.PlayerId);
+            Assert.That(menu.Reroll(), Is.True);
+            Assert.That(run.Souls(a.PlayerId), Is.EqualTo(souls - price), "payée");
+            Assert.That(menu.Offers.Count, Is.EqualTo(3), "trois nouvelles offres");
+            Assert.That(menu.Offers.Any(o => before.Contains(o)), Is.False, "les anciennes orbes sont parties");
+            Assert.That(chest.ChoicesFor(a.PlayerId).Count, Is.EqualTo(3));
+            run.TrySpend(a.PlayerId, run.Souls(a.PlayerId));
+            var kept = menu.Offers.ToList();
+            Assert.That(menu.Reroll(), Is.False, "plus d'âmes : refus");
+            Assert.That(menu.Offers, Is.EqualTo(kept), "rien ne change");
+            Assert.That(menu.Buy(0), Is.True, "on choisit toujours une offre");
+            Assert.That(chest.ChosenBy(a.PlayerId), Is.True);
         }
 
         [Test]

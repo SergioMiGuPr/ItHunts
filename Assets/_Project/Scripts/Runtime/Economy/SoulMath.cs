@@ -9,7 +9,9 @@ namespace ItHunts.Economy
     {
         Coffre,
         Marchand,
-        Porte
+        Porte,
+        /// <summary>Soin du marchand (point 3) : sa propre hausse, plus forte et plafonnée plus haut.</summary>
+        Soin
     }
 
     /// <summary>Calculs de l'économie (D-043), purs pour les tests : âmes à la mort, prix, tirages.</summary>
