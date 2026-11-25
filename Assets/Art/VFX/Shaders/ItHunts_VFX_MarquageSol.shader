@@ -1,3 +1,6 @@
+// Nuit 5, lot 4 : plus aucune zone rouge. Le danger se lit à l'animation ; le marquage n'est plus qu'un indice sombre :
+// une flaque d'ombre (le sol s'assombrit) cernée d'un fin trait d'encre fumée, qui prend un ton d'os pâle à l'impact.
+// Couleur de l'éclair et opacité du bord réglables (_CouleurEclair, _OpaciteBord).
 // Marquage au sol des attaques du boss et des apparitions (nuit 4, lot 7). Sobre et lisible, à la manière des jeux de boss
 // exigeants : bord net rouge sang éteint d'épaisseur constante EN MÈTRES (12 cm, au moins 1,5 px à l'écran), remplissage
 // rouge sang sombre et translucide (le sol rougit et s'assombrit, il n'est jamais couvert d'une plaque claire), zone déjà
@@ -21,11 +24,13 @@ Shader "ItHunts/VFX/MarquageSol"
         _RayonInterieur ("Anneau : rayon intérieur (0..1)", Range(0, 0.95)) = 0.55
         _BordM ("Épaisseur du bord (m)", Range(0.02, 0.5)) = 0.12
         _FrontM ("Largeur du dégradé du front (m)", Range(0.1, 4)) = 1.2
-        _CouleurBord ("Bord", Color) = (0.62, 0.09, 0.07, 1)
-        _CouleurBordChaud ("Bord à l'impact", Color) = (1.0, 0.72, 0.48, 1)
-        _CouleurFond ("Remplissage : zone à venir", Color) = (0.07, 0.01, 0.012, 1)
-        _CouleurRempli ("Remplissage : zone remplie", Color) = (0.24, 0.035, 0.03, 1)
-        _OpaciteFond ("Opacité (à venir / remplie)", Vector) = (0.38, 0.6, 0, 0)
+        _CouleurBord ("Bord", Color) = (0.24, 0.22, 0.2, 1)
+        _CouleurBordChaud ("Bord à l'impact", Color) = (0.42, 0.37, 0.31, 1)
+        _CouleurFond ("Remplissage : zone à venir", Color) = (0.008, 0.007, 0.008, 1)
+        _CouleurRempli ("Remplissage : zone remplie", Color) = (0.016, 0.014, 0.015, 1)
+        _CouleurEclair ("Remplissage à l'impact", Color) = (0.05, 0.045, 0.042, 1)
+        _OpaciteFond ("Opacité (à venir / remplie)", Vector) = (0.26, 0.42, 0, 0)
+        _OpaciteBord ("Opacité du bord", Range(0, 1)) = 0.75
     }
     SubShader
     {
@@ -45,7 +50,8 @@ Shader "ItHunts/VFX/MarquageSol"
 
             CBUFFER_START(UnityPerMaterial)
             float _Forme, _Progression, _Intensite, _Flash, _Fondu, _Pulsation, _DemiAngle, _RayonInterieur, _BordM, _FrontM;
-            float4 _CouleurBord, _CouleurBordChaud, _CouleurFond, _CouleurRempli, _OpaciteFond;
+            float4 _CouleurBord, _CouleurBordChaud, _CouleurFond, _CouleurRempli, _CouleurEclair, _OpaciteFond;
+            float _OpaciteBord;
             CBUFFER_END
 
             struct A { float4 pos : POSITION; float3 n : NORMAL; };
@@ -123,9 +129,9 @@ Shader "ItHunts/VFX/MarquageSol"
                 float aFond = lerp(_OpaciteFond.x, _OpaciteFond.y, rempli) * (1 + 0.2 * monte + bat);
                 float3 cBord = lerp(_CouleurBord.rgb * (0.8 + 0.5 * monte), _CouleurBordChaud.rgb, _Flash);
                 float3 col = lerp(fond, cBord, bord);
-                float a = lerp(aFond, 0.9 + 0.1 * monte, bord);
-                // éclair : le bord devient chaud, le remplissage rougeoie (jamais une plaque claire)
-                col = lerp(col, float3(0.42, 0.11, 0.05), _Flash * 0.5 * (1 - bord));
+                float a = lerp(aFond, _OpaciteBord * (0.85 + 0.15 * monte + 0.3 * _Flash), bord);
+                // éclair : le bord prend le ton d'os, le remplissage reste une ombre (jamais une plaque claire ni rouge)
+                col = lerp(col, _CouleurEclair.rgb, _Flash * 0.5 * (1 - bord));
                 return half4(col, saturate(a * dedans * _Fondu));
             }
             ENDHLSL

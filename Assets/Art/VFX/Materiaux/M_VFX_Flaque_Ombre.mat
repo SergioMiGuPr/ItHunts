@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_VFX_Flaque_Ombre
+  m_Shader: {fileID: 4800000, guid: 7d3be1caccea98c4c82cc5971682ad90, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _BordM: 0.12
+    - _DemiAngle: 35
+    - _Flash: 0
+    - _Fondu: 1
+    - _Forme: 0
+    - _FrontM: 0.6
+    - _Intensite: 0
+    - _OpaciteBord: 0
+    - _Progression: 1
+    - _Pulsation: 0
+    - _RayonInterieur: 0.55
+    m_Colors:
+    - _CouleurBord: {r: 0.23999995, g: 0.21999997, b: 0.19999996, a: 1}
+    - _CouleurBordChaud: {r: 0.41999996, g: 0.36999997, b: 0.30999997, a: 1}
+    - _CouleurEclair: {r: 0.049999982, g: 0.044999972, b: 0.04199999, a: 1}
+    - _CouleurFond: {r: 0.004, g: 0.004, b: 0.005, a: 1}
+    - _CouleurRempli: {r: 0.004, g: 0.004, b: 0.005, a: 1}
+    - _OpaciteFond: {r: 0.5, g: 0.5, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
