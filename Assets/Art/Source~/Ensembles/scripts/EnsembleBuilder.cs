@@ -336,10 +336,18 @@ public static class EnsembleBuilder
             .Where(q => Path.GetFileNameWithoutExtension(q) == mat).Select(AssetDatabase.LoadAssetAtPath<Material>).FirstOrDefault();
     }
 
+    // shaders compilés tout de suite pendant les captures (réglage de session, jamais écrit dans ProjectSettings) ; toujours rétabli
     public static string Banc(string noms, string dossier, double ambd)
     {
+        bool asyncAvant = UnityEditor.ShaderUtil.allowAsyncCompilation;
+        UnityEditor.ShaderUtil.allowAsyncCompilation = false;
+        try { return BancCorps(noms, dossier, ambd); }
+        finally { UnityEditor.ShaderUtil.allowAsyncCompilation = asyncAvant; }
+    }
+
+    static string BancCorps(string noms, string dossier, double ambd)
+    {
         float ambx = (float)ambd; Directory.CreateDirectory(dossier);
-        bool asyncAvant = EditorSettings.asyncShaderCompilation; EditorSettings.asyncShaderCompilation = false;
         var sb = new StringBuilder();
         foreach (var acte in new[] { "Caves", "Chateau", "Jardin" })
         {
@@ -389,7 +397,6 @@ public static class EnsembleBuilder
                 sb.Append(nom).Append(' ');
             }
         }
-        EditorSettings.asyncShaderCompilation = asyncAvant;
         return "ok " + sb;
     }
 }

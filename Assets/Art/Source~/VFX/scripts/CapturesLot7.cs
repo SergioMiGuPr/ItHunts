@@ -114,7 +114,16 @@ public static class CapturesLot7
 
     static readonly BindingFlags NP = BindingFlags.NonPublic | BindingFlags.Instance;
 
+    // shaders compilés tout de suite pendant les captures (réglage de session, jamais écrit dans ProjectSettings) ; toujours rétabli
     public static async Task<string> Shoot(string dossier)
+    {
+        bool asyncAvant = UnityEditor.ShaderUtil.allowAsyncCompilation;
+        UnityEditor.ShaderUtil.allowAsyncCompilation = false;
+        try { return await ShootCorps(dossier); }
+        finally { UnityEditor.ShaderUtil.allowAsyncCompilation = asyncAvant; }
+    }
+
+    static async Task<string> ShootCorps(string dossier)
     {
         _log.Clear(); _corps = null;
         float t0 = Time.realtimeSinceStartup;

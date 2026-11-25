@@ -395,11 +395,18 @@ public static class MateriauxBuilder
     }
 
     // vues : "panneaux" (une par panneau, rangée 1 et 2), "voisins", "decals", "trim"
+    // shaders compilés tout de suite pendant les captures (réglage de session, jamais écrit dans ProjectSettings) ; toujours rétabli
     public static string Capture(string dossier)
     {
+        bool asyncAvant = UnityEditor.ShaderUtil.allowAsyncCompilation;
+        UnityEditor.ShaderUtil.allowAsyncCompilation = false;
+        try { return CaptureCorps(dossier); }
+        finally { UnityEditor.ShaderUtil.allowAsyncCompilation = asyncAvant; }
+    }
+
+    static string CaptureCorps(string dossier)
+    {
         EditorSceneManager.OpenScene(SCENE, OpenSceneMode.Single);
-        bool asyncAvant = EditorSettings.asyncShaderCompilation;
-        EditorSettings.asyncShaderCompilation = false;   // sinon la première image d'une variante sort en blanc
         var cam = Object.FindFirstObjectByType<Camera>();
         var sb = new StringBuilder();
         foreach (var p in GameObject.Find("Vitrine").GetComponentsInChildren<Transform>())
@@ -419,7 +426,6 @@ public static class MateriauxBuilder
         var t = GameObject.Find("Trim").transform;
         cam.transform.position = t.position + new Vector3(0, 3.4f, -7.5f); cam.transform.rotation = Quaternion.Euler(-2, 0, 0);
         Shot(cam, Path.Combine(dossier, "_Trim.jpg"), 1000, 760);
-        EditorSettings.asyncShaderCompilation = asyncAvant;
         return "ok " + sb;
     }
 }

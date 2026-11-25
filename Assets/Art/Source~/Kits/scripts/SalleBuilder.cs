@@ -155,11 +155,18 @@ public static class SalleBuilder
         Object.DestroyImmediate(tex); rt.Release(); Object.DestroyImmediate(rt);
     }
 
+    // shaders compilés tout de suite pendant les captures (réglage de session, jamais écrit dans ProjectSettings) ; toujours rétabli
     public static string Capture(string plan, string scene, string dossier)
     {
+        bool asyncAvant = UnityEditor.ShaderUtil.allowAsyncCompilation;
+        UnityEditor.ShaderUtil.allowAsyncCompilation = false;
+        try { return CaptureCorps(plan, scene, dossier); }
+        finally { UnityEditor.ShaderUtil.allowAsyncCompilation = asyncAvant; }
+    }
+
+    static string CaptureCorps(string plan, string scene, string dossier)
+    {
         EditorSceneManager.OpenScene(scene, OpenSceneMode.Single);
-        bool asyncAvant = EditorSettings.asyncShaderCompilation;
-        EditorSettings.asyncShaderCompilation = false;
         var cam = Object.FindFirstObjectByType<Camera>();
         foreach (var ps in Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None)) ps.Simulate(3f, true, true);
         var sb = new StringBuilder();
@@ -175,7 +182,6 @@ public static class SalleBuilder
             Shot(cam, Path.Combine(dossier, $"{nom}_{t[1]}.jpg"), 1280, 720);
             sb.Append($"{nom}_{t[1]} ");
         }
-        EditorSettings.asyncShaderCompilation = asyncAvant;
         return "ok " + sb;
     }
 }
