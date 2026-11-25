@@ -781,7 +781,10 @@ namespace ItHunts.Debugging
             Vector3 target = _corners[Mathf.Min(_corner, _corners.Count - 1)];
             Vector3 to = target - pos;
             float flat = Flat(to);
-            float distGoal = Vector3.Distance(pos, _goal);
+            // Progrès : longueur du chemin qui reste (pas la distance à vol d'oiseau : un chemin peut s'éloigner du but).
+            float distGoal = Vector3.Distance(pos, target);
+            for (int i = Mathf.Min(_corner, _corners.Count - 1); i + 1 < _corners.Count; i++)
+                distGoal += Vector3.Distance(_corners[i], _corners[i + 1]);
             if (distGoal < _bestDistance - 0.5f)
             {
                 _bestDistance = distGoal;
@@ -809,6 +812,13 @@ namespace ItHunts.Debugging
                 f.JumpPress = (Time.frameCount % 20) == 0;
             if (noProgress > 2.5f && (Time.frameCount % 45) == 0)
                 f.DashPress = true;
+            // Coincé contre un coin ou un meuble : comme un joueur, il recule en biais une seconde, puis repart.
+            if (noProgress > 5f && (int)noProgress % 2 == 1)
+            {
+                float side = (int)noProgress % 4 == 1 ? 130f : -130f;
+                Vector3 back = Quaternion.Euler(0f, side, 0f) * dir;
+                f.Move = new Vector2(Vector3.Dot(back, right), Vector3.Dot(back, fwd));
+            }
             if (noProgress > 4f && Time.time > _attractHoldUntil && _tractionTries < 3)
             {
                 _tractionTries++;

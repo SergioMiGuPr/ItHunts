@@ -61,7 +61,7 @@ namespace ItHunts.Level.Acts
             // Sous les rampes : sol au niveau bas (la rampe le recouvre).
             foreach (ActDoor d in Plan.Doors.Where(d => d.RampRoom == r.Id))
                 foreach (RectInt rc in Rects(new HashSet<Vector2Int>(d.RampCells)))
-                    Solid(root, "Sol (rampe)", RectCenter(rc, r.Floor - FloorDepth * 0.5f), RectSize(rc, FloorDepth), 0f, KitBuild.Kind.Bloc, null);
+                    Solid(root, "Sol (rampe)", RectCenter(rc, r.Floor - FloorDepth * 0.5f), RectSize(rc, FloorDepth), 0f, KitBuild.Kind.Bloc, null, walkable: false);   // sous la rampe pleine : pas de NavMesh
             foreach (RectInt rc in Rects(terrace))
                 Solid(root, "Terrasse", RectCenter(rc, r.Floor + (r.TerraceHeight - FloorDepth) * 0.5f), RectSize(rc, r.TerraceHeight + FloorDepth), 0f,
                     KitBuild.Kind.Bloc, null);

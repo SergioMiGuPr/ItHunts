@@ -142,6 +142,8 @@ namespace ItHunts.Level.Acts
             foreach (ActRoom r in Rooms)
                 PlanInterior(r);
             foreach (ActRoom r in Rooms)
+                FillPockets(r);
+            foreach (ActRoom r in Rooms)
                 if (!r.Special && r.Doors.Count < 2)
                     Failures.Add($"salle {r.Name} : impasse ({r.Doors.Count} sortie)");
         }
@@ -243,6 +245,42 @@ namespace ItHunts.Level.Acts
             d.RampRoom = -1;
             d.RampCells.Clear();
             return true;
+        }
+
+        /// <summary>
+        /// Poches de sol fermées (D-117) : un bout de sol de moins de 60 cases coupé du reste de la salle par une rampe (sans porte, hors
+        /// galerie) devient de la roche : on n'y tombe plus pour y rester coincé.
+        /// </summary>
+        private void FillPockets(ActRoom r)
+        {
+            if (r.Special)
+                return;
+            bool Open(Vector2Int c) => r.Use.TryGetValue(c, out CellUse u) && u != CellUse.Rampe;
+            var seen = new HashSet<Vector2Int>();
+            foreach (Vector2Int start in r.Cells.ToList())
+            {
+                if (!Open(start) || !seen.Add(start))
+                    continue;
+                var comp = new List<Vector2Int> { start };
+                for (int i = 0; i < comp.Count; i++)
+                    foreach (Vector2Int d in Dirs)
+                        if (Open(comp[i] + d) && seen.Add(comp[i] + d))
+                            comp.Add(comp[i] + d);
+                if (comp.Count >= 60 || comp.Count == r.Cells.Count)
+                    continue;
+                var set = new HashSet<Vector2Int>(comp);
+                if (r.Doors.Any(di => set.Contains(DoorCellInside(Doors[di], r.Id))) || comp.Any(c => r.Use[c] == CellUse.Terrasse))
+                    continue;
+                // Le bas d'une rampe y débouche peut-être : gardé si une case touche un passage.
+                if (comp.Any(c => r.Use[c] == CellUse.Passage))
+                    continue;
+                foreach (Vector2Int c in comp)
+                {
+                    Owner[c.x, c.y] = -1;
+                    r.Cells.Remove(c);
+                    r.Use.Remove(c);
+                }
+            }
         }
 
         /// <summary>Cases laissées libres devant une galerie (12 m).</summary>

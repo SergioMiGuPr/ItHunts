@@ -192,7 +192,7 @@ Cave_Candelabre 3.4 2
 
 # ---- Mine, gouffre, citerne, grotte ----
 [Échafaudage] mur 8x4 fonctions Galerie de mine, Gouffre, Citerne
-Prop_Echafaudage 0 1.8
+Prop_Echafaudage 0 1.15
 Cave_Caisses_Pile 3 1.6
 Cave_Brasero -3 2.2
 
