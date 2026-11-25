@@ -119,6 +119,7 @@ namespace ItHunts.Player
 
         private void OnEnable()
         {
+            ItHunts.Combat.EnemyPassThrough.RegisterPlayer(this);     // goules et volants traversables (jour 5, point 2)
             if (!AllList.Contains(this))
                 AllList.Add(this);
         }

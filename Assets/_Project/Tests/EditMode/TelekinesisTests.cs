@@ -434,7 +434,8 @@ namespace ItHunts.Tests
             Assert.That(all.Select(g => g.Key), Is.EquivalentTo(new[] { "<Gamepad>/buttonNorth" }),
                 "Y : recharger ou interagir selon le contexte ; E ne sert plus qu'à interagir (D-079)");
             // Parade (D-079) : Alt gauche / R3 ; le dash manette revient sur LB.
-            Assert.That(Paths("Parry"), Is.EqualTo("<Gamepad>/rightStickPress <Keyboard>/leftAlt <Keyboard>/v"), "nuit 3 : V en plus d'Alt gauche");
+            Assert.That(Paths("Parry"), Is.EqualTo("<Gamepad>/rightStickPress <Keyboard>/v"), "jour 5 : parade sur V, Alt gauche libère le curseur");
+            Assert.That(Paths("FreeCursor"), Does.Contain("<Keyboard>/leftAlt"), "jour 5 : Alt gauche libère le curseur");
             Assert.That(Paths("Dash"), Is.EqualTo("<Gamepad>/leftShoulder <Keyboard>/leftShift"));
         }
 

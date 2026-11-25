@@ -45,6 +45,10 @@ MonoBehaviour:
   lanternJetStart: {fileID: 8300000, guid: ca4c1bad84b93634299a6b8826a886d9, type: 3}
   lanternJetLoop: {fileID: 8300000, guid: 6b6d692c7473f7e49a1914abe6a1381c, type: 3}
   lanternLoopFade: 0.15
+  swordSwing: {fileID: 0}
+  swordSwingHeavy: {fileID: 0}
+  swordHit: {fileID: 0}
+  swordVolume: 0.75
   tractionStart: {fileID: 8300000, guid: 89e30e305cdf3e943a2c1a2f9685ec09, type: 3}
   tractionHum: {fileID: 8300000, guid: ad39067e73a725d4d9598f5093219c18, type: 3}
   tractionEnd: {fileID: 8300000, guid: d289f18b77ee6384996e00a6036eaf32, type: 3}

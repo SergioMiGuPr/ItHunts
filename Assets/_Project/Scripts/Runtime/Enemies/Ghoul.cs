@@ -501,7 +501,7 @@ namespace ItHunts.Enemies
                 nearest = Mathf.Min(nearest, d);
                 float detect = EnemySenses.DetectionScale(p);              // Souffle court, Peau changeante (D-100)
                 if (!seen && (d <= settings.aggroProximity * detect
-                              || (d <= settings.aggroSightRange * detect && LineOfSight(pos + Vector3.up * Height * 0.8f, p))))
+                              || (d <= EnemySight.Range(settings.aggroSightRange) * detect && LineOfSight(pos + Vector3.up * Height * 0.8f, p))))
                     seen = true;
             }
 

@@ -21,6 +21,10 @@ MonoBehaviour:
   doorPanelPrefab: {fileID: 3429655861808232250, guid: bf61a56507d2e7f499d12091af073b8c, type: 3}
   bossBarPrefab: {fileID: 4489342621281088891, guid: af0be2af4280e7b4397dcb6659a52127, type: 3}
   critPrefab: {fileID: 6371434102891039647, guid: ba36321a3a58270409ee45df2e4b59b9, type: 3}
+  upgradeColumnPrefab: {fileID: 4254440948366804884, guid: d97c8c51bf26c8d48b48e58789c4839d, type: 3}
+  upgradeTooltipPrefab: {fileID: 8846851167363929109, guid: 91db8fbec61136b4f8bd547c5c3f6cff, type: 3}
+  chestOffersPrefab: {fileID: 6310701335082652841, guid: 789500eb851586f4a83d5adbe124b4ac, type: 3}
+  merchantOffersPrefab: {fileID: 181720919128651122, guid: 6b2d00f143207254c9ffce1106063676, type: 3}
   textFont: {fileID: 12800000, guid: 9c0d1388ac19db84387d4c02dd031f52, type: 3}
   titleFont: {fileID: 12800000, guid: beb1fe48b368ab24e8f157905953e401, type: 3}
   numberOutline: {r: 0.04, g: 0.02, b: 0.04, a: 0.9}

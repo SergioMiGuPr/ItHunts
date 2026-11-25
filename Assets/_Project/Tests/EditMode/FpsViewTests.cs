@@ -401,7 +401,8 @@ namespace ItHunts.Tests
             var flyer = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.FlyerSettings>("Assets/_Project/Settings/Flyer_Default.asset");
             Assert.That(ghoul.eyeColor.maxColorComponent, Is.LessThan(1f), "yeux sous le seuil du bloom hors annonce");
             Assert.That(flyer.eyeColor.maxColorComponent, Is.LessThan(1f));
-            Assert.That(flyer.diveGlowColor.maxColorComponent, Is.GreaterThan(1f));
+            Assert.That(flyer.diveGlowColor.maxColorComponent, Is.LessThan(1.2f), "jour 5 : annonce sobre, plus de rouge vif");
+            Assert.That(ghoul.leapBodyTint, Is.EqualTo(0f), "jour 5 : plus de corps rouge à l annonce du bond");
         }
 
         [Test]

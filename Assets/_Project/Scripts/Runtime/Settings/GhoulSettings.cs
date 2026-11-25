@@ -129,9 +129,9 @@ namespace ItHunts.Settings
 
         [Header("Signal : lueur pendant l'annonce du bond (bloc 4)")]
         [Tooltip("Yeux et gueule pendant l'annonce du bond (HDR, au-delà du seuil du bloom).")]
-        [ColorUsage(false, true)] public Color leapGlowColor = new Color(4f, 0.25f, 0.12f);
+        [ColorUsage(false, true)] public Color leapGlowColor = new Color(0.9f, 0.16f, 0.07f);   // jour 5 : sobre, sous le seuil du bloom
         [Tooltip("Teinte rouge du corps pendant l'annonce (0 : aucune, 1 : rouge plein).")]
-        [Range(0f, 1f)] public float leapBodyTint = 0.55f;
+        [Range(0f, 1f)] public float leapBodyTint = 0f;                                       // jour 5 : plus de corps rouge
 
         [Header("Lueur des yeux et de la gueule (modèle de la DA, masque d'émission ; retours du lot, point 3)")]
         [Tooltip("Rouge sombre et discret, sous le seuil du bloom : jamais un rouge vif. Le signal du bond est la gueule, le disque au " +

@@ -17,6 +17,13 @@ MonoBehaviour:
   choiceScreen: {fileID: 6276208912917991764, guid: 5cd2da1f797d67149b7f6ca53df0575d, type: 3}
   pauseScreen: {fileID: 105743282666029876, guid: 147f130a5c792fb42b52c7bb1ab434da, type: 3}
   settingsScreen: {fileID: 9025060666553366663, guid: 06830e2b212e6c24595728f5c76b8179, type: 3}
+  codexPrefab: {fileID: 3558281845681864568, guid: c80006ed17626d14285cb78db3324458, type: 3}
+  codexPools:
+  - {fileID: 11400000, guid: 3b4226d748f2ec64a9e2ed472e75197a, type: 2}
+  - {fileID: 11400000, guid: e7242932d72fd4a4b84f89f607f1a2c6, type: 2}
+  - {fileID: 11400000, guid: fd7eb9e02f368b644a015ec3ea4167dd, type: 2}
+  - {fileID: 11400000, guid: 02a2b5b406e679ec4f8ef39b40d607ac, type: 2}
+  - {fileID: 11400000, guid: 1e082f4e310b9b1448b596c0e6426314, type: 2}
   playerNameFormat: Joueur {0}
   showChat: 0
   textFont: {fileID: 12800000, guid: 514fed4c22662ec449fc8e84addc8bab, type: 3}

@@ -259,6 +259,15 @@ namespace ItHunts.Level.Acts
             }
         }
 
+        /// <summary>Case de coin : deux voisins orthogonaux hors de la salle.</summary>
+        private bool CornerCell(ActRoom r, Vector2Int c)
+        {
+            int outside = 0;
+            foreach (Vector2Int d in ActPlan.Dirs)
+                outside += Plan.OwnerAt(c + d) != r.Id ? 1 : 0;
+            return outside >= 2;
+        }
+
         private void PlaceSpawns(Transform game)
         {
             var parent = Group("Points d'apparition", game);
@@ -266,12 +275,27 @@ namespace ItHunts.Level.Acts
             {
                 if (r.Special || r.Role == RoomRole.Depart)
                     continue;
-                for (int k = 0; k < settings.spawnPointsPerRoom; k++)
+                // Jour 5, point 2 : les goules arrivent par les portes (elles sortent du noir de la salle voisine) et des coins
+                // sombres, jamais au milieu d'une salle ; le directeur des vagues ne prend qu'un point hors de la vue de tous.
+                int placedHere = 0;
+                foreach (int di in r.Doors)
                 {
-                    if (!FreeCell(r, out Vector2Int c, clearance: 0))
-                        break;
-                    _occupied.Remove(c);
-                    var go = new GameObject("Apparition : goule");
+                    ActDoor d = Plan.Doors[di];
+                    if (d.Locked || d.Exit || d.Gate || placedHere >= settings.spawnPointsPerRoom + 1)
+                        continue;
+                    var go = new GameObject("Apparition : goule (porte)");
+                    go.transform.SetParent(parent, false);
+                    go.transform.position = Plan.DoorFront(d, r.Id, 3f) + Vector3.up * 0.1f;
+                    go.AddComponent<SpawnPoint>().Configure(SpawnKinds.Goule);
+                    placedHere++;
+                }
+
+                Dictionary<Vector2Int, int> edge = Plan.EdgeDistance(r);
+                var corners = r.Cells.Where(c => edge.TryGetValue(c, out int e) && e == 0 && r.Use[c] == CellUse.Sol && !Occupied(c)
+                                                 && CornerCell(r, c)).OrderBy(_ => _rng.Next()).Take(2).ToList();
+                foreach (Vector2Int c in corners)
+                {
+                    var go = new GameObject("Apparition : goule (coin)");
                     go.transform.SetParent(parent, false);
                     go.transform.position = Plan.CellCenter(c, r.Floor + 0.1f);
                     go.AddComponent<SpawnPoint>().Configure(SpawnKinds.Goule);

@@ -130,6 +130,10 @@ namespace ItHunts.Combat
 
         private void Awake() => Init();
 
+        private void OnEnable() => EnemyPassThrough.Register(this);
+
+        private void OnDisable() => EnemyPassThrough.Unregister(this);
+
         /// <summary>Prépare le corps (Awake ; aussi par les tests).</summary>
         public void Init()
         {

@@ -68,7 +68,7 @@ namespace ItHunts.Settings
         [Header("Retour visuel")]
         [ColorUsage(false, true)] public Color eyeColor = new Color(0.5f, 0.33f, 0.07f);   // au repos : sous le seuil du bloom (correctifs-rendu point 5)
         [Tooltip("Yeux pendant l'annonce du piqué (HDR, au-delà du seuil du bloom).")]
-        [ColorUsage(false, true)] public Color diveGlowColor = new Color(4f, 0.25f, 0.12f);
+        [ColorUsage(false, true)] public Color diveGlowColor = new Color(0.9f, 0.16f, 0.07f);   // jour 5 : sobre (contour discret de la DA)
         [ColorUsage(false, true)] public Color telegraphColor = new Color(4f, 0.4f, 0.2f);
 
         public override bool DiesOnProjectileHit => dieOnProjectileHit;
