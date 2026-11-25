@@ -1,0 +1,13 @@
+Test du lien du livre en jeu (Play Mode, 2026-11-25, prefab VFX_Lien_Drain, LienVfx après relecture) :
+1 accroche=True visible=True fin=(0.00, 100.00, 8.00)
+2 accroche=True detruit_apres_mort_cible=True
+3 detruit_apres_Ferme=True
+4 sans_cible_detruit=True
+5 regle_monde debut=(30.00, 100.00, 30.00) fin=(30.00, 100.00, 36.00) visible=True
+6 sans_cible_puis_Regle : accroche=False detruit=True
+7 ferme_en_vol : accroche=False detruit=True
+
+1 Lance puis Regle à chaque image (usage prévu de main) ; 2 cible détruite pendant l'accroche (rétraction puis destruction) ;
+3 Ferme ; 4 sans cible (bout de portée, rétraction, destruction) ; 5 Regle seul sur un objet instancié loin de l'origine
+(positions monde exactes) ; 6 lancer sans cible puis Regle à chaque image (schéma actuel de main : pas d'accroche dans le vide) ;
+7 Ferme pendant le vol (pas d'accroche jouée).

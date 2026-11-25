@@ -275,3 +275,13 @@ Effet d'écran fait par le post-traitement URP : un `Volume` à priorité 200, a
 - **Journal Unity** (après réimport des shaders, des matériaux et des sons, compilation et captures en Play Mode dans `Acte_4_Boss`) : 0 erreur et 0 avertissement sur ces assets. Les seules erreurs de la console sont `Destroying assets is not permitted` dans `ItHunts.Audio.MagnetismAudio.OnDestroy` (`Assets/_Project`, côté main).
 - **Read/Write des maillages de l'arène** : 6 pièces de `KitJardin` utilisées par l'arène du boss (`SM_Arene_Butte`, `_Couvert`, `_EscalierDescente`, `_PilierBrise`, `SM_Jardin_Falaise_16m`, `SM_Jardin_Statue_Geante`) donnaient l'erreur « Source mesh … does not allow read access » (NavMesh en build). Elles sont passées à Read/Write. La PR du lot 2 (#47) rend lisibles toutes les pièces des kits : les deux changements sont identiques.
 - **Éclairage des captures.** Ce sont celles du jeu, sans lumière ajoutée : l'arène du boss est très sombre par choix de DA (ciel de nuit, braseros), et les marques sont faites pour s'y lire. Le volant est la greybox de main (pas de modèle d'ennemi demandé à la DA cette nuit).
+
+## Nuit 5, lot 4 : plus de rouge
+
+Le marquage du boss décrit plus haut garde ses formes, son front, sa montée et son éclair, mais **plus aucun rouge** : flaque
+d'ombre translucide (le sol s'assombrit), fin trait d'encre fumée (opacité 0,55), ton d'os pâle à l'impact. Même matériau,
+rien à changer côté main. Le contour d'annonce du piqué des volants passe à l'encre fumée ; le contour de prise est un fin
+trait d'os. Nouveaux : indices sombres `M_VFX_Indice_Cercle` / `_Rect` (goule qui bondit, main et revers du traqueur),
+`VFX_Trait_Prise`, liens du livre lancés à chaque coup (`LienVfx.Lance`), apparitions `VFX_Apparition_Trou` / `_Grille` /
+`_Ombre`. Où les brancher, valeurs de réglage et sons de l'épée : `docs/art/ART-HANDOFF.md`, section « Nuit 5, lot 4 ».
+Captures : `docs/art/rendus/Nuit5/Lot4/`.
