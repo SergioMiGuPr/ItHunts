@@ -515,10 +515,10 @@
   "taille": [
    6.01,
    1.43,
-   6.65
+   6.76
   ],
-  "bas": -0.05,
-  "triangles": 1707,
+  "bas": -0.16,
+  "triangles": 1691,
   "materiaux": [
    "M_Bib_Moellons_Peint",
    "M_Bib_PierreTaillee_Peint",
@@ -727,11 +727,11 @@
  "SM_Jardin_SousBois_A": {
   "doc": "Touffe de sous-bois de Ø 5 m : fougères et buissons bas, branche morte ; traversable.",
   "taille": [
-   2.94,
-   2.5,
-   0.18
+   4.9,
+   3.97,
+   0.76
   ],
-  "bas": 0.01,
+  "bas": 0.0,
   "triangles": 732,
   "materiaux": [
    "M_Bib_Ecorce"
@@ -740,11 +740,11 @@
  "SM_Jardin_SousBois_B": {
   "doc": "Petite touffe de sous-bois de Ø 3.2 m ; traversable.",
   "taille": [
-   1.58,
-   1.95,
-   0.18
+   3.37,
+   2.85,
+   0.8
   ],
-  "bas": 0.01,
+  "bas": 0.0,
   "triangles": 1018,
   "materiaux": [
    "M_Bib_Ecorce"
@@ -797,7 +797,7 @@
    22.02
   ],
   "bas": -0.45,
-  "triangles": 2614,
+  "triangles": 2632,
   "materiaux": [
    "M_Bib_Ecorce",
    "M_Kit_Feuillage_Foret",
@@ -807,8 +807,8 @@
  "SM_Jardin_Sol_Puits_8x8": {
   "doc": "Dalle de sol de 8 × 8 m percée, avec le puits de jardin dans son ouverture.",
   "taille": [
-   4.4,
-   3.2,
+   8.0,
+   8.0,
    6.55
   ],
   "bas": -2.41,
@@ -821,16 +821,16 @@
   ]
  },
  "SM_Jardin_Sol_Fosse_8x8": {
-  "doc": "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter.",
+  "doc": "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 3.4 m : éboulis, pieux, échelle de décor.",
   "taille": [
    8.0,
    8.0,
-   4.09
+   4.21
   ],
-  "bas": -4.01,
-  "triangles": 462,
+  "bas": -3.41,
+  "triangles": 438,
   "materiaux": [
-   "M_Bib_Dalles_Sales",
+   "M_Jardin_SolMelange",
    "M_Bib_Moellons_Peint",
    "M_Bib_Terre_Racines",
    "M_Bib_RocheCave_Peint",
@@ -842,10 +842,10 @@
   "doc": "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant.",
   "taille": [
    3.0,
-   3.0,
-   4.47
+   3.03,
+   4.48
   ],
-  "bas": -0.45,
+  "bas": -0.47,
   "triangles": 1066,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
@@ -856,12 +856,12 @@
  "SM_Jardin_Lisiere_12m": {
   "doc": "Lisière de forêt dense de 12 m : troncs sur deux rangs, trois couches de feuillage, sous-bois, fond noir ; infranchissable.",
   "taille": [
-   22.59,
-   16.79,
-   21.49
+   23.67,
+   17.64,
+   21.47
   ],
   "bas": -0.5,
-  "triangles": 5738,
+  "triangles": 9082,
   "materiaux": [
    "M_Bib_Ecorce",
    "M_Kit_Feuillage_Foret",
@@ -872,12 +872,12 @@
  "SM_Jardin_Lisiere_Coin": {
   "doc": "Lisière de forêt en quart de cercle (angle d'une clairière, rayon 8 m) ; infranchissable.",
   "taille": [
-   22.69,
-   22.93,
-   21.26
+   25.4,
+   26.78,
+   21.42
   ],
-  "bas": -0.38,
-  "triangles": 5752,
+  "bas": -0.39,
+  "triangles": 9096,
   "materiaux": [
    "M_Bib_Ecorce",
    "M_Kit_Feuillage_Foret",
@@ -886,19 +886,77 @@
   ]
  },
  "SM_Jardin_SalleHaute_8x8": {
-  "doc": "Salle en hauteur de 8 × 8 m (pavillon), plancher à 6 m sur quatre piliers : fenêtre, porte, garde-corps, passage d'échelle.",
+  "doc": "Salle en hauteur de 8 × 8 m (pavillon), plancher à 5 m sur quatre piliers : fenêtre, porte, garde-corps, passage d'échelle.",
   "taille": [
    8.3,
    8.3,
-   9.82
+   8.82
   ],
   "bas": 0.0,
-  "triangles": 1744,
+  "triangles": 1816,
   "materiaux": [
    "M_Bib_PierreTaillee_Peint",
    "M_Bib_Dalles_Sales",
    "M_Bib_Moellons_Peint",
+   "M_Bib_BoisNeuf",
+   "M_Bib_FerRouille",
    "M_Bib_BoisPourri"
+  ]
+ },
+ "SM_Jardin_PontSuspendu_12m": {
+  "doc": "Pont suspendu de 12 m (planches sur cordes, flèche de 0.8 m), poteaux de rondins aux bouts.",
+  "taille": [
+   12.7,
+   2.02,
+   2.57
+  ],
+  "bas": -0.97,
+  "triangles": 2504,
+  "materiaux": [
+   "M_Bib_BoisPourri",
+   "M_Corde"
+  ]
+ },
+ "SM_Jardin_Rebord_3m": {
+  "doc": "Rebord de mur de 3 × 0.9 m : dalle sur trois corbeaux, lierre qui pend, dessus plat à 0.",
+  "taille": [
+   3.0,
+   0.96,
+   1.34
+  ],
+  "bas": -1.3,
+  "triangles": 132,
+  "materiaux": [
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_Moellons_Peint",
+   "M_Kit_Feuillage"
+  ]
+ },
+ "SM_Jardin_Passerelle_Pente_10m": {
+  "doc": "Passerelle en pente : monte de 3 m sur 10 m (16.7°), planches, garde-corps de bois, rampe lisse.",
+  "taille": [
+   10.11,
+   2.6,
+   4.63
+  ],
+  "bas": -0.51,
+  "triangles": 636,
+  "materiaux": [
+   "M_Bib_BoisPourri"
+  ]
+ },
+ "SM_Jardin_Sol_8x8": {
+  "doc": "Dalle de sol de 8 × 8 m en sol mélangé (terre, gravier, herbe sèche, mousse).",
+  "taille": [
+   8.0,
+   8.0,
+   0.6
+  ],
+  "bas": -0.6,
+  "triangles": 12,
+  "materiaux": [
+   "M_Bib_Moellons_Peint",
+   "M_Jardin_SolMelange"
   ]
  }
 }

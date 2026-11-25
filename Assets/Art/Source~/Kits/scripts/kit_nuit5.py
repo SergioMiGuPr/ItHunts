@@ -27,6 +27,18 @@ FEUIL_FORET = "M_Kit_Feuillage_Foret"     # feuillage de la forêt (lisière, ar
 FOND = "M_Fond_Noir"
 
 
+def bornes(ob):
+    """Emprise de toute la pièce (objet et enfants maillés, collisions `Col_*` exclues), en coordonnées de la pièce."""
+    import bpy
+    pts = []
+    for o in [ob] + [c for c in ob.children_recursive if c.type == "MESH" and not c.name.startswith("Col_")]:
+        mw = ob.matrix_world.inverted() @ o.matrix_world
+        pts += [mw @ v.co for v in o.data.vertices]
+    if not pts:
+        return (0, 0), (0, 0), (0, 0)
+    return tuple((min(p[i] for p in pts), max(p[i] for p in pts)) for i in range(3))
+
+
 def _catenaire(x, Lx, sag):
     u = 2 * x / Lx
     return -sag * (1 - u * u)
@@ -69,6 +81,10 @@ def pont_suspendu(S, nom, Lx=12.0, W=1.7, sag=0.8):
             kg.obox(haut[t], haut[t + 1], 0.07, 0.07, lien)
         for t in range(0, seg + 1, 2):
             k.obox(bas[t], haut[t], 0.035, 0.035, lien)
+        # lisse basse à 0.5 m (relecture : un joueur en glissade, 0.9 m, passait sous la main courante)
+        mi = [Vector((-Lx / 2 + Lx * t / seg, y, _catenaire(-Lx / 2 + Lx * t / seg, Lx, sag) + 0.5)) for t in range(seg + 1)]
+        for t in range(seg):
+            kg.obox(mi[t], mi[t + 1], 0.05, 0.05, lien)
     # poteaux et ancrages aux bouts
     for sx in (-1, 1):
         x = sx * (Lx / 2 + 0.15)
@@ -85,6 +101,11 @@ def pont_suspendu(S, nom, Lx=12.0, W=1.7, sag=0.8):
         x0, x1 = -Lx / 2 + Lx * t / seg, -Lx / 2 + Lx * (t + 1) / seg
         z0, z1 = _catenaire(x0, Lx, sag) - 0.01, _catenaire(x1, Lx, sag) - 0.01
         H.rampe_col(kc, [(x0, -W / 2, z0), (x1, -W / 2, z1), (x1, W / 2, z1), (x0, W / 2, z0)])
+    # collision des poteaux et piliers d'ancrage (relecture : on les traversait)
+    for sx in (-1, 1):
+        x = sx * (Lx / 2 + 0.15)
+        for sy in (-1, 1):
+            kc.box((x, sy * (W / 2 + 0.05), 0.6), (0.4, 0.4, 1.6), COL)
     k.empty("Appui_A", (-Lx / 2, 0, 0))
     k.empty("Appui_B", (Lx / 2, 0, 0))
     ob = k.finish(S["seed"] + 501, H.PEINT_OBJET)
@@ -143,6 +164,9 @@ def plateforme_traction(S, nom, A=3.0, chute=4.0):
         for sx in (-1, 1):
             k.box((sx * (A / 2 - 0.12), 0, -ep / 2 - 0.06), (0.24, A, ep - 0.12), S["bois"])
             k.box((0, sx * (A / 2 - 0.12), -ep / 2 - 0.06), (A, 0.24, ep - 0.12), S["bois"])
+        # traverses en croix sous le centre : la plaque magnétique y est vissée (relecture : elle flottait)
+        k.box((0, 0, -ep / 2 - 0.06), (A - 0.5, 0.26, ep - 0.12), S["bois"])
+        k.box((0, 0, -ep / 2 - 0.055), (0.26, A - 0.5, ep - 0.13), S["bois"])
     else:
         k.box((0, 0, -ep / 2), (A, A, ep), S["pierre"])
         k.box((0, 0, 0.004), (A - 0.2, A - 0.2, 0.008), S["sol"], skip=("-z",))
@@ -185,8 +209,8 @@ def plateforme_traction(S, nom, A=3.0, chute=4.0):
 
 
 # =================================================================== 4. salle en hauteur
-def salle_haute(S, nom, A=8.0, Hs=6.0, Hm=3.4):
-    """Salle en hauteur de A × A m, plancher à Hs m sur quatre appuis (pivot au sol, au centre) : mur du fond percé d'une
+def salle_haute(S, nom, A=8.0, Hs=5.0, Hm=3.4):
+    """Salle en hauteur de A × A m, plancher à Hs m (5 m : double saut et hissage, comme les mezzanines) sur quatre appuis (pivot au sol, au centre) : mur du fond percé d'une
     fenêtre, mur gauche percé d'une porte de 2.4 × 3.2 m (vers une coursive ou un pont), côté droit ouvert à garde-corps,
     devant ouvert avec un passage de 1.2 m pour une échelle (`Accroche_Echelle`), plafond à poutres à Hs + Hm."""
     k = L.K(nom)
@@ -221,6 +245,17 @@ def salle_haute(S, nom, A=8.0, Hs=6.0, Hm=3.4):
     zb, zt = Hs, Hs + Hm
     _mur_ouvert(k, (-A / 2, A / 2 - t), (A / 2, A / 2), zb, zt, [(-0.8, 0.8, zb + 1.1, zb + 2.6)], S)
     _mur_ouvert(k, (-A / 2, -A / 2), (-A / 2 + t, A / 2 - t), zb, zt, [(-1.2, 1.2, zb, zb + 3.2)], S, axe="y")
+    # baie du fond fermée (relecture : on voyait ce qui était derrière) : vitre avec vue au château, volets de bois ailleurs
+    yb = A / 2 - t / 2
+    if act == "Chateau":
+        k.face([(-0.8, yb, zb + 1.1), (0.8, yb, zb + 1.1), (0.8, yb, zb + 2.6), (-0.8, yb, zb + 2.6)], "M_Kit_VitreVue")
+        k.box((0, yb - 0.02, zb + 1.85), (0.08, 0.06, 1.5), S["fer"])
+        k.box((0, yb - 0.02, zb + 1.85), (1.6, 0.06, 0.06), S["fer"])
+    else:
+        for sx in (-1, 1):
+            k.box((sx * 0.4, yb, zb + 1.85), (0.78, 0.08, 1.48), S["porte"] if "porte" in S else S["bois"])
+            for z in (zb + 1.35, zb + 2.35):
+                k.box((sx * 0.4, yb - 0.05, z), (0.7, 0.03, 0.07), S["fer"])
     # plafond : poutres + planches (château : caissons de pierre)
     for i in range(5):
         y = -A / 2 + 0.6 + i * (A - 1.2) / 4
@@ -360,9 +395,9 @@ def _feuillage(k, c, r, h, m, rnd, n=7, dents=11, aplat=0.35, normale=None):
 
 
 def lisiere(S, nom, Lx=12.0, coin=False):
-    """Lisière de forêt dense de Lx m (pivot au sol, au milieu du bord avant ; la forêt s'étend vers +Y sur 6 m) : rang de
+    """Lisière de forêt dense de Lx m (pivot au sol, au milieu du bord avant ; la forêt s'étend vers +Y sur 6.5 m) : rang de
     troncs (Ø 0.35 à 1.1 m, 10 à 17 m), trois couches de feuillage dentelé de plus en plus sombres, sous-bois, racines,
-    fond noir à 6 m. Infranchissable : `Col_Lisiere` (8 m de haut). `coin` : quart de cercle de 90° (angle d'une clairière)."""
+    fond noir à 6.5 m. Infranchissable : `Col_Lisiere` de -0.7 à 6.7 m de profondeur et 22 m de haut (troncs compris). `coin` : quart de cercle de 90° (angle d'une clairière)."""
     k = L.K(nom)
     kc = L.K("Col_Lisiere")
     rnd = random.Random(S["seed"] + 561 + (7 if coin else 0))
@@ -375,7 +410,7 @@ def lisiere(S, nom, Lx=12.0, coin=False):
         n_ = Vector((-math.cos(a), -math.sin(a), 0))
         return Vector((R * math.cos(a), R * math.sin(a), 0)) + Vector((-R, -R, 0)) - n_ * prof, n_
     # troncs sur deux rangs
-    for rang, (prof, nb) in enumerate(((0.8, int(Lx / 1.6)), (3.2, int(Lx / 1.3)))):
+    for rang, (prof, nb) in enumerate(((0.6, int(Lx / 1.1)), (2.6, int(Lx / 1.0)), (4.6, int(Lx / 1.2)))):
         for i in range(nb):
             u = (i + 0.5 + rnd.uniform(-0.35, 0.35)) / nb
             p, n_ = place(u, prof + rnd.uniform(-0.5, 0.5))
@@ -420,13 +455,13 @@ def lisiere(S, nom, Lx=12.0, coin=False):
     # collision : boîte(s) infranchissable(s) juste derrière le sous-bois
     if coin:
         for s in range(6):
-            p0, _ = place(s / 6, 2.4)
-            p1, _ = place((s + 1) / 6, 2.4)
+            p0, _ = place(s / 6, 3.0)
+            p1, _ = place((s + 1) / 6, 3.0)
             c = (p0 + p1) / 2
             d = p1 - p0
-            kc.box((c.x, c.y, 4.0), (d.length + 0.6, 3.0, 8.0), COL, rot=math.atan2(d.y, d.x))
+            kc.box((c.x, c.y, 11.0), (d.length + 0.8, 7.4, 22.0), COL, rot=math.atan2(d.y, d.x))
     else:
-        kc.box((0, 2.4, 4.0), (Lx, 3.0, 8.0), COL)
+        kc.box((0, 3.0, 11.0), (Lx, 7.4, 22.0), COL)          # de -0.7 à 6.7 m de profondeur, 22 m de haut
     ob = k.finish(S["seed"] + 561, dict(sale_h=0.6, mousse=0.3))
     H.enfant(ob, kc, 0)
     return ob
@@ -514,7 +549,7 @@ def rocher(S, nom, taille=2.5, var=0):
 
 def grand_arbre(S, nom, h=20.0):
     """Grand arbre praticable (pivot au sol, au centre du tronc) : tronc de Ø 2.2 m, racines en contreforts, trois grosses
-    branches **plates sur le dessus** (largeur 1.4 m) à 3.4, 6.6 et 9.8 m qui montent en spirale (on saute de l'une à l'autre,
+    branches **plates sur le dessus** (largeur 1.2 m) à 3.4, 6.6 et 9.8 m qui montent en spirale (on saute de l'une à l'autre,
     3.2 m d'écart vertical : saut et hissage), couronne de feuillage dentelé au-dessus de 12 m. Collision : tronc par le
     maillage, `Col_Branche_*` (dessus des branches)."""
     k = L.K(nom)
@@ -523,6 +558,10 @@ def grand_arbre(S, nom, h=20.0):
     R0 = 1.1
     pts = [Vector((0, 0, -0.4))] + [Vector((rnd.uniform(-0.15, 0.15), rnd.uniform(-0.15, 0.15), h * t)) for t in (0.2, 0.45, 0.7, 0.88, 1.0)]
     L.tube(k, pts, [R0 * 1.35, R0, R0 * 0.88, R0 * 0.7, R0 * 0.5, R0 * 0.28], S["ecorce"], sides=14, rough=0.1, seed=7)
+    # collision du tronc (relecture : il se traversait) : prisme octogonal par tronçons qui suit le rayon
+    for z0, z1, r in ((-0.4, 4.0, R0 * 1.05), (4.0, 9.0, R0 * 0.85), (9.0, 15.0, R0 * 0.65)):
+        poly = [(math.cos(2 * math.pi * i / 8) * r, math.sin(2 * math.pi * i / 8) * r) for i in range(8)]
+        H.prism(kc, poly, z0, z1, COL, axis="z")
     for i in range(7):
         a = 2 * math.pi * i / 7 + rnd.uniform(-0.2, 0.2)
         d = Vector((math.cos(a), math.sin(a), 0))
@@ -533,15 +572,21 @@ def grand_arbre(S, nom, h=20.0):
         d = Vector((math.cos(ang), math.sin(ang), 0))
         a = d * R0 * 0.6 + Vector((0, 0, z - 0.55))
         b = d * (R0 + Lb) + Vector((0, 0, z - 0.25))
-        L.tube(k, [a, a.lerp(b, 0.5) + Vector((0, 0, 0.12)), b], [0.75, 0.55, 0.35], S["ecorce"], sides=10, rough=0.08, seed=rnd.randint(0, 999))
+        # branche sous le dessus plat (relecture : l'écorce dépassait de 10 à 27 cm au-dessus)
+        a = d * R0 * 0.6 + Vector((0, 0, z - 0.75))
+        b = d * (R0 + Lb) + Vector((0, 0, z - 0.42))
+        L.tube(k, [a, a.lerp(b, 0.5) + Vector((0, 0, 0.05)), b], [0.72, 0.55, 0.38], S["ecorce"], sides=10, rough=0.05, seed=rnd.randint(0, 999))
         # dessus plat : dalle d'écorce aplanie 1.4 m de large
         n_ = Vector((-d.y, d.x, 0))
         p0 = d * (R0 * 0.9) + Vector((0, 0, z))
         p1 = d * (R0 + Lb - 0.2) + Vector((0, 0, z))
-        w = 1.4
-        k.face([p0 - n_ * w / 2, p1 - n_ * w * 0.35, p1 + n_ * w * 0.35, p0 + n_ * w / 2], S["ecorce"])
-        H.rampe_col(kc, [p0 - n_ * w / 2 + Vector((0, 0, 0.01)), p1 - n_ * w * 0.35 + Vector((0, 0, 0.01)),
-                         p1 + n_ * w * 0.35 + Vector((0, 0, 0.01)), p0 + n_ * w / 2 + Vector((0, 0, 0.01))])
+        w = 1.2
+        k.face([p0 - n_ * w / 2, p1 - n_ * 0.34, p1 + n_ * 0.34, p0 + n_ * w / 2], S["ecorce"])
+        # tranche du dessus plat (0.12 m) : on lit une planche d'écorce taillée, pas une languette
+        for (u0, u1) in ((p0 - n_ * w / 2, p1 - n_ * 0.34), (p1 + n_ * 0.34, p0 + n_ * w / 2), (p1 - n_ * 0.34, p1 + n_ * 0.34)):
+            k.face([u0, u1, u1 - Vector((0, 0, 0.14)), u0 - Vector((0, 0, 0.14))], S["ecorce"])
+        H.rampe_col(kc, [p0 - n_ * w / 2 + Vector((0, 0, 0.01)), p1 - n_ * 0.34 + Vector((0, 0, 0.01)),
+                         p1 + n_ * 0.34 + Vector((0, 0, 0.01)), p0 + n_ * w / 2 + Vector((0, 0, 0.01))])
         k.empty(f"Appui_Branche_{i + 1}", tuple(p1))
         # petites branches et feuillage au bout
         _feuillage(k, b + Vector((0, 0, 1.2)), 1.6, 1.8, FEUIL_FORET, rnd, n=5, dents=12)
@@ -597,7 +642,7 @@ def sol_puits(S, nom, A=8.0):
     eau `Deco_Eau` à -1.5 m, fond à -2.4 m) posé dans l'ouverture : à poser à la place d'une dalle de sol, le puits a son trou."""
     ob = H.puits(S, nom)
     k = L.K("Dalle")
-    contour = _dalle_percee(k, A, 0.6, 3.25, S["sol"], S["mur"], rond=True)
+    contour = _dalle_percee(k, A, 0.6, 3.25, S["sol"] if S["act"] != "Jardin" else "M_Jardin_SolMelange", S["mur"], rond=True)
     for v in k.bm.verts:          # dessus à -4 mm : jamais confondu avec la base de la margelle
         v.co.z -= 0.004
     # paroi du trou sous la dalle (jusqu'au fût du puits)
@@ -608,12 +653,12 @@ def sol_puits(S, nom, A=8.0):
     return ob
 
 
-def sol_fosse(S, nom, A=8.0, B=4.0, prof=4.0):
-    """Dalle de sol de A × A m (dessus à 0, pivot au centre) percée d'une fosse de B × B m et `prof` m : parois appareillées,
-    fond de terre et d'éboulis, quatre pieux, une échelle pour remonter (`Accroche_Echelle`). On peut y tomber et en
-    ressortir (échelle, ou double saut depuis un rebord)."""
+def sol_fosse(S, nom, A=8.0, B=4.0, prof=3.4):
+    """Dalle de sol de A × A m (dessus à 0, pivot au centre) percée d'une fosse de B × B m et `prof` m (3.4 m : on en
+    ressort par un saut et un hissage, 3.7 m) : parois appareillées, fond de terre et d'éboulis, quatre pieux, une échelle
+    (décor : main n'a pas de mécanique d'escalade ; `Accroche_Echelle` si elle en ajoute une)."""
     k = L.K(nom)
-    _dalle_percee(k, A, 0.6, B, S["sol"], S["mur"])
+    _dalle_percee(k, A, 0.6, B, S["sol"] if S["act"] != "Jardin" else "M_Jardin_SolMelange", S["mur"])
     t = B / 2
     for (x0, y0, x1, y1) in ((t, t, -t, t), (-t, t, -t, -t), (-t, -t, t, -t), (t, -t, t, t)):
         k.face([(x0, y0, 0), (x1, y1, 0), (x1, y1, -prof), (x0, y0, -prof)], S["mur"])
@@ -640,9 +685,19 @@ def sol_fosse(S, nom, A=8.0, B=4.0, prof=4.0):
     return ob
 
 
+def sol_dalle(S, nom, A=8.0, ep=0.6):
+    """Dalle de sol de A × A m (dessus à 0, pivot au centre) en sol mélangé du jardin (`M_Jardin_SolMelange` : terre,
+    gravier, herbe sèche, mousse, transitions douces) : à poser bord à bord, les plaques du mélange suivent les
+    coordonnées du monde (aucune coupure entre deux dalles)."""
+    k = L.K(nom)
+    k.box((0, 0, -ep / 2), (A, A, ep), S["mur"], skip=("+z",))
+    k.face([(-A / 2, -A / 2, 0), (A / 2, -A / 2, 0), (A / 2, A / 2, 0), (-A / 2, A / 2, 0)], "M_Jardin_SolMelange")
+    return k.finish(S["seed"] + 631, H.PEINT_ARCHI)
+
+
 # =================================================================== 11. support de râtelier (acte II)
 def support_ratelier(S, nom):
-    """Petit support de râtelier (présentoir) de 0.6 × 0.5 × 1.4 m : pied en croix, montant, traverse à trois encoches où
+    """Petit support de râtelier (présentoir) de 0.6 × 0.5 × 1.6 m (hampes à 1.4 m, fers à 1.6 m) : pied en croix, montant, traverse à trois encoches où
     reposent deux lances et une hallebarde (pivot au sol, au centre). Remplace la boîte greybox `Prop_Ratelier` de petite
     taille (acte II)."""
     k = L.K(nom)
@@ -653,8 +708,8 @@ def support_ratelier(S, nom):
     k.box((0, 0, 1.18), (0.56, 0.12, 0.08), b)
     k.box((0, 0, 0.36), (0.5, 0.1, 0.06), b)
     for i, x in enumerate((-0.18, 0.0, 0.18)):
-        y = -0.08
-        k.cyl((x, y, 0.08), 0.022, 1.32, b, n=6)
+        y = 0.0
+        k.cyl((x, y, 0.08), 0.022, 1.32, b, n=6)       # posée sur la traverse du pied (dessus à 0.08)
         if i == 1:
             k.face([(x, y, 1.4), (x + 0.12, y, 1.32), (x + 0.12, y, 1.22), (x, y, 1.3)], fer)
             k.face([(x, y, 1.3), (x + 0.12, y, 1.22), (x + 0.12, y, 1.32), (x, y, 1.4)], fer)
@@ -671,10 +726,10 @@ def pieces_caves(S):
         ("SM_Cave_PontSuspendu_12m", pont_suspendu, dict(), "Pont suspendu de 12 m (planches de bois pourri sur cordes, flèche de 0.8 m, deux planches manquantes), poteaux aux bouts."),
         ("SM_Cave_Rebord_3m", rebord, dict(), "Rebord de mur de 3 × 0.9 m : dalle brute sur trois corbeaux, dessus plat à 0 (saut, hissage, wall jump)."),
         ("SM_Cave_PlateformeTraction", plateforme_traction, dict(), "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant."),
-        ("SM_Cave_SalleHaute_8x8", salle_haute, dict(), "Salle en hauteur de 8 × 8 m, plancher à 6 m sur quatre poteaux : fenêtre au fond, porte à gauche, garde-corps, passage d'échelle."),
+        ("SM_Cave_SalleHaute_8x8", salle_haute, dict(), "Salle en hauteur de 8 × 8 m, plancher à 5 m sur quatre poteaux : fenêtre au fond, porte à gauche, garde-corps, passage d'échelle."),
         ("SM_Cave_Passerelle_Pente_10m", passerelle_pente, dict(), "Passerelle en pente : monte de 3 m sur 10 m (16.7°), rampe lisse, garde-corps de corde."),
         ("SM_Cave_Sol_Puits_8x8", sol_puits, dict(), "Dalle de sol de 8 × 8 m percée, avec le puits dans son ouverture (eau à -1.5 m, fond à -2.4 m)."),
-        ("SM_Cave_Sol_Fosse_8x8", sol_fosse, dict(), "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter."),
+        ("SM_Cave_Sol_Fosse_8x8", sol_fosse, dict(), "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 3.4 m : éboulis, pieux, échelle de décor."),
     ]
 
 
@@ -683,17 +738,17 @@ def pieces_chateau(S):
         ("SM_Chateau_PontSuspendu_12m", pont_suspendu, dict(), "Pont suspendu de 12 m (planches sur chaînes, flèche de 0.8 m), piliers de pierre aux bouts."),
         ("SM_Chateau_Rebord_3m", rebord, dict(), "Rebord de mur de 3 × 0.9 m : corniche moulurée sur trois consoles, dessus plat à 0."),
         ("SM_Chateau_PlateformeTraction", plateforme_traction, dict(), "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant."),
-        ("SM_Chateau_SalleHaute_8x8", salle_haute, dict(), "Salle en hauteur de 8 × 8 m, plancher à 6 m sur quatre piliers : fenêtre au fond, porte à gauche, balustrade, passage d'échelle."),
+        ("SM_Chateau_SalleHaute_8x8", salle_haute, dict(), "Salle en hauteur de 8 × 8 m, plancher à 5 m sur quatre piliers : fenêtre au fond, porte à gauche, balustrade, passage d'échelle."),
         ("SM_Chateau_Passerelle_Pente_10m", passerelle_pente, dict(), "Passerelle en pente : monte de 3 m sur 10 m (16.7°), dallée, balustrade, rampe lisse."),
         ("SM_Chateau_Balcon_Pierre_4m", balcon_pierre, dict(), "Balcon de pierre de 4 × 1.8 m en encorbellement, trois consoles moulurées, balustrade."),
-        ("SM_Chateau_Sol_Fosse_8x8", sol_fosse, dict(), "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter."),
+        ("SM_Chateau_Sol_Fosse_8x8", sol_fosse, dict(), "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 3.4 m : éboulis, pieux, échelle de décor."),
         ("SM_Chateau_Fenetre_Vue_Simple", fenetre_vue, dict(w=4.0, h=12.0, bw=1.6, sill=3.0, top=9.6, nl=1),
          "Fenêtre en lancette simple qui montre l'extérieur (ciel étoilé, lune, paysage lointain) : baie de 1.6 × 6.6 m dans un panneau de 4 × 12 m."),
         ("SM_Chateau_Fenetre_Vue_Double", fenetre_vue, dict(w=8.0, h=12.0, bw=4.0, sill=2.5, top=9.8, nl=2, oculus=(8.95, 0.5, 4)),
          "Fenêtre à deux lancettes et oculus qui montre l'extérieur : baie de 4 × 7.3 m dans un panneau de 8 × 12 m."),
         ("SM_Chateau_Fenetre_Vue_Triple", fenetre_vue, dict(w=8.0, h=20.0, bw=5.6, sill=3.5, top=17.8, nl=3, oculus=(16.0, 0.85, 6)),
          "Haute fenêtre à trois lancettes et rose qui montre l'extérieur : baie de 5.6 × 14.3 m dans un panneau de 8 × 20 m."),
-        ("SM_Chateau_SupportRatelier", support_ratelier, dict(), "Petit support de râtelier de 0.6 × 0.5 × 1.4 m : deux lances et une hallebarde."),
+        ("SM_Chateau_SupportRatelier", support_ratelier, dict(), "Petit support de râtelier de 0.6 × 0.5 × 1.6 m : deux lances et une hallebarde."),
     ]
 
 
@@ -702,7 +757,7 @@ def pieces_jardin(S):
         ("SM_Jardin_PontSuspendu_12m", pont_suspendu, dict(), "Pont suspendu de 12 m (planches sur cordes, flèche de 0.8 m), poteaux de rondins aux bouts."),
         ("SM_Jardin_Rebord_3m", rebord, dict(), "Rebord de mur de 3 × 0.9 m : dalle sur trois corbeaux, lierre qui pend, dessus plat à 0."),
         ("SM_Jardin_PlateformeTraction", plateforme_traction, dict(), "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant."),
-        ("SM_Jardin_SalleHaute_8x8", salle_haute, dict(), "Salle en hauteur de 8 × 8 m (pavillon), plancher à 6 m sur quatre piliers : fenêtre, porte, garde-corps, passage d'échelle."),
+        ("SM_Jardin_SalleHaute_8x8", salle_haute, dict(), "Salle en hauteur de 8 × 8 m (pavillon), plancher à 5 m sur quatre piliers : fenêtre, porte, garde-corps, passage d'échelle."),
         ("SM_Jardin_Passerelle_Pente_10m", passerelle_pente, dict(), "Passerelle en pente : monte de 3 m sur 10 m (16.7°), planches, garde-corps de bois, rampe lisse."),
         ("SM_Jardin_Lisiere_12m", lisiere, dict(), "Lisière de forêt dense de 12 m : troncs sur deux rangs, trois couches de feuillage, sous-bois, fond noir ; infranchissable."),
         ("SM_Jardin_Lisiere_Coin", lisiere, dict(coin=True), "Lisière de forêt en quart de cercle (angle d'une clairière, rayon 8 m) ; infranchissable."),
@@ -713,5 +768,6 @@ def pieces_jardin(S):
         ("SM_Jardin_Rocher_Grand", rocher, dict(taille=5.0, var=2), "Gros rocher de 5 m à épaulement (double saut), mousse sur le dessus."),
         ("SM_Jardin_GrandArbre_Praticable", grand_arbre, dict(), "Grand arbre de 20 m, tronc de Ø 2.2 m : trois branches plates à 3.4, 6.6 et 9.8 m qui montent en spirale."),
         ("SM_Jardin_Sol_Puits_8x8", sol_puits, dict(), "Dalle de sol de 8 × 8 m percée, avec le puits de jardin dans son ouverture."),
-        ("SM_Jardin_Sol_Fosse_8x8", sol_fosse, dict(), "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter."),
+        ("SM_Jardin_Sol_Fosse_8x8", sol_fosse, dict(), "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 3.4 m : éboulis, pieux, échelle de décor."),
+        ("SM_Jardin_Sol_8x8", sol_dalle, dict(), "Dalle de sol de 8 × 8 m en sol mélangé (terre, gravier, herbe sèche, mousse)."),
     ]

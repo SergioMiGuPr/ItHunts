@@ -92,8 +92,11 @@ namespace ItHunts.Art.VFX
                     if (partieB) partieB.localRotation = _rotB * Quaternion.Euler(0f, 0f, 90f * Douce(Mathf.Clamp01(t / 0.3f)));
                     if (partieA)
                     {
+                        // sept tractions du cliquet : chaque cran monte vite puis marque un arrêt (montée lisible en à-coups)
                         float u = Mathf.Clamp01((t - 0.3f) / 0.7f);
-                        float k = Lourde(u) + Mathf.Sin(u * Mathf.PI * 7f) * 0.012f * (1f - u) * (u > 0f ? 1f : 0f);
+                        const float crans = 7f;
+                        float c = Mathf.Floor(u * crans), f = u * crans - c;
+                        float k = u >= 1f ? 1f : (c + Douce(Mathf.Clamp01(f / 0.55f))) / crans;
                         partieA.localPosition = _posA + Vector3.up * 3.1f * k;
                     }
                     break;

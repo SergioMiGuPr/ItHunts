@@ -1044,71 +1044,85 @@ Corrections faites dans Blender seulement (Unity n'a pas été ouvert, aucun `.m
 
 Pour les grandes cartes faites à la main par main. Sources : `Assets/Art/Source~/Kits/scripts/kit_nuit5.py` (enregistré par
 les trois scripts de kit), porte verrouillée dans `kit_hauteur.py`, prefabs par `KitBuilder.Construit` (mêmes règles que les
-kits : `Col_*` = collision seule, `Garde_Corps`, `Deco_SansCollision`, repères `Appui_*`, `Accroche_*`). Captures en jeu
-(salles générées, seed 4242, torches du jeu, lanterne du joueur) : `docs/art/rendus/Nuit5/Lot3/` (planches par acte et `Jeu/`,
-une vue « avant » par acte, chaque pièce de loin et de près). Contrôle des maillages : `controle_faces.json` (0 face superposée,
-0 face dégénérée sur les 36 FBX ; recouvrements entre objets d'une même pièce corrigés : `controle_faces_corrections.json`).
+kits : `Col_*` = collision seule, `Garde_Corps`, `Deco_SansCollision`, repères `Appui_*`, `Accroche_*`). Captures :
+`docs/art/rendus/Nuit5/Lot3/` (planches par acte et `Jeu/` : en jeu, salles générées seed 4242, une torche du jeu et la lumière
+froide de la lune, lanterne du joueur, une vue « avant » par acte ; fenêtres : exposition contrôlée contre un mur tapissé avec
+l'éclairage et le post-process du jeu, `ExpoFenetres.cs`). Contrôle des maillages : `controle_faces.json` (37 FBX : 0 face
+superposée, 0 dégénérée, 0 recouvrement entre les objets visibles d'une même pièce).
 
-### Ce qui change pour main
+### Consignes pour main
 
-- **Fenêtres de l'acte II** : utiliser `Chateau_Fenetre_Vue_Simple`, `_Double`, `_Triple` à la place des lancettes : la vitre
-  (shader `ItHunts/VueExterieure`, matériaux `M_Kit_VitreVue`, `_Rouge`, `_Ambre`, panorama `T_Vue_Nuit_Panorama`) montre le
-  ciel étoilé, la lune et la vallée **selon la direction du regard, comme à l'infini** : jamais le mur ni la salle derrière.
-  **À poser contre un mur plein** (pivot au sol, milieu de la face, comme les autres pièces de mur) : la vitre est 5 cm devant
-  la surface du mur ; la baie dépasse de 0.77 m dans la salle. Réglages par matériau : `_Cap` (cap monde du centre du
-  paysage), `_Couverture` (150°, miroir au-delà, aucune couture), `_Exposition` (0.75).
+- **Fenêtres de l'acte II** : `Chateau_Fenetre_Vue_Simple`, `_Double`, `_Triple` à la place des lancettes. La vitre (shader
+  `ItHunts/VueExterieure`, matériaux `M_Kit_VitreVue`, `_Rouge`, `_Ambre`) lit une **bande de 360° sans couture**
+  (`T_Vue_Nuit_360.png` : ciel étoilé, **une seule lune**, vallée, ruines) selon la direction du regard, comme à l'infini :
+  jamais le mur ni la salle derrière, et des fenêtres sur des murs différents montrent des morceaux différents du même paysage.
+  `_Cap` tourne tout le paysage (cap monde de la lune ≈ `_Cap` − 115°). **À poser contre un mur plein** (pivot au sol, milieu
+  de la face) : la vitre est 5 cm devant la surface du mur ; la baie dépasse de 0.77 m dans la salle (embrasure profonde, à
+  habiller de part et d'autre par des piliers du kit si elle doit se fondre dans le mur). Passes : avant, profondeur,
+  profondeur et normales (contours, occlusion) ; compatible SRP Batcher.
 - **Sol de l'acte III** : `M_Jardin_SolMelange` (ItHunts/Toon, mot-clé `_SOLMELANGE`) : terre, gravier, herbe sèche et mousse
-  en plaques de 4.5 à 9 m mêlées par leur hauteur peinte, transitions douces, seconde lecture tournée contre la répétition.
-  À mettre sur les dessus des sols du jardin (les flancs gardent la terre). Réglages : `_SolQuantite`, `_SolEchelle`,
-  `_SolTuile`, `_SolDouceur`.
-- **Limites de l'acte III** : `Jardin_Lisiere_12m` et `Jardin_Lisiere_Coin` à la place des murs gris (infranchissables).
-- **Porte verrouillée** (les trois actes, mêmes GUID) : finie (contreforts, corniche, vantail de chêne et de fer, barre de
-  verrou) ; animation : `OuverturePorte.Ouvre()` : le sceau et la barre tournent d'un quart de tour (0,66 s), puis le vantail
-  monte de 3,1 m par à-coups, poussière au décollage (`Poussiere_Ouverture`, aussi sur les herses des cellules du traqueur).
-  Le `.meta` des trois FBX change (remappage du nouveau matériau `M_Bib_BoisNeuf` du vantail) : changement voulu.
-- **Puits et fosses** : `*_Sol_Puits_8x8` et `*_Sol_Fosse_8x8` sont des **dalles de sol percées** à poser à la place d'une case
-  du sol (le trou est dans la pièce) ; ne plus poser un puits sur un sol plein.
-- **Coffres** : `P_Prop_Coffre` et `P_Prop_CoffreVerrou` ont une lueur dorée qui respire (`Lueur_Coffre`, lumière ponctuelle
-  1,4 / 3,6 m, composant `LueurPulsee`) et un laiton plus lumineux. Appeler `GetComponentInChildren<LueurPulsee>().Eteint()`
-  quand le coffre est ouvert.
-- **Acte II, formes sans modèle** : petit présentoir `Chateau_SupportRatelier` (0.6 × 0.5 × 1.4 m) pour la greybox
-  `Prop_Ratelier` de petite taille ; pour la « plaque » `Prop_Armoire` de 3,9 × 0,7 × 3,9 m, la pièce de kit
-  `Chateau_Armoire_Tombee` (déjà livrée) reste la bonne (armoire couchée).
-- **Plateformes de traction** : la plaque `Plaque_Magnetique` (runes bleu pâle) est la surface à viser ; la mettre sur la
-  couche des surfaces magnétiques de main.
+  en plaques de 4.5 à 9 m mêlées par leur hauteur peinte, transitions douces, seconde lecture tournée contre la répétition ; les
+  plaques suivent les coordonnées du monde (aucune coupure entre deux pièces). Déjà posé sur `Jardin_Sol_8x8` (dalle de 8 × 8 m
+  à poser bord à bord) et sur le dessus des dalles `Jardin_Sol_Puits_8x8` et `Jardin_Sol_Fosse_8x8` ; à mettre aussi sur les
+  sols du jardin construits par main. Réglages : `_SolQuantite`, `_SolEchelle`, `_SolTuile`, `_SolDouceur`.
+- **Limites de l'acte III** : `Jardin_Lisiere_12m` (droite) et `Jardin_Lisiere_Coin` (quart de cercle de rayon 7.92 m) à la
+  place des murs gris. Infranchissables : `Col_Lisiere` de −0.7 à 6.7 m de profondeur et **22 m de haut** (troncs compris : ni
+  traction sur le dessus, ni double saut par-dessus). Le feuillage déborde de 5 m de chaque côté (les lisières se chevauchent
+  bord à bord sans trou). Raccord du coin aux lisières droites : ses deux extrémités sont aux points (0, −7.92) et (−7.92, 0) de
+  son repère, tangentes à ±X et ±Z.
+- **Grand arbre** : collision du tronc (prisme octogonal par tronçons) et des trois dessus plats de branche (`Col_Branches`) ;
+  branches à 3.4, 6.6 et 9.8 m (3.2 m d'écart : saut et hissage).
+- **Ponts suspendus** : `Col_Tablier` lisse, poteaux et piliers en collision, main courante à 1.15 m et lisse basse à 0.5 m
+  (un joueur en glissade ne passe plus dessous).
+- **Salle en hauteur** : plancher à **5 m** (double saut et hissage, comme les mezzanines) ; baie du fond fermée (vitre avec
+  vue au château, volets ailleurs).
+- **Puits et fosses** : `*_Sol_Puits_8x8` et `*_Sol_Fosse_8x8` sont des **dalles de sol percées** à poser à la place d'une
+  case du sol (le trou est dans la pièce) ; ne plus poser un puits sur un sol plein. Fosse de **3.4 m** : on en ressort par un
+  saut et un hissage (3.7 m). Les échelles sont du décor : le jeu n'a pas de mécanique d'escalade (`Accroche_Echelle` si main
+  en ajoute une).
+- **Porte verrouillée** (les trois actes, mêmes GUID) : finie (contreforts, vantail de chêne et de fer, barre de verrou sur
+  crampons, sceau d'âme) ; animation : `OuverturePorte.Ouvre()` : le sceau et la barre tournent d'un quart de tour (0,66 s),
+  puis le vantail monte de 3,1 m en sept à-coups de cliquet, poussière au décollage (`Poussiere_Ouverture`, aussi sur les herses
+  des cellules du traqueur). Le `.meta` des trois FBX change (remappage du matériau `M_Bib_BoisNeuf` du vantail) : voulu.
+- **Coffres** : `P_Prop_Coffre` et `P_Prop_CoffreVerrou` ont une lueur dorée qui respire (`Lueur_Coffre`, lumière ponctuelle,
+  composant `LueurPulsee`) et un laiton plus lumineux. Appeler `GetComponentInChildren<LueurPulsee>().Eteint()` quand le
+  coffre est ouvert (code de main).
+- **Plateformes de traction** : la plaque `Plaque_Magnetique` (runes bleu pâle) marque la face à viser ; toutes les surfaces
+  répondent déjà à la traction (`aimMask`), la plaque sert de signal visuel.
+- **Acte II, formes sans modèle** : petit présentoir `Chateau_SupportRatelier` (0.6 × 0.5 × 1.6 m) pour la greybox
+  `Prop_Ratelier` de 0.6 × 1.4 × 0.5 m ; pour la « plaque » `Prop_Armoire` de 3,9 × 0,7 × 3,9 m (armoire couchée), la pièce
+  de kit `Chateau_Armoire_Tombee` déjà livrée : 3.8 × 4.0 × 0.7 m, armoire couchée à plat, même plaque que la greybox (à poser à sa place, échelle 1).
+- **Coursives et échelles** : celles de la nuit 4 (`*_Coursive_8m`, `*_Echelle_6m`) complètent ces pièces.
 
-### Pièces
+### Pièces (emprise de toute la pièce, enfants compris, collisions exclues)
 
 ### Acte I : caves
 
 | Pièce | Emprise x × y × z (m) | Bas (m) | Triangles | Pivot | Usage |
 |---|---|---|---|---|---|
-| `SM_Cave_Rebord_4m` | 4.17 × 1.58 × 1.66 | -1.66 | 156 | ras du mur, milieu du bord arrière, dessus à 0 (saillie vers l'avant) | en quinconce tous les 2.2 à 3.5 m pour monter (saut, hissage, saut mural) |
-| `SM_Cave_PorteVerrouillee` | 6.01 × 1.43 × 6.65 | -0.05 | 1680 | sol, milieu de la face ; pièce de mur de 1 m d'épaisseur | salle payante : `OuverturePorte.Ouvre()` (sceau et barre tournent, puis le vantail monte par à-coups, poussière) |
-| `SM_Cave_MurRebords_10m` | 6.11 × 2.74 × 10.34 | 0.0 | 462 | ras du mur, milieu du bord arrière, dessus à 0 (saillie vers l'avant) | en quinconce tous les 2.2 à 3.5 m pour monter (saut, hissage, saut mural) |
-| `SM_Cave_PontSuspendu_12m` | 12.7 × 2.02 × 2.57 | -0.97 | 1916 | centre du tablier aux bouts (dessus à 0 aux appuis `Appui_A` / `Appui_B`, flèche de 0.8 m au milieu) | relier deux plateformes de même hauteur ; collision `Col_Tablier` lisse, garde-corps `Garde_Corps` |
+| `SM_Cave_PorteVerrouillee` | 6.01 × 1.43 × 6.76 | -0.16 | 1664 | sol, milieu de la face ; pièce de mur de 1 m d'épaisseur | salle payante : `OuverturePorte.Ouvre()` (sceau et barre tournent, puis le vantail monte par à-coups, poussière) |
+| `SM_Cave_PontSuspendu_12m` | 12.7 × 2.02 × 2.57 | -0.97 | 2492 | centre du tablier aux bouts (dessus à 0 aux appuis `Appui_A` / `Appui_B`, flèche de 0.8 m au milieu) | relier deux plateformes de même hauteur ; collision `Col_Tablier` lisse, garde-corps `Garde_Corps` |
 | `SM_Cave_Rebord_3m` | 3.0 × 0.9 × 1.03 | -1.03 | 120 | ras du mur, milieu du bord arrière, dessus à 0 (saillie vers l'avant) | en quinconce tous les 2.2 à 3.5 m pour monter (saut, hissage, saut mural) |
-| `SM_Cave_PlateformeTraction` | 3.0 × 3.01 × 4.47 | -0.45 | 1192 | centre du dessus ; accroches des chaînes à +4 m (`Accroche_Plafond`) ; `Accroche_Traction` sous la plaque | suspendue sous un plafond ou une voûte : on s'y tracte (plaque `Plaque_Magnetique`, runes bleu pâle) puis on s'y pose |
-| `SM_Cave_SalleHaute_8x8` | 8.3 × 8.3 × 9.82 | 0.0 | 1884 | sol, centre ; plancher à 6 m ; `Accroche_Echelle` devant, `Passage_Porte` à gauche | pièce en hauteur reliée par échelle, pont ou coursive |
-| `SM_Cave_Passerelle_Pente_10m` | 10.11 × 2.6 × 3.5 | -0.51 | 2004 | milieu du bord bas, dessus à 0 ; `Appui_Bas` (0, 0, 0), `Appui_Haut` (10, 0, 3) | relier deux étages de 3 m d'écart ; `Col_Rampe` lisse (16.7°) |
-| `SM_Cave_Sol_Puits_8x8` | 4.58 × 3.2 × 6.45 | -2.41 | 1120 | centre, dessus de la dalle à −4 mm ; eau `Deco_Eau` à −1.5 m | dalle de sol qui remplace une case du sol de la salle : le puits a son trou |
-| `SM_Cave_Sol_Fosse_8x8` | 8.0 × 8.0 × 4.09 | -4.01 | 462 | centre, dessus à 0 ; fond à −4 m ; `Accroche_Echelle` au pied de l'échelle | dalle de sol qui remplace une case du sol : fosse de 4 × 4 × 4 m dont on ressort par l'échelle |
+| `SM_Cave_PlateformeTraction` | 3.0 × 3.04 × 4.48 | -0.47 | 1216 | centre du dessus ; accroches des chaînes à +4 m (`Accroche_Plafond`) ; `Accroche_Traction` sous la plaque | suspendue sous un plafond ou une voûte : on s'y tracte (plaque `Plaque_Magnetique`, runes bleu pâle) puis on s'y pose |
+| `SM_Cave_SalleHaute_8x8` | 8.3 × 8.3 × 8.82 | 0.0 | 1956 | sol, centre ; plancher à 6 m ; `Accroche_Echelle` devant, `Passage_Porte` à gauche | pièce en hauteur reliée par échelle, pont ou coursive |
+| `SM_Cave_Passerelle_Pente_10m` | 10.11 × 2.6 × 4.68 | -0.51 | 2004 | milieu du bord bas, dessus à 0 ; `Appui_Bas` (0, 0, 0), `Appui_Haut` (10, 0, 3) | relier deux étages de 3 m d'écart ; `Col_Rampe` lisse (16.7°) |
+| `SM_Cave_Sol_Puits_8x8` | 8.0 × 8.0 × 6.45 | -2.41 | 1120 | centre, dessus de la dalle à −4 mm ; eau `Deco_Eau` à −1.5 m | dalle de sol qui remplace une case du sol de la salle : le puits a son trou |
+| `SM_Cave_Sol_Fosse_8x8` | 8.0 × 8.0 × 4.21 | -3.41 | 438 | centre, dessus à 0 ; fond à −4 m ; `Accroche_Echelle` au pied de l'échelle | dalle de sol qui remplace une case du sol : fosse de 4 × 4 × 4 m dont on ressort par l'échelle |
 
 ### Acte II : château
 
 | Pièce | Emprise x × y × z (m) | Bas (m) | Triangles | Pivot | Usage |
 |---|---|---|---|---|---|
-| `SM_Chateau_MurRebords_10m` | 6.02 × 2.08 × 10.02 | -0.01 | 453 | ras du mur, milieu du bord arrière, dessus à 0 (saillie vers l'avant) | en quinconce tous les 2.2 à 3.5 m pour monter (saut, hissage, saut mural) |
-| `SM_Chateau_PorteVerrouillee` | 6.01 × 1.43 × 6.65 | -0.05 | 1680 | sol, milieu de la face ; pièce de mur de 1 m d'épaisseur | salle payante : `OuverturePorte.Ouvre()` (sceau et barre tournent, puis le vantail monte par à-coups, poussière) |
-| `SM_Chateau_PontSuspendu_12m` | 12.78 × 2.28 × 2.62 | -0.97 | 2024 | centre du tablier aux bouts (dessus à 0 aux appuis `Appui_A` / `Appui_B`, flèche de 0.8 m au milieu) | relier deux plateformes de même hauteur ; collision `Col_Tablier` lisse, garde-corps `Garde_Corps` |
+| `SM_Chateau_PorteVerrouillee` | 6.01 × 1.43 × 6.76 | -0.16 | 1664 | sol, milieu de la face ; pièce de mur de 1 m d'épaisseur | salle payante : `OuverturePorte.Ouvre()` (sceau et barre tournent, puis le vantail monte par à-coups, poussière) |
+| `SM_Chateau_PontSuspendu_12m` | 12.78 × 2.28 × 2.62 | -0.97 | 2600 | centre du tablier aux bouts (dessus à 0 aux appuis `Appui_A` / `Appui_B`, flèche de 0.8 m au milieu) | relier deux plateformes de même hauteur ; collision `Col_Tablier` lisse, garde-corps `Garde_Corps` |
 | `SM_Chateau_Rebord_3m` | 3.0 × 0.9 × 1.25 | -1.25 | 72 | ras du mur, milieu du bord arrière, dessus à 0 (saillie vers l'avant) | en quinconce tous les 2.2 à 3.5 m pour monter (saut, hissage, saut mural) |
-| `SM_Chateau_PlateformeTraction` | 3.0 × 3.0 × 4.47 | -0.45 | 1066 | centre du dessus ; accroches des chaînes à +4 m (`Accroche_Plafond`) ; `Accroche_Traction` sous la plaque | suspendue sous un plafond ou une voûte : on s'y tracte (plaque `Plaque_Magnetique`, runes bleu pâle) puis on s'y pose |
-| `SM_Chateau_SalleHaute_8x8` | 8.3 × 8.3 × 9.82 | 0.0 | 2608 | sol, centre ; plancher à 6 m ; `Accroche_Echelle` devant, `Passage_Porte` à gauche | pièce en hauteur reliée par échelle, pont ou coursive |
-| `SM_Chateau_Passerelle_Pente_10m` | 10.11 × 2.6 × 3.5 | -0.51 | 4036 | milieu du bord bas, dessus à 0 ; `Appui_Bas` (0, 0, 0), `Appui_Haut` (10, 0, 3) | relier deux étages de 3 m d'écart ; `Col_Rampe` lisse (16.7°) |
-| `SM_Chateau_Balcon_Pierre_4m` | 4.1 × 1.88 × 1.46 | -1.45 | 1240 | ras du mur, dessus à 0 | balcon accessible par une porte haute |
-| `SM_Chateau_Sol_Fosse_8x8` | 8.0 × 8.0 × 4.11 | -4.01 | 462 | centre, dessus à 0 ; fond à −4 m ; `Accroche_Echelle` au pied de l'échelle | dalle de sol qui remplace une case du sol : fosse de 4 × 4 × 4 m dont on ressort par l'échelle |
-| `SM_Chateau_Fenetre_Vue_Simple` | 4.01 × 1.68 × 12.0 | 0.0 | 864 | sol, milieu de la face ; **à poser contre un mur plein** : la vitre est 5 cm devant le mur, la baie dépasse de 0.77 m | fenêtres de l'acte II : le paysage de nuit (ciel, lune, vallée) se voit à travers les vitres, jamais le papier peint |
-| `SM_Chateau_Fenetre_Vue_Double` | 8.02 × 1.68 × 12.0 | 0.0 | 1794 | sol, milieu de la face ; **à poser contre un mur plein** : la vitre est 5 cm devant le mur, la baie dépasse de 0.77 m | fenêtres de l'acte II : le paysage de nuit (ciel, lune, vallée) se voit à travers les vitres, jamais le papier peint |
+| `SM_Chateau_PlateformeTraction` | 3.0 × 3.03 × 4.48 | -0.47 | 1066 | centre du dessus ; accroches des chaînes à +4 m (`Accroche_Plafond`) ; `Accroche_Traction` sous la plaque | suspendue sous un plafond ou une voûte : on s'y tracte (plaque `Plaque_Magnetique`, runes bleu pâle) puis on s'y pose |
+| `SM_Chateau_SalleHaute_8x8` | 8.3 × 8.3 × 8.82 | 0.0 | 2634 | sol, centre ; plancher à 6 m ; `Accroche_Echelle` devant, `Passage_Porte` à gauche | pièce en hauteur reliée par échelle, pont ou coursive |
+| `SM_Chateau_Passerelle_Pente_10m` | 10.22 × 2.6 × 4.7 | -0.51 | 4036 | milieu du bord bas, dessus à 0 ; `Appui_Bas` (0, 0, 0), `Appui_Haut` (10, 0, 3) | relier deux étages de 3 m d'écart ; `Col_Rampe` lisse (16.7°) |
+| `SM_Chateau_Balcon_Pierre_4m` | 4.1 × 2.03 × 2.67 | -1.45 | 1240 | ras du mur, dessus à 0 | balcon accessible par une porte haute |
+| `SM_Chateau_Sol_Fosse_8x8` | 8.0 × 8.0 × 4.21 | -3.41 | 438 | centre, dessus à 0 ; fond à −4 m ; `Accroche_Echelle` au pied de l'échelle | dalle de sol qui remplace une case du sol : fosse de 4 × 4 × 4 m dont on ressort par l'échelle |
+| `SM_Chateau_Fenetre_Vue_Simple` | 4.02 × 1.68 × 12.0 | 0.0 | 864 | sol, milieu de la face ; **à poser contre un mur plein** : la vitre est 5 cm devant le mur, la baie dépasse de 0.77 m | fenêtres de l'acte II : le paysage de nuit (ciel, lune, vallée) se voit à travers les vitres, jamais le papier peint |
+| `SM_Chateau_Fenetre_Vue_Double` | 8.01 × 1.68 × 12.0 | 0.0 | 1794 | sol, milieu de la face ; **à poser contre un mur plein** : la vitre est 5 cm devant le mur, la baie dépasse de 0.77 m | fenêtres de l'acte II : le paysage de nuit (ciel, lune, vallée) se voit à travers les vitres, jamais le papier peint |
 | `SM_Chateau_Fenetre_Vue_Triple` | 8.01 × 1.68 × 20.0 | 0.0 | 2560 | sol, milieu de la face ; **à poser contre un mur plein** : la vitre est 5 cm devant le mur, la baie dépasse de 0.77 m | fenêtres de l'acte II : le paysage de nuit (ciel, lune, vallée) se voit à travers les vitres, jamais le papier peint |
 | `SM_Chateau_SupportRatelier` | 0.6 × 0.5 × 1.59 | -0.01 | 140 | sol, centre | remplace la greybox `Prop_Ratelier` de 0.6 × 1.4 × 0.5 m |
 
@@ -1116,19 +1130,20 @@ une vue « avant » par acte, chaque pièce de loin et de près). Contrôle des 
 
 | Pièce | Emprise x × y × z (m) | Bas (m) | Triangles | Pivot | Usage |
 |---|---|---|---|---|---|
-| `SM_Jardin_Foret_Lisiere_20m` | 20.58 × 10.5 × 22.42 | -0.53 | 1378 |  | délimite les zones de l'acte III à la place des murs gris ; infranchissable (`Col_Lisiere`, 8 m) |
-| `SM_Jardin_MurRebords_10m` | 6.1 × 2.17 × 10.24 | 0.0 | 213 | ras du mur, milieu du bord arrière, dessus à 0 (saillie vers l'avant) | en quinconce tous les 2.2 à 3.5 m pour monter (saut, hissage, saut mural) |
-| `SM_Jardin_PorteVerrouillee` | 6.01 × 1.43 × 6.65 | -0.05 | 1707 | sol, milieu de la face ; pièce de mur de 1 m d'épaisseur | salle payante : `OuverturePorte.Ouvre()` (sceau et barre tournent, puis le vantail monte par à-coups, poussière) |
-| `SM_Jardin_Falaise_Rebords_16m` | 16.36 × 5.65 × 16.3 | 0.0 | 720 | ras du mur, milieu du bord arrière, dessus à 0 (saillie vers l'avant) | en quinconce tous les 2.2 à 3.5 m pour monter (saut, hissage, saut mural) |
-| `SM_Jardin_SousBois_A` | 2.94 × 2.5 × 0.18 | 0.01 | 732 | sol, centre | habillage au pied des arbres et des lisières ; traversable (`Deco_SansCollision`) |
-| `SM_Jardin_SousBois_B` | 1.58 × 1.95 × 0.18 | 0.01 | 1018 | sol, centre | habillage au pied des arbres et des lisières ; traversable (`Deco_SansCollision`) |
+| `SM_Jardin_PorteVerrouillee` | 6.01 × 1.43 × 6.76 | -0.16 | 1691 | sol, milieu de la face ; pièce de mur de 1 m d'épaisseur | salle payante : `OuverturePorte.Ouvre()` (sceau et barre tournent, puis le vantail monte par à-coups, poussière) |
+| `SM_Jardin_SousBois_A` | 4.9 × 3.97 × 0.76 | 0.0 | 732 | sol, centre | habillage au pied des arbres et des lisières ; traversable (`Deco_SansCollision`) |
+| `SM_Jardin_SousBois_B` | 3.37 × 2.85 × 0.8 | 0.0 | 1018 | sol, centre | habillage au pied des arbres et des lisières ; traversable (`Deco_SansCollision`) |
 | `SM_Jardin_Rocher_Petit` | 1.27 × 1.15 × 0.65 | 0.28 | 360 | sol, centre (base enfoncée de 10 cm) | obstacle et appui (petit : enjambé ; moyen : hissage ; grand : double saut) |
 | `SM_Jardin_Rocher_Moyen` | 2.7 × 2.15 × 1.52 | 0.73 | 360 | sol, centre (base enfoncée de 10 cm) | obstacle et appui (petit : enjambé ; moyen : hissage ; grand : double saut) |
 | `SM_Jardin_Rocher_Grand` | 5.53 × 3.92 × 3.68 | 0.6 | 720 | sol, centre (base enfoncée de 10 cm) | obstacle et appui (petit : enjambé ; moyen : hissage ; grand : double saut) |
-| `SM_Jardin_GrandArbre_Praticable` | 14.65 × 14.15 × 22.02 | -0.45 | 2614 | sol, centre du tronc ; `Appui_Branche_1..3` au bout des branches | arbre de 20 m qu'on gravit par trois branches plates (3.4, 6.6, 9.8 m) |
-| `SM_Jardin_Sol_Puits_8x8` | 4.4 × 3.2 × 6.55 | -2.41 | 1380 | centre, dessus de la dalle à −4 mm ; eau `Deco_Eau` à −1.5 m | dalle de sol qui remplace une case du sol de la salle : le puits a son trou |
-| `SM_Jardin_Sol_Fosse_8x8` | 8.0 × 8.0 × 4.09 | -4.01 | 462 | centre, dessus à 0 ; fond à −4 m ; `Accroche_Echelle` au pied de l'échelle | dalle de sol qui remplace une case du sol : fosse de 4 × 4 × 4 m dont on ressort par l'échelle |
-| `SM_Jardin_PlateformeTraction` | 3.0 × 3.0 × 4.47 | -0.45 | 1066 | centre du dessus ; accroches des chaînes à +4 m (`Accroche_Plafond`) ; `Accroche_Traction` sous la plaque | suspendue sous un plafond ou une voûte : on s'y tracte (plaque `Plaque_Magnetique`, runes bleu pâle) puis on s'y pose |
-| `SM_Jardin_Lisiere_12m` | 22.59 × 16.79 × 21.49 | -0.5 | 5738 | sol, milieu du bord avant ; la forêt s'étend sur 6.5 m derrière (vers −Z Unity), fond noir à 6.5 m | délimite les zones de l'acte III à la place des murs gris ; infranchissable (`Col_Lisiere`, 8 m) |
-| `SM_Jardin_Lisiere_Coin` | 22.69 × 22.93 × 21.26 | -0.38 | 5752 | sol, coin intérieur de la clairière ; quart de cercle de rayon 8 m | délimite les zones de l'acte III à la place des murs gris ; infranchissable (`Col_Lisiere`, 8 m) |
-| `SM_Jardin_SalleHaute_8x8` | 8.3 × 8.3 × 9.82 | 0.0 | 1744 | sol, centre ; plancher à 6 m ; `Accroche_Echelle` devant, `Passage_Porte` à gauche | pièce en hauteur reliée par échelle, pont ou coursive |
+| `SM_Jardin_GrandArbre_Praticable` | 14.65 × 14.15 × 22.02 | -0.45 | 2632 | sol, centre du tronc ; `Appui_Branche_1..3` au bout des branches | arbre de 20 m qu'on gravit par trois branches plates (3.4, 6.6, 9.8 m) |
+| `SM_Jardin_Sol_Puits_8x8` | 8.0 × 8.0 × 6.55 | -2.41 | 1380 | centre, dessus de la dalle à −4 mm ; eau `Deco_Eau` à −1.5 m | dalle de sol qui remplace une case du sol de la salle : le puits a son trou |
+| `SM_Jardin_Sol_Fosse_8x8` | 8.0 × 8.0 × 4.21 | -3.41 | 438 | centre, dessus à 0 ; fond à −4 m ; `Accroche_Echelle` au pied de l'échelle | dalle de sol qui remplace une case du sol : fosse de 4 × 4 × 4 m dont on ressort par l'échelle |
+| `SM_Jardin_PlateformeTraction` | 3.0 × 3.03 × 4.48 | -0.47 | 1066 | centre du dessus ; accroches des chaînes à +4 m (`Accroche_Plafond`) ; `Accroche_Traction` sous la plaque | suspendue sous un plafond ou une voûte : on s'y tracte (plaque `Plaque_Magnetique`, runes bleu pâle) puis on s'y pose |
+| `SM_Jardin_Lisiere_12m` | 23.67 × 17.64 × 21.47 | -0.5 | 9082 | sol, milieu du bord avant ; la forêt s'étend sur 6.5 m derrière (vers −Z Unity), fond noir à 6.5 m | délimite les zones de l'acte III à la place des murs gris ; infranchissable (`Col_Lisiere`, 8 m) |
+| `SM_Jardin_Lisiere_Coin` | 25.4 × 26.78 × 21.42 | -0.39 | 9096 | sol, coin intérieur de la clairière ; quart de cercle de rayon 8 m | délimite les zones de l'acte III à la place des murs gris ; infranchissable (`Col_Lisiere`, 8 m) |
+| `SM_Jardin_SalleHaute_8x8` | 8.3 × 8.3 × 8.82 | 0.0 | 1816 | sol, centre ; plancher à 6 m ; `Accroche_Echelle` devant, `Passage_Porte` à gauche | pièce en hauteur reliée par échelle, pont ou coursive |
+| `SM_Jardin_PontSuspendu_12m` | 12.7 × 2.02 × 2.57 | -0.97 | 2504 | centre du tablier aux bouts (dessus à 0 aux appuis `Appui_A` / `Appui_B`, flèche de 0.8 m au milieu) | relier deux plateformes de même hauteur ; collision `Col_Tablier` lisse, garde-corps `Garde_Corps` |
+| `SM_Jardin_Rebord_3m` | 3.0 × 0.96 × 1.34 | -1.3 | 132 | ras du mur, milieu du bord arrière, dessus à 0 (saillie vers l'avant) | en quinconce tous les 2.2 à 3.5 m pour monter (saut, hissage, saut mural) |
+| `SM_Jardin_Passerelle_Pente_10m` | 10.11 × 2.6 × 4.63 | -0.51 | 636 | milieu du bord bas, dessus à 0 ; `Appui_Bas` (0, 0, 0), `Appui_Haut` (10, 0, 3) | relier deux étages de 3 m d'écart ; `Col_Rampe` lisse (16.7°) |
+| `SM_Jardin_Sol_8x8` | 8.0 × 8.0 × 0.6 | -0.6 | 12 |  |  |

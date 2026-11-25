@@ -73,7 +73,7 @@ public static class KitBuilder
     }
 
     // ---------------------------------------------------------------- nuit 5, lot 3
-    const string PANO = "Assets/Art/Textures/Ciel/T_Vue_Nuit_Panorama.png";
+    const string PANO = "Assets/Art/Textures/Ciel/T_Vue_Nuit_360.png";   // bande de 360° sans couture (panorama360.py)
 
     static Material VueMat(string nom, Color teinte, float force)
     {
@@ -84,7 +84,7 @@ public static class KitBuilder
         m.shader = sh;
         m.SetTexture("_Panorama", AssetDatabase.LoadAssetAtPath<Texture2D>(PANO));
         m.SetColor("_Teinte", teinte); m.SetFloat("_TeinteForce", force);
-        m.SetFloat("_Couverture", 150f); m.SetFloat("_HauteurBas", -28f); m.SetFloat("_HauteurHaut", 52f);
+        m.SetFloat("_HauteurBas", -24f); m.SetFloat("_HauteurHaut", 50f);
         m.SetFloat("_Exposition", 0.75f); m.SetFloat("_Salete", 0.35f);
         EditorUtility.SetDirty(m);
         return m;
@@ -93,9 +93,9 @@ public static class KitBuilder
     static void MateriauxNuit5()
     {
         var ti = (TextureImporter)AssetImporter.GetAtPath(PANO);
-        if (ti != null && (ti.wrapMode != TextureWrapMode.Clamp || ti.maxTextureSize != 4096))
+        if (ti != null && (ti.wrapModeU != TextureWrapMode.Repeat || ti.maxTextureSize != 8192))
         {
-            ti.wrapMode = TextureWrapMode.Clamp; ti.maxTextureSize = 4096; ti.mipmapEnabled = true; ti.sRGBTexture = true;
+            ti.wrapModeU = TextureWrapMode.Repeat; ti.wrapModeV = TextureWrapMode.Clamp; ti.maxTextureSize = 8192; ti.mipmapEnabled = true; ti.sRGBTexture = true;
             ti.textureCompression = TextureImporterCompression.CompressedHQ; ti.SaveAndReimport();
         }
         // plaque de traction : fer sombre, runes bleu pâle (bleu = traction, D-024) qui luisent sans éblouir

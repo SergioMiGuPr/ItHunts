@@ -24,7 +24,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _Panorama:
-        m_Texture: {fileID: 2800000, guid: 38427d56e6402184798f401fb3b82353, type: 3}
+        m_Texture: {fileID: 2800000, guid: afe751728c92d0e4c9ca1724a8893d2b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -33,8 +33,8 @@ Material:
     - _Ciel: 0.6
     - _Couverture: 150
     - _Exposition: 0.75
-    - _HauteurBas: -28
-    - _HauteurHaut: 52
+    - _HauteurBas: -24
+    - _HauteurHaut: 50
     - _Ondes: 0.012
     - _Salete: 0.35
     - _SaleteEchelle: 0.35

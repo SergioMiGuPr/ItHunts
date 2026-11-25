@@ -7,8 +7,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Bib_BoisNeuf
+    second: {fileID: 2100000, guid: f8e81365003a3914b9d3e4a6d45a4352, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Bib_BoisPourri
     second: {fileID: 2100000, guid: 52dbf2a450ab2884086a188bbea4c35d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Bib_FerRouille
+    second: {fileID: 2100000, guid: 9f2fdf7453e756345a009e4dfeb99ea4, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule

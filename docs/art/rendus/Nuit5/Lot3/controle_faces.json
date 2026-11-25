@@ -9,7 +9,7 @@
   "piece_entiere_superposees": 0
  },
  "SM_Cave_PlateformeTraction.fbx": {
-  "faces": 1192,
+  "faces": 1216,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
@@ -18,16 +18,16 @@
   "piece_entiere_superposees": 0
  },
  "SM_Cave_PontSuspendu_12m.fbx": {
-  "faces": 1964,
+  "faces": 2588,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
   "partielles": 0,
   "aire_partielle_m2": 0.0,
-  "piece_entiere_superposees": 8
+  "piece_entiere_superposees": 0
  },
  "SM_Cave_PorteVerrouillee.fbx": {
-  "faces": 1680,
+  "faces": 1664,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
@@ -44,7 +44,7 @@
   "aire_partielle_m2": 0.0
  },
  "SM_Cave_SalleHaute_8x8.fbx": {
-  "faces": 1872,
+  "faces": 1956,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
@@ -53,7 +53,7 @@
   "piece_entiere_superposees": 0
  },
  "SM_Cave_Sol_Fosse_8x8.fbx": {
-  "faces": 462,
+  "faces": 438,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
@@ -68,7 +68,7 @@
   "aire_m2": 0.0,
   "partielles": 0,
   "aire_partielle_m2": 0.0,
-  "piece_entiere_superposees": 10
+  "piece_entiere_superposees": 0
  },
  "SM_Chateau_Balcon_Pierre_4m.fbx": {
   "faces": 1240,
@@ -122,16 +122,16 @@
   "piece_entiere_superposees": 0
  },
  "SM_Chateau_PontSuspendu_12m.fbx": {
-  "faces": 2072,
+  "faces": 2696,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
   "partielles": 0,
   "aire_partielle_m2": 0.0,
-  "piece_entiere_superposees": 8
+  "piece_entiere_superposees": 0
  },
  "SM_Chateau_PorteVerrouillee.fbx": {
-  "faces": 1680,
+  "faces": 1664,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
@@ -148,16 +148,16 @@
   "aire_partielle_m2": 0.0
  },
  "SM_Chateau_SalleHaute_8x8.fbx": {
-  "faces": 2836,
+  "faces": 2634,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
   "partielles": 0,
   "aire_partielle_m2": 0.0,
-  "piece_entiere_superposees": 9
+  "piece_entiere_superposees": 0
  },
  "SM_Chateau_Sol_Fosse_8x8.fbx": {
-  "faces": 462,
+  "faces": 438,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
@@ -174,31 +174,28 @@
   "aire_partielle_m2": 0.0
  },
  "SM_Jardin_GrandArbre_Praticable.fbx": {
-  "faces": 2620,
+  "faces": 2722,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
   "partielles": 0,
-  "aire_partielle_m2": 0.0,
-  "piece_entiere_superposees": 0
+  "aire_partielle_m2": 0.0
  },
  "SM_Jardin_Lisiere_12m.fbx": {
-  "faces": 5750,
+  "faces": 9094,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
   "partielles": 0,
-  "aire_partielle_m2": 0.0,
-  "piece_entiere_superposees": 0
+  "aire_partielle_m2": 0.0
  },
  "SM_Jardin_Lisiere_Coin.fbx": {
-  "faces": 5824,
+  "faces": 9168,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
   "partielles": 0,
-  "aire_partielle_m2": 0.0,
-  "piece_entiere_superposees": 0
+  "aire_partielle_m2": 0.0
  },
  "SM_Jardin_Passerelle_Pente_10m.fbx": {
   "faces": 638,
@@ -219,16 +216,16 @@
   "piece_entiere_superposees": 0
  },
  "SM_Jardin_PontSuspendu_12m.fbx": {
-  "faces": 1976,
+  "faces": 2600,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
   "partielles": 0,
   "aire_partielle_m2": 0.0,
-  "piece_entiere_superposees": 8
+  "piece_entiere_superposees": 0
  },
  "SM_Jardin_PorteVerrouillee.fbx": {
-  "faces": 1707,
+  "faces": 1691,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
@@ -269,16 +266,24 @@
   "aire_partielle_m2": 0.0
  },
  "SM_Jardin_SalleHaute_8x8.fbx": {
-  "faces": 1804,
+  "faces": 1816,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
   "partielles": 0,
   "aire_partielle_m2": 0.0,
-  "piece_entiere_superposees": 9
+  "piece_entiere_superposees": 0
+ },
+ "SM_Jardin_Sol_8x8.fbx": {
+  "faces": 12,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
  },
  "SM_Jardin_Sol_Fosse_8x8.fbx": {
-  "faces": 462,
+  "faces": 438,
   "degenerees": 0,
   "superposees": 0,
   "aire_m2": 0.0,
@@ -293,7 +298,7 @@
   "aire_m2": 0.0,
   "partielles": 0,
   "aire_partielle_m2": 0.0,
-  "piece_entiere_superposees": 10
+  "piece_entiere_superposees": 0
  },
  "SM_Jardin_SousBois_A.fbx": {
   "faces": 732,

@@ -319,4 +319,4 @@ Pièces existantes modifiées par ce lot : `SM_Cave_Puits` (refait : margelle li
 
 ## Nuit 5, lot 3 : pièces pour de vraies cartes (branche art-kits-5)
 
-36 nouvelles pièces (verticalité, fenêtres qui montrent l'extérieur, lisières, sous-bois, rochers, grand arbre, sols percés, support de râtelier), porte verrouillée finie, sol mélangé du jardin (`M_Jardin_SolMelange`), lueur des coffres. Dimensions, pivots, usage et consignes de pose : docs/art/INTEGRATION-PROPS.md, section « Nuit 5, lot 3 » ; source `kit_nuit5.py` ; catalogue `kit_doc_nuit5.py` ; planches `docs/art/rendus/Nuit5/Lot3/`.
+34 nouvelles pièces (verticalité, fenêtres qui montrent l'extérieur, lisières, sous-bois, rochers, grand arbre, sols percés, support de râtelier), porte verrouillée finie, sol mélangé du jardin (`M_Jardin_SolMelange`), lueur des coffres. Dimensions, pivots, usage et consignes de pose : docs/art/INTEGRATION-PROPS.md, section « Nuit 5, lot 3 » ; source `kit_nuit5.py` ; catalogue `kit_doc_nuit5.py` ; planches `docs/art/rendus/Nuit5/Lot3/`.

@@ -121,6 +121,9 @@ public static class CapturesLot3N5
             // deux autres torches du jeu de part et d'autre (une salle éclairée comme celles des cartes)
             var t2 = Object.Instantiate(torche.gameObject).GetComponent<Light>(); var t3 = Object.Instantiate(torche.gameObject).GetComponent<Light>();
             t2.shadows = LightShadows.None; t3.shadows = LightShadows.None;
+            // relecture : sous trois torches orange, les matériaux saturaient en rouge. Une torche du jeu garde le chaud ; les deux
+            // autres deviennent la lumière froide de la lune (comme le rayon de lune des fenêtres et la lune de l'acte III)
+            foreach (var l in new[] { t2, t3 }) { l.color = new Color(0.55f, 0.62f, 0.85f); l.intensity = 1.4f; l.range = 26f; }
             var avantVue = centre + fond.normal * Mathf.Min(fond.distance - 8f, 4f);
             torche.transform.position = pf + fond.normal * 1.2f + lat * 4.5f + Vector3.up * 2.6f;
             await Snap($"{acte}_avant_mur", centre, pf + Vector3.up * 3f);
@@ -175,15 +178,25 @@ public static class CapturesLot3N5
                 Vector3 cible = b.center;
                 if (!murale) torche.transform.position = b.center + fond.normal * (b.extents.z + 2.5f) + lat * (b.extents.x + 1.5f) + Vector3.up * 1.5f;
                 else torche.transform.position = pf + fond.normal * 1.2f + lat * (b.extents.x + 1f) + Vector3.up * 2.6f;
-                t2.transform.position = b.center - lat * (b.extents.x + 2f) + fond.normal * 2f + Vector3.up * 1.2f;
-                t3.transform.position = new Vector3(b.center.x, sol + 2.8f, b.center.z) + fond.normal * (b.extents.z + 5f);
+                t2.transform.position = b.center - lat * (b.extents.x + 4f) + fond.normal * 4f + Vector3.up * (b.extents.y + 6f);
+                t3.transform.position = new Vector3(b.center.x, sol + b.size.y + 8f, b.center.z) + fond.normal * (b.extents.z + 8f);
+                // grandes pièces de plein air (lisière, arbre) : la lune porte plus loin et plus fort
+                float lune = taille > 8f ? 3.2f : 1.4f;
+                t2.intensity = lune; t3.intensity = lune; t2.range = t3.range = taille > 8f ? 45f : 26f;
                 Vector3 axe = (fond.normal + lat * 0.35f).normalized;
                 float loin = Mathf.Min(fond.distance + (murale ? 0f : -2f), taille * 0.95f + 4f);
                 Vector3 oeilLoin = new Vector3(cible.x, sol + levee + 1.7f, cible.z) + axe * loin;
+                if (nom.StartsWith("Fenetre"))
+                {
+                    // fenêtres : cadrage fixe depuis leur pied (vue de la salle, en levant les yeux vers la baie)
+                    cible = pos + Vector3.up * (b.size.y * 0.55f) + fond.normal * 0.8f;
+                    oeilLoin = pos + fond.normal * 12f + lat * 3f + Vector3.up * 1.7f;
+                }
                 await Snap($"{acte}_{nom}_loin", oeilLoin, cible);
                 float pres = Mathf.Max(3f, taille * 0.55f + 1.5f);
                 Vector3 oeilPres = new Vector3(cible.x, sol + levee + 1.7f, cible.z) + (fond.normal - lat * 0.4f).normalized * pres;
                 if (levee > 0f) { oeilLoin = new Vector3(pos.x, pos.y + 1.7f, pos.z) + axe * 5.5f; oeilPres = new Vector3(pos.x, pos.y + 1.7f, pos.z) + fond.normal * 3.2f; cible = pos - Vector3.up * 1.5f; }
+                if (nom.StartsWith("Fenetre")) oeilPres = pos + fond.normal * 5.5f - lat * 1.2f + Vector3.up * 1.7f;
                 if (nom.StartsWith("PorteVerrouillee")) { oeilPres = new Vector3(cible.x, sol + 1.7f, cible.z) + fond.normal * 6.5f; cible = new Vector3(cible.x, sol + 2.4f, cible.z); }
                 await Snap($"{acte}_{nom}_pres", oeilPres, cible + (nom.StartsWith("Fenetre") ? Vector3.up * 2f : Vector3.zero));
                 var ouv = g.GetComponent<ItHunts.Art.VFX.OuverturePorte>();

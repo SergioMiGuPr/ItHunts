@@ -34,6 +34,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Bib_Terre_Racines
     second: {fileID: 2100000, guid: 4d983f941a48d2d45a33a0340a584891, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Jardin_SolMelange
+    second: {fileID: 2100000, guid: c6a16eec06054d046874820d709558ef, type: 2}
   materials:
     materialImportMode: 2
     materialName: 1

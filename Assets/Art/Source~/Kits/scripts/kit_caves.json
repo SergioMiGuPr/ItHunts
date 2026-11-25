@@ -622,10 +622,10 @@
   "taille": [
    6.01,
    1.43,
-   6.65
+   6.76
   ],
-  "bas": -0.05,
-  "triangles": 1680,
+  "bas": -0.16,
+  "triangles": 1664,
   "materiaux": [
    "M_Bib_Moellons_Peint",
    "M_Bib_PierreTaillee_Peint",
@@ -856,7 +856,7 @@
    2.57
   ],
   "bas": -0.97,
-  "triangles": 1916,
+  "triangles": 2492,
   "materiaux": [
    "M_Bib_BoisPourri",
    "M_Corde"
@@ -880,29 +880,31 @@
   "doc": "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant.",
   "taille": [
    3.0,
-   3.01,
-   4.47
+   3.04,
+   4.48
   ],
-  "bas": -0.45,
-  "triangles": 1192,
+  "bas": -0.47,
+  "triangles": 1216,
   "materiaux": [
    "M_Bib_BoisPourri",
    "M_Bib_FerRouille"
   ]
  },
  "SM_Cave_SalleHaute_8x8": {
-  "doc": "Salle en hauteur de 8 × 8 m, plancher à 6 m sur quatre poteaux : fenêtre au fond, porte à gauche, garde-corps, passage d'échelle.",
+  "doc": "Salle en hauteur de 8 × 8 m, plancher à 5 m sur quatre poteaux : fenêtre au fond, porte à gauche, garde-corps, passage d'échelle.",
   "taille": [
    8.3,
    8.3,
-   9.82
+   8.82
   ],
   "bas": 0.0,
-  "triangles": 1884,
+  "triangles": 1956,
   "materiaux": [
    "M_Bib_BoisPourri",
    "M_Bib_Moellons_Peint",
-   "M_Bib_PierreTaillee_Peint"
+   "M_Bib_PierreTaillee_Peint",
+   "M_Bib_BoisNeuf",
+   "M_Bib_FerRouille"
   ]
  },
  "SM_Cave_Passerelle_Pente_10m": {
@@ -910,7 +912,7 @@
   "taille": [
    10.11,
    2.6,
-   3.5
+   4.68
   ],
   "bas": -0.51,
   "triangles": 2004,
@@ -921,8 +923,8 @@
  "SM_Cave_Sol_Puits_8x8": {
   "doc": "Dalle de sol de 8 × 8 m percée, avec le puits dans son ouverture (eau à -1.5 m, fond à -2.4 m).",
   "taille": [
-   4.58,
-   3.2,
+   8.0,
+   8.0,
    6.45
   ],
   "bas": -2.41,
@@ -936,14 +938,14 @@
   ]
  },
  "SM_Cave_Sol_Fosse_8x8": {
-  "doc": "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter.",
+  "doc": "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 3.4 m : éboulis, pieux, échelle de décor.",
   "taille": [
    8.0,
    8.0,
-   4.09
+   4.21
   ],
-  "bas": -4.01,
-  "triangles": 462,
+  "bas": -3.41,
+  "triangles": 438,
   "materiaux": [
    "M_Bib_Dalles_Sales",
    "M_Bib_Moellons_Peint",

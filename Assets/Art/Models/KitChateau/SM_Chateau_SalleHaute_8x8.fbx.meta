@@ -12,6 +12,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Bib_FerRouille
+    second: {fileID: 2100000, guid: 9f2fdf7453e756345a009e4dfeb99ea4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Chateau_Parquet
     second: {fileID: 2100000, guid: bd9fdfc4c93de2f4c97068165508a478, type: 2}
   - first:
@@ -19,6 +24,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Chateau_PierreClaire
     second: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Kit_VitreVue
+    second: {fileID: 2100000, guid: c027cf8d085fe2c489401e399f1af123, type: 2}
   materials:
     materialImportMode: 2
     materialName: 1

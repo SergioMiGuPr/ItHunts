@@ -577,10 +577,10 @@
   "taille": [
    6.01,
    1.43,
-   6.65
+   6.76
   ],
-  "bas": -0.05,
-  "triangles": 1680,
+  "bas": -0.16,
+  "triangles": 1664,
   "materiaux": [
    "M_Chateau_PierreClaire",
    "M_Bib_Trim",
@@ -826,7 +826,7 @@
    2.62
   ],
   "bas": -0.97,
-  "triangles": 2024,
+  "triangles": 2600,
   "materiaux": [
    "M_Bib_BoisNeuf",
    "M_Bib_FerRouille",
@@ -850,10 +850,10 @@
   "doc": "Plateforme de traction de 3 × 3 m suspendue par quatre chaînes : plaque magnétique gravée dessous et sur la tranche avant.",
   "taille": [
    3.0,
-   3.0,
-   4.47
+   3.03,
+   4.48
   ],
-  "bas": -0.45,
+  "bas": -0.47,
   "triangles": 1066,
   "materiaux": [
    "M_Chateau_PierreClaire",
@@ -862,26 +862,28 @@
   ]
  },
  "SM_Chateau_SalleHaute_8x8": {
-  "doc": "Salle en hauteur de 8 × 8 m, plancher à 6 m sur quatre piliers : fenêtre au fond, porte à gauche, balustrade, passage d'échelle.",
+  "doc": "Salle en hauteur de 8 × 8 m, plancher à 5 m sur quatre piliers : fenêtre au fond, porte à gauche, balustrade, passage d'échelle.",
   "taille": [
    8.3,
    8.3,
-   9.82
+   8.82
   ],
   "bas": 0.0,
-  "triangles": 2608,
+  "triangles": 2634,
   "materiaux": [
    "M_Chateau_PierreClaire",
    "M_Chateau_Parquet",
+   "M_Kit_VitreVue",
+   "M_Bib_FerRouille",
    "M_Bib_BoisNeuf"
   ]
  },
  "SM_Chateau_Passerelle_Pente_10m": {
   "doc": "Passerelle en pente : monte de 3 m sur 10 m (16.7°), dallée, balustrade, rampe lisse.",
   "taille": [
-   10.11,
+   10.22,
    2.6,
-   3.5
+   4.7
   ],
   "bas": -0.51,
   "triangles": 4036,
@@ -894,8 +896,8 @@
   "doc": "Balcon de pierre de 4 × 1.8 m en encorbellement, trois consoles moulurées, balustrade.",
   "taille": [
    4.1,
-   1.88,
-   1.46
+   2.03,
+   2.67
   ],
   "bas": -1.45,
   "triangles": 1240,
@@ -905,14 +907,14 @@
   ]
  },
  "SM_Chateau_Sol_Fosse_8x8": {
-  "doc": "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 4 m : éboulis, pieux, échelle pour remonter.",
+  "doc": "Dalle de sol de 8 × 8 m percée d'une fosse de 4 × 4 × 3.4 m : éboulis, pieux, échelle de décor.",
   "taille": [
    8.0,
    8.0,
-   4.11
+   4.21
   ],
-  "bas": -4.01,
-  "triangles": 462,
+  "bas": -3.41,
+  "triangles": 438,
   "materiaux": [
    "M_Chateau_Dalles",
    "M_Chateau_PierreClaire",
@@ -922,7 +924,7 @@
  "SM_Chateau_Fenetre_Vue_Simple": {
   "doc": "Fenêtre en lancette simple qui montre l'extérieur (ciel étoilé, lune, paysage lointain) : baie de 1.6 × 6.6 m dans un panneau de 4 × 12 m.",
   "taille": [
-   4.01,
+   4.02,
    1.68,
    12.0
   ],
@@ -939,7 +941,7 @@
  "SM_Chateau_Fenetre_Vue_Double": {
   "doc": "Fenêtre à deux lancettes et oculus qui montre l'extérieur : baie de 4 × 7.3 m dans un panneau de 8 × 12 m.",
   "taille": [
-   8.02,
+   8.01,
    1.68,
    12.0
   ],
@@ -971,7 +973,7 @@
   ]
  },
  "SM_Chateau_SupportRatelier": {
-  "doc": "Petit support de râtelier de 0.6 × 0.5 × 1.4 m : deux lances et une hallebarde.",
+  "doc": "Petit support de râtelier de 0.6 × 0.5 × 1.6 m : deux lances et une hallebarde.",
   "taille": [
    0.6,
    0.5,

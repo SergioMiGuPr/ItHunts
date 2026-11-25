@@ -42,6 +42,12 @@ USAGE = {
 }
 
 
+# noms exacts des pièces du lot (relecture : un filtre par sous-chaîne prenait des pièces anciennes)
+_src = open(os.path.join(ICI, "kit_nuit5.py"), encoding="utf-8").read()
+import re as _re
+NOMS = set(_re.findall(r'\("(SM_[A-Za-z]+_[A-Za-z0-9_]+)"', _src)) | {"SM_Cave_PorteVerrouillee", "SM_Chateau_PorteVerrouillee", "SM_Jardin_PorteVerrouillee"}
+
+
 def cle(nom, table):
     for k in table:
         if k in nom:
@@ -53,7 +59,7 @@ def main():
     out = []
     for acte, f in (("Acte I : caves", "kit_caves.json"), ("Acte II : château", "kit_chateau.json"), ("Acte III : jardin", "kit_jardin.json")):
         d = json.load(open(os.path.join(ICI, f), encoding="utf-8"))
-        lignes = [(n, v) for n, v in d.items() if any(k in n for k in list(PIVOT) + ["Lisiere", "SousBois", "Rocher"])]
+        lignes = [(n, v) for n, v in d.items() if n in NOMS]
         if not lignes:
             continue
         out.append(f"\n### {acte}\n")

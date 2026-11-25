@@ -44,6 +44,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Eau_Toon
     second: {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Jardin_SolMelange
+    second: {fileID: 2100000, guid: c6a16eec06054d046874820d709558ef, type: 2}
   materials:
     materialImportMode: 2
     materialName: 1

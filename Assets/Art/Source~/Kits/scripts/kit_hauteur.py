@@ -1229,10 +1229,10 @@ def porte_verrouillee(S, nom):
     for sx in (-1, 1):
         k.box((sx * 1.48, 0.33, 1.49 + dz()), (0.05, 0.06, 2.98), S["fer"])
         k.box((sx * 1.48, 0.67, 1.49 + dz()), (0.05, 0.06, 2.98), S["fer"])
-    # nuit 5 (« finis-la ») : mur tenu, corniche moulurée au sommet, deux contreforts à larmier, plinthe
+    # nuit 5 (« finis-la ») : deux contreforts à larmier (enfoncés de 5 cm dans le mur), plinthe ; pas de corniche (elle
+    # redonnait l'air d'une cheminée, relecture)
     for sx in (-1, 1):
-        prism(k, [(-0.02, 0.0), (-0.42, 0.0), (-0.42, 4.2), (-0.2, 4.9), (-0.02, 4.9)], sx * 2.62 - 0.3, sx * 2.62 + 0.3, mp, axis="x")
-    prism(k, [(0.02, h - 0.02), (-0.28, h - 0.02), (-0.28, h - 0.2), (-0.16, h - 0.32), (0.02, h - 0.36)], -w / 2, w / 2, mp, axis="x")
+        prism(k, [(0.05, 0.0), (-0.42, 0.0), (-0.42, 4.2), (-0.2, 4.9), (0.05, 4.9)], sx * 2.62 - 0.3, sx * 2.62 + 0.3, mp, axis="x")
     k.box((-2.27, -0.06, 0.15 + dz()), (1.46, 0.14, 0.3), mp)
     k.box((2.27, -0.06, 0.15 + dz()), (1.46, 0.14, 0.3), mp)
     if act == "Jardin":
@@ -1255,6 +1255,8 @@ def porte_verrouillee(S, nom):
         kv.obox((a[0], 0.418, a[1]), (b[0], 0.418, b[1]), 0.16, 0.035, S["fer"], up=(0, 1, 0))
     for sx in (-1, 1):
         kv.box((sx * 1.52, 0.42, 1.62), (0.14, 0.04, 3.1), S["fer"])
+    for sx in (-1, 1):                       # crampons de la barre de verrou, fixés au vantail
+        kv.box((sx * 1.33, 0.38, 1.5), (0.06, 0.07, 0.2), S["fer"])
     for i in range(10):
         x = -1.5 + i * 3.0 / 9
         kv.face([(x - 0.09, 0.42, 0.02), (x + 0.09, 0.42, 0.02), (x, 0.42, -0.16)], S["fer"])
@@ -1271,8 +1273,6 @@ def porte_verrouillee(S, nom):
         a = math.pi / 2 + i * math.pi / 3
         ks.cyl((math.cos(a) * 0.43, 0.357, zs_ + math.sin(a) * 0.43), 0.035, 0.016, S["fer"], n=6, axis="y")
     ks.box((0, 0.392, zs_), (2.7, 0.05, 0.13), S["fer"])
-    for sx in (-1, 1):
-        ks.box((sx * 1.33, 0.38, zs_), (0.06, 0.07, 0.2), S["fer"])
     # enfant direct de la pièce (un enfant de second niveau sort mal orienté du FBX) : KitBuilder la range sous Vantail
     enfant(ob, ks, S["seed"] + 154, pivot=(0, yv - 0.15, zs_))
     return ob
