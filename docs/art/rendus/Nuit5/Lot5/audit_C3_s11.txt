@@ -1,0 +1,9 @@
+scène Acte_3_Jardin graine 11 salles 33
+objets de décor : 103
+## Décor flottant ou mal accroché : 0
+## Décor au-dessus du vide (3 m ou plus) : 0
+## Lustres à moins de 3 m l'un de l'autre : 0
+## Décor traversable (plus de 0,8 m, sans collision) : 0
+## Décor qui se chevauche : 1
+- Prop_ColonneBrisee et Prop_Caisse_Attrapable, en (-346.7, 0.9, -318.1)
+gros plan gros_chevauche_0.jpg : objet en (-346.7, 0.9, -318.1), caméra (-337.7, 1.6, -318.1)
