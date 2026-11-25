@@ -79,6 +79,8 @@ namespace ItHunts.Level.Acts
             ["Arène"] = new Recipe(),
         };
 
+        private readonly List<Vector3> _chandeliers = new List<Vector3>();
+
         private void Dress(ActRoom r)
         {
             Transform root = Group("Habillage", _roomRoots[r.Id]);
@@ -111,17 +113,25 @@ namespace ItHunts.Level.Acts
                 RowProps(r, root, focalWall.Value, rec);
             if (rec.Wall.Length > 0)
                 WallProps(r, root, segs, rec);
-            for (int k = 0; k < rec.Clusters && rec.Cluster.Length > 0; k++)
+            // Cartes faites à la main (D-110) : salles 3 à 8 fois plus grandes que celles des recettes ; les quantités suivent la
+            // surface (une salle remplie avec soin, pas un champ vide).
+            float density = Plan.Hand != null ? Mathf.Clamp(r.Area(Plan.Cell) / 1600f, 1f, 7f) : 1f;
+            int N(int count) => Mathf.RoundToInt(count * density);
+            for (int k = 0; k < N(rec.Clusters) && rec.Cluster.Length > 0; k++)
                 ClusterProps(r, root, rec.Cluster);
             if (settings.theme == ActTheme.Jardin || rec.Trees > 0)
-                for (int k = 0; k < rec.Trees; k++)
+                for (int k = 0; k < N(rec.Trees); k++)
                     Tree(r, root, 1f);
-            for (int k = 0; k < rec.Hedges; k++)
+            for (int k = 0; k < N(rec.Hedges); k++)
                 Hedge(r, root);
-            for (int k = 0; k < rec.Tombs; k++)
+            for (int k = 0; k < N(rec.Tombs); k++)
                 Tomb(r, root);
-            for (int k = 0; k < rec.Planters; k++)
+            for (int k = 0; k < N(rec.Planters); k++)
                 Planter(r, root);
+            if (settings.theme == ActTheme.Jardin && Plan.Hand != null)
+                Undergrowth(r, root, Mathf.RoundToInt(r.Area(Plan.Cell) / 450f));
+            if (Plan.Hand != null && r.Area(Plan.Cell) > 900f)
+                FieldLights(r, root, Mathf.RoundToInt(r.Area(Plan.Cell) / (settings.theme == ActTheme.Jardin ? 900f : 1300f)));
             if (rec.Hang.Length > 0 && r.Ceiling > 0f)
                 for (int k = 0; k < 4; k++)
                     if (FreeCell(r, out Vector2Int c, clearance: 0))
@@ -135,11 +145,19 @@ namespace ItHunts.Level.Acts
                 int n = Mathf.Max(1, Mathf.RoundToInt(r.Area(Plan.Cell) / 1000f * settings.chandeliersPer1000));
                 // Lustre proportionné à la salle (nuit 4) : grand dans un hall de 30 m, modeste dans une chambre.
                 float chandelierScale = Mathf.Clamp(Mathf.Sqrt(r.Area(Plan.Cell) / 1400f) * (r.Ceiling / 24f), 0.7f, 1.8f);
+                // Jamais deux lustres côte à côte : 22 m au moins entre deux (jour 5).
                 for (int k = 0; k < n; k++)
-                    if (FreeCell(r, out Vector2Int c, clearance: 2))
+                    for (int tries = 0; tries < 6; tries++)
                     {
+                        if (!FreeCell(r, out Vector2Int c, clearance: 2))
+                            break;
+                        Vector3 at = Plan.CellCenter(c, r.Floor);
+                        if (_chandeliers.Any(o => (new Vector2(o.x - at.x, o.z - at.z)).magnitude < 22f))
+                            continue;
                         _occupied.Remove(c);
-                        Chandelier(root, Plan.CellCenter(c, r.Floor), r.Ceiling, chandelierScale);
+                        _chandeliers.Add(at);
+                        Chandelier(root, at, r.Ceiling, chandelierScale);
+                        break;
                     }
             }
 
@@ -419,12 +437,73 @@ namespace ItHunts.Level.Acts
 
         // ---------- Jardin ----------
 
+        /// <summary>
+        /// Acte III (jour 5, PR #56) : rochers de trois tailles (petit enjambé, moyen hissé, grand au double saut) et sous-bois de
+        /// fougères au pied des murs et des arbres, pour que la forêt soit dense sans boucher les allées.
+        /// </summary>
+        /// <summary>
+        /// Cartes à la main (jour 5) : sources posées au sol dans les grandes salles (braseros, candélabres), pas seulement au pied des
+        /// murs, pour que le centre d'une salle de 100 m ne soit plus un trou noir ; chacune garde au moins 18 m d'écart avec les autres.
+        /// </summary>
+        private void FieldLights(ActRoom r, Transform root, int count)
+        {
+            // Caves : braseros ; château et jardin : candélabres.
+            GameObject prefab = Art == null ? null : settings.theme == ActTheme.Caves ? Art.Piece("Cave_Brasero") ?? Art.candles : Art.candles;
+            if (prefab == null)
+                return;
+            var placed = new List<Vector3>();
+            for (int k = 0; k < count * 3 && placed.Count < count; k++)
+            {
+                if (!FreeCell(r, out Vector2Int c, clearance: 1))
+                    break;
+                Vector3 at = Plan.CellCenter(c, GroundAt(r, c));
+                if (placed.Any(o => (o - at).sqrMagnitude < 18f * 18f))
+                {
+                    _occupied.Remove(c);
+                    continue;
+                }
+
+                placed.Add(at);
+                GameObject go = KitPiece(prefab, root, at, Quaternion.Euler(0f, _rng.Next(360), 0f) * Vector3.forward,
+                    Vector3.one * (prefab == Art.candles ? 1.3f : 1f), true);
+                if (go.GetComponent<ItHunts.Enemies.StalkerPassesThrough>() == null)
+                    go.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
+                foreach (Light l in go.GetComponentsInChildren<Light>())
+                {
+                    l.color = settings.torchColor;
+                    l.intensity = settings.torchIntensity * 1.1f;
+                    l.range = settings.torchRange * 1.4f;
+                }
+            }
+        }
+
+        private void Undergrowth(ActRoom r, Transform root, int count)
+        {
+            string[] rocks = { "Jardin_Rocher_Petit", "Jardin_Rocher_Petit", "Jardin_Rocher_Moyen", "Jardin_Rocher_Grand" };
+            string[] ferns = { "Jardin_SousBois_A", "Jardin_SousBois_B" };
+            Dictionary<Vector2Int, int> edge = Plan.EdgeDistance(r);
+            for (int k = 0; k < count; k++)
+            {
+                if (!FreeCell(r, out Vector2Int c, clearance: 0))
+                    break;
+                bool nearWall = edge.TryGetValue(c, out int e) && e <= 2;
+                string name = nearWall || _rng.NextDouble() < 0.45 ? ferns[_rng.Next(ferns.Length)] : rocks[_rng.Next(rocks.Length)];
+                GameObject prefab = Art != null ? Art.Piece(name) : null;
+                if (prefab == null)
+                    continue;
+                GameObject go = KitPiece(prefab, root, Plan.CellCenter(c, r.Floor), Quaternion.Euler(0f, _rng.Next(360), 0f) * Vector3.forward,
+                    Vector3.one * (0.85f + 0.3f * (float)_rng.NextDouble()), true);
+                if (go.GetComponent<ItHunts.Enemies.StalkerPassesThrough>() == null)
+                    go.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();   // le traqueur enjambe rochers et fougères
+            }
+        }
+
         private void Tree(ActRoom r, Transform root, float scale)
         {
             if (!FreeCell(r, out Vector2Int c, clearance: 1))
                 return;
             Vector3 at = Plan.CellCenter(c, r.Floor);
-            string[] kitTrees = { "Jardin_ArbreMort_Grand", "Jardin_ArbreMort_Penche", "Jardin_ArbreMort_Tordu" };
+            string[] kitTrees = { "Jardin_ArbreMort_Grand", "Jardin_ArbreMort_Penche", "Jardin_ArbreMort_Tordu", "Jardin_GrandArbre_Praticable" };
             GameObject kitTree = Art != null ? Art.Piece(kitTrees[_rng.Next(kitTrees.Length)]) : null;
             if (kitTree != null)
             {
@@ -560,3 +639,4 @@ namespace ItHunts.Level.Acts
         }
     }
 }
+

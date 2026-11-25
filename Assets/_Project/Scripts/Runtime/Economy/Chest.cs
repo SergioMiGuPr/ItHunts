@@ -190,6 +190,9 @@ namespace ItHunts.Economy
             run.NoteChestOpened(p.PlayerId);
             var opening = new Opening { At = Time.time, Count = count, RankUps = rankUps, StartRank = startRank, ForceCharacter = force };
             _openings[p.PlayerId] = opening;
+            // Coffre de la DA (PR #56) : sa lueur dorée qui respire s'éteint une fois ouvert.
+            foreach (var glow in GetComponentsInChildren<ItHunts.Art.VFX.LueurPulsee>(true))
+                glow.Eteint();
             Fill(opening, p, run);
             ShowMenu(p, opening);
             return true;

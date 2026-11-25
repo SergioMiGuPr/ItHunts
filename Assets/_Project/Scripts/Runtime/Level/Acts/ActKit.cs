@@ -36,6 +36,8 @@ namespace ItHunts.Level.Acts
         public GameObject chandelier;
 
         [Header("Portes de sortie, repères")]
+        [Tooltip("Porte de la salle verrouillée (PR #56) : vantail de chêne et de fer, ouvert par OuverturePorte.Ouvre().")]
+        public GameObject lockedDoor;
         [Tooltip("Porte de sortie de l'acte (encadrement et battants Battant_G / Battant_D qui pivotent).")]
         public GameObject exitDoor;
         [Tooltip("Hauteur de l'ouverture de la porte de sortie (m) : le linteau du mur commence au-dessus.")]

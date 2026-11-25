@@ -71,6 +71,16 @@ namespace ItHunts.Economy
         public void SetOpen(bool open)
         {
             Open = open;
+            // Porte de la DA (PR #56) : le sceau et la barre tournent, puis le vantail monte par à-coups.
+            var anim = GetComponentInChildren<ItHunts.Art.VFX.OuverturePorte>();
+            if (anim != null)
+            {
+                if (open)
+                    anim.Ouvre();
+                else
+                    anim.Pose(0f);
+            }
+
             foreach (Collider c in GetComponentsInChildren<Collider>(true))
                 c.enabled = !open;
             if (_grille != null)

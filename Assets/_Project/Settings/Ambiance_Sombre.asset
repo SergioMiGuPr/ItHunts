@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9181e00e108934d91e4524c0f3cfbc, type: 3}
   m_Name: Ambiance_Sombre
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.AmbianceSettings
-  ambient: {r: 0.022, g: 0.0235, b: 0.033, a: 1}
+  ambient: {r: 0.03, g: 0.032, b: 0.045, a: 1}
   fogColor: {r: 0.006, g: 0.007, b: 0.013, a: 1}
-  fogStart: 6
-  fogEnd: 38
-  moonIntensity: 0.18
+  fogStart: 10
+  fogEnd: 70
+  moonIntensity: 0.3
   torchIntensity: 1.2
   torchRange: 14
   lampIntensity: 1.04

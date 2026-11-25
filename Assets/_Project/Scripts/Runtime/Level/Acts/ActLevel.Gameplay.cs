@@ -331,6 +331,17 @@ namespace ItHunts.Level.Acts
 
         private void ConfigureScene()
         {
+            // Acte II (jour 5) : la lune n'entre que par les fenêtres (leurs rayons) ; plus de lumière directionnelle dans le château.
+            // Acte III (jour 5) : à ciel ouvert, la lune éclaire les clairières (lisibilité dans le noir, pilier 4).
+            if (settings.theme == ActTheme.Jardin && Plan.Hand != null)
+                foreach (Light l in FindObjectsByType<Light>(FindObjectsSortMode.None))
+                    if (l.type == LightType.Directional && l.gameObject.scene == gameObject.scene)
+                        l.intensity = Mathf.Max(l.intensity, 0.55f);
+            if (settings.theme == ActTheme.Chateau && Plan.Hand != null)
+                foreach (Light l in FindObjectsByType<Light>(FindObjectsSortMode.None))
+                    if (l.type == LightType.Directional && l.gameObject.scene == gameObject.scene)
+                        l.enabled = false;
+
             int n = Plan.Rooms.Count;
             var names = new string[n];
             var centers = new Vector3[n];
@@ -450,6 +461,26 @@ namespace ItHunts.Level.Acts
             // Nuit 4, point 5 : la salle verrouillée se ferme par une grille de fer (on voit le coffre à travers) qui se lève une fois
             // payée ; la porte de sortie, elle, a ses battants de bois du kit : les deux ne se confondent plus.
             Vector3 inward = Plan.Rooms[d.B].Role == RoomRole.Verrouillee ? n : -n;
+            if (Art != null && Art.lockedDoor != null)
+            {
+                // Jour 5 (PR #56) : porte verrouillée finie de la DA (6 m de large) ; le reste de l'ouverture est muré.
+                GameObject door = KitPiece(Art.lockedDoor, parent, new Vector3(c.x, sill, c.z), inward, Vector3.one, true);
+                door.name = "Porte de la salle verrouillée";
+                Vector3 side = Vector3.Cross(Vector3.up, inward).normalized;
+                float rest = (w - 6f) * 0.5f, hh = openTop - sill;
+                if (rest > 0.2f)
+                    foreach (float sgn in new[] { -1f, 1f })
+                        Solid(parent, "Mur de la porte verrouillée", new Vector3(c.x, sill + hh * 0.5f, c.z) + side * sgn * (3f + rest * 0.5f),
+                            new Vector3(1f, hh, rest), Mathf.Atan2(side.x, side.z) * Mathf.Rad2Deg + 90f, KitBuild.Kind.Mur, null, walkable: false);
+                if (hh > 6.9f)
+                    Solid(parent, "Linteau de la porte verrouillée", new Vector3(c.x, sill + (6.8f + hh) * 0.5f, c.z),
+                        new Vector3(1f, hh - 6.8f, 6f), Mathf.Atan2(side.x, side.z) * Mathf.Rad2Deg + 90f, KitBuild.Kind.Mur, null, walkable: false);
+                var ldArt = door.AddComponent<LockedDoor>();
+                if (economy != null)
+                    ldArt.Configure(economy);
+                return;
+            }
+
             var root = new GameObject("Grille de la salle verrouillée").transform;
             root.SetParent(parent, false);
             root.position = new Vector3(c.x, sill, c.z);

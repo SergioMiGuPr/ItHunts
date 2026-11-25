@@ -171,6 +171,7 @@ namespace ItHunts.Level.Acts
             _max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
             KitBuild.PieceCount = 0;
             StalkerClimbs = 0;
+            _chandeliers.Clear();
             var slice = Stopwatch.StartNew();
             int n = Plan.Rooms.Count;
             for (int i = 0; i < n; i++)

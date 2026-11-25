@@ -86,6 +86,7 @@ namespace ItHunts.EditorTools
                     k.wallAccent = P("KitCaves/Cave_Paroi_Saillie_10m");
                     k.wallAccentEvery = 4;
                     k.torch = P("KitCaves/Cave_Torche_Murale");
+                    k.lockedDoor = P("KitCaves/Cave_PorteVerrouillee");
                     k.candles = P("KitCaves/Cave_Candelabre");
                     k.exitDoor = P("KitCaves/Cave_PorteSortie");
                     k.exitDoorOpening = 10.2f;
@@ -119,12 +120,15 @@ namespace ItHunts.EditorTools
                     k.wallPieceWidth = 8f;
                     k.wallPieceHeight = 20f;
                     k.wallFrontDepth = 0.7f;
-                    k.wallAccent = P("KitChateau/Chateau_Fenetre_Haute");
-                    k.wallAccentEvery = 2;
-                    k.window = P("KitChateau/Chateau_Fenetre_Haute");
+                    // Jour 5 (PR #56) : fenêtres qui montrent le paysage de nuit (vitre ItHunts/VueExterieure), plus de lancettes ;
+                    // pas de torches au château : appliques à bougies, lustres, candélabres et la lune par les fenêtres.
+                    k.wallAccent = null;
+                    k.wallAccentEvery = 0;
+                    k.window = P("KitChateau/Chateau_Fenetre_Vue_Double");
                     k.moonRay = P("KitChateau/Chateau_RayonLune");
-                    k.windowCenterHeight = 9.5f;
-                    k.torch = P("KitCaves/Cave_Applique");
+                    k.windowCenterHeight = 7f;
+                    k.torch = P("KitCaves/Cave_Applique");                  // applique à trois bougies (pas une torche)
+                    k.lockedDoor = P("KitChateau/Chateau_PorteVerrouillee");
                     k.candles = P("KitCaves/Cave_Candelabre");
                     k.chandelier = P("KitChateau/Chateau_Chandelier");
                     k.exitDoor = P("KitChateau/Chateau_GrandeEntree");
@@ -157,13 +161,15 @@ namespace ItHunts.EditorTools
                     s.moonWindowSpacing = 18f;
                     break;
                 case ActTheme.Jardin:
-                    k.outerWalls = new List<GameObject> { P("KitJardin/Jardin_Foret_Lisiere_20m"), P("KitJardin/Jardin_Falaise_16m"), P("KitJardin/Jardin_Foret_Lisiere_20m") };
+                    // Jour 5 (PR #56) : lisières de forêt dense à la place des murs gris (infranchissables, 22 m).
+                    k.outerWalls = new List<GameObject> { P("KitJardin/Jardin_Lisiere_12m") };
                     k.outerWalls.RemoveAll(x => x == null);
-                    k.wallPieceWidth = 19f;
-                    k.wallPieceHeight = 23f;
-                    k.wallFrontDepth = 3f;
-                    k.wallAccent = P("KitJardin/Jardin_MurEnceinte_8m");
-                    k.wallAccentEvery = 5;
+                    k.wallPieceWidth = 12f;
+                    k.wallPieceHeight = 22f;
+                    k.wallFrontDepth = 0.6f;
+                    k.wallAccent = P("KitJardin/Jardin_Foret_Lisiere_20m");
+                    k.wallAccentEvery = 6;
+                    k.lockedDoor = P("KitJardin/Jardin_PorteVerrouillee");
                     k.innerWall = P("KitJardin/Jardin_Haie_6m");
                     k.innerWallWidth = 6.9f;
                     k.innerWallHeight = 3f;
@@ -185,6 +191,17 @@ namespace ItHunts.EditorTools
                     };
                     s.wallMaterial = M("RocheCave");
                     s.floorMaterial = M("Gravier_Herbe");
+                    // Jour 5 (PR #56) : sol mélangé de la DA (terre, gravier, herbe sèche, mousse, transitions douces) partout où le
+                    // sol n'est pas dallé (bassins, fontaine, terrasse du château gardent leurs dalles).
+                    var melange = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Kits/M_Jardin_SolMelange.mat");
+                    if (melange != null)
+                    {
+                        s.floorMaterial = melange;
+                        foreach (FunctionMaterials fm in k.functionMaterials)
+                            if (fm.floor == null || !fm.floor.name.Contains("Dalles"))
+                                fm.floor = melange;
+                    }
+
                     s.trimMaterial = M("PierreTaillee");
                     s.foliageMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Kits/M_Kit_Feuillage.mat") ?? s.foliageMaterial;
                     break;
