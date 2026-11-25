@@ -1,0 +1,183 @@
+# Carte faite à la main (D-110), écrite par Tools/Cartes. Plan : 1 caractère = 8 m, nord en haut.
+nom: Les jardins en terrasses
+acte: 3
+echelle: 8
+organique: 12
+
+[plan]
+|aaaaaaaaaaaaaaaabbbbbbbbbbbbbbDDDDDDDDDDDDDDDDDDDDccccccccccccccddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaabbbbbbbbbbbbbbDDDDDDDDDDDDDDDDDDDDccccccccccccccddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaabbbbbbbbbbbbbbDDDDDDDDDDDDDDDDDDDDccccccccccccccddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaabbbbbbbbbbbbbbDDDDDDDDDDDDDDDDDDDDccccccccccccccddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaabbbbbbbbbbbbbbDDDDDDDDDDDDDDDDDDDDccccccccccccccddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaabbbbbbbbbbbbbbDDDDDDDDDDDDDDDDDDDDccccccccccccccddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaabbbbbbbbbbbbbbDDDDDDDDDDDDDDDDDDDDccccccccccccccddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaabbbbbbbbbbbbbbDDDDDDDDDDDDDDDDDDDDccccccccccccccddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaabbbbbbbbbbbbbbDDDDDDDDDDDDDDDDDDDDccccccccccccccddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaabbbbbbbbbbbbbbDDDDDDDDDDDDDDDDDDDDccccccccccccccddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaaeeeeeeeeeeeeeeDDDDDDDDDDDDDDDDDDDDeeeeeeeeeeeeeeddddddddddddddddwwwwwwwwww|
+|aaaaaaaaaaaaaaaaeeeeeeeeeeeeeeDDDDDDDDDDDDDDDDDDDDeeeeeeeeeeeeeeddddddddddddddddwwwwwwwwww|
+|ffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeddddddddddddddddwwwwwwwwww|
+|ffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeddddddddddddddddwwwwwwwwww|
+|ffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeiiiiiiiiiiiiiiiiwwwwwwwwww|
+|ffffffffffffffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeiiiiiiiiiiiiiiiiwwwwwwwwww|
+|ffffffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiiwwwwwwwwww|
+|ffffffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiiwwwwwwwwww|
+|ffffffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiiwwwwwwwwww|
+|ffffffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiiwwwwwwwwww|
+|ffffffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiiwwwwwwwwww|
+|ffffffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiiwwwwwwwwww|
+|ffffffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiiwwwwwwwwww|
+|ffffffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiiwwwwwwwwww|
+|AAAAffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiiwwwwwwwwww|
+|AAAAffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiiwwwwwwwwww|
+|AAAAffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|AAAAffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|AAAAffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|AAAAffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|AAAAffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|AAAAffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|AAAAffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|AAAAffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|....ffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|....ffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|....ffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|....ffffffffffffggggggggggggBBBBBBBBBBBBBBBBBBBBBBBBhhhhhhhhhhhhiiiiiiiiiiiiiiiixxxxxxxxxx|
+|jjjjjjjjjjjjjjjjjjjjjjjjjjjjBBBBBBBBBBBBBBBBBBBBBBBBkkkkkkkkkkkkkkkkkkkkkkkkkkkkxxxxxxxxxx|
+|jjjjjjjjjjjjjjjjjjjjjjjjjjjjBBBBBBBBBBBBBBBBBBBBBBBBkkkkkkkkkkkkkkkkkkkkkkkkkkkkxxxxxxxxxx|
+|jjjjjjjjjjjjjjjjjjjjjjjjjjjjllllllllllllllllllllllllkkkkkkkkkkkkkkkkkkkkkkkkkkkkxxxxxxxxxx|
+|jjjjjjjjjjjjjjjjjjjjjjjjjjjjllllllllllllllllllllllllkkkkkkkkkkkkkkkkkkkkkkkkkkkkxxxxxxxxxx|
+|jjjjjjjjjjjjjjjjjjjjjjjjjjjjllllllllllllllllllllllllkkkkkkkkkkkkkkkkkkkkkkkkkkkkxxxxxxxxxx|
+|jjjjjjjjjjjjjjjjjjjjjjjjjjjjllllllllllllllllllllllllkkkkkkkkkkkkkkkkkkkkkkkkkkkkxxxxxxxxxx|
+|mmmmmmmmmmmmmmnnnnnnnnnnnnnnllllllllllllllllllllllllooooooooooooooppppppppppppppxxxxxxxxxx|
+|mmmmmmmmmmmmmmnnnnnnnnnnnnnnllllllllllllllllllllllllooooooooooooooppppppppppppppxxxxxxxxxx|
+|mmmmmmmmmmmmmmnnnnnnnnnnnnnnllllllllllllllllllllllllooooooooooooooppppppppppppppxxxxxxxxxx|
+|mmmmmmmmmmmmmmnnnnnnnnnnnnnnllllllllllllllllllllllllooooooooooooooppppppppppppppxxxxxxxxxx|
+|mmmmmmmmmmmmmmnnnnnnnnnnnnnnRRRRRRRRRRRRRRRRRRRRRRRRooooooooooooooppppppppppppppxxxxxxxxxx|
+|mmmmmmmmmmmmmmnnnnnnnnnnnnnnRRRRRRRRRRRRRRRRRRRRRRRRooooooooooooooppppppppppppppxxxxxxxxxx|
+|mmmmmmmmmmmmmmnnnnnnnnnnnnnnRRRRRRRRRRRRRRRRRRRRRRRRooooooooooooooppppppppppppppyyyyyyyyyy|
+|mmmmmmmmmmmmmmnnnnnnnnnnnnnnRRRRRRRRRRRRRRRRRRRRRRRRooooooooooooooppppppppppppppyyyyyyyyyy|
+|mmmmmmmmmmmmmmnnnnnnnnnnnnnnRRRRRRRRRRRRRRRRRRRRRRRRooooooooooooooppppppppppppppyyyyyyyyyy|
+|mmmmmmmmmmmmmmnnnnnnnnnnnnnnRRRRRRRRRRRRRRRRRRRRRRRRooooooooooooooppppppppppppppyyyyyyyyyy|
+|mmmmmmmmmmmmmmRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRppppppppppppppyyyyyyyyyy|
+|mmmmmmmmmmmmmmRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRppppppppppppppyyyyyyyyyy|
+|qqqqqqqqqqqqqqRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqrrrrrrrrrrrrrrrrrrSSSSSSSSSSSSSSSSssssssssssssssssssttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqrrrrrrrrrrrrrrrrrrSSSSSSSSSSSSSSSSssssssssssssssssssttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqrrrrrrrrrrrrrrrrrrSSSSSSSSSSSSSSSSssssssssssssssssssttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqrrrrrrrrrrrrrrrrrrSSSSSSSSSSSSSSSSssssssssssssssssssttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqrrrrrrrrrrrrrrrrrrSSSSSSSSSSSSSSSSssssssssssssssssssttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqrrrrrrrrrrrrrrrrrrSSSSSSSSSSSSSSSSssssssssssssssssssttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqrrrrrrrrrrrrrrrrrrSSSSSSSSSSSSSSSSssssssssssssssssssttttttttttttttyyyyyyyyyy|
+|qqqqqqqqqqqqqqrrrrrrrrrrrrrrrrrrSSSSSSSSSSSSSSSSssssssssssssssssssttttttttttttttyyyyyyyyyy|
+|uuuuuuuuuuuuuurrrrrrrrrrrrrrrrrrSSSSSSSSSSSSSSSSssssssssssssssssssvvvvvvvvvvvvvvyyyyyyyyyy|
+|uuuuuuuuuuuuuurrrrrrrrrrrrrrrrrrSSSSSSSSSSSSSSSSssssssssssssssssssvvvvvvvvvvvvvvyyyyyyyyyy|
+|uuuuuuuuuuuuuurrrrrrrrrrrrrrrrrr....HHHHHHHH....ssssssssssssssssssvvvvvvvvvvvvvvyyyyyyyyyy|
+|uuuuuuuuuuuuuurrrrrrrrrrrrrrrrrr....HHHHHHHH....ssssssssssssssssssvvvvvvvvvvvvvvyyyyyyyyyy|
+|uuuuuuuuuuuuuuLLLLLL................HHHHHHHH................MMMMMMvvvvvvvvvvvvvvyyyyyyyyyy|
+|uuuuuuuuuuuuuuLLLLLL................HHHHHHHH................MMMMMMvvvvvvvvvvvvvvyyyyyyyyyy|
+
+[salles]
+a : Potager ; sol 4 ; ciel ; galerie n,o 6 sans-escalier
+b : Serre en ruine ; sol 4 ; ciel ; galerie n 6 sans-escalier
+D : Terrasse du château ; sol 8 ; ciel ; depart
+c : Kiosque ; sol 4 ; ciel ; eau ; galerie n 6 sans-escalier
+d : Roseraie ; sol 4 ; ciel ; galerie n 6 sans-escalier
+e : Allée des statues ; sol 4 ; ciel
+A : Porte d'arrivée ; sol 0 ; arrivee
+f : Labyrinthe de haies ; sol 0 ; ciel ; galerie o 6 sans-escalier
+g : Bosquet ; sol 0 ; ciel
+B : Grand bassin ; sol 0 ; ciel ; eau ; galerie n 4
+h : Verger ; sol 0 ; ciel
+i : Cimetière ; sol 0 ; ciel
+j : Allée des statues ; sol 0 ; ciel
+k : Allée des statues ; sol 0 ; ciel
+l : Fontaine ; sol -4 ; ciel ; eau
+m : Verger ; sol -4 ; ciel ; galerie o 6 sans-escalier
+n : Potager ; sol -4 ; ciel
+o : Bosquet ; sol -4 ; ciel
+p : Roseraie ; sol -4 ; ciel
+R : Ravin ; sol -8 ; ciel ; vide ; galerie n 8
+q : Cimetière ; sol -4 ; ciel ; galerie o,s 6 sans-escalier
+r : Bosquet ; sol -4 ; ciel ; galerie s 6 sans-escalier
+S : Grande grille ; sol -4 ; ciel ; sortie ; fonction Allée des statues
+H : Hall de sortie ; sol -4 ; hall
+s : Verger ; sol -4 ; ciel ; galerie s 6 sans-escalier
+t : Labyrinthe de haies ; sol -4 ; ciel ; galerie s 6 sans-escalier
+u : Serre en ruine ; sol -4 ; ciel
+v : Kiosque ; sol -4 ; ciel ; eau
+w : Bosquet ; sol 4 ; ciel ; galerie n,e 6 sans-escalier
+x : Verger ; sol 0 ; ciel ; galerie e 6 sans-escalier
+y : Cimetière ; sol -4 ; ciel ; galerie e,s 6 sans-escalier
+L : Salle verrouillée ; sol -4 ; verrouillee
+M : Salle verrouillée ; sol -4 ; verrouillee
+
+[portes]
+S-H sortie
+f-A arrivee
+a-b
+b-D
+D-c
+c-d
+b-e
+D-e
+c-e
+a-f
+d-i
+e-g
+e-B
+e-h
+f-g
+g-B
+B-h
+h-i
+f-j
+g-j
+i-k
+h-k
+B-l haute
+j-l rampe
+k-l rampe
+j-m rampe
+j-n rampe
+k-o rampe
+k-p rampe
+l-R rampe
+n-R
+o-R
+m-n
+o-p
+m-q
+p-t
+R-r
+R-S
+R-s
+q-r
+r-S
+S-s
+s-t
+q-u
+r-u
+t-v
+s-v
+d-w
+i-w rampe
+i-x
+k-x
+p-x rampe
+w-x rampe
+x-y rampe
+p-y
+t-y
+v-y
+r-L verrou
+s-M verrou
+
+[ancres]
+coffre a c d g h i m p q t u v
+marchand j k n

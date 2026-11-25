@@ -26,7 +26,7 @@ namespace ItHunts.Tests
             for (int act = 1; act <= 3; act++)
             {
                 var s = AssetDatabase.LoadAssetAtPath<ActLayoutSettings>($"Assets/_Project/Settings/Actes/Act_{act}.asset");
-                Assert.GreaterOrEqual(s.handMaps.Count(m => m != null), act <= 1 ? 2 : 0, $"acte {act} : cartes faites à la main branchées");
+                Assert.GreaterOrEqual(s.handMaps.Count(m => m != null), 2, $"acte {act} : cartes faites à la main branchées");
             }
         }
 

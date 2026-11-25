@@ -60,7 +60,9 @@ MonoBehaviour:
   lockedRooms: 2
   merchants: 1
   stalkerFromArrival: 1
-  handMaps: []
+  handMaps:
+  - {fileID: 4900000, guid: 50ab94132b3fcae489820d3b63ce9015, type: 3}
+  - {fileID: 4900000, guid: ae71df6e49600404cbe71b30ac17e4e5, type: 3}
   wallMaterial: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
   floorMaterial: {fileID: 2100000, guid: 79e2a798fb455f14a875b121dc801c38, type: 2}
   ceilingMaterial: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}

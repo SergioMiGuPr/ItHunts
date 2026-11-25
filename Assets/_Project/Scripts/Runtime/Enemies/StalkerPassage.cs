@@ -106,7 +106,7 @@ namespace ItHunts.Enemies
             k == StalkerLinkKind.EscaladeRebord || k == StalkerLinkKind.MurGrimpe || k == StalkerLinkKind.ChaineGrimpe;
 
         /// <summary>Distance horizontale et dénivelé permis pour ce type (Stalker_Default).</summary>
-        public const float ClimbMaxFlat = 16f;
+        public const float ClimbMaxFlat = 22f;
 
         public static bool Allowed(StalkerLinkKind k, Vector3 a, Vector3 b, StalkerSettings cfg)
         {

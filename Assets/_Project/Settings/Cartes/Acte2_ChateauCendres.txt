@@ -1,0 +1,171 @@
+# Carte faite à la main (D-110), écrite par Tools/Cartes. Plan : 1 caractère = 8 m, nord en haut.
+nom: Le château des cendres
+acte: 2
+echelle: 8
+organique: 0
+
+[plan]
+|....aaaaaaaaaaaaaabbbbbbbb....HHHHHH....ccccccccccccccdddddddddd|
+|....aaaaaaaaaaaaaabbbbbbbb....HHHHHH....ccccccccccccccdddddddddd|
+|....aaaaaaaaaaaaaabbbbbbbbSSSSSSSSSSSSSSccccccccccccccdddddddddd|
+|....aaaaaaaaaaaaaabbbbbbbbSSSSSSSSSSSSSSccccccccccccccdddddddddd|
+|....aaaaaaaaaaaaaabbbbbbbbSSSSSSSSSSSSSSccccccccccccccdddddddddd|
+|....aaaaaaaaaaaaaabbbbbbbbSSSSSSSSSSSSSSccccccccccccccdddddddddd|
+|....aaaaaaaaaaaaaabbbbbbbbSSSSSSSSSSSSSSccccccccccccccdddddddddd|
+|....aaaaaaaaaaaaaabbbbbbbbSSSSSSSSSSSSSSccccccccccccccdddddddddd|
+|....aaaaaaaaaaaaaabbbbbbbbSSSSSSSSSSSSSSccccccccccccccdddddddddd|
+|....aaaaaaaaaaaaaabbbbbbbbSSSSSSSSSSSSSSccccccccccccccdddddddddd|
+|....aaaaaaaaaaaaaabbbbbbbbSSSSSSSSSSSSSSccccccccccccccdddddddddd|
+|eeeeeeeeeeeeeeeeeeeeeeeeeeffffffffffffffffffffffffffffdddddddddd|
+|eeeeeeeeeeeeeeeeeeeeeeeeeeffffffffffffffffffffffffffffdddddddddd|
+|gggggggggghhhhhhhhGGGGGGGGGGGGGGGGGGGGGGGGiiiiiiiiiiiidddddddddd|
+|gggggggggghhhhhhhhGGGGGGGGGGGGGGGGGGGGGGGGiiiiiiiiiiiijjjjjjjjjj|
+|gggggggggghhhhhhhhGGGGGGGGGGGGGGGGGGGGGGGGiiiiiiiiiiiijjjjjjjjjj|
+|gggggggggghhhhhhhhGGGGGGGGGGGGGGGGGGGGGGGGiiiiiiiiiiiijjjjjjjjjj|
+|gggggggggghhhhhhhhGGGGGGGGGGGGGGGGGGGGGGGGiiiiiiiiiiiijjjjjjjjjj|
+|gggggggggghhhhhhhhGGGGGGGGGGGGGGGGGGGGGGGGiiiiiiiiiiiijjjjjjjjjj|
+|gggggggggghhhhhhhhGGGGGGGGGGGGGGGGGGGGGGGGiiiiiiiiiiiijjjjjjjjjj|
+|gggggggggghhhhhhhhGGGGGGGGGGGGGGGGGGGGGGGGiiiiiiiiiiiijjjjjjjjjj|
+|gggggggggghhhhhhhhGGGGGGGGGGGGGGGGGGGGGGGGiiiiiiiiiiiijjjjjjjjjj|
+|AAAAkkkkkkkkkkkkkkGGGGGGGGGGGGGGGGGGGGGGGGlllllllllllljjjjjjjjjj|
+|AAAAkkkkkkkkkkkkkkGGGGGGGGGGGGGGGGGGGGGGGGlllllllllllljjjjjjjjjj|
+|AAAAkkkkkkkkkkkkkkGGGGGGGGGGGGGGGGGGGGGGGGllllllllllllmmmmmmmmmm|
+|AAAAkkkkkkkkkkkkkkGGGGGGGGGGGGGGGGGGGGGGGGllllllllllllmmmmmmmmmm|
+|AAAAkkkkkkkkkkkkkkGGGGGGGGGGGGGGGGGGGGGGGGllllllllllllmmmmmmmmmm|
+|AAAAkkkkkkkkkkkkkkGGGGGGGGGGGGGGGGGGGGGGGGllllllllllllmmmmmmmmmm|
+|AAAAkkkkkkkkkkkkkkGGGGGGGGGGGGGGGGGGGGGGGGllllllllllllmmmmmmmmmm|
+|AAAAnnnnnnnnnnnnnnooooooooooooppppppppppppllllllllllllmmmmmmmmmm|
+|nnnnnnnnnnnnnnnnnnooooooooooooppppppppppppllllllllllllmmmmmmmmmm|
+|nnnnnnnnnnnnnnnnnnooooooooooooppppppppppppllllllllllllmmmmmmmmmm|
+|nnnnnnnnnnnnnnnnnnooooooooooooppppppppppppllllllllllllmmmmmmmmmm|
+|qqqqqqqqqqqqrrrrrrooooooooooooppppppppppppllllllllllllmmmmmmmmmm|
+|qqqqqqqqqqqqrrrrrroooooooooooopppppppppppp..uuuuuuuuuuvvvvvvvvvv|
+|qqqqqqqqqqqqrrrrrroooooooooooopppppppppppp..uuuuuuuuuuvvvvvvvvvv|
+|qqqqqqqqqqqqrrrrrroooooooooooopppppppppppp..uuuuuuuuuuvvvvvvvvvv|
+|qqqqqqqqqqqqrrrrrroooooooooooopppppppppppp..uuuuuuuuuuvvvvvvvvvv|
+|qqqqqqqqqqqqrrrrrrssssssssssssttttttttttttttuuuuuuuuuuvvvvvvvvvv|
+|qqqqqqqqqqqqrrrrrrssssssssssssttttttttttttttuuuuuuuuuuvvvvvvvvvv|
+|qqqqqqqqqqqqrrrrrrssssssssssssttttttttttttttuuuuuuuuuuvvvvvvvvvv|
+|qqqqqqqqqqqqrrrrrrssssssssssssttttttttttttttuuuuuuuuuuvvvvvvvvvv|
+|qqqqqqqqqqqqrrrrrrssssssssssssttttttttttttttxxxxxxxxxxvvvvvvvvvv|
+|qqqqqqqqqqqqrrrrrrssssssssssssttttttttttttttxxxxxxxxxxvvvvvvvvvv|
+|wwwwwwwwwwwwwwwwwwssssssssssssttttttttttttttxxxxxxxxxxvvvvvvvvvv|
+|wwwwwwwwwwwwwwwwwwssssssssssssttttttttttttttxxxxxxxxxxvvvvvvvvvv|
+|wwwwwwwwwwwwwwwwwwssssssssssssttttttttttttttxxxxxxxxxx3333333333|
+|yyyyyyyyyyzzzzzzzzssssssssssssttttttttttttttxxxxxxxxxx3333333333|
+|yyyyyyyyyyzzzzzzzzDDDDDDDDDDDDDDDD111111111111222222222222222222|
+|yyyyyyyyyyzzzzzzzzDDDDDDDDDDDDDDDD111111111111222222222222222222|
+|yyyyyyyyyyzzzzzzzzDDDDDDDDDDDDDDDD111111111111222222222222222222|
+|yyyyyyyyyyzzzzzzzzDDDDDDDDDDDDDDDD111111111111222222222222222222|
+|yyyyyyyyyyzzzzzzzzDDDDDDDDDDDDDDDD111111111111222222222222222222|
+|yyyyyyyyyyzzzzzzzzDDDDDDDDDDDDDDDD111111111111222222222222222222|
+|yyyyyyyyyyzzzzzzzzDDDDDDDDDDDDDDDD111111111111222222222222222222|
+|yyyyyyyyyyzzzzzzzzDDDDDDDDDDDDDDDD111111111111222222222222222222|
+|yyyyyyyyyyzzzzzzzzDDDDDDDDDDDDDDDD111111111111222222222222222222|
+|yyyyyyyyyyzzzzzzzzDDDDDDDDDDDDDDDD111111111111222222222222222222|
+|LLLLLLLL................................................MMMMMMMM|
+|LLLLLLLL................................................MMMMMMMM|
+
+[salles]
+H : Hall de sortie ; sol 8 ; hall
+S : Grande entrée ; sol 8 ; plafond 24 ; sortie ; fonction Salle du trône
+a : Chapelle ; sol 0 ; plafond 26
+b : Salon de musique ; sol 4
+c : Salle du trône ; sol 4 ; plafond 22 ; galerie n 6 sans-escalier
+d : Bibliothèque ; sol 8 ; plafond 20 ; galerie e 6
+e : Galerie des portraits ; sol 0
+f : Galerie des portraits ; sol 4
+A : Porte d'arrivée ; sol 0 ; arrivee
+g : Armurerie ; sol 0
+h : Chambre ; sol 8
+G : Grande salle ; sol 0 ; plafond 30 ; galerie n,s,e,o 8 ; fonction Salle de bal
+i : Salle à manger ; sol 0
+j : Grand escalier ; sol 4
+k : Chambre ; sol 8
+l : Salle de bal ; sol 0 ; plafond 24 ; galerie e 6
+m : Salon de musique ; sol 0
+n : Galerie des portraits ; sol 0
+o : Chapelle ; sol 0
+p : Salle du trône ; sol -6 ; eau ; fonction Bains
+q : Bibliothèque ; sol 0 ; galerie o 6 sans-escalier
+r : Chambre ; sol 4
+s : Tour effondrée ; sol -6 ; vide
+t : Bains ; sol -6 ; eau
+u : Armurerie ; sol 0
+v : Salle à manger ; sol 4
+w : Galerie des portraits ; sol 0
+x : Salle des gardes ; sol -6 ; fonction Armurerie
+D : Palier ; sol 0 ; plafond 18 ; depart
+y : Salon de musique ; sol 0
+z : Chambre ; sol 4
+1 : Grand escalier ; sol 0 ; galerie n 6
+2 : Salle à manger ; sol 4
+3 : Chapelle ; sol 4 ; fonction Galerie des portraits
+L : Salle verrouillée ; sol 0 ; verrouillee
+M : Salle verrouillée ; sol 4 ; verrouillee
+
+[portes]
+S-H sortie
+A-g arrivee
+a-b
+b-S
+S-c
+c-d
+a-e
+b-e rampe
+S-f
+c-f
+d-f haute
+d-j
+e-g
+e-h haute
+g-h haute
+h-G haute
+f-G
+e-G
+f-i
+i-j
+G-i
+G-l
+i-l
+j-m
+l-m
+g-k haute
+k-G haute
+k-n haute
+n-o
+G-o
+G-p haute
+o-p
+p-l haute
+l-u
+m-v
+u-v
+n-q
+q-r
+r-n rampe
+q-w
+o-s
+p-t
+s-t
+t-u
+u-x rampe
+t-x
+v-3
+x-3 haute
+3-2
+w-y
+w-z
+y-z
+s-D
+z-D
+D-1
+t-1
+1-2
+x-1
+y-L verrou
+2-M verrou
+
+[ancres]
+coffre a c d h k p q s u x z 2
+marchand o i y

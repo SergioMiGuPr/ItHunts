@@ -188,6 +188,30 @@ namespace ItHunts.Enemies
                     // Bouts recalés sur le NavMesh du traqueur (4 m au plus) : un lit, un garde-corps ou le bord érodé décalent le sol
                     // praticable ; sans sol proche, pas de lien.
                     var filter = new NavMeshQueryFilter { agentTypeID = StalkerAgent, areaMask = NavMesh.AllAreas };
+                    // Escalades (D-110) : sans sol au pied, on recule jusqu'à 12 m dans l'axe (fosse, escalier, abords d'un mur).
+                    if (StalkerPassageMath.IsClimb(p.kind) && !NavMesh.SamplePosition(rawA, out _, 4f, filter))
+                    {
+                        // Le plus proche sol praticable autour du pied (cercles de 4 à 12 m), à la même hauteur.
+                        float bestD = float.PositiveInfinity;
+                        Vector3 best = rawA;
+                        for (float k = 4f; k <= 12f; k += 4f)
+                        for (int a = 0; a < 12; a++)
+                        {
+                            Vector3 probe = rawA + Quaternion.Euler(0f, a * 30f, 0f) * Vector3.forward * k;
+                            if (NavMesh.SamplePosition(probe, out NavMeshHit far, 2.5f, filter) && Mathf.Abs(far.position.y - rawA.y) < 1.5f)
+                            {
+                                float dd = Vector3.Distance(far.position, rawA);
+                                if (dd < bestD)
+                                {
+                                    bestD = dd;
+                                    best = far.position;
+                                }
+                            }
+                        }
+
+                        rawA = best;
+                    }
+
                     if (!NavMesh.SamplePosition(rawA, out NavMeshHit ha, 4f, filter) || !NavMesh.SamplePosition(rawB, out NavMeshHit hb, 4f, filter)
                         || Mathf.Abs(ha.position.y - rawA.y) > 1.5f || Mathf.Abs(hb.position.y - rawB.y) > 1.5f
                         || !StalkerPassageMath.Allowed(p.kind, ha.position, hb.position, stalkerSettings))

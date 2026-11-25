@@ -93,6 +93,9 @@ namespace ItHunts.Level.Acts
                 HandMap.Room lowHand = m.Find(Rooms[a].Floor < Rooms[b].Floor ? hd.A : hd.B);
                 float dz = Mathf.Abs(Rooms[a].Floor - Rooms[b].Floor);
                 bool landingOk = lowHand == null || lowHand.TerraceHeight < 0.01f || Mathf.Abs(lowHand.TerraceHeight - dz) < 0.05f;
+                // Vers une salle basse à fosse ou à bassin : rampe (12 m de large, le traqueur la descend), pas de palier à escalier étroit.
+                if (lowHand != null && lowHand.Feature != RoomFeature.Aucun)
+                    landingOk = false;
                 bool ok = hd.High ? PlanHighLanding(d) : hd.Ramp ? PlanRamp(d) : PlanConnection(d, allowLanding: landingOk);
                 if (!ok)
                     Failures.Add($"porte {hd.A}-{hd.B} (ligne {hd.Line}) : pas de place pour {(hd.High ? "le palier" : "la rampe ou l'escalier")} "
@@ -316,8 +319,25 @@ namespace ItHunts.Level.Acts
 
             int depth = hr.TerraceDepth;
             RectInt b = r.Box;
+            // Devant chaque porte du sol : encoche de la largeur de la porte + 3 cases de chaque côté, 6 cases de profond (le traqueur
+            // fait 7 m de large ; une encoche de 6 m le bloquait derrière la porte).
+            var clear = new HashSet<Vector2Int>();
+            foreach (int di in r.Doors)
+            {
+                ActDoor d = Doors[di];
+                if (d.High)
+                    continue;
+                Vector2Int inward = r.Id == d.A ? -d.Dir : d.Dir;
+                Vector2Int edge0 = r.Id == d.A ? d.First : d.First + d.Dir;
+                for (int i = -3; i < d.Length + 3; i++)
+                for (int k = 0; k < 6; k++)
+                    clear.Add(edge0 + d.Along * i + inward * k);
+            }
+
             foreach (Vector2Int c in r.Cells)
             {
+                if (clear.Contains(c))
+                    continue;
                 bool inside = false;
                 foreach (char s in hr.TerraceSides)
                     inside |= s switch

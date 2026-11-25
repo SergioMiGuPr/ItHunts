@@ -176,17 +176,22 @@ namespace ItHunts.Level.Acts
             // Paliers (nuit 4) : leur escalier est réservé par le plan (cases Passage devant le palier) ; wall jump en plus si la place.
             foreach (Landing l in r.Landings)
             {
-                if (l.Stairs.Count == 0)
+                if (Plan.Hand != null)
                 {
-                    // Porte haute (carte faite à la main) : le joueur monte par traction sur le mur au-dessus ; le traqueur escalade le bord.
+                    // Carte faite à la main : le traqueur (7 m de large) ne passe pas l'escalier de 6 m ; il escalade le bord du palier.
                     Vector3 inward = new Vector3(l.StairsDir.x, 0f, l.StairsDir.y);
                     float front = l.Cells.Max(c => Vector2.Dot(c, (Vector2)l.StairsDir));
                     var edgeRow = l.Cells.Where(c => Mathf.Abs(Vector2.Dot(c, (Vector2)l.StairsDir) - front) < 0.1f).OrderBy(c => c.x + c.y).ToList();
-                    Vector2Int mid = edgeRow[edgeRow.Count / 2];
+                    Vector2Int mid = edgeRow[edgeRow.Count / 4];               // à côté de l'escalier, pas dessus
                     Vector3 lip = Plan.CellCenter(mid, r.Floor + l.Height);
-                    StalkerClimb(root, lip + inward * (Plan.Cell * 2.5f) - Vector3.up * l.Height, lip - inward * Plan.Cell);
-                    continue;
+                    // Haut : dans la salle haute, 4 m derrière la porte (le palier de 6 m est trop étroit pour lui).
+                    ActDoor door = l.Door >= 0 && l.Door < Plan.Doors.Count ? Plan.Doors[l.Door] : null;
+                    Vector3 climbTop = door != null ? Plan.DoorFront(door, door.Other(r.Id), 4f) : lip - inward * Plan.Cell;
+                    StalkerClimb(root, lip + inward * (Plan.Cell * 2.5f) - Vector3.up * l.Height, climbTop);
                 }
+
+                if (l.Stairs.Count == 0)
+                    continue;                                           // porte haute : traction sur le mur au-dessus
                 Vector3 dir = new Vector3(l.StairsDir.x, 0f, l.StairsDir.y);      // du palier vers le fond : l'escalier descend
                 Vector2Int top = l.Stairs.OrderBy(c => Vector2.Dot(c, (Vector2)l.StairsDir)).First();
                 Vector3 topEdge = Plan.CellCenter(top, r.Floor) - dir * (Plan.Cell * 0.5f);
@@ -333,7 +338,7 @@ namespace ItHunts.Level.Acts
                     }
                     else if (!wallJump)
                     {
-                        if (r.NoTerraceStairs)
+                        if (r.NoTerraceStairs || Plan.Hand != null)
                             StalkerClimb(root, edge + dir * (Plan.Cell * 2.5f), edge - dir * Plan.Cell + Vector3.up * h);
                         // Mur parallèle à la façade : on rebondit entre les deux jusqu'en haut.
                         float gap = settings.wallJumpGap;

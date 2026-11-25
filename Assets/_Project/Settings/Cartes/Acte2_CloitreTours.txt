@@ -1,0 +1,164 @@
+# Carte faite à la main (D-110), écrite par Tools/Cartes. Plan : 1 caractère = 8 m, nord en haut.
+nom: Le cloître et les tours
+acte: 2
+echelle: 8
+organique: 0
+
+[plan]
+|....aaaaaaaaaaaaaaaaaaaa....HHHHHH....bbbbbbbbbbbbbbcccccccccc|
+|....aaaaaaaaaaaaaaaaaaaa....HHHHHH....bbbbbbbbbbbbbbcccccccccc|
+|....aaaaaaaaaaaaaaaaaaaaSSSSSSSSSSSSSSbbbbbbbbbbbbbbcccccccccc|
+|....aaaaaaaaaaaaaaaaaaaaSSSSSSSSSSSSSSbbbbbbbbbbbbbbcccccccccc|
+|....aaaaaaaaaaaaaaaaaaaaSSSSSSSSSSSSSSbbbbbbbbbbbbbbcccccccccc|
+|....aaaaaaaaaaaaaaaaaaaaSSSSSSSSSSSSSSbbbbbbbbbbbbbbcccccccccc|
+|....aaaaaaaaaaaaaaaaaaaaSSSSSSSSSSSSSSbbbbbbbbbbbbbbcccccccccc|
+|....aaaaaaaaaaaaaaaaaaaaSSSSSSSSSSSSSSbbbbbbbbbbbbbbcccccccccc|
+|....aaaaaaaaaaaaaaaaaaaaSSSSSSSSSSSSSSbbbbbbbbbbbbbbcccccccccc|
+|....aaaaaaaaaaaaaaaaaaaaSSSSSSSSSSSSSSbbbbbbbbbbbbbbcccccccccc|
+|ddddddddddddddBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBiiiiiiiiiiiiiiii|
+|ddddddddddddddBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBiiiiiiiiiiiiiiii|
+|ddddddddddddddBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBiiiiiiiiiiiiiiii|
+|ddddddddddddddBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBiiiiiiiiiiiiiiii|
+|ddddddddddddddBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBiiiiiiiiiiiiiiii|
+|ddddddddddddddBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBiiiiiiiiiiiiiiii|
+|ddddddddddddddBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBiiiiiiiiiiiiiiii|
+|ddddddddddddddBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBiiiiiiiiiiiiiiii|
+|ddddddddddddddBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBiiiiiiiiiiiiiiii|
+|dddddddddddddd..nnnnnnnnnnnnnnnnnnnnnnnnnnnnnniiiiiiiiiiiiiiii|
+|eeeeeeeeffffffffnnnnnnnnnnnnnnnnnnnnnnnnnnnnnniiiiiiiiiiiiiiii|
+|eeeeeeeeffffffffnnnnnnnnnnnnnnnnnnnnnnnnnnnnnniiiiiiiiiiiiiiii|
+|eeeeeeeeffffffffooCCCCCCCCCCCCCCCCCCCCCCCCCCppjjjjjjjjjjjjAAAA|
+|eeeeeeeeffffffffooCCCCCCCCCCCCCCCCCCCCCCCCCCppjjjjjjjjjjjjAAAA|
+|eeeeeeeeffffffffooCCCCCCCCCCCCCCCCCCCCCCCCCCppjjjjjjjjjjjjAAAA|
+|eeeeeeeeffffffffooCCCCCCCCCCCCCCCCCCCCCCCCCCppjjjjjjjjjjjjAAAA|
+|eeeeeeeeffffffffooCCCCCCCCCCCCCCCCCCCCCCCCCCppjjjjjjjjjjjjAAAA|
+|eeeeeeeeggggggggooCCCCCCCCCCCCCCCCCCCCCCCCCCppjjjjjjjjjjjjAAAA|
+|eeeeeeeeggggggggooCCCCCCCCCCCCCCCCCCCCCCCCCCppjjjjjjjjjjjjAAAA|
+|eeeeeeeeggggggggooCCCCCCCCCCCCCCCCCCCCCCCCCCppjjjjjjjjjjjjAAAA|
+|eeeeeeeeggggggggooCCCCCCCCCCCCCCCCCCCCCCCCCCppjjjjjjjjjjjj....|
+|eeeeeeeeggggggggooCCCCCCCCCCCCCCCCCCCCCCCCCCppjjjjjjjjjjjj....|
+|eeeeeeeeggggggggooCCCCCCCCCCCCCCCCCCCCCCCCCCppkkkkkkkkkkkkkkkk|
+|eeeeeeeeggggggggooCCCCCCCCCCCCCCCCCCCCCCCCCCppkkkkkkkkkkkkkkkk|
+|hhhhhhhhhhhhhhhhooCCCCCCCCCCCCCCCCCCCCCCCCCCppkkkkkkkkkkkkkkkk|
+|hhhhhhhhhhhhhhhhooCCCCCCCCCCCCCCCCCCCCCCCCCCppkkkkkkkkkkkkkkkk|
+|hhhhhhhhhhhhhhhhooCCCCCCCCCCCCCCCCCCCCCCCCCCppkkkkkkkkkkkkkkkk|
+|hhhhhhhhhhhhhhhhooCCCCCCCCCCCCCCCCCCCCCCCCCCppkkkkkkkkkkkkkkkk|
+|hhhhhhhhhhhhhhhhqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqkkkkkkkkkkkkkkkk|
+|hhhhhhhhhhhhhhhhqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqkkkkkkkkkkkkkkkk|
+|hhhhhhhhhhhhhhhhqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqkkkkkkkkkkkkkkkk|
+|hhhhhhhhhhhhhhhhrrrrrrrrrrrrrrsssssssssssssssskkkkkkkkkkkkkkkk|
+|hhhhhhhhhhhhhhhhrrrrrrrrrrrrrrssssssssssssssssllllllllllllllll|
+|hhhhhhhhhhhhhhhhrrrrrrrrrrrrrrssssssssssssssssllllllllllllllll|
+|hhhhhhhhhhhhhhhhrrrrrrrrrrrrrrssssssssssssssssllllllllllllllll|
+|hhhhhhhhhhhhhhhhrrrrrrrrrrrrrrssssssssssssssssllllllllllllllll|
+|ttttttttttttttttttrrrrrrrrrrrrssssssssssssssssllllllllllllllll|
+|ttttttttttttttttttrrrrrrrrrrrrssssssssssssssssllllllllllllllll|
+|ttttttttttttttttttrrrrrrrrrrrrssssssssssssssssllllllllllllllll|
+|ttttttttttttttttttrrrrrrrrrrrrssssssssssssssssllllllllllllllll|
+|ttttttttttttttttttDDDDDDDDDDDDDDDDDDwwwwwwwwwwllllllllllllllll|
+|ttttttttttttttttttDDDDDDDDDDDDDDDDDDwwwwwwwwwwllllllllllllllll|
+|ttttttttttttttttttDDDDDDDDDDDDDDDDDDwwwwwwwwwwllllllllllllllll|
+|uuuuuuuuuuuuuuuuuuDDDDDDDDDDDDDDDDDDwwwwwwwwwwllllllllllllllll|
+|uuuuuuuuuuuuuuuuuuDDDDDDDDDDDDDDDDDDvvvvvvvvvvvvvvvvvvvvvvvvvv|
+|uuuuuuuuuuuuuuuuuuDDDDDDDDDDDDDDDDDDvvvvvvvvvvvvvvvvvvvvvvvvvv|
+|uuuuuuuuuuuuuuuuuuDDDDDDDDDDDDDDDDDDvvvvvvvvvvvvvvvvvvvvvvvvvv|
+|uuuuuuuuuuuuuuuuuuDDDDDDDDDDDDDDDDDDvvvvvvvvvvvvvvvvvvvvvvvvvv|
+|uuuuuuuuuuuuuuuuuuDDDDDDDDDDDDDDDDDDvvvvvvvvvvvvvvvvvvvvvvvvvv|
+|uuuuuuuuuuuuuuuuuuDDDDDDDDDDDDDDDDDDvvvvvvvvvvvvvvvvvvvvvvvvvv|
+|uuuuuuuuuuuuuuuuuuxxxxxxxxxxxxxxxxxxvvvvvvvvvvvvvvvvvvvvvvvvvv|
+|uuuuuuuuuuuuuuuuuuxxxxxxxxxxxxxxxxxxvvvvvvvvvvvvvvvvvvvvvvvvvv|
+|MMMMMMMM..........xxxxxxxxxxxxxxxxxx................LLLLLLLLLL|
+|MMMMMMMM..........xxxxxxxxxxxxxxxxxx................LLLLLLLLLL|
+
+[salles]
+H : Hall de sortie ; sol 6 ; hall
+S : Grande entrée ; sol 6 ; plafond 22 ; sortie ; fonction Salle du trône
+B : Salle de bal ; sol 0 ; plafond 26 ; galerie n 6 ; fonction Salle de bal
+a : Chapelle ; sol 0 ; plafond 28
+b : Salon de musique ; sol 6
+c : Chambre ; sol 14
+d : Armurerie ; sol 0
+e : Salle des gardes ; sol 0 ; fonction Armurerie
+f : Chambre ; sol 8
+g : Chambre ; sol 14
+h : Tour effondrée ; sol -6 ; vide ; galerie n 6
+n : Galerie des portraits ; sol 0
+C : Cloître ; sol 0 ; ciel ; eau ; fonction Fontaine
+o : Galerie des portraits ; sol 6 ; fonction Galerie des portraits
+p : Galerie des portraits ; sol 6 ; fonction Galerie des portraits
+q : Galerie des portraits ; sol 0
+i : Bibliothèque ; sol 6 ; plafond 24 ; galerie e 8
+A : Porte d'arrivée ; sol 0 ; arrivee
+j : Grand escalier ; sol 0 ; galerie n 6
+k : Salle du trône ; sol 6 ; plafond 22
+l : Bains ; sol -6 ; eau
+r : Salle à manger ; sol 0
+s : Salon de musique ; sol -6 ; fonction Salle des gardes
+D : Palier ; sol 0 ; plafond 18 ; depart
+t : Chambre ; sol 0
+u : Salle à manger ; sol 4
+v : Armurerie ; sol 0
+w : Chapelle ; sol 0 ; fonction Galerie des portraits
+L : Salle verrouillée ; sol 0 ; verrouillee
+M : Salle verrouillée ; sol 4 ; verrouillee
+x : Salle à manger ; sol 0 ; fonction Galerie des portraits
+
+[portes]
+S-H sortie
+j-A arrivee
+a-S rampe
+S-b
+b-c haute
+a-B
+S-B haute
+B-b rampe
+a-d
+B-d
+B-i rampe
+b-i
+c-i haute
+d-e
+d-f haute
+e-f haute
+f-g haute
+e-h
+B-n
+n-C
+n-o haute
+n-p haute
+o-C haute
+p-C haute
+C-q
+o-q haute
+p-q haute
+g-o haute
+i-j
+p-j haute
+j-k
+p-k
+k-l
+q-k haute
+h-q
+h-t
+q-r
+q-s
+r-s
+s-l
+s-w
+r-D
+w-D
+t-u
+t-r
+u-D haute
+D-v
+w-v
+v-l haute
+D-x
+u-x
+x-v
+v-L verrou
+u-M verrou
+
+[ancres]
+coffre a c g h i k l s t u v
+marchand r e j
