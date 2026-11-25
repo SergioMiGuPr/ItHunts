@@ -210,6 +210,24 @@ namespace ItHunts.Player
             {
                 if (Cursor.lockState == CursorLockMode.Locked)
                     SetCursorLocked(false);
+                _freedByAlt = false;
+                return;
+            }
+
+            // Point 3 : Alt gauche maintenu libère le curseur (survol des améliorations du HUD) ; relâché, il est repris.
+            if (_reader.FreeCursorHeld)
+            {
+                if (Cursor.lockState == CursorLockMode.Locked)
+                    SetCursorLocked(false);
+                _freedByAlt = true;
+                return;
+            }
+
+            if (_freedByAlt)
+            {
+                _freedByAlt = false;
+                if (Application.isFocused)
+                    SetCursorLocked(true);
                 return;
             }
 
@@ -225,6 +243,8 @@ namespace ItHunts.Player
                 && mouse != null && mouse.leftButton.wasPressedThisFrame)
                 SetCursorLocked(true);
         }
+
+        private bool _freedByAlt;
 
         /// <summary>Un menu (écran de fin, marchand…) a besoin de la souris : le curseur reste libre.</summary>
         public static bool MenuOpen { get; set; }

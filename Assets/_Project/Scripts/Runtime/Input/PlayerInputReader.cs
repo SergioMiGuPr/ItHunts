@@ -32,6 +32,7 @@ namespace ItHunts.Input
         private InputAction _interact;
         private ItHunts.Economy.PlayerInteractor _interactor;
         private InputAction _parry;
+        private InputAction _freeCursor;
         private InputAction _toggleDebug;
         private InputAction _pause;
         private InputAction _map;
@@ -57,8 +58,13 @@ namespace ItHunts.Input
         public bool ThrowHeld { get; private set; }
         public int ReloadPressedTick { get; private set; } = MovementState.NeverTick;
         public bool ToggleDebugPressed { get; private set; }
-        /// <summary>Parer (Alt gauche / R3 par défaut, D-079) cette image.</summary>
+        /// <summary>Parer (V / R3 par défaut, D-079 ; point 3 : Alt gauche libère le curseur) cette image.</summary>
         public bool ParryPressed { get; private set; }
+        /// <summary>
+        /// Alt gauche maintenu (clavier, point 3) : curseur libre pour survoler les améliorations du HUD (infobulle) ; la vue et les
+        /// actions de visée s'arrêtent, le déplacement continue.
+        /// </summary>
+        public bool FreeCursorHeld { get; private set; }
         /// <summary>E / Y maintenu (réanimation d'un allié, étape 9).</summary>
         public bool InteractHeld => _interact != null && _interact.IsPressed();
         public bool PausePressed { get; private set; }
@@ -70,7 +76,7 @@ namespace ItHunts.Input
         {
             public Vector2 Move;
             public bool JumpHeld, JumpPress, SlideHeld, DashPress, AttractPress, AttractHeld, RepelPress, RepelHeld, GrabPress, ThrowPress,
-                ThrowHeld, ReloadPress, Parry, Interact;
+                ThrowHeld, ReloadPress, Parry, Interact, FreeCursor;
         }
 
         /// <summary>
@@ -109,6 +115,7 @@ namespace ItHunts.Input
             if (_interactor == null)
                 _interactor = gameObject.AddComponent<ItHunts.Economy.PlayerInteractor>();   // coffres, marchand, porte (D-043)
             _parry = actions.FindAction("Player/Parry", throwIfNotFound: false);
+            _freeCursor = actions.FindAction("Player/FreeCursor", throwIfNotFound: false);
             _toggleDebug = actions.FindAction("Player/ToggleDebug", throwIfNotFound: true);
             _pause = actions.FindAction("Player/Pause", throwIfNotFound: true);
             _map = actions.FindAction("Player/Map", throwIfNotFound: false);
@@ -157,8 +164,9 @@ namespace ItHunts.Input
             ThrowHeld = _throw.IsPressed() && aimReady;
             if (_reload.WasPressedThisFrame() && aimReady && !(UsingGamepad && focus))
                 ReloadPressedTick = next;                     // R / Y : recharger l'artefact (Y visant un objet : il l'utilise)
-            // Parade sur sa propre touche (Alt gauche / R3, D-079) : E ne sert plus qu'à interagir.
+            // Parade sur sa propre touche (V / R3, D-079) : E ne sert plus qu'à interagir.
             ParryPressed = _parry != null && _parry.WasPressedThisFrame();
+            FreeCursorHeld = _freeCursor != null && _freeCursor.IsPressed() && !UsingGamepad;
             ToggleDebugPressed = _toggleDebug.WasPressedThisFrame();
             PausePressed = _pause.WasPressedThisFrame();
         }
@@ -189,6 +197,7 @@ namespace ItHunts.Input
             if (f.ReloadPress)
                 ReloadPressedTick = next;
             ParryPressed = f.Parry;
+            FreeCursorHeld = f.FreeCursor;
             if (f.Interact && _interactor != null)
                 _interactor.Press();
             ToggleDebugPressed = false;
