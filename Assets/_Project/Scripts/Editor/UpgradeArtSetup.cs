@@ -56,8 +56,52 @@ namespace ItHunts.EditorTools
             }
 
             WireLot7();
+            WireNight5Lot2();
             AssetDatabase.SaveAssets();
             Debug.Log("Illustrations des améliorations : " + icons + " branchées, " + missing + " manquantes ; cadres de rang dans HudSkin_Default.");
+        }
+
+        private const string UiJeu = "Assets/Art/UI/Jeu/Prefabs/";
+
+        /// <summary>
+        /// Nuit 5, lot 2 de la DA (PR #55, UI-HANDOFF § 10) : colonne d'améliorations du HUD, infobulle, panneaux d'offres du coffre et
+        /// du marchand dans HudSkin_Default ; page Codex du menu principal et ses tables d'améliorations dans MenuSkin_Default.
+        /// </summary>
+        public static void WireNight5Lot2()
+        {
+            GameObject Prefab(string name)
+            {
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(UiJeu + name + ".prefab");
+                if (go == null)
+                    Debug.LogWarning("Prefab de la DA manquant : " + UiJeu + name + ".prefab");
+                return go;
+            }
+
+            var skin = AssetDatabase.LoadAssetAtPath<HudSkinSettings>("Assets/_Project/Settings/HudSkin_Default.asset");
+            if (skin != null)
+            {
+                skin.upgradeColumnPrefab = Prefab("HUD_ColonneAmeliorations");
+                skin.upgradeTooltipPrefab = Prefab("HUD_InfobulleAmelioration");
+                skin.chestOffersPrefab = Prefab("Panneau_Offres_Coffre");
+                skin.merchantOffersPrefab = Prefab("Panneau_Offres_Marchand");
+                EditorUtility.SetDirty(skin);
+            }
+
+            var menu = AssetDatabase.LoadAssetAtPath<MenuSkinSettings>("Assets/_Project/Settings/MenuSkin_Default.asset");
+            if (menu != null)
+            {
+                menu.codexPrefab = Prefab("Menu_Codex");
+                var pools = new System.Collections.Generic.List<UpgradePool>();
+                foreach (string n in new[] { "Default", "Renard", "Cameleon", "Koala", "Hibou" })
+                {
+                    var pool = AssetDatabase.LoadAssetAtPath<UpgradePool>("Assets/_Project/Settings/UpgradePool_" + n + ".asset");
+                    if (pool != null)
+                        pools.Add(pool);
+                }
+
+                menu.codexPools = pools.ToArray();
+                EditorUtility.SetDirty(menu);
+            }
         }
 
         /// <summary>Lot 7 de la DA (PR #50) : contour du volant sur son prefab, cris d'apparition et « je t'ai vu » dans GameAudio_Default.</summary>

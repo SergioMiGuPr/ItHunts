@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using ItHunts.Art.Menus;
+using ItHunts.Art.UIJeu;
 using ItHunts.Hud;
 using ItHunts.Level;
 using ItHunts.Settings;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace ItHunts.Menus
@@ -53,6 +55,11 @@ namespace ItHunts.Menus
         private readonly List<(RectTransform rect, Text value, Graphic[] tint)> _rows = new List<(RectTransform, Text, Graphic[])>();
         private Selectable _settingsBack;
 
+        // Codex (nuit 5, lot 2 ; point 3)
+        private GameObject _codexRoot;
+        private CodexAmeliorations _codex;
+        private float _codexRepeatAt;
+
         // Transition
         private RectTransform _fog;
         private Image _veil, _mist;
@@ -65,6 +72,8 @@ namespace ItHunts.Menus
         public GameObject CampScreen => _camp;
         public GameObject ChoiceScreen => _choice;
         public GameObject SettingsScreen => _settings;
+        public GameObject CodexScreen => _codexRoot;
+        public CodexAmeliorations Codex => _codex;
         public Canvas Canvas => _canvas;
 
         /// <summary>Construit la vue (appelé à la pose ; public pour les tests).</summary>
@@ -105,6 +114,7 @@ namespace ItHunts.Menus
             BuildCamp();
             BuildChoice();
             BuildSettings();
+            BuildCodex();
             if (_skin.settingsScreen != null)
                 _playtest = ArtMenuScreen.Create(_skin.settingsScreen, Page("Playtest"), "Menu_Playtest", "Playtest");
             BuildTransition();
@@ -126,6 +136,95 @@ namespace ItHunts.Menus
         {
             _title = MenuArtKit.Spawn(_skin.titleScreen, Page("Écran titre"), "Menu_Titre");
             _titleView = _title.GetComponentInChildren<TitreApercu>(true);
+            AddCodexTitleEntry();
+        }
+
+        /// <summary>
+        /// Entrée « Codex » du titre (point 3), en texte Unity comme Jouer / Paramètres / Quitter : copie de « Quitter » à sa place, et
+        /// « Quitter » descend d'un pas (l'écart entre Paramètres et Quitter). Même ordre que le menu : Jouer, Paramètres, Codex, Quitter.
+        /// </summary>
+        private void AddCodexTitleEntry()
+        {
+            if (_titleView == null || _titleView.elements == null || _titleView.elements.Length != 3)
+                return;
+            TitreApercu.Element settings = _titleView.elements[1], quit = _titleView.elements[2];
+            if (quit?.bouton == null || quit.texte == null || settings == null)
+                return;
+            float step = quit.ligneDeBase - settings.ligneDeBase;
+            GameObject button = Instantiate(quit.bouton.gameObject, quit.bouton.transform.parent, false);
+            button.name = "Element_Codex";
+            GameObject text = Instantiate(quit.texte.gameObject, quit.texte.transform.parent, false);
+            text.name = "Texte_Codex";
+            var codex = new TitreApercu.Element
+            {
+                bouton = button.GetComponent<Selectable>(),
+                texte = text.GetComponent<Text>(),
+                ligneDeBase = quit.ligneDeBase,
+            };
+            codex.texte.text = "Codex";
+            var quitRect = (RectTransform)quit.bouton.transform;
+            quitRect.anchoredPosition -= new Vector2(0f, step);                // ancres en haut : y descend
+            quit.ligneDeBase += step;
+            _titleView.elements = new[] { _titleView.elements[0], settings, codex, quit };
+            _titleShown = -1;
+        }
+
+        /// <summary>Page Codex (Menu_Codex) : fiches construites depuis les UpgradeDefinition de main (code, nom, effet, 5 rangs).</summary>
+        private void BuildCodex()
+        {
+            if (_skin.codexPrefab == null)
+                return;
+            _codexRoot = MenuArtKit.Spawn(_skin.codexPrefab, Page("Codex"), "Menu_Codex");
+            foreach (Graphic g in _codexRoot.GetComponentsInChildren<Graphic>(true))
+                g.raycastTarget = false;                                  // survol et clic testés ici (comme les autres écrans)
+            _codex = _codexRoot.GetComponent<CodexAmeliorations>();
+            if (_codex == null)
+                _codex = _codexRoot.GetComponentInChildren<CodexAmeliorations>(true);
+            if (_codex == null)
+            {
+                Destroy(_codexRoot);
+                _codexRoot = null;
+                return;
+            }
+
+            CatalogueAmeliorations.Fiche[] fiches = CodexFiches(_skin, _menu.Roster);
+            _codex.Remplit(fiches.Length > 0 ? fiches : _codex.catalogue != null ? _codex.catalogue.fiches : fiches);
+            _codexRoot.SetActive(false);
+            _menu.CodexReady = true;
+        }
+
+        /// <summary>Fiches du codex (pur, testable) : tables du skin (communes puis personnages), sinon celles des personnages de la run.</summary>
+        public static CatalogueAmeliorations.Fiche[] CodexFiches(MenuSkinSettings skin, CharacterRoster roster)
+        {
+            var list = new List<CatalogueAmeliorations.Fiche>();
+            var seen = new HashSet<UpgradeDefinition>();
+            void Add(UpgradePool pool)
+            {
+                if (pool == null || pool.upgrades == null)
+                    return;
+                foreach (UpgradeDefinition u in pool.upgrades)
+                    if (u != null && !string.IsNullOrEmpty(u.code) && seen.Add(u))
+                        list.Add(FicheOf(u));
+            }
+
+            if (skin != null && skin.codexPools != null)
+                foreach (UpgradePool pool in skin.codexPools)
+                    Add(pool);
+            if (roster != null)
+                for (int i = 0; i < roster.Count; i++)
+                    Add(roster[i] != null ? roster[i].upgrades : null);
+            return list.ToArray();
+        }
+
+        public static CatalogueAmeliorations.Fiche FicheOf(UpgradeDefinition u)
+        {
+            var f = new CatalogueAmeliorations.Fiche
+            {
+                id = u.code, nom = u.displayName, effet = u.description, synergies = u.synergies, rangs = new string[UpgradeDefinition.RankCount],
+            };
+            for (int r = 0; r < f.rangs.Length; r++)
+                f.rangs[r] = u.RankText(r);
+            return f;
         }
 
         private readonly System.Collections.Generic.List<Material> _ownedMaterials = new System.Collections.Generic.List<Material>();
@@ -299,6 +398,7 @@ namespace ItHunts.Menus
                 SyncCamp(page == MainMenu.Page.Campement && _menu.Pick == null);
             SyncChoice();
             SyncSettings(page == MainMenu.Page.Parametres);
+            SyncCodex(page == MainMenu.Page.Codex);
             _playtest?.Sync(_menu.PlaytestMenu, _cam, page == MainMenu.Page.Playtest);
             SyncTransition();
             bool devLinks = MainMenu.PlaytestVisible && page == MainMenu.Page.Titre;
@@ -556,6 +656,85 @@ namespace ItHunts.Menus
 
             GreyboxMenu.Item back = m.Items.Count > 0 ? m.Items[m.Items.Count - 1] : null;
             Bind(m, back, _settingsBack, true);
+        }
+
+        /// <summary>
+        /// Codex : Tab / Maj+Tab ou LB / RB changent d'onglet, flèches (ZQSD, WASD) ou croix parcourent la grille, souris : clic sur
+        /// un onglet, survol d'une case, « Fermer » ; Échap / B : retour (MainMenu).
+        /// </summary>
+        private void SyncCodex(bool open)
+        {
+            if (_codexRoot == null)
+                return;
+            if (_codexRoot.activeSelf != open)
+                _codexRoot.SetActive(open);
+            if (!open)
+                return;
+            Keyboard k = Keyboard.current;
+            Gamepad g = Gamepad.current;
+            if (_codex.aide != null)
+                _codex.aide.text = g != null && GreyboxMenu.LastNavPad == g
+                    ? "LB / RB : onglet   ·   croix : parcourir   ·   B : retour"
+                    : "Tab : onglet   ·   flèches : parcourir   ·   souris : survoler   ·   Échap : retour";
+            if (k != null)
+            {
+                bool shift = k.leftShiftKey.isPressed || k.rightShiftKey.isPressed;
+                if (k.tabKey.wasPressedThisFrame)
+                    _codex.OngletSuivant(shift ? -1 : 1);
+                int dx = 0, dy = 0;
+                if (k.leftArrowKey.wasPressedThisFrame || k.aKey.wasPressedThisFrame || k.qKey.wasPressedThisFrame) dx = -1;
+                if (k.rightArrowKey.wasPressedThisFrame || k.dKey.wasPressedThisFrame) dx = 1;
+                if (k.upArrowKey.wasPressedThisFrame || k.wKey.wasPressedThisFrame || k.zKey.wasPressedThisFrame) dy = -1;
+                if (k.downArrowKey.wasPressedThisFrame || k.sKey.wasPressedThisFrame) dy = 1;
+                if (dx != 0 || dy != 0)
+                    _codex.Deplace(dx, dy);
+            }
+
+            if (g != null)
+            {
+                if (g.leftShoulder.wasPressedThisFrame)
+                    _codex.OngletSuivant(-1);
+                if (g.rightShoulder.wasPressedThisFrame)
+                    _codex.OngletSuivant(1);
+                Vector2 st = g.leftStick.ReadValue() + g.dpad.ReadValue();
+                if (st.sqrMagnitude > 0.4f && Time.unscaledTime >= _codexRepeatAt)
+                {
+                    if (Mathf.Abs(st.x) > Mathf.Abs(st.y))
+                        _codex.Deplace(st.x > 0f ? 1 : -1, 0);
+                    else
+                        _codex.Deplace(0, st.y > 0f ? -1 : 1);
+                    _codexRepeatAt = Time.unscaledTime + 0.22f;
+                }
+                else if (st.sqrMagnitude < 0.1f)
+                    _codexRepeatAt = 0f;
+            }
+
+            for (int i = 0; i < _codex.onglets.Length; i++)
+            {
+                CodexAmeliorations.Onglet o = _codex.onglets[i];
+                if (o?.bouton != null && MenuArtKit.Clicked && MenuArtKit.Over(Rect(o.bouton), _cam) && i != _codex.OngletActif)
+                    _codex.ChoisitOnglet(i);
+            }
+
+            if (MenuArtKit.MouseMoved || MenuArtKit.Clicked)
+                for (int i = 0; i < _codex.cases.Length; i++)
+                {
+                    IconeAmelioration c = _codex.cases[i];
+                    if (c != null && c.gameObject.activeInHierarchy && MenuArtKit.Over((RectTransform)c.transform, _cam))
+                    {
+                        _codex.Choisit(i);
+                        break;
+                    }
+                }
+
+            if (_codex.fermer != null)
+            {
+                bool over = MenuArtKit.Over(Rect(_codex.fermer), _cam);
+                MenuArtKit.Tint(MenuArtKit.Targets(_codex.fermer), over && MenuArtKit.MouseDown ? MenuArtKit.State.Pressed
+                    : over ? MenuArtKit.State.Hover : MenuArtKit.State.Normal);
+                if (over && MenuArtKit.Clicked)
+                    _menu.CloseCodex();
+            }
         }
 
         private void SyncTransition()

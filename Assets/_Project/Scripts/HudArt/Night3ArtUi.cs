@@ -60,29 +60,46 @@ namespace ItHunts.HudArt
             stats = stats.Where(x => x.libelle == null || !x.libelle.StartsWith("Améliorations")).ToArray();
             FitRows(view, stats.Length);
             view.Remplit(end.Victory, end.Headline, stats);
-            FillUpgrades(view);
-            view.Recommencer += end.Replay;
-            view.Campement += end.ToCamp;
+            var keys = end.gameObject.AddComponent<EndKeys>();
+            keys.End = end;
+            keys.View = view;
+            keys.Upgrades = FillUpgrades(view);
+            // Point 3 : infobulle de la DA au survol d'une illustration (nom, rang, effet précis), par-dessus le panneau.
+            if (skin.upgradeTooltipPrefab != null)
+            {
+                GameObject tip = Object.Instantiate(skin.upgradeTooltipPrefab, c.transform, false);
+                tip.transform.SetAsLastSibling();
+                foreach (UnityEngine.UI.Graphic g in tip.GetComponentsInChildren<UnityEngine.UI.Graphic>(true))
+                    g.raycastTarget = false;
+                keys.Tooltip = tip.GetComponentInChildren<InfobulleAmelioration>(true);
+            }
+
+            // Les boutons de la DA n'ont pas d'EventSystem ici : EndKeys teste aussi la souris ; une seule action par écran.
+            view.Recommencer += () => keys.Do(end.Replay);
+            view.Campement += () => keys.Do(end.ToCamp);
             end.Skinned = true;
-            end.gameObject.AddComponent<EndKeys>().End = end;
             foreach (MonoBehaviour m in end.GetComponents<MonoBehaviour>())
                 if (m.GetType().Name == "RunEndScreenArt")
                     Object.Destroy(m);                                       // la vue provisoire laisse la place
         }
 
-        /// <summary>Améliorations du premier joueur (codes de AMELIORATIONS.md et rangs), le passif en premier.</summary>
-        private static void FillUpgrades(FinDeRun view)
+        /// <summary>Améliorations du premier joueur (codes de AMELIORATIONS.md et rangs), le passif en premier ; renvoie la liste montrée.</summary>
+        private static System.Collections.Generic.List<(UpgradeDefinition u, int rank)> FillUpgrades(FinDeRun view)
         {
+            var shown = new System.Collections.Generic.List<(UpgradeDefinition u, int rank)>();
             var run = ItHunts.Artifacts.RunState.Current;
             ItHunts.Player.PlayerHealth p = ItHunts.Player.PlayerHealth.All.FirstOrDefault(x => x != null);
             if (run == null || p == null)
             {
                 view.RemplitAmeliorations(new string[0], new int[0]);
-                return;
+                return shown;
             }
 
             var owned = run.UpgradesOf(p.PlayerId).Where(u => u != null).OrderByDescending(u => u.isPassive).ToList();
-            view.RemplitAmeliorations(owned.Select(u => u.code).ToArray(), owned.Select(u => Mathf.Max(0, run.RankOf(p.PlayerId, u))).ToArray());
+            foreach (UpgradeDefinition u in owned)
+                shown.Add((u, Mathf.Max(0, run.RankOf(p.PlayerId, u))));
+            view.RemplitAmeliorations(shown.Select(x => x.u.code).ToArray(), shown.Select(x => x.rank).ToArray());
+            return shown;
         }
 
         /// <summary>
@@ -122,19 +139,81 @@ namespace ItHunts.HudArt
             view.valeurs = val.ToArray();
         }
 
-        /// <summary>Clavier et manette sur l'écran de fin : Entrée / A au campement, R / Y nouvelle run.</summary>
+        /// <summary>
+        /// Clavier, manette et souris sur l'écran de fin : Entrée / A / clic sur Campement au campement, R / Y / clic sur Recommencer
+        /// nouvelle run (une seule fois) ; survol d'une illustration : infobulle de l'amélioration.
+        /// </summary>
         private sealed class EndKeys : MonoBehaviour
         {
             public RunEndScreen End;
+            public FinDeRun View;
+            public InfobulleAmelioration Tooltip;
+            public System.Collections.Generic.List<(UpgradeDefinition u, int rank)> Upgrades =
+                new System.Collections.Generic.List<(UpgradeDefinition u, int rank)>();
+            private bool _done;
+            private int _hover = -1;
+
+            /// <summary>Action de l'écran (chargement de scène) : la première seulement.</summary>
+            public void Do(System.Action action)
+            {
+                if (_done || action == null)
+                    return;
+                _done = true;
+                action();
+            }
+
+            private static bool Over(Component c) =>
+                c != null && ItHunts.Menus.MenuArtKit.Over((RectTransform)c.transform, null);   // canvas en Screen Space - Overlay
 
             private void Update()
             {
+                if (_done)
+                    return;
                 var k = UnityEngine.InputSystem.Keyboard.current;
                 var g = UnityEngine.InputSystem.Gamepad.current;
                 if ((k != null && k.rKey.wasPressedThisFrame) || (g != null && g.buttonNorth.wasPressedThisFrame))
-                    End.Replay();
+                    Do(End.Replay);
                 else if ((k != null && (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame)) || (g != null && g.buttonSouth.wasPressedThisFrame))
-                    End.ToCamp();
+                    Do(End.ToCamp);
+                else if (View != null && ItHunts.Menus.MenuArtKit.Clicked)
+                {
+                    if (Over(View.recommencer))
+                        Do(End.Replay);
+                    else if (Over(View.campement))
+                        Do(End.ToCamp);
+                }
+
+                if (_done || View == null)
+                    return;
+                UpdateTooltip();
+            }
+
+            private void UpdateTooltip()
+            {
+                if (Tooltip == null || View.ameliorations == null)
+                    return;
+                int hover = -1;
+                for (int i = 0; i < View.ameliorations.Length && i < Upgrades.Count; i++)
+                {
+                    IconeAmelioration c = View.ameliorations[i];
+                    if (c != null && c.gameObject.activeInHierarchy && Over(c))
+                    {
+                        hover = i;
+                        break;
+                    }
+                }
+
+                if (hover == _hover)
+                    return;
+                _hover = hover;
+                if (hover < 0)
+                {
+                    Tooltip.Cache();
+                    return;
+                }
+
+                (UpgradeDefinition u, int rank) = Upgrades[hover];
+                Tooltip.Montre(u.code, rank, u.displayName, u.description, u.RankText(rank), (RectTransform)View.ameliorations[hover].transform);
             }
         }
 

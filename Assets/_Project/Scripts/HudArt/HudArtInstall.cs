@@ -16,8 +16,16 @@ namespace ItHunts.HudArt
         {
             PlayerHud.Built -= AttachHud;
             PlayerHud.Built += AttachHud;
-            ShopMenu.Opened -= ShopPanelArt.Attach;
-            ShopMenu.Opened += ShopPanelArt.Attach;
+            ShopMenu.Opened -= AttachShop;
+            ShopMenu.Opened += AttachShop;
+        }
+
+        /// <summary>Coffre et marchand : panneau d'offres de la nuit 5 (cartes illustrées, relance) ; sinon l'ancien panneau en liste.</summary>
+        private static void AttachShop(ShopMenu menu)
+        {
+            if (menu == null || OffersPanelArt.Attach(menu))
+                return;
+            ShopPanelArt.Attach(menu);
         }
 
         private static void AttachHud(PlayerHud hud) => Attach(hud);

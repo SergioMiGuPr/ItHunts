@@ -69,7 +69,8 @@ namespace ItHunts.HudArt
             ParryEvents.Parried += OnParried;
             DamageEvents.Hit += OnHit;
             BuildMarker();
-            BuildUpgradeRow(skin);
+            if (!BuildUpgradeColumn(skin))
+                BuildUpgradeRow(skin);                                   // repli : la rangée de la nuit 4
             hud.UseArtGauges();
             return true;
         }
@@ -139,6 +140,99 @@ namespace ItHunts.HudArt
                 cell.Root.SetActive(false);
                 _cells.Add(cell);
             }
+        }
+
+        // ---------- Colonne d'améliorations (nuit 5, lot 2, point 3) : de bas en haut au-dessus de la barre de vie ----------
+
+        private ColonneAmeliorations _column;
+        private readonly System.Collections.Generic.Dictionary<string, UpgradeDefinition> _byCode =
+            new System.Collections.Generic.Dictionary<string, UpgradeDefinition>();
+        private int _hover = -1;
+        /// <summary>Colonne de la DA posée (tests).</summary>
+        public ColonneAmeliorations Column => _column;
+        /// <summary>Case survolée à la souris (-1 : aucune).</summary>
+        public int HoveredUpgrade => _hover;
+
+        /// <summary>Colonne HUD_ColonneAmeliorations (cadres aux couleurs du personnage, étoiles du rang, infobulle) ; faux sans prefab.</summary>
+        private bool BuildUpgradeColumn(HudSkinSettings skin)
+        {
+            if (skin == null || skin.upgradeColumnPrefab == null || _canvas == null)
+                return false;
+            _column = Spawn<ColonneAmeliorations>(skin.upgradeColumnPrefab, "Améliorations (colonne)");
+            if (_column == null)
+                return false;
+            _column.SourceTextes = UpgradeTexts;
+            _column.Remplit(new string[0], new int[0]);
+            return true;
+        }
+
+        /// <summary>Textes de main pour l'infobulle : nom, effet général, effet précis au rang.</summary>
+        private string[] UpgradeTexts(string code, int rank)
+        {
+            if (code == null || !_byCode.TryGetValue(code, out UpgradeDefinition u) || u == null)
+                return null;
+            return new[] { u.displayName, u.description, u.RankText(rank) };
+        }
+
+        private void UpdateUpgradeColumn()
+        {
+            if (_column == null)
+                return;
+            if (_upgrades == null)
+                _upgrades = GetComponent<PlayerUpgrades>();
+            int version = _upgrades != null ? _upgrades.Version : 0;
+            if (version != _upgradeVersion)
+            {
+                _upgradeVersion = version;
+                var list = _upgrades != null ? _upgrades.Slots.Sorted() : new System.Collections.Generic.List<UpgradeDefinition>();
+                var codes = new System.Collections.Generic.List<string>();
+                var ranks = new System.Collections.Generic.List<int>();
+                _byCode.Clear();
+                foreach (UpgradeDefinition u in list)
+                {
+                    if (u == null || string.IsNullOrEmpty(u.code))
+                        continue;
+                    codes.Add(u.code);
+                    ranks.Add(Mathf.Max(0, _upgrades.RankOf(u)));
+                    _byCode[u.code] = u;
+                }
+
+                _column.Remplit(codes.ToArray(), ranks.ToArray());
+                UpgradeCellsShown = _column.Visibles;
+                _hover = -1;
+                _column.Survole(-1);
+            }
+
+            UpdateUpgradeHover();
+        }
+
+        /// <summary>
+        /// Survol des cases à la souris quand le curseur est libre (Alt gauche maintenu, pause, carte) et que ce joueur joue au clavier :
+        /// l'infobulle de la DA (nom, rang, effet précis).
+        /// </summary>
+        private void UpdateUpgradeHover()
+        {
+            var reader = GetComponent<global::ItHunts.Input.PlayerInputReader>();
+            bool free = Cursor.lockState != CursorLockMode.Locked && Mouse.current != null && (reader == null || !reader.UsingGamepad);
+            int hover = -1;
+            if (free)
+            {
+                Camera cam = _canvas != null ? _canvas.worldCamera : null;
+                for (int i = 0; i < _column.cases.Length && i < _column.Visibles; i++)
+                {
+                    IconeAmelioration c = _column.cases[i];
+                    if (c != null && MenuArtKit.Over((RectTransform)c.transform, cam))
+                    {
+                        hover = i;
+                        break;
+                    }
+                }
+            }
+
+            if (hover == _hover)
+                return;
+            _hover = hover;
+            _column.Survole(hover);
         }
 
         private static Image Square(string name, RectTransform parent, float inset, Color color)
@@ -224,7 +318,10 @@ namespace ItHunts.HudArt
                 t.gameObject.layer = _canvas.gameObject.layer;
             foreach (Graphic g in go.GetComponentsInChildren<Graphic>(true))
                 g.raycastTarget = false;
-            return go.GetComponent<T>();
+            T c = go.GetComponent<T>();
+            if (c == null)
+                c = go.GetComponentInChildren<T>(true);
+            return c;
         }
 
         private void OnDestroy()
@@ -371,6 +468,7 @@ namespace ItHunts.HudArt
             UpdateMarker();
             UpdateDoorPanel();
             UpdateUpgradeRow();
+            UpdateUpgradeColumn();
 
             if (_reticle != null)
             {
