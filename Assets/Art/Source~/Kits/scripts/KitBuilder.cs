@@ -584,11 +584,18 @@ public static class KitBuilder
     }
 
     // une capture par pièce (cadrée sur ses bornes, 3/4 avant), dans la vitrine
+    // shaders compilés tout de suite pendant les captures (réglage de session, jamais écrit dans ProjectSettings) ; toujours rétabli
     public static string Capture(string kit, string dossier)
     {
+        bool asyncAvant = UnityEditor.ShaderUtil.allowAsyncCompilation;
+        UnityEditor.ShaderUtil.allowAsyncCompilation = false;
+        try { return CaptureCorps(kit, dossier); }
+        finally { UnityEditor.ShaderUtil.allowAsyncCompilation = asyncAvant; }
+    }
+
+    static string CaptureCorps(string kit, string dossier)
+    {
         EditorSceneManager.OpenScene($"Assets/Art/Scenes/Vitrine_{kit}.unity", OpenSceneMode.Single);
-        bool asyncAvant = EditorSettings.asyncShaderCompilation;
-        EditorSettings.asyncShaderCompilation = false;
         var cam = Object.FindFirstObjectByType<Camera>();
         var root = GameObject.Find("Vitrine_" + kit).transform;
         var sb = new StringBuilder();
@@ -635,7 +642,6 @@ public static class KitBuilder
         Object.DestroyImmediate(lum);
         Object.DestroyImmediate(froid.gameObject);
         foreach (var l in torches) l.enabled = true;
-        EditorSettings.asyncShaderCompilation = asyncAvant;
         return "ok " + sb;
     }
 }

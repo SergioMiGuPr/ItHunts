@@ -62,7 +62,16 @@ public static class CapturesLot3N5
         return b;
     }
 
+    // shaders compilés tout de suite pendant les captures (réglage de session, jamais écrit dans ProjectSettings) ; toujours rétabli
     public static async Task<string> Shoot(string dossier, string acte, string pieces)
+    {
+        bool asyncAvant = UnityEditor.ShaderUtil.allowAsyncCompilation;
+        UnityEditor.ShaderUtil.allowAsyncCompilation = false;
+        try { return await ShootCorps(dossier, acte, pieces); }
+        finally { UnityEditor.ShaderUtil.allowAsyncCompilation = asyncAvant; }
+    }
+
+    static async Task<string> ShootCorps(string dossier, string acte, string pieces)
     {
         _log.Clear();
         float t0 = Time.realtimeSinceStartup;

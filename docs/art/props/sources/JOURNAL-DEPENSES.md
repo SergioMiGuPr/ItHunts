@@ -62,3 +62,11 @@ Jobs Higgsfield (deuxième passe) :
 
 Références de style téléversées (non facturées) : concept_tonneau_v01 (acc58627-d82f-43af-82d2-783a78094e06),
 concept_chaise_v01 (3b9ba558-89b6-4381-ad7e-8ac37ede9aa5).
+
+## Nuit 6, lot 1 (2026-11-25) : 32 crédits (plafond 50)
+
+| Étape | Détail | Crédits | Solde |
+|---|---|---|---|
+| Solde de départ | relevé par l'outil balance | — | 676.19 |
+| 6 images Nano Banana (devis : 3 en 4K, 2 en 2K) | portraits (4K, 3), feuillage (4K, 3), vitrail (2), tapisserie (2), concept ange (2), concept fauteuil (2) | 14 | 662.19 |
+| 2 modèles Tripo H3.1 (devis : 9 chacun ; Tripo P2 refusé, 34) | ange pleureur, fauteuil | 18 | 644.19 |

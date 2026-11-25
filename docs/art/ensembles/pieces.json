@@ -1,0 +1,1988 @@
+{
+ "Appentis": {
+  "bas": -0.03,
+  "col": 6,
+  "feuillage": true,
+  "h": 3.04,
+  "mats": [
+   "M_Ens_BoisGris"
+  ],
+  "tris": 1304,
+  "x": 4.15,
+  "z": 2.65
+ },
+ "Arbre_Chene_A": {
+  "bas": -0.34,
+  "col": 1,
+  "feuillage": true,
+  "h": 9.75,
+  "mats": [
+   "M_Ens_Ecorce"
+  ],
+  "tris": 1226,
+  "x": 7.55,
+  "z": 8.17
+ },
+ "Arbre_Chene_B": {
+  "bas": -0.41,
+  "col": 1,
+  "feuillage": true,
+  "h": 8.36,
+  "mats": [
+   "M_Ens_Ecorce",
+   "M_Ens_Noir"
+  ],
+  "tris": 928,
+  "x": 7.77,
+  "z": 7.97
+ },
+ "Armoire_Ouverte": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 2.78,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Fer",
+   "M_Ens_VeloursRouge",
+   "M_Ens_Lin",
+   "M_Ens_VeloursBleu",
+   "M_Ens_Cuir"
+  ],
+  "tris": 1342,
+  "x": 1.8,
+  "z": 1.38
+ },
+ "Autel_Ancien": {
+  "bas": -0.01,
+  "col": 2,
+  "feuillage": false,
+  "h": 1.38,
+  "mats": [
+   "M_Ens_Pierre",
+   "M_Ens_PierreClaire",
+   "M_Ens_Noir",
+   "M_Ens_Laiton",
+   "M_Ens_Sang",
+   "M_Kit_Os"
+  ],
+  "tris": 1596,
+  "x": 3.43,
+  "z": 2.2
+ },
+ "Autel_Chapelle": {
+  "bas": 0.0,
+  "col": 3,
+  "feuillage": false,
+  "h": 3.13,
+  "mats": [
+   "M_Ens_PierreClaire",
+   "M_Ens_Drap",
+   "M_Ens_VeloursRouge",
+   "M_Ens_Dorure",
+   "M_Ens_BoisSombre",
+   "M_Ens_Portraits"
+  ],
+  "tris": 3386,
+  "x": 5.0,
+  "z": 2.8
+ },
+ "Banc_Chapelle": {
+  "bas": 0.0,
+  "col": 2,
+  "feuillage": false,
+  "h": 1.36,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois"
+  ],
+  "tris": 796,
+  "x": 3.49,
+  "z": 0.74
+ },
+ "Banc_Pierre": {
+  "bas": 0.0,
+  "col": 2,
+  "feuillage": false,
+  "h": 1.18,
+  "mats": [
+   "M_Ens_PierreClaire"
+  ],
+  "tris": 384,
+  "x": 2.3,
+  "z": 0.65
+ },
+ "Banc_Pierre_Brise": {
+  "bas": -0.03,
+  "col": 1,
+  "feuillage": true,
+  "h": 0.65,
+  "mats": [
+   "M_Ens_PierreClaire"
+  ],
+  "tris": 730,
+  "x": 2.45,
+  "z": 1.19
+ },
+ "Banniere": {
+  "bas": -2.87,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.05,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Laiton",
+   "M_Ens_Fer",
+   "M_Ens_VeloursRouge",
+   "M_Ens_Dorure"
+  ],
+  "tris": 808,
+  "x": 1.66,
+  "z": 0.22
+ },
+ "Banniere_Bleue": {
+  "bas": -3.17,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.03,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Fer",
+   "M_Ens_VeloursBleu",
+   "M_Ens_Dorure"
+  ],
+  "tris": 656,
+  "x": 1.04,
+  "z": 0.18
+ },
+ "Banquet": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.33,
+  "mats": [
+   "M_Ens_Etain",
+   "M_Ens_Cuir",
+   "M_Kit_Os",
+   "M_Ens_Laiton",
+   "M_Ens_VeloursRouge",
+   "M_Ens_TerreCuite",
+   "M_Ens_Jute"
+  ],
+  "tris": 1954,
+  "x": 1.63,
+  "z": 0.54
+ },
+ "Banquette": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.69,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_VeloursRouge",
+   "M_Ens_Dorure"
+  ],
+  "tris": 1452,
+  "x": 2.06,
+  "z": 0.56
+ },
+ "Baquet": {
+  "bas": -0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.44,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_Eau",
+   "M_Ens_Fer"
+  ],
+  "tris": 942,
+  "x": 0.91,
+  "z": 0.92
+ },
+ "Bibliotheque": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 4.05,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Livres",
+   "M_Ens_Papier"
+  ],
+  "tris": 6254,
+  "x": 2.49,
+  "z": 0.68
+ },
+ "Bibliotheque_Pillee": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 3.97,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Livres",
+   "M_Ens_Papier"
+  ],
+  "tris": 3734,
+  "x": 2.49,
+  "z": 0.68
+ },
+ "Billot_Hache": {
+  "bas": -0.04,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.14,
+  "mats": [
+   "M_Ens_Ecorce",
+   "M_Ens_Bois",
+   "M_Ens_Fer"
+  ],
+  "tris": 910,
+  "x": 2.27,
+  "z": 1.93
+ },
+ "Bouche_Mine": {
+  "bas": -0.12,
+  "col": 0,
+  "feuillage": false,
+  "h": 3.58,
+  "mats": [
+   "M_Ens_Noir",
+   "M_Ens_PierreClaire",
+   "M_Ens_Pierre"
+  ],
+  "tris": 1035,
+  "x": 3.99,
+  "z": 0.48
+ },
+ "Bouclier_Epees": {
+  "bas": -0.75,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.78,
+  "mats": [
+   "M_Ens_VeloursRouge",
+   "M_Ens_Fer",
+   "M_Ens_Laiton",
+   "M_Ens_Etain",
+   "M_Ens_Cuir"
+  ],
+  "tris": 814,
+  "x": 1.25,
+  "z": 0.18
+ },
+ "Bougies_B": {
+  "bas": -0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.5,
+  "mats": [
+   "M_Kit_Cire",
+   "M_Ens_Noir",
+   "M_Ens_Flamme",
+   "M_Ens_Flamme_Coeur"
+  ],
+  "tris": 1968,
+  "x": 0.4,
+  "z": 0.37
+ },
+ "Brouette": {
+  "bas": -0.01,
+  "col": 1,
+  "feuillage": true,
+  "h": 1.1,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_Bois",
+   "M_Ens_Fer",
+   "M_Ens_Terreau"
+  ],
+  "tris": 890,
+  "x": 2.21,
+  "z": 0.84
+ },
+ "Buis_Boule": {
+  "bas": -0.06,
+  "col": 1,
+  "feuillage": true,
+  "h": 1.44,
+  "mats": [
+   "M_Ens_Feuillage_Coeur"
+  ],
+  "tris": 164,
+  "x": 1.73,
+  "z": 1.73
+ },
+ "Cadre_Vide": {
+  "bas": -0.96,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.96,
+  "mats": [
+   "M_Ens_Dorure",
+   "M_Ens_BoisSombre"
+  ],
+  "tris": 492,
+  "x": 1.57,
+  "z": 0.16
+ },
+ "Cage_Suspendue": {
+  "bas": -3.4,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.03,
+  "mats": [
+   "M_Ens_Fer",
+   "M_Kit_Os",
+   "M_Ens_Noir"
+  ],
+  "tris": 2652,
+  "x": 0.95,
+  "z": 0.95
+ },
+ "Caisse_Ouverte": {
+  "bas": -0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.61,
+  "mats": [
+   "M_Ens_Bois",
+   "M_Ens_BoisSombre",
+   "M_Ens_Fer",
+   "M_Ens_Jute",
+   "M_Ens_Verre"
+  ],
+  "tris": 2072,
+  "x": 1.24,
+  "z": 0.99
+ },
+ "Candelabre_Table": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.78,
+  "mats": [
+   "M_Ens_Laiton",
+   "M_Kit_Cire",
+   "M_Ens_Noir",
+   "M_Ens_Flamme",
+   "M_Ens_Flamme_Coeur"
+  ],
+  "tris": 1620,
+  "x": 0.46,
+  "z": 0.26
+ },
+ "Catafalque": {
+  "bas": 0.0,
+  "col": 2,
+  "feuillage": false,
+  "h": 1.04,
+  "mats": [
+   "M_Ens_PierreClaire",
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Dorure",
+   "M_Ens_Laiton",
+   "M_Ens_VeloursRouge"
+  ],
+  "tris": 1464,
+  "x": 3.0,
+  "z": 1.8
+ },
+ "Chaines_Murales": {
+  "bas": 0.65,
+  "col": 0,
+  "feuillage": false,
+  "h": 2.07,
+  "mats": [
+   "M_Ens_Fer"
+  ],
+  "tris": 2400,
+  "x": 1.2,
+  "z": 0.16
+ },
+ "Chaines_Plafond": {
+  "bas": -3.27,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.02,
+  "mats": [
+   "M_Ens_Fer"
+  ],
+  "tris": 4836,
+  "x": 1.27,
+  "z": 0.22
+ },
+ "Champignons_Cercle": {
+  "bas": -0.02,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.53,
+  "mats": [
+   "M_Kit_Os",
+   "M_Ens_Champignon"
+  ],
+  "tris": 3680,
+  "x": 3.71,
+  "z": 3.73
+ },
+ "Chemin_Tapis_8m": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.02,
+  "mats": [
+   "M_Ens_Tapis",
+   "M_Ens_Dorure"
+  ],
+  "tris": 152,
+  "x": 8.0,
+  "z": 1.81
+ },
+ "Cheminee": {
+  "bas": 0.0,
+  "col": 5,
+  "feuillage": false,
+  "h": 8.23,
+  "mats": [
+   "M_Ens_PierreClaire",
+   "M_Chateau_PierreClaire",
+   "M_Ens_Pierre",
+   "M_Bib_Briques",
+   "M_Ens_Noir",
+   "M_Ens_Fer",
+   "M_Ens_Bois_Brule",
+   "M_Ens_Braise",
+   "M_Ens_Flamme",
+   "M_Ens_Flamme_Coeur"
+  ],
+  "tris": 5820,
+  "x": 4.3,
+  "z": 1.5
+ },
+ "Cheminee_Froide": {
+  "bas": 0.0,
+  "col": 5,
+  "feuillage": false,
+  "h": 8.23,
+  "mats": [
+   "M_Ens_PierreClaire",
+   "M_Chateau_PierreClaire",
+   "M_Ens_Pierre",
+   "M_Bib_Briques",
+   "M_Ens_Noir",
+   "M_Ens_Fer",
+   "M_Ens_Bois_Brule",
+   "M_Ens_Livres",
+   "M_Ens_Papier"
+  ],
+  "tris": 3472,
+  "x": 4.3,
+  "z": 1.53
+ },
+ "Chevalet": {
+  "bas": -0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.16,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Jute",
+   "M_Ens_Cuir"
+  ],
+  "tris": 2380,
+  "x": 1.44,
+  "z": 2.98
+ },
+ "Chevet": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.75,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Laiton"
+  ],
+  "tris": 1003,
+  "x": 0.58,
+  "z": 0.53
+ },
+ "Chope_Cruche": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.32,
+  "mats": [
+   "M_Ens_Bois",
+   "M_Ens_Fer",
+   "M_Ens_TerreCuite"
+  ],
+  "tris": 606,
+  "x": 0.53,
+  "z": 0.24
+ },
+ "Cierges": {
+  "bas": -0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.55,
+  "mats": [
+   "M_Ens_Fer",
+   "M_Ens_Laiton",
+   "M_Kit_Cire",
+   "M_Ens_Noir",
+   "M_Ens_Flamme",
+   "M_Ens_Flamme_Coeur"
+  ],
+  "tris": 4756,
+  "x": 1.2,
+  "z": 0.57
+ },
+ "Clavecin": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.97,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Laiton",
+   "M_Kit_Os",
+   "M_Ens_Noir",
+   "M_Ens_VeloursRouge"
+  ],
+  "tris": 3397,
+  "x": 1.14,
+  "z": 2.34
+ },
+ "Coiffeuse": {
+  "bas": 0.0,
+  "col": 2,
+  "feuillage": false,
+  "h": 2.2,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Laiton",
+   "M_Ens_Dorure",
+   "M_Ens_Miroir",
+   "M_Ens_Noir",
+   "M_Ens_Verre"
+  ],
+  "tris": 1840,
+  "x": 1.4,
+  "z": 0.63
+ },
+ "Corbeau": {
+  "bas": -0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.35,
+  "mats": [
+   "M_Ens_Noir",
+   "M_Ens_Ardoise"
+  ],
+  "tris": 300,
+  "x": 0.19,
+  "z": 0.53
+ },
+ "Corde": {
+  "bas": -0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.25,
+  "mats": [
+   "M_Ens_Jute"
+  ],
+  "tris": 764,
+  "x": 1.02,
+  "z": 0.54
+ },
+ "Crane": {
+  "bas": 0.02,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.2,
+  "mats": [
+   "M_Kit_Os",
+   "M_Ens_Noir"
+  ],
+  "tris": 224,
+  "x": 0.19,
+  "z": 0.24
+ },
+ "Croix_Bois": {
+  "bas": -0.1,
+  "col": 1,
+  "feuillage": true,
+  "h": 1.35,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_Jute",
+   "M_Ens_Terreau"
+  ],
+  "tris": 346,
+  "x": 0.87,
+  "z": 1.36
+ },
+ "Des_Cartes": {
+  "bas": -0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.03,
+  "mats": [
+   "M_Ens_Papier",
+   "M_Kit_Os",
+   "M_Ens_Dorure"
+  ],
+  "tris": 552,
+  "x": 0.51,
+  "z": 0.35
+ },
+ "Drap_Fauteuil": {
+  "bas": 0.02,
+  "col": 2,
+  "feuillage": false,
+  "h": 1.54,
+  "mats": [
+   "M_Ens_Drap"
+  ],
+  "tris": 3280,
+  "x": 1.66,
+  "z": 1.42
+ },
+ "Drap_Statue": {
+  "bas": 0.02,
+  "col": 1,
+  "feuillage": false,
+  "h": 2.17,
+  "mats": [
+   "M_Ens_Drap"
+  ],
+  "tris": 3528,
+  "x": 1.46,
+  "z": 1.56
+ },
+ "Drap_Table": {
+  "bas": 0.03,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.19,
+  "mats": [
+   "M_Ens_Drap"
+  ],
+  "tris": 2204,
+  "x": 2.23,
+  "z": 1.46
+ },
+ "Eau_Disque": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.0,
+  "mats": [
+   "M_Ens_Eau"
+  ],
+  "tris": 28,
+  "x": 2.0,
+  "z": 2.0
+ },
+ "Eboulis_A": {
+  "bas": -0.27,
+  "col": 3,
+  "feuillage": false,
+  "h": 1.76,
+  "mats": [
+   "M_Ens_PierreMoussue",
+   "M_Ens_Pierre",
+   "M_Ens_PierreClaire"
+  ],
+  "tris": 3425,
+  "x": 5.45,
+  "z": 3.59
+ },
+ "Eboulis_B": {
+  "bas": -0.06,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.63,
+  "mats": [
+   "M_Ens_Terreau",
+   "M_Ens_Pierre",
+   "M_Ens_PierreClaire"
+  ],
+  "tris": 3393,
+  "x": 3.26,
+  "z": 2.08
+ },
+ "Echelle_Biblio": {
+  "bas": -0.01,
+  "col": 1,
+  "feuillage": false,
+  "h": 3.76,
+  "mats": [
+   "M_Ens_Bois"
+  ],
+  "tris": 352,
+  "x": 0.62,
+  "z": 1.03
+ },
+ "Etagere_Murale": {
+  "bas": -0.45,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.28,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_TerreCuite",
+   "M_Ens_Verre",
+   "M_Ens_Cuir",
+   "M_Ens_Etain",
+   "M_Kit_Os",
+   "M_Ens_Noir"
+  ],
+  "tris": 1151,
+  "x": 1.81,
+  "z": 0.37
+ },
+ "Etagere_Murale_B": {
+  "bas": -0.31,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.85,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_Jute",
+   "M_Ens_Bois",
+   "M_Ens_Fer",
+   "M_Ens_Laiton",
+   "M_Ens_TerreCuite",
+   "M_Kit_Os",
+   "M_Ens_Noir"
+  ],
+  "tris": 1532,
+  "x": 1.85,
+  "z": 0.33
+ },
+ "Etagere_Murale_Vide": {
+  "bas": -0.71,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.15,
+  "mats": [
+   "M_Ens_BoisGris"
+  ],
+  "tris": 132,
+  "x": 1.77,
+  "z": 0.34
+ },
+ "Etai": {
+  "bas": -0.05,
+  "col": 3,
+  "feuillage": false,
+  "h": 3.62,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_Fer",
+   "M_Ens_Pierre"
+  ],
+  "tris": 636,
+  "x": 4.6,
+  "z": 0.66
+ },
+ "Fers_Brasero": {
+  "bas": 0.84,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.35,
+  "mats": [
+   "M_Ens_Fer",
+   "M_Ens_Bois",
+   "M_Ens_Braise"
+  ],
+  "tris": 174,
+  "x": 1.32,
+  "z": 0.88
+ },
+ "Fougeres": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": true,
+  "h": 1.01,
+  "mats": [
+   "M_Ens_Feuillage"
+  ],
+  "tris": 120,
+  "x": 2.28,
+  "z": 2.58
+ },
+ "Globe": {
+  "bas": -0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.39,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Laiton",
+   "M_Ens_Papier",
+   "M_Ens_Cuir"
+  ],
+  "tris": 1894,
+  "x": 0.88,
+  "z": 0.88
+ },
+ "Gravats_Epars": {
+  "bas": -0.01,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.16,
+  "mats": [
+   "M_Ens_Pierre",
+   "M_Ens_Grain"
+  ],
+  "tris": 2876,
+  "x": 3.69,
+  "z": 2.59
+ },
+ "Gravats_Epars_B": {
+  "bas": -0.01,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.12,
+  "mats": [
+   "M_Ens_PierreClaire",
+   "M_Ens_Pierre"
+  ],
+  "tris": 1808,
+  "x": 4.41,
+  "z": 1.67
+ },
+ "Gravats_Epars_C": {
+  "bas": -0.02,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.11,
+  "mats": [
+   "M_Ens_Pierre",
+   "M_Ens_PierreClaire"
+  ],
+  "tris": 1042,
+  "x": 3.76,
+  "z": 2.04
+ },
+ "Grille_2m_Pliee": {
+  "bas": -0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 3.4,
+  "mats": [
+   "M_Ens_Fer"
+  ],
+  "tris": 740,
+  "x": 2.0,
+  "z": 0.2
+ },
+ "Grille_Cimetiere": {
+  "bas": -0.03,
+  "col": 1,
+  "feuillage": true,
+  "h": 1.47,
+  "mats": [
+   "M_Ens_Pierre",
+   "M_Ens_PierreClaire",
+   "M_Ens_Fer"
+  ],
+  "tris": 1838,
+  "x": 3.24,
+  "z": 0.97
+ },
+ "Grille_Imposte": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 2.7,
+  "mats": [
+   "M_Ens_Fer"
+  ],
+  "tris": 356,
+  "x": 1.5,
+  "z": 0.04
+ },
+ "Gueridon": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.77,
+  "mats": [
+   "M_Ens_Bois",
+   "M_Ens_BoisSombre"
+  ],
+  "tris": 358,
+  "x": 0.9,
+  "z": 0.89
+ },
+ "Gueridon_Urne": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.78,
+  "mats": [
+   "M_Ens_PierreClaire",
+   "M_Ens_Faience",
+   "M_Ens_Laiton"
+  ],
+  "tris": 602,
+  "x": 0.62,
+  "z": 0.62
+ },
+ "Habillage_Haie_6m": {
+  "bas": -0.06,
+  "col": 0,
+  "feuillage": true,
+  "h": 2.83,
+  "mats": [
+   "M_Ens_Feuillage"
+  ],
+  "tris": 358,
+  "x": 7.65,
+  "z": 2.82
+ },
+ "Habillage_Kiosque": {
+  "bas": -0.03,
+  "col": 0,
+  "feuillage": true,
+  "h": 4.32,
+  "mats": [
+   "M_Ens_Ecorce"
+  ],
+  "tris": 492,
+  "x": 6.93,
+  "z": 6.8
+ },
+ "Habillage_Lierre_4m": {
+  "bas": -0.01,
+  "col": 0,
+  "feuillage": true,
+  "h": 4.06,
+  "mats": [
+   "M_Ens_Ecorce"
+  ],
+  "tris": 360,
+  "x": 4.72,
+  "z": 0.41
+ },
+ "Herbes_A": {
+  "bas": -0.03,
+  "col": 0,
+  "feuillage": true,
+  "h": 0.91,
+  "mats": [
+   "M_Ens_Feuillage"
+  ],
+  "tris": 54,
+  "x": 3.11,
+  "z": 1.46
+ },
+ "Horloge": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 2.61,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Noir",
+   "M_Ens_Bois",
+   "M_Ens_Laiton",
+   "M_Ens_Papier",
+   "M_Ens_Dorure"
+  ],
+  "tris": 1034,
+  "x": 0.74,
+  "z": 0.49
+ },
+ "Jarres": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.81,
+  "mats": [
+   "M_Ens_TerreCuite",
+   "M_Ens_Jute"
+  ],
+  "tris": 1632,
+  "x": 1.31,
+  "z": 1.32
+ },
+ "Lanterne_Pierre": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.86,
+  "mats": [
+   "M_Ens_PierreClaire",
+   "M_Ens_Fer",
+   "M_Ens_Verre_Lampe"
+  ],
+  "tris": 526,
+  "x": 0.6,
+  "z": 0.6
+ },
+ "Lierre_Coulee": {
+  "bas": -0.06,
+  "col": 0,
+  "feuillage": true,
+  "h": 0.65,
+  "mats": [
+   "M_Ens_Feuillage"
+  ],
+  "tris": 18,
+  "x": 1.2,
+  "z": 1.16
+ },
+ "Lit_Baldaquin": {
+  "bas": 0.0,
+  "col": 6,
+  "feuillage": false,
+  "h": 3.41,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Dorure",
+   "M_Ens_Bois",
+   "M_Ens_Lin",
+   "M_Ens_VeloursRouge",
+   "M_Ens_Drap"
+  ],
+  "tris": 9070,
+  "x": 2.33,
+  "z": 2.55
+ },
+ "Lit_Effondre": {
+  "bas": 0.0,
+  "col": 3,
+  "feuillage": false,
+  "h": 3.13,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Lin",
+   "M_Ens_VeloursRouge",
+   "M_Ens_Drap"
+  ],
+  "tris": 4408,
+  "x": 2.71,
+  "z": 3.17
+ },
+ "Livres_Sol": {
+  "bas": -0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.42,
+  "mats": [
+   "M_Ens_Livres",
+   "M_Ens_Papier",
+   "M_Ens_VeloursRouge",
+   "M_Ens_Cuir",
+   "M_Ens_VeloursBleu"
+  ],
+  "tris": 741,
+  "x": 1.53,
+  "z": 1.11
+ },
+ "Livres_Table": {
+  "bas": -0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.26,
+  "mats": [
+   "M_Ens_Livres",
+   "M_Ens_Papier",
+   "M_Ens_Cuir",
+   "M_Ens_Noir",
+   "M_Kit_Os"
+  ],
+  "tris": 498,
+  "x": 1.25,
+  "z": 0.52
+ },
+ "Lustre_Tombe": {
+  "bas": -0.02,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.01,
+  "mats": [
+   "M_Ens_Fer",
+   "M_Kit_Cire"
+  ],
+  "tris": 2972,
+  "x": 2.86,
+  "z": 2.93
+ },
+ "Marques_Jours": {
+  "bas": -0.41,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.41,
+  "mats": [
+   "M_Ens_Noir"
+  ],
+  "tris": 660,
+  "x": 1.47,
+  "z": 0.01
+ },
+ "Nenuphars": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.04,
+  "mats": [
+   "M_Ens_Tige"
+  ],
+  "tris": 132,
+  "x": 2.02,
+  "z": 2.35
+ },
+ "Os_Tas": {
+  "bas": -0.07,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.2,
+  "mats": [
+   "M_Kit_Os",
+   "M_Ens_Noir"
+  ],
+  "tris": 1222,
+  "x": 0.94,
+  "z": 0.66
+ },
+ "Outils_Jardin": {
+  "bas": -0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.92,
+  "mats": [
+   "M_Ens_Bois",
+   "M_Ens_Fer"
+  ],
+  "tris": 580,
+  "x": 2.29,
+  "z": 0.52
+ },
+ "Outils_Sans_Faux": {
+  "bas": -0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.92,
+  "mats": [
+   "M_Ens_Bois",
+   "M_Ens_Fer"
+  ],
+  "tris": 480,
+  "x": 1.22,
+  "z": 0.51
+ },
+ "Outils_Table": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.06,
+  "mats": [
+   "M_Ens_Cuir",
+   "M_Ens_Bois",
+   "M_Ens_Fer"
+  ],
+  "tris": 824,
+  "x": 1.17,
+  "z": 0.45
+ },
+ "Papiers_Epars": {
+  "bas": 0.01,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.1,
+  "mats": [
+   "M_Ens_Papier",
+   "M_Ens_Cuir"
+  ],
+  "tris": 1316,
+  "x": 3.69,
+  "z": 1.81
+ },
+ "Pierre_Levee_A": {
+  "bas": -0.12,
+  "col": 1,
+  "feuillage": false,
+  "h": 2.82,
+  "mats": [
+   "M_Ens_Pierre",
+   "M_Ens_Noir"
+  ],
+  "tris": 612,
+  "x": 1.38,
+  "z": 1.06
+ },
+ "Pierre_Levee_B": {
+  "bas": -0.11,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.48,
+  "mats": [
+   "M_Ens_Pierre",
+   "M_Ens_Noir"
+  ],
+  "tris": 520,
+  "x": 1.65,
+  "z": 1.03
+ },
+ "Pilori": {
+  "bas": 0.0,
+  "col": 3,
+  "feuillage": false,
+  "h": 2.4,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Fer"
+  ],
+  "tris": 788,
+  "x": 2.0,
+  "z": 1.0
+ },
+ "Pioches": {
+  "bas": -0.01,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.36,
+  "mats": [
+   "M_Ens_Bois",
+   "M_Ens_Fer"
+  ],
+  "tris": 180,
+  "x": 0.8,
+  "z": 0.46
+ },
+ "Planches_Puits": {
+  "bas": 0.91,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.88,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_Fer",
+   "M_Ens_Pierre"
+  ],
+  "tris": 1020,
+  "x": 3.35,
+  "z": 2.69
+ },
+ "Plante_Geante": {
+  "bas": -0.06,
+  "col": 1,
+  "feuillage": true,
+  "h": 4.13,
+  "mats": [
+   "M_Ens_Tige"
+  ],
+  "tris": 358,
+  "x": 4.62,
+  "z": 4.57
+ },
+ "Portrait_1": {
+  "bas": -1.09,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.09,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Portraits"
+  ],
+  "tris": 482,
+  "x": 1.77,
+  "z": 0.16
+ },
+ "Portrait_2": {
+  "bas": -0.96,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.96,
+  "mats": [
+   "M_Ens_Dorure",
+   "M_Ens_Portraits"
+  ],
+  "tris": 482,
+  "x": 1.57,
+  "z": 0.16
+ },
+ "Portrait_3": {
+  "bas": -1.09,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.09,
+  "mats": [
+   "M_Ens_Dorure",
+   "M_Ens_Portraits"
+  ],
+  "tris": 482,
+  "x": 1.77,
+  "z": 0.16
+ },
+ "Portrait_4": {
+  "bas": -0.96,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.96,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Portraits"
+  ],
+  "tris": 482,
+  "x": 1.57,
+  "z": 0.16
+ },
+ "Portrait_5": {
+  "bas": -1.09,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.09,
+  "mats": [
+   "M_Ens_Dorure",
+   "M_Ens_Portraits"
+  ],
+  "tris": 482,
+  "x": 1.77,
+  "z": 0.16
+ },
+ "Portrait_6": {
+  "bas": -0.96,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.96,
+  "mats": [
+   "M_Ens_Dorure",
+   "M_Ens_Portraits"
+  ],
+  "tris": 482,
+  "x": 1.57,
+  "z": 0.16
+ },
+ "Portrait_7": {
+  "bas": -1.09,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.09,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Portraits"
+  ],
+  "tris": 482,
+  "x": 1.77,
+  "z": 0.16
+ },
+ "Portrait_8": {
+  "bas": -0.96,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.96,
+  "mats": [
+   "M_Ens_Dorure",
+   "M_Ens_Portraits"
+  ],
+  "tris": 482,
+  "x": 1.57,
+  "z": 0.16
+ },
+ "Portrait_Grand": {
+  "bas": -1.68,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.51,
+  "mats": [
+   "M_Ens_Dorure",
+   "M_Ens_Portraits",
+   "M_Ens_Laiton"
+  ],
+  "tris": 526,
+  "x": 2.32,
+  "z": 0.16
+ },
+ "Portrait_Lacere": {
+  "bas": -1.09,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.09,
+  "mats": [
+   "M_Ens_Dorure",
+   "M_Ens_Noir",
+   "M_Ens_Portraits"
+  ],
+  "tris": 772,
+  "x": 1.77,
+  "z": 0.72
+ },
+ "Portrait_Lacere_2": {
+  "bas": -0.96,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.96,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Noir",
+   "M_Ens_Portraits"
+  ],
+  "tris": 772,
+  "x": 1.57,
+  "z": 0.72
+ },
+ "Portrait_Lacere_3": {
+  "bas": -0.96,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.96,
+  "mats": [
+   "M_Ens_Dorure",
+   "M_Ens_Noir",
+   "M_Ens_Portraits"
+  ],
+  "tris": 772,
+  "x": 1.57,
+  "z": 0.72
+ },
+ "Portrait_Lacere_4": {
+  "bas": -0.96,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.96,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Noir",
+   "M_Ens_Portraits"
+  ],
+  "tris": 772,
+  "x": 1.57,
+  "z": 0.72
+ },
+ "Portrait_Lacere_5": {
+  "bas": -1.09,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.09,
+  "mats": [
+   "M_Ens_Dorure",
+   "M_Ens_Noir",
+   "M_Ens_Portraits"
+  ],
+  "tris": 772,
+  "x": 1.77,
+  "z": 0.72
+ },
+ "Potence": {
+  "bas": 0.0,
+  "col": 2,
+  "feuillage": false,
+  "h": 4.3,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Fer"
+  ],
+  "tris": 320,
+  "x": 0.28,
+  "z": 1.53
+ },
+ "Pots_Tas": {
+  "bas": -0.03,
+  "col": 1,
+  "feuillage": true,
+  "h": 1.69,
+  "mats": [
+   "M_Ens_TerreCuite",
+   "M_Ens_Terreau"
+  ],
+  "tris": 1164,
+  "x": 1.95,
+  "z": 1.57
+ },
+ "Prie_Dieu": {
+  "bas": 0.04,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.08,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_VeloursRouge",
+   "M_Ens_Bois",
+   "M_Ens_Livres",
+   "M_Ens_Papier"
+  ],
+  "tris": 358,
+  "x": 0.68,
+  "z": 0.72
+ },
+ "Pupitre": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.3,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Papier",
+   "M_Ens_VeloursRouge",
+   "M_Ens_Cuir"
+  ],
+  "tris": 576,
+  "x": 0.73,
+  "z": 0.57
+ },
+ "Pupitres_Musique": {
+  "bas": -0.2,
+  "col": 0,
+  "feuillage": false,
+  "h": 1.3,
+  "mats": [
+   "M_Ens_Fer",
+   "M_Ens_Papier",
+   "M_Ens_Bois",
+   "M_Ens_BoisSombre",
+   "M_Ens_Noir"
+  ],
+  "tris": 660,
+  "x": 2.96,
+  "z": 1.6
+ },
+ "Rail_Suspendu": {
+  "bas": -0.81,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.04,
+  "mats": [
+   "M_Ens_Fer",
+   "M_Kit_Os",
+   "M_Ens_Cuir",
+   "M_Ens_Jute",
+   "M_Ens_Papier",
+   "M_Ens_Tige"
+  ],
+  "tris": 1176,
+  "x": 2.1,
+  "z": 0.32
+ },
+ "Rails_4m": {
+  "bas": -0.04,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.2,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_Fer"
+  ],
+  "tris": 440,
+  "x": 1.65,
+  "z": 4.01
+ },
+ "Ronces": {
+  "bas": -0.05,
+  "col": 0,
+  "feuillage": true,
+  "h": 1.03,
+  "mats": [
+   "M_Ens_Feuillage"
+  ],
+  "tris": 36,
+  "x": 2.9,
+  "z": 2.39
+ },
+ "Rosiers": {
+  "bas": -0.03,
+  "col": 0,
+  "feuillage": true,
+  "h": 1.31,
+  "mats": [
+   "M_Ens_Feuillage"
+  ],
+  "tris": 56,
+  "x": 2.3,
+  "z": 1.75
+ },
+ "Sacs_A": {
+  "bas": -0.04,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.7,
+  "mats": [
+   "M_Ens_Jute",
+   "M_Ens_Cuir",
+   "M_Ens_Grain"
+  ],
+  "tris": 3654,
+  "x": 1.67,
+  "z": 1.13
+ },
+ "Sacs_B": {
+  "bas": -0.05,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.9,
+  "mats": [
+   "M_Ens_Jute",
+   "M_Ens_Cuir",
+   "M_Ens_Grain"
+  ],
+  "tris": 3854,
+  "x": 1.49,
+  "z": 1.67
+ },
+ "Sacs_Eventres": {
+  "bas": -0.05,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.5,
+  "mats": [
+   "M_Ens_Jute",
+   "M_Ens_Grain"
+  ],
+  "tris": 1986,
+  "x": 1.56,
+  "z": 3.05
+ },
+ "Sapin": {
+  "bas": -0.31,
+  "col": 1,
+  "feuillage": true,
+  "h": 11.6,
+  "mats": [
+   "M_Ens_Ecorce",
+   "M_Ens_Feuillage_Coeur"
+  ],
+  "tris": 300,
+  "x": 6.95,
+  "z": 6.88
+ },
+ "Serre_Vitres": {
+  "bas": -0.03,
+  "col": 0,
+  "feuillage": true,
+  "h": 1.2,
+  "mats": [
+   "M_Ens_Miroir"
+  ],
+  "tris": 88,
+  "x": 6.09,
+  "z": 3.95
+ },
+ "Socle_Statue": {
+  "bas": -0.0,
+  "col": 3,
+  "feuillage": false,
+  "h": 1.3,
+  "mats": [
+   "M_Ens_Pierre",
+   "M_Ens_PierreClaire"
+  ],
+  "tris": 528,
+  "x": 2.6,
+  "z": 2.6
+ },
+ "Souche": {
+  "bas": -0.14,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.99,
+  "mats": [
+   "M_Ens_Ecorce",
+   "M_Ens_Bois",
+   "M_Ens_BoisGris",
+   "M_Ens_Champignon"
+  ],
+  "tris": 662,
+  "x": 2.57,
+  "z": 2.7
+ },
+ "Squelette_Assis": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.81,
+  "mats": [
+   "M_Kit_Os",
+   "M_Ens_Noir",
+   "M_Ens_Fer"
+  ],
+  "tris": 1630,
+  "x": 0.73,
+  "z": 1.03
+ },
+ "Table_Longue": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.93,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Bois",
+   "M_Ens_Drap",
+   "M_Ens_VeloursRouge"
+  ],
+  "tris": 4092,
+  "x": 6.3,
+  "z": 1.71
+ },
+ "Table_Rempotage": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": true,
+  "h": 1.78,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_Terreau",
+   "M_Ens_TerreCuite",
+   "M_Ens_Fer",
+   "M_Ens_Bois"
+  ],
+  "tris": 3108,
+  "x": 2.28,
+  "z": 0.91
+ },
+ "Table_Ronde_Fer": {
+  "bas": -0.01,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.04,
+  "mats": [
+   "M_Ens_Fer",
+   "M_Ens_Faience"
+  ],
+  "tris": 1566,
+  "x": 2.84,
+  "z": 1.48
+ },
+ "Tapis_4x3": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.12,
+  "mats": [
+   "M_Ens_Tapis",
+   "M_Ens_Dorure"
+  ],
+  "tris": 1692,
+  "x": 4.25,
+  "z": 2.8
+ },
+ "Tapis_Cendres": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.03,
+  "mats": [
+   "M_Ens_Noir"
+  ],
+  "tris": 118,
+  "x": 1.29,
+  "z": 1.35
+ },
+ "Tas_Bois": {
+  "bas": -0.0,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.75,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_Ecorce",
+   "M_Ens_Bois"
+  ],
+  "tris": 5676,
+  "x": 3.32,
+  "z": 1.25
+ },
+ "Tas_Bois_Ecroule": {
+  "bas": -0.02,
+  "col": 2,
+  "feuillage": false,
+  "h": 1.75,
+  "mats": [
+   "M_Ens_BoisGris",
+   "M_Ens_Ecorce",
+   "M_Ens_Bois"
+  ],
+  "tris": 4423,
+  "x": 4.5,
+  "z": 2.83
+ },
+ "Tenture": {
+  "bas": -0.09,
+  "col": 0,
+  "feuillage": false,
+  "h": 4.16,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Laiton",
+   "M_Ens_Cuir",
+   "M_Ens_Tapisserie",
+   "M_Ens_Dorure"
+  ],
+  "tris": 1568,
+  "x": 3.6,
+  "z": 0.12
+ },
+ "Tombe_Ouverte": {
+  "bas": -0.02,
+  "col": 3,
+  "feuillage": false,
+  "h": 1.31,
+  "mats": [
+   "M_Ens_Pierre",
+   "M_Ens_Noir",
+   "M_Ens_PierreClaire",
+   "M_Ens_Terreau",
+   "M_Ens_BoisGris",
+   "M_Kit_Os"
+  ],
+  "tris": 694,
+  "x": 3.58,
+  "z": 2.69
+ },
+ "Tombe_Penchee": {
+  "bas": -0.2,
+  "col": 1,
+  "feuillage": true,
+  "h": 1.14,
+  "mats": [
+   "M_Ens_PierreClaire",
+   "M_Ens_Noir",
+   "M_Ens_Terreau",
+   "M_Ens_Pierre"
+  ],
+  "tris": 626,
+  "x": 1.25,
+  "z": 2.27
+ },
+ "Tonneau_Brise": {
+  "bas": -0.02,
+  "col": 1,
+  "feuillage": false,
+  "h": 0.67,
+  "mats": [
+   "M_Ens_Eau",
+   "M_Ens_Bois",
+   "M_Ens_Fer"
+  ],
+  "tris": 1108,
+  "x": 2.19,
+  "z": 2.0
+ },
+ "Topiaire": {
+  "bas": 0.0,
+  "col": 2,
+  "feuillage": true,
+  "h": 3.41,
+  "mats": [
+   "M_Ens_PierreClaire",
+   "M_Ens_Terreau",
+   "M_Ens_Ecorce",
+   "M_Ens_Feuillage_Coeur"
+  ],
+  "tris": 510,
+  "x": 1.34,
+  "z": 1.35
+ },
+ "Tronc_Couche": {
+  "bas": -0.09,
+  "col": 1,
+  "feuillage": true,
+  "h": 1.39,
+  "mats": [
+   "M_Ens_Ecorce",
+   "M_Ens_BoisSombre",
+   "M_Ens_Champignon"
+  ],
+  "tris": 562,
+  "x": 6.95,
+  "z": 1.7
+ },
+ "Urne_Pierre": {
+  "bas": 0.0,
+  "col": 1,
+  "feuillage": true,
+  "h": 2.13,
+  "mats": [
+   "M_Ens_PierreClaire"
+  ],
+  "tris": 470,
+  "x": 0.96,
+  "z": 0.96
+ },
+ "Vaisselle_A": {
+  "bas": -0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.19,
+  "mats": [
+   "M_Ens_Etain",
+   "M_Ens_Cuir",
+   "M_Ens_Jute"
+  ],
+  "tris": 994,
+  "x": 0.95,
+  "z": 0.39
+ },
+ "Vaisselle_B": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.21,
+  "mats": [
+   "M_Ens_Etain",
+   "M_Ens_TerreCuite",
+   "M_Kit_Os"
+  ],
+  "tris": 724,
+  "x": 0.82,
+  "z": 0.47
+ },
+ "Verre_Brise": {
+  "bas": 0.0,
+  "col": 0,
+  "feuillage": false,
+  "h": 0.01,
+  "mats": [
+   "M_Ens_Miroir"
+  ],
+  "tris": 22,
+  "x": 1.1,
+  "z": 1.12
+ },
+ "Verriere": {
+  "bas": 0.0,
+  "col": 3,
+  "feuillage": false,
+  "h": 7.06,
+  "mats": [
+   "M_Ens_Vitrail",
+   "M_Ens_PierreClaire",
+   "M_Ens_Pierre",
+   "M_Ens_Fer"
+  ],
+  "tris": 1707,
+  "x": 3.59,
+  "z": 0.59
+ },
+ "Wagonnet": {
+  "bas": 0.01,
+  "col": 1,
+  "feuillage": false,
+  "h": 1.14,
+  "mats": [
+   "M_Ens_BoisSombre",
+   "M_Ens_Fer"
+  ],
+  "tris": 1426,
+  "x": 1.89,
+  "z": 1.34
+ }
+}

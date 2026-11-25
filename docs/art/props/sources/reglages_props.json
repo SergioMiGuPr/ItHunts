@@ -63,5 +63,13 @@
  },
  "Chaudron": {
   "rot_z": 0
+ },
+ "AngePleureur": {
+  "rot_z": -90,
+  "uniforme": true
+ },
+ "Fauteuil": {
+  "rot_z": -90,
+  "uniforme": true
  }
 }

@@ -1,0 +1,1157 @@
+{
+ "SM_Ens_Appentis.fbx": {
+  "faces": 1376,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Arbre_Chene_A.fbx": {
+  "faces": 1238,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Arbre_Chene_B.fbx": {
+  "faces": 940,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Armoire_Ouverte.fbx": {
+  "faces": 1354,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Autel_Ancien.fbx": {
+  "faces": 1620,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Autel_Chapelle.fbx": {
+  "faces": 3422,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Banc_Chapelle.fbx": {
+  "faces": 820,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Banc_Pierre.fbx": {
+  "faces": 408,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Banc_Pierre_Brise.fbx": {
+  "faces": 742,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Banniere.fbx": {
+  "faces": 808,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Banniere_Bleue.fbx": {
+  "faces": 656,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Banquet.fbx": {
+  "faces": 1954,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Banquette.fbx": {
+  "faces": 1464,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Baquet.fbx": {
+  "faces": 954,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Bibliotheque.fbx": {
+  "faces": 6266,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Bibliotheque_Pillee.fbx": {
+  "faces": 3746,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Billot_Hache.fbx": {
+  "faces": 922,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Bouche_Mine.fbx": {
+  "faces": 1035,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Bouclier_Epees.fbx": {
+  "faces": 814,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Bougies_B.fbx": {
+  "faces": 1968,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Brouette.fbx": {
+  "faces": 902,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Buis_Boule.fbx": {
+  "faces": 176,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Cadre_Vide.fbx": {
+  "faces": 492,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Cage_Suspendue.fbx": {
+  "faces": 2664,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Caisse_Ouverte.fbx": {
+  "faces": 2084,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Candelabre_Table.fbx": {
+  "faces": 1620,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Catafalque.fbx": {
+  "faces": 1488,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Chaines_Murales.fbx": {
+  "faces": 2400,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Chaines_Plafond.fbx": {
+  "faces": 4836,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Champignons_Cercle.fbx": {
+  "faces": 3680,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Chemin_Tapis_8m.fbx": {
+  "faces": 152,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Cheminee.fbx": {
+  "faces": 5880,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Cheminee_Froide.fbx": {
+  "faces": 3532,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Chevalet.fbx": {
+  "faces": 2392,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Chevet.fbx": {
+  "faces": 1015,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Chope_Cruche.fbx": {
+  "faces": 606,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Cierges.fbx": {
+  "faces": 4768,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Clavecin.fbx": {
+  "faces": 3409,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Coiffeuse.fbx": {
+  "faces": 1864,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Corbeau.fbx": {
+  "faces": 300,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Corde.fbx": {
+  "faces": 764,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Crane.fbx": {
+  "faces": 224,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Croix_Bois.fbx": {
+  "faces": 358,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Des_Cartes.fbx": {
+  "faces": 552,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Drap_Fauteuil.fbx": {
+  "faces": 3304,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Drap_Statue.fbx": {
+  "faces": 3540,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Drap_Table.fbx": {
+  "faces": 2216,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Eau_Disque.fbx": {
+  "faces": 28,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Eboulis_A.fbx": {
+  "faces": 3461,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Eboulis_B.fbx": {
+  "faces": 3405,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Echelle_Biblio.fbx": {
+  "faces": 364,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Etagere_Murale.fbx": {
+  "faces": 1151,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Etagere_Murale_B.fbx": {
+  "faces": 1532,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Etagere_Murale_Vide.fbx": {
+  "faces": 132,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Etai.fbx": {
+  "faces": 672,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Fers_Brasero.fbx": {
+  "faces": 174,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Fougeres.fbx": {
+  "faces": 120,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Globe.fbx": {
+  "faces": 1906,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Gravats_Epars.fbx": {
+  "faces": 2876,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Gravats_Epars_B.fbx": {
+  "faces": 1808,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Gravats_Epars_C.fbx": {
+  "faces": 1042,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Grille_2m_Pliee.fbx": {
+  "faces": 752,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Grille_Cimetiere.fbx": {
+  "faces": 1850,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Grille_Imposte.fbx": {
+  "faces": 368,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Gueridon.fbx": {
+  "faces": 370,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Gueridon_Urne.fbx": {
+  "faces": 614,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Habillage_Haie_6m.fbx": {
+  "faces": 358,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Habillage_Kiosque.fbx": {
+  "faces": 492,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Habillage_Lierre_4m.fbx": {
+  "faces": 360,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Herbes_A.fbx": {
+  "faces": 54,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Horloge.fbx": {
+  "faces": 1046,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Jarres.fbx": {
+  "faces": 1644,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Lanterne_Pierre.fbx": {
+  "faces": 538,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Lierre_Coulee.fbx": {
+  "faces": 18,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Lit_Baldaquin.fbx": {
+  "faces": 9142,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Lit_Effondre.fbx": {
+  "faces": 4444,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Livres_Sol.fbx": {
+  "faces": 741,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Livres_Table.fbx": {
+  "faces": 498,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Lustre_Tombe.fbx": {
+  "faces": 2984,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Marques_Jours.fbx": {
+  "faces": 660,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Nenuphars.fbx": {
+  "faces": 132,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Os_Tas.fbx": {
+  "faces": 1222,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Outils_Jardin.fbx": {
+  "faces": 580,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Outils_Sans_Faux.fbx": {
+  "faces": 480,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Outils_Table.fbx": {
+  "faces": 824,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Papiers_Epars.fbx": {
+  "faces": 1316,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Pierre_Levee_A.fbx": {
+  "faces": 624,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Pierre_Levee_B.fbx": {
+  "faces": 532,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Pilori.fbx": {
+  "faces": 824,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Pioches.fbx": {
+  "faces": 180,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Planches_Puits.fbx": {
+  "faces": 1032,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Plante_Geante.fbx": {
+  "faces": 370,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Portrait_1.fbx": {
+  "faces": 482,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_2.fbx": {
+  "faces": 482,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_3.fbx": {
+  "faces": 482,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_4.fbx": {
+  "faces": 482,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_5.fbx": {
+  "faces": 482,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_6.fbx": {
+  "faces": 482,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_7.fbx": {
+  "faces": 482,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_8.fbx": {
+  "faces": 482,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_Grand.fbx": {
+  "faces": 526,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_Lacere.fbx": {
+  "faces": 772,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_Lacere_2.fbx": {
+  "faces": 772,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_Lacere_3.fbx": {
+  "faces": 772,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_Lacere_4.fbx": {
+  "faces": 772,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Portrait_Lacere_5.fbx": {
+  "faces": 772,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Potence.fbx": {
+  "faces": 344,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Pots_Tas.fbx": {
+  "faces": 1176,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Prie_Dieu.fbx": {
+  "faces": 370,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Pupitre.fbx": {
+  "faces": 588,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Pupitres_Musique.fbx": {
+  "faces": 660,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Rail_Suspendu.fbx": {
+  "faces": 1176,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Rails_4m.fbx": {
+  "faces": 440,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Ronces.fbx": {
+  "faces": 36,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Rosiers.fbx": {
+  "faces": 56,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Sacs_A.fbx": {
+  "faces": 3666,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Sacs_B.fbx": {
+  "faces": 3866,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Sacs_Eventres.fbx": {
+  "faces": 1998,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Sapin.fbx": {
+  "faces": 312,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Serre_Vitres.fbx": {
+  "faces": 88,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Socle_Statue.fbx": {
+  "faces": 564,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Souche.fbx": {
+  "faces": 674,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Squelette_Assis.fbx": {
+  "faces": 1630,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Table_Longue.fbx": {
+  "faces": 4104,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Table_Rempotage.fbx": {
+  "faces": 3120,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Table_Ronde_Fer.fbx": {
+  "faces": 1578,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Tapis_4x3.fbx": {
+  "faces": 1692,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Tapis_Cendres.fbx": {
+  "faces": 118,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Tas_Bois.fbx": {
+  "faces": 5688,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Tas_Bois_Ecroule.fbx": {
+  "faces": 4447,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Tenture.fbx": {
+  "faces": 1568,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Tombe_Ouverte.fbx": {
+  "faces": 730,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Tombe_Penchee.fbx": {
+  "faces": 638,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Tonneau_Brise.fbx": {
+  "faces": 1120,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Topiaire.fbx": {
+  "faces": 534,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Tronc_Couche.fbx": {
+  "faces": 574,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Urne_Pierre.fbx": {
+  "faces": 482,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0,
+  "piece_entiere_superposees": 0
+ },
+ "SM_Ens_Vaisselle_A.fbx": {
+  "faces": 994,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Vaisselle_B.fbx": {
+  "faces": 724,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Verre_Brise.fbx": {
+  "faces": 22,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Verriere.fbx": {
+  "faces": 1743,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ },
+ "SM_Ens_Wagonnet.fbx": {
+  "faces": 1438,
+  "degenerees": 0,
+  "superposees": 0,
+  "aire_m2": 0.0,
+  "partielles": 0,
+  "aire_partielle_m2": 0.0
+ }
+}
