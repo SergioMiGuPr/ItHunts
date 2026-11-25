@@ -34,13 +34,13 @@ Material:
     - _Cull: 0
     - _DstBlend: 10
     - _EncreForce: 1
-    - _Intensite: 2.2
+    - _Intensite: 1
     - _SrcBlend: 5
     m_Colors:
     - _Defilement: {r: 0, g: 0, b: 0, a: 0}
     - _Encre: {r: 0.03, g: 0.02, b: 0.03, a: 1}
-    - _Ton1: {r: 0.03, g: 0.3, b: 0.3, a: 1}
-    - _Ton2: {r: 0.15, g: 0.68, b: 0.62, a: 1}
-    - _Ton3: {r: 0.7, g: 1, b: 0.9, a: 1}
+    - _Ton1: {r: 0.012, g: 0.11, b: 0.13, a: 1}
+    - _Ton2: {r: 0.04, g: 0.27, b: 0.27, a: 1}
+    - _Ton3: {r: 0.16, g: 0.48, b: 0.43, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

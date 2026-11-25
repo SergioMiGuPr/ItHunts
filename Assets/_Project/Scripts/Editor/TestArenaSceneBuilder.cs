@@ -45,6 +45,9 @@ namespace ItHunts.EditorTools
         private const string ZonePath = SettingsDir + "/Zone_Test.asset";
         private const string PoolPath = SettingsDir + "/ArtifactPool_Default.asset";
         private const string DamageFeedbackPath = SettingsDir + "/DamageFeedback_Default.asset";
+        // Indices sombres de la DA (nuit 5, lot 4) : annonces des ennemis.
+        private const string IndiceCercle = "Assets/Art/VFX/Materiaux/M_VFX_Indice_Cercle.mat";
+        private const string IndiceRect = "Assets/Art/VFX/Materiaux/M_VFX_Indice_Rect.mat";
         private const float T = 1f;                 // épaisseur des murs
         private const int SideN = 0, SideS = 1, SideE = 2, SideW = 3;
 
@@ -1195,7 +1198,9 @@ namespace ItHunts.EditorTools
             Material eyes = UnlitMat("Ghoul_Eyes", "Universal Render Pipeline/Unlit", _ghoul.eyeColor);
             Part(PrimitiveType.Sphere, "Oeil gauche", visual, new Vector3(-0.1f, 0.86f, 0.6f), Vector3.one * 0.07f, Vector3.zero, eyes);
             Part(PrimitiveType.Sphere, "Oeil droit", visual, new Vector3(0.1f, 0.86f, 0.6f), Vector3.one * 0.07f, Vector3.zero, eyes);
-            Material warn = UnlitMat("Ghoul_Telegraph", "Universal Render Pipeline/Unlit", _ghoul.telegraphColor);
+            // Nuit 5, lot 4 : l'indice sombre de la DA (M_VFX_Indice_Cercle, seul le dessus est dessiné) au lieu du disque rouge.
+            Material warn = _ghoul.leapTelegraphMaterial != null ? _ghoul.leapTelegraphMaterial
+                : AssetDatabase.LoadAssetAtPath<Material>(IndiceCercle) ?? UnlitMat("Ghoul_Telegraph", "Universal Render Pipeline/Unlit", _ghoul.telegraphColor);
             Part(PrimitiveType.Cylinder, "Annonce du bond", root.transform, new Vector3(0f, 0.02f, 0f), new Vector3(1.6f, 0.005f, 1.6f), Vector3.zero, warn);
             Renderer telegraph = root.transform.Find("Annonce du bond").GetComponent<Renderer>();
             var grab = root.AddComponent<Grabbable>();
@@ -1260,9 +1265,12 @@ namespace ItHunts.EditorTools
             }
 
             Transform left = Wing("Aile gauche", -1f), right = Wing("Aile droite", 1f);
-            Material warn = UnlitMat("Flyer_Telegraph", "Universal Render Pipeline/Unlit", _flyer.telegraphColor);
-            Part(PrimitiveType.Sphere, "Annonce du piqué", root.transform, Vector3.zero, Vector3.one * 1.1f, Vector3.zero, warn);
-            Renderer telegraph = root.transform.Find("Annonce du piqué").GetComponent<Renderer>();
+            // Nuit 5, lot 4 : plus de sphère d'annonce du piqué ; le contour discret de la DA cerne le volant (annonce, prise).
+            var contour = root.AddComponent<ItHunts.Art.VFX.ContourDiscret>();
+            contour.annonce = _flyer.contourAnnonce != null ? _flyer.contourAnnonce
+                : AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/VFX/Materiaux/M_VFX_Volant_Annonce.mat");
+            contour.prise = _flyer.contourPrise != null ? _flyer.contourPrise
+                : AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/VFX/Materiaux/M_VFX_Prise_Contour.mat");
             var grab = root.AddComponent<Grabbable>();
             var gso = new SerializedObject(grab);
             gso.FindProperty("isEnemy").boolValue = true;
@@ -1286,7 +1294,6 @@ namespace ItHunts.EditorTools
             SetRef(flyer, "visual", visual);
             SetRef(flyer, "wingLeft", left);
             SetRef(flyer, "wingRight", right);
-            SetRef(flyer, "telegraph", telegraph);
         }
 
         /// <summary>
@@ -1347,13 +1354,13 @@ namespace ItHunts.EditorTools
             var zone = hand.GetComponent<BoxCollider>();
             zone.isTrigger = true;
 
-            // Repère de la zone visée : ombre et lueur rouge à la taille de la main, au sol.
+            // Repère de la zone visée, à la taille de la main, au sol. Nuit 5, lot 4 : l'indice sombre de la DA (M_VFX_Indice_Rect) au lieu
+            // du carré rouge ; plus de cube « Ombre » (l'indice assombrit déjà le sol).
             var marker = new GameObject("Zone visée par la main").transform;
             marker.SetParent(_level, false);
             Material red = UnlitMat("Stalker_Grab_Warning", "Universal Render Pipeline/Unlit", new Color(4f, 0.25f, 0.15f));
-            Material shadow = UnlitMat("Stalker_Grab_Shadow", "Universal Render Pipeline/Unlit", new Color(0.02f, 0f, 0f));
-            Part(PrimitiveType.Cube, "Ombre", marker, new Vector3(0f, 0.02f, 0f), new Vector3(s.handSize.x * 1.15f, 0.02f, s.handSize.z * 1.15f), Vector3.zero, shadow);
-            Part(PrimitiveType.Cube, "Lueur", marker, new Vector3(0f, 0.04f, 0f), new Vector3(s.handSize.x, 0.02f, s.handSize.z), Vector3.zero, red);
+            Material hint = s.grabWarningMaterial != null ? s.grabWarningMaterial : AssetDatabase.LoadAssetAtPath<Material>(IndiceRect) ?? red;
+            Part(PrimitiveType.Cube, "Lueur", marker, new Vector3(0f, 0.04f, 0f), new Vector3(s.handSize.x, 0.02f, s.handSize.z), Vector3.zero, hint);
             // Main plantée après une prise ratée (D-039) : nuage de poussière au sol, caché sinon.
             Material dustMat = Mat("Stalker_Dust", new Color(0.45f, 0.4f, 0.36f));
             Part(PrimitiveType.Cylinder, "Poussière", marker, new Vector3(0f, 0.3f, 0f), new Vector3(s.handSize.x * 1.3f, 0.3f, s.handSize.z * 1.3f), Vector3.zero, dustMat);
@@ -1377,7 +1384,8 @@ namespace ItHunts.EditorTools
             SetRef(stalker, "leftHand", leftHand.transform);
             // Revers de la main gauche (D-039, piste a) : zone rouge au sol, posée et agrandie par le code, cachée sinon.
             float backD = 2f * (s.width * 0.5f + s.backhandReach);
-            Part(PrimitiveType.Cylinder, "Zone du revers (traqueur)", _level, feet + Vector3.up * 0.05f, new Vector3(backD, 0.01f, backD), Vector3.zero, red);
+            Material backHint = s.backhandZoneMaterial != null ? s.backhandZoneMaterial : AssetDatabase.LoadAssetAtPath<Material>(IndiceCercle) ?? red;
+            Part(PrimitiveType.Cylinder, "Zone du revers (traqueur)", _level, feet + Vector3.up * 0.05f, new Vector3(backD, 0.01f, backD), Vector3.zero, backHint);
             var backZone = _level.Find("Zone du revers (traqueur)").GetComponent<MeshRenderer>();
             backZone.enabled = false;
             SetRef(stalker, "backhandZone", backZone);

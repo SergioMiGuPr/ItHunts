@@ -62,3 +62,6 @@ MonoBehaviour:
   leapLead: 0.2
   telegraphColor: {r: 3, g: 0.4, b: 0.2, a: 1}
   eyeColor: {r: 0.45, g: 0.25, b: 0.05, a: 1}
+  leapGlowColor: {r: 0.45, g: 0.36, b: 0.26, a: 1}
+  leapBodyTint: 0
+  leapTelegraphMaterial: {fileID: 2100000, guid: a4565c9aec0e5c941a37cc16d80e510f, type: 2}

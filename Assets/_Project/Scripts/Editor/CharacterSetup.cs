@@ -45,7 +45,7 @@ namespace ItHunts.EditorTools
             var lanternColors = new System.Collections.Generic.Dictionary<string, Color>
             {
                 { "renard", new Color(0.62f, 0.16f, 0.07f) }, { "cameleon", new Color(0.66f, 0.34f, 0.08f) },
-                { "koala", new Color(0.16f, 0.42f, 0.14f) }, { "hibou", new Color(0.12f, 0.24f, 0.60f) },
+                { "koala", new Color(0.16f, 0.42f, 0.14f) }, { "hibou", new Color(0.36f, 0.44f, 0.58f) },   // nuit 5, lot 4 : lune froide et désaturée (avant : bleu saturé)
             };
             foreach (CharacterDefinition c in roster.characters)
                 if (c != null && lanternColors.TryGetValue(c.id, out Color lc) && c.lanternColor != lc)

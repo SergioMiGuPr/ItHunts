@@ -16,11 +16,12 @@ MonoBehaviour:
   throwColor: {r: 0.25, g: 1, b: 0.35, a: 1}
   tooHeavyColor: {r: 0.8, g: 0.1, b: 0.1, a: 1}
   glowIdle: 0.08
-  glowInRange: 1
-  glowAimed: 1.6
+  glowInRange: 0.15
+  glowAimed: 0.5
   aimedPulse: 0.3
   aimedPulseFrequency: 4
-  glowHeld: 1.2
+  glowHeld: 0
+  enemyStruggleGlow: 1.2
   glowTooHeavy: 0.5
   thrownGlowDuration: 1
   glowThrown: 2

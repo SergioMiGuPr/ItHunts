@@ -142,7 +142,13 @@ namespace ItHunts.Enemies
             _audio.playOnAwake = false;
             _hiss = ItHunts.Audio.GameAudio.Or(s => s.ghoulHiss, ItHunts.Audio.ProceduralSfx.ToClip("Goule : sifflement", ItHunts.Audio.ProceduralSfx.GhoulHiss()));
             if (telegraph != null)
+            {
                 telegraph.enabled = false;
+                // Nuit 5, lot 4 : l'annonce du bond devient l'indice sombre de la DA (M_VFX_Indice_Cercle), même sur une scène déjà construite.
+                if (settings != null && settings.leapTelegraphMaterial != null)
+                    telegraph.sharedMaterial = settings.leapTelegraphMaterial;
+            }
+
             ApplySize();
             _anim = visual != null ? visual.GetComponentInChildren<Animator>(true) : GetComponentInChildren<Animator>(true);
             if (_anim != null && _damageable != null && settings != null)
@@ -325,8 +331,58 @@ namespace ItHunts.Enemies
             ResetState();
         }
 
+        // ---------- Sortie du sol (nuit 5, lot 4 : VFX_Apparition_Trou) ----------
+
+        private float _emergeAt = float.NegativeInfinity, _emergeDepth, _emergeStart, _emergeEnd;
+
+        /// <summary>Elle monte encore du sol (immobile, sans attaque) : juste après une apparition par un trou.</summary>
+        public bool Emerging => Time.time - _emergeAt < _emergeEnd;
+
+        /// <summary>
+        /// Après Spawn : elle part de depth m sous ses pieds et monte jusqu'au sol entre start et end s (trou d'ombre de la DA), sans
+        /// bouger ni frapper. Repoussée, tenue ou étourdie pendant ce temps : elle sort tout de suite.
+        /// </summary>
+        public void Emerge(float depth, float start, float end)
+        {
+            if (depth <= 0f || end <= 0f)
+                return;
+            _emergeAt = Time.time;
+            _emergeDepth = depth;
+            _emergeStart = Mathf.Clamp(start, 0f, end);
+            _emergeEnd = end;
+            Vector3 below = _home + Vector3.down * depth;
+            if (_rb != null)
+                _rb.position = below;
+            transform.position = below;
+        }
+
+        /// <summary>Hauteur sous le sol (m) pendant la sortie, au temps t (s) depuis le début : depth puis 0 (montée adoucie).</summary>
+        public static float EmergeOffset(float t, float depth, float start, float end)
+        {
+            if (t >= end)
+                return 0f;
+            return depth * (1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(start, end, t)));
+        }
+
+        private void EmergeStep(float now)
+        {
+            _move.Speed = 0f;
+            if (_body != null && _body.Busy)
+            {
+                _emergeAt = float.NegativeInfinity;                       // prise ou repoussée : son corps la déplace
+                return;
+            }
+
+            float t = now - _emergeAt;
+            MoveTo(_home + Vector3.down * EmergeOffset(t, _emergeDepth, _emergeStart, _emergeEnd));
+            if (t >= _emergeEnd)
+                _emergeAt = float.NegativeInfinity;
+            UpdateVisual();
+        }
+
         public void ResetState()
         {
+            _emergeAt = float.NegativeInfinity;
             _move.SpeedScale = ItHunts.Level.RunSession.EnemySpeed;   // difficulté (D-048)
             transform.SetPositionAndRotation(_home, _homeRotation);
             if (_rb != null)
@@ -370,6 +426,12 @@ namespace ItHunts.Enemies
             // que si la goule passait par ContactDamage : l'impact tombait à un instant variable (ou jamais), la parade semblait
             // ne pas marcher.
             ResolveStrike(Time.time);
+            if (Emerging)
+            {
+                EmergeStep(Time.time);                                    // sort du trou d'ombre : ni marche ni coup
+                return;
+            }
+
             if (ZoneState.Asleep && !_body.Busy)
             {
                 _move.Speed = 0f;                                          // salle de départ pas encore quittée (D-048)
@@ -1330,9 +1392,10 @@ namespace ItHunts.Enemies
                 _strikeTarget = p;
                 Strikes++;
                 AttackSound();
-                // Télégraphe (nuit 3, point 7) : un éclat chaud sur la goule au début du geste, puis l'impact 0.55 s plus tard.
+                // Télégraphe (nuit 3, point 7) : un éclat sur la goule au début du geste, puis l'impact 0.55 s plus tard. Nuit 5, lot 4 :
+                // ton d'os pâle, sous le seuil du bloom (le danger se lit à l'animation).
                 if (_damageable != null && settings.strikeTelegraphFlash > 0f)
-                    _damageable.Flash(new Color(2.4f, 1.1f, 0.35f), settings.strikeTelegraphFlash);
+                    _damageable.Flash(new Color(0.5f, 0.45f, 0.38f), settings.strikeTelegraphFlash);
                 _nextContact = now + Mathf.Max(settings.contactInterval, settings.contactImpactDelay + 0.35f);
                 if (settings.contactImpactDelay <= 0f)
                     ContactDamage(now);

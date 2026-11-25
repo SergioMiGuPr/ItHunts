@@ -68,7 +68,11 @@ namespace ItHunts.Settings
         [Header("Retour visuel")]
         [ColorUsage(false, true)] public Color eyeColor = new Color(0.5f, 0.33f, 0.07f);   // au repos : sous le seuil du bloom (correctifs-rendu point 5)
         [Tooltip("Yeux pendant l'annonce du piqué (HDR, au-delà du seuil du bloom).")]
-        [ColorUsage(false, true)] public Color diveGlowColor = new Color(0.9f, 0.16f, 0.07f);   // jour 5 : sobre (contour discret de la DA)
+        [ColorUsage(false, true)] public Color diveGlowColor = new Color(0.45f, 0.36f, 0.26f);   // nuit 5, lot 4 : brun d'os, sous le seuil du bloom
+        [Tooltip("Contour discret de la DA (ContourDiscret, nuit 5 lot 4) : annonce du piqué (M_VFX_Volant_Annonce) et volant tenu " +
+                 "(M_VFX_Prise_Contour). Posé au démarrage sur les volants qui n'ont pas encore le composant (scènes déjà construites).")]
+        public Material contourAnnonce;
+        public Material contourPrise;
         [ColorUsage(false, true)] public Color telegraphColor = new Color(4f, 0.4f, 0.2f);
 
         public override bool DiesOnProjectileHit => dieOnProjectileHit;

@@ -1102,3 +1102,106 @@ dégénérée.
 **Maillages lisibles :** tous les FBX des kits ont maintenant Read/Write coché, parce que le NavMesh est construit au
 chargement. Sans cela, `RuntimeNavMeshBuilder: Source mesh … does not allow read access` apparaît et le NavMesh échoue dans
 le build. Ce changement d'import, voulu, est listé dans la PR.
+
+## Nuit 5, lot 4 : plus de rouge, lien du livre, objet tenu, apparitions, sons de l'épée (branche `art-vfx-5`)
+
+Règle : **le danger se lit à l'animation**. Une annonce n'est plus qu'un **indice sombre** : le sol s'assombrit (flaque
+d'ombre translucide) sous un fin trait d'encre fumée (gris chaud, opacité 0,75), qui prend un ton d'os pâle à l'impact.
+Aucune zone rouge, aucun disque ni carré lumineux, aucune sphère. Captures avant / après en jeu :
+`docs/art/rendus/Nuit5/Lot4/` (planches et `Jeu/`).
+
+**Déjà actif sans code** (matériaux chargés par `Resources`) : marquages du boss (`MarquageBoss`, `M_VFX_Marquage_Boss`) et
+marque d'apparition des vagues (`WaveDirector`, `M_VFX_Apparition`). Le shader `ItHunts/VFX/MarquageSol` a de nouvelles
+valeurs par défaut sombres, `_CouleurEclair` (remplissage à l'impact) et `_OpaciteBord`.
+
+### Annonces des ennemis (code et réglages de main)
+
+Les objets rouges sont créés par `Assets/_Project/Scripts/Editor/TestArenaSceneBuilder.cs` (et enregistrés dans
+`Assets/_Project/Prefabs/Niveau/Goule.prefab` et `Volant.prefab`) ; la colonne du traqueur par `RenderSetup.cs`.
+
+| Où | Aujourd'hui | À mettre |
+|---|---|---|
+| `TestArenaSceneBuilder.cs:1198` : « Annonce du bond » de la goule (cylindre aplati, `Ghoul_Telegraph`) ; et l'objet du même nom dans `Goule.prefab` | disque rouge-orange lumineux (3, 0.4, 0.2) | matériau **`Assets/Art/VFX/Materiaux/M_VFX_Indice_Cercle.mat`** sur le même cylindre (le shader lit la forme dans l'espace de l'objet ; seul le dessus est dessiné) |
+| `GhoulSettings.leapGlowColor`, `leapBodyTint` (repli greybox) | (4, 0.25, 0.12), corps teinté de rouge | (0.45, 0.36, 0.26), sous le seuil du bloom ; `leapBodyTint` = 0 |
+| `Ghoul.cs:1335` : `_damageable.Flash(new Color(2.4f, 1.1f, 0.35f), …)` avant le coup | éclair orangé | (0.5, 0.45, 0.38) |
+| `TestArenaSceneBuilder.cs:1263` : « Annonce du piqué » du volant (sphère `Flyer_Telegraph`) ; même objet dans `Volant.prefab` | **boule rouge** autour du volant | supprimer la sphère ; ajouter `ContourDiscret` sur la racine du volant (`annonce` = `M_VFX_Volant_Annonce`, `prise` = `M_VFX_Prise_Contour`) : `Montre(annonce)` pendant `FlyerMode.Annonce`, `Montre(prise)` tant qu'il est tenu, `Cache()` sinon |
+| `FlyerSettings.diveGlowColor` | (4, 0.25, 0.12) | (0.45, 0.36, 0.26) |
+| `TestArenaSceneBuilder.cs:1353-1356` : « Zone visée par la main » du traqueur, cubes « Lueur » (`Stalker_Grab_Warning`) et « Ombre » | **carré rouge** | « Lueur » : matériau **`M_VFX_Indice_Rect.mat`** (son échelle reste celle que `Stalker.cs` lui donne à chaque image, `handSize × fondu`) ; supprimer le cube « Ombre » (l'indice assombrit déjà le sol) |
+| `TestArenaSceneBuilder.cs:1380` : « Zone du revers (traqueur) » (cylindre, même rouge) | **plaque circulaire rouge** | matériau **`M_VFX_Indice_Cercle.mat`** |
+| `RenderSetup.cs:174` : `M_Signal_Colonne` (1.6, 0.08, 0.04), colonne de lumière de la prise (`StalkerSettings.grabColumn`) | colonne rouge | `grabColumn` = false |
+| « Point prédit du traqueur (debug) » (sphère rouge) | — | jamais actif hors debug |
+| `FinalBoss.MarkColor` (repli sans le matériau de la DA) | ambre | (0.24, 0.22, 0.2) |
+
+### Objet tenu (télékinésie)
+
+| Où | Aujourd'hui | À mettre |
+|---|---|---|
+| `TelekinesisFeedbackSettings.glowHeld` | **objet entièrement violet** | 0 ; sur l'objet tenu, un `ContourDiscret` (`prise` = `M_VFX_Prise_Contour`, fin trait d'os ; ajouté une fois au `Grabbable`) : `Montre(prise)` à la prise, `Cache()` au lâcher ou au lancer |
+| `TelekinesisView.line` (`grabColor × lineIntensity`) | **trait violet épais** | instancier `Assets/Art/VFX/Prefabs/VFX_Trait_Prise.prefab` à la prise et appeler `GetComponent<LienVfx>().Regle(LineStart, objet)` à chaque image (positions monde) ; le détruire au lâcher. L'orbe reste violette (règle `OrbLook`) |
+| `glowAimed` (1.6), `glowInRange` (0.35) | objet violet pulsé au survol | `glowAimed` ≤ 0.5, `glowInRange` ≤ 0.15 |
+
+### Livre du hibou (`ArtifactHolder.BookStep`, `ArtifactModelView.UpdateLink`)
+
+Un lien part **à chaque appui** du livre (`ThrowPressed` frais et livre prêt), même quand `SpiritBook.Find` ne trouve rien :
+
+1. `ArtifactHolder.BookStep`, au moment de `SpiritBook.Find` : si le résultat est `BookLink.Aucun`, publier un événement
+   « coup dans le vide » (par exemple `LastBookMissTick = tick`) avant le `return` ; s'il y a une cible, garder le chemin
+   actuel (`SpiritBook.Start`).
+2. `ArtifactModelView` : à ce coup dans le vide, `LienVfx.Lance(vfx.drainLink, livre, visée, portée, null, default)` (le
+   drain, sombre, est le lien « hostile » par défaut), avec `portée = _holder.BookSettings.castRange` : c'est la copie
+   améliorée du joueur (`LonguePortee` l'allonge), pas l'asset `SpiritBook_Default`. Le lien file jusqu'au bout, se
+   rétracte et se détruit seul : ne plus y toucher.
+3. Au début d'un lien sur une cible (là où `UpdateLink` fait aujourd'hui `GameVfx.Spawn` puis `Ouvre()`) : instancier le
+   prefab avec `GameVfx.Spawn(…, life: 0f)` comme aujourd'hui (une durée de vie par défaut détruirait un lien tenu), puis
+   `_link.Lance(livre, (point − livre).normalized, portée, target, point)` au lieu de `Ouvre()`. La tête file à 42 m/s et s'accroche (anneau de 0,85 m qui se referme, crochets, puis crochets qui
+   tournent autour du point).
+4. Tant que le lien dure : `_link.Regle(livre, point)` à chaque image (positions **monde** : c'est maintenant la règle de
+   `Regle` ; avant, un lien instancié à la position du livre était décalé d'autant).
+5. Quand le lien finit (`LastBookEnd` ≠ `Aucune`, `BookTarget` devenu null, changement de type) : `_link.Ferme()` puis oublier
+   la référence **sans** `Destroy` : le lien se rétracte vers le livre et se détruit seul. Si `Ferme` n'est pas appelé et que
+   la cible disparaît, il se rétracte aussi seul (`delaiSansNouvelles` = 0,3 s sans `Regle`).
+
+`livre` = `_view.ViewToWorld(centre)`, où `centre` est le centre des boîtes des rendus du modèle du livre (le pivot
+`_root.position` est au dos, sous les doigts : le lien en partirait au lieu de partir du livre). `point` : le centre du
+collider de la cible, comme `ArtifactHolder.TargetPoint`, aujourd'hui `private static` : le rendre `internal` (ou exposer le
+point de la cible du livre) pour que `ArtifactModelView` l'appelle. Test du comportement :
+`docs/art/rendus/Nuit5/Lot4/test_lien.txt`.
+
+**Lanterne du hibou** : `Character_hibou.lanternColor` (0.2, 0.4, 1) baigne toute la salle d'un bleu saturé, hors DA. Valeur
+proposée : (0.36, 0.44, 0.58), lune froide et désaturée (c'est celle des captures du livre). Le livre spectral
+(`Artefact_Livre_Hibou`, matériaux `M_Livre_*`) a été baissé d'environ moitié dans ce lot : il ne sature plus l'image.
+
+### Apparitions des goules
+
+`Assets/Art/VFX/Prefabs/` (environ 2,5 s jusqu'à la fin des dernières particules, se détruisent seuls, aucune lumière) : à
+instancier au point d'apparition au moment où la goule sort, selon le lieu :
+
+- `VFX_Apparition_Trou` (sol : un trou d'ombre de 1,5 m s'ouvre (disque presque noir, sans contour) et se referme, mottes
+  de terre projetées, volutes de poussière sourde ; pivot au sol) : faire monter la goule de 1 m sous le sol jusqu'au sol entre 0,25 et 0,9 s.
+- `VFX_Apparition_Grille` (grille ou soupirail : poussière et écailles de rouille poussées à travers les barreaux ; pivot au
+  centre de la grille, **+Y = côté salle**, à tourner pour une grille murale). Le jeu n'a pas encore de grille posée : la DA
+  peut en modéliser une si main en prévoit.
+- `VFX_Apparition_Ombre` (coin sombre : fumée d'encre qui converge, volutes qui montent, puis se défont) : activer la goule à
+  0,45 s, quand la fumée est la plus dense (aucun fondu de matériau nécessaire).
+
+La marque de vague (`M_VFX_Apparition`) reste l'annonce ; l'effet joue à la sortie.
+
+### Sons de l'épée du koala
+
+`Assets/Art/Audio/Armes/` : mono, 44,1 kHz, import **Decompress On Load, Vorbis qualité 0,7**, normalize décoché, crête
+−1 dBFS, fondus d'entrée et de sortie. Les vides montent tout de suite (50 % du niveau atteint entre 12 et 21 ms, première
+crête à 44 ms) ; leur sommet arrive plus tard selon la variante (43 à 143 ms), comme le passage d'une lame. Deux champs à ajouter à
+`GameAudioSettings` : `AudioClip[] swordSwings` et `AudioClip[] swordHits`.
+
+| Fichier | Quand | Où dans le code | Champ |
+|---|---|---|---|
+| `Sfx_Epee_Vide_01`, `_02`, `_03` (0,48 à 0,66 s) | chaque coup d'épée (taille et estoc), au déclenchement du coup ; une variante au hasard sans répéter la précédente, hauteur ±4 % | `ArtifactHolder`, là où `_pendingSwing` est posé | `swordSwings` |
+| `Sfx_Epee_Impact_01`, `_02`, `_03` (0,58 à 0,65 s) | la lame touche (une fois par coup, quel que soit le nombre d'ennemis touchés) ; une variante au hasard | `ArtifactHolder` lignes 152 et 469, quand `LastSwordHits > 0` | `swordHits` |
+
+L'impact se superpose au vide (qui a commencé `strikeDelay` plus tôt).
+
+### À signaler
+
+Le système de main « Ambiance de rendu (D-067) / Halos des lumières » dessine un halo rond autour de la lanterne du joueur :
+vu par un autre joueur (coop) ou sur une vue extérieure, c'est une **boule orange floue** à hauteur de taille. À réserver
+aux lumières du décor, ou à masquer pour la lanterne des joueurs.

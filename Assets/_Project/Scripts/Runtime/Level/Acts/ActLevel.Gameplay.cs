@@ -283,10 +283,10 @@ namespace ItHunts.Level.Acts
                     ActDoor d = Plan.Doors[di];
                     if (d.Locked || d.Exit || d.Gate || placedHere >= settings.spawnPointsPerRoom + 1)
                         continue;
-                    var go = new GameObject("Apparition : goule (porte)");
+                    var go = new GameObject("Apparition : goule (porte)");   // sort du noir de la porte : fumée d'encre (nuit 5, lot 4)
                     go.transform.SetParent(parent, false);
                     go.transform.position = Plan.DoorFront(d, r.Id, 3f) + Vector3.up * 0.1f;
-                    go.AddComponent<SpawnPoint>().Configure(SpawnKinds.Goule);
+                    go.AddComponent<SpawnPoint>().Configure(SpawnKinds.Goule, SpawnEffect.Ombre);
                     placedHere++;
                 }
 
@@ -298,7 +298,7 @@ namespace ItHunts.Level.Acts
                     var go = new GameObject("Apparition : goule (coin)");
                     go.transform.SetParent(parent, false);
                     go.transform.position = Plan.CellCenter(c, r.Floor + 0.1f);
-                    go.AddComponent<SpawnPoint>().Configure(SpawnKinds.Goule);
+                    go.AddComponent<SpawnPoint>().Configure(SpawnKinds.Goule, SpawnEffect.Ombre);
                 }
 
                 if (r.Ceiling <= 0f || r.Ceiling >= 16f)

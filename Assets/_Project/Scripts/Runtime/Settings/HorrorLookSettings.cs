@@ -36,6 +36,9 @@ namespace ItHunts.Settings
         [Min(0.1f)] public float lampHaloSize = 3.2f;
         [Tooltip("Intensité (alpha additif) d'un halo.")]
         [Range(0f, 1f)] public float haloIntensity = 0.5f;
+        [Tooltip("Halo autour de la lanterne des joueurs. Nuit 5, lot 4 : coupé (vu par un autre joueur ou une vue extérieure, c'était une " +
+                 "boule orange floue à hauteur de taille) ; les halos restent réservés aux lumières du décor.")]
+        public bool lanternHalos = false;
         [Tooltip("Halo de la lanterne du joueur (vu par les autres joueurs et dans les reflets ; le sien est caché à 1 m de la caméra).")]
         [Min(0.1f)] public float lanternHaloSize = 1.4f;
         [Tooltip("Décalage du halo devant le mur de la torche (m) : il ne se coupe pas dans la pierre.")]

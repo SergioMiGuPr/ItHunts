@@ -50,10 +50,18 @@ namespace ItHunts.Settings
         [Tooltip("Épée : la lame touche ; sans lui, le son d'impact commun (impactHit).")]
         public AudioClip swordHit;
         [Range(0f, 1f)] public float swordVolume = 0.75f;
+        [Tooltip("Épée (nuit 5, lot 4) : lame dans le vide à chaque coup (taille et estoc), une variante au hasard sans répéter la précédente " +
+                 "(Sfx_Epee_Vide_01 à 03). Prioritaire sur swordSwing / swordSwingHeavy, gardés en repli.")]
+        public AudioClip[] swordSwings = new AudioClip[0];
+        [Tooltip("Épée : la lame touche, une fois par coup quel que soit le nombre d'ennemis touchés (Sfx_Epee_Impact_01 à 03). " +
+                 "Prioritaire sur swordHit.")]
+        public AudioClip[] swordHits = new AudioClip[0];
+        [Tooltip("Variation de hauteur des sons de l'épée (± part).")]
+        [Range(0f, 0.3f)] public float swordPitchVariation = 0.04f;
 
         /// <summary>
         /// Emplacements qui attendent des sons de la DA : silence tant qu'ils sont vides (jamais un son synthétisé). Vidée à mesure que
-        /// les sons arrivent. Jour 5 : l'épée du koala (aucun son d'épée livré à ce jour).
+        /// les sons arrivent. Nuit 5, lot 4 : l'épée est servie par swordSwings et swordHits ; ces trois champs uniques restent en repli.
         /// </summary>
         public static readonly string[] AwaitingArt = { nameof(swordSwing), nameof(swordSwingHeavy), nameof(swordHit) };
 

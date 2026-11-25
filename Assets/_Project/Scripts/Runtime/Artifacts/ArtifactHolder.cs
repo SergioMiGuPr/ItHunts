@@ -43,6 +43,16 @@ namespace ItHunts.Artifacts
         public BookState Book => _book;
         public int LastSwordHits { get; private set; }
         public int TotalSwordHits { get; private set; }
+        /// <summary>Coups d'épée qui ont touché au moins un ennemi (un son d'impact par coup, nuit 5 lot 4) : la vue suit ce compteur.</summary>
+        public int SwordHitStrikes { get; private set; }
+        /// <summary>
+        /// Appuis du livre sans cible (nuit 5, lot 4) : un lien part quand même et file dans le vide jusqu'à la portée. La vue suit ce
+        /// compteur ; LastBookMissTick et LastBookMissAim (direction visée) décrivent le dernier.
+        /// </summary>
+        public int BookMisses { get; private set; }
+        public int LastBookMissTick { get; private set; } = MovementState.NeverTick;
+        public Vector3 LastBookMissAim { get; private set; } = Vector3.forward;
+        private int _bookMissPress = -1;
         public BookEnd LastBookEnd { get; private set; }
         /// <summary>Cible du lien en cours (ennemi drainé ou allié soigné), null sans lien.</summary>
         public Transform BookTarget => _bookEnemy != null ? _bookEnemy.transform : _bookAlly != null ? _bookAlly.transform : null;
@@ -151,6 +161,8 @@ namespace ItHunts.Artifacts
             var step = new SwordStep { Swung = true, Index = index };
             LastSwordHits = BoneSword.Strike(eye, _lastAim, ms.Velocity, step, ms.HorizontalSpeed, sw, transform, _playerId, Time.time, null, Upgrades);
             TotalSwordHits += LastSwordHits;
+            if (LastSwordHits > 0)
+                SwordHitStrikes++;
         }
 
         // ---------- Livre à lien ----------
@@ -181,7 +193,18 @@ namespace ItHunts.Artifacts
                 bool allowDowned = up != null && up.Mythic(UpgradeKind.SoinLie) && _reviveAct != ItHunts.Level.RunSession.Act;
                 BookLink link = SpiritBook.Find(eye, aim, bk, transform, out _bookEnemy, out _bookAlly, allowDowned);
                 if (link == BookLink.Aucun)
+                {
+                    // Coup dans le vide (nuit 5, lot 4) : publié une fois par appui (l'appui reste mémorisé pour le buffer).
+                    if (input.ThrowPressedTick != _bookMissPress)
+                    {
+                        _bookMissPress = input.ThrowPressedTick;
+                        LastBookMissTick = tick;
+                        LastBookMissAim = aim;
+                        BookMisses++;
+                    }
+
                     return;
+                }
                 SpiritBook.Start(ref _book, link, tick, input.ThrowPressedTick);
                 _drainShown = 0f;
                 LastBookEnd = BookEnd.Aucune;
@@ -381,7 +404,8 @@ namespace ItHunts.Artifacts
             return d.ApplyDamage(PlayerUpgrades.Outgoing(_playerId, d, dmg), time, out _);
         }
 
-        private static Vector3 TargetPoint(Transform t)
+        /// <summary>Point visé sur une cible du livre : centre de son collider (la vue y accroche le lien).</summary>
+        internal static Vector3 TargetPoint(Transform t)
         {
             var c = t.GetComponentInChildren<Collider>();
             return c != null ? c.bounds.center : t.position + Vector3.up;
@@ -470,6 +494,7 @@ namespace ItHunts.Artifacts
                     TotalSwordHits += LastSwordHits;
                     if (LastSwordHits > 0)
                     {
+                        SwordHitStrikes++;
                         bool third = _pendingSwing.Index >= 2 || _pendingSwing.Lunge;
                         GameFeelSettings feel = GameFeel.Settings;
                         if (feel != null)

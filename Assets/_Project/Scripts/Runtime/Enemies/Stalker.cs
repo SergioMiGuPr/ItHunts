@@ -217,8 +217,33 @@ namespace ItHunts.Enemies
             _move.Heading = transform.forward;
         }
 
+        /// <summary>
+        /// Nuit 5, lot 4 : plus de rouge. La zone visée par la main (« Lueur ») et la zone du revers prennent les indices sombres de la DA
+        /// (M_VFX_Indice_Rect, M_VFX_Indice_Cercle) ; le cube « Ombre » est caché (l'indice assombrit déjà le sol). Au démarrage, pour
+        /// que les scènes déjà construites en profitent sans être reconstruites.
+        /// </summary>
+        private void ApplyDarkHints()
+        {
+            if (settings == null)
+                return;
+            if (grabMarker != null)
+            {
+                Transform shadow = grabMarker.Find("Ombre");
+                if (shadow != null)
+                    shadow.gameObject.SetActive(false);
+                Transform glow = grabMarker.Find("Lueur");
+                Renderer r = glow != null ? glow.GetComponent<Renderer>() : null;
+                if (r != null && settings.grabWarningMaterial != null)
+                    r.sharedMaterial = settings.grabWarningMaterial;
+            }
+
+            if (backhandZone != null && settings.backhandZoneMaterial != null)
+                backhandZone.sharedMaterial = settings.backhandZoneMaterial;
+        }
+
         private void Start()
         {
+            ApplyDarkHints();
             // Pupilles du modèle de la DA (rouge sombre) : Damageable écrit l'émission de tous ses rendus à chaque image ; les bras et
             // les mains (M_Traqueur_Mains : griffes) ont leur propre lueur ivoire (UpdateClawGlow).
             var dmg = GetComponent<ItHunts.Combat.Damageable>();
