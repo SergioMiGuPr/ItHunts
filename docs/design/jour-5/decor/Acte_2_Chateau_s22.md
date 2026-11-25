@@ -1,9 +1,11 @@
 # Décor : Acte_2_Chateau, graine 22 (Le château des cendres)
 
-Corrigé à la construction : lumières sans mur 613, suspendus sans plafond 0, lustres trop proches 0, chevauchements 271, décor traversable 401, formes provisoires 62
+Corrigé à la construction : lumières sans mur 301, suspendus sans plafond 0, lustres trop proches 0, chevauchements 41, décor traversable 433, formes provisoires 2
 
 Restant : lumières sans mur 0, suspendus sans plafond 0, lustres trop proches 0, chevauchements 0, décor traversable 0, formes provisoires 0
 
-Traqueur : 6232/6232 points atteints (100,0 ٪) ; non atteints : aucun
+Ensembles de décor posés : 1972. Salles vides (sol à plus de 9 m de tout décor) : aucune
 
-Îlots de son NavMesh reliés : 24 (restés seuls : 0, 503 ms)
+Traqueur : 6164/6164 points atteints (100,0 ٪) ; non atteints : aucun
+
+Îlots de son NavMesh reliés : 22 (restés seuls : 0, 783 ms)

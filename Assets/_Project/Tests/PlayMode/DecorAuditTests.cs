@@ -54,6 +54,7 @@ namespace ItHunts.Tests
             Assert.IsNotNull(level, "niveau non construit");
             yield return null;
             DecorReport left = DecorAudit.Run(level.Root, false);
+            List<string> empty = level.EmptySpots();
             string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "docs", "design", "jour-5", "decor"));
             Directory.CreateDirectory(dir);
             string map = level.Plan != null && level.Plan.Hand != null ? level.Plan.Hand.Name : "?";
@@ -66,8 +67,10 @@ namespace ItHunts.Tests
             var reach = ItHunts.Debugging.StalkerReachAudit.Run(level);
             File.WriteAllText(Path.Combine(dir, $"{scene}_s{seed}.md"),
                 $"# Décor : {scene}, graine {seed} ({map})\n\nCorrigé à la construction : {level.DecorFixes}\n\nRestant : {left.Text(200)}\n\n" +
+                $"Ensembles de décor posés : {level.EnsembleCount}. Salles vides (sol à plus de 9 m de tout décor) : {(empty.Count == 0 ? "aucune" : string.Join(" ; ", empty))}\n\n" +
                 $"Traqueur : {reach.Summary()}\n\nÎlots de son NavMesh reliés : {nav?.IslandBridges} (restés seuls : {nav?.IslandsLeft}, {nav?.IslandMilliseconds} ms)\n" +(reach.Misses.Count > 0 ? $"\nPoints :\n\n{reach.All()}\n" : ""));
             Assert.AreEqual(0, left.Total, $"{scene} graine {seed} ({map}) : {left.Text(30)}");
+            Assert.AreEqual(0, empty.Count, $"{scene} graine {seed} ({map}) : salles vides : {string.Join(" ; ", empty)}");
             Assert.Greater(reach.Samples, 0, "audit du traqueur : aucun point");
             Assert.AreEqual(0, reach.Misses.Count, $"{scene} graine {seed} ({map}) : traqueur, {reach.Summary()}");
 #endif

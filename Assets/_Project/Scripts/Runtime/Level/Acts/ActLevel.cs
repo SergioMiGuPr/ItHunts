@@ -178,6 +178,10 @@ namespace ItHunts.Level.Acts
             StalkerClimbs = 0;
             _chandeliers.Clear();
             _decorOrder = 0;
+            _group = 0;
+            _wallJumps.Clear();
+            _tallCells.Clear();
+            EnsembleCount = 0;
             var slice = Stopwatch.StartNew();
             int n = Plan.Rooms.Count;
             for (int i = 0; i < n; i++)
@@ -227,6 +231,7 @@ namespace ItHunts.Level.Acts
             (PropsSwapped, PropsKept) = PropArt.DressAll(_root);      // props en 3D de la DA (PR #51) sur les greybox
             // Revue des cartes de la DA (jour 5, D-115) : lumières sans mur, suspendus sans plafond, lustres en double, props qui se
             // chevauchent, décor traversable, formes provisoires : corrigés ici ; le test DecorAuditTests vérifie qu'il n'en reste aucun.
+            PaintFoliage();
             DecorFixes = DecorAudit.Run(_root, true, settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial);
             Batch();
             Physics.SyncTransforms();

@@ -27,6 +27,8 @@ namespace ItHunts.Level.Acts
     {
         public DecorKind kind;
         public int order;
+        /// <summary>Ensemble auquel la pièce appartient (0 : aucun) : ses pièces se touchent exprès (chaise sous la table).</summary>
+        public int group;
     }
 
     /// <summary>Résultat de l'audit du décor d'un niveau (une ligne par défaut).</summary>
@@ -207,7 +209,7 @@ namespace ItHunts.Level.Acts
                 foreach (Vector2Int c in Cells(bi))
                     if (grid.TryGetValue(c, out List<int> list))
                         foreach (int j in list)
-                            if (alive[j] && Overlap(bi, Shrink(boxes[j].b, 0.1f)))
+                            if (alive[j] && (boxes[i].tag.group == 0 || boxes[j].tag.group != boxes[i].tag.group) && Overlap(bi, Shrink(boxes[j].b, 0.1f)))
                             {
                                 hit = true;
                                 break;

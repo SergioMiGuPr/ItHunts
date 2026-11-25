@@ -44,7 +44,28 @@ namespace ItHunts.Debugging
                     return true;
                 else if (Overlap[i].name.StartsWith("Massif de l'escalier"))
                     return true;
-            return false;
+            return Enclosed(feet);
+        }
+
+        /// <summary>Cœur creux d'une pièce (pilier de roche en maillage non convexe) : de tous côtés, la même pièce barre l'accès.</summary>
+        private static bool Enclosed(Vector3 feet)
+        {
+            Vector3 at = feet + Vector3.up * 0.9f;
+            Collider same = null;
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 d = Quaternion.Euler(0f, i * 45f, 0f) * Vector3.forward;
+                Vector3 from = at + d * 8f;
+                Collider last = null;
+                foreach (RaycastHit h in Physics.RaycastAll(from, -d, 7.7f, ~0, QueryTriggerInteraction.Ignore))
+                    if (same == null ? h.collider is MeshCollider : h.collider == same)
+                        last = h.collider;
+                if (last == null)
+                    return false;
+                same = last;
+            }
+
+            return same != null;
         }
 
         public static Result Run(ActLevel level, float step = 6f)

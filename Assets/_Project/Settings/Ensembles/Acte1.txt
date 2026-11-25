@@ -1,0 +1,221 @@
+# Ensembles de décor de l'acte I (D-118). Format : voir EnsembleLibrary.cs.
+
+[Poste de garde de la DA] centre 26x18 fonctions Salle des gardes ; max 1
+@Cave_SalleDeGarde 0 0
+
+# ---- Cachot, salle de torture ----
+[Cellule ouverte] mur 8x8 fonctions Cachot, Salle de torture
+Cave_Cellule_Grille -3.4 4 90
+Cave_Cellule_Grille 3.4 4 90
+Cave_Lit -1.8 1.6
+Cave_Paille 1.2 2
+Cave_Seau 2.4 1.4
+Cave_Chaines_Mur 0.8 0.1
+Cave_Candelabre 0 7.2
+
+[Chaînes et paille] mur 6x3 fonctions Cachot, Salle de torture
+Cave_Chaines_Mur -1.2 0.1
+Cave_Chaines_Mur 1.2 0.1
+Cave_Paille 0 1.6
+Cave_Seau 1.8 1.4
+
+[Rangée de grilles] centre 14x3 fonctions Cachot
+Cave_Cellule_Grille -3.4 0
+Cave_Cellule_Grille 3.4 0
+Cave_Brasero 0 1.2
+
+[Table des geôliers] centre 8x7 fonctions Cachot, Salle de torture, Salle des gardes
+Cave_TableGarde 0 0
+Cave_Banc 0 1.2
+Cave_Tabouret 1.8 -0.6
+Cave_Tabouret -1.6 -0.8
+Cave_Brasero -2.8 2
+Cave_Tonneaux_Pile 2.6 -2.2
+Prop_Caisse_Attrapable -2.4 -2 20 0.45
+
+[Chevalet de torture] centre 8x8 fonctions Salle de torture
+Prop_Table 0 0
+P_Prop_Chaudron 2.8 1.4
+Cave_Brasero 2.8 -0.6
+P_Prop_Ratelier -2.8 1 90
+P_Prop_Ratelier -2.8 -1 90
+Prop_Tonneau_Attrapable 0 -2.8 0 0.55
+
+[Cage de fer] centre 8x8 fonctions Salle de torture ; max 3
+Cave_Cellule_Grille 0 3.3
+Cave_Cellule_Grille -3.3 0 90
+Cave_Cellule_Grille 3.3 0 90
+Cave_Paille 0 0
+Cave_Seau 1.6 1
+Cave_Candelabre 0 -3
+
+# ---- Salle des gardes ----
+[Râtelier de garde] mur 9x2.6 fonctions Salle des gardes
+P_Prop_Ratelier -3 1
+P_Prop_Ratelier -1 1
+Cave_Tonneaux_Pile 1.8 1.4
+Cave_Sacs 3.6 1.3
+
+[Couchettes] mur 9x3 fonctions Salle des gardes, Cachot
+Cave_Lit -3 1.6 90
+Cave_Lit 0 1.6 90
+Cave_Lit 3 1.6 90
+Cave_Candelabre 1.5 1.2
+
+[Barricade] centre 10x5 fonctions Salle des gardes, Galerie de mine, Gouffre
+Cave_MurBrise_4m 0 0
+Cave_Caisses_Pile -2 -1.8 10
+Cave_Brasero 2.6 -1.6
+Prop_Caisse_Attrapable 0.6 -1.8 40 0.45
+
+# ---- Réserve, cave à vin ----
+[Étagères de réserve] centre 10x3 fonctions Réserve
+Cave_Etagere -3.6 0.4
+Cave_Etagere -1.2 0.4
+Cave_Etagere 1.2 0.4
+Cave_Etagere 3.6 0.4
+Cave_Etagere -3.6 -0.4 180
+Cave_Etagere -1.2 -0.4 180
+Cave_Etagere 1.2 -0.4 180
+Cave_Candelabre 3.8 -0.9
+
+[Pile de caisses] centre 7x6 fonctions Réserve, Galerie de mine, Citerne
+Cave_Caisses_Pile 0 0
+Cave_Caisses_Pile -0.4 1.8 90
+Prop_Caisse_Attrapable 2.2 0.4 15 0.45
+Prop_Caisse_Attrapable 2.4 -0.8 50 0.45
+Prop_Tonneau_Attrapable -2.4 -1.4 0 0.55
+Cave_Sacs 0 -2
+
+[Réserve murale] mur 9x3 fonctions Réserve, Cave à vin
+Cave_Etagere -3 1.1
+Cave_Etagere -0.4 1.1
+Cave_Sacs 1.8 1.4
+Cave_Tonneaux_Pile 3.4 1.5
+
+[Rang de tonneaux] centre 12x3 fonctions Cave à vin
+P_Prop_Tonneaux_Couches -4 0
+P_Prop_Tonneaux_Couches -1 0
+P_Prop_Tonneaux_Couches 2 0
+Cave_Tonneaux_Pile 4.6 0
+Cave_Candelabre 3.4 1
+
+[Dégustation] centre 6x6 fonctions Cave à vin
+Cave_TableGarde 0 0
+Cave_Tabouret 1.6 0
+Cave_Tabouret -1.6 0.4
+Cave_Tonneaux_Pile 0 2
+Prop_Tonneau_Attrapable 2 -1.8 0 0.55
+Cave_Chandelles 0.3 0 0 1
+
+# ---- Ossuaire, crypte, chapelle ----
+[Sarcophages] centre 10x8 fonctions Ossuaire, Crypte
+P_Prop_Sarcophage -3 2
+P_Prop_Sarcophage 3 2
+P_Prop_Sarcophage -3 -2
+P_Prop_Sarcophage 3 -2 8
+P_Prop_Statue 0 0
+Cave_Chandelles 0 1.6
+Cave_Candelabre 0 -2.6
+
+[Gisant] centre 6x5 fonctions Ossuaire, Crypte, Chapelle souterraine
+P_Prop_Sarcophage 0 0 0 0 1.4
+Cave_Candelabre -2 1
+Cave_Candelabre 2 1
+Cave_Chandelles 0 -1.4
+
+[Enfeu] mur 8x3 fonctions Ossuaire, Crypte
+P_Prop_Sarcophage 0 1.2
+P_Prop_Statue -2.6 1.2
+P_Prop_Statue 2.6 1.2
+Cave_Candelabre 1.6 1.8
+
+[Bancs de crypte] centre 12x11 fonctions Chapelle souterraine, Crypte
+P_Prop_Banc_Eglise -3.2 4
+P_Prop_Banc_Eglise 3.2 4
+P_Prop_Banc_Eglise -3.2 1.6
+P_Prop_Banc_Eglise 3.2 1.6
+P_Prop_Banc_Eglise -3.2 -0.8 -8
+P_Prop_Banc_Eglise 3.2 -0.8
+P_Prop_Banc_Eglise -3.2 -3.2
+P_Prop_Banc_Eglise 3.2 -3.2
+Cave_Candelabre 0 4.6
+Cave_Candelabre 0 -4.6
+
+[Autel souterrain] mur 9x4 fonctions Chapelle souterraine, Crypte ; max 2
+Chateau_Autel 0 2
+Cave_Candelabre -3.4 2
+Cave_Candelabre 3.4 2
+
+# ---- Mine, gouffre, citerne, grotte ----
+[Échafaudage] mur 8x4 fonctions Galerie de mine, Gouffre, Citerne
+Prop_Echafaudage 0 1.8
+Cave_Caisses_Pile 3 1.6
+Cave_Brasero -3 2.2
+
+[Étais de mine] centre 9x5 fonctions Galerie de mine
+P_Prop_Poutre -2 1 0
+P_Prop_Poutre 0 0 30
+Cave_Caisses_Pile 2.6 -1
+Cave_Sacs -2.4 -1.4
+Cave_Brasero 3.4 1.2
+Prop_Tonneau_Attrapable -3.4 0.6 0 0.55
+
+[Plateforme de mine] centre 17x4 fonctions Galerie de mine, Gouffre, Citerne, Salle des gardes, Réserve ; max 1
+Cave_PlateformeTraction -6.6 0 0 0 1.4
+Cave_PlateformeTraction 6.6 0 0 0 1.4
+Cave_Passerelle_10m 0 0 0 5.6
+Cave_Brasero -8 1.6
+
+[Éboulis] centre 8x7 fonctions Gouffre, Grotte inondée, Galerie de mine, Citerne
+Cave_Eboulis_Petit -1.6 0.6
+Cave_Eboulis_Petit 1.8 -1 120
+Cave_Brasero -2.6 -2.2
+Prop_Caisse_Attrapable 2.8 1.8 20 0.45
+
+[Rocher de prise] centre 6x6 fonctions Gouffre, Grotte inondée, Citerne, Ossuaire
+Cave_Plateforme_3m 0 0
+Cave_Eboulis_Petit 1.4 -1.6 60 0 0.8
+Cave_Candelabre -2.4 2
+
+[Pilier de roche] centre 8x8 fonctions Gouffre, Grotte inondée, Galerie de mine, Citerne, Salle des gardes, Réserve, Ossuaire, Cave à vin ; max 3
+Cave_PilierRoche_18m 0 0
+Cave_Brasero 3.4 3.4
+
+[Tonneaux flottants] centre 5x5 fonctions Grotte inondée, Citerne
+Cave_Tonneaux_Pile 0 0
+Prop_Tonneau_Attrapable 1.8 1.4 0 0.55
+Prop_Tonneau_Attrapable -1.6 -1.6 0 0.55
+Cave_Brasero -1.8 1.6
+
+[Rochers au pied du mur] mur 8x4 fonctions Gouffre, Grotte inondée, Citerne
+Cave_Eboulis_Petit -2 2
+Cave_Eboulis_Petit 2 2.2 80
+Cave_Brasero 0 2.6
+
+[Arche en ruine] centre 13x4 fonctions Ossuaire, Crypte, Chapelle souterraine, Gouffre, Salle des gardes, Cave à vin ; max 1
+Cave_ArcheRuine 0.8 0
+Cave_Brasero -5.6 1.6
+
+[Pan de mur] centre 9x4 fonctions Cachot, Réserve, Ossuaire, Cave à vin, Crypte, Salle de torture, Chapelle souterraine ; max 2
+Cave_MurBrise_4m 0 -0.6
+Cave_Brasero 3 1.4
+
+[Mur de rebords] centre 7x4 fonctions Salle de torture, Réserve, Crypte, Cachot ; max 1
+Cave_MurRebords_10m 0 0
+
+# ---- Pour combler ----
+[Brasero et éboulis] centre 4x4 fonctions *
+Cave_Brasero 1 1
+Cave_Eboulis_Petit -0.6 -0.6 0 0 0.7
+
+[Caisses oubliées] centre 4x4 fonctions * ; max 5
+Prop_Caisse_Attrapable 0.8 0.6 20 0.45
+Prop_Caisse_Attrapable 0.2 -0.8 60 0.45
+Cave_Tonneaux_Pile -0.6 0.6 90
+
+[Candélabre] centre 2x2 fonctions *
+Cave_Candelabre 0 0
+
+[Sacs] centre 2x2 fonctions *
+Cave_Sacs 0.3 0

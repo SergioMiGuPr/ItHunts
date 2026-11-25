@@ -364,14 +364,17 @@ namespace ItHunts.Level.Acts
                             StalkerClimb(root, edge + dir * (Plan.Cell * 2.5f), edge - dir * Plan.Cell + Vector3.up * h);
                         // Mur parallèle à la façade : on rebondit entre les deux jusqu'en haut.
                         float gap = settings.wallJumpGap;
-                        Vector3 c = edge + dir * (gap + 0.5f) + Vector3.up * ((h + 4f) * 0.5f);
+                        // 10 m au plus (D-117) : son bras passe par-dessus depuis le sol (épaule à 10,5 m).
+                        float wallH = Mathf.Max(h + 1.5f, Mathf.Min(h + 4f, 10f));
+                        Vector3 c = edge + dir * (gap + 0.5f) + Vector3.up * (wallH * 0.5f);
                         float yaw = Mathf.Atan2(side.x, side.y) * Mathf.Rad2Deg;
-                        Solid(root, "Mur de wall jump", c, new Vector3(1f, h + 4f, Plan.Cell * 3f), Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg + 90f,
+                        Solid(root, "Mur de wall jump", c, new Vector3(1f, wallH, Plan.Cell * 3f), Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg + 90f,
                             KitBuild.Kind.Mur, null, walkable: false);
                         for (int k = 1; k <= 2; k++)
                         for (int s = -4; s <= 4; s++)   // D-117 : rien devant les deux bouts du couloir (ni fuite bouchée, ni main bloquée)
                             if (r.Use.TryGetValue(t + d * k + side * s, out CellUse u) && u == CellUse.Sol)
                                 r.Use[t + d * k + side * s] = CellUse.Passage;
+                        _wallJumps.Add(edge);
                         TractionAnchor(root, edge + Vector3.up * (h + 3.5f) - dir * 0.2f, -dir);
                         wallJump = true;
                     }

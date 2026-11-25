@@ -1,0 +1,177 @@
+# Ensembles de décor de l'acte III (D-118). Format : voir EnsembleLibrary.cs.
+
+[Labyrinthe de la DA] centre 48x48 fonctions Labyrinthe de haies ; max 2
+@Jardin_Labyrinthe 0 0
+
+[Allée de la DA] centre 60x50 fonctions Allée des statues ; max 1
+@Jardin_AlleeDesStatues 0 0
+
+# ---- Labyrinthe, roseraie ----
+[Haies en U] centre 14x10 fonctions Labyrinthe de haies, Roseraie
+Jardin_Haie_6m -3 4
+Jardin_Haie_6m 3 4
+Jardin_Haie_6m -6 1 90
+Jardin_Haie_6m 6 1 90
+Jardin_Statue_Pleureuse 0 1.4
+Cave_Candelabre 1.8 1.4
+
+[Haies croisées] centre 13x13 fonctions Labyrinthe de haies
+Jardin_Haie_6m -3.2 0
+Jardin_Haie_6m 3.2 0
+Jardin_Haie_6m 0 3.4 90
+Jardin_Haie_6m 0 -3.4 90
+Cave_Candelabre 1.6 1.6
+
+[Parterre de roses] centre 10x10 fonctions Roseraie, Fontaine, Terrasse du château, Grand bassin, Kiosque
+Jardin_Muret_4m -2 4.4
+Jardin_Muret_4m 2 4.4
+Jardin_Muret_4m -2 -4.4
+Jardin_Muret_4m 2 -4.4
+Jardin_Massif -2.4 2
+Jardin_Massif 2.4 2
+Jardin_Massif -2.4 -2
+Jardin_Massif 2.4 -2
+Jardin_Statue_Pleureuse 0 0
+Cave_Candelabre 1.4 0
+
+[Banc entre deux massifs] centre 8x4 fonctions Roseraie, Kiosque, Fontaine, Terrasse du château, Grand bassin, Allée des statues
+Cave_Banc 0 0
+Jardin_Massif -2.6 0
+Jardin_Massif 2.6 0
+Cave_Candelabre 0 1.4
+
+# ---- Cimetière ----
+[Carré de tombes] centre 11x11 fonctions Cimetière
+Jardin_Tombe_Croix -3.6 2
+Jardin_Tombe_Stele -1.2 2.2
+Jardin_Tombe_Stele 1.2 1.9
+Jardin_Tombe_Croix 3.6 2.1
+Jardin_Tombe_Stele -3.6 -2
+Jardin_Tombe_Croix -1.2 -2.1 6
+Jardin_Tombe_Stele 1.2 -1.8
+Jardin_Tombe_Stele 3.6 -2.2 -5
+Jardin_Grille_4m 0 5
+Jardin_Grille_4m 0 -5
+Cave_Candelabre 0 0.6
+Cave_Chandelles -1.2 1.8
+
+[Caveau] centre 9x10 fonctions Cimetière ; max 3
+Jardin_Caveau 0 -0.6
+Jardin_Statue_Pleureuse -3.4 3
+Jardin_Statue_Pleureuse 3.4 3
+Cave_Candelabre 2 4.2
+
+[Pleureuse et tombes] centre 8x6 fonctions Cimetière, Allée des statues
+Jardin_Statue_Pleureuse 0 1.4
+Jardin_Tombe_Stele -2.4 -0.6
+Jardin_Tombe_Stele 2.4 -0.6
+Cave_Chandelles 0 -0.4
+Jardin_SousBois_B 0 2.4
+
+# ---- Serre, potager, verger ----
+[Serre en ruine] centre 12x8 fonctions Serre en ruine
+Jardin_Serre_Ruine 0 0
+Cave_Brasero 5.4 3
+
+[Planches de culture] centre 10x8 fonctions Potager, Serre en ruine
+Jardin_Muret_4m -2.4 3
+Jardin_Muret_4m 2.4 3
+Jardin_Massif -3 0.8
+Jardin_Massif 0 0.8
+Jardin_Massif 3 0.8
+Jardin_Muret_4m -2.4 -1.6
+Jardin_Muret_4m 2.4 -1.6
+Prop_Tonneau_Attrapable 4.2 -3 0 0.55
+Prop_Caisse_Attrapable -4 -3 20 0.45
+
+[Enclos] centre 10x10 fonctions Potager, Verger
+Jardin_Palissade_4m -2.2 4.6
+Jardin_Palissade_4m 2.2 4.6
+Jardin_Palissade_4m -4.6 2.2 90
+Jardin_Palissade_4m -4.6 -2.2 90
+Cave_Caisses_Pile 1.6 1.6
+Prop_Caisse_Attrapable -1.4 0 30 0.45
+Cave_Sacs 1 -1.8
+Cave_Brasero -2.6 2.6
+
+[Cueillette] centre 6x6 fonctions Verger, Potager
+Cave_Echelle_6m 0 0 0 0 0.6
+Cave_Caisses_Pile 1.8 1.4 30
+Prop_Caisse_Attrapable -1.6 1.2 0 0.45
+Prop_Tonneau_Attrapable -1.4 -1.6 0 0.55
+Cave_Candelabre 1.6 -1.6
+
+# ---- Allées, kiosque, fontaine, terrasse ----
+[Paire de statues] centre 8x4 fonctions Allée des statues, Terrasse du château, Grand bassin, Fontaine, Grande grille
+Jardin_Statue_Pleureuse -2.8 0
+Jardin_Statue_Pleureuse 2.8 0
+Jardin_Massif 0 0
+Cave_Candelabre 0 1.6
+
+[Statue géante] centre 8x8 fonctions Allée des statues, Grand bassin, Terrasse du château, Kiosque ; max 2
+Jardin_Statue_Geante 0 0
+Jardin_Muret_4m 0 3.4
+Jardin_Muret_4m 0 -3.4
+Cave_Brasero 2.8 2.2
+Cave_Brasero -2.8 -2.2
+
+[Kiosque] centre 12x12 fonctions Kiosque, Roseraie, Terrasse du château ; max 1
+Jardin_Kiosque 0 0
+Cave_Candelabre 0 -1
+Cave_Banc 5.4 0 90
+
+[Fontaine] centre 10x10 fonctions Fontaine, Grand bassin, Allée des statues ; max 1
+Jardin_Fontaine 0 0
+
+[Balustrade] centre 12x4 fonctions Terrasse du château, Fontaine, Grand bassin, Allée des statues
+Jardin_Muret_4m -4.2 0
+Jardin_Muret_4m 0 0
+Jardin_Muret_4m 4.2 0
+Jardin_Massif -2.1 1.2 0 0 0.7
+Cave_Candelabre 2.1 1
+
+# ---- Bosquet, ravin, verger ----
+[Rochers moussus] centre 8x7 fonctions Bosquet, Ravin, Verger, Grande grille
+Jardin_Rocher_Grand 0 0 0 -0.7
+Jardin_Rocher_Moyen 2.8 1.4 40 -0.8
+Jardin_Rocher_Petit -2.8 -1.4 0 -0.4
+Jardin_SousBois_A -2 2.2
+Jardin_SousBois_B 2.4 -2
+
+[Feu de camp] centre 7x7 fonctions Bosquet, Ravin, Verger, Serre en ruine, Grande grille ; max 3
+Cave_Brasero 0 0
+Cave_Banc 0 2
+Cave_Banc 2 -0.4 90
+Jardin_Rocher_Petit -2 0 0 -0.4
+Jardin_SousBois_B -2.4 -2.4
+
+[Arbre couché] centre 10x8 fonctions Bosquet, Ravin ; max 3
+Jardin_ArbreMort_Tordu 0 0 0 0 0.7
+Jardin_Rocher_Moyen 3.4 -1.6 0 -0.8
+Jardin_SousBois_A -3 1.6
+
+[Ruine] centre 9x8 fonctions Ravin, Bosquet, Verger, Cimetière, Grande grille, Serre en ruine ; max 2
+Arene_PilierBrise 0 0
+Jardin_Rocher_Moyen 3 -2 0 -0.8
+Cave_Brasero -3 -2
+
+[Couvert de pierre] centre 8x5 fonctions Ravin, Bosquet, Grande grille, Potager, Cimetière
+Arene_Couvert 0 -1
+Jardin_SousBois_A 2 1.6
+
+[Passerelle de bois] centre 17x4 fonctions Ravin, Verger, Bosquet, Grande grille, Serre en ruine, Labyrinthe de haies ; max 1
+Jardin_PlateformeTraction -6.6 0 0 0 1.4
+Jardin_PlateformeTraction 6.6 0 0 0 1.4
+Jardin_Passerelle_10m 0 0 0 5.6
+Cave_Brasero -8 1.6
+
+# ---- Pour combler ----
+[Sous-bois] centre 4x4 fonctions *
+Jardin_SousBois_A 0 0
+Jardin_Rocher_Petit 1 1 0 -0.4
+
+[Massif] centre 2x2 fonctions *
+Jardin_Massif 0 0
+
+[Candélabre de jardin] centre 2x2 fonctions * ; max 8
+Cave_Candelabre 0 0

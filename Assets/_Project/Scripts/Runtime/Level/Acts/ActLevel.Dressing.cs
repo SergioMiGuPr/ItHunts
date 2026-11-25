@@ -123,18 +123,21 @@ namespace ItHunts.Level.Acts
                 FocalProps(r, root, focalWall.Value, rec);
             if (rec.Rows > 0 && !string.IsNullOrEmpty(rec.Row) && focalWall.HasValue)
                 RowProps(r, root, focalWall.Value, rec);
-            if (rec.Wall.Length > 0)
-                WallProps(r, root, segs, rec);
             // Cartes faites à la main (D-110) : salles 3 à 8 fois plus grandes que celles des recettes ; les quantités suivent la
             // surface (une salle remplie avec soin, pas un champ vide).
             // Revue de la DA (jour 5) : un groupe de props tous les 8 à 10 m, plus de grands sols vides.
             float density = Plan.Hand != null ? Mathf.Clamp(r.Area(Plan.Cell) / 500f, 1f, 20f) : 1f;
             int N(int count) => Mathf.RoundToInt(count * density);
-            for (int k = 0; k < N(rec.Clusters) && rec.Cluster.Length > 0; k++)
-                ClusterProps(r, root, rec.Cluster);
             if (settings.theme == ActTheme.Jardin || rec.Trees > 0)
                 for (int k = 0; k < N(rec.Trees); k++)
                     Tree(r, root, 1f);
+            bool sets = HasEnsembles(r);
+            if (sets)
+                Ensembles(r, root, segs);
+            else if (rec.Wall.Length > 0)
+                WallProps(r, root, segs, rec);
+            for (int k = 0; k < (sets ? rec.Clusters : N(rec.Clusters)) && rec.Cluster.Length > 0; k++)
+                ClusterProps(r, root, rec.Cluster);
             for (int k = 0; k < N(rec.Hedges); k++)
                 Hedge(r, root);
             for (int k = 0; k < N(rec.Tombs); k++)
@@ -524,9 +527,15 @@ namespace ItHunts.Level.Acts
             }
         }
 
+        private readonly List<Vector3> _wallJumps = new List<Vector3>();
+
         private void Tree(ActRoom r, Transform root, float scale)
         {
             if (!FreeCell(r, out Vector2Int c, clearance: 1))
+                return;
+            // Jamais devant un couloir de wall jump (fuite bouchée, main du traqueur bloquée).
+            Vector3 spot = Plan.CellCenter(c, r.Floor);
+            if (_wallJumps.Any(w => (w - spot).sqrMagnitude < 14f * 14f))
                 return;
             Vector3 at = Plan.CellCenter(c, r.Floor);
             string[] kitTrees = { "Jardin_ArbreMort_Grand", "Jardin_ArbreMort_Penche", "Jardin_ArbreMort_Tordu", "Jardin_GrandArbre_Praticable" };

@@ -122,6 +122,8 @@ namespace ItHunts.Level.Acts
         public ItHunts.Settings.AmbianceSettings ambiance;
         [Tooltip("Cartes de l'acte (fichiers texte, format docs/design/level/CARTES.md). Non vide : une carte tirée par seed à la place du plan au hasard.")]
         public List<TextAsset> handMaps = new List<TextAsset>();
+        [Tooltip("Ensembles de décor de l'acte (D-118) : compositions posées selon la fonction de chaque salle.")]
+        public EnsembleLibrary ensembles;
 
         [Header("Matériaux (formes simples en attendant les kits d'art)")]
         public Material wallMaterial;
@@ -131,6 +133,8 @@ namespace ItHunts.Level.Acts
         public Material waterMaterial;
         public Material propMaterial;
         public Material foliageMaterial;
+        [Tooltip("Haies et massifs : remplace le vert uni M_Kit_Feuillage (blocs noirs la nuit) par une matière peinte ; vide : inchangé.")]
+        public Material paintedFoliage;
         public Material windowMaterial;
 
         [Header("Kits d'art de l'acte (PR #36 à #39)")]

@@ -60,10 +60,11 @@ MonoBehaviour:
   lockedRooms: 2
   merchants: 1
   stalkerFromArrival: 1
-  ambiance: {fileID: 0}
+  ambiance: {fileID: 11400000, guid: 65f3bb84dbcd3b3448152e6c83444a31, type: 2}
   handMaps:
   - {fileID: 4900000, guid: 50ab94132b3fcae489820d3b63ce9015, type: 3}
   - {fileID: 4900000, guid: ae71df6e49600404cbe71b30ac17e4e5, type: 3}
+  ensembles: {fileID: 11400000, guid: 2afbdf0e40ed86a4eb31d7780486fc13, type: 2}
   wallMaterial: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
   floorMaterial: {fileID: 2100000, guid: 79e2a798fb455f14a875b121dc801c38, type: 2}
   ceilingMaterial: {fileID: 2100000, guid: d4359c76f5d627b449c81b3072a25dad, type: 2}
@@ -71,6 +72,7 @@ MonoBehaviour:
   waterMaterial: {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   propMaterial: {fileID: 2100000, guid: 906f34049ab58bc408820a06944a0900, type: 2}
   foliageMaterial: {fileID: 2100000, guid: b7f371e6767fd044dbcb032f53a0eb54, type: 2}
+  paintedFoliage: {fileID: 0}
   windowMaterial: {fileID: 2100000, guid: 449bccfbe3227a7409f7ddef9a55b4cd, type: 2}
   art:
     outerWalls:

@@ -21,9 +21,9 @@ MonoBehaviour:
   enragedExposure: 0.8
   halos: 1
   haloMaterial: {fileID: 2100000, guid: 751248526e1d1bf419db1eb5b5962fa7, type: 2}
-  torchHaloSize: 3
-  lampHaloSize: 3.2
-  haloIntensity: 0.5
+  torchHaloSize: 1.3
+  lampHaloSize: 1.6
+  haloIntensity: 0.32
   lanternHalos: 0
   lanternHaloSize: 1.4
   haloWallOffset: 0.35

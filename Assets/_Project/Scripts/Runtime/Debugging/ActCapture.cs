@@ -54,6 +54,21 @@ namespace ItHunts.Debugging
             return shots;
         }
 
+        /// <summary>Point libre (0,8 m autour de l'œil) le plus proche : le décor posé depuis ne bouche pas la vue.</summary>
+        private static Vector3 FreeEye(Vector3 eye)
+        {
+            for (int i = 0; i < 120; i++)
+            {
+                float r = 0.5f * Mathf.Sqrt(i);
+                Vector3 p = eye + Quaternion.Euler(0f, i * 137.5f, 0f) * Vector3.forward * r;
+                if (!Physics.CheckSphere(p, 0.8f, ~0, QueryTriggerInteraction.Ignore) && Physics.Raycast(p, Vector3.down, 2.4f, ~0, QueryTriggerInteraction.Ignore)
+                    && !Physics.Raycast(p, Vector3.down, 1.2f, ~0, QueryTriggerInteraction.Ignore))
+                    return p;
+            }
+
+            return eye;
+        }
+
         public static string Safe(string s)
         {
             foreach (char c in Path.GetInvalidFileNameChars())
@@ -84,8 +99,9 @@ namespace ItHunts.Debugging
             int n = 0;
             foreach (Shot s in Shots(level.Plan))
             {
-                player.Motor.Teleport(s.Eye - Vector3.up * 1.6f);
-                Vector3 d = s.LookAt - s.Eye;
+                Vector3 eye = FreeEye(s.Eye);
+                player.Motor.Teleport(eye - Vector3.up * 1.6f);
+                Vector3 d = s.LookAt - eye;
                 float yaw = Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg;
                 float pitch = -Mathf.Atan2(d.y, new Vector2(d.x, d.z).magnitude) * Mathf.Rad2Deg;
                 look?.SetView(yaw, Mathf.Clamp(pitch, -60f, 60f));

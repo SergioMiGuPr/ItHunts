@@ -64,6 +64,7 @@ MonoBehaviour:
   handMaps:
   - {fileID: 4900000, guid: 5de1578a8abd3114197c6188fd65613a, type: 3}
   - {fileID: 4900000, guid: 5541004da8988434b9f5e90e7dc46436, type: 3}
+  ensembles: {fileID: 11400000, guid: 8cdafd2f991ac3548a25d9345faa5433, type: 2}
   wallMaterial: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
   floorMaterial: {fileID: 2100000, guid: c6a16eec06054d046874820d709558ef, type: 2}
   ceilingMaterial: {fileID: 2100000, guid: 24d2f953c14f63c42a2cdd6ff670fa92, type: 2}
@@ -71,6 +72,7 @@ MonoBehaviour:
   waterMaterial: {fileID: 2100000, guid: a3b0e4f6d353c044eb8d93e071aecf27, type: 2}
   propMaterial: {fileID: 2100000, guid: 906f34049ab58bc408820a06944a0900, type: 2}
   foliageMaterial: {fileID: 2100000, guid: 39e3025ada4b71b4699825363eff9719, type: 2}
+  paintedFoliage: {fileID: 2100000, guid: 55f7a1e943c16ad4bb37a7ff297c353c, type: 2}
   windowMaterial: {fileID: 2100000, guid: 449bccfbe3227a7409f7ddef9a55b4cd, type: 2}
   art:
     outerWalls:
