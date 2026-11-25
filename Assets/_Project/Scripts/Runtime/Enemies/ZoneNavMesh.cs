@@ -91,7 +91,7 @@ namespace ItHunts.Enemies
                 // Le traqueur enjambe : rien dans son NavMesh. Meubles et gravats de l'habillage (D-119) : obstacles pour les goules, qui
                 // marchaient dedans ; anneau des arcs : joueurs seulement.
                 bool stepOver = c.GetComponentInParent<StalkerPassesThrough>() != null;
-                if (stepOver && c.GetComponentInParent<ItHunts.Level.Acts.DecorTag>() == null)
+                if (stepOver && (c.GetComponentInParent<ItHunts.Level.Acts.DecorTag>() == null || c.GetComponentInParent<NotWalkable>() == null))
                     continue;
                 NavMeshBuildSource src = s;
                 if (src.shape == NavMeshBuildSourceShape.Mesh && src.sourceObject is Mesh mesh && !mesh.isReadable)
@@ -109,7 +109,7 @@ namespace ItHunts.Enemies
                     UnreadableMeshes++;
                 }
 
-                if (stepOver || c.GetComponentInParent<NotWalkable>() != null)
+                if (c.GetComponentInParent<NotWalkable>() != null)
                     src.area = 1;                                       // plafonds, toits, murs : obstacle, jamais un sol
                 // Porte d'une salle verrouillée : hors du NavMesh des goules (il n'est pas refait à l'ouverture ; fermée, la porte
                 // bloque par sa collision et la salle est un cul-de-sac où aucun joueur ne se trouve encore).

@@ -266,7 +266,7 @@ namespace ItHunts.Level.Acts
                     foreach (Vector2Int d in Dirs)
                         if (Open(comp[i] + d) && seen.Add(comp[i] + d))
                             comp.Add(comp[i] + d);
-                if (comp.Count >= 60 || comp.Count == r.Cells.Count)
+                if (comp.Count >= 30 || comp.Count == r.Cells.Count || !comp.All(c => NearRamp(r, c)))
                     continue;
                 var set = new HashSet<Vector2Int>(comp);
                 if (r.Doors.Any(di => set.Contains(DoorCellInside(Doors[di], r.Id))) || comp.Any(c => r.Use[c] == CellUse.Terrasse))
@@ -284,6 +284,15 @@ namespace ItHunts.Level.Acts
         }
 
         /// <summary>Cases laissées libres devant une galerie (12 m).</summary>
+        private static bool NearRamp(ActRoom r, Vector2Int c)
+        {
+            for (int dx = -2; dx <= 2; dx++)
+            for (int dy = -2; dy <= 2; dy++)
+                if (r.Use.TryGetValue(c + new Vector2Int(dx, dy), out CellUse u) && u == CellUse.Rampe)
+                    return true;
+            return false;
+        }
+
         private const int GalleryFront = 6;
 
         /// <summary>
