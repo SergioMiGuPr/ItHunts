@@ -44,7 +44,7 @@ namespace ItHunts.Level
         /// <summary>La vue de la DA (assembly ItHunts.Menus) s'abonne ici : elle se pose sur chaque menu principal.</summary>
         public static event System.Action<MainMenu> Created;
 
-        public enum Page : byte { Titre, Transition, Campement, Parametres, Playtest }
+        public enum Page : byte { Titre, Transition, Campement, Parametres, Playtest, Codex }
 
         // Menus (logique clavier-manette de GreyboxMenu). _menu : le menu Playtest (noms gardés par les tests).
         private readonly GreyboxMenu _menu = new GreyboxMenu();
@@ -144,6 +144,7 @@ namespace ItHunts.Level
             _title.Items.Clear();
             _title.Add("Jouer", () => GoTo(Page.Campement));
             _title.Add("Paramètres", () => OpenSettings(Page.Titre));
+            _title.Add("Codex", OpenCodex);                                 // point 3 : améliorations communes et par personnage
             _title.Add("Quitter", Application.Quit);
             _title.FocusFirst();
 
@@ -218,6 +219,28 @@ namespace ItHunts.Level
 
         public static string ActLabel(int act) => act switch { 0 => "ACTE I", 1 => "ACTE II", _ => "ACTE III" };
         public static bool ActPlayable(int act) => act == 0;
+
+        /// <summary>Page Codex posée par la vue de la DA (Menu_Codex) : sans elle, l'entrée « Codex » le dit.</summary>
+        public bool CodexReady { get; set; }
+
+        /// <summary>Ouvre le codex des améliorations (depuis le titre ; Échap / B ou « Fermer » : retour).</summary>
+        public void OpenCodex()
+        {
+            if (!CodexReady)
+            {
+                Say("Codex : l'interface de la DA n'est pas branchée");
+                return;
+            }
+
+            _back = Page.Titre;
+            _page = Page.Codex;
+        }
+
+        public void CloseCodex()
+        {
+            if (_page == Page.Codex)
+                _page = _back;
+        }
 
         private void OpenSettings(Page from)
         {
@@ -531,6 +554,10 @@ namespace ItHunts.Level
                     _menu.Update();
                     if (BackPressed(p2))
                         _page = _back;
+                    break;
+                case Page.Codex:
+                    if (BackPressed(p2))
+                        _page = _back;                                       // la vue du codex lit les autres touches
                     break;
             }
 

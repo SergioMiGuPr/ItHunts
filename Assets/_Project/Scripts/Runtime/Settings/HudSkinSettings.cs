@@ -21,6 +21,14 @@ namespace ItHunts.Settings
         public GameObject doorPanelPrefab;
         public GameObject bossBarPrefab;
         public GameObject critPrefab;
+        [Header("Améliorations par personnage (nuit 5, lot 2 : UI-HANDOFF § 10)")]
+        [Tooltip("HUD_ColonneAmeliorations : colonne de bas en haut au-dessus de la barre de vie (remplace la rangée horizontale).")]
+        public GameObject upgradeColumnPrefab;
+        [Tooltip("HUD_InfobulleAmelioration : infobulle au survol (écran de fin).")]
+        public GameObject upgradeTooltipPrefab;
+        [Tooltip("Panneau_Offres_Coffre et Panneau_Offres_Marchand : cartes d'offre (illustration, rang actuel → suivant, prix, relance).")]
+        public GameObject chestOffersPrefab;
+        public GameObject merchantOffersPrefab;
         [Header("Polices (OFL)")]
         [Tooltip("Texte et nombres : EB Garamond SemiBold.")]
         public Font textFont;

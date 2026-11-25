@@ -25,6 +25,8 @@ namespace ItHunts.Economy
         [SerializeField] private bool withHeal = true;
 
         private readonly Dictionary<int, List<OfferOrb>> _offers = new Dictionary<int, List<OfferOrb>>();
+        /// <summary>Améliorations proposées à chaque joueur, dans l'ordre des cartes : gardées d'un achat à l'autre (la carte monte).</summary>
+        private readonly Dictionary<int, List<UpgradeDefinition>> _picks = new Dictionary<int, List<UpgradeDefinition>>();
         private int _draws;
 
         public UpgradePool Pool => pool;
@@ -65,8 +67,11 @@ namespace ItHunts.Economy
         public void Interact(PlayerHealth p)
         {
             int id = p.PlayerId;
+            Stock(id);                                                     // améliorations prises depuis (coffres) : de quoi monter
             ShopMenu.Show(p, ShopMenu.Kind.Marchand, "Marchand", () => OffersFor(id));
         }
+
+        private int RankUpOffers => settings != null ? settings.merchantRankUpOffers : 2;
 
         private void Start()
         {
@@ -90,6 +95,7 @@ namespace ItHunts.Economy
                     if (o != null)
                         Interactables.Discard(o.gameObject);
             _offers.Clear();
+            _picks.Clear();
             _draws = 0;
         }
 
@@ -116,24 +122,36 @@ namespace ItHunts.Economy
         }
 
         /// <summary>
-        /// Offres du marchand pour un joueur (pur, D-100) : 1 amélioration nouvelle (générique ou de son personnage, passif possible)
-        /// + 1 montée de rang d'une amélioration possédée non Mythique ; sans rien à monter, 2 nouvelles ; emplacements pleins, 2
-        /// montées. Renvoie (amélioration, rang de départ, rang visé).
+        /// Améliorations proposées (pur, point 3) : celles de keep encore possédées et pas Mythiques, dans leur ordre (une carte achetée
+        /// garde sa place et passe au rang suivant), complétées jusqu'à count par d'autres possédées tirées avec la seed.
         /// </summary>
-        public static List<(UpgradeDefinition u, int from, int to)> OffersFor(RunState run, PlayerHealth p)
+        public static List<UpgradeDefinition> RankUpPicks(RunState run, int playerId, IEnumerable<UpgradeDefinition> keep, int count)
         {
-            var r = new List<(UpgradeDefinition, int, int)>();
+            var r = new List<UpgradeDefinition>();
+            if (run == null || count <= 0)
+                return r;
+            UpgradeSlots slots = run.Slots(playerId);
+            if (keep != null)
+                foreach (UpgradeDefinition u in keep)
+                    if (r.Count < count && u != null && !r.Contains(u) && slots.Has(u) && slots.RankOf(u) < UpgradeDefinition.MaxRank)
+                        r.Add(u);
+            if (r.Count < count)
+                r.AddRange(run.DrawRankUpFor(playerId, count - r.Count, r));
+            return r;
+        }
+
+        /// <summary>
+        /// Offres du marchand pour un joueur (pur, point 3) : seulement des montées de rang de ses améliorations possédées non
+        /// Mythiques (Bronze → Argent → Or → Diamant → Mythique), count au plus ; rien à monter : aucune (le soin reste).
+        /// Renvoie (amélioration, rang de départ, rang visé).
+        /// </summary>
+        public static List<(UpgradeDefinition u, int from, int to)> OffersFor(RunState run, PlayerHealth p, int count = 2,
+            IEnumerable<UpgradeDefinition> keep = null)
+        {
+            var r = new List<(UpgradeDefinition u, int from, int to)>();
             if (run == null || p == null)
                 return r;
-            UpgradeDefinition[] news = run.DrawNewFor(p, 1);
-            UpgradeDefinition[] ups = run.DrawRankUpFor(p.PlayerId, 1);
-            if (ups.Length == 0)
-                news = run.DrawNewFor(p, 2);
-            else if (news.Length == 0)
-                ups = run.DrawRankUpFor(p.PlayerId, 2);
-            foreach (UpgradeDefinition u in news)
-                r.Add((u, -1, 0));
-            foreach (UpgradeDefinition u in ups)
+            foreach (UpgradeDefinition u in RankUpPicks(run, p.PlayerId, keep, count))
             {
                 int rank = run.RankOf(p.PlayerId, u);
                 r.Add((u, rank, rank + 1));
@@ -142,7 +160,10 @@ namespace ItHunts.Economy
             return r;
         }
 
-        /// <summary>Tire les offres d'un joueur (orbes vues par lui seul) : une nouvelle, une montée de rang, le soin.</summary>
+        /// <summary>
+        /// Pose les offres d'un joueur (orbes vues par lui seul) : ses montées de rang (mêmes cartes qu'avant, au rang suivant après un
+        /// achat), puis le soin (illimité, prix en hausse à chaque soin).
+        /// </summary>
         public void Stock(int playerId)
         {
             if (_offers.TryGetValue(playerId, out List<OfferOrb> old))
@@ -153,7 +174,12 @@ namespace ItHunts.Economy
             _offers[playerId] = list;
             RunState run = RunState.Current;
             PlayerHealth player = PlayerHealth.Find(playerId);
-            List<(UpgradeDefinition u, int from, int to)> drawn = OffersFor(run, player);
+            _picks.TryGetValue(playerId, out List<UpgradeDefinition> keep);
+            List<(UpgradeDefinition u, int from, int to)> drawn = OffersFor(run, player, RankUpOffers, keep);
+            var picks = new List<UpgradeDefinition>();
+            foreach (var d in drawn)
+                picks.Add(d.u);
+            _picks[playerId] = picks;
             _draws++;
             float range = settings != null ? settings.orbInteractRange : 8f;
             for (int i = 0; i < drawn.Count; i++)
@@ -182,6 +208,7 @@ namespace ItHunts.Economy
                 OfferOrb heal = OfferOrb.Create(transform, hat, null, settings != null ? settings.healPrice : 35,
                     settings != null ? settings.healAmount : 40f, playerId, range, orbMaterial);
                 heal.Pricing = settings;
+                heal.Kind = PriceKind.Soin;
                 heal.MenuOnly = true;
                 heal.TakenBy += (o, p) =>
                 {

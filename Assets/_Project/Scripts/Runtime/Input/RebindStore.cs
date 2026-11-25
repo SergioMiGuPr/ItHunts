@@ -44,6 +44,7 @@ namespace ItHunts.Input
             { "Jump", "Sauter" }, { "Slide", "Glisser" }, { "Dash", "Dash" }, { "Attract", "Attirer (traction)" },
             { "Repel", "Repousser" }, { "Grab", "Attraper / relâcher" }, { "Throw", "Lancer / artefact" }, { "Reload", "Recharger" },
             { "Interact", "Interagir" }, { "Parry", "Parer" }, { "Map", "Carte" }, { "Pause", "Pause" }, { "ToggleDebug", "Affichage de debug" },
+            { "FreeCursor", "Libérer le curseur (améliorations)" },
         };
 
         private static readonly Dictionary<string, string> MoveParts = new Dictionary<string, string>

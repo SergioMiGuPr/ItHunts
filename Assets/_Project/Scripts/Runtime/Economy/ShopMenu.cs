@@ -62,13 +62,22 @@ namespace ItHunts.Economy
         /// Comme ci-dessus, avec une source relue après chaque achat (le marchand de l'artefact retire de nouvelles offres après un
         /// achat).
         /// </summary>
-        public static ShopMenu Show(PlayerHealth p, Kind kind, string title, Func<IEnumerable<OfferOrb>> source)
+        public static ShopMenu Show(PlayerHealth p, Kind kind, string title, Func<IEnumerable<OfferOrb>> source) =>
+            Show(p, kind, title, source, null, null);
+
+        /// <summary>
+        /// Comme ci-dessus, avec une relance (coffre, point 3) : reroll tire de nouvelles offres (vrai si payé et fait), rerollPrice
+        /// donne son prix actuel (-1 : pas de relance).
+        /// </summary>
+        public static ShopMenu Show(PlayerHealth p, Kind kind, string title, Func<IEnumerable<OfferOrb>> source, Func<bool> reroll, Func<int> rerollPrice)
         {
             if (p == null || p.Dead)
                 return null;
             Of(p)?.Close();
             var m = new ShopMenu { Player = p, Type = kind, Title = title, Input = p.GetComponent<PlayerInput>(), OpenedFrame = Time.frameCount };
             m._source = source;
+            m._reroll = reroll;
+            m._rerollPrice = rerollPrice;
             m.Menu = new GreyboxMenu { Owner = m.Input != null ? PauseMenu.OwnerOf(m.Input) : Keyboard.current };
             m.Refresh();
             m.Menu.FocusFirst();
@@ -89,6 +98,36 @@ namespace ItHunts.Economy
         }
 
         private Func<IEnumerable<OfferOrb>> _source;
+        private Func<bool> _reroll;
+        private Func<int> _rerollPrice;
+
+        /// <summary>Prix actuel de la relance (-1 : pas de relance dans ce menu).</summary>
+        public int RerollPrice => _reroll != null && _rerollPrice != null ? _rerollPrice() : -1;
+        public bool CanReroll => RerollPrice >= 0;
+        /// <summary>Ligne « Relancer » du menu (-1 : aucune) : juste après les offres, avant « Fermer ».</summary>
+        public int RerollIndex => _rerollItem != null ? Menu.Items.IndexOf(_rerollItem) : -1;
+        public int Rerolls { get; private set; }
+        private GreyboxMenu.Item _rerollItem;
+
+        /// <summary>Relance : paie et tire de nouvelles offres (coffre). Vrai si fait ; refus en rouge s'il manque des âmes.</summary>
+        public bool Reroll()
+        {
+            if (!IsOpen || !CanReroll || !_reroll())
+                return false;
+            Rerolls++;
+            Refresh();
+            return true;
+        }
+
+        public bool RerollAffordable
+        {
+            get
+            {
+                int price = RerollPrice;
+                var run = ItHunts.Artifacts.RunState.Current;
+                return price >= 0 && (price == 0 || run == null || run.Souls(Player.PlayerId) >= price);
+            }
+        }
 
         /// <summary>Change à chaque nouvelle liste d'offres (la vue refait ses cartes).</summary>
         public int Version { get; private set; }
@@ -108,11 +147,28 @@ namespace ItHunts.Economy
                 int index = i;
                 GreyboxMenu.Item it = Menu.Add(Label(i), () => Buy(index));
                 it.Dim = () => !Affordable(index);
+                it.Change = d => Menu.SetFocus(Mathf.Clamp(index + d, 0, Offers.Count - 1));   // cartes côte à côte : ◄ ►
+            }
+
+            _rerollItem = null;
+            if (CanReroll)
+            {
+                _rerollItem = Menu.Add(RerollLabel, () => Reroll());
+                _rerollItem.Dim = () => !RerollAffordable;
             }
 
             Menu.Add("Fermer", Close);
             Menu.SetFocus(Mathf.Clamp(focus, 0, Menu.Items.Count - 1));
             Version++;
+        }
+
+        public string RerollLabel
+        {
+            get
+            {
+                int price = RerollPrice;
+                return price > 0 ? $"Relancer  ({price} âmes)" : "Relancer  (gratuit)";
+            }
         }
 
         public string Label(int i)

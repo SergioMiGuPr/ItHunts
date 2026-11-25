@@ -18,7 +18,9 @@ namespace ItHunts.Economy
         /// <summary>Prix de base (0 : gratuit, choix d'un coffre) ; le prix payé monte à chaque achat au marchand (PriceFor).</summary>
         public int Price { get; private set; }
         public EconomySettings Pricing { get; set; }
-        public int PriceFor(PlayerHealth p) => FreeFor(p) ? 0 : Prices.For(Pricing, p, PriceKind.Marchand, Price);
+        /// <summary>Catégorie de prix (hausse par achat) : marchand, ou soin (point 3 : sa propre hausse).</summary>
+        public PriceKind Kind { get; set; } = PriceKind.Marchand;
+        public int PriceFor(PlayerHealth p) => FreeFor(p) ? 0 : Prices.For(Pricing, p, Kind, Price);
         public float Heal { get; private set; }
         /// <summary>Seul ce joueur peut la prendre (0 : tout joueur).</summary>
         public int RestrictedTo { get; private set; }
@@ -151,7 +153,7 @@ namespace ItHunts.Economy
         {
             RunState run = RunState.Current;
             bool free = FreeFor(p);
-            if (Price > 0 && !free && !Prices.TryBuy(Pricing, p, PriceKind.Marchand, Price))
+            if (Price > 0 && !free && !Prices.TryBuy(Pricing, p, Kind, Price))
                 return;                                                  // refus en rouge (RunState.Refused)
             if (free && run != null)
                 run.TryUseFreeRankUp(p.PlayerId, ItHunts.Level.RunSession.Act);

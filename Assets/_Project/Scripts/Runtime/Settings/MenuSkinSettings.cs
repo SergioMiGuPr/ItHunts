@@ -17,6 +17,10 @@ namespace ItHunts.Settings
         public GameObject choiceScreen;
         public GameObject pauseScreen;
         public GameObject settingsScreen;
+        [Tooltip("Menu_Codex (nuit 5, lot 2) : page Codex du menu principal (améliorations communes et par personnage).")]
+        public GameObject codexPrefab;
+        [Tooltip("Améliorations montrées par le codex : la table commune puis celles des personnages (sans : celles des personnages de la run).")]
+        public UpgradePool[] codexPools = new UpgradePool[0];
         [Tooltip("Nom affiché dans le cartouche d'une place du campement ({0} : numéro du joueur).")]
         public string playerNameFormat = "Joueur {0}";
         [Tooltip("Chat du campement (bas gauche) : masqué tant que le jeu en ligne n'existe pas (décision du 2026-11-17).")]

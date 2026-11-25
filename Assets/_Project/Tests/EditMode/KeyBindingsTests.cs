@@ -46,10 +46,14 @@ namespace ItHunts.Tests
             var kb = RebindStore.Rows(_a, RebindStore.Keyboard);
             var pad = RebindStore.Rows(_a, RebindStore.Gamepad);
             foreach (string l in new[] { "Sauter", "Glisser", "Dash", "Attirer (traction)", "Repousser", "Attraper / relâcher", "Lancer / artefact",
-                         "Recharger", "Interagir", "Parer", "Carte", "Pause", "Avancer", "Reculer", "Aller à gauche", "Aller à droite" })
+                         "Recharger", "Interagir", "Parer", "Carte", "Pause", "Avancer", "Reculer", "Aller à gauche", "Aller à droite",
+                         "Libérer le curseur (améliorations)" })
                 Assert.That(kb.Any(r => r.Label == l), Is.True, "clavier : " + l);
             Assert.That(pad.Any(r => r.Label == "Parer" && r.Path == "<Gamepad>/rightStickPress"), Is.True, "R3 (D-079)");
-            Assert.That(kb.First(r => r.Label == "Parer").Path, Is.EqualTo("<Keyboard>/leftAlt"));
+            // Point 3 : la parade reste sur V ; Alt gauche libère le curseur (survol des améliorations du HUD).
+            Assert.That(kb.Where(r => r.Label == "Parer").Select(r => r.Path), Is.EqualTo(new[] { "<Keyboard>/v" }));
+            Assert.That(kb.First(r => r.Label == "Libérer le curseur (améliorations)").Path, Is.EqualTo("<Keyboard>/leftAlt"));
+            Assert.That(pad.Any(r => r.Label == "Libérer le curseur (améliorations)"), Is.False, "pas de curseur à la manette");
             Assert.That(kb.Count(r => r.Label == "Avancer"), Is.EqualTo(1), "un seul composite de déplacement (pas les flèches)");
             Assert.That(pad.Any(r => r.Label.StartsWith("Avancer")), Is.False, "le stick ne se change pas");
         }

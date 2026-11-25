@@ -45,12 +45,21 @@ namespace ItHunts.Settings
         [Tooltip("Plafond de la hausse (× le prix de base) ; 0 : sans plafond.")]
         [Min(0f)] public float priceIncreaseCap = 2f;
 
+        [Tooltip("Soin du marchand (point 3) : illimité, son prix monte de ce pourcentage du prix de base à chaque soin acheté (par " +
+                 "joueur), plafonné à healPriceCap × le prix de base (0 : sans plafond).")]
+        [Min(0f)] public float healPriceIncrease = 20f;
+        [Min(0f)] public float healPriceCap = 4f;
+
         public float IncreaseFor(ItHunts.Economy.PriceKind kind) => kind switch
         {
             ItHunts.Economy.PriceKind.Coffre => chestPriceIncrease,
             ItHunts.Economy.PriceKind.Marchand => merchantPriceIncrease,
+            ItHunts.Economy.PriceKind.Soin => healPriceIncrease,
             _ => doorPriceIncrease
         };
+
+        /// <summary>Plafond de la hausse (× le prix de base) de cette catégorie ; 0 : sans plafond.</summary>
+        public float CapFor(ItHunts.Economy.PriceKind kind) => kind == ItHunts.Economy.PriceKind.Soin ? healPriceCap : priceIncreaseCap;
 
         [Header("Améliorations à rangs (D-100)")]
         [Tooltip("Prix d'une amélioration selon le rang visé : nouvelle (Bronze) 60 ; montée vers Argent 90, Or 140, Diamant 220, Mythique 350.")]
@@ -72,11 +81,27 @@ namespace ItHunts.Settings
         [Min(1f)] public float choiceLifetime = 30f;
         [Tooltip("Offres d'amélioration du marchand (plus le soin).")]
         [Min(0)] public int merchantOffers = 3;
+        [Tooltip("Point 3 : le marchand ne vend que des montées de rang des améliorations possédées ; nombre de montées proposées (le " +
+                 "soin en plus : 2 montées + le soin remplissent les 3 cartes du panneau de la DA).")]
+        [Min(0)] public int merchantRankUpOffers = 2;
         [Tooltip("Portée de l'interaction (E / Y) sur un coffre, une porte, le marchand (m) ; sur une orbe de choix ou d'offre (m).")]
         [Min(0.5f)] public float interactRange = 4f;
         [Min(0.5f)] public float orbInteractRange = 8f;
         [Tooltip("Tolérance de visée de l'interaction (°).")]
         [Min(0f)] public float interactAngle = 12f;
+
+        [Header("Coffre : choix et relance (point 3)")]
+        [Tooltip("Chance (0 à 1) que chaque choix d'un coffre soit une amélioration du personnage du joueur (sinon une commune).")]
+        [Range(0f, 1f)] public float characterUpgradeChance = 0.25f;
+        [Tooltip("Garantie : au moins ce nombre d'améliorations du personnage par run. Tant qu'il n'est pas atteint, un coffre ne propose " +
+                 "que des améliorations du personnage après characterPityChests coffres d'affilée sans en prendre une, ou quand il ne reste " +
+                 "pas plus d'emplacements libres que d'améliorations du personnage manquantes.")]
+        [Min(0)] public int characterUpgradeGuarantee = 4;
+        [Min(1)] public int characterPityChests = 2;
+        [Tooltip("Relance d'un coffre : prix (âmes) ; -1 : pas de relance. Une relance tire 3 nouvelles offres.")]
+        [Min(-1)] public int chestRerollPrice = 25;
+        [Tooltip("Hausse du prix de la relance à chaque relance du même coffre (âmes ajoutées) ; 0 : prix fixe.")]
+        [Min(0)] public int chestRerollIncrease;
 
         [Header("Coffre rare (D-071) : coffres des parcours, difficiles d'accès, meilleur butin")]
         [Tooltip("Table de butin dédiée aux coffres rares (vide : la table de la run).")]

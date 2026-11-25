@@ -4,6 +4,7 @@
     "references": [
         "ItHunts.Runtime",
         "ItHunts.Art.Menus",
+        "ItHunts.Art.UIJeu",
         "Unity.InputSystem",
         "UnityEngine.UI"
     ],
