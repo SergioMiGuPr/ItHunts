@@ -17,6 +17,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Chateau_Boiserie
+    second: {fileID: 2100000, guid: bb421f18b0c3c334c9d3bb04391ffa25, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Chateau_PierreClaire
     second: {fileID: 2100000, guid: 2f167029680985c4b8227cc954ba239a, type: 2}
   - first:

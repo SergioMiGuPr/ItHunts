@@ -68,7 +68,62 @@ public static class KitBuilder
             var m = AssetDatabase.LoadAssetAtPath<Material>($"{MATKIT}/{v}.mat");
             m.SetFloat("_LightSaturation", 0.4f); m.SetFloat("_AmbientInfluence", 0.4f); EditorUtility.SetDirty(m);
         }
+        MateriauxNuit5();
         AssetDatabase.SaveAssets();
+    }
+
+    // ---------------------------------------------------------------- nuit 5, lot 3
+    const string PANO = "Assets/Art/Textures/Ciel/T_Vue_Nuit_360.png";   // bande de 360° sans couture (panorama360.py)
+
+    static Material VueMat(string nom, Color teinte, float force)
+    {
+        var path = $"{MATKIT}/{nom}.mat";
+        var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+        var sh = Shader.Find("ItHunts/VueExterieure");
+        if (m == null) { m = new Material(sh); AssetDatabase.CreateAsset(m, path); }
+        m.shader = sh;
+        m.SetTexture("_Panorama", AssetDatabase.LoadAssetAtPath<Texture2D>(PANO));
+        m.SetColor("_Teinte", teinte); m.SetFloat("_TeinteForce", force);
+        m.SetFloat("_HauteurBas", -24f); m.SetFloat("_HauteurHaut", 50f);
+        m.SetFloat("_Exposition", 0.75f); m.SetFloat("_Salete", 0.35f);
+        EditorUtility.SetDirty(m);
+        return m;
+    }
+
+    static void MateriauxNuit5()
+    {
+        var ti = (TextureImporter)AssetImporter.GetAtPath(PANO);
+        if (ti != null && (ti.wrapModeU != TextureWrapMode.Repeat || ti.maxTextureSize != 8192))
+        {
+            ti.wrapModeU = TextureWrapMode.Repeat; ti.wrapModeV = TextureWrapMode.Clamp; ti.maxTextureSize = 8192; ti.mipmapEnabled = true; ti.sRGBTexture = true;
+            ti.textureCompression = TextureImporterCompression.CompressedHQ; ti.SaveAndReimport();
+        }
+        // plaque de traction : fer sombre, runes bleu pâle (bleu = traction, D-024) qui luisent sans éblouir
+        Plat("M_Kit_Magnetique", new Color(0.5f, 0.66f, 0.88f), new Color(0.28f, 0.62f, 1.35f));
+        // fond des lisières : feuillage presque noir (troisième couche)
+        Plat("M_Kit_Feuillage_Sombre", new Color(0.06f, 0.08f, 0.055f), null, true);
+        Plat("M_Kit_Feuillage_Foret", new Color(0.15f, 0.2f, 0.11f), null, true);
+        // vitres qui montrent l'extérieur (ItHunts/VueExterieure) : verre clair bleuté, rouge et ambre des vitraux
+        VueMat("M_Kit_VitreVue", new Color(0.82f, 0.88f, 1f), 0.25f);
+        VueMat("M_Kit_VitreVue_Rouge", new Color(1f, 0.42f, 0.4f), 0.55f);
+        VueMat("M_Kit_VitreVue_Ambre", new Color(1f, 0.74f, 0.42f), 0.5f);
+        // sol mélangé du jardin : terre, gravier, herbe sèche, mousse (ItHunts/Toon, mot-clé _SOLMELANGE)
+        string T = "Assets/Art/Textures/Materiaux/T_Mat_";
+        var bas = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/Bibliotheque/M_Bib_HerbeSeche.mat");
+        var path = $"{MATKIT}/M_Jardin_SolMelange.mat";
+        var sol = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (sol == null) { sol = new Material(bas); AssetDatabase.CreateAsset(sol, path); }
+        sol.CopyPropertiesFromMaterial(bas);
+        sol.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(T + "Terre_BaseColor.png"));
+        sol.SetTexture("_SolGravier", AssetDatabase.LoadAssetAtPath<Texture2D>(T + "Gravier_BaseColor.png"));
+        sol.SetTexture("_SolHerbe", AssetDatabase.LoadAssetAtPath<Texture2D>(T + "HerbeSeche_BaseColor.png"));
+        sol.SetTexture("_SolMousse", AssetDatabase.LoadAssetAtPath<Texture2D>(T + "Mousse_BaseColor.png"));
+        sol.SetFloat("_SolMelange", 1); sol.EnableKeyword("_SOLMELANGE");
+        sol.SetVector("_SolQuantite", new Vector4(0.32f, 0.5f, 0.22f, 0));
+        sol.SetVector("_SolEchelle", new Vector4(6.5f, 9f, 4.5f, 0));
+        sol.SetVector("_SolTuile", new Vector4(2f, 2.5f, 2f, 2f));
+        sol.SetFloat("_SolDouceur", 0.16f); sol.SetFloat("_SolAntiRepet", 1f); sol.SetFloat("_HeightBlend", 0.12f);
+        EditorUtility.SetDirty(sol);
     }
 
     static bool EstLumiere(string nom) => nom.Contains("Torche") || nom.Contains("Applique") || nom.Contains("Chandelle") ||
@@ -166,6 +221,16 @@ public static class KitBuilder
                     o = go.AddComponent<ItHunts.Art.VFX.OuverturePorte>();
                     o.genre = nom.Contains("CelluleTraqueur") ? ItHunts.Art.VFX.OuverturePorte.Genre.Vantaux : ItHunts.Art.VFX.OuverturePorte.Genre.Battants;
                     o.partieA = F("Battant_G"); o.partieB = F("Battant_D"); o.duree = nom.Contains("CelluleTraqueur") ? 0.9f : 1.8f;
+                }
+                // nuit 5 : poussière au décollage du vantail et des herses (le fer frotte dans sa rainure)
+                var pous = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/VFX/Prefabs/VFX_Poussiere_Atterrissage.prefab");
+                if (o != null && pous != null && (o.genre == ItHunts.Art.VFX.OuverturePorte.Genre.Guillotine || o.genre == ItHunts.Art.VFX.OuverturePorte.Genre.Herse))
+                {
+                    var pg = (GameObject)PrefabUtility.InstantiatePrefab(pous, go.transform);
+                    pg.name = "Poussiere_Ouverture";
+                    pg.transform.localPosition = o.genre == ItHunts.Art.VFX.OuverturePorte.Genre.Guillotine ? new Vector3(0f, 3.05f, 0.25f) : new Vector3(0f, 0.2f, 0.6f);
+                    var ps = pg.GetComponentInChildren<ParticleSystem>();
+                    if (ps != null) { var main = ps.main; main.playOnAwake = false; o.poussiere = ps; }
                 }
                 if (o != null) sb.Append($"[ouverture {o.genre}] ");
             }

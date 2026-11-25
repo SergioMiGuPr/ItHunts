@@ -316,3 +316,7 @@ Modèles `Assets/Art/Models/KitJardin/`, prefabs `Assets/Art/Prefabs/KitJardin/`
 | `SM_Jardin_MurEnceinte_CheminRonde_8m` | Mur d'enceinte de 8 × 9 m à chemin de ronde dallé et parapet crénelé. | 8.0 × 3.45 × 10.9 | 0.0 | 151 | `M_Bib_Moellons_Peint`, `M_Bib_Dalles_Sales`, `M_Bib_PierreTaillee_Peint`, `M_Kit_Feuillage` |
 
 Pièces existantes modifiées par ce lot : `SM_Cave_Puits` (refait : margelle lisse, eau, fond), `SM_Cave_PorteSortie` et `SM_Chateau_GrandeEntree` (sceau de lune de sortie sur les battants) ; leurs lignes sont à jour dans les sections des actes.
+
+## Nuit 5, lot 3 : pièces pour de vraies cartes (branche art-kits-5)
+
+34 nouvelles pièces (verticalité, fenêtres qui montrent l'extérieur, lisières, sous-bois, rochers, grand arbre, sols percés, support de râtelier), porte verrouillée finie, sol mélangé du jardin (`M_Jardin_SolMelange`), lueur des coffres. Dimensions, pivots, usage et consignes de pose : docs/art/INTEGRATION-PROPS.md, section « Nuit 5, lot 3 » ; source `kit_nuit5.py` ; catalogue `kit_doc_nuit5.py` ; planches `docs/art/rendus/Nuit5/Lot3/`.

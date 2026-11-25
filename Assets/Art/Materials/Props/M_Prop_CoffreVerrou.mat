@@ -36,6 +36,18 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SolGravier:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SolHerbe:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SolMousse:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
@@ -69,10 +81,13 @@ Material:
     - _PointWrap: 0.2
     - _ReceiveShadows: 1
     - _Rim: 0
-    - _RimIntensity: 0.65
+    - _RimIntensity: 0.85
     - _RimLitOnly: 0
     - _RimSoftness: 0.2
     - _RimWidth: 0.22
+    - _SolAntiRepet: 1
+    - _SolDouceur: 0.16
+    - _SolMelange: 0
     - _SrcBlend: 1
     - _TopRandomRotation: 0
     - _TopRotation: 0
@@ -82,11 +97,14 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0.9, g: 0.52199996, b: 0.162, a: 0.9}
+    - _EmissionColor: {r: 1.2, g: 0.696, b: 0.21600002, a: 1.2}
     - _GrimeColor: {r: 0.41999996, g: 0.39999998, b: 0.35999998, a: 1}
     - _MacroTint: {r: 0.78, g: 0.82, b: 0.74, a: 1}
     - _RimColor: {r: 1.6, g: 0.99200004, b: 0.4, a: 1.6}
     - _ShadowColor: {r: 0.028, g: 0.034, b: 0.07499998, a: 1}
+    - _SolEchelle: {r: 7, g: 9, b: 5, a: 0}
+    - _SolQuantite: {r: 0.35, g: 0.45, b: 0.2, a: 0}
+    - _SolTuile: {r: 2, g: 2, b: 2, a: 2}
     - _TileOffset: {r: 0, g: 0, b: 0, a: 0}
     - _TileSize: {r: 4, g: 4, b: 0, a: 0}
     - _WetColor: {r: 0.54999995, g: 0.62, b: 0.62, a: 1}
