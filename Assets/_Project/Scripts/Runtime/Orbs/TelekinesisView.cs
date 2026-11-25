@@ -9,7 +9,7 @@ namespace ItHunts.Orbs
     /// Retour visuel de la télékinésie (greybox), réglé par TelekinesisFeedbackSettings :
     /// - lueur des objets attrapables : faible de loin (repérables), plus forte à portée, vive et pulsée quand ils sont
     ///   sélectionnés (visés, ou pris par l'aide à la visée),
-    ///   rouge terne s'ils sont trop lourds, violette quand ils sont tenus, verte qui s'éteint après un lancer ;
+    ///   rouge terne s'ils sont trop lourds, cernés du contour discret de la DA quand ils sont tenus (jour 5), verte qui s'éteint après un lancer ;
     /// - trait violet de l'orbe à l'objet tenu (la couleur de l'orbe elle-même : MagnetismOrbView, règle OrbLook).
     /// Sur la racine du joueur. Écran partagé (étape 9) : la lueur des objets est recalculée juste avant le rendu de la caméra
     /// de chaque joueur, chacun voit donc ce que lui vise, tient et peut attraper.
@@ -77,9 +77,13 @@ namespace ItHunts.Orbs
 
                 Color glow;
 
+                // Objet tenu (jour 5, point 4) : le contour discret de la DA au lieu de l'objet tout violet (sans matériau : l'ancienne lueur).
+                bool held = g.Id == t.HeldId;
+                bool outline = held && settings.heldOutline != null;
+                g.ShowOutline(outline ? settings.heldOutline : null);
                 float sinceThrow = Time.time - g.ThrownAt;
-                if (g.Id == t.HeldId)
-                    glow = settings.grabColor * settings.glowHeld;
+                if (held)
+                    glow = settings.grabColor * (settings.glowHeld * (outline ? settings.heldGlowWithOutline : 1f));
                 else if (sinceThrow < settings.thrownGlowDuration)
                     glow = settings.throwColor * Mathf.Lerp(settings.glowThrown, settings.glowIdle, sinceThrow / settings.thrownGlowDuration);
                 else if (t.AimHit && t.AimId == g.Id)

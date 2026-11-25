@@ -14,8 +14,11 @@ namespace ItHunts.Settings
         [Header("Vie et phases")]
         [Min(1f)] public float maxHealth = 2400f;
         [Range(0f, 1f)] public float phase2At = 0.66f, phase3At = 0.33f;
-        [Tooltip("Dégâts reçus par un point faible × ce facteur (balles, objets lancés, épée, lanterne, drain).")]
+        [Tooltip("Coup critique : dégâts reçus par un point faible × ce facteur (balles, objets lancés, épée, lanterne, drain).")]
         [Min(0f)] public float weakPointMultiplier = 2.5f;
+        [Tooltip("Dégâts d'une arme sur son corps, partout ailleurs qu'un point faible (épée, balles, flamme, drain, saignement) × ce facteur " +
+                 "(jour 5, point 5 : il prend des dégâts partout, chaque arme peut le battre).")]
+        [Min(0f)] public float bodyDamageShare = 1f;
         [Tooltip("Un point faible cède après ces dégâts : le boss chancelle, puis le point se reforme.")]
         [Min(1f)] public float weakPointBreak = 260f;
         [Min(0f)] public float weakPointRegrow = 18f;
@@ -43,5 +46,11 @@ namespace ItHunts.Settings
         [Min(1f)] public float cryRadius = 20f, cryPush = 24f, eruptionRadius = 3.8f;
         [Range(1, 10)] public int eruptions = 5, debrisCount = 3, summonCount = 4;
         [Min(1f)] public float debrisSpeed = 24f;
+
+        [Header("Charge : arrêt net sur un obstacle (jour 5, point 5)")]
+        [Tooltip("Sphère lancée devant lui pendant la charge : rayon (m) et hauteur de son centre au-dessus du sol (m). Un décor touché " +
+                 "(pilier, statue, mur) l'arrête net ; il ne sort jamais du couloir marqué au sol.")]
+        [Min(0.1f)] public float chargeStopRadius = 1.5f;
+        [Min(0.2f)] public float chargeStopHeight = 3f;
     }
 }

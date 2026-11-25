@@ -102,7 +102,7 @@ namespace ItHunts.Combat
             if (_grabbable.Broken)
                 return;
             Vector3 point = collision.contactCount > 0 ? collision.GetContact(0).point : transform.position;
-            Damageable target = collision.collider != null ? collision.collider.GetComponentInParent<Damageable>() : null;
+            Damageable target = Damageable.Of(collision.collider);       // boss final : son relais (HitProxy)
             PlayerHealth player = target == null && collision.collider != null ? collision.collider.GetComponentInParent<PlayerHealth>() : null;
             HandleImpact(_grabbable, target, collision.relativeVelocity, point, settings, Time.time, player);
         }

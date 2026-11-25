@@ -50,7 +50,7 @@ namespace ItHunts.Artifacts
                 if (c.isTrigger && c.GetComponent<Hitbox>() == null)
                     continue;                                            // déclencheurs ignorés, sauf les zones de touche (ailes)
 
-                var enemy = c.GetComponentInParent<Damageable>();
+                var enemy = Damageable.Of(c);                        // boss final : son relais (HitProxy)
                 PlayerHealth player = enemy == null ? c.GetComponentInParent<PlayerHealth>() : null;
                 if (enemy == null && player == null)
                     continue;

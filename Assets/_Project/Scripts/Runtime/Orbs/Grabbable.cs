@@ -366,6 +366,52 @@ namespace ItHunts.Orbs
                 _renderers = renderers;
         }
 
+        private ItHunts.Art.VFX.ContourDiscret _contour;
+
+        /// <summary>
+        /// Contour discret de la DA (ContourDiscret) autour de l'objet tenu (jour 5, point 4) ; null : caché. Posé au premier appel sur
+        /// le parent commun de ses rendus (le modèle de la DA s'il remplace la greybox : la greybox cachée n'est pas cernée).
+        /// </summary>
+        public void ShowOutline(Material material)
+        {
+            if (material == null)
+            {
+                if (_contour != null)
+                    _contour.Cache();
+                return;
+            }
+
+            if (_contour == null)
+            {
+                Transform host = OutlineHost();
+                if (!host.TryGetComponent(out _contour))
+                    _contour = host.gameObject.AddComponent<ItHunts.Art.VFX.ContourDiscret>();
+            }
+
+            _contour.Montre(material);
+        }
+
+        private Transform OutlineHost()
+        {
+            Transform host = null;
+            if (_renderers != null)
+                foreach (Renderer r in _renderers)
+                {
+                    if (r == null)
+                        continue;
+                    if (host == null)
+                    {
+                        host = r.transform;
+                        continue;
+                    }
+
+                    while (host != null && !r.transform.IsChildOf(host))
+                        host = host.parent;                              // remonte jusqu'au parent commun
+                }
+
+            return host != null && host.IsChildOf(transform) ? host : transform;
+        }
+
         /// <summary>Couleur d'émission (HDR) de tous ses rendus.</summary>
         public void SetGlow(Color color)
         {

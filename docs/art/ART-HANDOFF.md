@@ -771,6 +771,17 @@ Réglages d'import : effets courts **Decompress On Load** (aucune latence au tir
 musiques **Streaming** (chargement en arrière-plan) ; Vorbis 0,7, fréquence d'origine (44,1 kHz) ; mono forcé pour tous les
 effets (sons 3D et armes en main), musiques en stéréo. Durées, silences retirés et raccords : `sons_jeu.json`.
 
+**Sons attendus : épée en os du koala (main, jour 5, point 4).** Aucun son d'épée n'est encore livré : les emplacements sont prêts
+(`GameAudio_Default` : `swordSwing`, `swordSwingHeavy`, `swordHit`, silence tant qu'ils manquent ; à l'impact, le son commun
+`Impacts/Sfx_Impact_Leger` est joué). Livrer dans `Assets/Art/Audio/Armes/` des fichiers dont le nom contient **`Epee`** ;
+*ItHunts > Brancher les illustrations des améliorations* les range par leur nom :
+
+| Nom (exemple) | Moment du jeu | Champ | Import |
+|---|---|---|---|
+| `Sfx_Epee_Taille` | lame dans le vide, 1er et 2e coups du combo (0,15 à 0,3 s, attaque immédiate ; hauteur variée par le jeu) | `swordSwing` | mono, décompressé |
+| `Sfx_Epee_Estoc` (ou `_Lourd`, `_Fente`) | 3e coup, fente pendant un dash ou une glissade, tourbillon | `swordSwingHeavy` | mono, décompressé |
+| `Sfx_Epee_Impact` (ou `_Touche`) | la lame touche un ennemi (os qui tranche, court) | `swordHit` | mono, décompressé, 3D |
+
 ## Nouveaux modules et passages du traqueur (main, 2026-11-21, D-078)
 
 Échelle de jeu des 4 modules (64 × 64 m) et des passages du traqueur, pour remplacer les blocs par le kit (PR #25) :

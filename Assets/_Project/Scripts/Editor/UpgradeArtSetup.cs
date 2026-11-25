@@ -57,6 +57,7 @@ namespace ItHunts.EditorTools
 
             WireLot7();
             WireNight5Lot2();
+            WireDay5();
             AssetDatabase.SaveAssets();
             Debug.Log("Illustrations des améliorations : " + icons + " branchées, " + missing + " manquantes ; cadres de rang dans HudSkin_Default.");
         }
@@ -126,6 +127,55 @@ namespace ItHunts.EditorTools
                 audio.stalkerSpottedCries = new[] { A("Sfx_Traqueur_Cri_Vu_01"), A("Sfx_Traqueur_Cri_Vu_02") };
                 EditorUtility.SetDirty(audio);
             }
+        }
+
+        /// <summary>
+        /// Jour 5, point 4 : contour discret de l'objet tenu (M_VFX_Prise_Contour) dans TelekinesisFeedback_Default ; sons de l'épée du
+        /// koala dans GameAudio_Default, cherchés par leur nom dans Assets/Art/Audio (« Epee » ; « Impact » ou « Touche » : la lame
+        /// touche ; « Lourd », « Estoc » ou « Fente » : coup fort dans le vide ; sinon : coup dans le vide). Un son absent laisse le champ tel quel.
+        /// </summary>
+        public static void WireDay5()
+        {
+            var feedback = AssetDatabase.LoadAssetAtPath<TelekinesisFeedbackSettings>("Assets/_Project/Settings/TelekinesisFeedback_Default.asset");
+            var outline = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/VFX/Materiaux/M_VFX_Prise_Contour.mat");
+            if (feedback != null && outline != null && feedback.heldOutline != outline)
+            {
+                feedback.heldOutline = outline;
+                EditorUtility.SetDirty(feedback);
+            }
+
+            var audio = AssetDatabase.LoadAssetAtPath<GameAudioSettings>("Assets/_Project/Resources/GameAudio_Default.asset");
+            if (audio == null)
+                return;
+            AudioClip swing = null, heavy = null, hit = null;
+            foreach (string guid in AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/Art/Audio" }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                string name = System.IO.Path.GetFileNameWithoutExtension(path);
+                if (name.IndexOf("Epee", System.StringComparison.OrdinalIgnoreCase) < 0)
+                    continue;
+                var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+                if (clip == null)
+                    continue;
+                bool Has(string part) => name.IndexOf(part, System.StringComparison.OrdinalIgnoreCase) >= 0;
+                if (Has("Impact") || Has("Touche"))
+                    hit = hit != null ? hit : clip;
+                else if (Has("Lourd") || Has("Estoc") || Has("Fente"))
+                    heavy = heavy != null ? heavy : clip;
+                else
+                    swing = swing != null ? swing : clip;
+            }
+
+            if (swing != null)
+                audio.swordSwing = swing;
+            if (heavy != null)
+                audio.swordSwingHeavy = heavy;
+            if (hit != null)
+                audio.swordHit = hit;
+            EditorUtility.SetDirty(audio);
+            Debug.Log("Sons de l'épée du koala : " + (swing != null ? swing.name : "coup dans le vide manquant") + ", "
+                      + (heavy != null ? heavy.name : "coup fort manquant") + ", " + (hit != null ? hit.name : "lame qui touche manquante")
+                      + (swing == null && heavy == null && hit == null ? " (aucun son « Epee » livré par la DA dans Assets/Art/Audio)" : ""));
         }
     }
 }

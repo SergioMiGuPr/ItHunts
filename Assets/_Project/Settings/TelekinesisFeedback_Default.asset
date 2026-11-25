@@ -24,6 +24,8 @@ MonoBehaviour:
   glowTooHeavy: 0.5
   thrownGlowDuration: 1
   glowThrown: 2
+  heldOutline: {fileID: 2100000, guid: fe3f92d3c3c82334ab8f6bd3f3df38ab, type: 2}
+  heldGlowWithOutline: 0
   orbUsageIntensity: 2.5
   orbReadyIntensity: 0.8
   lineIntensity: 1.5
