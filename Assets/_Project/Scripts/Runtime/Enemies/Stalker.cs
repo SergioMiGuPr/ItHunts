@@ -1457,7 +1457,7 @@ namespace ItHunts.Enemies
                 return StandForRoom(room, feet, out stand, out opening);
             stand = feet;
             if (!OverheadClear(feet))
-                return false;
+                return UnderReach(feet, out stand, out _, out _);   // sous un surplomb : la main passe à l'horizontale (D-116)
             Vector3 chest = feet + Vector3.up;
             bool found = false;
             float bestD = float.PositiveInfinity;
@@ -1474,19 +1474,158 @@ namespace ItHunts.Enemies
                 float flat = Flat(s - feet);
                 if (flat >= bestD)
                     continue;
-                Vector3 fd = FlatDir(feet - s);
-                Vector3 shoulder = s + Vector3.up * ShoulderOffset.y + fd * ShoulderOffset.z + Vector3.Cross(Vector3.up, fd) * ShoulderOffset.x;
-                float reach = settings.GrabReach + (flat > Radius + 1f ? settings.edgeLean : 0f);
-                if ((chest - shoulder).magnitude > reach)
-                    continue;
-                if (!Clear(shoulder, chest) && !Clear(s + Vector3.up * 2f, chest))
+                if (!ReachFrom(s, feet))
                     continue;
                 found = true;
                 bestD = flat;
                 stand = s;
             }
 
+            return found || WideReach(feet, out stand);
+        }
+
+        private Vector3 _wideFeet = new Vector3(float.NaN, 0f, 0f), _wideStand;
+        private float _wideAt = -1f;
+        private bool _wideFound;
+
+        /// <summary>
+        /// Second passage, seulement si les 34 essais échouent (joueur sur une terrasse derrière un mur, au fond d'un ravin, D-116) :
+        /// 16 directions à 3, 8.5 et 14 m, à sa hauteur, plus bas et plus haut. Résultat gardé 0.25 s pour un même point (coût).
+        /// </summary>
+        private bool WideReach(Vector3 feet, out Vector3 stand)
+        {
+            float now = Time.time;
+            if (now - _wideAt < 0.25f && (feet - _wideFeet).sqrMagnitude < 0.25f)
+            {
+                stand = _wideStand;
+                return _wideFound;
+            }
+
+            stand = feet;
+            float bestD = float.PositiveInfinity;
+            bool found = false;
+            for (int i = 0; i < 16; i++)
+            {
+                Vector3 d = Quaternion.Euler(0f, i * 22.5f, 0f) * Vector3.forward;
+                foreach (float r in WideRadii)
+                foreach (float dy in WideHeights)
+                {
+                    if (r >= bestD)
+                        continue;
+                    Vector3 probe = feet + d * r + Vector3.up * (dy < -1f ? -(ShoulderOffset.y - 1f) : dy);
+                    if (!_move.Snap(probe, 3f, out Vector3 s))
+                        continue;
+                    float flat = Flat(s - feet);
+                    if (flat >= bestD || !ReachFrom(s, feet))
+                        continue;
+                    found = true;
+                    bestD = flat;
+                    stand = s;
+                }
+            }
+
+            _wideFeet = feet;
+            _wideAt = now;
+            _wideStand = stand;
+            _wideFound = found;
             return found;
+        }
+
+        private static readonly float[] WideRadii = { 3f, 8.5f, 14f };
+        private static readonly float[] WideHeights = { 0f, -2f, 4f };
+
+        /// <summary>
+        /// Debout en <paramref name="stand"/> sur son NavMesh, sa main atteint-elle un joueur dont les pieds sont en
+        /// <paramref name="feet"/> ? Épaule tournée vers lui, portée GrabReach (+ edgeLean s'il ne peut pas se placer dessous), ligne
+        /// libre pour le bras. Même règle pour le jeu (CanReach) et l'audit de portée (StalkerReachAudit).
+        /// </summary>
+        public bool ReachFrom(Vector3 stand, Vector3 feet)
+        {
+            Vector3 chest = feet + Vector3.up;
+            float flat = Flat(stand - feet);
+            Vector3 fd = FlatDir(feet - stand);
+            Vector3 shoulder = stand + Vector3.up * ShoulderOffset.y + fd * ShoulderOffset.z + Vector3.Cross(Vector3.up, fd) * ShoulderOffset.x;
+            float reach = settings.GrabReach + (flat > Radius + 1f ? settings.edgeLean : 0f);
+            if ((chest - shoulder).magnitude > reach)
+                return false;
+            return ArmClear(shoulder, stand, chest, fd);
+        }
+
+        /// <summary>
+        /// Le bras passe-t-il ? Droit de l'épaule au joueur, depuis le bas du corps, ou comme la prise réelle : main levée au-dessus
+        /// de l'épaule (RaisedHand), puis abattue sur le joueur (par-dessus un muret, le bord d'une terrasse ; D-116).
+        /// </summary>
+        private bool ArmClear(Vector3 shoulder, Vector3 stand, Vector3 chest, Vector3 fd)
+        {
+            if (Clear(shoulder, chest) || Clear(stand + Vector3.up * 2f, chest))
+                return true;
+            Vector3 raised = shoulder + Vector3.up * 4f + fd * 2f;
+            if (!Clear(shoulder, raised))
+                return false;
+            if (Clear(raised, chest))
+                return true;
+            // Par-dessus un mur proche du joueur : la main passe au-dessus de lui (à hauteur d'épaule, au moins handClearance
+            // au-dessus de sa poitrine), puis s'abat à la verticale, si le bras va jusque-là et que rien n'est au-dessus de lui.
+            Vector3 over = new Vector3(chest.x, Mathf.Max(shoulder.y, chest.y + settings.handClearance), chest.z);
+            return (over - shoulder).magnitude <= settings.GrabReach + settings.edgeLean
+                && Clear(raised, over) && Clear(over, chest);
+        }
+
+        /// <summary>
+        /// Sous un surplomb (galerie, pont, plafond bas : moins de handClearance au-dessus du joueur, D-116) : sa main ne descend pas
+        /// d'en haut, elle passe à l'horizontale depuis le bord du surplomb, comme par l'ouverture d'une pièce (roomReach). Bord =
+        /// premier point dégagé au-dessus sur l'une des 16 directions, sans mur entre le joueur et lui ; il se tient devant, au même
+        /// niveau (± 4 m), sur son NavMesh. Le plus proche des bords gagne.
+        /// </summary>
+        public bool UnderReach(Vector3 feet, out Vector3 stand, out Vector3 edge, out Vector3 outward)
+        {
+            stand = feet;
+            edge = feet;
+            outward = Vector3.forward;
+            Vector3 chest = feet + Vector3.up;
+            float best = float.PositiveInfinity;
+            for (int i = 0; i < 16; i++)
+            {
+                Vector3 d = Quaternion.Euler(0f, i * 22.5f, 0f) * Vector3.forward;
+                for (float r = 1f; r <= settings.roomReach && r < best; r += 1f)
+                {
+                    Vector3 e = feet + d * r;
+                    if (!Clear(chest, e + Vector3.up))
+                        break;                                          // mur entre lui et le joueur
+                    if (!OverheadClear(e))
+                        continue;
+                    // Debout au même niveau, ou sur un rebord plus haut (fond de ravin, sous une rampe), main qui descend jusqu'au bord.
+                    if (_move.Snap(e + d * (Radius + 1.5f), Radius + 7f, out Vector3 s) && feet.y - s.y <= 4f
+                        && s.y - feet.y <= ShoulderOffset.y - 1f
+                        && (s.y - feet.y <= 4f || Clear(s + Vector3.up * ShoulderOffset.y, e + Vector3.up * 1.5f)))
+                    {
+                        best = r;
+                        stand = s;
+                        edge = e + Vector3.up * 1.5f;
+                        outward = d;
+                    }
+
+                    break;
+                }
+            }
+
+            return !float.IsInfinity(best);
+        }
+
+        private Transform _underOpening;
+
+        /// <summary>Ouverture virtuelle au bord du surplomb (UnderReach), tournée vers l'extérieur comme celle d'une pièce.</summary>
+        private Transform UnderOpening(Vector3 edge, Vector3 outward)
+        {
+            if (_underOpening == null)
+            {
+                _underOpening = new GameObject("Bord du surplomb (prise)").transform;
+                _underOpening.SetParent(transform.parent, false);
+            }
+
+            if (_grab == GrabPhase.Aucune || _grabOpening != _underOpening)
+                _underOpening.SetPositionAndRotation(edge, Quaternion.LookRotation(outward, Vector3.up));
+            return _underOpening;
         }
 
         /// <summary>Point devant l'ouverture de la pièce la plus proche du joueur et à moins de roomReach de lui.</summary>
@@ -1880,12 +2019,22 @@ namespace ItHunts.Enemies
                 }
 
                 if (!OverheadClear(aim))
+                {
+                    // Sous un surplomb (D-116) : par le bord, s'il se tient devant.
+                    if (UnderReach(aim, out Vector3 under, out Vector3 edge, out Vector3 outward) && Flat(under - pos) <= Radius + 6f)
+                    {
+                        opening = UnderOpening(edge, outward);
+                        return true;
+                    }
+
                     continue;
+                }
+
                 Vector3 shoulder = ShoulderFrom(pos, aim);
                 float reach = settings.GrabReach + settings.edgeLean;
                 if ((aim + Vector3.up - shoulder).magnitude > reach)
                     continue;
-                if (!Clear(shoulder, aim + Vector3.up) && !Clear(pos + Vector3.up * 2f, aim + Vector3.up))
+                if (!ArmClear(shoulder, pos, aim + Vector3.up, FlatDir(aim - pos)))
                     continue;
                 opening = null;
                 return true;
@@ -1933,6 +2082,25 @@ namespace ItHunts.Enemies
                 if (Solid(_hits[i].collider))
                     return false;
             return true;
+        }
+
+        /// <summary>Audit : pourquoi ReachFrom échoue (portée manquante, ou objet qui coupe le bras).</summary>
+        public string ReachWhyNot(Vector3 stand, Vector3 feet)
+        {
+            Vector3 chest = feet + Vector3.up;
+            float flat = Flat(stand - feet);
+            Vector3 fd = FlatDir(feet - stand);
+            Vector3 shoulder = stand + Vector3.up * ShoulderOffset.y + fd * ShoulderOffset.z + Vector3.Cross(Vector3.up, fd) * ShoulderOffset.x;
+            float reach = settings.GrabReach + (flat > Radius + 1f ? settings.edgeLean : 0f);
+            float d = (chest - shoulder).magnitude;
+            if (d > reach)
+                return $"trop loin de {d - reach:0.0} m";
+            Vector3 dir = chest - shoulder;
+            int n = Physics.RaycastNonAlloc(shoulder, dir.normalized, _hits, dir.magnitude, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < n; i++)
+                if (Solid(_hits[i].collider))
+                    return "bras coupé par " + _hits[i].collider.name + " à " + _hits[i].point.ToString("F0");
+            return "?";
         }
 
         private bool Solid(Collider c) =>
@@ -1986,7 +2154,12 @@ namespace ItHunts.Enemies
                 return _grabOpening.position + FlatDir(_grabOpening.forward) * 2f;   // devant l'ouverture, prête à entrer
             Vector3 f = _grabTarget - Shoulder;
             f.y = 0f;
-            return Shoulder + Vector3.up * 4f + (f.sqrMagnitude > 1e-4f ? f.normalized : transform.forward) * 2f;
+            Vector3 raised = Shoulder + Vector3.up * 4f + (f.sqrMagnitude > 1e-4f ? f.normalized : transform.forward) * 2f;
+            Vector3 chest = _grabTarget + Vector3.up;
+            if (_grab == GrabPhase.Aucune || Clear(raised, chest))
+                return raised;
+            // Par-dessus un mur (ArmClear, D-116) : main au-dessus du joueur, puis abattue à la verticale.
+            return new Vector3(chest.x, Mathf.Max(Shoulder.y, chest.y + settings.handClearance), chest.z);
         }
 
         // ---------- Mains au-dessus de la tête (D-037) ----------

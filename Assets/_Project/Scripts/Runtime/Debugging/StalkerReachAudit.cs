@@ -21,6 +21,8 @@ namespace ItHunts.Debugging
             public readonly List<(Vector3 point, string room, string why)> Misses = new List<(Vector3, string, string)>();
             public float Share => Samples == 0 ? 1f : Reached / (float)Samples;
 
+            /// <summary>Tous les points manqués, avec la cause.</summary>
+            public string All() => string.Join("\n", Misses.Select(m => $"- {m.room} {m.point:F0} : {m.why}"));
             /// <summary>Un point par salle (le premier), pour aller voir.</summary>
             public string Points() => string.Join(" ; ", Misses.GroupBy(m => m.room).Select(g => $"{g.Key} {g.First().point:F0}"));
 
@@ -55,6 +57,7 @@ namespace ItHunts.Debugging
             float shoulder = stalker.Settings != null ? stalker.Settings.shoulderHeight : 10.5f;
             // Même calcul que Stalker.CanReach (jour 5) : poitrine du joueur (pieds + 1 m), épaule avancée vers lui, portée + edgeLean
             // quand il ne peut pas se placer dessous (bord d'une corniche, d'une fosse).
+            // (InReach : ancien calcul, gardé pour comparaison ; la vérification passe par Stalker.ReachFrom.)
             float forward = stalker.Settings != null ? stalker.Settings.shoulderForward : 0.9f;
             float lean = stalker.Settings != null ? stalker.Settings.edgeLean : 0f;
             float radius = stalker.Settings != null ? stalker.Settings.width * 0.5f : 1.25f;
@@ -88,16 +91,46 @@ namespace ItHunts.Debugging
                         if (!NavMesh.SamplePosition(q, out NavMeshHit h, 1.2f, small) || Mathf.Abs(h.position.y - y) > 1.2f)
                             continue;                                   // pas un sol du joueur ici (creux, mur, autre étage)
                         res.Samples++;
+                        // D'abord la règle du jeu (Stalker.CanReach : 34 essais autour, ou le bord d'un surplomb, D-116).
+                        if (stalker.CanReach(h.position, out Vector3 stand, out _)
+                            && NavMesh.SamplePosition(stand, out NavMeshHit sh, 3f, big)
+                            && NavMesh.CalculatePath(from.position, sh.position, big, path) && path.status == NavMeshPathStatus.PathComplete)
+                        {
+                            res.Reached++;
+                            continue;
+                        }
+
+                        if (!stalker.OverheadClear(h.position))
+                        {
+                            res.Misses.Add((h.position, r.Name, "sous un surplomb, pas de bord où se tenir"));
+                            continue;
+                        }
+
                         // Candidats : le point du NavMesh du traqueur le plus proche, puis tout autour (un fond de fosse isolé ne compte pas).
                         bool any = false, reached = false;
+                        string why = null;
+                        float whyD = float.PositiveInfinity;
                         for (int a = -1; a < 26 && !reached; a++)
                         {
                             // 13 directions à la hauteur du point, puis les mêmes au sol de la salle (il attrape une galerie d'en bas).
                             int dirIdx = a < 0 ? -1 : a % 13;
                             Vector3 basePos = a < 13 ? h.position : new Vector3(h.position.x, r.Floor, h.position.z);
                             Vector3 probe = dirIdx < 0 || dirIdx == 12 ? basePos : basePos + Quaternion.Euler(0f, dirIdx * 30f, 0f) * Vector3.forward * (dirIdx % 2 == 0 ? 6f : 11f);
-                            if (!NavMesh.SamplePosition(probe, out NavMeshHit t, 6f, big) || !InReach(t.position, h.position))
+                            if (!NavMesh.SamplePosition(probe, out NavMeshHit t, 6f, big))
                                 continue;
+                            if (!stalker.ReachFrom(t.position, h.position))
+                            {
+                                float dd = (t.position - h.position).sqrMagnitude;
+                                if (dd < whyD)
+                                {
+                                    whyD = dd;
+                                    why = $"depuis {t.position:F0} : " + stalker.ReachWhyNot(t.position, h.position);
+                                }
+
+                                continue;
+                            }
+
+                            why = $"bout sans chemin {t.position:F0}";
                             any = true;
                             reached = NavMesh.CalculatePath(from.position, t.position, big, path) && path.status == NavMeshPathStatus.PathComplete;
                         }
@@ -105,7 +138,8 @@ namespace ItHunts.Debugging
                         if (reached)
                             res.Reached++;
                         else
-                            res.Misses.Add((h.position, r.Name, any ? "pas de chemin" : "pas de sol du traqueur à portée"));
+                            res.Misses.Add((h.position, r.Name, (any ? "pas de chemin" : "pas de sol du traqueur à portée")
+                                + (why != null ? " ; " + why : "")));
                     }
                 }
             }

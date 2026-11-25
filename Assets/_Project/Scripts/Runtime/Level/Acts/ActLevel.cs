@@ -143,6 +143,9 @@ namespace ItHunts.Level.Acts
             {
             }
 
+            if (zoneNav != null && Plan != null && Plan.Start >= 0)
+                zoneNav.StalkerOrigin = Plan.CellCenter(Plan.Rooms[Plan.Start].CenterCell, Plan.Rooms[Plan.Start].Floor);
+
             if (_residents != null)
                 _residents.gameObject.SetActive(true);
         }
@@ -468,6 +471,8 @@ namespace ItHunts.Level.Acts
                 {
                     if (!t.name.StartsWith("Kit_") || (t.parent != null && t.parent.name.StartsWith("Kit_")))
                         continue;
+                    if (!t.gameObject.activeInHierarchy)
+                        continue;                                   // décor retiré par DecorAudit (détruit en fin d'image) : pas fusionné
                     bool readable = true;
                     foreach (MeshFilter f in t.GetComponentsInChildren<MeshFilter>(true))
                         readable &= f.sharedMesh == null || f.sharedMesh.isReadable;

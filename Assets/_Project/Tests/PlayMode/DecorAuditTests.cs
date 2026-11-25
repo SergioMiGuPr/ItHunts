@@ -66,7 +66,7 @@ namespace ItHunts.Tests
             var reach = ItHunts.Debugging.StalkerReachAudit.Run(level);
             File.WriteAllText(Path.Combine(dir, $"{scene}_s{seed}.md"),
                 $"# Décor : {scene}, graine {seed} ({map})\n\nCorrigé à la construction : {level.DecorFixes}\n\nRestant : {left.Text(200)}\n\n" +
-                $"Traqueur : {reach.Summary()}\n\nÎlots de son NavMesh reliés : {nav?.IslandBridges} (restés seuls : {nav?.IslandsLeft}, {nav?.IslandMilliseconds} ms)\n" +(reach.Misses.Count > 0 ? $"\nPoints : {reach.Points()}\n" : ""));
+                $"Traqueur : {reach.Summary()}\n\nÎlots de son NavMesh reliés : {nav?.IslandBridges} (restés seuls : {nav?.IslandsLeft}, {nav?.IslandMilliseconds} ms)\n" +(reach.Misses.Count > 0 ? $"\nPoints :\n\n{reach.All()}\n" : ""));
             Assert.AreEqual(0, left.Total, $"{scene} graine {seed} ({map}) : {left.Text(30)}");
             Assert.Greater(reach.Samples, 0, "audit du traqueur : aucun point");
             Assert.AreEqual(0, reach.Misses.Count, $"{scene} graine {seed} ({map}) : traqueur, {reach.Summary()}");

@@ -92,7 +92,8 @@ namespace ItHunts.Level.Acts
             // encore au matériau greybox ou sans matériau prend le matériau de repli (le mur de l'acte) ; la collision ne change pas.
             foreach (MeshRenderer r in root.GetComponentsInChildren<MeshRenderer>(false))
             {
-                if (!r.enabled || r.GetComponentInParent<DecorTag>() != null || r.GetComponentInParent<ItHunts.Orbs.Grabbable>() != null)
+                if (!r.enabled || r.GetComponentInParent<DecorTag>() != null || r.GetComponentInParent<ItHunts.Orbs.Grabbable>() != null
+                    || InGameplayGroup(r.transform, root))
                     continue;
                 Material[] mats = r.sharedMaterials;
                 bool bad = false;
@@ -317,6 +318,15 @@ namespace ItHunts.Level.Acts
             if (n.StartsWith("Greybox_Magnetic") || n.StartsWith("Greybox_NonMagnetic") || n.StartsWith("Greybox_Grabbable"))
                 return false;
             return n.StartsWith("Greybox_") || n.StartsWith("Default-") || n == "Lit";
+        }
+
+        /// <summary>Objets de jeu (groupe « Jeu du niveau » : coffres, marchand, porte de sortie, repères) : jamais touchés.</summary>
+        private static bool InGameplayGroup(Transform t, Transform root)
+        {
+            for (Transform x = t; x != null && x != root; x = x.parent)
+                if (x.parent == root && x.name == "Jeu du niveau")
+                    return true;
+            return false;
         }
 
         private static string Path(Transform t, Transform root)

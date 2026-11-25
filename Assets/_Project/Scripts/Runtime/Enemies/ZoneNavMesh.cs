@@ -264,6 +264,26 @@ namespace ItHunts.Enemies
         public int IslandBridges { get; private set; }
         public int IslandsLeft { get; private set; }
         public long IslandMilliseconds { get; private set; }
+        private readonly List<GameObject> _islandPassages = new List<GameObject>();
+
+        /// <summary>
+        /// Le traqueur peut-il passer de low à high (revue indépendante, jour 5) ? Bond : rien de solide entre les deux à 2 m et à 5 m
+        /// au-dessus des bouts. Escalade : un mur entre les deux (rayon horizontal à 1 m du bas), rien au-dessus du pied jusqu'au haut,
+        /// puis le passage du bord vers le haut libre à 2 m au-dessus.
+        /// </summary>
+        private bool BridgeClear(StalkerLinkKind kind, Vector3 low, Vector3 high)
+        {
+            bool Blocked(Vector3 a, Vector3 b) => Physics.Linecast(a, b, out RaycastHit hit, layers, QueryTriggerInteraction.Ignore)
+                && hit.collider.GetComponentInParent<StalkerPassesThrough>() == null && !IsMoving(hit.collider);
+            if (kind != StalkerLinkKind.MurGrimpe)
+                return !Blocked(low + Vector3.up * 2f, high + Vector3.up * 2f) && !Blocked(low + Vector3.up * 5f, high + Vector3.up * 5f);
+            Vector3 foot = low + Vector3.up;
+            Vector3 across = new Vector3(high.x, foot.y, high.z);
+            if (!Blocked(foot, across))
+                return false;                                           // pas de mur à grimper
+            Vector3 top = new Vector3(low.x, high.y + 2f, low.z);
+            return !Blocked(foot, top) && !Blocked(top, high + Vector3.up * 2f);
+        }
 
         /// <summary>
         /// Îlots du NavMesh du traqueur (jour 5) : une grille de points (tous les étages, rayons vers le bas) ; chaque point sans chemin
@@ -365,7 +385,7 @@ namespace ItHunts.Enemies
                         continue;
                     StalkerLinkKind k = Mathf.Abs(u.y - v.y) <= stalkerSettings.leapMaxRise ? StalkerLinkKind.Bond : StalkerLinkKind.MurGrimpe;
                     Vector3 low = u.y < v.y ? u : v, high = u.y < v.y ? v : u;
-                    if (!StalkerPassageMath.Allowed(k, low, high, stalkerSettings))
+                    if (!StalkerPassageMath.Allowed(k, low, high, stalkerSettings) || !BridgeClear(k, low, high))
                         continue;
                     best = d;
                     a = low;
@@ -407,6 +427,7 @@ namespace ItHunts.Enemies
                 }
 
                 _links.Add(li);
+                _islandPassages.Add(go);
                 pass.Linked = true;
                 pass.LinkA = a;
                 pass.LinkB = b;
@@ -619,6 +640,10 @@ namespace ItHunts.Enemies
             foreach (NavMeshLinkInstance l in _links)
                 l.Remove();
             _links.Clear();
+            foreach (GameObject g in _islandPassages)
+                if (g != null)
+                    DestroyImmediate(g);                                // sinon relus par FindObjectsByType<StalkerPassage> au build suivant
+            _islandPassages.Clear();
             foreach (NavMeshDataInstance i in _instances)
                 i.Remove();
             _instances.Clear();
