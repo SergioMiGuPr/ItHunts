@@ -11,10 +11,12 @@ namespace ItHunts.Art.VFX
     /// Utilisation (main) : contour.Montre(contour.annonce) pendant FlyerMode.Annonce ; contour.Montre(contour.prise) tant
     /// que l'ennemi est tenu ; contour.Cache() sinon. Les rendus dont le nom commence par un préfixe de « ignorer » (par
     /// défaut « Annonce ») ne sont pas cernés.
+    /// Nuit 5 : marche aussi sur un objet tenu par la télékinésie (caisse, tonneau) : contour.Montre(contour.prise) à la place de
+    /// la lueur violette de tout le modèle.
     /// </summary>
     public sealed class ContourDiscret : MonoBehaviour
     {
-        [Tooltip("Annonce du piqué : encre rouge sang éteint, pulsée.")] public Material annonce;
+        [Tooltip("Annonce du piqué : encre fumée épaissie, pulsée (nuit 5 : plus de rouge).")] public Material annonce;
         [Tooltip("Ennemi tenu par la télékinésie : ton d'os neutre, fixe.")] public Material prise;
         public string[] ignorer = { "Annonce" };
 

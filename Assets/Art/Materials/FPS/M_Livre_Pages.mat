@@ -32,9 +32,9 @@ Material:
     - _Lignes: 22
     - _LignesForce: 0.7
     m_Colors:
-    - _Bord: {r: 0.8, g: 1.5, b: 2.2, a: 1}
+    - _Bord: {r: 0.46, g: 0.74, b: 1.0, a: 1}
     - _Bruit: {r: 6, g: 0.5, b: 0, a: 0}
-    - _Couleur: {r: 0.3, g: 0.62, b: 1.05, a: 1}
+    - _Couleur: {r: 0.18, g: 0.32, b: 0.5, a: 1}
     - _Defile: {r: 0, g: 0.25, b: 0, a: 0}
     - _Fremit: {r: 0.007, g: 2.3, b: 0, a: 0}
     - _Pulse: {r: 0.15, g: 1.1, b: 0, a: 0}

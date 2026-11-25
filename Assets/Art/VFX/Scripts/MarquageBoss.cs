@@ -3,8 +3,9 @@ using UnityEngine;
 namespace ItHunts.Art.VFX
 {
     /// <summary>
-    /// Marquage au sol d'une attaque du boss (nuit 4, lot 7) : remplace les marques orange de FinalBoss. Bord net, remplissage
-    /// rouge sang sombre et translucide, front qui se remplit pendant l'annonce, montée en intensité sur les 40 derniers pour
+    /// Marquage au sol d'une attaque du boss (nuit 4, lot 7) : remplace les marques orange de FinalBoss. Nuit 5, lot 4 : plus de
+    /// rouge, un indice sombre (flaque d'ombre, fin trait d'encre fumée, ton d'os à l'impact) ; le danger se lit à l'animation.
+    /// Bord net, remplissage sombre et translucide, front qui se remplit pendant l'annonce, montée en intensité sur les 40 derniers pour
     /// cent, éclair de 0,1 s à l'impact puis disparition en 0,18 s. Couleur unique pour tout le boss ; le type d'attaque se lit
     /// à la forme.
     /// Utilisation (main) : MarquageBoss.Cercle(centre, rayon, duree), Couloir(depart, direction, longueur, largeur, duree),

@@ -32,14 +32,16 @@ Material:
     - _Forme: 0
     - _FrontM: 1.2
     - _Intensite: 0.2
+    - _OpaciteBord: 0.75
     - _Progression: 1
     - _Pulsation: 1.2
     - _RayonInterieur: 0.55
     m_Colors:
-    - _CouleurBord: {r: 0.62, g: 0.089999996, b: 0.06999998, a: 1}
-    - _CouleurBordChaud: {r: 1, g: 0.72, b: 0.47999996, a: 1}
-    - _CouleurFond: {r: 0.06999998, g: 0.01, b: 0.012, a: 1}
-    - _CouleurRempli: {r: 0.23999995, g: 0.035, b: 0.03, a: 1}
-    - _OpaciteFond: {r: 0.38, g: 0.6, b: 0, a: 0}
+    - _CouleurBord: {r: 0.23999995, g: 0.21999997, b: 0.19999996, a: 1}
+    - _CouleurBordChaud: {r: 0.41999996, g: 0.36999997, b: 0.30999997, a: 1}
+    - _CouleurEclair: {r: 0.049999982, g: 0.044999972, b: 0.04199999, a: 1}
+    - _CouleurFond: {r: 0.008, g: 0.007, b: 0.008, a: 1}
+    - _CouleurRempli: {r: 0.016, g: 0.014, b: 0.015, a: 1}
+    - _OpaciteFond: {r: 0.26, g: 0.42, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -25,12 +25,12 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Epaisseur: 0.02
-    - _MinPx: 2
-    - _Opacite: 0.75
+    - _Epaisseur: 0.014
+    - _MinPx: 1.5
+    - _Opacite: 0.7
     - _Pulsation: 0
-    - _PulsationMin: 0.35
+    - _PulsationMin: 1
     m_Colors:
-    - _Couleur: {r: 0.36, g: 0.33, b: 0.29, a: 1}
+    - _Couleur: {r: 0.4, g: 0.37, b: 0.33, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

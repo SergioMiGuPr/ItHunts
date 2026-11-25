@@ -1,6 +1,7 @@
 // Effets peints (lot D, 2026-11-21 ; lot 2 des retours, 2026-11-22 : ConstruitLot2) : import des textures, matériaux,
 // prefabs, mesure du coût, captures.
 // `unity cmd ... script run --file VfxBuilder.cs --entry VfxBuilder.<Construit|Mesure|Capture>` (éditeur du projet art).
+// Nuit 5, lot 4 : VfxBuilder.ConstruitNuit5 (marquages sombres, liens lancés, trait de prise, apparitions des goules).
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -179,8 +180,8 @@ public static class VfxBuilder
         var etoile = Mat("M_VFX_Etoile", "T_VFX_Etoile", ENCRE, C(0.85f, 0.5f, 0.05f), C(1f, 0.82f, 0.2f), C(1f, 0.97f, 0.7f), 2f);
         var parE = Mat("M_VFX_Parade_Eclat", "T_VFX_Eclat_2x2", ENCRE, C(0.35f, 0.55f, 0.85f), C(0.7f, 0.85f, 1f), C(1f, 1f, 1f), 3.5f);
         var parA = Mat("M_VFX_Parade_Anneau", "T_VFX_Anneau", ENCRE, C(0.3f, 0.5f, 0.85f), C(0.65f, 0.82f, 1f), C(0.95f, 0.98f, 1f), 3f);
-        var drain = Mat("M_VFX_Lien_Drain", "T_VFX_Lien", ENCRE, C(0.32f, 0.01f, 0.03f), C(0.62f, 0.03f, 0.06f), C(0.95f, 0.25f, 0.2f), 2f);
-        var soin = Mat("M_VFX_Lien_Soin", "T_VFX_Lien", ENCRE, C(0.03f, 0.3f, 0.3f), C(0.15f, 0.68f, 0.62f), C(0.7f, 1f, 0.9f), 2.2f);
+        var drain = Mat("M_VFX_Lien_Drain", "T_VFX_Lien", ENCRE, C(0.1f, 0.004f, 0.014f), C(0.22f, 0.012f, 0.026f), C(0.36f, 0.05f, 0.05f), 1f);   // nuit 5
+        var soin = Mat("M_VFX_Lien_Soin", "T_VFX_Lien", ENCRE, C(0.012f, 0.11f, 0.13f), C(0.04f, 0.27f, 0.27f), C(0.16f, 0.48f, 0.43f), 1f);
         var pous = Mat("M_VFX_Poussiere", "T_VFX_Poussiere_4x4", ENCRE, C(0.16f, 0.13f, 0.12f), C(0.3f, 0.26f, 0.22f), C(0.46f, 0.41f, 0.35f), 1f);
 
         // torches et feux : flammes dessinées en boucle + quelques braises
@@ -511,6 +512,158 @@ public static class VfxBuilder
         return "lot 2 : VFX_Traction, VFX_Repulsion, VFX_Epee_Taille_H, VFX_Epee_Taille_D, VFX_Epee_Estoc, VFX_Epee_Impact, VFX_Vitesse_Bords, VFX_Impact_Leger, VFX_Impact_Lourd, VFX_Poussiere_Joueur";
     }
 
+    // ------------------------------------------------------------------ nuit 5, lot 4 (2026-11-25)
+    // Plus aucune zone rouge : marquages en indice sombre (flaque d'ombre, trait d'encre fumée), contours discrets ; lien du
+    // livre lancé à chaque coup avec accroche visible ; apparitions des goules (trou, grille, ombre) ; trait de prise discret.
+    static Material MatSol(string chemin)
+    {
+        var sh = Shader.Find("ItHunts/VFX/MarquageSol");
+        var m = AssetDatabase.LoadAssetAtPath<Material>(chemin);
+        if (m == null) { m = new Material(sh) { name = Path.GetFileNameWithoutExtension(chemin) }; AssetDatabase.CreateAsset(m, chemin); }
+        m.shader = sh;
+        var propre = new Material(sh); m.CopyPropertiesFromMaterial(propre); Object.DestroyImmediate(propre);   // valeurs du shader
+        EditorUtility.SetDirty(m);
+        return m;
+    }
+
+    static Material MatCoque(string chemin, Color c, float epaisseur, float minPx, float opacite, float pulsation, float pulsMin)
+    {
+        var m = AssetDatabase.LoadAssetAtPath<Material>(chemin);
+        m.SetColor("_Couleur", c); m.SetFloat("_Epaisseur", epaisseur); m.SetFloat("_MinPx", minPx); m.SetFloat("_Opacite", opacite);
+        m.SetFloat("_Pulsation", pulsation); m.SetFloat("_PulsationMin", pulsMin);
+        EditorUtility.SetDirty(m);
+        return m;
+    }
+
+    public static string ConstruitNuit5()
+    {
+        if (!BonProjet()) return "MAUVAIS PROJET";
+        Importe();
+        // --- marquages : une seule source, le shader (valeurs sombres de la nuit 5)
+        MatSol("Assets/Art/VFX/Resources/M_VFX_Marquage_Boss.mat");
+        var ap = MatSol("Assets/Art/VFX/Resources/M_VFX_Apparition.mat");
+        ap.SetFloat("_Forme", 0); ap.SetFloat("_Progression", 1); ap.SetFloat("_Intensite", 0.2f); ap.SetFloat("_Pulsation", 1.2f);
+        ap.SetFloat("_BordM", 0.06f);
+        // indices sombres pour les annonces de main (goule qui bondit, main du traqueur, revers) : à poser à la place des
+        // matériaux rouges sur les cylindres et cubes aplatis existants (le shader lit la forme dans l'espace de l'objet)
+        var ic = MatSol($"{MAT}/M_VFX_Indice_Cercle.mat");
+        ic.SetFloat("_Forme", 0); ic.SetFloat("_Progression", 1); ic.SetFloat("_Intensite", 0.15f); ic.SetFloat("_Pulsation", 0.9f); ic.SetFloat("_BordM", 0.05f);
+        // flaque d'ombre des apparitions : remplissage seul, sans trait (pas d'anneau d'interface)
+        var fl = MatSol($"{MAT}/M_VFX_Flaque_Ombre.mat");
+        fl.SetFloat("_Forme", 0); fl.SetFloat("_Progression", 1); fl.SetFloat("_OpaciteBord", 0f); fl.SetVector("_OpaciteFond", new Vector4(0.5f, 0.5f, 0, 0));
+        fl.SetColor("_CouleurFond", new Color(0.004f, 0.004f, 0.005f)); fl.SetColor("_CouleurRempli", new Color(0.004f, 0.004f, 0.005f)); fl.SetFloat("_FrontM", 0.6f);
+        // trou d'apparition : flaque presque opaque (le sol paraît s'ouvrir), sans trait
+        var tr = MatSol($"{MAT}/M_VFX_Trou_Ombre.mat");
+        tr.SetFloat("_Forme", 0); tr.SetFloat("_Progression", 1); tr.SetFloat("_OpaciteBord", 0f); tr.SetVector("_OpaciteFond", new Vector4(0.88f, 0.88f, 0, 0));
+        tr.SetColor("_CouleurFond", new Color(0.003f, 0.003f, 0.004f)); tr.SetColor("_CouleurRempli", new Color(0.003f, 0.003f, 0.004f)); tr.SetFloat("_FrontM", 0.35f);
+        var ir = MatSol($"{MAT}/M_VFX_Indice_Rect.mat");
+        ir.SetFloat("_Forme", 1); ir.SetFloat("_Progression", 1); ir.SetFloat("_Intensite", 0.15f); ir.SetFloat("_Pulsation", 0.9f); ir.SetFloat("_BordM", 0.05f);
+        // contours (coque inversée) : annonce du piqué = encre fumée épaissie qui bat ; prise = fin trait d'os, fixe
+        MatCoque($"{MAT}/M_VFX_Volant_Annonce.mat", new Color(0.16f, 0.145f, 0.14f), 0.03f, 2.5f, 0.85f, 2.2f, 0.45f);
+        MatCoque($"{MAT}/M_VFX_Prise_Contour.mat", new Color(0.4f, 0.37f, 0.33f), 0.014f, 1.5f, 0.7f, 0f, 1f);
+
+        // --- matériaux peints
+        var trait = Mat("M_VFX_Trait_Prise", "T_VFX_Lien", ENCRE, C(0.1f, 0.09f, 0.12f), C(0.26f, 0.24f, 0.3f), C(0.52f, 0.5f, 0.56f), 0.9f, false, 0.7f);
+        // anneau d'accroche en ton d'os (lisible sur les deux liens, sur un fond sombre), crochets à la couleur du lien
+        var drA = Mat("M_VFX_Lien_Drain_Accroche", "T_VFX_Anneau", ENCRE, C(0.07f, 0.055f, 0.05f), C(0.24f, 0.2f, 0.18f), C(0.46f, 0.4f, 0.35f), 1f, false, 0.8f);
+        var drS = Mat("M_VFX_Lien_Drain_Crochet", "T_VFX_Etincelle", ENCRE, C(0.12f, 0.005f, 0.016f), C(0.24f, 0.015f, 0.03f), C(0.38f, 0.06f, 0.06f), 1f, false, 0.6f);
+        var soA = Mat("M_VFX_Lien_Soin_Accroche", "T_VFX_Anneau", ENCRE, C(0.05f, 0.065f, 0.065f), C(0.2f, 0.24f, 0.23f), C(0.4f, 0.46f, 0.43f), 1f, false, 0.8f);
+        var soS = Mat("M_VFX_Lien_Soin_Crochet", "T_VFX_Etincelle", ENCRE, C(0.014f, 0.12f, 0.14f), C(0.05f, 0.29f, 0.28f), C(0.18f, 0.5f, 0.45f), 1f, false, 0.6f);
+        // liens : drain rouge sombre (sang éteint, plus de corail), soin bleu-vert franc (plus de blanc)
+        var drain = Mat("M_VFX_Lien_Drain", "T_VFX_Lien", ENCRE, C(0.1f, 0.004f, 0.014f), C(0.22f, 0.012f, 0.026f), C(0.36f, 0.05f, 0.05f), 1f);
+        var soin = Mat("M_VFX_Lien_Soin", "T_VFX_Lien", ENCRE, C(0.012f, 0.11f, 0.13f), C(0.04f, 0.27f, 0.27f), C(0.16f, 0.48f, 0.43f), 1f);
+        var terre = Mat("M_VFX_Terre", "T_VFX_Etincelle", ENCRE, C(0.12f, 0.095f, 0.07f), C(0.26f, 0.21f, 0.16f), C(0.42f, 0.36f, 0.28f), 1f, false, 1f);
+        var rouille = Mat("M_VFX_Rouille", "T_VFX_Etincelle", ENCRE, C(0.13f, 0.08f, 0.05f), C(0.26f, 0.16f, 0.1f), C(0.4f, 0.3f, 0.22f), 1f, false, 1f);
+        // fumée d'encre : cœur noir, bords d'un gris froid qui accroche la lumière (lisible sur un sol sombre, jamais violet)
+        var ombre = Mat("M_VFX_Fumee_Ombre", "T_VFX_Fumee_4x4", ENCRE, C(0.012f, 0.011f, 0.014f), C(0.05f, 0.047f, 0.056f), C(0.065f, 0.062f, 0.072f), 1f, false, 0.5f);
+        // poussière d'apparition : tons resserrés (pas de taches claires qui feraient des bulles), plus sourde que celle du traqueur
+        var pousS = Mat("M_VFX_Poussiere_Sombre", "T_VFX_Poussiere_4x4", ENCRE, C(0.07f, 0.06f, 0.055f), C(0.13f, 0.115f, 0.1f), C(0.16f, 0.14f, 0.12f), 1f, false, 0.55f);
+        var ombreT = Mat("M_VFX_Ombre_Volute", "T_VFX_Etincelle", ENCRE, C(0.02f, 0.018f, 0.024f), C(0.1f, 0.095f, 0.11f), C(0.28f, 0.27f, 0.3f), 1f, false, 1f);
+
+        // --- liens du livre : lancer + accroche (anneau qui se referme sur la cible, crochets) + tenue (crochets qui tournent)
+        GameObject Lien(string nom, Material bande, Material anneau, Material crochet, float sens, float largeur, Vector2 ond)
+        {
+            var g = Racine(nom);
+            var lr = Ligne(g, bande);
+            lr.widthCurve = K(0, 0.2f, 0.18f, 0.85f, 0.5f, 1f, 1, 0.9f);   // effilé à la main : pas de large bande devant la caméra
+            var l = g.AddComponent<LienVfx>(); l.sens = sens; l.largeur = largeur; l.ondulation = ond;
+            var acc = new GameObject("Accroche"); acc.transform.SetParent(g.transform, false);
+            var accPs = acc.AddComponent<ParticleSystem>(); accPs.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            var am = accPs.main; am.loop = false; am.duration = 0.4f; am.playOnAwake = false; am.startSpeed = 0; am.startLifetime = 0.01f; am.maxParticles = 1;
+            var aem = accPs.emission; aem.enabled = false; var ash = accPs.shape; ash.enabled = false;
+            acc.GetComponent<ParticleSystemRenderer>().enabled = false;
+            // anneau qui se referme (grand -> petit) : se lit comme une prise qui serre la cible
+            var an = PS(acc.transform, new P { nom = "Anneau", mat = anneau, boucle = false, duree = 0.3f, rafale = 1, vie = new Vector2(0.22f, 0.22f), vitesse = Vector2.zero, taille = new Vector2(0.85f, 0.85f), rayon = 0.001f, rotation = false, tailleVie = K(0, 1f, 1, 0.4f), max = 2, dissout = 0.9f });
+            // crochets : traits qui jaillissent du point puis s'y figent (vitesse freinée)
+            var cr = PS(acc.transform, new P { nom = "Crochets", mat = crochet, boucle = false, duree = 0.3f, rafale = 8, vie = new Vector2(0.25f, 0.35f), vitesse = new Vector2(3.5f, 5f), taille = new Vector2(0.07f, 0.11f), forme = ParticleSystemShapeType.Sphere, rayon = 0.05f, etire = true, etirement = 0.05f, max = 10, dissout = 0.5f });
+            var lv = cr.limitVelocityOverLifetime; lv.enabled = true; lv.limit = 0.6f; lv.dampen = 0.25f;
+            foreach (var ps in new[] { an, cr }) { var m2 = ps.main; m2.playOnAwake = false; }
+            var ten = PS(g.transform, new P { nom = "Tenue", mat = crochet, debit = 14, vie = new Vector2(0.35f, 0.5f), vitesse = Vector2.zero, taille = new Vector2(0.06f, 0.09f), forme = ParticleSystemShapeType.Circle, rotationForme = new Vector3(-90, 0, 0), rayon = 0.38f, orbitalXYZ = new Vector3(0, 4.2f, 0), etire = true, etirement = 0.06f, monde = false, max = 12, dissout = 0.5f, rotation = false });
+            { var m3 = ten.main; m3.playOnAwake = false; }
+            var pe = PS(g.transform, new P { nom = "Perte", mat = crochet, boucle = false, duree = 0.3f, rafale = 5, vie = new Vector2(0.15f, 0.25f), vitesse = new Vector2(0.8f, 1.6f), taille = new Vector2(0.03f, 0.05f), rayon = 0.03f, etire = true, etirement = 0.04f, max = 6, dissout = 0.6f });
+            { var m4 = pe.main; m4.playOnAwake = false; }
+            l.accroche = accPs; l.tenue = ten; l.perte = pe;
+            return g;
+        }
+        Sauve(Lien("VFX_Lien_Drain", drain, drA, drS, -1f, 0.2f, new Vector2(0.08f, 1.3f)));
+        Sauve(Lien("VFX_Lien_Soin", soin, soA, soS, 1f, 0.16f, new Vector2(0.05f, 0.9f)));
+
+        // --- trait de prise de la télékinésie : fil peint fin, cendre lavande (pas un trait violet épais)
+        var go = Racine("VFX_Trait_Prise", 0.9f);
+        Ligne(go, trait);
+        var tp = go.AddComponent<LienVfx>(); tp.sens = 1f; tp.largeur = 0.035f; tp.creux = 0.04f; tp.ondulation = new Vector2(0.015f, 0.7f); tp.pas = 0.6f; tp.vitesse = 1.4f;
+        Sauve(go);
+
+        // --- apparitions des goules (≈ 1,4 s, se détruisent seules ; pivot au sol pour le trou et l'ombre, au centre de la grille)
+        // trou : la terre se soulève (mottes projetées qui retombent), poussière qui monte, flaque d'ombre qui s'ouvre puis se referme
+        go = Racine("VFX_Apparition_Trou");
+        PS(go.transform, new P { nom = "Mottes", mat = terre, boucle = false, duree = 1.2f, rafale = 22, vie = new Vector2(0.6f, 0.95f), vitesse = new Vector2(2.5f, 4.5f), taille = new Vector2(0.1f, 0.2f), forme = ParticleSystemShapeType.Cone, angle = 32f, rayon = 0.45f, rotationForme = new Vector3(-90, 0, 0), gravite = 1.6f, max = 18, dissout = 0.4f });
+        var pt = PS(go.transform, new P { nom = "Poussiere", mat = pousS, tuiles = 4, boucle = false, duree = 1.4f, rafale = 6, vie = new Vector2(0.8f, 1.1f), vitesse = new Vector2(1.2f, 2f), taille = new Vector2(0.5f, 0.8f), forme = ParticleSystemShapeType.Cone, angle = 25f, rayon = 0.5f, rotationForme = new Vector3(-90, 0, 0), flipAleatoire = false, max = 9, dissout = 0.6f, gravite = -0.04f, etire = true, etirement = 0.35f });
+        var lt = pt.limitVelocityOverLifetime; lt.enabled = true; lt.limit = 0.4f; lt.dampen = 0.12f;
+        PS(go.transform, new P { nom = "Graviers", mat = terre, boucle = false, duree = 1f, rafale = 10, vie = new Vector2(0.3f, 0.5f), vitesse = new Vector2(1f, 2.2f), taille = new Vector2(0.025f, 0.045f), forme = ParticleSystemShapeType.Circle, rotationForme = new Vector3(-90, 0, 0), rayon = 0.55f, gravite = 2f, etire = true, etirement = 0.03f, max = 12 });
+        Flaque(go.transform, tr, 1.5f);
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        // grille : poussière et écailles de rouille poussées à travers les barreaux (pivot au centre de la grille, +Y = côté salle),
+        // quelques éclats de fer sombres ; pas de lumière, pas de couleur vive
+        go = Racine("VFX_Apparition_Grille");
+        var pg = PS(go.transform, new P { nom = "Poussiere", mat = pousS, tuiles = 4, boucle = false, duree = 1.4f, rafale = 6, vie = new Vector2(0.8f, 1.1f), vitesse = new Vector2(1f, 1.6f), taille = new Vector2(0.4f, 0.65f), forme = ParticleSystemShapeType.Box, rotationForme = new Vector3(-90, 0, 0), flipAleatoire = false, max = 8, dissout = 0.6f, gravite = -0.03f, etire = true, etirement = 0.35f });
+        { var sh = pg.shape; sh.scale = new Vector3(1.1f, 1.1f, 0.02f); var lg = pg.limitVelocityOverLifetime; lg.enabled = true; lg.limit = 0.6f; lg.dampen = 0.12f; }
+        var ec = PS(go.transform, new P { nom = "Ecailles", mat = rouille, boucle = false, duree = 1.2f, rafale = 18, vie = new Vector2(0.7f, 1.1f), vitesse = new Vector2(0.2f, 0.6f), taille = new Vector2(0.025f, 0.05f), forme = ParticleSystemShapeType.Box, gravite = 0.9f, max = 20, dissout = 0.5f, vitesseVie = new Vector3(0, 2.6f, 0) });
+        { var sh = ec.shape; sh.scale = new Vector3(1f, 0.02f, 1f); }
+        var fe = PS(go.transform, new P { nom = "Fer", mat = rouille, boucle = false, duree = 0.5f, rafale = 6, vie = new Vector2(0.18f, 0.3f), vitesse = new Vector2(2.5f, 4f), taille = new Vector2(0.015f, 0.025f), forme = ParticleSystemShapeType.Box, gravite = 1.5f, etire = true, etirement = 0.04f, max = 8 });
+        { var sh = fe.shape; sh.scale = new Vector3(1f, 0.02f, 1f); }
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        // ombre : la fumée d'encre converge vers le point (vitesse négative), des volutes montent et se resserrent en silhouette,
+        // puis se défont autour de la goule
+        go = Racine("VFX_Apparition_Ombre");
+        var co = PS(go.transform, new P { nom = "Convergence", mat = ombre, tuiles = 4, boucle = false, duree = 0.7f, rafale = 10, debit = 30, vie = new Vector2(0.55f, 0.7f), vitesse = new Vector2(-2.6f, -1.8f), taille = new Vector2(0.8f, 1.3f), forme = ParticleSystemShapeType.Hemisphere, rayon = 1.5f, flipAleatoire = true, max = 30, dissout = 0.8f, tailleVie = K(0, 1.1f, 1, 0.45f) });
+        co.transform.localPosition = new Vector3(0, 0.6f, 0);
+        var vo = PS(go.transform, new P { nom = "Volutes", mat = ombreT, boucle = false, duree = 0.9f, debit = 26, vie = new Vector2(0.5f, 0.8f), vitesse = new Vector2(0.4f, 0.9f), taille = new Vector2(0.06f, 0.1f), forme = ParticleSystemShapeType.Circle, rotationForme = new Vector3(-90, 0, 0), rayon = 0.45f, orbitalXYZ = new Vector3(0, 2.4f, 0), max = 26, dissout = 0.6f, gravite = -0.25f, monde = false });
+        { var m5 = vo.main; m5.startDelay = 0.25f; }
+        var di = PS(go.transform, new P { nom = "Dissipation", mat = ombre, tuiles = 4, boucle = false, duree = 1f, rafale = 6, vie = new Vector2(0.7f, 1f), vitesse = new Vector2(0.8f, 1.4f), taille = new Vector2(0.8f, 1.2f), forme = ParticleSystemShapeType.Sphere, rayon = 0.4f, flipAleatoire = false, max = 8, dissout = 0.7f, gravite = -0.05f });
+        { var m6 = di.main; m6.startDelay = 0.75f; di.transform.localPosition = new Vector3(0, 0.8f, 0); var ld = di.limitVelocityOverLifetime; ld.enabled = true; ld.limit = 0.3f; ld.dampen = 0.15f; }
+        Flaque(go.transform, fl, 2.2f);
+        go.GetComponent<VfxPeint>().detruireALaFin = true; Sauve(go);
+
+        AssetDatabase.SaveAssets();
+        return "nuit 5 : marquages sombres, M_VFX_Indice_Cercle/Rect, contours, VFX_Lien_Drain/Soin (lancer, accroche), VFX_Trait_Prise, VFX_Apparition_Trou/Grille/Ombre";
+    }
+
+    /// <summary>Flaque d'ombre au sol (cylindre aplati, dessus seul dessiné, indice sombre) qui s'ouvre puis se referme.</summary>
+    static void Flaque(Transform parent, Material m, float diametre)
+    {
+        var g = GameObject.CreatePrimitive(PrimitiveType.Cylinder); g.name = "Flaque";
+        Object.DestroyImmediate(g.GetComponent<Collider>());
+        g.transform.SetParent(parent, false);
+        g.transform.localPosition = new Vector3(0, 0.02f, 0);
+        g.transform.localScale = new Vector3(diametre, 0.005f, diametre);
+        var mr = g.GetComponent<MeshRenderer>(); mr.sharedMaterial = m;
+        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; mr.receiveShadows = false;
+        g.AddComponent<FlaqueVfx>();
+    }
+
     // ------------------------------------------------------------------ captures vue à la première personne (lot 2)
     // L'effet est posé à l'origine (main ou caméra), la caméra regarde +Z depuis (0, yeux, -recul). Traction : source en bas
     // à droite de la vue (l'orbe), cible à `distance` m devant. Vitesse : intensité donnée par `distance` (m/s).
@@ -625,7 +778,7 @@ public static class VfxBuilder
         camGo.transform.localPosition = jet ? new Vector3(distance, hauteur, distance * 0.35f) : new Vector3(0, hauteur, -distance);
         camGo.transform.LookAt(root.transform.position + (jet ? new Vector3(0, 0, distance * 0.45f) : new Vector3(0, hauteur * 0.6f, 0)));
         var tr = go.GetComponent<TraceVfx>(); if (tr != null) { tr.depart = root.transform.position; tr.arrivee = root.transform.position + new Vector3(0, 0, 6); tr.Pose(temps); }
-        var li = go.GetComponent<LienVfx>(); if (li != null) li.Regle(new Vector3(-1.6f, 0, 0), new Vector3(1.6f, 0, 0));
+        var li = go.GetComponent<LienVfx>(); if (li != null) li.Regle(root.transform.position + new Vector3(-1.6f, 0, 0), root.transform.position + new Vector3(1.6f, 0, 0));   // positions monde (nuit 5)
         foreach (var p in go.GetComponentsInChildren<ParticleSystem>()) { p.useAutoRandomSeed = false; p.randomSeed = 1234; }
         var roots = go.GetComponentsInChildren<ParticleSystem>().Where(p => p.transform.parent == go.transform).ToArray();
         foreach (var p in roots) p.Simulate(temps, true, true, true);
