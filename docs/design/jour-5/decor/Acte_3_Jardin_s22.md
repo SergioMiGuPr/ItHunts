@@ -6,7 +6,7 @@ Restant : lumières sans mur 0, suspendus sans plafond 0, lustres trop proches 0
 
 Traqueur : 9772/9775 points atteints (100,0 ٪) ; non atteints : Ravin (3, sous un surplomb, pas de bord où se tenir)
 
-Îlots de son NavMesh reliés : 62 (restés seuls : 3, 839 ms)
+Îlots de son NavMesh reliés : 60 (restés seuls : 3, 842 ms)
 
 Points :
 

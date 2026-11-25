@@ -6,7 +6,7 @@ Restant : lumières sans mur 0, suspendus sans plafond 0, lustres trop proches 0
 
 Traqueur : 4873/4883 points atteints (99,8 ٪) ; non atteints : Grand puits (3, pas de chemin ; depuis (47, -8, 52) : bras coupé par Mur à (50, 2, 54)), Salle de torture II (3, pas de sol du traqueur à portée ; depuis (179, 0, -74) : bras coupé par Mur à (182, 9, -71)), Citerne (2, pas de sol du traqueur à portée ; depuis (140, 4, 132) : bras coupé par Mur à (136, 12, 135)), Gouffre II (2, pas de sol du traqueur à portée ; depuis (68, 0, -246) : bras coupé par Mur à (66, 9, -250))
 
-Îlots de son NavMesh reliés : 28 (restés seuls : 0, 453 ms)
+Îlots de son NavMesh reliés : 28 (restés seuls : 0, 321 ms)
 
 Points :
 
