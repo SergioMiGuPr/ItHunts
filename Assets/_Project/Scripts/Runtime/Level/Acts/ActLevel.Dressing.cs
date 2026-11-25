@@ -138,11 +138,11 @@ namespace ItHunts.Level.Acts
                 WallProps(r, root, segs, rec);
             for (int k = 0; k < (sets ? rec.Clusters : N(rec.Clusters)) && rec.Cluster.Length > 0; k++)
                 ClusterProps(r, root, rec.Cluster);
-            for (int k = 0; k < N(rec.Hedges); k++)
+            for (int k = 0; k < (sets ? rec.Hedges / 3 : N(rec.Hedges)); k++)
                 Hedge(r, root);
-            for (int k = 0; k < N(rec.Tombs); k++)
+            for (int k = 0; k < (sets ? rec.Tombs / 2 : N(rec.Tombs)); k++)
                 Tomb(r, root);
-            for (int k = 0; k < N(rec.Planters); k++)
+            for (int k = 0; k < (sets ? rec.Planters / 3 : N(rec.Planters)); k++)
                 Planter(r, root);
             if (settings.theme == ActTheme.Jardin && Plan.Hand != null)
                 Undergrowth(r, root, Mathf.RoundToInt(r.Area(Plan.Cell) / 450f));
@@ -533,11 +533,19 @@ namespace ItHunts.Level.Acts
         }
 
         private readonly List<Vector3> _wallJumps = new List<Vector3>();
+        private readonly List<Vector2Int> _trees = new List<Vector2Int>();
 
         private void Tree(ActRoom r, Transform root, float scale)
         {
             if (!FreeCell(r, out Vector2Int c, clearance: 1))
                 return;
+            if (Plan.Hand != null && _trees.Any(t => (t - c).sqrMagnitude < 9))
+            {
+                _occupied.Remove(c);
+                return;
+            }
+
+            _trees.Add(c);
             // Jamais devant un couloir de wall jump (fuite bouchée, main du traqueur bloquée).
             Vector3 spot = Plan.CellCenter(c, r.Floor);
             if (_wallJumps.Any(w => (w - spot).sqrMagnitude < 14f * 14f))

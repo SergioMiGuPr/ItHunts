@@ -180,6 +180,7 @@ namespace ItHunts.Level.Acts
             _decorOrder = 0;
             _group = 0;
             _wallJumps.Clear();
+            _trees.Clear();
             _tallCells.Clear();
             EnsembleCount = 0;
             var slice = Stopwatch.StartNew();
