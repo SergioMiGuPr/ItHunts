@@ -77,7 +77,16 @@ namespace ItHunts.Level.Acts
                     continue;
                 }
 
-                KitPiece(prefab, root, at, inward, new Vector3(sx, sy, Mathf.Clamp(sy, 0.8f, 1.4f)));
+                // Revue de la DA (jour 5) : un mur de 30 m n'étire plus une pièce de 10 m par 3 (briques et dalles géantes) ; les pièces
+                // s'empilent en rangs à leur hauteur. Le jardin garde l'étirement (lisière de forêt : des arbres, pas des briques).
+                int rows = settings.theme == ActTheme.Jardin ? 1 : Mathf.Max(1, Mathf.RoundToInt(h / Art.wallPieceHeight));
+                float rowH = h / rows;
+                for (int row = 0; row < rows; row++)
+                {
+                    GameObject piece = row == 0 ? prefab : Art.outerWalls[_rng.Next(Art.outerWalls.Count)];
+                    float rsy = rowH / Art.wallPieceHeight;
+                    KitPiece(piece, root, at + Vector3.up * (row * rowH), inward, new Vector3(sx, rsy, Mathf.Clamp(rsy, 0.8f, 1.4f)));
+                }
             }
         }
 
@@ -118,7 +127,7 @@ namespace ItHunts.Level.Acts
         {
             if (Art == null || Art.chandelier == null)
                 return false;
-            KitPiece(Art.chandelier, root, floor + Vector3.up * (ceiling - 0.2f), Vector3.forward, Vector3.one * scale);
+            Tag(KitPiece(Art.chandelier, root, floor + Vector3.up * (ceiling - 0.2f), Vector3.forward, Vector3.one * scale), DecorKind.Lustre);
             return true;
         }
 
@@ -132,6 +141,10 @@ namespace ItHunts.Level.Acts
                 ActRoom start = Plan.Rooms[Plan.Start];
                 GameObject sky = KitPiece(Art.sky, _root, Plan.CellCenter(start.CenterCell, 0f), Vector3.forward, Vector3.one, true);
                 sky.name = "Ciel";
+                // Revue de la DA (jour 5) : la voûte (rayon 450 m) suit la caméra qui rend ; posée au départ, on en sortait au bout
+                // de la carte (700 m) et le ciel n'apparaissait plus que par une fente.
+                if (sky.GetComponent<SkyFollowCamera>() == null)
+                    sky.AddComponent<SkyFollowCamera>();
                 // Nuit 4, point 9 : la lune du menu (même sprite) ne doit pas réapparaître dans le ciel de l'acte III ; la lumière de lune
                 // reste (Light directionnelle de la scène), seul le disque dessiné est retiré (retour fait à la DA dans ART-HANDOFF).
                 Transform moonDisc = sky.transform.Find("Lune");
@@ -186,20 +199,47 @@ namespace ItHunts.Level.Acts
             }
         }
 
-        /// <summary>Piliers d'une grande salle haute (acte II) : deux rangées symétriques le long du grand axe, hors des voies et des creux.</summary>
+        /// <summary>
+        /// Piliers d'une grande salle haute : deux rangées symétriques le long du grand axe, hors des voies et des creux. Cartes faites
+        /// à la main (revue de la DA, jour 5) : une vraie colonnade qui porte la voûte (une colonne tous les 12 m sur chaque rangée, les
+        /// rangées au tiers de la largeur), qui découpe les salles démesurées en nef et bas-côtés ; 13 m libres au moins entre deux
+        /// colonnes, assez pour le traqueur (7 m).
+        /// </summary>
         private void HallPillars(ActRoom r, Transform root)
         {
-            if (Art == null || Art.hallPillar == null || r.Ceiling < 20f || r.Area(Plan.Cell) < 1500f || r.Feature != RoomFeature.Aucun)
+            bool hand = Plan.Hand != null;
+            if (Art == null || Art.hallPillar == null || r.Ceiling < (hand ? 12f : 20f) || r.Area(Plan.Cell) < 1500f || r.Feature != RoomFeature.Aucun)
                 return;
             bool alongX = r.Box.width >= r.Box.height;
             Vector2 c = r.CenterCell;
-            float span = (alongX ? r.Box.width : r.Box.height) * 0.28f, gap = (alongX ? r.Box.height : r.Box.width) * 0.22f;
-            foreach (float a in new[] { -1f, 1f })
-            foreach (float b in new[] { -1f, 1f })
+            float length = alongX ? r.Box.width : r.Box.height, breadth = alongX ? r.Box.height : r.Box.width;
+            var spots = new List<Vector2>();
+            if (!hand || breadth * Plan.Cell < 26f)
             {
-                Vector2 p = c + (alongX ? new Vector2(a * span, b * gap) : new Vector2(b * gap, a * span));
+                float span = length * 0.28f, gap = breadth * 0.22f;
+                foreach (float a in new[] { -1f, 1f })
+                foreach (float b in new[] { -1f, 1f })
+                    spots.Add(c + (alongX ? new Vector2(a * span, b * gap) : new Vector2(b * gap, a * span)));
+            }
+            else
+            {
+                float step = 12f / Plan.Cell, gap = breadth / 6f;
+                int count = Mathf.Max(2, Mathf.FloorToInt((length - 6f / Plan.Cell) / step));
+                for (int k = 0; k < count; k++)
+                {
+                    float a = (k - (count - 1) * 0.5f) * step;
+                    foreach (float b in new[] { -1f, 1f })
+                        spots.Add(c + (alongX ? new Vector2(a, b * gap) : new Vector2(b * gap, a)));
+                }
+            }
+
+            Dictionary<Vector2Int, int> edge = hand ? Plan.EdgeDistance(r) : null;
+            foreach (Vector2 p in spots)
+            {
                 var cell = Vector2Int.RoundToInt(p);
                 if (!r.Use.TryGetValue(cell, out CellUse u) || u != CellUse.Sol || Occupied(cell))
+                    continue;
+                if (edge != null && (!edge.TryGetValue(cell, out int e) || e < 3 || NearDoor(r, Plan.CellCenter(cell, r.Floor), 8f)))
                     continue;
                 Vector3 at = Plan.CellCenter(cell, r.Floor);
                 GameObject pillar = KitPiece(Art.hallPillar, root, at, Vector3.forward, new Vector3(1f, r.Ceiling / 19.2f, 1f));

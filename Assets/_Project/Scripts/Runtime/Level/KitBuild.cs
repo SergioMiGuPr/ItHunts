@@ -84,7 +84,7 @@ namespace ItHunts.Level
         /// dir (horizontale), sur length (m) à plat, montée rise (m), largeur width.
         /// </summary>
         public static GameObject Ramp(Transform parent, string name, Vector3 bottom, Vector3 dir, float length, float rise, float width,
-            KitSet kit, float thickness = 1f)
+            KitSet kit, float thickness = 1f, Material under = null)
         {
             dir.y = 0f;
             dir.Normalize();
@@ -111,16 +111,95 @@ namespace ItHunts.Level
             int n = Mathf.Max(1, Mathf.RoundToInt(rise / stepRise));
             float r = rise / n, run = length / n;
             List<(float c, float s)> across = Segments(width, 4f);
+            // Revue de la DA (jour 5) : avec un matériau de dessous, chaque marche garde sa hauteur (pavage à l'échelle, qui suit les
+            // marches) et un massif en biais, au matériau du mur, remplit le dessous ; sinon, marches pleines jusqu'au sol (ancien).
             for (int k = 1; k < n; k++)
                 foreach ((float c, float s) in across)
                 {
                     GameObject st = Spawn(kit.escalier, steps);
-                    st.transform.localPosition = new Vector3(c - width * 0.5f, 0f, k * run);
                     st.transform.localRotation = Quaternion.identity;
-                    st.transform.localScale = new Vector3(s, k * r / stepRise, run);
+                    if (under != null)
+                    {
+                        st.transform.localPosition = new Vector3(c - width * 0.5f, (k - 1) * r, k * run);
+                        st.transform.localScale = new Vector3(s, r / stepRise, run);
+                    }
+                    else
+                    {
+                        st.transform.localPosition = new Vector3(c - width * 0.5f, 0f, k * run);
+                        st.transform.localScale = new Vector3(s, k * r / stepRise, run);
+                    }
                 }
 
+            if (under != null && n > 2)
+            {
+                var wedge = new GameObject("Kit_Massif de l'escalier");
+                wedge.transform.SetParent(steps, false);
+                wedge.transform.localPosition = new Vector3(0f, 0f, run);
+                wedge.transform.localRotation = Quaternion.identity;
+                wedge.transform.localScale = new Vector3(width, (n - 1) * r, length - run);
+                wedge.AddComponent<MeshFilter>().sharedMesh = WedgeMesh;
+                wedge.AddComponent<MeshRenderer>().sharedMaterial = under;
+            }
+
             return go;
+        }
+
+        private static Mesh _wedge;
+
+        /// <summary>Prisme unité : base z 0..1 au sol, pente de (z 0, y 0) à (z 1, y 1), largeur x −0.5..0.5, dos vertical en z = 1.</summary>
+        private static Mesh WedgeMesh
+        {
+            get
+            {
+                if (_wedge != null)
+                    return _wedge;
+                Vector3 a = new Vector3(-0.5f, 0f, 0f), b = new Vector3(0.5f, 0f, 0f), c = new Vector3(-0.5f, 0f, 1f), d = new Vector3(0.5f, 0f, 1f);
+                Vector3 e = new Vector3(-0.5f, 1f, 1f), f = new Vector3(0.5f, 1f, 1f);
+                var v = new List<Vector3>();
+                var t = new List<int>();
+                void Tri(Vector3 p, Vector3 q, Vector3 w)
+                {
+                    int i = v.Count;
+                    v.Add(p);
+                    v.Add(q);
+                    v.Add(w);
+                    t.Add(i);
+                    t.Add(i + 1);
+                    t.Add(i + 2);
+                }
+
+                void Quad(Vector3 p, Vector3 q, Vector3 w, Vector3 x)
+                {
+                    Tri(p, q, w);
+                    Tri(p, w, x);
+                }
+
+                Quad(a, e, f, b);      // pente (vers le haut et l'avant)
+                Quad(c, d, f, e);      // dos vertical
+                Quad(a, b, d, c);      // dessous
+                Tri(a, c, e);          // flanc gauche
+                Tri(b, f, d);          // flanc droit
+                _wedge = new Mesh { name = "Massif d'escalier" };
+                _wedge.SetVertices(v);
+                _wedge.SetTriangles(t, 0);
+                _wedge.RecalculateNormals();
+                _wedge.RecalculateBounds();
+                // Les faces doivent regarder dehors : on retourne celles dont la normale pointe vers le centre.
+                Vector3 center = new Vector3(0f, 0.33f, 0.66f);
+                Vector3[] verts = _wedge.vertices, normals = _wedge.normals;
+                int[] tris = _wedge.triangles;
+                for (int i = 0; i < tris.Length; i += 3)
+                {
+                    Vector3 mid = (verts[tris[i]] + verts[tris[i + 1]] + verts[tris[i + 2]]) / 3f;
+                    Vector3 nrm = Vector3.Cross(verts[tris[i + 1]] - verts[tris[i]], verts[tris[i + 2]] - verts[tris[i]]);
+                    if (Vector3.Dot(nrm, mid - center) < 0f)
+                        (tris[i + 1], tris[i + 2]) = (tris[i + 2], tris[i + 1]);
+                }
+
+                _wedge.triangles = tris;
+                _wedge.RecalculateNormals();
+                return _wedge;
+            }
         }
 
         /// <summary>Hauteur de l'arc du kit (m), lue sur son modèle ; 11 m (SM_Arc_Couloir) par défaut.</summary>

@@ -80,6 +80,18 @@ namespace ItHunts.Level.Acts
         };
 
         private readonly List<Vector3> _chandeliers = new List<Vector3>();
+        private int _decorOrder;
+
+        /// <summary>Étiquette d'audit du décor (D-115) : rôle de l'élément et ordre de pose (le plus récent part en cas de doublon).</summary>
+        private GameObject Tag(GameObject go, DecorKind kind)
+        {
+            if (go == null)
+                return null;
+            DecorTag t = go.GetComponent<DecorTag>() ?? go.AddComponent<DecorTag>();
+            t.kind = kind;
+            t.order = _decorOrder++;
+            return go;
+        }
 
         private void Dress(ActRoom r)
         {
@@ -115,7 +127,8 @@ namespace ItHunts.Level.Acts
                 WallProps(r, root, segs, rec);
             // Cartes faites à la main (D-110) : salles 3 à 8 fois plus grandes que celles des recettes ; les quantités suivent la
             // surface (une salle remplie avec soin, pas un champ vide).
-            float density = Plan.Hand != null ? Mathf.Clamp(r.Area(Plan.Cell) / 1600f, 1f, 7f) : 1f;
+            // Revue de la DA (jour 5) : un groupe de props tous les 8 à 10 m, plus de grands sols vides.
+            float density = Plan.Hand != null ? Mathf.Clamp(r.Area(Plan.Cell) / 500f, 1f, 20f) : 1f;
             int N(int count) => Mathf.RoundToInt(count * density);
             for (int k = 0; k < N(rec.Clusters) && rec.Cluster.Length > 0; k++)
                 ClusterProps(r, root, rec.Cluster);
@@ -130,9 +143,12 @@ namespace ItHunts.Level.Acts
                 Planter(r, root);
             if (settings.theme == ActTheme.Jardin && Plan.Hand != null)
                 Undergrowth(r, root, Mathf.RoundToInt(r.Area(Plan.Cell) / 450f));
-            if (Plan.Hand != null && r.Area(Plan.Cell) > 900f)
-                FieldLights(r, root, Mathf.RoundToInt(r.Area(Plan.Cell) / (settings.theme == ActTheme.Jardin ? 900f : 1300f)));
-            if (rec.Hang.Length > 0 && r.Ceiling > 0f)
+            // Revue de la DA : le décor se lit à 20 m ; une source au sol par 450 m² environ (600 au jardin, la lune éclaire), 14 m
+            // d'écart au moins. HorrorLook éteint celles qui sont au-delà du brouillard (coût en lumières tenu).
+            if (Plan.Hand != null && r.Area(Plan.Cell) > 300f)
+                FieldLights(r, root, Mathf.Max(1, Mathf.RoundToInt(r.Area(Plan.Cell) / (settings.theme == ActTheme.Jardin ? 600f : 450f))));
+            // Suspendus (chaînes) : seulement sans pièce du kit (les chaînes du kit sont murales) et sous un plafond.
+            if (rec.Hang.Length > 0 && r.Ceiling > 0f && (Art == null || Art.Swap(rec.Hang[0]) == null))
                 for (int k = 0; k < 4; k++)
                     if (FreeCell(r, out Vector2Int c, clearance: 0))
                     {
@@ -175,12 +191,16 @@ namespace ItHunts.Level.Acts
         {
             // Pièce du kit de l'acte à la place du prop greybox (table de remplacement), ou pièce du kit appelée par son nom.
             GameObject prefab = Art != null ? Art.Swap(name) ?? Art.Piece(name) : null;
+            bool greybox = prefab == null;
             if (prefab == null)
                 prefab = settings.Prop(name);
             if (prefab == null)
                 return null;
             GameObject go = Instantiate(prefab, at, Quaternion.Euler(0f, yaw, 0f), root);
             go.name = name;
+            // Cage et chaîne greybox : suspendues ; leurs pièces du kit (grille de cellule, chaînes murales) se posent au sol ou au mur.
+            Tag(go, greybox && (name == "Prop_Cage" || name == "Prop_Chaine") ? DecorKind.Suspendu
+                : !greybox && name == "Prop_Chaine" ? DecorKind.Mural : DecorKind.Prop);
             // Le traqueur (14 m) enjambe le mobilier : il ne découpe pas son NavMesh (sinon des îlots hors de sa portée, D-080).
             if (go.GetComponent<ItHunts.Enemies.StalkerPassesThrough>() == null)
                 go.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
@@ -216,7 +236,9 @@ namespace ItHunts.Level.Acts
                     string name = rec.Wall[i++ % rec.Wall.Length];
                     float yaw = Mathf.Atan2(inward.x, inward.z) * Mathf.Rad2Deg;
                     // Tapisseries et grilles : contre le mur, plus haut pour la tapisserie.
-                    Vector3 at = name == "Prop_Tapisserie" ? p - inward * 0.85f + Vector3.up * 2.5f : name == "Prop_Grille" ? p - inward * 0.5f : p;
+                    // Chaînes murales du kit : contre le mur (revue de la DA : plus de chaînes posées à 1.4 m d'un mur).
+                    Vector3 at = name == "Prop_Tapisserie" ? p - inward * 0.85f + Vector3.up * 2.5f : name == "Prop_Grille" ? p - inward * 0.5f
+                        : name == "Prop_Chaine" && Art != null && Art.Swap(name) != null ? p - inward * 1.3f : p;
                     Prop(root, name, at, yaw);
                     Take(p);
                 }
@@ -329,7 +351,7 @@ namespace ItHunts.Level.Acts
                     {
                         if (k % 2 == 1 || Occupied(c))
                             continue;                                   // au jardin, une source sur deux : la lune éclaire déjà
-                        KitPiece(Art.candles, root, new Vector3(p.x, ground, p.z) + inward * 2.2f, inward, Vector3.one * 1.3f, true)
+                        Tag(KitPiece(Art.candles, root, new Vector3(p.x, ground, p.z) + inward * 2.2f, inward, Vector3.one * 1.3f, true), DecorKind.LumiereSol)
                             .AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
                         _occupied.Add(c);
                         continue;
@@ -339,6 +361,7 @@ namespace ItHunts.Level.Acts
                         ? KitPiece(Art.torch, root, at - inward * 0.05f, inward, Vector3.one, true)
                         : KitBuild.Piece(torchPrefab, root, at, yaw);
                     torch.transform.position = at;
+                    Tag(torch, DecorKind.Mural);
                     foreach (Light l in torch.GetComponentsInChildren<Light>())
                     {
                         l.color = settings.torchColor;
@@ -371,6 +394,7 @@ namespace ItHunts.Level.Acts
             float y = floor.y + Mathf.Max(8f, ceiling - 7f);
             var go = new GameObject("Lustre");
             go.transform.SetParent(root, false);
+            Tag(go, DecorKind.Lustre);
             go.transform.position = new Vector3(floor.x, y, floor.z);
             Material iron = settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial;
             for (int k = 0; k < 10; k++)
@@ -457,7 +481,7 @@ namespace ItHunts.Level.Acts
                 if (!FreeCell(r, out Vector2Int c, clearance: 1))
                     break;
                 Vector3 at = Plan.CellCenter(c, GroundAt(r, c));
-                if (placed.Any(o => (o - at).sqrMagnitude < 18f * 18f))
+                if (placed.Any(o => (o - at).sqrMagnitude < 14f * 14f))
                 {
                     _occupied.Remove(c);
                     continue;
@@ -466,6 +490,7 @@ namespace ItHunts.Level.Acts
                 placed.Add(at);
                 GameObject go = KitPiece(prefab, root, at, Quaternion.Euler(0f, _rng.Next(360), 0f) * Vector3.forward,
                     Vector3.one * (prefab == Art.candles ? 1.3f : 1f), true);
+                Tag(go, DecorKind.LumiereSol);
                 if (go.GetComponent<ItHunts.Enemies.StalkerPassesThrough>() == null)
                     go.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
                 foreach (Light l in go.GetComponentsInChildren<Light>())
@@ -493,6 +518,7 @@ namespace ItHunts.Level.Acts
                     continue;
                 GameObject go = KitPiece(prefab, root, Plan.CellCenter(c, r.Floor), Quaternion.Euler(0f, _rng.Next(360), 0f) * Vector3.forward,
                     Vector3.one * (0.85f + 0.3f * (float)_rng.NextDouble()), true);
+                Tag(go, DecorKind.Vegetal);
                 if (go.GetComponent<ItHunts.Enemies.StalkerPassesThrough>() == null)
                     go.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();   // le traqueur enjambe rochers et fougères
             }
@@ -510,6 +536,7 @@ namespace ItHunts.Level.Acts
                 // Gros arbre mort du kit : son tronc sert au wall jump (collision gardée), le traqueur l'enjambe (NavMesh).
                 GameObject t = KitPiece(kitTree, root, at, Quaternion.Euler(0f, _rng.Next(360), 0f) * Vector3.forward, Vector3.one * scale, true);
                 t.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
+                Tag(t, DecorKind.Vegetal);
                 for (int dx = -1; dx <= 1; dx++)
                 for (int dy = -1; dy <= 1; dy++)
                     _occupied.Add(c + new Vector2Int(dx, dy));
@@ -588,7 +615,7 @@ namespace ItHunts.Level.Acts
             GameObject kitTomb = Art != null ? Art.Piece(_rng.Next(3) == 0 ? "Jardin_Tombe_Croix" : "Jardin_Tombe_Stele") : null;
             if (kitTomb != null)
             {
-                KitPiece(kitTomb, root, at, Quaternion.Euler(0f, yaw, 0f) * Vector3.forward, Vector3.one, true).AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
+                Tag(KitPiece(kitTomb, root, at, Quaternion.Euler(0f, yaw, 0f) * Vector3.forward, Vector3.one, true), DecorKind.Vegetal).AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
                 return;
             }
 
@@ -607,7 +634,7 @@ namespace ItHunts.Level.Acts
             GameObject massif = Art != null ? Art.Piece("Jardin_Massif") : null;
             if (massif != null)
             {
-                KitPiece(massif, root, at, Quaternion.Euler(0f, yaw, 0f) * Vector3.forward, Vector3.one, true).AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
+                Tag(KitPiece(massif, root, at, Quaternion.Euler(0f, yaw, 0f) * Vector3.forward, Vector3.one, true), DecorKind.Vegetal).AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
                 return;
             }
 

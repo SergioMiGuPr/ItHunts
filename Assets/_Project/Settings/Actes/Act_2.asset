@@ -60,6 +60,7 @@ MonoBehaviour:
   lockedRooms: 2
   merchants: 1
   stalkerFromArrival: 1
+  ambiance: {fileID: 0}
   handMaps:
   - {fileID: 4900000, guid: 50ab94132b3fcae489820d3b63ce9015, type: 3}
   - {fileID: 4900000, guid: ae71df6e49600404cbe71b30ac17e4e5, type: 3}

@@ -331,6 +331,14 @@ namespace ItHunts.Level.Acts
 
         private void ConfigureScene()
         {
+            // Acte III (revue de la DA) : vrai extérieur, brouillard lointain (18 à 140 m), lune à 0.6, ambiance plus claire.
+            if (settings.ambiance != null)
+            {
+                var amb = FindFirstObjectByType<SceneAmbiance>();
+                if (amb != null && amb.Base != settings.ambiance)
+                    amb.Use(settings.ambiance);
+            }
+
             // Acte II (jour 5) : la lune n'entre que par les fenêtres (leurs rayons) ; plus de lumière directionnelle dans le château.
             // Acte III (jour 5) : à ciel ouvert, la lune éclaire les clairières (lisibilité dans le noir, pilier 4).
             if (settings.theme == ActTheme.Jardin && Plan.Hand != null)

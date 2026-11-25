@@ -172,6 +172,7 @@ namespace ItHunts.Level.Acts
             KitBuild.PieceCount = 0;
             StalkerClimbs = 0;
             _chandeliers.Clear();
+            _decorOrder = 0;
             var slice = Stopwatch.StartNew();
             int n = Plan.Rooms.Count;
             for (int i = 0; i < n; i++)
@@ -219,13 +220,22 @@ namespace ItHunts.Level.Acts
             if (async)
                 yield return null;
             (PropsSwapped, PropsKept) = PropArt.DressAll(_root);      // props en 3D de la DA (PR #51) sur les greybox
+            // Revue des cartes de la DA (jour 5, D-115) : lumières sans mur, suspendus sans plafond, lustres en double, props qui se
+            // chevauchent, décor traversable, formes provisoires : corrigés ici ; le test DecorAuditTests vérifie qu'il n'en reste aucun.
+            DecorFixes = DecorAudit.Run(_root, true, settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial);
             Batch();
             Physics.SyncTransforms();
             BuildMs = (float)sw.Elapsed.TotalMilliseconds;
             Debug.Log($"Acte « {settings.displayName} » : seed {seed}, {Plan.Rooms.Count} salles, {Plan.Doors.Count} portes " +
                       $"({Plan.Doors.Count(x => x.Loop)} boucles), départ – sortie {Plan.StartExitDepth} salles, {GhoulsPlaced} goules, " +
-                      $"{BuildMs:0} ms, {KitBuild.PieceCount} pièces du kit");
+                      $"{BuildMs:0} ms, {KitBuild.PieceCount} pièces du kit ; décor corrigé : {DecorFixes}");
         }
+
+        /// <summary>Défauts du décor corrigés à la construction (lumières sans mur, doublons, chevauchements…).</summary>
+        public DecorReport DecorFixes { get; private set; } = new DecorReport();
+
+        /// <summary>Racine du niveau construit (audit du décor).</summary>
+        public Transform Root => _root;
 
         // ---------- Outils ----------
 
@@ -262,14 +272,25 @@ namespace ItHunts.Level.Acts
                 var vis = new GameObject("Kit_Boite");
                 vis.transform.SetParent(go.transform, false);
                 vis.transform.localScale = size;
-                vis.AddComponent<MeshFilter>().sharedMesh = CubeMesh;
                 FunctionMaterials fm = _roomMaterials;
                 Material wallM = fm != null && fm.wall != null ? fm.wall : settings.wallMaterial;
                 Material floorM = fm != null && fm.floor != null ? fm.floor : settings.floorMaterial;
                 Material ceilM = fm != null && fm.ceiling != null ? fm.ceiling : settings.ceilingMaterial;
                 Material m = mat != null ? mat : kind == KitBuild.Kind.Mur ? wallM
                     : kind == KitBuild.Kind.Sol && !walkable ? ceilM : kind == KitBuild.Kind.Pont ? settings.trimMaterial : floorM;
-                vis.AddComponent<MeshRenderer>().sharedMaterial = m != null ? m : settings.wallMaterial;
+                m = m != null ? m : settings.wallMaterial;
+                // Revue de la DA (jour 5) : un sol, une terrasse ou un îlot a ses faces de côté au matériau du mur (plus de damier ni de
+                // dallage posé à la verticale sur les murs des terrasses et les contremarches).
+                if (mat == null && walkable && kind != KitBuild.Kind.Mur && kind != KitBuild.Kind.Pont && wallM != null && wallM != m)
+                {
+                    vis.AddComponent<MeshFilter>().sharedMesh = TwoMaterialCube;
+                    vis.AddComponent<MeshRenderer>().sharedMaterials = new[] { m, wallM };
+                }
+                else
+                {
+                    vis.AddComponent<MeshFilter>().sharedMesh = CubeMesh;
+                    vis.AddComponent<MeshRenderer>().sharedMaterial = m;
+                }
             }
 
             go.transform.localPosition = center;
@@ -292,6 +313,60 @@ namespace ItHunts.Level.Acts
                 }
 
                 return _cube;
+            }
+        }
+
+        private static Mesh _twoMat;
+
+        /// <summary>Cube unité à deux sous-maillages : 0 = dessus et dessous (sol), 1 = les quatre côtés (mur).</summary>
+        public static Mesh TwoMaterialCube
+        {
+            get
+            {
+                if (_twoMat != null)
+                    return _twoMat;
+                var v = new List<Vector3>();
+                var n = new List<Vector3>();
+                var uv = new List<Vector2>();
+                var top = new List<int>();
+                var sides = new List<int>();
+                void Face(Vector3 normal, Vector3 u, Vector3 w, List<int> into)
+                {
+                    int b = v.Count;
+                    Vector3 c = normal * 0.5f;
+                    v.Add(c - u * 0.5f - w * 0.5f);
+                    v.Add(c + u * 0.5f - w * 0.5f);
+                    v.Add(c + u * 0.5f + w * 0.5f);
+                    v.Add(c - u * 0.5f + w * 0.5f);
+                    for (int i = 0; i < 4; i++)
+                        n.Add(normal);
+                    uv.Add(new Vector2(0, 0));
+                    uv.Add(new Vector2(1, 0));
+                    uv.Add(new Vector2(1, 1));
+                    uv.Add(new Vector2(0, 1));
+                    // Sens des triangles : la normale sort de la face (u × w = normale).
+                    if (Vector3.Dot(Vector3.Cross(u, w), normal) > 0f)
+                        into.AddRange(new[] { b, b + 1, b + 2, b, b + 2, b + 3 });
+                    else
+                        into.AddRange(new[] { b, b + 2, b + 1, b, b + 3, b + 2 });
+                }
+
+                Face(Vector3.up, Vector3.right, Vector3.forward, top);
+                Face(Vector3.down, Vector3.right, Vector3.forward, top);
+                Face(Vector3.right, Vector3.forward, Vector3.up, sides);
+                Face(Vector3.left, Vector3.forward, Vector3.up, sides);
+                Face(Vector3.forward, Vector3.right, Vector3.up, sides);
+                Face(Vector3.back, Vector3.right, Vector3.up, sides);
+                _twoMat = new Mesh { name = "Cube sol et murs" };
+                _twoMat.SetVertices(v);
+                _twoMat.SetNormals(n);
+                _twoMat.SetUVs(0, uv);
+                _twoMat.subMeshCount = 2;
+                _twoMat.SetTriangles(top, 0);
+                _twoMat.SetTriangles(sides, 1);
+                _twoMat.RecalculateBounds();
+                _twoMat.RecalculateTangents();
+                return _twoMat;
             }
         }
 

@@ -119,6 +119,8 @@ namespace ItHunts.Level.Acts
 
         [Header("Cartes faites à la main (D-110)")]
         [Tooltip("Cartes de l'acte (fichiers texte, format docs/design/level/CARTES.md). Non vide : une carte tirée par seed à la place du plan au hasard.")]
+        [Tooltip("Ambiance propre à l'acte (brouillard, lumière d'ambiance, lune) ; vide : celle de la scène. Acte III : ciel ouvert, brouillard lointain.")]
+        public ItHunts.Settings.AmbianceSettings ambiance;
         public List<TextAsset> handMaps = new List<TextAsset>();
 
         [Header("Matériaux (formes simples en attendant les kits d'art)")]

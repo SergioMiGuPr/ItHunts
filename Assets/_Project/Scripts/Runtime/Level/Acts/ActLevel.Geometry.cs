@@ -14,6 +14,9 @@ namespace ItHunts.Level.Acts
         private readonly Dictionary<int, Transform> _roomRoots = new Dictionary<int, Transform>();
         private readonly Dictionary<int, List<ActContour.Segment>> _contours = new Dictionary<int, List<ActContour.Segment>>();
 
+        /// <summary>Matériau des murs de la salle en cours de construction (fonction de la salle, sinon celui de l'acte).</summary>
+        private Material RoomWall => _roomMaterials != null && _roomMaterials.wall != null ? _roomMaterials.wall : settings.wallMaterial;
+
         private float WallTop(ActRoom r) => r.Ceiling > 0f ? r.Floor + r.Ceiling : r.Floor + (r.Special ? 12f : settings.openInnerWall);
         private float Bottom(ActRoom r) => r.Floor - (r.Feature == RoomFeature.Vide ? VoidDepth : FloorDepth);
 
@@ -120,7 +123,7 @@ namespace ItHunts.Level.Acts
                     Vector3 dir = new Vector3(d.x, 0f, d.y);
                     Vector3 top = Plan.CellCenter(c, r.Floor) + dir * (Plan.Cell * 0.5f);
                     float len = Plan.Cell * 2f;
-                    KitBuild.Ramp(root, "Marches du bassin", top - dir * len - Vector3.up * depth, dir, len, depth, Plan.Cell * 2f, settings.kit);
+                    KitBuild.Ramp(root, "Marches du bassin", top - dir * len - Vector3.up * depth, dir, len, depth, Plan.Cell * 2f, settings.kit, under: RoomWall);
                     made++;
                     break;
                 }
@@ -196,7 +199,7 @@ namespace ItHunts.Level.Acts
                 Vector2Int top = l.Stairs.OrderBy(c => Vector2.Dot(c, (Vector2)l.StairsDir)).First();
                 Vector3 topEdge = Plan.CellCenter(top, r.Floor) - dir * (Plan.Cell * 0.5f);
                 float len = Mathf.Max(1, l.Stairs.Count / 3) * Plan.Cell;
-                KitBuild.Ramp(root, "Escalier du palier", topEdge + dir * len, -dir, len, l.Height, Plan.Cell * 3f, settings.kit);
+                KitBuild.Ramp(root, "Escalier du palier", topEdge + dir * len, -dir, len, l.Height, Plan.Cell * 3f, settings.kit, under: RoomWall);
                 foreach (Vector2Int c in l.Stairs)
                     r.Use[c] = CellUse.Rampe;
                 // Garde-corps bas du palier (lisible) : une margelle le long du bord libre, côté escalier exclu.
@@ -330,7 +333,7 @@ namespace ItHunts.Level.Acts
                     Vector3 edge = Plan.CellCenter(t, r.Floor) + dir * (Plan.Cell * 0.5f);
                     if (!stairs)
                     {
-                        KitBuild.Ramp(root, "Escalier de la terrasse", edge + dir * (cells * Plan.Cell), -dir, cells * Plan.Cell, h, Plan.Cell * 2.5f, settings.kit);
+                        KitBuild.Ramp(root, "Escalier de la terrasse", edge + dir * (cells * Plan.Cell), -dir, cells * Plan.Cell, h, Plan.Cell * 2.5f, settings.kit, under: RoomWall);
                         for (int k = 1; k <= cells; k++)
                         for (int s = -1; s <= 1; s++)
                             r.Use[t + d * k + side * s] = CellUse.Rampe;
@@ -545,7 +548,7 @@ namespace ItHunts.Level.Acts
                 Vector3 inward = n * (d.RampRoom == d.A ? -1f : 1f);
                 float run = d.RampCellsDeep * Plan.Cell;
                 Vector3 doorFoot = new Vector3(c.x, low.Floor, c.z) + inward * (T * 0.5f);
-                KitBuild.Ramp(_roomRoots[low.Id], "Rampe entre salles", doorFoot + inward * (run - T * 0.5f), -inward, run, high.Floor - low.Floor, w, settings.kit);
+                KitBuild.Ramp(_roomRoots[low.Id], "Rampe entre salles", doorFoot + inward * (run - T * 0.5f), -inward, run, high.Floor - low.Floor, w, settings.kit, under: settings.wallMaterial);
             }
 
             // Nuit 4, point 1 (« ouvertures de portes en noir total ») : une lueur chaude de chaque côté de l'ouverture, qui dessine le seuil
