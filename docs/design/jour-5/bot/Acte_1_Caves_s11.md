@@ -1,24 +1,25 @@
-# Bot : Acte_1_Caves_s11 (2026-11-25 16:25)
+# Bot : Acte_1_Caves_s11 (2026-11-25 21:00)
 
-## Acte_1_Caves (acte 1, seed 11) : ❌ 2 défaut(s), 0 erreur(s)
+## Acte_1_Caves (acte 1, seed 11) : ✅ réussi
 
-- Temps de jeu de l'acte : 8:38 ; temps réel 438 s (vitesse ×1).
-- Âmes en fin d'acte : 30 ; achats : 0 ; coffres essayés : 0.
-- Tirs : 657 ; coups reçus (comptés, invulnérable) : 0 ; parades : 8623 appuis, 2467 réussies (images avec une annonce de goule à moins de 6 m : 6053).
-- Fuites devant le traqueur : 6 ; tractions de secours : 15 ; téléportations après blocage : 2 ; esquives (boss) : 0.
-- Vitesse max : 19,2 m/s ; images par seconde (éditeur) : moyenne 8, minimum 0.
+- Temps de jeu de l'acte : 8:39 ; temps réel 718 s (vitesse ×1).
+- Âmes en fin d'acte : 5 ; achats : 6 ; coffres essayés : 6.
+- Tirs : 712 ; coups reçus (comptés, invulnérable) : 0 ; parades : 5738 appuis, 1158 réussies (images avec une annonce de goule à moins de 6 m : 3734).
+- Fuites devant le traqueur : 6 ; tractions de secours : 14 ; téléportations après blocage : 0 ; esquives (boss) : 0.
+- Vitesse max : 22,0 m/s ; images par seconde (éditeur) : moyenne 5, minimum 0.
 - Toutes les salles visitées : non.
-
-**Défauts :**
-- [blocage] aucun progrès vers « salle Chapelle souterraine II » pendant 12 s à 4:47, position (-157.8, 0.0, -194.7) (salle Galerie de mine III) ; téléporté au point suivant
-- [blocage] aucun progrès vers « salle Grand puits » pendant 12 s à 6:31, position (-114.4, -11.0, 12.4) (salle Grotte inondée) ; téléporté au point suivant
 
 <details><summary>Journal du bot</summary>
 
-- [chute] tombé dans un vide à 6:57, position (195.4, -16.4, -26.0) (salle Ossuaire II) ; ramené au dernier sol sûr
-- [sortie] payable, 150 âmes à 7:52
-- [sortie] demande d'ouverture à 8:36 (porte déjà ouverte)
-- [acte] terminé à 8:38 (temps de jeu)
+- [achat] coffre : Semelles de vent · Bronze (0 âmes, reste 2) à 0:47
+- [achat] coffre : Œil du collectionneur · Bronze (0 âmes, reste 24) à 1:45
+- [achat] coffre : Ricochet · Bronze (0 âmes, reste 27) à 2:22
+- [achat] coffre : Balles paralysantes · Bronze (0 âmes, reste 48) à 3:13
+- [achat] coffre : Âmes gourmandes · Bronze (0 âmes, reste 40) à 4:16
+- [achat] coffre : Sixième chambre · Argent (0 âmes, reste 13) à 4:44
+- [sortie] payable, 151 âmes à 7:49
+- [sortie] demande d'ouverture à 8:37 (porte déjà ouverte)
+- [acte] terminé à 8:39 (temps de jeu)
 - [acte] acte gagné
 
 </details>
