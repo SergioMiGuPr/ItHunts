@@ -163,12 +163,20 @@ namespace ItHunts.Art.Menus
                 return;
             Perso p = persos[perso];
             Placement pc = Trouve(p.id, place + 1);
+            if (pc == null)
+            {
+                // nuit 5 : sans placement mesuré, la place reste vide (avant : l'ancien corps et ses ombres restaient affichés)
+                Debug.LogWarning("CampementApercu : pas de placement pour " + p.id + " à la place " + (place + 1), this);
+                Libere(place);
+                return;
+            }
             pl.occupant = perso;
             if (pc != null && pl.corps != null)
             {
                 pl.corps.sprite = p.corps;
                 MenuEcran.Pose(pl.corps.rectTransform, pc.corps.x, pc.corps.y, pc.corps.width, pc.corps.height);
                 if (pc.miroir) Retourne(pl.corps.rectTransform);
+                PivotBas(pl.corps.rectTransform);
                 pl.corps.gameObject.SetActive(true);
                 Eclaire(pl, p, pc);
             }
@@ -183,7 +191,7 @@ namespace ItHunts.Art.Menus
                 Vector2 c = new Vector2(pc.lanterne.center.x, pc.lanterne.yMax - pc.lanterne.height * 0.12f);
                 float r = pc.lanterne.height * eclairageLanterne.x;
                 MenuEcran.Pose(pl.eclairage.rectTransform, c.x - r, c.y - r * eclairageLanterne.y, r * 2, r * eclairageLanterne.y * 2);
-                Color lc = Color.Lerp(new Color(1f, 0.78f, 0.5f), p.couleur, eclairageLanterne.z);
+                Color lc = Color.Lerp(new Color(1f, 0.78f, 0.5f), CouleurLueur(p.couleur), eclairageLanterne.z);
                 lc.a = 1f;
                 pl.eclairage.color = lc;
                 pl.eclairage.gameObject.SetActive(true);
@@ -217,7 +225,7 @@ namespace ItHunts.Art.Menus
                 }
                 else // lueur au sol autour du pied de la lanterne (ellipse aplatie)
                     MenuEcran.Pose(pl.lueur.rectTransform, c.x - r, pc.lanterne.yMax - r * 0.55f, r * 2, r * 0.9f);
-                pl.lueur.color = p.couleur;
+                pl.lueur.color = CouleurLueur(p.couleur);
                 pl.lueur.gameObject.SetActive(true);
             }
             if (pl.cartouche != null)
@@ -311,20 +319,50 @@ namespace ItHunts.Art.Menus
             }
         }
 
-        /// <summary>Ombre (contact et portée) d'un sprite posé dans le rect r : image élargie, uv du sprite aux coins.</summary>
+        [Tooltip("Luminance visée des lueurs de lanterne (nuit 5) : le vert, le jaune et le bleu, perçus bien plus clairs que le rouge, sont ramenés à la même force.")]
+        public float luminanceLueur = 0.4f;
+
+        [Tooltip("Part de lumière chaude neutre mêlée à la couleur du personnage dans la lueur de sa lanterne (nuit 5).")]
+        public float chaleurLueur = 0.45f;
+
+        /// <summary>Couleur de lanterne mêlée de lumière chaude puis ramenée à une luminance commune (le vert du koala faisait
+        /// un aplat saturé sur la bûche et le rocher).</summary>
+        private Color CouleurLueur(Color c)
+        {
+            c = Color.Lerp(c, new Color(1f, 0.8f, 0.58f, c.a), chaleurLueur);
+            float l = c.r * 0.2126f + c.g * 0.7152f + c.b * 0.0722f;
+            float k = l > luminanceLueur ? luminanceLueur / l : 1f;
+            return new Color(c.r * k, c.g * k, c.b * k, c.a);
+        }
+
         /// <summary>Retourne horizontalement un rect posé par MenuEcran.Pose (même emprise à l'écran).</summary>
         private static void Retourne(RectTransform rt)
         {
             Vector2 pos = rt.anchoredPosition, size = rt.sizeDelta;
             rt.pivot = new Vector2(0.5f, 1f);
             rt.anchoredPosition = new Vector2(pos.x + size.x * 0.5f, pos.y);
-            rt.localScale = new Vector3(-1f, 1f, 1f);
+            // nuit 5 : rotation de 180° au lieu d'une échelle -1 : les apparitions (ici et MainMenuArt.Appear de main) règlent
+            // localScale et écrasaient le retournement pendant 0,6 s
+            rt.localScale = Vector3.one;
+            rt.localRotation = Quaternion.Euler(0f, 180f, 0f);
         }
 
+        /// <summary>Pivot au bas du rect (même emprise) : un fondu qui écrase la hauteur garde les pieds sur le siège.</summary>
+        private static void PivotBas(RectTransform rt)
+        {
+            Vector2 piv = rt.pivot, size = rt.sizeDelta;
+            rt.pivot = new Vector2(piv.x, 0f);
+            rt.anchoredPosition += new Vector2(0f, -size.y * piv.y);
+        }
+
+        /// <summary>Ombre (contact et portée) d'un sprite posé dans le rect r : image élargie, uv du sprite aux coins.</summary>
         private void PoseOmbre(ref Material matJeu, Image im, Sprite spr, Rect r, int place, bool estLanterne, bool miroir = false)
         {
             if (spr == null)
+            {
+                im.gameObject.SetActive(false);   // nuit 5 : plus d'ombre du personnage précédent
                 return;
+            }
             im.sprite = spr;
             float gx = margeOmbre.x * r.width, dx = margeOmbre.y * r.width, by = margeOmbre.z * r.height;
             if (estLanterne) { gx *= 0.8f; dx *= 0.8f; by *= 0.6f; }
