@@ -108,6 +108,7 @@ namespace ItHunts.Level.Acts
             }
 
             // Sorties : rampes douces depuis le fond vers deux bords opposés (escaliers lisses).
+            var exits = new HashSet<(Vector2Int, Vector2Int)>();
             int made = 0;
             foreach (Vector2Int c in hollow.OrderBy(_ => _rng.Next()))
             {
@@ -124,10 +125,28 @@ namespace ItHunts.Level.Acts
                     Vector3 top = Plan.CellCenter(c, r.Floor) + dir * (Plan.Cell * 0.5f);
                     float len = Plan.Cell * 2f;
                     KitBuild.Ramp(root, "Marches du bassin", top - dir * len - Vector3.up * depth, dir, len, depth, Plan.Cell * 2f, settings.kit, under: RoomWall);
+                    exits.Add((c, d));
                     made++;
                     break;
                 }
             }
+
+            // Revue de la DA (jour 5, point 12) : une margelle de pierre le long de chaque bord entre l'eau et le sol (sauf aux marches) :
+            // dalle à fleur du sol (+5 cm, sans gêne pour les sauts ni le NavMesh) qui déborde de 0,45 m au-dessus de l'eau.
+            if (settings.trimMaterial == null)
+                return;
+            foreach (Vector2Int c in all)
+                foreach (Vector2Int d in ActPlan.Dirs)
+                {
+                    Vector2Int n = c + d;
+                    if (all.Contains(n) || exits.Contains((c, d)) || !r.Use.TryGetValue(n, out CellUse u)
+                        || (u != CellUse.Sol && u != CellUse.Passage && u != CellUse.Pont))
+                        continue;
+                    Vector3 dir = new Vector3(d.x, 0f, d.y);
+                    Vector3 mid = Plan.CellCenter(c, r.Floor - 0.1f) + dir * (Plan.Cell * 0.5f);
+                    Vector3 size = d.x != 0 ? new Vector3(0.9f, 0.3f, Plan.Cell + 0.9f) : new Vector3(Plan.Cell + 0.9f, 0.3f, 0.9f);
+                    Solid(root, "Margelle du bassin", mid, size, 0f, KitBuild.Kind.Pont, settings.trimMaterial);
+                }
         }
 
         /// <summary>Fosse : vide (−voidDamage PV, retour au dernier sol sûr), ponts étroits et îlots (piliers) pour la traverser.</summary>
