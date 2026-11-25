@@ -79,6 +79,7 @@ namespace ItHunts.Tests
         [TearDown]
         public void TearDown()
         {
+            RunSession.ResetForTests();
             ActLevel.SeedOverride = 0;
             Time.timeScale = 1f;
         }
