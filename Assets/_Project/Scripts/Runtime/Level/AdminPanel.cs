@@ -135,7 +135,7 @@ namespace ItHunts.Level
                 : new List<CharacterDefinition>();
         }
 
-        private ZoneState Zone => FindFirstObjectByType<ZoneState>();
+        private ZoneState Zone => ZoneState.Active;
         private static PlayerHealth Player => PlayerHealth.All.FirstOrDefault(p => p != null);
 
         private void Do(System.Action a, string note)

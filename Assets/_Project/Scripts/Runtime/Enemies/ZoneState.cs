@@ -74,8 +74,21 @@ namespace ItHunts.Enemies
             Asleep = false;
         }
 
-        private void OnEnable() => PlayerHealth.Died += OnDied;
-        private void OnDisable() => PlayerHealth.Died -= OnDied;
+        /// <summary>Zone active de la scène (sans recherche : appelée à chaque image).</summary>
+        public static ZoneState Active { get; private set; }
+
+        private void OnEnable()
+        {
+            PlayerHealth.Died += OnDied;
+            Active = this;
+        }
+
+        private void OnDisable()
+        {
+            PlayerHealth.Died -= OnDied;
+            if (Active == this)
+                Active = null;
+        }
 
         private void Start() => ResetZone();
 

@@ -165,7 +165,10 @@ namespace ItHunts.Tests
                         continue;
                     }
 
-                    ZoneState zone = Object.FindFirstObjectByType<ZoneState>();
+                    // Images lentes (éditeur) : le temps accéléré ferait des pas de 3 m par image, le bot raterait ses virages.
+                    if (Time.timeScale > 1f && Time.deltaTime > 0.09f)
+                        Time.timeScale = Mathf.Max(1f, Time.timeScale * 0.95f);
+                    ZoneState zone = ZoneState.Active;
                     if (RunEndScreen.Current != null && !endSeen)
                     {
                         endSeen = true;

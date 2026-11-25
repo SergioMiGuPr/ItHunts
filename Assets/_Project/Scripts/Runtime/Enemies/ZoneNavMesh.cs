@@ -86,8 +86,13 @@ namespace ItHunts.Enemies
             foreach (NavMeshBuildSource s in all)
             {
                 Component c = s.component;
-                if (c == null || IsMoving(c) || c.GetComponentInParent<StalkerPassesThrough>() != null)
-                    continue;                                           // objets qui bougent ; anneau des arcs (joueurs seulement)
+                if (c == null || IsMoving(c))
+                    continue;                                           // objets qui bougent
+                // Le traqueur enjambe : rien dans son NavMesh. Meubles et gravats de l'habillage (D-119) : obstacles pour les goules, qui
+                // marchaient dedans ; anneau des arcs : joueurs seulement.
+                bool stepOver = c.GetComponentInParent<StalkerPassesThrough>() != null;
+                if (stepOver && (c.GetComponentInParent<ItHunts.Level.Acts.DecorTag>() == null || c.GetComponentInParent<NotWalkable>() == null))
+                    continue;
                 NavMeshBuildSource src = s;
                 if (src.shape == NavMeshBuildSourceShape.Mesh && src.sourceObject is Mesh mesh && !mesh.isReadable)
                 {
@@ -110,7 +115,7 @@ namespace ItHunts.Enemies
                 // bloque par sa collision et la salle est un cul-de-sac où aucun joueur ne se trouve encore).
                 if (c.GetComponentInParent<ItHunts.Economy.LockedDoor>() == null)
                     common.Add(src);
-                if (c.GetComponentInParent<StalkerShortcut>() == null)
+                if (!stepOver && c.GetComponentInParent<StalkerShortcut>() == null)
                     stalker.Add(src);
             }
 

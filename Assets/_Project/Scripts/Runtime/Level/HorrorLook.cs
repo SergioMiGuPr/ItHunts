@@ -127,7 +127,7 @@ namespace ItHunts.Level
             float dt = Time.deltaTime;
             if (Time.unscaledTime >= _nextSearch)
             {
-                _nextSearch = Time.unscaledTime + 1f;
+                _nextSearch = Time.unscaledTime + 4f;
                 if (_zone == null)
                     _zone = FindFirstObjectByType<ZoneState>();
                 _lanterns.Clear();
@@ -516,7 +516,7 @@ namespace ItHunts.Level
         // Halos : tous reconstruits une fois par seconde (lumières ajoutées ou retirées) ; chaque image, seuls ceux des lumières
         // proches (vacillement) et des lanternes changent.
         private readonly Dictionary<AmbianceLight, int> _haloIndex = new Dictionary<AmbianceLight, int>();
-        private float _nextHaloRebuild;
+        private float _nextHaloRebuild, _nextHaloTick;
         private int _staticHalos;
 
         private void UpdateHalos(HorrorLookSettings s)
@@ -532,6 +532,9 @@ namespace ItHunts.Level
             }
 
             EnsureHalos(s);
+            if (Time.unscaledTime < _nextHaloTick && Time.time < _nextHaloRebuild)
+                return;                                                 // 15 fois par seconde : le vacillement se lit aussi bien
+            _nextHaloTick = Time.unscaledTime + 1f / 15f;
             int n = AmbianceLight.All.Count + _lanterns.Count;
             if (_particles.Length < n)
             {
@@ -706,7 +709,8 @@ namespace ItHunts.Level
 
         private readonly List<Light> _decorLights = new List<Light>();
         private readonly HashSet<Light> _culled = new HashSet<Light>();
-        private float _nextDecorScan, _nextCull;
+        private float _nextDecorScan, _nextCull, _nextPropScan;
+        private readonly List<Light> _propLights = new List<Light>();
 
         /// <summary>Lumières du décor éteintes parce qu'elles sont au-delà du brouillard (tests, mesures).</summary>
         public int CulledCount => _culled.Count;
@@ -726,11 +730,22 @@ namespace ItHunts.Level
             if (Time.unscaledTime >= _nextDecorScan)
             {
                 // Lumières du décor : torches et lampes (AmbianceLight), lanternes posées (Prop_*). Jamais celles des joueurs ni des ennemis.
+                // Les lumières d'ambiance se déclarent elles-mêmes ; celles des props sont cherchées une fois toutes les 15 s.
                 _nextDecorScan = Time.unscaledTime + 2f;
+                if (Time.unscaledTime >= _nextPropScan)
+                {
+                    _nextPropScan = Time.unscaledTime + 15f;
+                    _propLights.Clear();
+                    foreach (Light l in FindObjectsByType<Light>(FindObjectsSortMode.None))
+                        if (l.type != LightType.Directional && l.GetComponent<AmbianceLight>() == null && InProp(l.transform))
+                            _propLights.Add(l);
+                }
+
                 _decorLights.Clear();
-                foreach (Light l in FindObjectsByType<Light>(FindObjectsSortMode.None))
-                    if (l.type != LightType.Directional && (l.GetComponent<AmbianceLight>() != null || InProp(l.transform)))
-                        _decorLights.Add(l);
+                foreach (AmbianceLight al in AmbianceLight.All)
+                    if (al != null && al.Light != null && al.Light.type != LightType.Directional)
+                        _decorLights.Add(al.Light);
+                _decorLights.AddRange(_propLights);
             }
 
             if (Time.time < _nextCull)
@@ -811,8 +826,8 @@ namespace ItHunts.Level
             if (Time.time < _nextVfxCull || _decorVfx.Count == 0)
                 return;
             _nextVfxCull = Time.time + 0.05f;
-            // Un quart de la liste à chaque passage : toute la liste en 0.2 s, sans pic d'une image.
-            int count = Mathf.Max(1, _decorVfx.Count / 4);
+            // Un douzième de la liste à chaque passage : toute la liste en 0.6 s, sans pic d'une image.
+            int count = Mathf.Max(1, _decorVfx.Count / 12);
             float far = s.vfxCullDistance, near = Mathf.Max(0f, far - s.vfxCullHysteresis);
             for (int k = 0; k < count; k++)
             {

@@ -400,6 +400,16 @@ namespace ItHunts.Enemies
             ClearSignals();
         }
 
+        private int _idleFar;
+
+        private static bool FarFromPlayers(Vector3 pos, float distance)
+        {
+            foreach (Player.PlayerHealth p in Player.PlayerHealth.All)
+                if (p != null && (p.transform.position - pos).sqrMagnitude < distance * distance)
+                    return false;
+            return true;
+        }
+
         private void SetMode(GhoulMode m)
         {
             Mode = m;
@@ -437,6 +447,12 @@ namespace ItHunts.Enemies
                 _move.Speed = 0f;                                          // salle de départ pas encore quittée (D-048)
                 return;
             }
+            if (_idleFar > 0 && !Hunting && !_body.Busy)
+            {
+                _idleFar--;
+                return;
+            }
+
             using Unity.Profiling.ProfilerMarker.AutoScope scope = Marker.Auto();
             float now = Time.time, dt = Time.fixedDeltaTime;
             // Le NavMesh peut être reconstruit après son Start (nouvel identifiant d'agent) : sans ça, plus aucun chemin
@@ -481,6 +497,7 @@ namespace ItHunts.Enemies
                 _move.Speed = 0f;
                 ContactDamage(now);
                 UpdateVisual();
+                _idleFar = FarFromPlayers(pos, 60f) ? 6 : 0;               // loin de tous : une pensée sur 6 pas fixes (0,12 s)
                 return;
             }
 

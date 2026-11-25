@@ -33,8 +33,12 @@ namespace ItHunts.Level
                 Current = null;
         }
 
+        private int _step;
+
         private void FixedUpdate()
         {
+            if (++_step % 5 != 0)
+                return;                                                 // 10 fois par seconde suffisent
             foreach (PlayerHealth p in PlayerHealth.All)
                 if (p != null && !p.Dead)
                     DiscoverAt(p.transform.position + Vector3.up * 0.5f, p.PlayerId);

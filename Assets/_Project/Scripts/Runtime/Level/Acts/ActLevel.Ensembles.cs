@@ -20,6 +20,7 @@ namespace ItHunts.Level.Acts
         };
 
         private static readonly string[] MuralNames = { "Tableau", "Applique", "Torche_Murale", "Chaines_Mur", "Tenture", "Tapisserie" };
+        private static readonly string[] Routes = { "Passerelle", "Plateforme", "Mezzanine", "Estrade", "Escalier", "Tapis", "Rails" };
         private static readonly string[] PlantNames = { "Massif", "Haie", "SousBois", "ArbreMort", "GrandArbre" };
         private int _group;
 
@@ -192,7 +193,8 @@ namespace ItHunts.Level.Acts
             {
                 // Ni contre une galerie : le traqueur y monte et y tend le bras d'en bas.
                 Vector2Int k = c + new Vector2Int(x, y);
-                if (_tallCells.Contains(k) || (r.Use.TryGetValue(k, out CellUse u) && u == CellUse.Terrasse))
+                if (_tallCells.Contains(k) || (r.Use.TryGetValue(k, out CellUse u) && (u == CellUse.Terrasse || u == CellUse.Rampe))
+                    || (Plan.OwnerAt(k) >= 0 && Plan.OwnerAt(k) != r.Id))
                     return true;
             }
 
@@ -200,7 +202,7 @@ namespace ItHunts.Level.Acts
         }
 
         private bool Gallery(Vector2Int c) =>
-            Plan.OwnerAt(c) >= 0 && Plan.Rooms[Plan.OwnerAt(c)].Use.TryGetValue(c, out CellUse u) && u == CellUse.Terrasse;
+            Plan.OwnerAt(c) >= 0 && Plan.Rooms[Plan.OwnerAt(c)].Use.TryGetValue(c, out CellUse u) && (u == CellUse.Terrasse || u == CellUse.Rampe);
 
         /// <summary>Détails au sol sans collision : le sol se lit sans gêner la course.</summary>
         private void GroundDetails(ActRoom r, Transform root, EnsembleLibrary lib, HashSet<Vector2Int> blocked)
@@ -409,6 +411,9 @@ namespace ItHunts.Level.Acts
         private void Finish(GameObject go, string name, int group)
         {
             go.name = name;
+            // Le dessus des meubles, gravats et rochers n'est pas un sol pour les ennemis (ils butaient dessus) ; les routes hautes, si.
+            if (!Routes.Any(n => name.Contains(n)) && go.GetComponent<NotWalkable>() == null)
+                go.AddComponent<NotWalkable>();
             Light[] lights = go.GetComponentsInChildren<Light>(true);
             if (go.transform.Find("Mobilier") != null)
             {

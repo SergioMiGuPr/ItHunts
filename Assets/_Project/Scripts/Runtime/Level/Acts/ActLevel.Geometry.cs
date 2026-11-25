@@ -61,7 +61,7 @@ namespace ItHunts.Level.Acts
             // Sous les rampes : sol au niveau bas (la rampe le recouvre).
             foreach (ActDoor d in Plan.Doors.Where(d => d.RampRoom == r.Id))
                 foreach (RectInt rc in Rects(new HashSet<Vector2Int>(d.RampCells)))
-                    Solid(root, "Sol (rampe)", RectCenter(rc, r.Floor - FloorDepth * 0.5f), RectSize(rc, FloorDepth), 0f, KitBuild.Kind.Bloc, null, walkable: false);   // sous la rampe pleine : pas de NavMesh
+                    Solid(root, "Sol (rampe)", RectCenter(rc, r.Floor - FloorDepth * 0.5f), RectSize(rc, FloorDepth), 0f, KitBuild.Kind.Bloc, null);
             foreach (RectInt rc in Rects(terrace))
                 Solid(root, "Terrasse", RectCenter(rc, r.Floor + (r.TerraceHeight - FloorDepth) * 0.5f), RectSize(rc, r.TerraceHeight + FloorDepth), 0f,
                     KitBuild.Kind.Bloc, null);
@@ -143,8 +143,8 @@ namespace ItHunts.Level.Acts
                         || (u != CellUse.Sol && u != CellUse.Passage && u != CellUse.Pont))
                         continue;
                     Vector3 dir = new Vector3(d.x, 0f, d.y);
-                    Vector3 mid = Plan.CellCenter(c, r.Floor - 0.1f) + dir * (Plan.Cell * 0.5f);
-                    Vector3 size = d.x != 0 ? new Vector3(0.9f, 0.3f, Plan.Cell + 0.9f) : new Vector3(Plan.Cell + 0.9f, 0.3f, 0.9f);
+                    Vector3 mid = Plan.CellCenter(c, r.Floor - 0.1f) + dir * (Plan.Cell * 0.5f + 0.5f);   // sur la rive : rien ne dépasse au-dessus de l'eau
+                    Vector3 size = d.x != 0 ? new Vector3(0.9f, 0.3f, Plan.Cell) : new Vector3(Plan.Cell, 0.3f, 0.9f);
                     Solid(root, "Margelle du bassin", mid, size, 0f, KitBuild.Kind.Pont, settings.trimMaterial);
                 }
         }

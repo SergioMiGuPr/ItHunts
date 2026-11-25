@@ -6,6 +6,6 @@ Restant : lumières sans mur 0, suspendus sans plafond 0, lustres trop proches 0
 
 Ensembles de décor posés : 1386. Salles vides (sol à plus de 9 m de tout décor) : aucune
 
-Traqueur : 9446/9446 points atteints (100,0 ٪) ; non atteints : aucun
+Traqueur : 9425/9425 points atteints (100,0 ٪) ; non atteints : aucun
 
-Îlots de son NavMesh reliés : 26 (restés seuls : 0, 928 ms)
+Îlots de son NavMesh reliés : 25 (restés seuls : 63, 8875 ms)

@@ -334,7 +334,7 @@ namespace ItHunts.Hud
             int volumesBefore = _volumes.Count, marksBefore = _marks.Count;
             ActPlan planBefore = _plan;
             _volumes.Clear();
-            _volumes.AddRange(FindObjectsByType<RoomVolume>(FindObjectsSortMode.None));
+            _volumes.AddRange(RoomVolume.All);
             ActLevel act = ActLevel.Current;
             _plan = act != null && act.Plan != null && act.Plan.Rooms.Count > 0 ? act.Plan : null;
             _volumeRoom.Clear();
@@ -371,7 +371,8 @@ namespace ItHunts.Hud
             foreach (RoomVolume r in _volumes)
                 if (r.Kind == RoomKind.Depart)
                     _marks.Add((r.transform.position, new Color(1f, 1f, 0.3f), "D", r));
-            _refreshAt = Time.time + 5f;
+            // Acte construit : rien n'apparaît plus ensuite ; relire toute la scène coûtait 60 ms toutes les 5 s.
+            _refreshAt = Time.time + (_plan != null && _marks.Count > 0 && Time.timeSinceLevelLoad > 60f ? 3600f : 5f);
             return _mapTex == null || volumesBefore != _volumes.Count || marksBefore != _marks.Count || planBefore != _plan;
         }
 
