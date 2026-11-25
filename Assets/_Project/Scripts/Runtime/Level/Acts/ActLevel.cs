@@ -107,10 +107,15 @@ namespace ItHunts.Level.Acts
             Destroy(screen.gameObject);
         }
 
+        public const string EditorSeedKey = "ItHunts.Outils.SeedForcee";
+
         public int ChooseSeed()
         {
             if (SeedOverride != 0)
                 return SeedOverride;
+            // Éditeur seulement : seed forcée par les outils de vérification (survit au rechargement du domaine de l'entrée en Play).
+            if (Application.isEditor && PlayerPrefs.GetInt(EditorSeedKey, 0) != 0)
+                return PlayerPrefs.GetInt(EditorSeedKey, 0);
             if (fixedSeed != 0)
                 return fixedSeed;
             string[] args = System.Environment.GetCommandLineArgs();
@@ -154,7 +159,9 @@ namespace ItHunts.Level.Acts
 
             var sw = Stopwatch.StartNew();
             LevelSeed = seed;
-            Plan = ActPlan.Make(settings, seed);
+            Plan = settings.handMaps != null && settings.handMaps.Count > 0
+                ? ActPlan.FromHand(settings, HandMap.Load(settings.handMaps[Mathf.Abs(seed) % settings.handMaps.Count]), seed)
+                : ActPlan.Make(settings, seed);
             if (Plan.Failures.Count > 0)
                 Debug.LogWarning($"Acte (seed {seed}) : {string.Join(" ; ", Plan.Failures)}");
             _rng = new System.Random(unchecked(seed ^ 0x2f6b1a37));
@@ -163,6 +170,7 @@ namespace ItHunts.Level.Acts
             _min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
             _max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
             KitBuild.PieceCount = 0;
+            StalkerClimbs = 0;
             var slice = Stopwatch.StartNew();
             int n = Plan.Rooms.Count;
             for (int i = 0; i < n; i++)
@@ -195,6 +203,8 @@ namespace ItHunts.Level.Acts
                 }
             }
 
+            if (Plan.Hand != null)
+                IslandLeaps();
             _root.gameObject.SetActive(true);
             Physics.SyncTransforms();
             Stage = "Le traqueur s'éveille";

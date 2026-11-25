@@ -59,6 +59,10 @@ namespace ItHunts.Level.Acts
         public int Parent = -1, Depth;
         public RoomFeature Feature;
         public float TerraceHeight;
+        /// <summary>Galerie écrite à la main (carte faite à la main) : pas de bande tirée au hasard.</summary>
+        public bool HandTerrace;
+        /// <summary>Galerie sans escalier : on y monte par traction, wall jump ou hissage.</summary>
+        public bool NoTerraceStairs;
         public readonly List<int> Doors = new List<int>();
         public Vector2 CenterCell;
         /// <summary>Paliers (nuit 4) : terrasse devant une porte vers une salle plus haute, avec son escalier réservé (cases Passage).</summary>
@@ -96,6 +100,8 @@ namespace ItHunts.Level.Acts
         public bool Locked, Gate, Exit, Loop;
         /// <summary>Porte en hauteur (nuit 4) : la salle basse y accède par un palier (Landing) au lieu d'une rampe.</summary>
         public bool Landing;
+        /// <summary>Porte haute sans escalier (carte faite à la main).</summary>
+        public bool High;
         /// <summary>Salle qui porte la rampe (la plus basse ; −1 : même hauteur) et ses cases.</summary>
         public int RampRoom = -1;
         public readonly List<Vector2Int> RampCells = new List<Vector2Int>();
@@ -112,7 +118,7 @@ namespace ItHunts.Level.Acts
     /// bal…) ; creux (bassin ou fosse) traversé par des ponts, terrasses. Calcul pur à partir de la seed (testé en EditMode, jeu en
     /// ligne : même plan partout).
     /// </summary>
-    public sealed class ActPlan
+    public sealed partial class ActPlan
     {
         public ActLayoutSettings Settings;
         public int Seed;
@@ -1717,7 +1723,7 @@ namespace ItHunts.Level.Acts
             for (int i = 0; i < doorPoints.Count; i++)
             for (int j = i + 1; j < doorPoints.Count; j++)
                 MarkLine(r, doorPoints[i], doorPoints[j], r.Feature != RoomFeature.Aucun ? CellUse.Pont : CellUse.Passage,
-                    r.Feature != RoomFeature.Aucun ? 1 : 2);                    // voie de 10 m entre les portes : le traqueur fait 7 m
+                    r.Feature != RoomFeature.Aucun ? (Hand != null ? 3 : 1) : 2);  // carte à la main : ponts de 14 m, le traqueur y passe                    // voie de 10 m entre les portes : le traqueur fait 7 m
             if (r.Role == RoomRole.Depart || r.Role == RoomRole.Sortie)
                 MarkDisk(r, Vector2Int.RoundToInt(r.CenterCell), 4, CellUse.Passage);
 
@@ -1731,6 +1737,8 @@ namespace ItHunts.Level.Acts
                 {
                     if (!edge.TryGetValue(cell, out int e) || e < 5 || r.Use[cell] != CellUse.Sol)
                         continue;
+                    if (r.HandTerrace && NearUse(r, cell, CellUse.Terrasse, 4))
+                        continue;                                       // carte faite à la main : sol ferme de 8 m entre galerie et fosse
                     float u = (cell.x - c.x) / Mathf.Max(1f, rx), v = (cell.y - c.y) / Mathf.Max(1f, ry);
                     if (u * u + v * v <= 1f)
                     {
@@ -1753,12 +1761,14 @@ namespace ItHunts.Level.Acts
                             r.Use[cell] = CellUse.Passage;
                     var hollowCells = r.Cells.Where(x => r.Use[x] == CellUse.Creux).ToList();
                     int islands = Mathf.Clamp(hollowCells.Count / 30, 1, 5);
+                    // Carte faite à la main (D-110) : îlots de 12 × 12 m, assez grands pour que le traqueur (7 m de large) y bondisse et s'y tienne.
+                    int isz = Hand != null ? 6 : 2;
                     for (int k = 0; k < islands * 4 && islands > 0; k++)
                     {
                         Vector2Int at = hollowCells[_rng.Next(hollowCells.Count)];
                         bool fits = true;
-                        for (int dx = -1; dx <= 2 && fits; dx++)
-                        for (int dy = -1; dy <= 2 && fits; dy++)
+                        for (int dx = -1; dx <= isz && fits; dx++)
+                        for (int dy = -1; dy <= isz && fits; dy++)
                         {
                             Vector2Int q = at + new Vector2Int(dx, dy);
                             fits = r.Use.TryGetValue(q, out CellUse u) && u == CellUse.Creux;
@@ -1766,8 +1776,8 @@ namespace ItHunts.Level.Acts
 
                         if (!fits)
                             continue;
-                        for (int dx = 0; dx <= 1; dx++)
-                        for (int dy = 0; dy <= 1; dy++)
+                        for (int dx = 0; dx < isz; dx++)
+                        for (int dy = 0; dy < isz; dy++)
                             r.Use[at + new Vector2Int(dx, dy)] = CellUse.Ilot;
                         islands--;
                     }
@@ -1776,9 +1786,9 @@ namespace ItHunts.Level.Acts
 
             // Terrasse : bande de 3 à 4 cases le long du bord, loin des portes, d'un seul tenant. Un palier (porte en hauteur) garde sa
             // terrasse telle quelle : pas de bande au hasard en plus.
-            if (r.TerraceHeight > 0f && r.Feature != RoomFeature.Aucun && !r.HasLanding)
+            if (r.TerraceHeight > 0f && r.Feature != RoomFeature.Aucun && !r.HasLanding && !r.HandTerrace)
                 r.TerraceHeight = 0f;                                   // pas de terrasse qui rétrécit l'anneau autour d'un creux
-            if (r.TerraceHeight > 0f && !r.HasLanding)
+            if (r.TerraceHeight > 0f && !r.HasLanding && !r.HandTerrace)
             {
                 int depth = 3;
                 var candidates = r.Cells.Where(x => edge.TryGetValue(x, out int e) && e < depth && r.Use[x] == CellUse.Sol).ToList();
@@ -1811,6 +1821,15 @@ namespace ItHunts.Level.Acts
                             r.Use[c] = CellUse.Terrasse;
                 }
             }
+        }
+
+        private static bool NearUse(ActRoom r, Vector2Int c, CellUse use, int radius)
+        {
+            for (int dx = -radius; dx <= radius; dx++)
+            for (int dy = -radius; dy <= radius; dy++)
+                if (r.Use.TryGetValue(c + new Vector2Int(dx, dy), out CellUse u) && u == use)
+                    return true;
+            return false;
         }
 
         private bool Touches(ActRoom r, Vector2Int c, CellUse use)

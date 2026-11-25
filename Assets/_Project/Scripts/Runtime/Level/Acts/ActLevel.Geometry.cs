@@ -176,6 +176,17 @@ namespace ItHunts.Level.Acts
             // Paliers (nuit 4) : leur escalier est réservé par le plan (cases Passage devant le palier) ; wall jump en plus si la place.
             foreach (Landing l in r.Landings)
             {
+                if (l.Stairs.Count == 0)
+                {
+                    // Porte haute (carte faite à la main) : le joueur monte par traction sur le mur au-dessus ; le traqueur escalade le bord.
+                    Vector3 inward = new Vector3(l.StairsDir.x, 0f, l.StairsDir.y);
+                    float front = l.Cells.Max(c => Vector2.Dot(c, (Vector2)l.StairsDir));
+                    var edgeRow = l.Cells.Where(c => Mathf.Abs(Vector2.Dot(c, (Vector2)l.StairsDir) - front) < 0.1f).OrderBy(c => c.x + c.y).ToList();
+                    Vector2Int mid = edgeRow[edgeRow.Count / 2];
+                    Vector3 lip = Plan.CellCenter(mid, r.Floor + l.Height);
+                    StalkerClimb(root, lip + inward * (Plan.Cell * 2.5f) - Vector3.up * l.Height, lip - inward * Plan.Cell);
+                    continue;
+                }
                 Vector3 dir = new Vector3(l.StairsDir.x, 0f, l.StairsDir.y);      // du palier vers le fond : l'escalier descend
                 Vector2Int top = l.Stairs.OrderBy(c => Vector2.Dot(c, (Vector2)l.StairsDir)).First();
                 Vector3 topEdge = Plan.CellCenter(top, r.Floor) - dir * (Plan.Cell * 0.5f);
@@ -195,6 +206,64 @@ namespace ItHunts.Level.Acts
             foreach (HashSet<Vector2Int> component in Components(terrace.Where(c => !done.Contains(c))))
                 TerraceComponentRoutes(r, root, component);
         }
+
+        /// <summary>Escalade du traqueur (rebord) du pied d'une paroi au bord du haut : lien de son NavMesh (D-110).</summary>
+        private void StalkerClimb(Transform root, Vector3 bottom, Vector3 top)
+        {
+            var go = new GameObject("Escalade du traqueur");
+            go.transform.SetParent(root, false);
+            go.transform.position = bottom;
+            var end = new GameObject("Haut").transform;
+            end.SetParent(go.transform, false);
+            end.position = top;
+            var p = go.AddComponent<ItHunts.Enemies.StalkerPassage>();
+            p.kind = top.y - bottom.y > 7.5f ? ItHunts.Enemies.StalkerLinkKind.MurGrimpe : ItHunts.Enemies.StalkerLinkKind.EscaladeRebord;
+            p.end = end;
+            p.width = 6f;
+            StalkerClimbs++;
+        }
+
+        /// <summary>
+        /// Îlots des fosses et des bassins (D-110) : le traqueur y bondit depuis le sol ferme le plus proche (lien Bond, 22 m au plus) ;
+        /// sans cela, un joueur sur un îlot au milieu d'une fosse était hors de sa portée.
+        /// </summary>
+        private void IslandLeaps()
+        {
+            foreach (ActRoom r in Plan.Rooms)
+            {
+                if (r.Feature == RoomFeature.Aucun)
+                    continue;
+                var islands = Components(r.Cells.Where(c => r.Use[c] == CellUse.Ilot));
+                var ground = r.Cells.Where(c => r.Use[c] == CellUse.Sol || r.Use[c] == CellUse.Passage || r.Use[c] == CellUse.Pont).ToList();
+                if (ground.Count == 0)
+                    continue;
+                float islandY = r.Floor + (r.Feature == RoomFeature.Vide ? 0.6f : 0.4f);
+                foreach (HashSet<Vector2Int> isl in islands)
+                {
+                    Vector2 mid = Vector2.zero;
+                    foreach (Vector2Int c in isl)
+                        mid += c;
+                    mid /= isl.Count;
+                    Vector2Int best = ground.OrderBy(c => (c - mid).sqrMagnitude).First();
+                    if ((best - mid).magnitude * Plan.Cell > 20f)
+                        continue;
+                    var go = new GameObject("Bond du traqueur vers l'îlot");
+                    go.transform.SetParent(_roomRoots[r.Id], false);
+                    go.transform.position = Plan.CellCenter(best, r.Floor);
+                    var end = new GameObject("Îlot").transform;
+                    end.SetParent(go.transform, false);
+                    end.position = Plan.CellCenter(mid, islandY);
+                    var pass = go.AddComponent<ItHunts.Enemies.StalkerPassage>();
+                    pass.kind = ItHunts.Enemies.StalkerLinkKind.Bond;
+                    pass.end = end;
+                    pass.width = 4f;
+                    StalkerClimbs++;
+                }
+            }
+        }
+
+        /// <summary>Escalades du traqueur posées par le niveau (mesure).</summary>
+        public int StalkerClimbs { get; private set; }
 
         /// <summary>Composantes connexes (4-voisinage) d'un ensemble de cases.</summary>
         public static List<HashSet<Vector2Int>> Components(IEnumerable<Vector2Int> cells)
@@ -234,7 +303,7 @@ namespace ItHunts.Level.Acts
             float h = r.TerraceHeight;
             float run = h / Mathf.Tan(28f * Mathf.Deg2Rad);
             int cells = Mathf.CeilToInt(run / Plan.Cell);
-            bool stairs = false, wallJump = false;
+            bool stairs = r.NoTerraceStairs, wallJump = false;              // galerie sans escalier : wall jump et traction seulement
             foreach (Vector2Int t in terrace.OrderBy(_ => _rng.Next()))
             {
                 foreach (Vector2Int d in ActPlan.Dirs)
@@ -264,6 +333,8 @@ namespace ItHunts.Level.Acts
                     }
                     else if (!wallJump)
                     {
+                        if (r.NoTerraceStairs)
+                            StalkerClimb(root, edge + dir * (Plan.Cell * 2.5f), edge - dir * Plan.Cell + Vector3.up * h);
                         // Mur parallèle à la façade : on rebondit entre les deux jusqu'en haut.
                         float gap = settings.wallJumpGap;
                         Vector3 c = edge + dir * (gap + 0.5f) + Vector3.up * ((h + 4f) * 0.5f);

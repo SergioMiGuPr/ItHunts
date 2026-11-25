@@ -692,7 +692,7 @@ namespace ItHunts.Debugging
 
         private NavMeshQueryFilter Filter => new NavMeshQueryFilter
         {
-            agentTypeID = _nav != null ? _nav.SmallAgent : 0, areaMask = NavMesh.AllAreas,
+            agentTypeID = _nav != null ? _nav.SmallAgent : 0, areaMask = NavMesh.AllAreas & ~(1 << ZoneNavMesh.ClimbArea),   // pas d'escalade de goule
         };
 
         private bool Reachable(Vector3 from, Vector3 to)

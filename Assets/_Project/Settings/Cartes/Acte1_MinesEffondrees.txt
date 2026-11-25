@@ -1,0 +1,173 @@
+# Carte faite à la main (D-110), écrite par Tools/Cartes. Plan : 1 caractère = 8 m, nord en haut.
+nom: Les mines effondrées
+acte: 1
+echelle: 8
+organique: 12
+
+[plan]
+|aaaaaaaaaaabbbbbbbbbbbbbbbbAAAAAAAcccccccccccccddddddddddddd|
+|aaaaaaaaaaabbbbbbbbbbbbbbbbAAAAAAAcccccccccccccddddddddddddd|
+|aaaaaaaaaaabbbbbbbbbbbbbbbbAAAAAAAcccccccccccccddddddddddddd|
+|aaaaaaaaaaabbbbbbbbbbbbbbbbAAAAAAAcccccccccccccddddddddddddd|
+|aaaaaaaaaaabbbbbbbbbbbbbbbbAAAAAAAcccccccccccccddddddddddddd|
+|aaaaaaaaaaabbbbbbbbbbbbbbbbAAAAAAAcccccccccccccddddddddddddd|
+|aaaaaaaaaaabbbbbbbbbbbbbbbbAAAAAAAcccccccccccccddddddddddddd|
+|aaaaaaaaaaaeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeddddddddddddd|
+|aaaaaaaaaaaeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeddddddddddddd|
+|fffffffff..eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeddddddddddddd|
+|fffffffffggggggggggFFFFFFFFFFFFFFFFFFhhhhhhhhhhddddddddddddd|
+|fffffffffggggggggggFFFFFFFFFFFFFFFFFFhhhhhhhhhhiiiiiiiiiiiii|
+|fffffffffggggggggggFFFFFFFFFFFFFFFFFFhhhhhhhhhhiiiiiiiiiiiii|
+|fffffffffggggggggggFFFFFFFFFFFFFFFFFFhhhhhhhhhhiiiiiiiiiiiii|
+|fffffffffggggggggggFFFFFFFFFFFFFFFFFFhhhhhhhhhhiiiiiiiiiiiii|
+|fffffffffggggggggggFFFFFFFFFFFFFFFFFFhhhhhhhhhhiiiiiiiiiiiii|
+|fffffffffggggggggggFFFFFFFFFFFFFFFFFFhhhhhhhhhhiiiiiiiiiiiii|
+|fffffffffggggggggggFFFFFFFFFFFFFFFFFFhhhhhhhhhhiiiiiiiiiiiii|
+|fffffffffggggggggggFFFFFFFFFFFFFFFFFFkkkkkkkkkkiiiiiiiiiiiii|
+|DDDDDDDDDDDDjjjjjjjFFFFFFFFFFFFFFFFFFkkkkkkkkkkiiiiiiiiiiiii|
+|DDDDDDDDDDDDjjjjjjjFFFFFFFFFFFFFFFFFFkkkkkkkkkkiiiiiiiiiiiii|
+|DDDDDDDDDDDDjjjjjjjFFFFFFFFFFFFFFFFFFkkkkkkkkkkiiiiiiiiiiiii|
+|DDDDDDDDDDDDjjjjjjjFFFFFFFFFFFFFFFFFFkkkkkkkkkkSSSSSSSSSSS..|
+|DDDDDDDDDDDDjjjjjjjFFFFFFFFFFFFFFFFFFkkkkkkkkkkSSSSSSSSSSS..|
+|DDDDDDDDDDDDjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjoooooSSSSSSSSSSSHH|
+|DDDDDDDDDDDDjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjoooooSSSSSSSSSSSHH|
+|DDDDDDDDDDDDjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjoooooSSSSSSSSSSSHH|
+|DDDDDDDDDDDDmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnoooooSSSSSSSSSSSHH|
+|DDDDDDDDDDDDmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnoooooSSSSSSSSSSSHH|
+|DDDDDDDDDDDDmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnoooooSSSSSSSSSSSHH|
+|DDDDDDDDDDDDmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnoooooSSSSSSSSSSS..|
+|llllllllllqqmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnoooooSSSSSSSSSSS..|
+|llllllllllqqmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnoooooooooooooooooo|
+|llllllllllqqmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnoooooooooooooooooo|
+|llllllllllqqmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnoooooooooooooooooo|
+|llllllllllqqmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnoooooooooooooooooo|
+|llllllllllqqmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnoooooppppppppppppp|
+|llllllllllqqrrrrrrrrrrrrrrnnnnnnnnnnnnnnnnoooooppppppppppppp|
+|llllllllllqqrrrrrrrrrrrrrrnnnnnnnnnnnnnnnnoooooppppppppppppp|
+|qqqqqqqqqqqqrrrrrrrrrrrrrrnnnnnnnnnnnnnnnnoooooppppppppppppp|
+|qqqqqqqqqqqqrrrrrrrrrrrrrrttttttttttttttttuuuuuppppppppppppp|
+|qqqqqqqqqqqqrrrrrrrrrrrrrrttttttttttttttttuuuuuppppppppppppp|
+|qqqqqqqqqqqqrrrrrrrrrrrrrrttttttttttttttttuuuuuppppppppppppp|
+|qqqqqqqqqqqqssssssssssssssssssssssssssssssuuuuuppppppppppppp|
+|qqqqqqqqqqqqssssssssssssssssssssssssssssssuuuuuppppppppppppp|
+|vvvvvvvvvv..ssssssssssssssssssssssssssssssuuuuuppppppppppppp|
+|vvvvvvvvvvwwwwwwwwwwwwxxxxxxxxxxxxyyyyyyyyuuuuuppppppppppppp|
+|vvvvvvvvvvwwwwwwwwwwwwxxxxxxxxxxxxyyyyyyyyuuuuuzzzz111111111|
+|vvvvvvvvvvwwwwwwwwwwwwxxxxxxxxxxxxyyyyyyyyuuuuuzzzz111111111|
+|vvvvvvvvvvwwwwwwwwwwwwxxxxxxxxxxxxyyyyyyyyuuuuuzzzz111111111|
+|vvvvvvvvvvwwwwwwwwwwwwxxxxxxxxxxxxyyyyyyyyzzzzzzzzz111111111|
+|vvvvvvvvvvwwwwwwwwwwwwxxxxxxxxxxxxyyyyyyyyzzzzzzzzz111111111|
+|vvvvvvvvvvwwwwwwwwwwwwxxxxxxxxxxxxyyyyyyyyzzzzzzzzz111111111|
+|vvvvvvvvvvwwwwwwwwwwwwxxxxxxxxxxxxyyyyyyyyzzzzzzzzz111111111|
+|222222222222222222222233333333333333333333zzzzzzzzz111111111|
+|222222222222222222222233333333333333333333zzzzzzzzz111111111|
+|222222222222222222222233333333333333333333444444444444444444|
+|LLLLLLLLMMMMMM........33333333333333333333444444444444444444|
+|LLLLLLLLMMMMMM........33333333333333333333444444444444444444|
+|LLLLLLLLMMMMMM........33333333333333333333444444444444444444|
+
+[salles]
+A : Porte d'arrivée ; sol 4 ; arrivee
+a : Réserve ; sol 4
+b : Salle des gardes ; sol 4
+c : Cave à vin ; sol 4
+d : Ossuaire ; sol 8 ; vide
+e : Galerie de mine ; sol 4
+f : Crypte ; sol 0
+g : Cachot ; sol 0
+F : La Fosse ; sol -8 ; plafond 28 ; vide ; galerie n,o,e 8 ; fonction Gouffre
+h : Salle de torture ; sol 0
+i : Chapelle souterraine ; sol 8 ; galerie o 4
+D : Salle du puits ; sol 0 ; plafond 16 ; depart
+j : Galerie de mine ; sol 0
+k : Réserve ; sol 0
+S : Grande porte ; sol 8 ; plafond 20 ; sortie ; fonction Salle des gardes
+H : Hall de sortie ; sol 8 ; hall
+l : Cave à vin ; sol 0
+m : Citerne ; sol -4 ; eau ; galerie n 4
+n : Gouffre ; sol 0 ; vide ; galerie s 6 sans-escalier
+o : Galerie de mine ; sol 4
+p : Grotte inondée ; sol 0 ; eau
+q : Cachot ; sol 0
+r : Salle des gardes ; sol -4
+s : Galerie de mine ; sol -4
+t : Crypte ; sol -4
+u : Ossuaire ; sol -4
+v : Réserve ; sol -4
+w : Cave à vin ; sol -8
+x : Salle de torture ; sol -4 ; galerie s 6
+y : Chapelle souterraine ; sol -4
+z : Cachot ; sol 0
+1 : Citerne ; sol 0 ; eau
+2 : Galerie de mine ; sol -4
+3 : Crypte ; sol -8 ; vide
+4 : Réserve ; sol 0
+L : Salle verrouillée ; sol -4 ; verrouillee
+M : Salle verrouillée ; sol -4 ; verrouillee
+
+[portes]
+S-H sortie
+e-A arrivee
+a-b
+b-e rampe
+a-f
+c-e
+c-d
+d-i
+e-h rampe
+e-g haute
+g-F haute
+f-g
+f-D
+g-D
+g-j
+F-j
+F-h haute
+h-k
+h-i haute
+i-S
+k-S
+j-k
+D-l
+D-q
+j-m haute
+j-n
+m-n
+n-o rampe
+o-S
+o-p
+o-u
+n-t
+l-q
+q-r
+m-r
+r-s
+r-t
+s-t
+t-u
+u-p
+u-z
+q-v
+s-w haute
+s-x
+s-y
+v-w
+w-x
+x-y
+y-u
+z-1
+1-p
+z-4
+v-2
+w-2
+2-3
+x-3
+y-3
+3-4
+1-4
+2-L verrou
+2-M verrou
+
+[ancres]
+coffre a d g i k m r u y z 3
+marchand l t h

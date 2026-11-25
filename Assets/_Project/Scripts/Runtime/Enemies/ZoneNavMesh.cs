@@ -272,12 +272,15 @@ namespace ItHunts.Enemies
                 width = width,
                 costModifier = -1f,
                 bidirectional = true,
-                area = 0,
+                area = ClimbArea,                                       // zone « Jump » : le bot de playtest (un joueur) ne grimpe pas à pied
                 agentTypeID = SmallAgent,
             });
             if (li.valid)
                 _links.Add(li);
         }
+
+        /// <summary>Zone des liens d'escalade des goules (2 : « Jump », zone intégrée d'Unity) ; même coût que la marche.</summary>
+        public const int ClimbArea = 2;
 
         private static bool StaticSolid(Collider c) => c != null && !IsMoving(c);
 

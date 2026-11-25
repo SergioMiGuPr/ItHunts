@@ -19,7 +19,7 @@ namespace ItHunts.Debugging
         public const int Width = 1280, Height = 720;
 
         /// <summary>Dossier des captures de la nuit, relatif à la racine du projet.</summary>
-        public static string Root => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "docs", "design", "nuit-4", "captures"));
+        public static string Root => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "docs", "design", "jour-5", "captures"));
 
         public struct Shot
         {

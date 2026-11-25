@@ -18,7 +18,7 @@ namespace ItHunts.Tests
     /// <summary>
     /// Playtest automatisé (nuit 4) : le bot joue un acte du début à la fin (déplacements, coffres, marchand, combats, traqueur, porte de
     /// sortie, hall) sur une seed, puis le combat de boss et l'écran de fin ; une run complète enchaîne les quatre scènes. Chaque test écrit
-    /// son compte rendu dans docs/design/nuit-4/bot/. Tout blocage, chute hors de la carte, porte sans suite, exception ou erreur du journal
+    /// son compte rendu dans docs/design/jour-5/bot/. Tout blocage, chute hors de la carte, porte sans suite, exception ou erreur du journal
     /// fait échouer le test. Vitesse du temps : Library/ithunts-bot.json { "timeScale": 3 } (3 par défaut).
     /// </summary>
     public class BotRunTests
@@ -26,7 +26,7 @@ namespace ItHunts.Tests
         private const string RunAsset = "Assets/_Project/Settings/Run_Default.asset";
         public static readonly int[] Seeds = { 11, 22, 33 };
 
-        public static string OutDir => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "docs", "design", "nuit-4", "bot"));
+        public static string OutDir => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "docs", "design", "jour-5", "bot"));
 
         [System.Serializable]
         private sealed class Config

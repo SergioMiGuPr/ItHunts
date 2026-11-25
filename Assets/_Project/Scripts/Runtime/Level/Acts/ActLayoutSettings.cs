@@ -117,6 +117,10 @@ namespace ItHunts.Level.Acts
         [Tooltip("Vrai : il entre par la porte d'arrivée (une herse se lève) ; faux : il sort de son repaire.")]
         public bool stalkerFromArrival;
 
+        [Header("Cartes faites à la main (D-110)")]
+        [Tooltip("Cartes de l'acte (fichiers texte, format docs/design/level/CARTES.md). Non vide : une carte tirée par seed à la place du plan au hasard.")]
+        public List<TextAsset> handMaps = new List<TextAsset>();
+
         [Header("Matériaux (formes simples en attendant les kits d'art)")]
         public Material wallMaterial;
         public Material floorMaterial;

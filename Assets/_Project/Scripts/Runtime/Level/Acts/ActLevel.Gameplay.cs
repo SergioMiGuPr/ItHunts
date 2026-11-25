@@ -79,9 +79,17 @@ namespace ItHunts.Level.Acts
             // Marchand des améliorations : salle calme à mi-chemin (sans creux), au centre.
             var calm = Plan.Rooms.Where(r => !r.Special && r.Role == RoomRole.Normale && r.Feature == RoomFeature.Aucun)
                 .OrderBy(r => Mathf.Abs(depth[r.Id] - Plan.StartExitDepth * 0.5f)).ToList();
-            for (int k = 0; k < settings.merchants && k < calm.Count && merchant != null; k++)
+            int merchants = settings.merchants;
+            if (Plan.MerchantAnchors.Count > 0)
             {
-                ActRoom r = calm[k * Mathf.Max(1, calm.Count / Mathf.Max(1, settings.merchants))];
+                // Carte faite à la main (D-110) : un seul marchand, dans une de ses salles d'ancrage tirée au hasard.
+                calm = Plan.MerchantAnchors.Select(i => Plan.Rooms[i]).OrderBy(_ => _rng.Next()).ToList();
+                merchants = 1;
+            }
+
+            for (int k = 0; k < merchants && k < calm.Count && merchant != null; k++)
+            {
+                ActRoom r = calm[k * Mathf.Max(1, calm.Count / Mathf.Max(1, merchants))];
                 if (!FreeCell(r, out Vector2Int c, clearance: 2))
                     continue;
                 Vector3 at = Plan.CellCenter(c, r.Floor);
@@ -151,6 +159,8 @@ namespace ItHunts.Level.Acts
                 return;
             // Ancres : terrasses (difficiles), îlots (difficiles), sols des salles (faciles) ; jamais deux dans la même salle.
             var rooms = Plan.Rooms.Where(r => r.Role == RoomRole.Normale || r.Role == RoomRole.Sortie).OrderBy(_ => _rng.Next()).ToList();
+            if (Plan.ChestAnchors.Count > 0)
+                rooms = Plan.ChestAnchors.Select(i => Plan.Rooms[i]).OrderBy(_ => _rng.Next()).ToList();   // ancres de la carte (D-110)
             int placed = 0;
             foreach (ActRoom r in rooms)
             {
