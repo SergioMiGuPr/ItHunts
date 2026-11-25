@@ -32,8 +32,8 @@ Material:
     - _Cisaille: -1.1
     - _ColorMask: 15
     - _ContactFlou: 9
-    - _ContactForce: 2
-    - _ContactHaut: 0.6
+    - _ContactForce: 2.6
+    - _ContactHaut: 0.95
     - _Ecrase: 0.3
     - _Max: 0.8
     - _PorteeFlou: 4
