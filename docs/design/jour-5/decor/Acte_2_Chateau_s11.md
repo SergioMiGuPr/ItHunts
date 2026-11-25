@@ -6,7 +6,7 @@ Restant : lumières sans mur 0, suspendus sans plafond 0, lustres trop proches 0
 
 Traqueur : 6440/6441 points atteints (100,0 ٪) ; non atteints : Bains (1, sous un surplomb, pas de bord où se tenir)
 
-Îlots de son NavMesh reliés : 22 (restés seuls : 0, 433 ms)
+Îlots de son NavMesh reliés : 22 (restés seuls : 0, 594 ms)
 
 Points :
 

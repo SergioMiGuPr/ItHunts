@@ -72,7 +72,7 @@ namespace ItHunts.Enemies
             size = boundsSize;
         }
 
-        private void OnDestroy() => Clear();
+        private void OnDestroy() => Clear(false);
 
         public void Build()
         {
@@ -273,8 +273,19 @@ namespace ItHunts.Enemies
         /// </summary>
         private bool BridgeClear(StalkerLinkKind kind, Vector3 low, Vector3 high)
         {
-            bool Blocked(Vector3 a, Vector3 b) => Physics.Linecast(a, b, out RaycastHit hit, layers, QueryTriggerInteraction.Ignore)
-                && hit.collider.GetComponentInParent<StalkerPassesThrough>() == null && !IsMoving(hit.collider);
+            var hits = new RaycastHit[16];
+            bool Blocked(Vector3 a, Vector3 b)
+            {
+                Vector3 d = b - a;
+                float len = d.magnitude;
+                if (len < 1e-3f)
+                    return false;
+                int n = Physics.RaycastNonAlloc(a, d / len, hits, len, layers, QueryTriggerInteraction.Ignore);
+                for (int i = 0; i < n; i++)
+                    if (hits[i].collider.GetComponentInParent<StalkerPassesThrough>() == null && !IsMoving(hits[i].collider))
+                        return true;
+                return false;
+            }
             if (kind != StalkerLinkKind.MurGrimpe)
                 return !Blocked(low + Vector3.up * 2f, high + Vector3.up * 2f) && !Blocked(low + Vector3.up * 5f, high + Vector3.up * 5f);
             Vector3 foot = low + Vector3.up;
@@ -635,13 +646,13 @@ namespace ItHunts.Enemies
             return s.agentTypeID;
         }
 
-        private void Clear()
+        private void Clear(bool destroyObjects = true)
         {
             foreach (NavMeshLinkInstance l in _links)
                 l.Remove();
             _links.Clear();
             foreach (GameObject g in _islandPassages)
-                if (g != null)
+                if (g != null && destroyObjects)
                     DestroyImmediate(g);                                // sinon relus par FindObjectsByType<StalkerPassage> au build suivant
             _islandPassages.Clear();
             foreach (NavMeshDataInstance i in _instances)

@@ -4,6 +4,23 @@
 
 ## Étape en cours
 
+**Jour du 2026-11-24 et 25 (jour 5) : cartes faites à la main, revue des cartes de la DA, D-110 à D-116.** Branche `animations`.
+- **Cartes** (D-110) : 2 cartes écrites à la main par acte (`Settings/Cartes/*.txt`), tirées par la seed (seed 22 et 11 : Mines
+  effondrées / Puits noyés, Château des cendres / Cloître et tours, Forêt des statues / Jardins en terrasses), surface ×4 à ×6.
+- **Points de jeu** : ennemis traversables et détection à la vue (D-112), coffre à 3 choix et marchand (D-113), boss blessable
+  partout, épée, parade (D-114). PR d'art #54 à #58 fusionnées, lot 4 branché (plus de rouge, lien du livre, apparitions, sons de
+  l'épée) ; lanterne du hibou (0.36, 0.44, 0.58), halos des lanternes coupés par défaut.
+- **Revue des cartes** (`docs/art/REVUE-CARTES.md`, D-115) : `DecorAudit` corrige puis vérifie le décor à la construction
+  (lumières sans mur, suspendus sans plafond, lustres en double, chevauchements, décor traversable, formes provisoires) : **0 défaut
+  sur les 6 cartes** (`DecorAuditTests`, rapports `docs/design/jour-5/decor/`). Ciel ouvert à l'acte III, damier sur les sols
+  seulement, marches à l'échelle, colonnades et sources au sol. Captures avant / après : `docs/design/jour-5/captures/`.
+- **Traqueur** (D-111, D-116) : îlots de son NavMesh reliés par bond ou escalade ; prise sous un surplomb et par-dessus un mur ;
+  audit à la même règle que le jeu : **99,8 à 100 %**, 20 points restants sur 41 827 (listés avec leur cause).
+- **Bot** (`BotRunTests`, rapports `docs/design/jour-5/bot/`) : les 6 cartes finies et le boss vaincu ; quelques blocages passés par
+  téléportation (comptés comme défauts par le test). Chutes répétées dans la Tour effondrée (salle à vide, voulu).
+- **Outils** : `pm2.sh` (scratchpad) lance les tests PlayMode un par un ; `unity command test cancel` arrête une série reprise toute
+  seule après une recompilation (elle avait relancé 40 tests).
+
 **Nuit du 2026-11-23 (nuit 4) : vérification en jeu, 70 améliorations à rangs, actes à boucles et paliers, D-100 à D-109, rapport
 `docs/design/nuit-4/RAPPORT.md`.** Branche `animations` fusionnée dans `main` ; PR d'art #45 à #53 toutes fusionnées et branchées.
 - **Fin de la nuit (journée du 23)** : bot dans l'arène du boss ; captures des 9 cartes ; build de dev `Builds/Nuit_2026-11-23/`

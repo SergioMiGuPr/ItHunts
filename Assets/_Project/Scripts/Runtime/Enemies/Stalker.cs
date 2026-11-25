@@ -1241,6 +1241,8 @@ namespace ItHunts.Enemies
             ReachRoom room = ReachRoom.At(feet);
             if (room != null && StandForRoom(room, feet, out Vector3 standRoom, out _))
                 return standRoom;
+            if (room == null && !OverheadClear(feet) && UnderReach(feet, out Vector3 standUnder, out _, out _))
+                return standUnder;                                      // sous un surplomb : devant le bord (D-116)
             if (ReachRoom.At(predicted) == null && _move.Snap(predicted, Radius + 4f, out Vector3 p))
                 return p;
             if (_move.Snap(feet, Radius + 4f, out p))
@@ -1597,7 +1599,8 @@ namespace ItHunts.Enemies
                     // Debout au même niveau, ou sur un rebord plus haut (fond de ravin, sous une rampe), main qui descend jusqu'au bord.
                     if (_move.Snap(e + d * (Radius + 1.5f), Radius + 7f, out Vector3 s) && feet.y - s.y <= 4f
                         && s.y - feet.y <= ShoulderOffset.y - 1f
-                        && (s.y - feet.y <= 4f || Clear(s + Vector3.up * ShoulderOffset.y, e + Vector3.up * 1.5f)))
+                        && (s.y - feet.y <= 4f || Clear(s + Vector3.up * ShoulderOffset.y, e + Vector3.up * 1.5f))
+                        && (s + Vector3.up * ShoulderOffset.y - (e + Vector3.up * 1.5f)).magnitude <= settings.GrabReach + settings.edgeLean)
                     {
                         best = r;
                         stand = s;
@@ -1613,6 +1616,12 @@ namespace ItHunts.Enemies
         }
 
         private Transform _underOpening;
+
+        private void OnDestroy()
+        {
+            if (_underOpening != null)
+                Destroy(_underOpening.gameObject);
+        }
 
         /// <summary>Ouverture virtuelle au bord du surplomb (UnderReach), tournée vers l'extérieur comme celle d'une pièce.</summary>
         private Transform UnderOpening(Vector3 edge, Vector3 outward)
@@ -1907,7 +1916,10 @@ namespace ItHunts.Enemies
                         _reaimed = true;
                         if (Target != null && !Target.Dead
                             && TryAim(Target, settings.grabReaim + settings.grabSlam, out Vector3 again, out Transform o2)
-                            && o2 == _grabOpening)
+                            && o2 == _grabOpening
+                            && (_underOpening == null || _grabOpening != _underOpening
+                                || (Clear(_underOpening.position, again + Vector3.up)
+                                    && Vector3.Distance(_underOpening.position, again + Vector3.up) <= settings.roomReach)))
                             _grabTarget = again;
                     }
 
@@ -2021,7 +2033,9 @@ namespace ItHunts.Enemies
                 if (!OverheadClear(aim))
                 {
                     // Sous un surplomb (D-116) : par le bord, s'il se tient devant.
-                    if (UnderReach(aim, out Vector3 under, out Vector3 edge, out Vector3 outward) && Flat(under - pos) <= Radius + 6f)
+                    if (Flat(aim - pos) <= settings.roomReach + 2f * Radius + 8f
+                        && UnderReach(aim, out Vector3 under, out Vector3 edge, out Vector3 outward) && Flat(under - pos) <= Radius + 6f
+                        && Mathf.Abs(under.y - pos.y) <= 2f && Clear(ShoulderFrom(pos, edge), edge))
                     {
                         opening = UnderOpening(edge, outward);
                         return true;
@@ -2159,7 +2173,8 @@ namespace ItHunts.Enemies
             if (_grab == GrabPhase.Aucune || Clear(raised, chest))
                 return raised;
             // Par-dessus un mur (ArmClear, D-116) : main au-dessus du joueur, puis abattue à la verticale.
-            return new Vector3(chest.x, Mathf.Max(Shoulder.y, chest.y + settings.handClearance), chest.z);
+            Vector3 over = new Vector3(chest.x, Mathf.Max(Shoulder.y, chest.y + settings.handClearance), chest.z);
+            return Clear(over, chest) ? over : raised;
         }
 
         // ---------- Mains au-dessus de la tête (D-037) ----------

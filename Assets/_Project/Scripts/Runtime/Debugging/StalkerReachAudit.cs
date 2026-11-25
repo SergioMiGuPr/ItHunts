@@ -41,6 +41,12 @@ namespace ItHunts.Debugging
             if (level == null || level.Plan == null || nav == null || stalker == null)
                 return res;
             ActPlan p = level.Plan;
+            if (stalker.Settings == null)
+            {
+                res.Misses.Add((stalker.transform.position, "traqueur", "réglages absents"));
+                return res;                                             // 10 : CanReach lèverait une exception
+            }
+
             var small = new NavMeshQueryFilter { agentTypeID = nav.SmallAgent, areaMask = NavMesh.AllAreas };
             var big = new NavMeshQueryFilter { agentTypeID = nav.StalkerAgent, areaMask = NavMesh.AllAreas };
             // Point de départ : la salle de départ (le traqueur peut encore attendre derrière sa porte d'arrivée fermée).

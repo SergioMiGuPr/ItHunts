@@ -6,4 +6,4 @@ Restant : lumières sans mur 0, suspendus sans plafond 0, lustres trop proches 0
 
 Traqueur : 6231/6231 points atteints (100,0 ٪) ; non atteints : aucun
 
-Îlots de son NavMesh reliés : 24 (restés seuls : 0, 470 ms)
+Îlots de son NavMesh reliés : 24 (restés seuls : 0, 515 ms)
