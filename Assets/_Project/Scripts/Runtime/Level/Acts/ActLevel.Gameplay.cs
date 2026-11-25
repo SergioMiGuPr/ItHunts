@@ -184,6 +184,7 @@ namespace ItHunts.Level.Acts
                 Vector3 look = Plan.CellCenter(Vector2Int.RoundToInt(r.CenterCell), y);
                 GameObject g = Instantiate(chest, at, Quaternion.LookRotation((look - at).sqrMagnitude > 0.5f ? look - at : Vector3.forward, Vector3.up), game);
                 g.name = $"Coffre : {r.Name}";
+                g.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();   // D-117 : un coffre ne coupe pas la galerie du traqueur
                 if (difficulty >= 2 && _rng.NextDouble() < 0.4 && g.TryGetComponent(out Chest ch))
                     ch.Rare = true;
                 placed++;

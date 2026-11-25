@@ -262,3 +262,28 @@ Cave_Candelabre 0 0
 
 [Sacs] centre 2x2 fonctions *
 Cave_Sacs 0.3 0
+
+# ---- Détails au sol (sans collision) ----
+[Gravats épars] sol 4x3 fonctions *
+Ens_Gravats_Epars_B 0 0
+
+[Gravats fins] sol 4x2 fonctions *
+Ens_Gravats_Epars_C 0 0
+
+[Os] sol 2x2 fonctions Ossuaire, Crypte, Cachot, Salle de torture, Gouffre, Chapelle souterraine
+Ens_Os_Tas 0 0
+Ens_Crane 0.8 0.5
+
+[Paille] sol 2x2 fonctions Cachot, Réserve, Cave à vin, Salle de torture, Salle des gardes
+Cave_Paille 0 0
+
+[Rails] sol 2x9 fonctions Galerie de mine
+Ens_Rails_4m 0 -2
+Ens_Rails_4m 0 2
+
+[Cartes] sol 2x2 fonctions Salle des gardes
+Ens_Des_Cartes 0 0
+
+[Sacs éventrés] sol 2x3 fonctions Réserve, Cave à vin
+Ens_Sacs_Eventres 0 -0.8
+

@@ -55,13 +55,13 @@ namespace ItHunts.Debugging
         }
 
         /// <summary>Point libre (0,8 m autour de l'œil) le plus proche : le décor posé depuis ne bouche pas la vue.</summary>
-        private static Vector3 FreeEye(Vector3 eye)
+        private static Vector3 FreeEye(Vector3 eye, Vector3 look)
         {
             for (int i = 0; i < 120; i++)
             {
                 float r = 0.5f * Mathf.Sqrt(i);
                 Vector3 p = eye + Quaternion.Euler(0f, i * 137.5f, 0f) * Vector3.forward * r;
-                if (!Physics.CheckSphere(p, 0.8f, ~0, QueryTriggerInteraction.Ignore) && Physics.Raycast(p, Vector3.down, 2.4f, ~0, QueryTriggerInteraction.Ignore)
+                if (!Physics.CheckSphere(p, 0.8f, ~0, QueryTriggerInteraction.Ignore) && !Physics.SphereCast(p, 0.6f, (look - p).normalized, out _, 5f, ~0, QueryTriggerInteraction.Ignore) && Physics.Raycast(p, Vector3.down, 2.4f, ~0, QueryTriggerInteraction.Ignore)
                     && !Physics.Raycast(p, Vector3.down, 1.2f, ~0, QueryTriggerInteraction.Ignore))
                     return p;
             }
@@ -99,7 +99,7 @@ namespace ItHunts.Debugging
             int n = 0;
             foreach (Shot s in Shots(level.Plan))
             {
-                Vector3 eye = FreeEye(s.Eye);
+                Vector3 eye = FreeEye(s.Eye, s.LookAt);
                 player.Motor.Teleport(eye - Vector3.up * 1.6f);
                 Vector3 d = s.LookAt - eye;
                 float yaw = Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg;
@@ -107,6 +107,7 @@ namespace ItHunts.Debugging
                 look?.SetView(yaw, Mathf.Clamp(pitch, -60f, 60f));
                 yield return null;
                 yield return null;
+                yield return new WaitForSecondsRealtime(0.6f);              // lumières et décor de la nouvelle salle (DressingOptimizer)
                 yield return new WaitForEndOfFrame();
                 if (Save(cam, Path.Combine(folder, s.Name + ".jpg")))
                     n++;

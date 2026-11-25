@@ -21,6 +21,8 @@ namespace ItHunts.Level.Acts
         [Range(4f, 20f)] public float doorClear = 9f;
         [Tooltip("Espace entre deux ensembles d'un même mur (m).")]
         public Vector2 wallGap = new Vector2(2f, 6f);
+        [Tooltip("Un détail au sol (gravats, tapis, herbes) tous les … m².")]
+        [Range(20f, 400f)] public float groundDetailArea = 55f;
         [Tooltip("Au-delà de cette hauteur (m), le traqueur contourne la pièce ; en dessous il l'enjambe.")]
         [Range(1f, 10f)] public float stepOver = 6f;
         [Tooltip("Place libre autour d'un ensemble plus haut que cela (m) : le traqueur (7 m de large) en fait le tour.")]
@@ -38,6 +40,8 @@ namespace ItHunts.Level.Acts
         {
             public string Name;
             public bool Wall;
+            /// <summary>Détail au sol (« sol ») : posé partout, sans collision ni allée réservée.</summary>
+            public bool Ground;
             public float Width, Depth;
             public int Max = 99;
             public bool Any;
@@ -124,6 +128,7 @@ namespace ItHunts.Level.Acts
                     int f = rest.IndexOf("fonctions", System.StringComparison.Ordinal);
                     string[] head = rest.Substring(0, f).Split(new[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
                     s.Wall = head[0] == "mur";
+                    s.Ground = head[0] == "sol";
                     string[] size = head[1].Split('x');
                     s.Width = F(size[0]);
                     s.Depth = F(size[1]);

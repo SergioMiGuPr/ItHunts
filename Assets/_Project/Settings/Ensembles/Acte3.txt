@@ -226,3 +226,23 @@ Jardin_Massif 0 0
 
 [Candélabre de jardin] centre 2x2 fonctions * ; max 8
 Cave_Candelabre 0 0
+
+# ---- Détails au sol (sans collision) ----
+[Herbes] sol 3x3 fonctions *
+Ens_Herbes_A 0 0
+
+[Fougères] sol 3x3 fonctions Bosquet, Ravin, Verger, Cimetière, Labyrinthe de haies, Serre en ruine, Roseraie, Grande grille
+Ens_Fougeres 0 0
+
+[Champignons] sol 3x3 fonctions Bosquet, Ravin, Verger
+Ens_Champignons_Cercle 0 0
+
+[Ronces] sol 3x3 fonctions Roseraie, Cimetière, Bosquet, Ravin
+Ens_Ronces 0 0
+
+[Gravats] sol 4x3 fonctions Terrasse du château, Fontaine, Grand bassin, Allée des statues, Serre en ruine, Cimetière
+Ens_Gravats_Epars_B 0 0
+
+[Sous-bois] sol 3x3 fonctions *
+Jardin_SousBois_B 0 0
+

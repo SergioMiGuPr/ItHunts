@@ -16,6 +16,7 @@ MonoBehaviour:
   aisle: 4
   doorClear: 9
   wallGap: {x: 2, y: 6}
+  groundDetailArea: 55
   stepOver: 6
   tallClear: 10
   pieces:
@@ -81,3 +82,10 @@ MonoBehaviour:
   - {fileID: 8254378017353148188, guid: 6a10d525bb4041f4cbd083ac26f57eea, type: 3}
   - {fileID: 179533381834045636, guid: 745a1c34edce34843a125758fdb2e538, type: 3}
   - {fileID: 3800011908195660524, guid: aec6ebe9a012b3845a53a3c2ab54ae37, type: 3}
+  - {fileID: 7424044846817738272, guid: e2978fddb7096734bbfbdbf143641e57, type: 3}
+  - {fileID: 3464240329292376130, guid: a864b5c9057d957488135eaced626b73, type: 3}
+  - {fileID: 34910561964076658, guid: ac16b1ed7539f904495f7ae59afb4f17, type: 3}
+  - {fileID: 4327077892339411109, guid: 05f17a11950c0604d8bb855c7988d40b, type: 3}
+  - {fileID: 3240543124515002810, guid: e146557011a57d24d83b9d4ddb1ab6e8, type: 3}
+  - {fileID: 6464980957765679891, guid: 386c0b3bde124a74584c02af2e5fe14e, type: 3}
+  - {fileID: 5885064177368067992, guid: b2ce58be9f56caa499cec91a72d9eeb7, type: 3}

@@ -67,8 +67,9 @@ namespace ItHunts.Level.Acts
                 if (Occupied(c))
                     blocked.Add(c);
             WallEnsembles(r, root, segs, lib, ground, blocked);
-            FloorEnsembles(r, root, lib, ground, blocked, lib.Sets.Where(s => !s.Wall && !s.Any && s.Fits(r.Function)).ToList());
-            FloorEnsembles(r, root, lib, ground, blocked, lib.Sets.Where(s => !s.Wall && s.Any).ToList());
+            FloorEnsembles(r, root, lib, ground, blocked, lib.Sets.Where(s => !s.Wall && !s.Ground && !s.Any && s.Fits(r.Function)).ToList());
+            FloorEnsembles(r, root, lib, ground, blocked, lib.Sets.Where(s => !s.Wall && !s.Ground && s.Any).ToList());
+            GroundDetails(r, root, lib, blocked);
             foreach (Vector2Int c in blocked)
                 _occupied.Add(c);
         }
@@ -200,6 +201,51 @@ namespace ItHunts.Level.Acts
 
         private bool Gallery(Vector2Int c) =>
             Plan.OwnerAt(c) >= 0 && Plan.Rooms[Plan.OwnerAt(c)].Use.TryGetValue(c, out CellUse u) && u == CellUse.Terrasse;
+
+        /// <summary>Détails au sol sans collision : le sol se lit sans gêner la course.</summary>
+        private void GroundDetails(ActRoom r, Transform root, EnsembleLibrary lib, HashSet<Vector2Int> blocked)
+        {
+            List<EnsembleLibrary.Set> sets = lib.Sets.Where(s => s.Ground && s.Fits(r.Function)).ToList();
+            if (sets.Count == 0)
+                return;
+            List<Vector2Int> order = r.Use.Where(kv => (kv.Value == CellUse.Sol || kv.Value == CellUse.Passage) && !blocked.Contains(kv.Key))
+                .Select(kv => kv.Key).OrderBy(_ => _rng.Next()).ToList();
+            int want = Mathf.RoundToInt(order.Count * Plan.Cell * Plan.Cell / lib.groundDetailArea), done = 0;
+            var taken = new HashSet<Vector2Int>();
+            foreach (Vector2Int c in order)
+            {
+                if (done >= want)
+                    break;
+                EnsembleLibrary.Set set = sets[_rng.Next(sets.Count)];
+                int w = Cells(set.Width * 0.5f), d = Cells(set.Depth * 0.5f);
+                bool ok = true;
+                for (int x = -w; x <= w && ok; x++)
+                for (int y = -d; y <= d && ok; y++)
+                {
+                    Vector2Int k = c + new Vector2Int(x, y);
+                    ok = !blocked.Contains(k) && !taken.Contains(k) && r.Use.TryGetValue(k, out CellUse u) && (u == CellUse.Sol || u == CellUse.Passage);
+                }
+
+                if (!ok)
+                    continue;
+                for (int x = -w; x <= w; x++)
+                for (int y = -d; y <= d; y++)
+                    taken.Add(c + new Vector2Int(x, y));
+                Quaternion rot = Quaternion.Euler(0f, set.Width > 3.5f ? _rng.Next(4) * 90f : _rng.Next(360), 0f);
+                int group = ++_group;
+                foreach (EnsembleLibrary.Piece p in set.Pieces)
+                {
+                    GameObject go = Place(p.Name, root, Plan.CellCenter(c, r.Floor) + rot * new Vector3(p.X, p.Y, p.Z), rot * Quaternion.Euler(0f, p.Yaw, 0f), p.Scale, group);
+                    if (go == null)
+                        continue;
+                    go.GetComponent<DecorTag>().kind = DecorKind.Vegetal;
+                    foreach (Collider col in go.GetComponentsInChildren<Collider>())
+                        DestroyImmediate(col);
+                }
+
+                done++;
+            }
+        }
 
         private int Cells(float m) => Mathf.Max(1, Mathf.CeilToInt(m / Plan.Cell - 0.05f));
 

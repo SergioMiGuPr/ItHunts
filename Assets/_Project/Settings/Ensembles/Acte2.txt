@@ -350,3 +350,26 @@ Chateau_Torchere -1.6 1
 [Arcade] centre 9x3 fonctions Grande entrée, Grande salle, Cloître, Palier, Chapelle, Salle de bal, Salle du trône, Bains, Grand escalier ; max 3
 Chateau_Arcade_8x12 0 0
 Chateau_Torchere 3.2 1.4
+
+# ---- Détails au sol (sans collision) ----
+[Papiers] sol 4x2 fonctions Bibliothèque, Salon de musique, Chambre, Galerie des portraits, Grande salle
+Ens_Papiers_Epars 0 0
+
+[Livres] sol 2x2 fonctions Bibliothèque, Chambre, Salon de musique
+Ens_Livres_Sol 0 0
+
+[Tapis] sol 5x4 fonctions Chambre, Salon de musique, Salle du trône, Grande salle, Salle à manger, Galerie des portraits, Palier, Armurerie
+Ens_Tapis_4x3 0 0
+
+[Gravats] sol 4x3 fonctions *
+Ens_Gravats_Epars_B 0 0
+
+[Gravats fins] sol 4x2 fonctions *
+Ens_Gravats_Epars_C 0 0
+
+[Verre] sol 2x2 fonctions *
+Ens_Verre_Brise 0 0 0 0 1.4
+
+[Chemin de tapis] sol 3x9 fonctions Salle du trône, Grande entrée, Chapelle, Palier, Grand escalier, Salle de bal
+Ens_Chemin_Tapis_8m 0 0 90
+

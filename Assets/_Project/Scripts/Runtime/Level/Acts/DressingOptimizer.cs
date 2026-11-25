@@ -13,7 +13,7 @@ namespace ItHunts.Level.Acts
     {
         private const float Tile = 24f;
 
-        public float lightGap = 9f;
+        public float lightGap = 7f;
         public float farSmall = 70f;
         public float farTile = 115f;
         public int doorHops = 2;

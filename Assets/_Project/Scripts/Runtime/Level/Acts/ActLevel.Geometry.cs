@@ -369,7 +369,8 @@ namespace ItHunts.Level.Acts
                         Vector3 c = edge + dir * (gap + 0.5f) + Vector3.up * (wallH * 0.5f);
                         float yaw = Mathf.Atan2(side.x, side.y) * Mathf.Rad2Deg;
                         Solid(root, "Mur de wall jump", c, new Vector3(1f, wallH, Plan.Cell * 3f), Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg + 90f,
-                            KitBuild.Kind.Mur, null, walkable: false);
+                            KitBuild.Kind.Mur, null, walkable: false)
+                            .AddComponent<ItHunts.Enemies.StalkerPassesThrough>();   // 10 m : il bondit et tend le bras par-dessus (épaule à 10,5 m)
                         for (int k = 1; k <= 2; k++)
                         for (int s = -4; s <= 4; s++)   // D-117 : rien devant les deux bouts du couloir (ni fuite bouchée, ni main bloquée)
                             if (r.Use.TryGetValue(t + d * k + side * s, out CellUse u) && u == CellUse.Sol)
