@@ -1,0 +1,111 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Ens_Tapisserie
+  m_Shader: {fileID: 4800000, guid: 9915fc7701c6a2c45ab83fc63e03c305, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 5657c9aeedb702249832838db55a1dd3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _EmissionMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LayerMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SolGravier:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SolHerbe:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SolMousse:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _AmbientInfluence: 1
+    - _BandCount: 3
+    - _BandGradient: 0.45
+    - _BandSoftness: 0.02
+    - _BandThreshold: 0.15
+    - _Cull: 0
+    - _Cutoff: 0.5
+    - _Decor: 0
+    - _DstBlend: 0
+    - _Emission: 0
+    - _EmissionThroughFog: 0
+    - _GrimeGroundY: 0
+    - _GrimeHeight: 1.8
+    - _GrimeStrength: 0.75
+    - _HeightBlend: 0.06
+    - _LayerAmount: 0
+    - _LayerLow: 0.5
+    - _LayerTile: 2
+    - _LayerTop: 0
+    - _LightSaturation: 0.5
+    - _MacroScale: 6
+    - _MacroVariation: 0.35
+    - _PointFalloff: 0.8
+    - _PointGradient: 0.8
+    - _PointSoftness: 0.015
+    - _PointSteps: 3
+    - _PointThreshold: 0.35
+    - _PointWrap: 0.2
+    - _ReceiveShadows: 1
+    - _Rim: 0
+    - _RimIntensity: 0.5
+    - _RimLitOnly: 0
+    - _RimSoftness: 0.02
+    - _RimWidth: 0.25
+    - _SolAntiRepet: 1
+    - _SolDouceur: 0.16
+    - _SolMelange: 0
+    - _SrcBlend: 1
+    - _TopRandomRotation: 0
+    - _TopRotation: 0
+    - _VertexPaint: 0
+    - _WetStrength: 0.5
+    - _WorldUV: 0
+    - _ZWrite: 1
+    m_Colors:
+    - _BaseColor: {r: 0.9, g: 0.86, b: 0.82, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _GrimeColor: {r: 0.41999996, g: 0.39999998, b: 0.35999998, a: 1}
+    - _MacroTint: {r: 0.78, g: 0.82, b: 0.74, a: 1}
+    - _RimColor: {r: 0.35, g: 0.45, b: 0.7, a: 1}
+    - _ShadowColor: {r: 0.028, g: 0.034, b: 0.07499998, a: 1}
+    - _SolEchelle: {r: 7, g: 9, b: 5, a: 0}
+    - _SolQuantite: {r: 0.35, g: 0.45, b: 0.2, a: 0}
+    - _SolTuile: {r: 2, g: 2, b: 2, a: 2}
+    - _TileOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _TileSize: {r: 4, g: 4, b: 0, a: 0}
+    - _WetColor: {r: 0.54999995, g: 0.62, b: 0.62, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

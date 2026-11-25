@@ -1147,3 +1147,676 @@ superposée, 0 dégénérée, 0 recouvrement entre les objets visibles d'une mê
 | `SM_Jardin_Rebord_3m` | 3.0 × 0.96 × 1.34 | -1.3 | 132 | ras du mur, milieu du bord arrière, dessus à 0 (saillie vers l'avant) | en quinconce tous les 2.2 à 3.5 m pour monter (saut, hissage, saut mural) |
 | `SM_Jardin_Passerelle_Pente_10m` | 10.11 × 2.6 × 4.63 | -0.51 | 636 | milieu du bord bas, dessus à 0 ; `Appui_Bas` (0, 0, 0), `Appui_Haut` (10, 0, 3) | relier deux étages de 3 m d'écart ; `Col_Rampe` lisse (16.7°) |
 | `SM_Jardin_Sol_8x8` | 8.0 × 8.0 × 0.6 | -0.6 | 12 |  |  |
+
+<!-- ENSEMBLES-DEBUT (généré par ens_doc.py) -->
+## Nuit 6, lot 1 : ensembles de décor (branche `art-ensembles`)
+
+**42 prefabs prêts à poser** dans `Assets/Art/Levels/Ensembles/<Acte>/`, deux variantes par ensemble : meubles, objets, lumières,
+collisions et repères. Ils remplissent les salles vides signalées dans `REVUE-CARTES.md` (points 1 et 11). Captures en jeu :
+`docs/art/rendus/Nuit6/Lot1/` (salles générées graine 22 : salle des gardes, palier, verger ; éclairage du jeu, lanterne du joueur ; `*_loin`
+et `*_pres`, plus `*_00_avant` : la salle vide au même endroit).
+
+### Poser un ensemble (pour main)
+
+- **Adossé** : le plan z = 0 est le mur, le pivot est au sol au milieu du mur, l'ensemble s'étend vers **+Z** (vers la salle). Poser le
+  pivot à 2 cm du mur. **Îlot** : le pivot est au centre. Jamais d'échelle non uniforme ; rotation libre autour de Y.
+- **Pas de mur ni de sol** dans les ensembles : ils se posent dans n'importe quelle salle de l'acte. Exception voulue : les murets de
+  séparation des cellules.
+- **Racine** : `StalkerPassesThrough` (le traqueur enjambe). Enfants : `Mobilier` (pièces avec collision), `Details` (petits objets sans
+  collision, masqués de loin par un `LODGroup`), `Lumieres` (points sans ombre), `Collisions` (boîtes en plus), `Reperes`.
+- **Repères** : `Accroche_*` = bord ou dessus où le joueur se hisse ou se tracte ; `Pose_Attrapable_*` = où poser un objet attrapable de main
+  (les meubles des ensembles ne sont pas attrapables) ; `Place_Coffre` = place d'un coffre ou d'un marchand.
+- **Emprise à réserver** : colonne « emprise » ; garder les allées de 10 m devant (`ActPlan.PlanInterior`). Retirer les props de main qui
+  tombent dans l'emprise (torches, caisses, lustres).
+- **Lumières** : 3 à 6 points par ensemble, portée 5 à 14 m, aucune ombre : une flamme motivée, une clé chaude devant, un appoint froid. Ne pas
+  ajouter de torche à moins de 6 m.
+- **Densité conseillée** : un ensemble adossé tous les 12 à 16 m de mur et un îlot par 250 m² de sol libre ; jamais deux fois la même variante
+  dans une salle.
+
+### Inventaire : repris et nouveau
+
+**Inventaire fait avant l'assemblage** : les 11 salles d'exemple (`Assets/Art/Levels/Exemples/`), les 3 kits, les props 3D et les décalques.
+
+- **Salles découpées** : chaque ensemble reprend la composition d'une salle d'exemple, sans ses murs (colonne « repris de » des fiches) :
+  Cave_Cachots (cellules, chaînes), Cave_SalleDeGarde (poste, réserve), Cave_CavernePuits (puits, îlot, éboulis), Chateau_SalleBibliotheque,
+  Chateau_GrandHall (tables, portraits), Chateau_Chapelle, Chateau_SalleDeBal (salon), Jardin_Labyrinthe (haies, kiosque),
+  Jardin_AlleeDesStatues (fontaine, serre, cimetière, statues). Cave_Citerne et Arene_Boss n'ont pas de coin réutilisable (eau, arène).
+- **Pièces de kit reprises telles quelles (31)** : `Cave_Brasero`, `Cave_Caisses_Pile`, `Cave_Candelabre`, `Cave_Cellule_Grille`, `Cave_Cellule_Porte`, `Cave_Eboulis_Petit`, `Cave_Etagere`, `Cave_Lit`, `Cave_MurBrise_4m`, `Cave_Puits`, `Cave_Seau`, `Cave_Tabouret`, `Cave_Torche_Murale`, `Chateau_Applique_Miroir`, `Chateau_Armoire_Tombee`, `Chateau_Candelabre_Pied`, `Chateau_MiroirBrise`, `Chateau_Table_Renversee`, `Chateau_Tenture`, `Chateau_Torchere`, `Jardin_Caveau`, `Jardin_Chemin_8m`, `Jardin_Fontaine`, `Jardin_Haie_6m`, `Jardin_Kiosque`, `Jardin_Palissade_4m`, `Jardin_Serre_Ruine`, `Jardin_SousBois_A`, `Jardin_SousBois_B`, `Jardin_Tombe_Croix`, `Jardin_Tombe_Stele`.
+- **Props repris** : `P_Prop_AngePleureur`, `P_Prop_Armoire`, `P_Prop_Banc`, `P_Prop_Chaise`, `P_Prop_Chaudron`, `P_Prop_CoffreDeco`, `P_Prop_Etagere`, `P_Prop_Fauteuil`, `P_Prop_Lanterne`, `P_Prop_Paille`, `P_Prop_Poutre`, `P_Prop_Ratelier`, `P_Prop_Sarcophage`, `P_Prop_Statue`, `P_Prop_Table`, `P_Prop_Tonneau`, `P_Prop_Tonneaux_Couches` (dont 2 nouveaux, plus bas).
+- **Décalques repris** : `Decal_CoulureLongue`, `Decal_CoulureRouille`, `Decal_EclatAngle`, `Decal_FissureEtoile`, `Decal_FissureLongue`, `Decal_MoussePlaque`, `Decal_TacheHumidite`, `Decal_TacheSang`, `Decal_TacheSuie`, `Decal_ToileAraignee`.
+- **Pièces de kit gardées et habillées** : la haie, le kiosque et la serre reçoivent un feuillage peint par-dessus (`Ens_Habillage_*`), au même
+  pivot ; le puits reçoit un plan d'eau (`Ens_Eau_Disque`). Main peut poser ces habillages sur les pièces déjà en place.
+- **Doublons supprimés de ce lot** (la pièce existante suffisait) : `Candelabre_Pied`, `Bougies_A`, `Seau`, `Caisse_A`, `Caisse_B`, `Tabouret`,
+  `Grille_2m`, `Grille_Vantail`, `Mur_Cellule`, `Linteau_Cellule`, `Paillasse`, `Brasero`, `Torche`, `Puits`, `Rideau_Double`, `Applique_Bougies`,
+  `Lambris_3m`.
+- **Nouvelle version gardée parce que meilleure** (l'ancienne reste dans le kit, encore posée par les cartes ; main peut la remplacer) :
+  `Ens_Chaines_Murales` (maillons réels) pour `Cave_Chaines_Mur` ; `Ens_Sacs_A/B` pour `Cave_Sacs` ; `Ens_Eboulis_A/B` pour
+  `Cave_Eboulis_Grand` ; `Ens_Bougies_B` pour `Cave_Chandelles` (flamme trop grande) ; `Ens_Bibliotheque` (livres en relief) pour
+  `Chateau_Bibliotheque` ; `Ens_Table_Longue` pour `Chateau_TableBanquet` ; `Ens_Lit_Baldaquin` pour `Chateau_LitBaldaquin` ;
+  `Ens_Banc_Chapelle` pour `Chateau_Banc_Eglise` ; `Ens_Autel_Chapelle` pour `Chateau_Autel` ; `Ens_Pupitre` pour `Chateau_Lutrin` ;
+  `Ens_Portrait_*` pour `Chateau_Tableau` (toile vide) ; `P_Prop_Fauteuil` pour `Chateau_Fauteuil` ; `P_Prop_AngePleureur` pour
+  `Jardin_Statue_Pleureuse`.
+
+### Acte I : caves : ensembles
+
+#### `Cave_Cellule_A` (adossé)
+
+![Cave_Cellule_A](rendus/Nuit6/Lot1/Cave_Cellule_A_loin.jpg)
+
+- **Emprise** : 7.2 × 6.4 m ; **hauteur** : 5.6 m. Mesuré (feuillage et débords compris) : 9,6 × 9,1 × 5,7 m.
+- **Fonction** : cachot occupé, porte close : on voit l'intérieur. **Récit** : Le prisonnier n'est jamais sorti : squelette assis sous ses chaînes, compte des jours gravé, bougie à peine éteinte.
+- **Accroches** : Linteau à 5.6 m (`Accroche_Linteau`) ; grille = mur de saut mural.
+- **Passage** : Porte close et imposte barrée ; ouverte par le haut (murs de 4 m). Aucun refuge : tout l'ensemble laisse passer le bras et le regard du traqueur (`StalkerPassesThrough`).
+- **Repris de** : Cave_Cachots : grille, porte, lit, paille, seau, murs de séparation ; traqueur : aucune cachette.
+- **Coût** : 18 115 triangles, 5 lumières, 11 collisions, 24 rendus.
+
+#### `Cave_Cellule_B` (adossé)
+
+![Cave_Cellule_B](rendus/Nuit6/Lot1/Cave_Cellule_B_loin.jpg)
+
+- **Emprise** : 7.2 × 6.6 m ; **hauteur** : 4.2 m. Mesuré (feuillage et débords compris) : 9,6 × 9,3 × 4,0 m.
+- **Fonction** : cachot forcé, ouvert : cul-de-sac visible en entier. **Récit** : Évasion : barreaux écartés, porte arrachée au sol, trou creusé dans le mur du fond, chaînes vides.
+- **Accroches** : Tête des murets à 4 m (`Accroche_Muret`).
+- **Passage** : Ouverture de 3.2 m entre les deux panneaux de grille, sans plafond : le traqueur y passe le bras (règle des 3 m) et enjambe les murs de 4 m.
+- **Repris de** : Cave_Cachots : porte, paille, seau, murs ; cellule forcée n° 2.
+- **Coût** : 20 293 triangles, 5 lumières, 12 collisions, 23 rendus.
+
+#### `Cave_PosteGarde_A` (adossé)
+
+![Cave_PosteGarde_A](rendus/Nuit6/Lot1/Cave_PosteGarde_A_loin.jpg)
+
+- **Emprise** : 7.5 × 4.5 m ; **hauteur** : 3.2 m. Mesuré (feuillage et débords compris) : 7,9 × 6,1 × 4,7 m.
+- **Fonction** : poste de garde contre un mur : lumière et objets à lancer. **Récit** : Partie de cartes interrompue : pièces sur la table, un tabouret renversé, chopes pleines.
+- **Accroches** : Table (0.95 m) = tremplin.
+- **Passage** : Voie libre de 10 m devant ; rien au-dessus de 2 m sauf le trophée mural.
+- **Repris de** : Cave_SalleDeGarde (table, tabourets, brasero, torches) ; P_Prop_Ratelier, P_Prop_Table, tonneau.
+- **Coût** : 40 838 triangles, 6 lumières, 12 collisions, 32 rendus.
+
+#### `Cave_PosteGarde_B` (adossé)
+
+![Cave_PosteGarde_B](rendus/Nuit6/Lot1/Cave_PosteGarde_B_loin.jpg)
+
+- **Emprise** : 7.5 × 4.8 m ; **hauteur** : 3.2 m. Mesuré (feuillage et débords compris) : 8,0 × 4,9 × 4,8 m.
+- **Fonction** : poste de garde mis à sac : couverts bas. **Récit** : Garde surprise : table basculée en barricade, coffre forcé, un corps contre le mur.
+- **Accroches** : Table basculée (1.2 m) = couvert et appui.
+- **Passage** : Voie libre de 10 m devant.
+- **Repris de** : Cave_SalleDeGarde ; P_Prop_Table, P_Prop_Ratelier, P_Prop_Chaise.
+- **Coût** : 30 150 triangles, 4 lumières, 8 collisions, 26 rendus.
+
+#### `Cave_Reserve_A` (adossé)
+
+![Cave_Reserve_A](rendus/Nuit6/Lot1/Cave_Reserve_A_loin.jpg)
+
+- **Emprise** : 8 × 3.6 m ; **hauteur** : 2.8 m. Mesuré (feuillage et débords compris) : 8,7 × 5,7 × 3,7 m.
+- **Fonction** : réserve rangée contre un mur : gisement d'objets attrapables. **Récit** : Provisions pour un siège : tonneaux en rang, caisses empilées, sacs de grain, étagère de jarres.
+- **Accroches** : Pile de caisses (1.3 et 2.6 m) = marches vers une corniche.
+- **Passage** : Voie libre devant.
+- **Repris de** : Cave_SalleDeGarde (réserve) et Cave_CavernePuits : tonneaux, caisses, étagère.
+- **Coût** : 56 270 triangles, 5 lumières, 10 collisions, 36 rendus.
+
+#### `Cave_Reserve_B` (adossé)
+
+![Cave_Reserve_B](rendus/Nuit6/Lot1/Cave_Reserve_B_loin.jpg)
+
+- **Emprise** : 8 × 4 m ; **hauteur** : 2.7 m. Mesuré (feuillage et débords compris) : 9,4 × 6,5 × 3,4 m.
+- **Fonction** : réserve pillée en coin : couverts et marches. **Récit** : Pillée par ce qui rôde : sacs éventrés, tonneau brisé, traînée de grain vers l'ombre.
+- **Accroches** : Pile de caisses (1.3 et 2.6 m).
+- **Passage** : Voie libre devant ; aucun objet au-dessus de 2.7 m.
+- **Repris de** : Cave_SalleDeGarde, Cave_CavernePuits ; P_Prop_Etagere, P_Prop_Tonneau.
+- **Coût** : 37 033 triangles, 5 lumières, 10 collisions, 23 rendus.
+
+#### `Cave_Eboulis_A` (adossé)
+
+![Cave_Eboulis_A](rendus/Nuit6/Lot1/Cave_Eboulis_A_loin.jpg)
+
+- **Emprise** : 7 × 4.5 m ; **hauteur** : 3.7 m. Mesuré (feuillage et débords compris) : 9,4 × 5,9 × 3,9 m.
+- **Fonction** : coin d'éboulis étayé : fin de galerie, appui de saut. **Récit** : Galerie de mine effondrée derrière son étai ; les outils sont restés.
+- **Accroches** : Blocs à 0.8, 1.6 et 2.2 m ; chapeau de l'étai à 3.4 m (`Accroche_Etai`).
+- **Passage** : Voie libre devant ; le fond est plein (ni cachette ni trou).
+- **Repris de** : Cave_CavernePuits (éboulis, décalques) ; Cave_Eboulis_Petit.
+- **Coût** : 17 637 triangles, 5 lumières, 11 collisions, 16 rendus.
+
+#### `Cave_Eboulis_B` (adossé)
+
+![Cave_Eboulis_B](rendus/Nuit6/Lot1/Cave_Eboulis_B_loin.jpg)
+
+- **Emprise** : 7 × 7 m ; **hauteur** : 3.7 m. Mesuré (feuillage et débords compris) : 7,5 × 8,7 × 3,9 m.
+- **Fonction** : voie de mine et wagonnet : glissade et saut. **Récit** : Le wagonnet a déraillé quand la voûte a cédé ; un mineur est resté dessous.
+- **Accroches** : Wagonnet (1.1 m) et étai (3.4 m).
+- **Passage** : La voie ferrée est plate (0.2 m) : on glisse dessus.
+- **Repris de** : Cave_Eboulis_Petit, P_Prop_Poutre, P_Prop_Lanterne.
+- **Coût** : 24 348 triangles, 4 lumières, 10 collisions, 16 rendus.
+
+#### `Cave_Autel_A` (îlot)
+
+![Cave_Autel_A](rendus/Nuit6/Lot1/Cave_Autel_A_loin.jpg)
+
+- **Emprise** : Ø 8 m ; **hauteur** : 2.9 m. Mesuré (feuillage et débords compris) : 7,9 × 7,8 × 3,4 m.
+- **Fonction** : autel ancien, îlot : repère de salle, place d'un coffre ou d'un marchand. **Récit** : Plus vieux que le château : dalle fendue, coupe, crânes, pierres levées qui portent le même signe.
+- **Accroches** : Pierres levées (2.8 m) : appuis et murs de saut mural.
+- **Passage** : On tourne autour : 1.6 m libres entre les pierres.
+- **Repris de** : Cave_CavernePuits (îlot central, chandelles, décalques).
+- **Coût** : 22 484 triangles, 5 lumières, 7 collisions, 17 rendus.
+
+#### `Cave_Puits_A` (îlot)
+
+![Cave_Puits_A](rendus/Nuit6/Lot1/Cave_Puits_A_loin.jpg)
+
+- **Emprise** : Ø 7 m ; **hauteur** : 4.0 m. Mesuré (feuillage et débords compris) : 7,3 × 7,8 × 6,5 m.
+- **Fonction** : puits ancien, îlot : repère, point de rassemblement. **Récit** : La margelle est usée par les cordes ; on y a vidé bien autre chose que de l'eau.
+- **Accroches** : Portique du puits à 4 m (`Accroche_Portique`).
+- **Passage** : On tourne autour ; eau à 0.45 m sous la margelle (rien sous le sol).
+- **Repris de** : Cave_CavernePuits : puits du kit, chandelles, caisses.
+- **Coût** : 21 271 triangles, 5 lumières, 8 collisions, 20 rendus.
+
+#### `Cave_Puits_B` (îlot)
+
+![Cave_Puits_B](rendus/Nuit6/Lot1/Cave_Puits_B_loin.jpg)
+
+- **Emprise** : Ø 7 m ; **hauteur** : 4.0 m. Mesuré (feuillage et débords compris) : 6,7 × 7,6 × 6,5 m.
+- **Fonction** : puits condamné, îlot : couverts bas et repère. **Récit** : On a cloué des planches sur le puits et posé des pierres dessus ; quelque chose a poussé d'en dessous.
+- **Accroches** : Portique à 4 m (`Accroche_Portique`).
+- **Passage** : On tourne autour ; le puits est bouché (planches et pierres).
+- **Repris de** : Cave_CavernePuits : puits du kit, éboulis, brasero.
+- **Coût** : 19 752 triangles, 4 lumières, 7 collisions, 16 rendus.
+
+#### `Cave_Autel_B` (adossé)
+
+![Cave_Autel_B](rendus/Nuit6/Lot1/Cave_Autel_B_loin.jpg)
+
+- **Emprise** : 7 × 4.2 m ; **hauteur** : 3.2 m. Mesuré (feuillage et débords compris) : 7,3 × 3,9 × 4,2 m.
+- **Fonction** : autel mural profané : fond de salle, niche à objet. **Récit** : L'autel sert encore : cire fraîche, offrandes, chaînes qui pendent.
+- **Accroches** : Dessus d'autel à 1.2 m.
+- **Passage** : Voie libre devant.
+- **Repris de** : Cave_CavernePuits ; P_Prop_Sarcophage.
+- **Coût** : 21 743 triangles, 5 lumières, 6 collisions, 17 rendus.
+
+#### `Cave_Torture_A` (adossé)
+
+![Cave_Torture_A](rendus/Nuit6/Lot1/Cave_Torture_A_loin.jpg)
+
+- **Emprise** : 8 × 4.8 m ; **hauteur** : 4.3 m. Mesuré (feuillage et débords compris) : 7,9 × 4,1 × 4,6 m.
+- **Fonction** : salle de question, discrète : suggérée, jamais montrée. **Récit** : Tout est rangé, propre et prêt ; seule la cage pend encore.
+- **Accroches** : Bras de potence à 4 m (`Accroche_Potence`).
+- **Passage** : Cage à 0.5 m du sol, contre le mur ; voie libre devant.
+- **Repris de** : Cave_Cachots (chaînes) ; P_Prop_Table, P_Prop_Chaudron, brasero du kit.
+- **Coût** : 29 367 triangles, 5 lumières, 10 collisions, 24 rendus.
+
+#### `Cave_Torture_B` (adossé)
+
+![Cave_Torture_B](rendus/Nuit6/Lot1/Cave_Torture_B_loin.jpg)
+
+- **Emprise** : 8 × 4.6 m ; **hauteur** : 4.3 m. Mesuré (feuillage et débords compris) : 7,9 × 5,7 × 4,4 m.
+- **Fonction** : salle de question abandonnée : couverts bas. **Récit** : Abandonnée en hâte : pilori ouvert, chaînes au bout de la potence, un registre encore ouvert.
+- **Accroches** : Bras de potence à 4 m (`Accroche_Potence`).
+- **Passage** : Chaînes à 1 m du sol : on passe dessous ; voie libre devant.
+- **Repris de** : Cave_Cachots ; P_Prop_Table, P_Prop_Banc, P_Prop_CoffreDeco.
+- **Coût** : 36 148 triangles, 5 lumières, 12 collisions, 28 rendus.
+
+### Acte II : château : ensembles
+
+#### `Chateau_Bibliotheque_A` (adossé)
+
+![Chateau_Bibliotheque_A](rendus/Nuit6/Lot1/Chateau_Bibliotheque_A_loin.jpg)
+
+- **Emprise** : 12.4 × 5.5 m (9.5 m sans les tentures) ; **hauteur** : 4.4 m. Mesuré (feuillage et débords compris) : 12,4 × 6,3 × 4,7 m.
+- **Fonction** : coin de bibliothèque : fond de salle, mur de saut. **Récit** : Quelqu'un lisait encore tout à l'heure : fauteuil tourné, livre ouvert, bougies hautes.
+- **Accroches** : Dessus des bibliothèques à 4 m (`Accroche_Corniche`) ; table à 0.95 m.
+- **Passage** : Voie libre devant ; 3 m entre la table et les rayons.
+- **Repris de** : Chateau_SalleBibliotheque (rayons, table, fauteuils, lutrin, tapis) : composition reprise, livres en relief à la place des rayons peints.
+- **Coût** : 47 826 triangles, 5 lumières, 13 collisions, 23 rendus.
+
+#### `Chateau_Bibliotheque_B` (adossé)
+
+![Chateau_Bibliotheque_B](rendus/Nuit6/Lot1/Chateau_Bibliotheque_B_loin.jpg)
+
+- **Emprise** : 10.5 × 6 m ; **hauteur** : 4.4 m. Mesuré (feuillage et débords compris) : 9,9 × 6,4 × 4,1 m.
+- **Fonction** : coin de bibliothèque ravagé : couverts bas et pente. **Récit** : Un rayon a été renversé sur le flanc, vidé ; les pages ont volé jusqu'au milieu de la salle.
+- **Accroches** : Rayon couché (dessus à 2.5 m) = appui ; corniche à 4 m.
+- **Passage** : Voie libre devant.
+- **Repris de** : Chateau_SalleBibliotheque ; P_Prop_Etagere, Chateau_Table_Renversee.
+- **Coût** : 37 523 triangles, 5 lumières, 8 collisions, 22 rendus.
+
+#### `Chateau_SalleManger_A` (îlot)
+
+![Chateau_SalleManger_A](rendus/Nuit6/Lot1/Chateau_SalleManger_A_loin.jpg)
+
+- **Emprise** : 8.5 × 5 m ; **hauteur** : 1.8 m (cheminée 4.7 m en fond possible). Mesuré (feuillage et débords compris) : 9,1 × 3,0 × 1,8 m.
+- **Fonction** : salle à manger dressée, îlot : longue table à courir. **Récit** : Le banquet attend toujours ses convives : couverts mis, bougies allumées, viande rassise.
+- **Accroches** : Table de 6 m à 0.93 m : piste de course et de glissade ; un lustre de main peut pendre au-dessus.
+- **Passage** : On tourne autour (2 m libres).
+- **Repris de** : Chateau_GrandHall (table de banquet et chaises autour du tapis) ; P_Prop_Chaise.
+- **Coût** : 48 946 triangles, 4 lumières, 13 collisions, 38 rendus.
+
+#### `Chateau_SalleManger_B` (îlot)
+
+![Chateau_SalleManger_B](rendus/Nuit6/Lot1/Chateau_SalleManger_B_loin.jpg)
+
+- **Emprise** : 9 × 5.5 m ; **hauteur** : 1.8 m. Mesuré (feuillage et débords compris) : 10,0 × 6,7 × 1,8 m.
+- **Fonction** : salle à manger après l'attaque, îlot : couverts bas. **Récit** : Ils ont fui au milieu du plat : chaises renversées, vaisselle balayée, lustre tombé sur la table.
+- **Accroches** : Table à 0.93 m ; lustre tombé (1 m).
+- **Passage** : On tourne autour.
+- **Repris de** : Chateau_GrandHall, Chateau_SalleDeBal (tables et chaises renversées).
+- **Coût** : 41 084 triangles, 4 lumières, 12 collisions, 32 rendus.
+
+#### `Chateau_Cheminee_A` (adossé)
+
+![Chateau_Cheminee_A](rendus/Nuit6/Lot1/Chateau_Cheminee_A_loin.jpg)
+
+- **Emprise** : 6.5 × 4.5 m ; **hauteur** : 8.3 m (conduit). Mesuré (feuillage et débords compris) : 7,2 × 4,6 × 8,2 m.
+- **Fonction** : cheminée et fauteuils : foyer de lumière d'une grande salle. **Récit** : Le feu brûle sans personne pour le nourrir.
+- **Accroches** : Manteau à 2.9 m (`Accroche_Manteau`).
+- **Passage** : Voie libre devant.
+- **Repris de** : P_Prop_CoffreDeco, P_Prop_Fauteuil ; tapis du château.
+- **Coût** : 27 555 triangles, 5 lumières, 11 collisions, 16 rendus.
+
+#### `Chateau_Cheminee_B` (adossé)
+
+![Chateau_Cheminee_B](rendus/Nuit6/Lot1/Chateau_Cheminee_B_loin.jpg)
+
+- **Emprise** : 8 × 4.8 m ; **hauteur** : 8.3 m (conduit). Mesuré (feuillage et débords compris) : 9,9 × 5,0 × 8,2 m.
+- **Fonction** : cheminée éteinte : fond de salle froid, couverts. **Récit** : Le foyer est mort ; on a brûlé les livres, puis les cadres, puis les chaises.
+- **Accroches** : Manteau à 2.9 m (`Accroche_Manteau`).
+- **Passage** : Voie libre devant.
+- **Repris de** : Chateau_Chaise_Renversee, P_Prop_Fauteuil, P_Prop_Tonneau.
+- **Coût** : 29 249 triangles, 4 lumières, 12 collisions, 19 rendus.
+
+#### `Chateau_Chambre_A` (adossé)
+
+![Chateau_Chambre_A](rendus/Nuit6/Lot1/Chateau_Chambre_A_loin.jpg)
+
+- **Emprise** : 11 × 4.8 m ; **hauteur** : 4.2 m. Mesuré (feuillage et débords compris) : 10,7 × 5,0 × 5,0 m.
+- **Fonction** : chambre seigneuriale contre un mur. **Récit** : Lit refait pour personne, la tapisserie montre la bête qui chasse les chasseurs.
+- **Accroches** : Dais à 3.1 m (`Accroche_Dais`).
+- **Passage** : Voie libre devant.
+- **Repris de** : P_Prop_Armoire, P_Prop_CoffreDeco, Chateau_Applique_Miroir ; meubles d'Act II de main (chambre).
+- **Coût** : 34 404 triangles, 6 lumières, 15 collisions, 19 rendus.
+
+#### `Chateau_Chambre_B` (adossé)
+
+![Chateau_Chambre_B](rendus/Nuit6/Lot1/Chateau_Chambre_B_loin.jpg)
+
+- **Emprise** : 9.5 × 5.2 m ; **hauteur** : 3.4 m. Mesuré (feuillage et débords compris) : 9,7 × 5,6 × 4,5 m.
+- **Fonction** : chambre abandonnée : couverts, silhouette brisée. **Récit** : Le dais s'est effondré sur le lit ; l'armoire est restée ouverte, le miroir terni.
+- **Accroches** : Dais effondré (pente de 1 à 3 m).
+- **Passage** : Voie libre devant.
+- **Repris de** : Chateau_MiroirBrise, Chateau_Armoire_Tombee (famille), Chateau_Chaise_Renversee.
+- **Coût** : 23 464 triangles, 5 lumières, 11 collisions, 19 rendus.
+
+#### `Chateau_Chapelle_A` (adossé)
+
+![Chateau_Chapelle_A](rendus/Nuit6/Lot1/Chateau_Chapelle_A_loin.jpg)
+
+- **Emprise** : 11 × 10 m ; **hauteur** : 7.2 m. Mesuré (feuillage et débords compris) : 10,7 × 9,1 × 7,1 m.
+- **Fonction** : chapelle : grand repère lumineux du fond de salle. **Récit** : La sainte à la lanterne veille encore ; les cierges brûlent, les bancs sont vides.
+- **Accroches** : Bancs (0.5 et 1.1 m), autel (1.3 m), appui de la verrière à 1.5 m.
+- **Passage** : Allée centrale de 1.6 m et côtés libres ; le traqueur enjambe les bancs.
+- **Repris de** : Chateau_Chapelle (bancs, autel, lutrin, candélabres, rayon de lune) : composition reprise en réduction.
+- **Coût** : 36 343 triangles, 6 lumières, 28 collisions, 22 rendus.
+
+#### `Chateau_Chapelle_B` (adossé)
+
+![Chateau_Chapelle_B](rendus/Nuit6/Lot1/Chateau_Chapelle_B_loin.jpg)
+
+- **Emprise** : 8.6 × 9 m ; **hauteur** : 7.2 m. Mesuré (feuillage et débords compris) : 8,9 × 10,3 × 7,1 m.
+- **Fonction** : chapelle funèbre profanée : catafalque au centre. **Récit** : Une veillée interrompue : le cercueil est cloué, mais un banc a été renversé en travers de l'allée.
+- **Accroches** : Catafalque à 1 m ; bancs.
+- **Passage** : 3 m libres autour du catafalque.
+- **Repris de** : Chateau_Chapelle ; P_Prop_Statue, Chateau_Banc_Eglise.
+- **Coût** : 31 678 triangles, 5 lumières, 21 collisions, 22 rendus.
+
+#### `Chateau_Galerie_A` (adossé)
+
+![Chateau_Galerie_A](rendus/Nuit6/Lot1/Chateau_Galerie_A_loin.jpg)
+
+- **Emprise** : 13.5 × 2.6 m ; **hauteur** : 4.6 m. Mesuré (feuillage et débords compris) : 13,5 × 2,8 × 5,5 m.
+- **Fonction** : galerie de portraits : habille un long mur. **Récit** : Sept ancêtres entourent celui qui n'a pas de visage ; un cadre vide attend déjà le suivant.
+- **Accroches** : Aucune (décor mural) ; banquettes 0.55 m.
+- **Passage** : Profondeur 1.3 m : couloir libre devant.
+- **Repris de** : Chateau_GrandHall (tableaux, tentures), Chateau_Applique_Miroir, Chateau_Torchere.
+- **Coût** : 11 894 triangles, 6 lumières, 5 collisions, 19 rendus.
+
+#### `Chateau_Galerie_B` (adossé)
+
+![Chateau_Galerie_B](rendus/Nuit6/Lot1/Chateau_Galerie_B_loin.jpg)
+
+- **Emprise** : 12 × 2.8 m ; **hauteur** : 4.4 m. Mesuré (feuillage et débords compris) : 12,5 × 3,0 × 5,4 m.
+- **Fonction** : galerie de portraits lacérée : habille un long mur. **Récit** : Quelqu'un a lacéré les visages, un par un ; le portrait sans visage, lui, est intact.
+- **Accroches** : Aucune ; banquette.
+- **Passage** : Profondeur 1.5 m.
+- **Repris de** : Chateau_GrandHall, Chateau_Torchere, Chateau_Armoire_Tombee (famille).
+- **Coût** : 14 424 triangles, 6 lumières, 5 collisions, 18 rendus.
+
+#### `Chateau_Salon_A` (îlot)
+
+![Chateau_Salon_A](rendus/Nuit6/Lot1/Chateau_Salon_A_loin.jpg)
+
+- **Emprise** : 8.5 × 6 m ; **hauteur** : 2.2 m. Mesuré (feuillage et débords compris) : 8,7 × 5,9 × 2,6 m.
+- **Fonction** : salon sous housses, îlot : couverts et silhouettes. **Récit** : Maison fermée : les meubles dorment sous les draps, et l'un des draps ressemble à quelqu'un.
+- **Accroches** : Clavecin (1.1 m), table (0.9 m).
+- **Passage** : Meubles espacés de 1.5 à 2 m : le joueur zigzague ; traqueur : tout est enjambé.
+- **Repris de** : Chateau_SalleDeBal (meubles autour de la piste vide), Chateau_Candelabre_Pied.
+- **Coût** : 23 614 triangles, 6 lumières, 11 collisions, 13 rendus.
+
+#### `Chateau_Salon_B` (îlot)
+
+![Chateau_Salon_B](rendus/Nuit6/Lot1/Chateau_Salon_B_loin.jpg)
+
+- **Emprise** : 8.5 × 6 m ; **hauteur** : 2 m. Mesuré (feuillage et débords compris) : 10,3 × 9,9 × 2,1 m.
+- **Fonction** : salon renversé, îlot : couverts bas et barricade. **Récit** : On s'est barricadé ici, derrière les meubles ; la barricade a cédé.
+- **Accroches** : Meubles couchés (0.7 à 1.2 m) : marches.
+- **Passage** : Brèche de 2 m au milieu de la barricade.
+- **Repris de** : Chateau_SalleDeBal : Chateau_Table_Renversee, Chaise_Renversee, Armoire_Tombee.
+- **Coût** : 33 925 triangles, 6 lumières, 13 collisions, 27 rendus.
+
+### Acte III : jardin : ensembles
+
+#### `Jardin_Massif_A` (îlot)
+
+![Jardin_Massif_A](rendus/Nuit6/Lot1/Jardin_Massif_A_loin.jpg)
+
+- **Emprise** : 15 × 10 m ; **hauteur** : 4.6 m. Mesuré (feuillage et débords compris) : 15,2 × 11,8 × 4,4 m.
+- **Fonction** : massif de haies autour d'une statue, îlot en U : niche et repère. **Récit** : L'ange pleure au fond de sa niche de buis ; on vient encore lui porter des lanternes.
+- **Accroches** : Socle à 1.3 m ; haies de 2.5 m (dessus praticable).
+- **Passage** : U ouvert de 7 m : jamais de cul-de-sac fermé ; le traqueur enjambe les haies.
+- **Repris de** : Jardin_Labyrinthe et Jardin_AlleeDesStatues : haies du kit (habillées de buis peint), chemin.
+- **Coût** : 13 459 triangles, 6 lumières, 19 collisions, 32 rendus.
+
+#### `Jardin_Massif_B` (îlot)
+
+![Jardin_Massif_B](rendus/Nuit6/Lot1/Jardin_Massif_B_loin.jpg)
+
+- **Emprise** : 13 × 8 m ; **hauteur** : 5 m. Mesuré (feuillage et débords compris) : 15,8 × 8,4 × 4,6 m.
+- **Fonction** : massif retourné à l'état sauvage, îlot : couverts. **Récit** : Le buis a tout mangé ; le moine de pierre prie toujours, et quelqu'un lui laisse une lanterne.
+- **Accroches** : Haies de 2.5 m.
+- **Passage** : Deux passages de 4 m.
+- **Repris de** : Jardin_Labyrinthe, Jardin_AlleeDesStatues : haies du kit, P_Prop_Statue.
+- **Coût** : 12 592 triangles, 5 lumières, 14 collisions, 35 rendus.
+
+#### `Jardin_FontaineBancs_A` (îlot)
+
+![Jardin_FontaineBancs_A](rendus/Nuit6/Lot1/Jardin_FontaineBancs_A_loin.jpg)
+
+- **Emprise** : Ø 13 m ; **hauteur** : 5.4 m. Mesuré (feuillage et débords compris) : 14,2 × 14,8 × 5,8 m.
+- **Fonction** : place de fontaine, îlot : carrefour et repère. **Récit** : L'eau noire ne coule plus ; les bancs l'entourent comme pour un spectacle.
+- **Accroches** : Vasque haute à 3.5 m, margelle 0.6 m (`Accroche_Vasque`).
+- **Passage** : Anneau libre de 3 m autour du bassin.
+- **Repris de** : Jardin_AlleeDesStatues (fontaine, allée, haies).
+- **Coût** : 4 630 triangles, 6 lumières, 13 collisions, 22 rendus.
+
+#### `Jardin_FontaineBancs_B` (îlot)
+
+![Jardin_FontaineBancs_B](rendus/Nuit6/Lot1/Jardin_FontaineBancs_B_loin.jpg)
+
+- **Emprise** : Ø 12 m ; **hauteur** : 5.4 m. Mesuré (feuillage et débords compris) : 14,4 × 13,3 × 5,8 m.
+- **Fonction** : fontaine envahie, îlot : carrefour. **Récit** : Le lierre a pris la fontaine ; un corbeau garde le dernier banc entier.
+- **Accroches** : Vasque haute à 3.5 m.
+- **Passage** : Anneau libre de 2.5 m.
+- **Repris de** : Jardin_AlleeDesStatues (fontaine, statues).
+- **Coût** : 6 068 triangles, 5 lumières, 8 collisions, 31 rendus.
+
+#### `Jardin_Serre_A` (îlot)
+
+![Jardin_Serre_A](rendus/Nuit6/Lot1/Jardin_Serre_A_loin.jpg)
+
+- **Emprise** : 11 × 7 m ; **hauteur** : 5.3 m. Mesuré (feuillage et débords compris) : 13,0 × 9,7 × 5,3 m.
+- **Fonction** : serre en ruine, îlot à enjamber : couverts et muret. **Récit** : Table de rempotage encore servie ; les plantes, elles, ont continué.
+- **Accroches** : Faîtage à 5 m (`Accroche_Faitage`).
+- **Passage** : Muret de 0.8 m sur quatre côtés : on entre par un saut ; le traqueur l'enjambe (toit ouvert).
+- **Repris de** : Jardin_AlleeDesStatues (serre du kit).
+- **Coût** : 10 560 triangles, 6 lumières, 8 collisions, 29 rendus.
+
+#### `Jardin_Serre_B` (îlot)
+
+![Jardin_Serre_B](rendus/Nuit6/Lot1/Jardin_Serre_B_loin.jpg)
+
+- **Emprise** : 11.5 × 7.5 m ; **hauteur** : 5.3 m. Mesuré (feuillage et débords compris) : 12,9 × 9,5 × 5,3 m.
+- **Fonction** : serre dévorée, îlot à enjamber : jungle dense, couverts. **Récit** : Ce qui poussait ici a mangé le reste, vitres comprises.
+- **Accroches** : Faîtage à 5 m.
+- **Passage** : Muret de 0.8 m sur quatre côtés : on entre par un saut ; le traqueur l'enjambe.
+- **Repris de** : Jardin_AlleeDesStatues (serre du kit), Jardin_SousBois_A et B.
+- **Coût** : 7 450 triangles, 5 lumières, 7 collisions, 30 rendus.
+
+#### `Jardin_Cimetiere_A` (îlot)
+
+![Jardin_Cimetiere_A](rendus/Nuit6/Lot1/Jardin_Cimetiere_A_loin.jpg)
+
+- **Emprise** : 12 × 9 m ; **hauteur** : 4.5 m. Mesuré (feuillage et débords compris) : 13,0 × 9,4 × 3,6 m.
+- **Fonction** : petit cimetière clos bas, îlot : couverts réguliers. **Récit** : Le carré de la famille ; l'ange est plus récent que les tombes.
+- **Accroches** : Tombes (1 à 2 m) : marches ; clôture basse 1.3 m.
+- **Passage** : Entrée de 4 m ouverte devant ; clôture sautée sans élan.
+- **Repris de** : Jardin_AlleeDesStatues (cimetière : tombes, portail).
+- **Coût** : 31 961 triangles, 6 lumières, 24 collisions, 48 rendus.
+
+#### `Jardin_Cimetiere_B` (îlot)
+
+![Jardin_Cimetiere_B](rendus/Nuit6/Lot1/Jardin_Cimetiere_B_loin.jpg)
+
+- **Emprise** : 11 × 8 m ; **hauteur** : 5.6 m. Mesuré (feuillage et débords compris) : 13,0 × 11,6 × 5,8 m.
+- **Fonction** : cimetière ouvert par en dessous, îlot. **Récit** : Une tombe s'est ouverte de l'intérieur ; les corbeaux attendent.
+- **Accroches** : Caveau (dessus à 5 m), dalles.
+- **Passage** : Pas de trou dans le sol (fosse peinte) ; passages de 2 m.
+- **Repris de** : Jardin_AlleeDesStatues (caveau, tombes, arbre mort).
+- **Coût** : 14 101 triangles, 6 lumières, 11 collisions, 29 rendus.
+
+#### `Jardin_KiosqueEns_A` (îlot)
+
+![Jardin_KiosqueEns_A](rendus/Nuit6/Lot1/Jardin_KiosqueEns_A_loin.jpg)
+
+- **Emprise** : Ø 10 m ; **hauteur** : 9.2 m. Mesuré (feuillage et débords compris) : 13,6 × 13,1 × 9,3 m.
+- **Fonction** : kiosque de jardin, îlot : estrade haute et repère. **Récit** : Le thé est servi depuis un siècle.
+- **Accroches** : Plancher à 1 m, toit (`Accroche_Toit` 5 m).
+- **Passage** : Ouvert sur tous les côtés ; marches devant.
+- **Repris de** : Jardin_Labyrinthe, Jardin_AlleeDesStatues (kiosque du kit).
+- **Coût** : 5 880 triangles, 6 lumières, 6 collisions, 22 rendus.
+
+#### `Jardin_KiosqueEns_B` (îlot)
+
+![Jardin_KiosqueEns_B](rendus/Nuit6/Lot1/Jardin_KiosqueEns_B_loin.jpg)
+
+- **Emprise** : Ø 10 m ; **hauteur** : 9.2 m. Mesuré (feuillage et débords compris) : 13,7 × 13,1 × 9,3 m.
+- **Fonction** : kiosque à musique abandonné, îlot. **Récit** : Les pupitres sont encore tournés vers un chef qui ne reviendra pas.
+- **Accroches** : Plancher à 1 m, toit.
+- **Passage** : Ouvert sur tous les côtés.
+- **Repris de** : Jardin_Labyrinthe (kiosque du kit), Jardin_SousBois_A.
+- **Coût** : 10 304 triangles, 6 lumières, 6 collisions, 27 rendus.
+
+#### `Jardin_TasBois_A` (adossé)
+
+![Jardin_TasBois_A](rendus/Nuit6/Lot1/Jardin_TasBois_A_loin.jpg)
+
+- **Emprise** : 7.5 × 4.6 m ; **hauteur** : 3.1 m. Mesuré (feuillage et débords compris) : 9,5 × 5,9 × 3,1 m.
+- **Fonction** : coin du jardinier contre un mur ou une haie. **Récit** : La hache est encore plantée ; le bois n'a jamais été rentré.
+- **Accroches** : Toit de l'appentis (2.4 à 3 m) ; tas de bois 1.5 m.
+- **Passage** : Voie libre devant.
+- **Repris de** : Jardin_Palissade_4m, P_Prop_Lanterne, P_Prop_Tonneau.
+- **Coût** : 19 531 triangles, 6 lumières, 12 collisions, 18 rendus.
+
+#### `Jardin_TasBois_B` (adossé)
+
+![Jardin_TasBois_B](rendus/Nuit6/Lot1/Jardin_TasBois_B_loin.jpg)
+
+- **Emprise** : 8 × 4.8 m ; **hauteur** : 2.2 m. Mesuré (feuillage et débords compris) : 10,3 × 5,9 × 2,0 m.
+- **Fonction** : tas de bois écroulé et brouette, contre une palissade. **Récit** : Le jardinier est parti sans ses outils ; sa faux, elle, manque.
+- **Accroches** : Tas de bois 1.5 m, souche 0.8 m.
+- **Passage** : Voie libre devant.
+- **Repris de** : Jardin_Palissade_4m, P_Prop_Poutre, P_Prop_Tonneau.
+- **Coût** : 17 193 triangles, 6 lumières, 9 collisions, 19 rendus.
+
+#### `Jardin_Clairiere_A` (îlot)
+
+![Jardin_Clairiere_A](rendus/Nuit6/Lot1/Jardin_Clairiere_A_loin.jpg)
+
+- **Emprise** : Ø 30 m (clairière libre Ø 10 m) ; **hauteur** : 12 m. Mesuré (feuillage et débords compris) : 35,1 × 35,7 × 14,0 m.
+- **Fonction** : clairière de forêt dense, îlot : arène naturelle. **Récit** : Un cercle de champignons pâles, des pierres levées : on a dansé ici, et pas seul.
+- **Accroches** : Tronc couché (0.9 m, 7 m de long) ; pierres levées.
+- **Passage** : Couronne d'arbres espacés de 3.5 à 5 m, ouverte de 8 m devant et de 5 m derrière : le traqueur passe entre les troncs.
+- **Repris de** : Jardin_SousBois_A/B, Jardin_ArbreMort_Tordu ; lisière du kit à mettre derrière.
+- **Coût** : 24 478 triangles, 4 lumières, 32 collisions, 78 rendus.
+
+#### `Jardin_Clairiere_B` (îlot)
+
+![Jardin_Clairiere_B](rendus/Nuit6/Lot1/Jardin_Clairiere_B_loin.jpg)
+
+- **Emprise** : Ø 30 m (libre Ø 8 m) ; **hauteur** : 12 m. Mesuré (feuillage et débords compris) : 34,8 × 35,4 × 14,0 m.
+- **Fonction** : clairière à la souche, îlot : couverts naturels. **Récit** : Un arbre énorme est tombé ; sa souche sert d'autel.
+- **Accroches** : Troncs couchés (0.9 m), souche.
+- **Passage** : Couronne ouverte de 8 m devant, 6 m derrière.
+- **Repris de** : Jardin_SousBois_A/B, Jardin_ArbreMort_Penche.
+- **Coût** : 23 502 triangles, 5 lumières, 30 collisions, 79 rendus.
+
+### Nouvelles pièces (`Assets/Art/Models/Ensembles/SM_Ens_*.fbx`, prefabs `Assets/Art/Prefabs/Ensembles/Ens_*.prefab`)
+
+Modélisées par script dans Blender (`Assets/Art/Source~/Ensembles/scripts/`), pivot au sol au centre (pièces murales : au mur). Cotes Unity x × z × h.
+
+| Pièce | x × z × h (m) | Triangles | Collisions | Description |
+|---|---|---|---|---|
+| `Ens_Appentis` | 4.15 × 2.65 × 3.04 | 1304 | 6 | Appentis de jardinier de 3.6 × 2 m, 2.8 m : quatre poteaux, toit de planches moussues troué, fond ajouré. |
+| `Ens_Arbre_Chene_A` | 7.55 × 8.17 × 9.75 | 1226 | 1 | Chêne dense de 11 m (traversable au-dessus de 4 m) : tronc noueux, racines, cinq branches, couronne de cartes. |
+| `Ens_Arbre_Chene_B` | 7.77 × 7.97 × 8.36 | 928 | 1 | Chêne penché et creux de 9 m. |
+| `Ens_Armoire_Ouverte` | 1.8 × 1.38 × 2.78 | 1342 | 1 | Armoire de 1.6 × 2.6 m, un battant entrouvert, vêtements pendus ; dos +Y. |
+| `Ens_Autel_Ancien` | 3.43 × 2.2 × 1.38 | 1596 | 2 | Table d'offrande : dalle fendue sur deux blocs, marche, coupe de sang séché, cire. |
+| `Ens_Autel_Chapelle` | 5.0 × 2.8 × 3.13 | 3386 | 3 | Autel de 3 m sur deux marches, antependium brodé, nappe, retable bas doré. |
+| `Ens_Banc_Chapelle` | 3.49 × 0.74 × 1.36 | 796 | 2 | Banc d'église de 3.4 m à joues sculptées, face -Y (l'assise regarde -Y). |
+| `Ens_Banc_Pierre` | 2.3 × 0.65 × 1.18 | 384 | 2 | Banc Pierre |
+| `Ens_Banc_Pierre_Brise` | 2.45 × 1.19 × 0.65 | 730 | 1 | Banc Pierre Brise |
+| `Ens_Banniere` | 1.66 × 0.22 × 0.05 | 808 | 0 | Bannière pendue de 1.2 × 2.8 m, deux pointes effilochées, croissant cousu (pivot au mur, haut à 0). |
+| `Ens_Banniere_Bleue` | 1.04 × 0.18 × 0.03 | 656 | 0 | Étendard étroit bleu de 0.8 × 3.2 m, franges dorées, déchiré (pivot au mur, haut à 0). |
+| `Ens_Banquet` | 1.63 × 0.54 × 0.33 | 1954 | 0 | Milieu de table : volaille rassise, coupe de fruits, soupière. |
+| `Ens_Banquette` | 2.06 × 0.56 × 0.69 | 1452 | 1 | Banquette |
+| `Ens_Baquet` | 0.91 × 0.92 × 0.44 | 942 | 1 | Baquet |
+| `Ens_Bibliotheque` | 2.49 × 0.68 × 4.05 | 6254 | 1 | Bibliothèque de 2.5 × 4 m, 0.5 m de profondeur, dos au mur : socle, colonnettes, corniche, 6 rangs de livres ; se pose au pas de 2.5 m. |
+| `Ens_Bibliotheque_Pillee` | 2.49 × 0.68 × 3.97 | 3734 | 1 | La même, presque vidée (pour la poser couchée sur le flanc). |
+| `Ens_Billot_Hache` | 2.27 × 1.93 × 1.14 | 910 | 1 | Billot Hache |
+| `Ens_Bouche_Mine` | 3.99 × 0.48 × 3.58 | 1035 | 0 | Galerie éventrée peinte sur le mur (pivot au mur) : fond noir irrégulier de 3.4 × 3.3 m bordé de pierres arrachées. Aucun trou réel : le mur de la salle reste entier. |
+| `Ens_Bouclier_Epees` | 1.25 × 0.18 × 0.78 | 814 | 0 | Trophée mural : écu et deux épées croisées, pivot au mur, centre à 0. |
+| `Ens_Bougies_B` | 0.4 × 0.37 × 0.5 | 1968 | 0 | Bougies B |
+| `Ens_Brouette` | 2.21 × 0.84 × 1.1 | 890 | 1 | Brouette |
+| `Ens_Buis_Boule` | 1.73 × 1.73 × 1.44 | 164 | 1 | Buis Boule |
+| `Ens_Cadre_Vide` | 1.57 × 0.16 × 0.96 | 492 | 0 | Cadre Vide |
+| `Ens_Cage_Suspendue` | 0.95 × 0.95 × 0.03 | 2652 | 1 | Cage de fer suspendue : pivot au crochet (z = 0), fond à -3.4 m ; un crâne au fond. |
+| `Ens_Caisse_Ouverte` | 1.24 × 0.99 × 0.61 | 2072 | 1 | Caisse Ouverte |
+| `Ens_Candelabre_Table` | 0.46 × 0.26 × 0.78 | 1620 | 0 | Candelabre Table |
+| `Ens_Catafalque` | 3.0 × 1.8 × 1.04 | 1464 | 2 | Catafalque : cercueil drapé sur estrade, pour la variante funèbre de la chapelle. |
+| `Ens_Chaines_Murales` | 1.2 × 0.16 × 2.07 | 2400 | 0 | Plaque, deux chaînes et fers ; pivot au mur (y = 0), plaque à 1.9 m. |
+| `Ens_Chaines_Plafond` | 1.27 × 0.22 × 0.02 | 4836 | 0 | Trois chaînes et un crochet pendus d'une poutre ; pivot au point d'accroche (z = 0), pendent de 3 m. |
+| `Ens_Champignons_Cercle` | 3.71 × 3.73 × 0.53 | 3680 | 0 | Cercle de champignons pâles (rayon 1.6 m), faiblement lumineux par leur teinte. |
+| `Ens_Chemin_Tapis_8m` | 8.0 × 1.81 × 0.02 | 152 | 0 | Chemin Tapis 8m |
+| `Ens_Cheminee` | 4.3 × 1.5 × 8.23 | 5820 | 5 | Cheminee |
+| `Ens_Cheminee_Froide` | 4.3 × 1.53 × 8.23 | 3472 | 5 | Cheminee Froide |
+| `Ens_Chevalet` | 1.44 × 2.98 × 1.16 | 2380 | 1 | Banc d'étirement : cadre, planches, deux treuils à barres, cordes et fers. |
+| `Ens_Chevet` | 0.58 × 0.53 × 0.75 | 1003 | 1 | Chevet |
+| `Ens_Chope_Cruche` | 0.53 × 0.24 × 0.32 | 606 | 0 | Chope Cruche |
+| `Ens_Cierges` | 1.2 × 0.57 × 1.55 | 4756 | 1 | Porte-cierges d'église : herse de fer à trois gradins. |
+| `Ens_Clavecin` | 1.14 × 2.34 × 1.97 | 3397 | 1 | Clavecin au couvercle relevé, 1.1 × 2.4 m, clavier vers -Y ; cordes rompues. |
+| `Ens_Coiffeuse` | 1.4 × 0.63 × 2.2 | 1840 | 2 | Coiffeuse à miroir ovale fendu. |
+| `Ens_Corbeau` | 0.19 × 0.53 × 0.35 | 300 | 0 | Corbeau posé (0.35 m), à placer sur une tombe ou une branche ; pivot aux pattes. |
+| `Ens_Corde` | 1.02 × 0.54 × 0.25 | 764 | 0 | Corde |
+| `Ens_Crane` | 0.19 × 0.24 × 0.2 | 224 | 0 | Crane |
+| `Ens_Croix_Bois` | 0.87 × 1.36 × 1.35 | 346 | 1 | Croix Bois |
+| `Ens_Des_Cartes` | 0.51 × 0.35 × 0.03 | 552 | 0 | Des Cartes |
+| `Ens_Drap_Fauteuil` | 1.66 × 1.42 × 1.54 | 3280 | 2 | Fauteuil sous un drap (volume seul). |
+| `Ens_Drap_Statue` | 1.46 × 1.56 × 2.17 | 3528 | 1 | Silhouette haute sous un drap (statue voilée). |
+| `Ens_Drap_Table` | 2.23 × 1.46 × 1.19 | 2204 | 1 | Drap Table |
+| `Ens_Eau_Disque` | 2.0 × 2.0 × 0.0 | 28 | 0 | Disque d'eau noire de 1 m de rayon (puits, fontaine) : échelle libre, sans collision. |
+| `Ens_Eboulis_A` | 5.45 × 3.59 × 1.76 | 3425 | 3 | Coulée d'éboulis contre un mur (dos +Y) : 5 × 3 m, 2.4 m de haut. |
+| `Ens_Eboulis_B` | 3.26 × 2.08 × 0.63 | 3393 | 1 | Tas bas de moellons et de terre, 3 × 2 m, 0.9 m. |
+| `Ens_Echelle_Biblio` | 0.62 × 1.03 × 3.76 | 352 | 1 | Échelle de bibliothèque appuyée (dos +Y) : pied à 1 m du mur, haut à 3.7 m. |
+| `Ens_Etagere_Murale` | 1.81 × 0.37 × 0.28 | 1151 | 0 | Tablette murale de 1.8 m sur consoles (pivot au mur, dessus à 0) : pots, fioles, pain, bougie éteinte. |
+| `Ens_Etagere_Murale_B` | 1.85 × 0.33 × 0.85 | 1532 | 0 | Deux tablettes murales décalées : cordes, marteaux, lampes, bûchettes (pivot au mur, dessus bas à 0). |
+| `Ens_Etagere_Murale_Vide` | 1.77 × 0.34 × 0.15 | 132 | 0 | Tablette murale décrochée d'un côté, vidée. |
+| `Ens_Etai` | 4.6 × 0.66 × 3.62 | 636 | 3 | Cadre d'étai de mine : deux poteaux, chapeau, jambes de force ; 4 × 3.6 m. |
+| `Ens_Fers_Brasero` | 1.32 × 0.88 × 1.35 | 174 | 0 | Trois tisonniers à poser dans le brasero (pivot au centre du panier, z = 1 m). |
+| `Ens_Fougeres` | 2.28 × 2.58 × 1.01 | 120 | 0 | Fougeres |
+| `Ens_Globe` | 0.88 × 0.88 × 1.39 | 1894 | 1 | Globe |
+| `Ens_Gravats_Epars` | 3.69 × 2.59 × 0.16 | 2876 | 0 | Cailloux, éclats et brins de paille épars (3 × 2 m) : casse les sols nus, sans collision. |
+| `Ens_Gravats_Epars_B` | 4.41 × 1.67 × 0.12 | 1808 | 0 | Gravats_Epars_B |
+| `Ens_Gravats_Epars_C` | 3.76 × 2.04 × 0.11 | 1042 | 0 | Gravats_Epars_C |
+| `Ens_Grille_2m_Pliee` | 2.0 × 0.2 × 3.4 | 740 | 1 | Grille 2m Pliee |
+| `Ens_Grille_Cimetiere` | 3.24 × 0.97 × 1.47 | 1838 | 1 | Clôture basse de fer forgé, 3 m × 1.3 m, sur muret de 0.35 m ; lances et volutes. |
+| `Ens_Grille_Imposte` | 1.5 × 0.04 × 2.7 | 356 | 1 | Imposte de barreaux de 1.5 × 2.7 m (au-dessus de la porte d'une cellule du kit) ; pivot au milieu du bas. |
+| `Ens_Gueridon` | 0.9 × 0.89 × 0.77 | 358 | 1 | Gueridon |
+| `Ens_Gueridon_Urne` | 0.62 × 0.62 × 1.78 | 602 | 1 | Gueridon Urne |
+| `Ens_Habillage_Haie_6m` | 7.65 × 2.82 × 2.83 | 358 | 0 | Feuillage de buis sur `Jardin_Haie_6m` (6.0 × 1.4 × 2.6 m environ) : flancs, dessus et bouts. |
+| `Ens_Habillage_Kiosque` | 6.93 × 6.8 × 4.32 | 492 | 0 | Rosiers grimpants et lierre pour `Jardin_Kiosque` (octogone d'environ 2.7 m de rayon au poteau, plancher à 0.9 m). |
+| `Ens_Habillage_Lierre_4m` | 4.72 × 0.41 × 4.06 | 360 | 0 | Rideau de lierre de 4 × 3.5 m à poser contre un mur, un treillage ou une colonnade (dos +Y). |
+| `Ens_Herbes_A` | 3.11 × 1.46 × 0.91 | 54 | 0 | Herbes A |
+| `Ens_Horloge` | 0.74 × 0.49 × 2.61 | 1034 | 1 | Horloge de parquet, 2.6 m, dos +Y. |
+| `Ens_Jarres` | 1.31 × 1.32 × 0.81 | 1632 | 1 | Jarres |
+| `Ens_Lanterne_Pierre` | 0.6 × 0.6 × 1.86 | 526 | 1 | Borne-lanterne de jardin, 1.7 m, repère Feu (lumière chaude). |
+| `Ens_Lierre_Coulee` | 1.2 × 1.16 × 0.65 | 18 | 0 | Petite coulée de lierre à poser sur une tombe, un socle ou un muret (1.2 m). |
+| `Ens_Lit_Baldaquin` | 2.33 × 2.55 × 3.41 | 9070 | 6 | Lit à baldaquin de 2.3 × 2.6 m, 3.2 m de haut, tête au mur (+Y) : colonnes tournées, dais à lambrequin, rideaux, édredon. |
+| `Ens_Lit_Effondre` | 2.71 × 3.17 × 3.13 | 4408 | 3 | Lit à baldaquin ruiné : deux colonnes cassées, dais tombé en biais, drap déchiré jusqu'au sol. |
+| `Ens_Livres_Sol` | 1.53 × 1.11 × 0.42 | 741 | 0 | Livres Sol |
+| `Ens_Livres_Table` | 1.25 × 0.52 × 0.26 | 498 | 0 | Livres Table |
+| `Ens_Lustre_Tombe` | 2.86 × 2.93 × 1.01 | 2972 | 1 | Lustre de fer tombé : couronne cassée, bougies, chaîne au sol. |
+| `Ens_Marques_Jours` | 1.47 × 0.01 × 0.41 | 660 | 0 | Jours comptés, gravés au mur (pivot au mur, milieu) : 11 paquets de cinq traits. |
+| `Ens_Nenuphars` | 2.02 × 2.35 × 0.04 | 132 | 0 | Nenuphars |
+| `Ens_Os_Tas` | 0.94 × 0.66 × 0.2 | 1222 | 0 | Os Tas |
+| `Ens_Outils_Jardin` | 2.29 × 0.52 × 1.92 | 580 | 0 | Faux, râteau, fourche et bêche appuyés à un mur. |
+| `Ens_Outils_Sans_Faux` | 1.22 × 0.51 × 1.92 | 480 | 0 | Râteau, fourche et bêche appuyés à un mur : il manque la faux. |
+| `Ens_Outils_Table` | 1.17 × 0.45 × 0.06 | 824 | 0 | Instruments posés sur une toile roulée (0.9 × 0.45 m). |
+| `Ens_Papiers_Epars` | 3.69 × 1.81 × 0.1 | 1316 | 0 | Feuilles envolées (3 × 2 m), sans collision. |
+| `Ens_Pierre_Levee_A` | 1.38 × 1.06 × 2.82 | 612 | 1 | Pierre Levee A |
+| `Ens_Pierre_Levee_B` | 1.65 × 1.03 × 1.48 | 520 | 1 | Pierre Levee B |
+| `Ens_Pilori` | 2.0 × 1.0 × 2.4 | 788 | 3 | Pilori |
+| `Ens_Pioches` | 0.8 × 0.46 × 1.36 | 180 | 0 | Pioche et pelle appuyées au mur (dos +Y, inclinées), plus une lanterne éteinte au sol. |
+| `Ens_Planches_Puits` | 3.35 × 2.69 × 1.88 | 1020 | 1 | Puits condamné : sept planches clouées en croix sur la margelle (dessous à 0.9 m) et pierres posées dessus ; deux planches soulevées d'en dessous. |
+| `Ens_Plante_Geante` | 4.62 × 4.57 × 4.13 | 358 | 1 | Plante de serre devenue monstrueuse : tiges grosses comme le bras et feuilles de 1.6 m, 3.6 m de haut. |
+| `Ens_Portrait_1` | 1.77 × 0.16 × 1.09 | 482 | 0 | Portrait peint 1 dans son cadre |
+| `Ens_Portrait_2` | 1.57 × 0.16 × 0.96 | 482 | 0 | Portrait peint 2 dans son cadre |
+| `Ens_Portrait_3` | 1.77 × 0.16 × 1.09 | 482 | 0 | Portrait peint 3 dans son cadre |
+| `Ens_Portrait_4` | 1.57 × 0.16 × 0.96 | 482 | 0 | Portrait peint 4 dans son cadre |
+| `Ens_Portrait_5` | 1.77 × 0.16 × 1.09 | 482 | 0 | Portrait peint 5 dans son cadre |
+| `Ens_Portrait_6` | 1.57 × 0.16 × 0.96 | 482 | 0 | Portrait peint 6 dans son cadre |
+| `Ens_Portrait_7` | 1.77 × 0.16 × 1.09 | 482 | 0 | Portrait peint 7 dans son cadre |
+| `Ens_Portrait_8` | 1.57 × 0.16 × 0.96 | 482 | 0 | Portrait peint 8 dans son cadre |
+| `Ens_Portrait_Grand` | 2.32 × 0.16 × 1.51 | 526 | 0 | Portrait Grand |
+| `Ens_Portrait_Lacere` | 1.77 × 0.72 × 1.09 | 772 | 0 | Portrait Lacere |
+| `Ens_Portrait_Lacere_2` | 1.57 × 0.72 × 0.96 | 772 | 0 | Portrait Lacere 2 |
+| `Ens_Portrait_Lacere_3` | 1.57 × 0.72 × 0.96 | 772 | 0 | Portrait peint 3 dans son cadre |
+| `Ens_Portrait_Lacere_4` | 1.57 × 0.72 × 0.96 | 772 | 0 | Portrait peint 4 dans son cadre |
+| `Ens_Portrait_Lacere_5` | 1.77 × 0.72 × 1.09 | 772 | 0 | Portrait peint 5 dans son cadre |
+| `Ens_Potence` | 0.28 × 1.53 × 4.3 | 320 | 2 | Potence murale de bois (dos +Y) pour la cage ou les chaînes : bras de 1.4 m à 4 m de haut, repère Accroche. |
+| `Ens_Pots_Tas` | 1.95 × 1.57 × 1.69 | 1164 | 1 | Pots Tas |
+| `Ens_Prie_Dieu` | 0.68 × 0.72 × 1.08 | 358 | 1 | Prie Dieu |
+| `Ens_Pupitre` | 0.73 × 0.57 × 1.3 | 576 | 1 | Lutrin gothique avec un grand livre ouvert. |
+| `Ens_Pupitres_Musique` | 2.96 × 1.6 × 1.3 | 660 | 0 | Trois pupitres et un violon abandonnés (orchestre disparu). |
+| `Ens_Rail_Suspendu` | 2.1 × 0.32 × 0.04 | 1176 | 0 | Rail de fer mural de 2 m (pivot au mur, rail à 0) : jambons, tresses d'ail, herbes sèches, poêle. |
+| `Ens_Rails_4m` | 1.65 × 4.01 × 0.2 | 440 | 0 | Rails 4m |
+| `Ens_Ronces` | 2.9 × 2.39 × 1.03 | 36 | 0 | Ronces |
+| `Ens_Rosiers` | 2.3 × 1.75 × 1.31 | 56 | 0 | Rosiers |
+| `Ens_Sacs_A` | 1.67 × 1.13 × 0.7 | 3654 | 1 | Sacs A |
+| `Ens_Sacs_B` | 1.49 × 1.67 × 0.9 | 3854 | 1 | Sacs B |
+| `Ens_Sacs_Eventres` | 1.56 × 3.05 × 0.5 | 1986 | 1 | Sacs éventrés et grain répandu en traînée de 2.4 m. |
+| `Ens_Sapin` | 6.95 × 6.88 × 11.6 | 300 | 1 | Sapin sombre de 12 m, branches basses à 2 m. |
+| `Ens_Serre_Vitres` | 6.09 × 3.95 × 1.2 | 88 | 0 | Éclats de verre au sol et plantes envahissantes pour `Jardin_Serre_Ruine` (emprise 6 × 4 m). |
+| `Ens_Socle_Statue` | 2.6 × 2.6 × 1.3 | 528 | 3 | Socle à gradins de 2.6 m, dessus à 1.3 m (1.5 × 1.5 m). |
+| `Ens_Souche` | 2.57 × 2.7 × 0.99 | 662 | 1 | Souche |
+| `Ens_Squelette_Assis` | 0.73 × 1.03 × 0.81 | 1630 | 0 | Squelette assis contre un mur (dos au +Y), tête tombée sur l'épaule. |
+| `Ens_Table_Longue` | 6.3 × 1.71 × 0.93 | 4092 | 1 | Table de banquet de 6 × 1.5 m, nappe à plis. |
+| `Ens_Table_Rempotage` | 2.28 × 0.91 × 1.78 | 3108 | 1 | Table de rempotage 2.2 × 0.8 m : pots, terre répandue, arrosoir, outils. |
+| `Ens_Table_Ronde_Fer` | 2.84 × 1.48 × 1.04 | 1566 | 1 | Petite table de jardin en fer et deux chaises, service à thé abandonné. |
+| `Ens_Tapis_4x3` | 4.25 × 2.8 × 0.12 | 1692 | 0 | Tapis de 4 × 2.8 m, 2 cm, coin replié, franges. UV : motif entier centré. |
+| `Ens_Tapis_Cendres` | 1.29 × 1.35 × 0.03 | 118 | 0 | Tapis Cendres |
+| `Ens_Tas_Bois` | 3.32 × 1.25 × 1.75 | 5676 | 1 | Tas de bûches rangées entre deux piquets : 3 m × 1.2 m × 1.5 m. |
+| `Ens_Tas_Bois_Ecroule` | 4.5 × 2.83 × 1.75 | 4423 | 2 | Tas de bûches écroulé d'un côté, bûches roulées devant. |
+| `Ens_Tenture` | 3.6 × 0.12 × 4.16 | 1568 | 0 | Tapisserie peinte de 3 × 4 m, pendue à une barre (pivot au mur, bas à 0). |
+| `Ens_Tombe_Ouverte` | 3.58 × 2.69 × 1.31 | 694 | 3 | Tombe vidée : dalle basculée, fosse noire peinte au ras du sol (aucun trou dans le sol), tas de terre, planches. |
+| `Ens_Tombe_Penchee` | 1.25 × 2.27 × 1.14 | 626 | 1 | Stèle arrondie penchée, gravure, terre retournée, fleurs. |
+| `Ens_Tonneau_Brise` | 2.19 × 2.0 × 0.67 | 1108 | 1 | Tonneau éclaté : fond, cercles et douves en éventail, flaque sombre. |
+| `Ens_Topiaire` | 1.34 × 1.35 × 3.41 | 510 | 2 | Topiaire en spirale de boules sur tige, dans un bac de pierre. |
+| `Ens_Tronc_Couche` | 6.95 × 1.7 × 1.39 | 562 | 1 | Tronc abattu de 7 m, 0.9 m de diamètre, praticable (on court dessus), bout creux. |
+| `Ens_Urne_Pierre` | 0.96 × 0.96 × 2.13 | 470 | 1 | Urne Pierre |
+| `Ens_Vaisselle_A` | 0.95 × 0.39 × 0.19 | 994 | 0 | Vaisselle A |
+| `Ens_Vaisselle_B` | 0.82 × 0.47 × 0.21 | 724 | 0 | Vaisselle B |
+| `Ens_Verre_Brise` | 1.1 × 1.12 × 0.01 | 22 | 0 | Verre Brise |
+| `Ens_Verriere` | 3.59 × 0.59 × 7.06 | 1707 | 3 | Verrière gothique : arc brisé de pierre (3.4 × 6.4 m, 0.45 m de saillie) et vitrail peint lumineux ; pivot au sol, dos au mur ; allège à 1.4 m. |
+| `Ens_Wagonnet` | 1.89 × 1.34 × 1.14 | 1426 | 1 | Wagonnet de mine renversé de côté : caisse de planches ferrée, quatre roues, minerai répandu. Le modèle est droit : la pose couchée se fait à la mise en place. |
+
+**Props Tripo ajoutés** : `P_Prop_AngePleureur` (1.42 × 1.30 × 2.40 m, 6 467 / 3 233 triangles, texture 2048, une boîte) et `P_Prop_Fauteuil`
+(0.98 × 0.91 × 1.75 m, 4 637 / 2 317 triangles, texture 1024, une boîte), même chaîne que la nuit 4 (`nettoyer_prop.py`, `EnsembleBuilder.Props`).
+
+**Outils** (`Assets/Art/Source~/Ensembles/scripts/`) : `ens_lib.py`, `pieces_*.py`, `construit.py` (Blender) ; `ens_textures.py` ; `ensembles.py` (plans) ;
+`EnsembleBuilder.cs` (matériaux, import, prefabs, banc) ; `AuditEnsembles.cs` ; `CapturesEnsembles.cs` ; `ens_doc.py`.
+<!-- ENSEMBLES-FIN -->

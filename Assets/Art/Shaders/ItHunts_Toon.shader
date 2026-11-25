@@ -44,14 +44,14 @@ Shader "ItHunts/Toon"
         _EmissionMap ("Masque d'émission", 2D) = "white" {}
         _EmissionThroughFog ("Émission à travers le brouillard", Range(0, 1)) = 0
 
-        [Header(UV en coordonnees monde (architecture))]
+        [Header(UV en coordonnees monde)]
         [Toggle(_WORLD_UV)] _WorldUV ("UV en coordonnées monde", Float) = 0
         _TileSize ("Taille de la tuile en mètres (x : largeur, y : hauteur ou profondeur)", Vector) = (4, 4, 0, 0)
         _TileOffset ("Décalage de la grille en mètres (x, y, z)", Vector) = (0, 0, 0, 0)
         [Enum(0 deg, 0, 90 deg, 1, 180 deg, 2, 270 deg, 3)] _TopRotation ("Rotation des dalles (dessus et dessous)", Float) = 0
         [Toggle] _TopRandomRotation ("Quart de tour au hasard par tuile (dessus et dessous)", Float) = 0
 
-        [Header(Decor (variation, bas des murs sale et humide, couche melangee en hauteur))]
+        [Header(Decor)]
         // Mode décor (lot matériaux, 2026-11-22) : docs/art/MATERIAUX.md, section bibliothèque. Alpha de la texture de
         // couleur = hauteur peinte (joints bas, pierres hautes) : la saleté remplit d'abord les joints, la couche monte
         // par les creux.
@@ -73,7 +73,7 @@ Shader "ItHunts/Toon"
         _LayerTop ("Couche : sur les dessus", Range(0, 1)) = 0
         _HeightBlend ("Mélange en hauteur : largeur de la transition", Range(0.01, 0.5)) = 0.06
 
-        [Header(Sol melange (nuit 5))]
+        [Header(Sol melange)]
         [Toggle(_SOLMELANGE)] _SolMelange ("Sol mélangé : terre (base), gravier, herbe sèche, mousse", Float) = 0
         [NoScaleOffset] _SolGravier ("Gravier (alpha = hauteur)", 2D) = "gray" {}
         [NoScaleOffset] _SolHerbe ("Herbe sèche (alpha = hauteur)", 2D) = "gray" {}
