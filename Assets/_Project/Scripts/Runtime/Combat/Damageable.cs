@@ -141,6 +141,27 @@ namespace ItHunts.Combat
         /// <summary>Traqueur : jamais blessé (aucun dégât), repoussé, étourdi, blessé par une zone ni attrapé.</summary>
         public bool ImmuneToOrbs => immuneToOrbs;
 
+        /// <summary>
+        /// Cible qui encaisse les coups portés à celle-ci (boss final, point 5 du jour 5) : le traqueur reste intouchable (ImmuneToOrbs),
+        /// mais pendant le combat de boss chaque coup sur un de ses colliders va à ce relais, qui transmet les dégâts au boss. null sinon.
+        /// </summary>
+        public Damageable HitProxy { get; set; }
+
+        /// <summary>
+        /// Ne meurt jamais : les dégâts sont comptés (renvoyés et publiés) sans toucher aux PV (relais du boss, points faibles). Ni
+        /// barre de PV, ni âmes, ni mort comptée.
+        /// </summary>
+        public bool Unkillable { get; set; }
+
+        /// <summary>La cible touchée par ce collider : son Damageable, ou le relais de celui-ci (HitProxy) ; null sans cible.</summary>
+        public static Damageable Of(Collider c)
+        {
+            if (c == null)
+                return null;
+            var d = c.GetComponentInParent<Damageable>();
+            return d != null && d.HitProxy != null ? d.HitProxy : d;
+        }
+
         /// <summary>Réapparaît seul après sa mort (factices) ; les ennemis d'une zone reviennent à la remise à zéro.</summary>
         public bool Respawns => respawns;
 
@@ -221,6 +242,8 @@ namespace ItHunts.Combat
             killed = false;
             if (immuneToOrbs)
                 return 0f;                                              // le traqueur est intuable
+            if (Unkillable)
+                return Mathf.Max(0f, damage);                           // relais du boss : compté, jamais retiré
             float taken = HealthState.Apply(ref _health, damage, time, out killed);
             if (taken > 0f)
                 LastDamagedAt = Time.time;

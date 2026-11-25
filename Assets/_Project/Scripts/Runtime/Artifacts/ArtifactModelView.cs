@@ -106,6 +106,7 @@ namespace ItHunts.Artifacts
                     _swingIndex = s.LastIndex;
                     _swingLunge = s.LastLunge;
                     SpawnArtSlash();
+                    SwingSound();
                 }
 
                 float u = (Time.time - _swingAt) / Mathf.Max(0.05f, sw.swingAnimDuration);
@@ -128,6 +129,17 @@ namespace ItHunts.Artifacts
         }
 
         private bool _artSlash;
+
+        /// <summary>Lame dans le vide (son de la DA, GameAudio_Default.swordSwing / swordSwingHeavy) : silence tant qu'il manque.</summary>
+        private void SwingSound()
+        {
+            GameAudioSettings art = ItHunts.Audio.GameAudio.Settings;
+            if (art == null)
+                return;
+            bool heavy = _swingLunge || _swingIndex >= 2;
+            AudioClip clip = heavy && art.swordSwingHeavy != null ? art.swordSwingHeavy : art.swordSwing;
+            ItHunts.Audio.GameAudio.PlayAt(clip, transform.position + Vector3.up * 1.4f, art.swordVolume, 25f);
+        }
 
         /// <summary>Traînée de la DA (PR #35) pour ce coup, posée à la caméra : taille horizontale, diagonale, estoc (et fente).</summary>
         private void SpawnArtSlash()
@@ -252,38 +264,103 @@ namespace ItHunts.Artifacts
         private void UpdateLink()
         {
             BookLink kind = _holder != null && _holder.BookSettings != null ? _holder.Book.Link : BookLink.Aucun;
+            int links = _holder != null ? _holder.Book.Links : 0;
             Transform target = _holder != null ? _holder.BookTarget : null;
-            if (kind != _linkKind && _link != null)
-            {
-                Destroy(_link.gameObject);
-                _link = null;
-            }
+            if ((kind != _linkKind || links != _linkCount) && (_link != null || _fallbackLink != null))
+                DestroyLink();
 
             _linkKind = kind;
+            _linkCount = links;
             if (kind == BookLink.Aucun || target == null)
-                return;
-            GameVfxSettings vfx = GameVfx.Settings;
-            if (_link == null && vfx != null)
             {
-                GameObject go = GameVfx.Spawn(kind == BookLink.Drain ? vfx.drainLink : vfx.healLink, transform.position, Quaternion.identity, 1f, null, 0f);
+                DestroyLink();
+                return;
+            }
+
+            if (_link == null && _fallbackLink == null)
+            {
+                _linkAt = Time.time;                                     // un nouveau lancer : le lien part du livre
+                GameVfxSettings vfx = GameVfx.Settings;
+                GameObject prefab = vfx == null ? null : kind == BookLink.Drain ? vfx.drainLink : vfx.healLink;
+                // Le lien de la DA lit ses points dans son propre repère (LienVfx.Regle puis TransformPoint) : il est donc posé à l'origine,
+                // sans rotation (avant : posé sur le joueur, le lien était décalé d'autant et n'apparaissait pas sur la cible).
+                GameObject go = GameVfx.Spawn(prefab, Vector3.zero, Quaternion.identity, 1f, null, 0f);
                 _link = go != null ? go.GetComponent<LienVfx>() : null;
                 if (_link != null)
                     _link.Ouvre();
+                else
+                {
+                    if (go != null)
+                        Destroy(go);
+                    _fallbackLink = FallbackLine(kind);                  // sans le prefab de la DA : un trait sobre
+                }
             }
 
-            if (_link == null)
-                return;
             Vector3 from = _root != null && _view != null ? _view.ViewToWorld(_root.position) : transform.position + Vector3.up * 1.4f;
             var col = target.GetComponentInChildren<Collider>();
             Vector3 to = col != null ? col.bounds.center : target.position + Vector3.up;
-            // Drain : le flux va de l'ennemi vers le hibou (source = livre, cible = ennemi ; sens réglé dans le prefab).
-            _link.Regle(from, to);
+            float throwTime = _holder.BookSettings != null ? _holder.BookSettings.linkThrowTime : 0f;
+            Vector3 tip = LinkTip(from, to, Time.time - _linkAt, throwTime);
+            if (_link != null)
+            {
+                Transform t = _link.transform;
+                if (t.parent == null && (t.position != Vector3.zero || t.rotation != Quaternion.identity || t.localScale != Vector3.one))
+                {
+                    t.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+                    t.localScale = Vector3.one;
+                }
+
+                // Drain : le flux va de l'ennemi vers le hibou (source = livre, cible = ennemi ; sens réglé dans le prefab).
+                _link.Regle(from, tip);
+            }
+            else if (_fallbackLink != null)
+            {
+                _fallbackLink.SetPosition(0, from);
+                _fallbackLink.SetPosition(1, tip);
+            }
         }
 
-        private void OnDestroy()
+        /// <summary>Bout du lien qui part du livre (from) et atteint la cible (to) en throwTime s (0 : tout de suite).</summary>
+        public static Vector3 LinkTip(Vector3 from, Vector3 to, float since, float throwTime) =>
+            throwTime <= 0f ? to : Vector3.Lerp(from, to, Mathf.Clamp01(since / throwTime));
+
+        private int _linkCount;
+        private float _linkAt;
+        private LineRenderer _fallbackLink;
+
+        private LineRenderer FallbackLine(BookLink kind)
+        {
+            var go = new GameObject("Lien du livre (repli)");
+            var line = go.AddComponent<LineRenderer>();
+            line.useWorldSpace = true;
+            line.positionCount = 2;
+            line.startWidth = 0.05f;
+            line.endWidth = 0.03f;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            Shader sh = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (sh != null)
+                line.material = new Material(sh) { name = "Lien du livre (repli)" };
+            Color c = kind == BookLink.Drain ? new Color(0.55f, 0.08f, 0.1f, 0.85f) : new Color(0.3f, 0.85f, 0.75f, 0.85f);
+            line.startColor = line.endColor = c;
+            return line;
+        }
+
+        private void DestroyLink()
         {
             if (_link != null)
                 Destroy(_link.gameObject);
+            _link = null;
+            if (_fallbackLink != null)
+            {
+                if (_fallbackLink.material != null)
+                    Destroy(_fallbackLink.material);
+                Destroy(_fallbackLink.gameObject);
+            }
+
+            _fallbackLink = null;
         }
+
+        private void OnDestroy() => DestroyLink();
     }
 }

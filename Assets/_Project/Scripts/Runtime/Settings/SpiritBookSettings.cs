@@ -15,6 +15,8 @@ namespace ItHunts.Settings
         [Header("Lien")]
         [Tooltip("Cône de visée pour accrocher une cible (demi-angle, °).")]
         [Range(1f, 30f)] public float aimHalfAngle = 8f;
+        [Tooltip("Vue : le lien de la DA part du livre et file jusqu'à la cible en ce temps (s) à chaque lancer, puis reste accroché.")]
+        [Min(0f)] public float linkThrowTime = 0.12f;
 
         [Header("Drain (ennemi) : continu, sans durée maximale (D-088)")]
         [Tooltip("Portée de lancement (m) : un ennemi plus loin ne s'accroche pas.")]

@@ -15,6 +15,10 @@ namespace ItHunts.Settings
         [Tooltip("Tolérance après l'impact (s) : un appui jusqu'à ce temps APRÈS l'impact du coup au contact pare encore ; ses dégâts " +
                  "attendent d'autant. 0 : aucune (proposition du 2026-11-21 : window 0.24 et lateWindow 0.06, voir PROGRESS).")]
         [Min(0f)] public float lateWindow = 0.08f;
+        [Tooltip("Marge de réflexe (s, jour 5) ajoutée AVANT la fenêtre pour les coups des goules : le coup au contact est annoncé 0.55 s " +
+                 "avant l'impact (éclat, son) ; un appui fait au réflexe (≈ 0.2 s après l'annonce) tombait 0.30 à 0.35 s avant l'impact, " +
+                 "« trop tôt » de 50 à 100 ms, et la recharge (0.7 s) empêchait de réessayer : aucune parade sur une run. 0 : fenêtre seule.")]
+        [Min(0f)] public float earlyGrace = 0.12f;
         [Tooltip("Étourdissement de la goule parée (s).")]
         [Min(0f)] public float stunDuration = 1.5f;
         [Tooltip("Temps de recharge (s) après un appui, réussi ou non (comme la répulsion).")]

@@ -60,8 +60,7 @@ namespace ItHunts.Enemies
         private int _phaseShown = 1;
         private Vector3 _chargeDir, _leapFrom, _leapTo;
         private readonly List<Vector3> _marks = new List<Vector3>();
-        private readonly List<GameObject> _telegraphs = new List<GameObject>();
-        private Material _telegraphMat, _weakMat;
+        private Material _weakMat;
         private enum Step { Annonce, Action, Recuperation }
         private Step _step;
         private string _clip;
@@ -94,6 +93,7 @@ namespace ItHunts.Enemies
                 _rb.isKinematic = true;
             BuildMaterials();
             BuildWeakPoints();
+            BuildBodyTarget();
             Play("Traqueur_Repos");
             GameAudio.PlayAt(GameAudio.Pick(GameAudio.Settings?.stalkerEnragedCries), transform.position + Vector3.up * 10f, 1f, 120f);
             DamageEvents.Hit += OnHit;
@@ -106,6 +106,8 @@ namespace ItHunts.Enemies
         private void OnDestroy()
         {
             DamageEvents.Hit -= OnHit;
+            if (_rootTarget != null && _rootTarget.HitProxy == _bodyTarget)
+                _rootTarget.HitProxy = null;
             if (Current_ == this)
                 Current_ = null;
         }
@@ -113,17 +115,7 @@ namespace ItHunts.Enemies
         private void BuildMaterials()
         {
             Shader sh = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-            _telegraphMat = new Material(sh) { name = "Annonce du boss (sol)" };
-            _telegraphMat.SetFloat("_Surface", 1f);
-            _telegraphMat.SetOverrideTag("RenderType", "Transparent");
-            _telegraphMat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            _telegraphMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            _telegraphMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One);
-            _telegraphMat.SetInt("_ZWrite", 0);
-            _telegraphMat.renderQueue = 3000;
-            _telegraphMat.SetColor("_BaseColor", MarkColor(0.35f));         // ambre éteint, sobre (nuit 4, point 8 : plus de rouge vif)
-            _telegraphFillMat = new Material(_telegraphMat) { name = "Annonce du boss (fond)" };
-            _telegraphFillMat.SetColor("_BaseColor", MarkColor(0.08f));
+            // Toutes les marques au sol passent par MarquageBoss (DA, PR #50) : plus aucune marque de repli dessinée ici (jour 5, point 5).
             _weakMat = new Material(sh) { name = "Point faible (lueur)" };
             _weakMat.SetColor("_BaseColor", new Color(3.2f, 2.2f, 0.7f, 1f));
         }
@@ -146,6 +138,7 @@ namespace ItHunts.Enemies
                 var hb = go.AddComponent<Hitbox>();
                 hb.Head = head;
                 var d = go.AddComponent<Damageable>();
+                d.Unkillable = true;                                     // ne meurt jamais : ni mort comptée, ni barre de PV
                 var vis = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 Destroy(vis.GetComponent<Collider>());
                 vis.name = "Lueur";
@@ -175,11 +168,66 @@ namespace ItHunts.Enemies
             }
         }
 
-        /// <summary>Un coup sur un point faible (balle, objet lancé, épée, flamme, drain) : dégâts au boss ; ou un objet sur son corps.</summary>
+        // ---------- Dégâts (jour 5, point 5) : partout sur le corps, critiques sur un point faible ----------
+
+        private Damageable _bodyTarget, _rootTarget;
+        private CapsuleCollider _capsule;
+        private float _nextCritFx, _nextHitSound;
+
+        /// <summary>Cible du corps (relais) : chaque coup sur un collider du boss lui est donné (Damageable.HitProxy).</summary>
+        public Damageable BodyTarget => _bodyTarget;
+
+        /// <summary>
+        /// Le traqueur reste intouchable (ImmuneToOrbs : ni répulsion, ni étourdissement, ni prise) ; pendant le combat, ses colliders
+        /// renvoient les coups des armes à un relais qui ne meurt jamais : chaque arme (épée, balles, flamme, drain, objets lancés)
+        /// le blesse partout.
+        /// </summary>
+        private void BuildBodyTarget()
+        {
+            _rootTarget = GetComponent<Damageable>();
+            _capsule = GetComponent<CapsuleCollider>();
+            var go = new GameObject("Corps du boss (cible)");
+            go.transform.SetParent(transform, false);
+            _bodyTarget = go.AddComponent<Damageable>();
+            _bodyTarget.Unkillable = true;
+            if (_rootTarget != null)
+                _rootTarget.HitProxy = _bodyTarget;
+            UpdateBodyTarget();
+        }
+
+        /// <summary>Le relais suit le centre du corps (visée du livre, aide de l'épée, dégâts de zone).</summary>
+        private void UpdateBodyTarget()
+        {
+            if (_bodyTarget == null)
+                return;
+            _bodyTarget.transform.position = _capsule != null ? _capsule.bounds.center - Vector3.up : transform.position + Vector3.up * 3f;
+        }
+
+        /// <summary>
+        /// Dégâts au boss d'un coup (logique pure) : point faible = coup critique (× weakPointMultiplier) ; corps = × bodyDamageShare,
+        /// ou × bodyThrowShare pour un objet lancé ou repoussé (impact).
+        /// </summary>
+        public static float HitDamage(float damage, bool weakPoint, bool impact, FinalBossSettings s)
+        {
+            if (damage <= 0f || s == null)
+                return 0f;
+            return damage * (weakPoint ? s.weakPointMultiplier : impact ? s.bodyThrowShare : s.bodyDamageShare);
+        }
+
+        /// <summary>Un objet (lancé, repoussé, ennemi lancé) qui frappe, pas une arme : ni balle, ni épée, avec une masse.</summary>
+        public static bool IsImpact(in DamageEvent e) => !e.Bullet && !e.Melee && e.SourceMass > 0f;
+
+        /// <summary>Un coup sur un point faible (critique) ou sur le corps (relais) : dégâts au boss.</summary>
         private void OnHit(DamageEvent e)
         {
             if (Dead || !Started || e.Target == null)
                 return;
+            if (e.Target == _bodyTarget)
+            {
+                TakeDamage(HitDamage(e.Damage, false, IsImpact(e), settings));
+                return;
+            }
+
             foreach (WeakPoint w in _weak)
             {
                 if (e.Target != w.Target)
@@ -188,10 +236,20 @@ namespace ItHunts.Enemies
                     w.Target.Revive();
                 if (!w.Open(Time.time))
                     return;
-                float dmg = e.Damage * settings.weakPointMultiplier;
+                float dmg = HitDamage(e.Damage, true, IsImpact(e), settings);
                 TakeDamage(dmg);
-                if (GameVfx.Settings != null && GameVfx.Settings.bossWound != null)
-                    GameVfx.Spawn(GameVfx.Settings.bossWound, e.Point, Quaternion.identity, 1.5f, null, 2f);
+                GameVfxSettings vfx = GameVfx.Settings;
+                if (vfx != null && vfx.bossWound != null)
+                    GameVfx.Spawn(vfx.bossWound, e.Point, Quaternion.identity, 1.5f, null, 2f);
+                if (Time.time >= _nextCritFx)
+                {
+                    // Critique lisible : éclat et son de critique de la DA (au plus toutes les 0.15 s : flamme et drain frappent en continu).
+                    _nextCritFx = Time.time + 0.15f;
+                    if (vfx != null && vfx.critical != null)
+                        GameVfx.Spawn(vfx.critical, e.Point, Quaternion.identity, 1.5f, null, 1.5f);
+                    GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.headshot : null, e.Point, 0.8f, 80f);
+                }
+
                 w.Taken += dmg;
                 if (w.Taken >= settings.weakPointBreak)
                 {
@@ -204,13 +262,18 @@ namespace ItHunts.Enemies
             }
         }
 
-        /// <summary>Dégâts au boss (points faibles, objets lancés sur son corps).</summary>
+        /// <summary>Dégâts au boss (points faibles, corps).</summary>
         public void TakeDamage(float amount)
         {
             if (Dead || amount <= 0f)
                 return;
             Health = Mathf.Max(0f, Health - amount);
-            GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.bossHit : null, transform.position + Vector3.up * 11f, 1f, 120f);
+            if (Time.time >= _nextHitSound)
+            {
+                _nextHitSound = Time.time + 0.25f;                       // flamme, drain, saignement frappent en continu : pas de rafale
+                GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.bossHit : null, transform.position + Vector3.up * 11f, 1f, 120f);
+            }
+
             if (Health <= 0f)
                 Die();
         }
@@ -233,6 +296,8 @@ namespace ItHunts.Enemies
             GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.bossDeath : null, transform.position + Vector3.up * 10f, 1f, 150f);
             GameAudio.PlayAt(GameAudio.Settings?.stalkerGrabCry, transform.position + Vector3.up * 10f, 1f, 150f);
             ShakeAll(1f, 120f);
+            if (_rootTarget != null && _rootTarget.HitProxy == _bodyTarget)
+                _rootTarget.HitProxy = null;                             // mort : le traqueur redevient intouchable
             foreach (WeakPoint w in _weak)
                 if (w.Visual != null)
                     w.Visual.parent.gameObject.SetActive(false);
@@ -281,6 +346,7 @@ namespace ItHunts.Enemies
                 return;
             float now = Time.time;
             UpdateWeakPoints(now);
+            UpdateBodyTarget();
             if (Dead)
             {
                 // Il s'effondre : il s'enfonce lentement et se couche.
@@ -437,7 +503,15 @@ namespace ItHunts.Enemies
                 case Attack.Charge:
                     TelegraphLeft = Telegraph(settings.chargeTelegraph);
                     _chargeDir = Flat(tp - transform.position).normalized;
-                    Lane(transform.position, _chargeDir, settings.chargeDistance, ChargeWidth, TelegraphLeft);
+                    if (_chargeDir.sqrMagnitude < 0.5f)
+                        _chargeDir = Flat(transform.forward).normalized;
+                    // Couloir marqué = trajet exact : coupé au bord de l'arène (avant, la marque débordait et le boss glissait le long du bord).
+                    _chargeFrom = Flat(transform.position) + Vector3.up * ArenaCenter.y;
+                    _chargeLength = ChargeLength(_chargeFrom, _chargeDir, ArenaCenter, ArenaRadius - 6.5f, settings.chargeDistance);
+                    _chargeAlong = 0f;
+                    Lane(transform.position, _chargeDir, _chargeLength, ChargeWidth, TelegraphLeft);
+                    if (_lane != null)
+                        _lane.Prolonge(_chargeLength / Mathf.Max(1f, settings.chargeSpeed) + 0.1f);   // la marque reste pleine pendant la course
                     Play("Traqueur_Repos");
                     GameAudio.PlayAt(GameAudio.Pick(GameAudio.Settings?.stalkerEnragedCries), transform.position + Vector3.up * 10f, 1f, 120f);
                     break;
@@ -510,7 +584,8 @@ namespace ItHunts.Enemies
                         if (_cone != null)
                             _cone.Oriente(transform.forward);
                     }
-                    PulseTelegraphs(t);
+                    else if (Current == Attack.Charge)
+                        Face(_chargeDir, settings.turnRate * 2f);            // il se tourne dans l'axe du couloir (la course, elle, ne dévie pas)
                     if (TelegraphLeft > 0f)
                         return;
                     _step = Step.Action;
@@ -520,13 +595,28 @@ namespace ItHunts.Enemies
                 case Step.Action:
                     if (Current == Attack.Charge)
                     {
-                        Move(_chargeDir * settings.chargeSpeed * Time.deltaTime);
+                        // Il avance sur le couloir marqué, jamais en dehors (ClampToLane), et s'arrête net sur un obstacle (ChargeBlocked).
+                        float stepLength = settings.chargeSpeed * Time.deltaTime;
+                        bool blocked = ChargeBlocked(stepLength);
+                        if (!blocked)
+                        {
+                            _chargeAlong = Mathf.Min(_chargeAlong + stepLength, _chargeLength);
+                            Place(ClampToLane(_chargeFrom + _chargeDir * _chargeAlong, _chargeFrom, _chargeDir, _chargeLength, 0f));
+                        }
+
                         Play("Traqueur_CourseEnragee_A", 2f);
                         foreach (PlayerHealth p in PlayerHealth.All)
                             if (p != null && !p.Dead && Vector3.Distance(Flat(p.transform.position), Flat(transform.position)) < ChargeWidth * 0.5f)
                                 Hurt(p, settings.chargeDamage, _chargeDir * 18f + Vector3.up * 6f, "Charge du traqueur");
-                        if (t * settings.chargeSpeed < settings.chargeDistance && Vector3.Distance(Flat(transform.position), Flat(ArenaCenter)) < ArenaRadius - 6.5f)
+                        if (!blocked && _chargeAlong < _chargeLength - 0.01f)
                             return;
+                        if (blocked)
+                        {
+                            ChargeStops++;
+                            ShakeAll(0.4f, 60f);
+                            GameAudio.PlayAt(GameAudio.Settings != null ? GameAudio.Settings.bossSlam : null, transform.position + _chargeDir * 3f, 1f, 80f);
+                            Play("Traqueur_Reception", 1.4f);
+                        }
                     }
                     else if (Current == Attack.Bond)
                     {
@@ -648,47 +738,79 @@ namespace ItHunts.Enemies
                 s.AddTrauma(trauma);
         }
 
-        // ---------- Marques au sol ----------
+        // ---------- Charge : couloir marqué, arrêt net (jour 5, point 5) ----------
 
-        private GameObject Mark(string name, Vector3 at, Vector3 scale, Quaternion rot, Mesh mesh)
+        private Vector3 _chargeFrom;
+        private float _chargeLength, _chargeAlong;
+        private static readonly RaycastHit[] ChargeHits = new RaycastHit[16];
+
+        /// <summary>Charges arrêtées net par un obstacle (debug, mesures).</summary>
+        public int ChargeStops { get; private set; }
+
+        /// <summary>
+        /// Longueur du couloir de charge (logique pure, à plat) : maxLength au plus, coupée là où la droite quitte le cercle de rayon
+        /// limitRadius autour du centre ; 0 si le départ est déjà dehors ou si la direction est nulle.
+        /// </summary>
+        public static float ChargeLength(Vector3 from, Vector3 dir, Vector3 center, float limitRadius, float maxLength)
         {
-            var go = new GameObject(name);
-            go.transform.SetPositionAndRotation(at + Vector3.up * 0.06f, rot);
-            go.transform.localScale = scale;
-            go.AddComponent<MeshFilter>().sharedMesh = mesh;
-            var mr = go.AddComponent<MeshRenderer>();
-            mr.sharedMaterial = _telegraphMat;
-            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            _telegraphs.Add(go);
-            return go;
+            var d = new Vector3(dir.x, 0f, dir.z);
+            if (d.sqrMagnitude < 1e-6f || maxLength <= 0f || limitRadius <= 0f)
+                return 0f;
+            d.Normalize();
+            var off = new Vector3(from.x - center.x, 0f, from.z - center.z);
+            float b = Vector3.Dot(off, d), c = off.sqrMagnitude - limitRadius * limitRadius;
+            if (c > 0f)
+                return 0f;                                               // déjà au-delà du bord
+            float exit = -b + Mathf.Sqrt(Mathf.Max(0f, b * b - c));
+            return Mathf.Clamp(exit, 0f, maxLength);
         }
 
-        private static Mesh _disc;
-        private static Mesh DiscMesh
+        /// <summary>
+        /// Position bornée au couloir marqué (logique pure, à plat ; la hauteur de p est gardée) : de 0 à length le long de dir depuis
+        /// from, à au plus halfWidth de son axe.
+        /// </summary>
+        public static Vector3 ClampToLane(Vector3 p, Vector3 from, Vector3 dir, float length, float halfWidth)
         {
-            get
-            {
-                if (_disc != null)
-                    return _disc;
-                GameObject c = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                _disc = c.GetComponent<MeshFilter>().sharedMesh;
-                Destroy(c);
-                return _disc;
-            }
+            var d = new Vector3(dir.x, 0f, dir.z);
+            if (d.sqrMagnitude < 1e-6f)
+                return new Vector3(from.x, p.y, from.z);
+            d.Normalize();
+            var side = new Vector3(d.z, 0f, -d.x);
+            var off = new Vector3(p.x - from.x, 0f, p.z - from.z);
+            float along = Mathf.Clamp(Vector3.Dot(off, d), 0f, Mathf.Max(0f, length));
+            float lateral = Mathf.Clamp(Vector3.Dot(off, side), -Mathf.Max(0f, halfWidth), Mathf.Max(0f, halfWidth));
+            Vector3 q = from + d * along + side * lateral;
+            return new Vector3(q.x, p.y, q.z);
         }
 
-        private static Mesh _quad;
-        private static Mesh QuadMesh
+        /// <summary>Un décor (pilier, statue, mur) devant lui sur ce pas de charge : sphère lancée à hauteur de poitrine.</summary>
+        private bool ChargeBlocked(float stepLength)
         {
-            get
+            float radius = settings.chargeStopRadius;
+            Vector3 origin = Flat(transform.position) + Vector3.up * (ArenaCenter.y + Mathf.Max(settings.chargeStopHeight, radius + 0.3f));
+            int n = Physics.SphereCastNonAlloc(origin, radius, _chargeDir, ChargeHits, stepLength + 0.3f, ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < n; i++)
             {
-                if (_quad != null)
-                    return _quad;
-                GameObject c = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                _quad = c.GetComponent<MeshFilter>().sharedMesh;
-                Destroy(c);
-                return _quad;
+                Collider c = ChargeHits[i].collider;
+                if (c == null || c.transform.IsChildOf(transform) || c.attachedRigidbody != null || c is CharacterController)
+                    continue;                                            // lui-même, caisses, joueurs : pas des obstacles
+                if (c.GetComponentInParent<Damageable>() != null || c.GetComponentInParent<PlayerHealth>() != null)
+                    continue;                                            // goules invoquées, joueurs
+                if (ChargeHits[i].distance > 0f && ChargeHits[i].normal.y > 0.6f)
+                    continue;                                            // une pente ou une marche, pas un mur
+                return true;
             }
+
+            return false;
+        }
+
+        /// <summary>Pose le boss (sol de l'arène), Rigidbody compris.</summary>
+        private void Place(Vector3 p)
+        {
+            p.y = ArenaCenter.y;
+            transform.position = p;
+            if (_rb != null)
+                _rb.position = p;
         }
 
         /// <summary>Largeur de la marque et des dégâts de la charge (m) : alignées (PR #50 : la marque faisait 7 m, les dégâts 10 m).</summary>
@@ -719,17 +841,6 @@ namespace ItHunts.Enemies
             _marquages.Add(_cone);
         }
 
-        /// <summary>Teinte des marques de repli (sans le matériau de la DA) : ambre éteint, jamais un rouge vif.</summary>
-        private static Color MarkColor(float a) => new Color(0.85f, 0.58f, 0.32f, a);
-        private Material _telegraphFillMat;
-
-        private void PulseTelegraphs(float t)
-        {
-            // Pulsation lente et discrète ; dans les 300 derniers ms, le marquage se fige et s'affirme (l'impact tombe à son extinction).
-            float a = TelegraphLeft < FreezeBefore ? 0.55f : 0.22f + 0.12f * Mathf.Abs(Mathf.Sin(t * 5f));
-            _telegraphMat.SetColor("_BaseColor", MarkColor(a));
-        }
-
         /// <summary>Les marquages et la visée se figent ce temps avant l'impact (recherche nuit 4 : snapshot FFXIV, 300 ms).</summary>
         public const float FreezeBefore = 0.3f;
         /// <summary>Enchaînement prévu après l'attaque en cours (Dark Souls : balayage puis prise, charge puis cri) ; Aucune sinon.</summary>
@@ -738,10 +849,6 @@ namespace ItHunts.Enemies
 
         private void ClearTelegraphs()
         {
-            foreach (GameObject g in _telegraphs)
-                if (g != null)
-                    Destroy(g);
-            _telegraphs.Clear();
             // Attaque interrompue (étourdi, mort, nouvelle attaque) : les marques encore affichées sont annulées.
             foreach (ItHunts.Art.VFX.MarquageBoss m in _marquages)
                 if (m != null)

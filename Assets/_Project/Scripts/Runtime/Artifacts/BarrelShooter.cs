@@ -130,7 +130,7 @@ namespace ItHunts.Artifacts
                 Hitbox hb = h.collider.isTrigger ? h.collider.GetComponent<Hitbox>() : null;
                 if (h.collider.isTrigger && hb == null)
                     continue;                                            // déclencheurs ignorés, sauf les zones de touche (ailes, tête)
-                var enemy = h.collider.GetComponentInParent<Damageable>();
+                var enemy = Damageable.Of(h.collider);                // boss final : son relais (HitProxy)
                 if (enemy != null && HitSet.Contains(enemy))
                     continue;                                            // déjà touché (tête puis corps)
                 if (first)

@@ -339,7 +339,7 @@ namespace ItHunts.Artifacts
             var self = GetComponent<PlayerHealth>();
             if (taken > 0f && self != null && !self.Dead)
             {
-                float back = taken * bk.drainReturn;
+                float back = SpiritBook.Returned(taken, bk);
                 _book.Returned += back;
                 float missing = self.MaxHealth - self.CurrentHealth;
                 self.Heal(back);

@@ -42,12 +42,20 @@ namespace ItHunts.Settings
         public AudioClip lanternJetLoop;
         [Tooltip("Fondu de fin de la boucle du jet (s).")]
         [Min(0.01f)] public float lanternLoopFade = 0.15f;
+        [Tooltip("Épée en os du koala (jour 5, point 4) : lame dans le vide au départ des 1er et 2e coups (hauteur variée). Branchée par " +
+                 "ItHunts > Brancher les illustrations des améliorations (sons « Epee » d'Assets/Art/Audio) ; silence tant qu'elle manque.")]
+        public AudioClip swordSwing;
+        [Tooltip("Épée : 3e coup, fente et tourbillon dans le vide ; sans lui, swordSwing.")]
+        public AudioClip swordSwingHeavy;
+        [Tooltip("Épée : la lame touche ; sans lui, le son d'impact commun (impactHit).")]
+        public AudioClip swordHit;
+        [Range(0f, 1f)] public float swordVolume = 0.75f;
 
         /// <summary>
-        /// Emplacements qui attendent les sons de la PR art-sons-2 (nuit 3) : silence tant qu'ils sont vides (jamais un son synthétisé).
-        /// Vidée à mesure que les sons arrivent.
+        /// Emplacements qui attendent des sons de la DA : silence tant qu'ils sont vides (jamais un son synthétisé). Vidée à mesure que
+        /// les sons arrivent. Jour 5 : l'épée du koala (aucun son d'épée livré à ce jour).
         /// </summary>
-        public static readonly string[] AwaitingArt = { };            // PR #41 (art-sons-2) intégrée : tous les sons sont là
+        public static readonly string[] AwaitingArt = { nameof(swordSwing), nameof(swordSwingHeavy), nameof(swordHit) };
 
         [Header("Orbe et mouvement (art-sons-2) : silence tant qu'ils manquent")]
         public AudioClip tractionStart;

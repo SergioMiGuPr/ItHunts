@@ -108,6 +108,9 @@ namespace ItHunts.Artifacts
         /// <summary>PV à retirer ce tick (drain continu, D-088 : sans plafond par lien).</summary>
         public static float DrainTick(in BookState s, SpiritBookSettings cfg, float dt) => Mathf.Max(0f, cfg.drainDps * dt);
 
+        /// <summary>PV rendus au hibou pour ces PV drainés (drainReturn : 20 %).</summary>
+        public static float Returned(float drained, SpiritBookSettings cfg) => cfg == null ? 0f : Mathf.Max(0f, drained) * Mathf.Max(0f, cfg.drainReturn);
+
         /// <summary>PV à rendre ce tick (soin) : jamais au-delà du maximum de l'allié ni du plafond du lien.</summary>
         public static float HealTick(in BookState s, float allyMissing, SpiritBookSettings cfg, float dt) =>
             Mathf.Max(0f, Mathf.Min(cfg.healDps * dt, Mathf.Min(allyMissing, cfg.maxHealPerLink - s.Healed)));
@@ -133,7 +136,7 @@ namespace ItHunts.Artifacts
                 Collider c = Overlaps[i];
                 if (c == null || (self != null && c.transform.IsChildOf(self)))
                     continue;
-                var e = c.GetComponentInParent<Damageable>();
+                var e = Damageable.Of(c);                                // boss final : son relais (HitProxy)
                 PlayerHealth p = e == null ? c.GetComponentInParent<PlayerHealth>() : null;
                 // Soin lié Mythique (H8, D-100) : un allié à terre (pas spectateur) est une cible : le lien le relève.
                 bool downedOk = allowDowned && p != null && p.Downed && !p.Spectating;
@@ -167,7 +170,7 @@ namespace ItHunts.Artifacts
             {
                 Collider c = Rays[i].collider;
                 if (c == null || c.attachedRigidbody != null || (self != null && c.transform.IsChildOf(self))
-                    || (target != null && (c.transform.IsChildOf(target.root) || target.IsChildOf(c.transform))))
+                    || (target != null && (c.transform.IsChildOf(target) || target.IsChildOf(c.transform))))
                     continue;
                 if (c.GetComponentInParent<Damageable>() != null || c.GetComponentInParent<PlayerHealth>() != null)
                     continue;

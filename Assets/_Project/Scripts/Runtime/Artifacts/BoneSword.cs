@@ -127,7 +127,7 @@ namespace ItHunts.Artifacts
                 Collider c = Overlaps[i];
                 if (c == null || (shooter != null && c.transform.IsChildOf(shooter)))
                     continue;
-                var enemy = c.GetComponentInParent<Damageable>();
+                var enemy = Damageable.Of(c);                          // boss final : son relais (HitProxy)
                 if (enemy == null || enemy.Dead || enemy.ImmuneToOrbs)
                     continue;
                 Vector3 p = c.bounds.center;
@@ -150,7 +150,8 @@ namespace ItHunts.Artifacts
             for (int i = 0; i < n; i++)
             {
                 Transform t = SightHits[i].transform;
-                if ((shooter != null && t.IsChildOf(shooter)) || t.IsChildOf(enemy.transform) || SightHits[i].collider.attachedRigidbody != null)
+                if ((shooter != null && t.IsChildOf(shooter)) || t.IsChildOf(enemy.transform) || Damageable.Of(SightHits[i].collider) == enemy
+                    || SightHits[i].collider.attachedRigidbody != null)
                     continue;
                 return false;                                            // un mur entre les deux
             }
@@ -195,7 +196,7 @@ namespace ItHunts.Artifacts
                 Collider c = Overlaps[i];
                 if (c == null || (shooter != null && c.transform.IsChildOf(shooter)))
                     continue;
-                var enemy = c.GetComponentInParent<Damageable>();
+                var enemy = Damageable.Of(c);                          // boss final : son relais (HitProxy)
                 if (enemy == null || enemy.Dead || enemy.ImmuneToOrbs || !done.Add(enemy))
                     continue;
                 Vector3 point = c.ClosestPoint(eye);
@@ -216,14 +217,17 @@ namespace ItHunts.Artifacts
                     });
                 if (!killed)
                 {
-                    bool knock = (step.Index == 2 && !step.Lunge && cfg.knockback > 0f) || whirl;
-                    if (knock)
+                    // Recul à chaque coup (jour 5, point 4) : léger, plus fort au 3e coup et au tourbillon, et décroissant sur un même
+                    // ennemi frappé à la suite (KnockbackScale) : on ne peut pas le tenir à distance en frappant sans arrêt.
+                    float knockSpeed = whirl ? Mathf.Max(cfg.knockback, 6f) : step.Index == 2 && !step.Lunge ? cfg.knockback : cfg.hitKnockback;
+                    var body = enemy.GetComponent<EnemyBody>();
+                    if (knockSpeed > 0f && body != null)
                     {
-                        var body = enemy.GetComponent<EnemyBody>();
                         Vector3 away = enemy.transform.position - eye;
                         away.y = 0f;
-                        if (body != null && away.sqrMagnitude > 1e-4f)
-                            body.Push(away.normalized * Mathf.Max(cfg.knockback, whirl ? 6f : 0f) + Vector3.up * 1.5f);
+                        float scale = KnockbackScale(enemy, time, cfg);
+                        if (scale > 0f && away.sqrMagnitude > 1e-4f)
+                            body.Push((away.normalized * knockSpeed + Vector3.up * 1.5f) * scale);
                     }
 
                     if (up != null)
@@ -247,6 +251,54 @@ namespace ItHunts.Artifacts
             return touched;
         }
 
+        /// <summary>Suite de reculs d'un ennemi : nombre de coups qui l'ont fait reculer à la suite, instant du dernier.</summary>
+        public struct KnockStreak
+        {
+            public int Count;
+            public float LastAt;
+
+            public static KnockStreak Create() => new KnockStreak { LastAt = float.NegativeInfinity };
+        }
+
+        /// <summary>
+        /// Part du recul donnée par ce coup (logique pure) : 1 au premier coup, × knockbackDecay à chaque coup suivant porté moins de
+        /// knockbackMemory s après le précédent, 0 sous knockbackMinScale ; la suite repart à 1 après knockbackMemory s sans coup.
+        /// </summary>
+        public static float KnockbackScale(ref KnockStreak s, float now, BoneSwordSettings cfg)
+        {
+            if (now - s.LastAt > cfg.knockbackMemory)
+                s.Count = 0;
+            float k = Mathf.Pow(Mathf.Clamp01(cfg.knockbackDecay), s.Count);
+            s.Count++;
+            s.LastAt = now;
+            return k < cfg.knockbackMinScale ? 0f : k;
+        }
+
+        private static readonly Dictionary<Damageable, KnockStreak> Streaks = new Dictionary<Damageable, KnockStreak>();
+        private static readonly List<Damageable> StaleStreaks = new List<Damageable>();
+
+        /// <summary>Part du recul pour cet ennemi (suite partagée par tous les joueurs : en coop non plus, pas de recul sans fin).</summary>
+        public static float KnockbackScale(Damageable enemy, float now, BoneSwordSettings cfg)
+        {
+            if (Streaks.Count > 64)
+            {
+                StaleStreaks.Clear();
+                foreach (KeyValuePair<Damageable, KnockStreak> kv in Streaks)
+                    if (kv.Key == null || now - kv.Value.LastAt > cfg.knockbackMemory)
+                        StaleStreaks.Add(kv.Key);
+                foreach (Damageable d in StaleStreaks)
+                    Streaks.Remove(d);
+            }
+
+            KnockStreak s = Streaks.TryGetValue(enemy, out KnockStreak found) ? found : KnockStreak.Create();
+            float k = KnockbackScale(ref s, now, cfg);
+            Streaks[enemy] = s;
+            return k;
+        }
+
+        /// <summary>Oublie les suites de reculs (tests, changement de scène).</summary>
+        public static void ResetKnockback() => Streaks.Clear();
+
         /// <summary>Onde tranchante : capsule devant les yeux (longueur m, rayon 1 m), dégâts à chaque ennemi non déjà touché par le coup.</summary>
         public static int Wave(Vector3 eye, Vector3 dir, float length, float damage, float stun, Transform shooter, int shooterId, float time,
             HashSet<Damageable> except = null)
@@ -259,7 +311,7 @@ namespace ItHunts.Artifacts
                 Collider c = Overlaps[i];
                 if (c == null || (shooter != null && c.transform.IsChildOf(shooter)))
                     continue;
-                var enemy = c.GetComponentInParent<Damageable>();
+                var enemy = Damageable.Of(c);                          // boss final : son relais (HitProxy)
                 if (enemy == null || enemy.Dead || enemy.ImmuneToOrbs || !done.Add(enemy) || (except != null && except.Contains(enemy)))
                     continue;
                 enemy.NoteAttacker(shooterId);

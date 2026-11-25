@@ -46,7 +46,7 @@ namespace ItHunts.Player
             float now = Time.time;
             // Fenêtre passée sans rien parer : petit son sec (raté), une fois par appui.
             if (_state.LastPress > _state.LastSuccess && _state.LastPress != _missCheckedFor
-                && now - _state.LastPress > settings.window + settings.lateWindow)
+                && now - _state.LastPress > WindowFor(settings) + settings.lateWindow)
             {
                 _missCheckedFor = _state.LastPress;
                 Misses++;
@@ -105,6 +105,13 @@ namespace ItHunts.Player
             ParryEvents.Raise(new ParryEvent { Player = player.transform, Attacker = attacker.transform, Point = point });
         }
 
+        /// <summary>
+        /// Fenêtre d'un coup de goule (s avant l'impact) : window + marge de réflexe (earlyGrace, jour 5) + fenêtre en plus (bond : temps
+        /// depuis l'envol). Logique pure.
+        /// </summary>
+        public static float WindowFor(ParrySettings cfg, float extraWindow = 0f) =>
+            cfg == null ? 0f : cfg.window + Mathf.Max(0f, cfg.earlyGrace) + Mathf.Max(0f, extraWindow);
+
         /// <summary>Appui (aussi pour les tests et le debug).</summary>
         public bool Press(float now) => settings != null && ParryMath.Press(ref _state, now, settings);
 
@@ -119,7 +126,7 @@ namespace ItHunts.Player
             var parry = player.GetComponent<PlayerParry>();
             if (parry == null || parry.settings == null)
                 return false;
-            if (!ParryMath.TryParry(ref parry._state, now, parry.settings, ParryMath.Parryable(attacker), parry.settings.window + Mathf.Max(0f, extraWindow)))
+            if (!ParryMath.TryParry(ref parry._state, now, parry.settings, ParryMath.Parryable(attacker), WindowFor(parry.settings, extraWindow)))
                 return false;
             Succeed(parry, player, attacker, point);
             return true;

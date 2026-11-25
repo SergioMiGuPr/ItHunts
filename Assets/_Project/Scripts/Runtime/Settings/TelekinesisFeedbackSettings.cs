@@ -34,6 +34,13 @@ namespace ItHunts.Settings
         [Min(0f)] public float thrownGlowDuration = 1f;
         [Min(0f)] public float glowThrown = 2f;
 
+        [Header("Objet tenu (jour 5, point 4)")]
+        [Tooltip("Contour discret de la DA (M_VFX_Prise_Contour, ContourDiscret) autour de l'objet tenu, à la place de l'objet tout violet. " +
+                 "Vide : l'ancienne lueur violette (grabColor × glowHeld).")]
+        public Material heldOutline;
+        [Tooltip("Avec le contour : part de la lueur violette gardée sur l'objet tenu (0 : aucune, seul le contour).")]
+        [Range(0f, 1f)] public float heldGlowWithOutline = 0f;
+
         [Header("Orbe et trait")]
         [Min(0f)] public float orbUsageIntensity = 2.5f;
         [Min(0f)] public float orbReadyIntensity = 0.8f;

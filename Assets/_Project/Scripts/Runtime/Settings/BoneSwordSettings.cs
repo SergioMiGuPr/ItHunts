@@ -57,9 +57,18 @@ namespace ItHunts.Settings
         [Tooltip("Multiplicateur maximal des dégâts (plafond).")]
         [Min(1f)] public float speedMaxMultiplier = 1.8f;
 
-        [Header("3e coup : recul")]
+        [Header("Recul des ennemis (jour 5, point 4)")]
         [Tooltip("Vitesse de recul donnée aux ennemis touchés par le 3e coup (m/s).")]
         [Min(0f)] public float knockback = 6f;
+        [Tooltip("Léger recul des 1er et 2e coups et de la fente (m/s). 0 : aucun.")]
+        [Min(0f)] public float hitKnockback = 2.2f;
+        [Tooltip("Recul décroissant sur un même ennemi : chaque coup suivant porté moins de knockbackMemory s après le précédent " +
+                 "garde cette part du recul (0.6 : 100 %, 60 %, 36 %…). On ne peut pas tenir un ennemi à distance en frappant sans arrêt.")]
+        [Range(0f, 1f)] public float knockbackDecay = 0.6f;
+        [Tooltip("Temps sans coup (s) après lequel le recul d'un ennemi repart à 100 %.")]
+        [Min(0f)] public float knockbackMemory = 1.5f;
+        [Tooltip("Sous cette part, plus aucun recul (0.25 : dès le 4e coup à la suite avec knockbackDecay 0.6).")]
+        [Range(0f, 1f)] public float knockbackMinScale = 0.25f;
 
         [Header("Fente (pendant un dash ou une glissade)")]
         [Tooltip("Longueur de la fente devant le joueur, dans le sens de son déplacement (m).")]
