@@ -1,3 +1,7 @@
+> **À revoir après correction** : branche `animations`, commit `da0d4cc` (fusionné dans `main`). Les 13 points sont traités : contrôles
+> automatiques à 0 sur les 6 cartes (décor, salles vides à plus de 9 m de tout décor, portée du traqueur 100 %), salles remplies
+> par les 42 ensembles de la PR #59, les salles d'exemple et les kits (D-118). Planches : `docs/design/jour-5/captures/planches-jour5-apres/`.
+
 # Revue des cartes faites à la main (nuit 5, lot 5)
 
 Revue de la DA, pour main. Cartes de la branche `animations` au commit `f3f5cd0` (« Jour 5, point 1 », D-110), pas encore
