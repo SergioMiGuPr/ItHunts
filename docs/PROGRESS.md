@@ -2,6 +2,27 @@
 
 > Mémoire du projet entre les sessions. Claude la met à jour à la fin de chaque étape.
 
+## Reprise du 2026-11-25 au soir (après le plantage de la chaîne de vérification) : fait / reste
+
+**Fait (commits sur `animations`, poussés) :**
+- PR d'art #57 (lot 4 : effets, sons), #58 (revue des cartes), **#59 (art-ensembles : 42 ensembles de décor)** et **#60 (art-fin-6)** :
+  fusionnées dans `main` et poussées ; lot 4 branché (D-115) ; lanterne du hibou (0.36, 0.44, 0.58), halos des lanternes coupés.
+- **Erreur ReloadScene / InitTestScene** de l'audit de l'acte II graine 11 : un test annulé laissait sa scène temporaire ouverte et
+  les suivants voulaient y revenir alors qu'elle était effacée. `UserSettings/outils/pt.sh` (non versionné) ouvre une scène stable et
+  efface les scènes orphelines avant chaque test, et vérifie que le rapport de résultats est neuf. L'audit de l'acte II graine 11 tourne.
+- **Traqueur : 0 point manqué sur les 6 cartes** (D-117 ; il en restait 20).
+- **Salles remplies** (D-118) : ensembles de la DA, salles d'exemple, kits et props selon la fonction de chaque salle ; détails au sol ;
+  contrôle « aucun sol à plus de 9 m de tout décor » à 0 sur les 6 cartes ; ambiances des actes I et II, jardin plus lumineux.
+- **Coût du décor** (D-119) : fusion par dalles, masquage par salle et par distance, lumières espacées, recherches de scène retirées
+  des boucles ; décor enjambé par le traqueur = obstacle des goules. Éditeur : 6 → 13 à 18 images par seconde pendant le bot.
+- **Bot** : progrès mesuré sur le chemin restant, recul quand il est coincé, temps accéléré réduit si les images sont lentes.
+- Cartes : poches fermées derrière les rampes rendues à la roche, margelles des bassins sur la rive, haut des marches des bassins
+  libre, couloirs de wall jump dégagés, jardin sans labyrinthe d'exemple (impasses), arbres espacés de 6 m, rochers posés au sol.
+
+**Reste (au moment de l'écriture) :** fin des passages du bot (6 cartes + boss), captures finales, relecture indépendante, en-tête
+de `REVUE-CARTES.md`, fusion d'`animations` dans `main`, build de développement `Builds/Jour_2026-11-25/` et mesure des images par
+seconde, rapport.
+
 ## Étape en cours
 
 **Jour du 2026-11-24 et 25 (jour 5) : cartes faites à la main, revue des cartes de la DA, D-110 à D-116.** Branche `animations`.
