@@ -1,25 +1,24 @@
-# Bot : Acte_2_Chateau_s11 (2026-11-26 02:12)
+# Bot : Acte_2_Chateau_s11 (2026-11-26 04:55)
 
 ## Acte_2_Chateau (acte 2, seed 11) : ✅ réussi
 
-- Temps de jeu de l'acte : 11:04 ; temps réel 474 s (vitesse ×1).
-- Âmes en fin d'acte : 12 ; achats : 2 ; coffres essayés : 2.
-- Tirs : 462 ; coups reçus (comptés, invulnérable) : 0 ; parades : 4439 appuis, 1423 réussies (images avec une annonce de goule à moins de 6 m : 4885).
-- Fuites devant le traqueur : 19 ; tractions de secours : 8 ; téléportations après blocage : 0 ; esquives (boss) : 0.
-- Vitesse max : 23,7 m/s ; images par seconde (éditeur) : moyenne 16, minimum 0.
+- Temps de jeu de l'acte : 16:33 ; temps réel 713 s (vitesse ×1).
+- Âmes en fin d'acte : 45 ; achats : 1 ; coffres essayés : 1.
+- Tirs : 729 ; coups reçus (comptés, invulnérable) : 0 ; parades : 5790 appuis, 1471 réussies (images avec une annonce de goule à moins de 6 m : 7292).
+- Fuites devant le traqueur : 28 ; tractions de secours : 17 ; téléportations après blocage : 3 ; esquives (boss) : 0.
+- Vitesse max : 24,2 m/s ; images par seconde (éditeur) : moyenne 16, minimum 0.
 - Toutes les salles visitées : non.
 
 <details><summary>Journal du bot</summary>
 
-- [chute] tombé dans un vide à 1:57, position (-194.6, -18.6, -62.7) (salle Tour effondrée) ; ramené au dernier sol sûr
-- [chute] tombé dans un vide à 1:59, position (-190.8, -18.7, -67.4) (salle Tour effondrée) ; ramené au dernier sol sûr
-- [chute] tombé dans un vide à 2:00, position (-194.6, -19.0, -66.2) (salle Tour effondrée) ; ramené au dernier sol sûr
-- [achat] coffre : Aspiration · Bronze (0 âmes, reste 1) à 3:03
-- [achat] coffre : Peau changeante · Bronze (0 âmes, reste 0) à 8:12
-- [économie] âmes insuffisantes pour la sortie à 10:00 : 29 / 200 ; ajoutées par l'admin pour continuer
-- [sortie] payable, 200 âmes à 10:01
-- [sortie] demande d'ouverture à 11:02 (porte déjà ouverte)
-- [acte] terminé à 11:04 (temps de jeu)
+- [achat] coffre : Balles paralysantes · Bronze (0 âmes, reste 0) à 1:28
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 3:47, position (158.0, 6.0, 4.6) (salle Grand escalier) ; téléporté au point suivant
+- [chute] tombé dans un vide à 5:40, position (-196.3, -18.7, -61.8) (salle Tour effondrée) ; ramené au dernier sol sûr
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 12:03, position (-240.0, 0.0, -11.8) (salle Salle des gardes) ; téléporté au point suivant
+- [blocage en fuite] aucun progrès vers « fuite » pendant 12 s à 14:56, position (-192.9, 0.0, 36.5) (salle Salle des gardes) ; téléporté au point suivant
+- [sortie] payable, 205 âmes à 15:38
+- [sortie] demande d'ouverture à 16:31 (porte déjà ouverte)
+- [acte] terminé à 16:33 (temps de jeu)
 - [acte] acte gagné
 
 </details>
