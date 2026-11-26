@@ -186,8 +186,8 @@ Arene_Couvert 0 -1
 Jardin_SousBois_A 2 1.6
 
 [Passerelle de bois] centre 17x4 fonctions Ravin, Verger, Bosquet, Grande grille, Serre en ruine, Labyrinthe de haies ; max 1
-Jardin_PlateformeTraction -6.6 0 0 0 1.4
-Jardin_PlateformeTraction 6.6 0 0 0 1.4
+Jardin_PlateformeTraction -6.6 0 0 5.74 1.4
+Jardin_PlateformeTraction 6.6 0 0 5.74 1.4
 Jardin_Passerelle_10m 0 0 0 5.6
 Cave_Brasero -8 1.6
 

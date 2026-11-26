@@ -32,7 +32,7 @@ Chateau_Chapelle_A 0 0.02
 [Chateau_Chapelle_B] mur 9x10.5 fonctions Chapelle ; max 1
 Chateau_Chapelle_B 0 0.02
 
-[Chateau_Galerie_A] mur 13.5x3 fonctions Galerie des portraits, Palier, Grand escalier ; max 1
+[Chateau_Galerie_A] mur 13.5x3 fonctions Galerie des portraits, Palier, Grand escalier, Hall de sortie ; max 1
 Chateau_Galerie_A 0 0.02
 
 [Chateau_Galerie_B] mur 12.5x3 fonctions Galerie des portraits, Grande entrée, Salle du trône, Salle de bal ; max 1
@@ -73,15 +73,17 @@ P_Prop_Fauteuil -7.2 0 90
 Chateau_Candelabre_Pied -7 2.2
 Chateau_Candelabre_Pied 7 -2.2
 
-[Banquet renversé] centre 10x8 fonctions Salle à manger, Grande salle, Salle de bal ; max 4
-Chateau_Table_Renversee 0 1.5 20
-Ens_Table_Longue 0 -1.6 -8
-Chateau_Chaise_Renversee 3 2 70
-Chateau_Chaise_Renversee -3 1.5 -40
-Chateau_Chaise -2.5 -3 10
-Prop_Chaise_Attrapable 2.2 -3.1 30 0.55
-Prop_Chaise_Attrapable -3.8 -1 80 0.55
-Chateau_Candelabre_Pied 4 -2.8
+# Seconde revue de la DA (D-120) : la table renversée, posée au milieu, se lisait comme un pan de bois debout. Elle est contre le mur,
+# plateau au mur et pieds vers la salle.
+[Banquet renversé] mur 10x7 fonctions Salle à manger, Grande salle, Salle de bal ; max 4
+Chateau_Table_Renversee 0 0.3 0
+Chateau_Chaise_Renversee 3.1 1.2 70
+Chateau_Chaise_Renversee -3.1 1.4 -40
+Ens_Table_Longue 0 4.2 -8
+Chateau_Chaise -2.5 5.8 10
+Prop_Chaise_Attrapable 2.2 6 30 0.55
+Prop_Chaise_Attrapable -3.8 3.2 80 0.55
+Chateau_Candelabre_Pied 4 5.4
 
 [Desserte] mur 8x3 fonctions Salle à manger, Grande salle
 P_Prop_Armoire -2.6 1.2
@@ -173,7 +175,7 @@ Ens_Banc_Chapelle 0 -0.5 180
 Chateau_Candelabre_Pied -3 0
 Chateau_Candelabre_Pied 3 0
 
-[Banquettes murales] mur 8x2.4 fonctions Salle de bal, Salon de musique, Galerie des portraits, Palier, Grande entrée, Grand escalier
+[Banquettes murales] mur 8x2.4 fonctions Salle de bal, Salon de musique, Galerie des portraits, Palier, Grande entrée, Grand escalier, Hall de sortie
 Ens_Banc_Chapelle 0 1.1
 Ens_Portrait_3 0 0.15 0 4.4 1.6
 Chateau_Candelabre_Pied -3 1
@@ -256,7 +258,7 @@ Prop_Statue 0 0
 Chateau_Candelabre_Pied 1.2 1.2
 Chateau_Candelabre_Pied -1.2 -1.2
 
-[Portraits] mur 9x2.4 fonctions Galerie des portraits, Grand escalier, Palier, Grande salle
+[Portraits] mur 9x2.4 fonctions Galerie des portraits, Grand escalier, Palier, Grande salle, Hall de sortie
 Ens_Portrait_Grand -3 0.15 0 4.4 1.6
 Ens_Portrait_6 0 0.15 0 4.4 1.6
 Ens_Portrait_7 3 0.15 0 4.4 1.6
@@ -311,8 +313,8 @@ Chateau_Candelabre_Pied 0 1.6
 
 # ---- Verticalité : routes de parcours dans les grandes salles ----
 [Passerelle] centre 17x4 fonctions Salle de bal, Grande salle, Grande entrée, Salle du trône, Bibliothèque, Cloître, Armurerie ; max 1
-Chateau_PlateformeTraction -6.6 0 0 0 1.4
-Chateau_PlateformeTraction 6.6 0 0 0 1.4
+Chateau_PlateformeTraction -6.6 0 0 5.74 1.4
+Chateau_PlateformeTraction 6.6 0 0 5.74 1.4
 Chateau_Passerelle_10m 0 0 0 5.6
 Chateau_Candelabre_Pied -8 1.6
 
@@ -386,18 +388,20 @@ Chateau_Candelabre_Pied 3.2 1.4
 [Livres] sol 2x2 fonctions Bibliothèque, Chambre, Salon de musique
 Ens_Livres_Sol 0 0
 
-[Tapis] sol 5x4 fonctions Chambre, Salon de musique, Salle du trône, Grande salle, Salle à manger, Galerie des portraits, Palier, Armurerie
+[Tapis] sol 5x4 fonctions Chambre, Salon de musique, Salle du trône, Grande salle, Salle à manger, Galerie des portraits, Palier, Armurerie, Hall de sortie
 Ens_Tapis_4x3 0 0
 
-[Gravats] sol 4x3 fonctions *
+# Seconde revue de la DA (D-120) : gravats et verre sombres semés partout (palier) se lisaient de loin comme des trous dans le sol ;
+# seulement dans les salles en ruine.
+[Gravats] sol 4x3 fonctions Tour effondrée, Salle des gardes, Armurerie
 Ens_Gravats_Epars_B 0 0
 
-[Gravats fins] sol 4x2 fonctions *
+[Gravats fins] sol 4x2 fonctions Tour effondrée, Salle des gardes
 Ens_Gravats_Epars_C 0 0
 
-[Verre] sol 2x2 fonctions *
+[Verre] sol 2x2 fonctions Tour effondrée, Salle de bal
 Ens_Verre_Brise 0 0 0 0 1.4
 
-[Chemin de tapis] sol 3x9 fonctions Salle du trône, Grande entrée, Chapelle, Palier, Grand escalier, Salle de bal
+[Chemin de tapis] sol 3x9 fonctions Salle du trône, Grande entrée, Chapelle, Palier, Grand escalier, Salle de bal, Hall de sortie
 Ens_Chemin_Tapis_8m 0 0 90
 

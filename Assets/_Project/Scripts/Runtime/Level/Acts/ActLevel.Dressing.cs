@@ -97,6 +97,8 @@ namespace ItHunts.Level.Acts
         {
             Transform root = Group("Habillage", _roomRoots[r.Id]);
             Sconces(r, root);
+            if (r.Role == RoomRole.HallDeSortie)
+                DressExitHall(r, root);
             if (r.Special)
                 return;
             Recipes.TryGetValue(r.Function ?? "", out Recipe rec);
@@ -186,6 +188,28 @@ namespace ItHunts.Level.Acts
             // plus de cimes en sphères : elles faisaient de grosses formes noires ellipsoïdales dans le ciel (nuit 4, point 1).
             if (settings.theme == ActTheme.Jardin && (Art == null || Art.outerWalls.Count == 0))
                 ForestEdge(r, root, segs);
+        }
+
+        /// <summary>
+        /// Seconde revue de la DA (D-120) : le hall de sortie des actes I et II n'est plus une salle nue. Ensembles muraux de la fonction
+        /// « Hall de sortie » (échafaudages, enfeus, portraits, banquettes…), détails au sol (tapis, gravats), deux sources au sol ; le
+        /// milieu reste libre (chemin vers le déclencheur de fin d'acte) et les abords des portes aussi.
+        /// </summary>
+        private void DressExitHall(ActRoom r, Transform root)
+        {
+            if (Plan.Hand == null || settings.ensembles == null || settings.theme == ActTheme.Jardin)
+                return;
+            EnsembleLibrary lib = settings.ensembles;
+            HashSet<Vector2Int> ground = EnsembleGround(r);
+            var blocked = new HashSet<Vector2Int>();
+            foreach (Vector2Int c in r.Use.Keys)
+                if (Occupied(c))
+                    blocked.Add(c);
+            WallEnsembles(r, root, _contours[r.Id], lib, ground, blocked);
+            GroundDetails(r, root, lib, blocked);
+            foreach (Vector2Int c in blocked)
+                _occupied.Add(c);
+            FieldLights(r, root, 2);
         }
 
         // ---------- Props ----------

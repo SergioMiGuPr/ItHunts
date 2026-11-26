@@ -53,6 +53,7 @@ namespace ItHunts.Level.Acts
                     list.Add(new Vector2Int(cx + i, cy + j));
             }
 
+            var handCeiling = new HashSet<int>();
             foreach (HandMap.Room hr in m.Rooms)
             {
                 if (!cellsOf.TryGetValue(hr.Id, out List<Vector2Int> cells))
@@ -64,7 +65,10 @@ namespace ItHunts.Level.Acts
                 r.Function = string.IsNullOrEmpty(hr.Function) ? hr.Name : hr.Function;
                 r.Feature = hr.Feature;
                 if (hr.Ceiling >= 0f)
+                {
                     r.Ceiling = hr.Ceiling;
+                    handCeiling.Add(id);
+                }
                 switch (hr.Role)
                 {
                     case RoomRole.Depart: Start = id; break;
@@ -146,7 +150,44 @@ namespace ItHunts.Level.Acts
             foreach (ActRoom r in Rooms)
                 if (!r.Special && r.Doors.Count < 2)
                     Failures.Add($"salle {r.Name} : impasse ({r.Doors.Count} sortie)");
+            LowerSmallCeilings(handCeiling);
         }
+
+        /// <summary>
+        /// Seconde revue de la DA (D-120) : les petites salles (couloirs, halls, salles verrouillées) n'ont plus un plafond de 22 à 30 m
+        /// qui fait une cheminée noire. Plafond abaissé à smallRoomCeiling, jamais sous le traqueur debout (il se baisserait et ralentirait)
+        /// ni sous le haut des portes (arc compris). Pas dans les salles à galerie, à palier, à fosse ou à bassin (bonds du traqueur vers
+        /// les étages et les îlots), ni à la porte d'arrivée (herse de 11 m), ni quand la carte écrit sa hauteur.
+        /// </summary>
+        private void LowerSmallCeilings(HashSet<int> handCeiling)
+        {
+            if (Settings.Open || Settings.smallRoomCeiling <= 0f)
+                return;
+            foreach (ActRoom r in Rooms)
+            {
+                if (r.Ceiling <= 0f || handCeiling.Contains(r.Id) || r.Role == RoomRole.Arrivee || r.Role == RoomRole.Repaire
+                    || r.Feature != RoomFeature.Aucun || r.HasLanding || r.TerraceHeight > 0.01f || r.Use.Values.Any(u => u == CellUse.Terrasse))
+                    continue;
+                float narrow = Mathf.Min(r.Box.width, r.Box.height) * Cell;
+                if (narrow > Settings.smallRoomWidth && r.Area(Cell) > Settings.smallRoomArea)
+                    continue;
+                float need = Mathf.Max(Settings.smallRoomCeiling, StalkerStandingHeight);
+                foreach (int di in r.Doors)
+                {
+                    ActDoor d = Doors[di];
+                    ActRoom o = Rooms[d.Other(r.Id)];
+                    float opening = d.Gate ? Mathf.Max(Settings.doorHeight, 11f)
+                        : d.Exit && Settings.art != null && Settings.art.exitDoor != null ? Mathf.Max(Settings.doorHeight, Settings.art.exitDoorOpening) : Settings.doorHeight;
+                    need = Mathf.Max(need, Mathf.Max(r.Floor, o.Floor) - r.Floor + opening + 2f);
+                }
+
+                if (need < r.Ceiling - 0.5f)
+                    r.Ceiling = need;
+            }
+        }
+
+        /// <summary>Hauteur du traqueur debout (14 m) et une marge : au-dessous, il se baisse et ralentit.</summary>
+        public const float StalkerStandingHeight = 15f;
 
         /// <summary>
         /// Ouverture d'une porte écrite à la main : la plus longue limite commune (du côté demandé), à la position demandée.

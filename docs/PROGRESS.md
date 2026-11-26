@@ -2,6 +2,55 @@
 
 > Mémoire du projet entre les sessions. Claude la met à jour à la fin de chaque étape.
 
+## Pause du 2026-11-26 (seconde revue des cartes, PR #61) : fait / reste
+
+**Fait (commit sur `animations`, poussé) :**
+- **PR #61 (`art-revue-2`)** : docs seulement, périmètre vérifié, fusionnée dans `main` (e20c318), poussée, `main` fusionnée dans `animations`.
+- **Corrections 1 à 7 de `REVUE-CARTES.md`** (D-120, détail dans le GDD et la section « Seconde revue des cartes » d'`ART-HANDOFF.md`) :
+  voûtes (arcs de pierre à l'acte II, poutres sur corbeaux à l'acte I, `ActLevel.Ceilings.cs`), appliques hautes tournées vers le
+  haut, brume sous plafond (`ItHunts/BrumePlafond`, `Acte{1,2}_BrumePlafond.mat`), plafond des petites salles à 15 / 16 m
+  (`ActPlan.LowerSmallCeilings`) ; plateformes de traction sur colonne, chaînes masquées ; jardin : lisière à la place du mur et de
+  la falaise (invisibles, collision gardée), fond noir abaissé à 9 m, haies plus vertes ; table renversée murale ; bibliothèques au
+  dos nu doublées ou retirées (`FixShelfBacks`) ; halls de sortie habillés (ensembles « Hall de sortie ») ; marchand en forme
+  drapée (`Ens_Drap_Statue`, `merchantStandIn`) ; chaudrons bas avec collision (seuil de `DecorAudit`) ; gravats et verre de
+  l'acte II seulement dans les salles en ruine.
+- **Vérifié** : compilation sans erreur ; EditMode 592 réussis, 1 non concluant (attendu) ; captures en jeu (acte I graine 11, acte II
+  graine 22, jardin graine 22 : `UserSettings/outils/cap/*.jpg`, outil `capx.sh`). **Pas encore vérifié** : contrôle du décor
+  PlayMode (lancé puis annulé à la pause), bot, build.
+- **Plantage à la fermeture (D-121, à écrire au GDD)** : cause trouvée dans les rapports Windows (`%LOCALAPPDATA%/CrashDumps`) :
+  `D3D12PipelineCacheLibrary::SaveCache` lit une mémoire libérée quand le cache `%TEMP%/DefaultCompany/ItHuntsGame/dx12_pso_cache_lib.bin`
+  vient d'un build précédent. Test sur le build du 25/11 : ancien cache → plantage ; cache effacé → 3 fermetures propres sur 3.
+  Garde-fou `PsoCacheGuard` : efface le cache au premier lancement d'un nouveau build. **Non testé sur un build** : si le cache est
+  lu avant le script, le premier lancement d'un build neuf peut encore planter une fois. D3D11 écarté : 40 ms par image à l'acte II.
+  L'ancien cache est gardé dans le scratchpad de la session (`dx12_pso_cache_lib.bin.ancien`) pour ce test.
+- **Perf du jardin (D-121)** : `Damageable.Update` n'écrit plus la lueur de chaque ennemi à chaque image (seulement quand elle
+  change, et une image sur 30) ; `Hitbox` sans `LateUpdate` (taille des têtes appliquée quand elle change). **Non mesuré** : le jardin
+  était à 54 i/s (300 goules actives contre 110 à 130 au château ; scripts +2 ms).
+
+**Reste, dans l'ordre :**
+1. **Défauts de la relecture indépendante, à corriger :**
+   - `ActLevel.Geometry.cs` (~l. 527) : au jardin, murs et falaise cachés même quand `DressOuterWall` n'a rien posé (Art nul,
+     segment < 1.5 m) → cacher seulement si une lisière est posée (ou si le kit a des lisières) ; rendre ces murs invisibles non
+     magnétiques (traction et wall jump « dans l'air » derrière les troncs).
+   - `ActLevel.Ensembles.cs` `FixShelfBacks` : vérifier en jeu que les doubles sont bien posés dos à dos (pivot au dos : boîte
+     0..1 m en z) et pas retirés à tort (le relecteur pense que la boîte de place touche le meuble) ; compter doubles et retraits à part.
+   - `ActLevel.Ceilings.cs` : dans les petites salles (15 / 16 m), arcs, consoles, corbeaux et appliques descendent sous 14 m (le
+     traqueur les traverse à l'image) → retombée 0 et pas de console / corbeau / applique si `Ceiling < 15.5 + épaisseur + 0.3`.
+   - Brume à `top − 0.8` = dessous des poutres de l'acte I (scintillement) → brume à `top − épaisseur − 0.15`.
+   - `Ghoul.cs` ~1527 et 1539 (`_glowBlock.Clear()`), `Flyer.cs` ~700 (`_eyeBlock.Clear()`) : effacent l'émission écrite par
+     Damageable, qui ne la réécrit plus qu'au changement → ajouter `Damageable.MarkGlowStale()` appelé après ces `Clear`.
+   - `ActLevel.Gameplay.cs` (marchand drapé) : `DestroyImmediate` des collisions au lieu de `Destroy`.
+   - `ActLevel.OnDestroy` : détruire `_ribMeshes` ; `_hedgeMaterial` statique repéré par son nom (à rattacher au niveau).
+   - Ne pas commiter `ProjectSettings/NavMeshAreas.asset` (sérialisation changée par l'éditeur), ni `Assets/Resources.meta`.
+2. **PR #62** : à intégrer avec la procédure habituelle (périmètre, manifeste, compilation, tests).
+3. **Contrôle du décor** (`DecorAuditTests`, 6 cartes : décor 0, salles vides 0, traqueur 100 %) avec `pt.sh`.
+4. **Build de mesure** (`UserSettings/outils/build_jour6.cs` → `Builds/Jour_2026-11-26/`), puis : test du plantage (remettre
+   l'ancien cache, lancer le build neuf deux fois, `crashtest.sh` du scratchpad) et mesure jardin graines 11 et 22 (`perfx.sh`,
+   résolution sauvée et remise) ; si le jardin reste sous 60 i/s : WaveDirector (0,57 ms), PlayerHud (0,72 ms), goules lointaines.
+5. **Bot** (`BotRunTests`, 6 cartes).
+6. **Relecture** des nouveaux correctifs, puis `REVUE-CARTES.md` marqué « À revoir après correction », **build final** dans
+   `Builds/Jour_2026-11-26/` (résolution de l'utilisateur intacte), mesure des 6 cartes, D-121 au GDD, rapport court.
+
 ## Reprise du 2026-11-25 au soir (après le plantage de la chaîne de vérification) : fait / reste
 
 **Fait (commits sur `animations`, poussés) :**

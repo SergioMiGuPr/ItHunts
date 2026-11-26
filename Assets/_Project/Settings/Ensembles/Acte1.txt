@@ -130,7 +130,7 @@ Prop_Caisse_Attrapable 2.4 -0.8 50 0.45
 Prop_Tonneau_Attrapable -2.4 -1.4 0 0.55
 Cave_Sacs 0 -2
 
-[Réserve murale] mur 9x3 fonctions Réserve, Cave à vin
+[Réserve murale] mur 9x3 fonctions Réserve, Cave à vin, Hall de sortie
 Cave_Etagere -3 1.1
 Cave_Etagere -0.4 1.1
 Cave_Sacs 1.8 1.4
@@ -167,7 +167,7 @@ Cave_Candelabre -2 1
 Cave_Candelabre 2 1
 Cave_Chandelles 0 -1.4
 
-[Enfeu] mur 8x3 fonctions Ossuaire, Crypte
+[Enfeu] mur 8x3 fonctions Ossuaire, Crypte, Hall de sortie
 P_Prop_Sarcophage 0 1.2
 P_Prop_Statue -2.6 1.2
 P_Prop_Statue 2.6 1.2
@@ -191,7 +191,7 @@ Cave_Candelabre -3.4 2
 Cave_Candelabre 3.4 2
 
 # ---- Mine, gouffre, citerne, grotte ----
-[Échafaudage] mur 10x4 fonctions Galerie de mine, Gouffre, Citerne
+[Échafaudage] mur 10x4 fonctions Galerie de mine, Gouffre, Citerne, Hall de sortie
 Ens_Etai -1 0.6
 Ens_Pioches -1.2 1.4 20
 Ens_Wagonnet 2.6 2.2 80
@@ -207,8 +207,8 @@ Cave_Brasero 3.4 1.2
 Prop_Tonneau_Attrapable -3.4 0.6 0 0.55
 
 [Plateforme de mine] centre 17x4 fonctions Galerie de mine, Gouffre, Citerne, Salle des gardes, Réserve ; max 1
-Cave_PlateformeTraction -6.6 0 0 0 1.4
-Cave_PlateformeTraction 6.6 0 0 0 1.4
+Cave_PlateformeTraction -6.6 0 0 5.74 1.4
+Cave_PlateformeTraction 6.6 0 0 5.74 1.4
 Cave_Passerelle_10m 0 0 0 5.6
 Cave_Brasero -8 1.6
 
@@ -233,7 +233,7 @@ Prop_Tonneau_Attrapable 1.8 1.4 0 0.55
 Prop_Tonneau_Attrapable -1.6 -1.6 0 0.55
 Cave_Brasero -1.8 1.6
 
-[Rochers au pied du mur] mur 8x4 fonctions Gouffre, Grotte inondée, Citerne
+[Rochers au pied du mur] mur 8x4 fonctions Gouffre, Grotte inondée, Citerne, Hall de sortie
 Cave_Eboulis_Petit -2 2
 Cave_Eboulis_Petit 2 2.2 80
 Cave_Brasero 0 2.6

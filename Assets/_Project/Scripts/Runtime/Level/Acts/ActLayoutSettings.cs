@@ -4,6 +4,16 @@ using UnityEngine;
 namespace ItHunts.Level.Acts
 {
     /// <summary>Décor d'un acte (D-092) : caves (acte I), étages hauts du château (II), jardin (III), arène du boss final.</summary>
+    /// <summary>Structure posée sous les plafonds (D-120).</summary>
+    public enum CeilingStructure
+    {
+        Aucune,
+        /// <summary>Arcs de pierre en travers de la salle (doubleaux), retombant sur des consoles, et une poutre faîtière.</summary>
+        Arcs,
+        /// <summary>Poutres de bois en travers, posées sur des corbeaux de bois (boisage de mine).</summary>
+        Poutres,
+    }
+
     public enum ActTheme
     {
         Caves,
@@ -68,6 +78,24 @@ namespace ItHunts.Level.Acts
         [Tooltip("Au-dessus de cette hauteur, les falaises extérieures ne sont plus magnétiques (la traction ne les escalade pas).")]
         [Range(4f, 40f)] public float outerMagneticTop = 12f;
 
+        [Header("Voûtes (seconde revue de la DA, D-120) : plus de plafond en aplat noir")]
+        [Tooltip("Structure sous le plafond : aucune, arcs de pierre (château) ou poutres de bois sur corbeaux (caves).")]
+        public CeilingStructure ceilingStructure = CeilingStructure.Aucune;
+        [Tooltip("Écart (m) entre deux arcs ou deux poutres, le long du grand axe de la salle.")]
+        [Range(4f, 20f)] public float ceilingRibSpacing = 8f;
+        [Tooltip("Matériau des arcs ou des poutres (vide : celui des encadrements).")]
+        public Material ceilingRibMaterial;
+        [Tooltip("Une applique haute tournée vers le haut tous les … arcs (0 : aucune) : elle éclaire l'arc, la voûte et le haut du mur.")]
+        [Range(0, 6)] public int upLightEvery = 2;
+        [Range(0f, 30f)] public float upLightIntensity = 6f;
+        [Tooltip("Brume sous le plafond (ItHunts/BrumePlafond) : le plafond lointain se fond dans un voile au lieu d'un aplat noir ; vide : aucune.")]
+        public Material ceilingHaze;
+        [Tooltip("Petites salles (couloirs, halls, salles verrouillées, plus petit côté ≤ smallRoomWidth m ou surface ≤ smallRoomArea m²) : plafond " +
+                 "abaissé à cette hauteur (m), jamais sous celle du traqueur debout ni sous les portes ; 0 : inchangé.")]
+        [Range(0f, 30f)] public float smallRoomCeiling = 0f;
+        [Range(8f, 64f)] public float smallRoomWidth = 24f;
+        [Range(500f, 8000f)] public float smallRoomArea = 3600f;
+
         [Header("Relief, eau et vide")]
         [Tooltip("Part des salles avec un bassin (eau sans danger : escaliers ou échelles pour sortir), traversé par des ponts.")]
         [Range(0f, 1f)] public float waterShare = 0.25f;
@@ -124,6 +152,8 @@ namespace ItHunts.Level.Acts
         public List<TextAsset> handMaps = new List<TextAsset>();
         [Tooltip("Ensembles de décor de l'acte (D-118) : compositions posées selon la fonction de chaque salle.")]
         public EnsembleLibrary ensembles;
+        [Tooltip("Forme neutre de la DA à la place de la silhouette des marchands, en attendant leur modèle (D-120) ; vide : silhouette sombre.")]
+        public GameObject merchantStandIn;
 
         [Header("Matériaux (formes simples en attendant les kits d'art)")]
         public Material wallMaterial;

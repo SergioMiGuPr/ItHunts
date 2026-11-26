@@ -35,6 +35,15 @@ MonoBehaviour:
   openInnerWall: 8
   openOuterWall: 55
   outerMagneticTop: 12
+  ceilingStructure: 2
+  ceilingRibSpacing: 7
+  ceilingRibMaterial: {fileID: 2100000, guid: f8e81365003a3914b9d3e4a6d45a4352, type: 2}
+  upLightEvery: 2
+  upLightIntensity: 6
+  ceilingHaze: {fileID: 2100000, guid: e77e5e1bc78e287419f18854b5a90f1c, type: 2}
+  smallRoomCeiling: 15
+  smallRoomWidth: 24
+  smallRoomArea: 3600
   waterShare: 0.3
   voidShare: 0.25
   voidDamage: 20
@@ -65,6 +74,7 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 75eba2baa57c54343bc12fdf72e55b90, type: 3}
   - {fileID: 4900000, guid: 8313b14097a0c584498ffe27e796d872, type: 3}
   ensembles: {fileID: 11400000, guid: 8005a05f89894bd4ea31c5ead26f89fa, type: 2}
+  merchantStandIn: {fileID: 509711283741876949, guid: cd69d1105f5e33f42a85ec73ded918f9, type: 3}
   wallMaterial: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}
   floorMaterial: {fileID: 2100000, guid: 6af8912b71f8e5d4ba292af44d12b47d, type: 2}
   ceilingMaterial: {fileID: 2100000, guid: 93c13b5e76c45944c9e767ec62430ee0, type: 2}

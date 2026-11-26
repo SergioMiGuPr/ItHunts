@@ -58,7 +58,7 @@ namespace ItHunts.Level.Acts
     /// Audit et correction du décor d'un niveau (jour 5, revue des cartes de la DA, D-115) : lumières murales sans mur derrière
     /// (ouverture percée après coup) ou plantées dans un grand prop, cages et chaînes sans plafond (reliées au plafond par une
     /// chaîne, ou retirées sous le ciel), lustres à moins de 6 m l'un de l'autre, props qui se chevauchent, décor de plus de 0.8 m
-    /// sans collision (braseros, chaudrons : une boîte de collision), formes provisoires (matériaux greybox) encore visibles.
+    /// sans collision, ou de plus de 0.5 m et 1 m de large (braseros, chaudrons : une boîte de collision), formes provisoires (matériaux greybox) encore visibles.
     /// En mode correction, chaque défaut est corrigé ; un second passage en contrôle doit alors tout compter à 0 (test PlayMode).
     /// </summary>
     public static class DecorAudit
@@ -240,7 +240,10 @@ namespace ItHunts.Level.Acts
             for (int i = 0; i < boxes.Count; i++)
             {
                 DecorTag t = boxes[i].tag;
-                if (!t.gameObject.activeInHierarchy || boxes[i].b.size.y < CollisionHeight || Traversable.Any(n => t.name.Contains(n)))
+                // Seconde revue de la DA (D-120) : un chaudron de 1.3 × 0.79 × 1.3 m passait sous le seuil ; un meuble large et bas compte aussi.
+                Vector3 sz = boxes[i].b.size;
+                bool solid = sz.y >= CollisionHeight || (sz.y >= 0.5f && Mathf.Max(sz.x, sz.z) >= 1f);
+                if (!t.gameObject.activeInHierarchy || !solid || Traversable.Any(n => t.name.Contains(n)))
                     continue;
                 if (t.GetComponentsInChildren<Collider>().Any(c => c.enabled && !c.isTrigger))
                     continue;

@@ -295,6 +295,9 @@ namespace ItHunts.Level.Acts
             }
         }
 
+        /// <summary>Murs et falaises du jardin remplacés par la lisière (mesure).</summary>
+        public int HiddenCliffs { get; private set; }
+
         /// <summary>Escalades du traqueur posées par le niveau (mesure).</summary>
         public int StalkerClimbs { get; private set; }
 
@@ -517,12 +520,25 @@ namespace ItHunts.Level.Acts
             if (outer && r.Ceiling <= 0f && top - r.Floor > settings.outerMagneticTop + 1f)
             {
                 float split = r.Floor + settings.outerMagneticTop;
-                Solid(root, "Mur", new Vector3(mid.x, (bottom + split) * 0.5f, mid.z), new Vector3(t, split - bottom, len + t), yaw, KitBuild.Kind.Mur, null, walkable: false);
-                if (!diagonal)
+                GameObject low = Solid(root, "Mur", new Vector3(mid.x, (bottom + split) * 0.5f, mid.z), new Vector3(t, split - bottom, len + t), yaw, KitBuild.Kind.Mur, null, walkable: false);
+                // Seconde revue de la DA (D-120) : au jardin, la lisière de forêt remplace le mur de 14 m et la falaise (elle était posée
+                // devant : feuillage sombre en éclats noirs sur la roche éclairée, horizon fermé). Les volumes gardent leur collision
+                // (limite du niveau) mais ne se voient plus : la forêt se lit sur le ciel.
+                bool forest = settings.theme == ActTheme.Jardin;
+                if (!diagonal || forest)
                     DressOuterWall(root, pa, pb, -new Vector3(outN.x, 0f, outN.y).normalized, r.Floor, r.Floor + 22f);
                 GameObject high = Solid(root, "Falaise", new Vector3(mid.x, (split + top) * 0.5f, mid.z), new Vector3(t, top - split, len + t), yaw, KitBuild.Kind.Mur,
                     null, walkable: false);
                 high.AddComponent<NonMagneticSurface>();
+                if (forest)
+                {
+                    foreach (MeshRenderer mr in low.GetComponentsInChildren<MeshRenderer>())
+                        mr.enabled = false;
+                    foreach (MeshRenderer mr in high.GetComponentsInChildren<MeshRenderer>())
+                        mr.enabled = false;
+                    HiddenCliffs++;
+                }
+
                 return;
             }
 

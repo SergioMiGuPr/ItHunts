@@ -127,7 +127,7 @@ namespace ItHunts.Level.Acts
         /// Marchand dans la DA (nuit 3, point 1) : plus d'enseigne au néon violet ni de lumière violette qui teint la salle ; une lanterne
         /// chaude à côté de lui. Son interface (offres, prix) reste telle quelle.
         /// </summary>
-        private static void DimMerchant(GameObject m)
+        private void DimMerchant(GameObject m)
         {
             Transform sign = m.transform.Find("Enseigne");
             if (sign != null)
@@ -139,9 +139,20 @@ namespace ItHunts.Level.Acts
                 l.range = 9f;
             }
 
-            // Silhouette : silhouette encapuchonnée sombre (plus de bloc violet lumineux) en attendant le modèle de la DA.
+            // Seconde revue de la DA (D-120) : plus de bloc bleu ; en attendant son modèle, le marchand est une forme drapée de la DA (une
+            // silhouette sous un drap). Le bloc garde sa collision (interaction), il ne se voit plus.
             Transform body = m.transform.Find("Marchand (silhouette)");
-            if (body != null && body.TryGetComponent(out Renderer rb))
+            if (body != null && body.TryGetComponent(out Renderer rb) && settings.merchantStandIn != null)
+            {
+                rb.enabled = false;
+                GameObject f = Instantiate(settings.merchantStandIn, m.transform.position, m.transform.rotation, m.transform);
+                f.name = "Marchand (forme drapée de la DA)";
+                foreach (Collider c in f.GetComponentsInChildren<Collider>(true))
+                    Destroy(c);
+                if (DecorAudit.Box(f, out Bounds fb) && fb.size.y > 0.2f)
+                    f.transform.localScale *= Mathf.Clamp(2.1f / fb.size.y, 0.5f, 2f);    // à hauteur d'homme
+            }
+            else if (body != null && body.TryGetComponent(out rb))
             {
                 var block = new MaterialPropertyBlock();
                 block.SetColor("_BaseColor", new Color(0.06f, 0.05f, 0.07f));

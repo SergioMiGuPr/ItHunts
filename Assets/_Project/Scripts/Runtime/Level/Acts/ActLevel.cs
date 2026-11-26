@@ -162,6 +162,11 @@ namespace ItHunts.Level.Acts
                 DestroyImmediate(_root.gameObject);
             }
 
+            foreach (Mesh m in _ribMeshes)
+                if (m != null)
+                    Destroy(m);
+            _ribMeshes.Clear();
+
             var sw = Stopwatch.StartNew();
             LevelSeed = seed;
             Plan = settings.handMaps != null && settings.handMaps.Count > 0
@@ -184,6 +189,8 @@ namespace ItHunts.Level.Acts
             _keepClear.Clear();
             _tallCells.Clear();
             EnsembleCount = 0;
+            PlatformsOnColumns = 0;
+            HiddenCliffs = 0;
             var slice = Stopwatch.StartNew();
             int n = Plan.Rooms.Count;
             for (int i = 0; i < n; i++)
@@ -221,6 +228,7 @@ namespace ItHunts.Level.Acts
                 IslandLeaps();
             _root.gameObject.SetActive(true);
             Physics.SyncTransforms();
+            BuildCeilings();                                             // voûtes : les murs (collisions) servent à trouver les appuis
             Stage = "Le traqueur s'éveille";
             Progress = 0.82f;
             if (async)
@@ -239,6 +247,7 @@ namespace ItHunts.Level.Acts
             PaintFoliage();
             MarkObstacles();
             DecorFixes = DecorAudit.Run(_root, true, settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial);
+            FixShelfBacks();
             long tAudit = sw.ElapsedMilliseconds;
             Batch();
             long tBatch = sw.ElapsedMilliseconds;

@@ -183,10 +183,16 @@ namespace ItHunts.Combat
 
         private void Awake() => Init();
 
+        private bool _glowStale = true, _lastWhole;
+        private Color _lastGlow;
+        private int _glowRefresh;
+
         /// <summary>Prépare la cible (appelé par Awake ; aussi par les tests, sans cycle de vie en mode édition).</summary>
         public void Init()
         {
             _renderers = GetComponentsInChildren<Renderer>();
+            _glowStale = true;
+            _glowRefresh = (GetInstanceID() & 0x7fffffff) % 30;          // rafraîchissements étalés sur 30 images
             _colliders = GetComponentsInChildren<Collider>();
             _block = new MaterialPropertyBlock();
             _body = GetComponent<EnemyBody>();
@@ -325,12 +331,26 @@ namespace ItHunts.Combat
             if (_renderers == null)
                 return;
             if (_grabbable != null && _grabbable.Held)
+            {
+                _glowStale = true;                                      // relâché : sa lueur est réécrite
                 return;                                                  // tenu : sa lueur vient de la télékinésie
+            }
+
             bool whole = Time.time < _flashUntil || Stunned;
             Color glow = Time.time < _flashUntil ? _flashColor
                 : Stunned ? (Paralyzed ? new Color(0.5f, 0.9f, 1f) : stunColor) * (stunGlowIntensity * (0.6f + 0.4f * Mathf.Sin(Time.time * 18f)))
                 : ExtraGlow.maxColorComponent > 0f ? ExtraGlow
                 : VisionGlow;
+            // Coût (D-121, jardin à 300 goules) : la lueur n'est réécrite que si elle change (et une image sur 30 par sécurité, décalée
+            // par ennemi) ; avant, chaque rendu de chaque ennemi était réécrit à chaque image. Lueurs par rendu ou par matériau
+            // (traqueur) : toujours écrites.
+            bool perRenderer = GlowOverrides.Count > 0 || _perMaterial.Count > 0;
+            if (!perRenderer && !_glowStale && whole == _lastWhole && glow == _lastGlow && ++_glowRefresh < 30)
+                return;
+            _glowRefresh = 0;
+            _glowStale = false;
+            _lastWhole = whole;
+            _lastGlow = glow;
             foreach (Renderer r in _renderers)
                 if (r != null && _perMaterial.Contains(r))
                 {

@@ -967,7 +967,7 @@ Mesures à respecter pour les prochains kits et salles d'exemple (le générateu
 | Élément | Mesure | Réglage | Remarques |
 |---|---|---|---|
 | Portes entre salles des actes | **12 m de large**, 9 m de haut (10 m dans l'acte II) | `doorWidth`, `doorHeight` | aucun piédroit dans l'ouverture (le traqueur fait 7 m de large) ; les piédroits du kit se posent **à l'extérieur** de l'ouverture |
-| Plafonds | acte I 16 à 22 m ; acte II 22 à 30 m (lustres) ; acte III ciel ouvert | `ceiling` | les rayons de lune de l'acte II tombent des hautes fenêtres du kit |
+| Plafonds | acte I 16 à 22 m ; acte II 22 à 30 m (lustres) ; acte III ciel ouvert ; **petites salles (D-120) : 15 m (acte I), 16 m (acte II)** | `ceiling`, `smallRoomCeiling` | les rayons de lune de l'acte II tombent des hautes fenêtres du kit ; voûtes : voir « Seconde revue des cartes » |
 | Marches entre étages | 3 m par étage, rampes lisses pour la collision, escalier du kit pour la vue | `floorStep` | |
 | Surface des salles | 700 à 2 300 m² (acte I), 800 à 2 600 m² (acte II), 1 200 à 3 400 m² (acte III) | `roomArea` | goules : 0.22 / 0.24 / 0.20 par 100 m² |
 | Allées | 10 m libres dans les salles sans bassin ni fosse, anneau de 10 m autour des bassins et des fosses | `ActPlan.PlanInterior` | ne pas poser de mobilier à collisions dans ces bandes |
@@ -1205,3 +1205,27 @@ L'impact se superpose au vide (qui a commencé `strikeDelay` plus tôt).
 Le système de main « Ambiance de rendu (D-067) / Halos des lumières » dessine un halo rond autour de la lanterne du joueur :
 vu par un autre joueur (coop) ou sur une vue extérieure, c'est une **boule orange floue** à hauteur de taille. À réserver
 aux lumières du décor, ou à masquer pour la lanterne des joueurs.
+
+## Seconde revue des cartes dans le jeu (main, 2026-11-26, D-120)
+
+Réponses de main à `REVUE-CARTES.md` (seconde revue). Mesures à connaître pour les prochains assets :
+
+| Élément | Mesure | Réglage | Remarques |
+|---|---|---|---|
+| Plafond des petites salles | **15 m** (acte I), **16 m** (acte II) : couloirs, halls de sortie, salles verrouillées (plus petit côté ≤ 24 m ou surface ≤ 3 600 m²) | `smallRoomCeiling`, `smallRoomWidth`, `smallRoomArea` | jamais sous 15 m (traqueur debout, 14 m), ni sous le haut des portes + 2 m ; inchangé dans les salles à galerie, palier, fosse ou bassin (bonds du traqueur) |
+| Voûte de l'acte II | **arcs de pierre** (`M_Chateau_PierreClaire`) en travers de la salle tous les **8 m** : dessus contre le plafond, **1 m** de large, **1.1 m** d'épaisseur au sommet, retombée de **0.3 à 7 m** (20 % de la portée) sur une console de 1.3 × 0.9 m | `ceilingStructure` Arcs, `ceilingRibSpacing`, `ceilingRibMaterial` | sans collision ; un arc n'est posé que s'il trouve un mur aux deux bouts |
+| Plafond de l'acte I | **poutres de bois** (`M_Bib_BoisNeuf`) tous les **7 m**, 0.7 × 0.8 m, sur des corbeaux à 45° | `ceilingStructure` Poutres | |
+| Appliques hautes | une tous les 2 arcs, sous la console : coupelle de fer, flamme, projecteur chaud **tourné vers le haut** (125°, 16 m) | `upLightEvery`, `upLightIntensity` | elles éclairent l'arc, le plafond et le haut du mur |
+| Brume sous le plafond | plan transparent à 0.8 m sous le plafond (`ItHunts/BrumePlafond`) : invisible au-dessus du joueur, voile chaud au-delà de 8 m, brouillard de la scène au loin | `ceilingHaze` (`Acte1_BrumePlafond`, `Acte2_BrumePlafond`) | |
+| Plateformes de traction (`*_PlateformeTraction`) | **posées sur une colonne** (`Chateau_Colonne_12m`, ou `Cave_PilierRoche_18m` réduite) au niveau de la passerelle (plaque à 5.6 m) ; **les chaînes (maillage du parent) sont masquées** | ensembles « Passerelle », « Plateforme de mine », « Passerelle de bois » | pour une plateforme suspendue, il faudrait un plafond à moins de 4 m au-dessus : à éviter dans les actes |
+| Lisières du jardin | elles **remplacent** le mur de 14 m et la falaise (volumes invisibles, collision gardée) ; plus d'étirement : **22 m** (hauteur du modèle) ; **fond noir `M_Fond_Noir` abaissé à 9 m** par le jeu (il dépassait des cimes sur le ciel) | `DressOuterWall` | une version du modèle avec un fond de 9 m au plus éviterait cette retouche |
+| Haies (`Jardin_Haie_6m`) | feuillage plus clair et plus vert que `M_Feuillage_Peint` (copie : vert × 1.75) | `ActLevel.HedgeMaterial` | une haie plus claire de la DA remplacerait cette retouche |
+| Marchands | **forme drapée `Ens_Drap_Statue`** (2.1 m) à la place du bloc bleu, en attendant leur modèle | `merchantStandIn` | le bloc garde sa collision, invisible |
+| Table renversée | contre un mur, plateau au mur, **pieds vers la salle** (ensemble « Banquet renversé », mural) | `Acte2.txt` | |
+| Bibliothèques | une bibliothèque dont le dos n'est ni contre un mur ni contre un autre dos reçoit un **double dos à dos** (ou part, sans place) | `ActLevel.FixShelfBacks` | |
+
+### À reprendre côté DA
+
+- `M_Kit_Feuillage_Sombre` (lisières) : plus clair pour un fond de ciel étoilé (ses cartes se découpent maintenant sur le ciel).
+- `Ens_Buis_Boule` : trous triangulaires noirs (point 4 de la seconde revue).
+

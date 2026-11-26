@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ItHunts.Orbs;
 using UnityEngine;
 
@@ -20,10 +21,35 @@ namespace ItHunts.Combat
         public static float GhoulHeadRadius = 0.3f, FlyerHeadRadius = 0.32f;
 
         /// <summary>Zone de tête × ce facteur (« Œil fendu », C-P2, D-100 : le plus fort des joueurs ; réglé par PlayerUpgrades).</summary>
-        public static float HeadScale = 1f;
+        public static float HeadScale
+        {
+            get => _headScale;
+            set
+            {
+                if (Mathf.Approximately(_headScale, value))
+                    return;
+                _headScale = value;
+                foreach (Hitbox h in Live)
+                    if (h != null)
+                        h.ApplyScale();
+            }
+        }
+
+        private static float _headScale = 1f;
+        // Coût (D-121) : plus de LateUpdate sur les 370 zones de touche d'un acte ; la taille des têtes est réappliquée quand elle change.
+        private static readonly HashSet<Hitbox> Live = new HashSet<Hitbox>();
         private float _baseRadius = -1f, _appliedScale = 1f;
 
-        private void LateUpdate()
+        private void OnEnable()
+        {
+            Live.Add(this);
+            ApplyScale();
+        }
+
+        private void OnDisable() => Live.Remove(this);
+
+        /// <summary>Rayon de la zone de tête au facteur HeadScale (à rappeler si Head est posé après l'activation).</summary>
+        public void ApplyScale()
         {
             if (!Head || Mathf.Approximately(_appliedScale, HeadScale))
                 return;
@@ -63,6 +89,7 @@ namespace ItHunts.Combat
             s.radius = worldRadius / scale;
             var h = go.AddComponent<Hitbox>();
             h.Head = true;
+            h.ApplyScale();
             return h;
         }
 

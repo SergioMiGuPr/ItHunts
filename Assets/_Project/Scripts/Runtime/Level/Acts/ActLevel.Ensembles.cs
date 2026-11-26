@@ -323,8 +323,150 @@ namespace ItHunts.Level.Acts
             Quaternion rot = Quaternion.LookRotation(forward, Vector3.up);
             int group = ++_group;
             foreach (EnsembleLibrary.Piece p in set.Pieces)
-                Place(p.Name, root, at + rot * new Vector3(p.X, p.Y, p.Z), rot * Quaternion.Euler(0f, p.Yaw, 0f), p.Scale, group);
+            {
+                GameObject go = Place(p.Name, root, at + rot * new Vector3(p.X, p.Y, p.Z), rot * Quaternion.Euler(0f, p.Yaw, 0f), p.Scale, group);
+                if (go != null && p.Name.Contains("PlateformeTraction"))
+                    SupportPlatform(go, at.y, group);
+            }
+
             EnsembleCount++;
+        }
+
+        /// <summary>Bibliothèques dont le dos nu se voyait : doublées dos à dos, ou retirées faute de place (mesure).</summary>
+        public int ShelfBacksFixed { get; private set; }
+
+        /// <summary>
+        /// Seconde revue de la DA (D-120) : une bibliothèque (ou une étagère) posée au milieu d'une salle montrait son dos nu, un grand
+        /// panneau de bois sans livres (rangées de la recette, pièce isolée d'une salle d'exemple, double retiré par l'audit). Après
+        /// l'audit, chaque meuble dont le dos n'est ni contre un mur ni contre le dos d'un autre reçoit un double dos à dos ; sans place
+        /// derrière, il est retiré.
+        /// </summary>
+        private void FixShelfBacks()
+        {
+            ShelfBacksFixed = 0;
+            Physics.SyncTransforms();
+            List<DecorTag> shelves = _root.GetComponentsInChildren<DecorTag>(false)
+                .Where(t => t.gameObject.activeInHierarchy && IsShelf(t.name)).ToList();
+            foreach (DecorTag t in shelves)
+            {
+                if (t == null || !t.gameObject.activeInHierarchy || !DecorAudit.Box(t.gameObject, out Bounds b))
+                    continue;
+                Vector3 f = t.transform.forward;
+                f.y = 0f;
+                if (f.sqrMagnitude < 1e-4f)
+                    continue;
+                f.Normalize();
+                Vector3 p = t.transform.position;
+                float height = b.max.y - p.y;
+                if (height < 2f)
+                    continue;                                           // meuble bas : son dos ne fait pas un pan
+                if (BackCovered(t, p + Vector3.up * Mathf.Min(1.5f, height * 0.5f), f))
+                    continue;
+                float halfW = Mathf.Max(0.4f, Mathf.Abs(Vector3.Dot(b.extents, new Vector3(Mathf.Abs(f.z), 0f, Mathf.Abs(f.x)))) - 0.1f);
+                float depth = Mathf.Max(0.3f, Mathf.Abs(Vector3.Dot(b.size, new Vector3(Mathf.Abs(f.x), 0f, Mathf.Abs(f.z)))));
+                Vector3 behind = p - f * (depth * 0.5f + 0.08f) + Vector3.up * (height * 0.5f + 0.15f);
+                bool free = !Physics.CheckBox(behind, new Vector3(halfW, height * 0.5f - 0.1f, depth * 0.5f - 0.05f), Quaternion.LookRotation(f), ~0,
+                    QueryTriggerInteraction.Ignore);
+                if (free)
+                {
+                    GameObject twin = Instantiate(t.gameObject, p, Quaternion.Euler(0f, 180f, 0f) * t.transform.rotation, t.transform.parent);
+                    twin.name = t.name;
+                    Physics.SyncTransforms();
+                }
+                else
+                {
+                    t.gameObject.SetActive(false);
+                    Destroy(t.gameObject);
+                }
+
+                ShelfBacksFixed++;
+            }
+        }
+
+        private static bool IsShelf(string name) => name == "Chateau_Bibliotheque" || name == "Prop_Etagere" || name == "Cave_Etagere";
+
+        /// <summary>Dos du meuble contre un mur, un pilier ou le dos d'un autre meuble (à moins de 1.6 m).</summary>
+        private static bool BackCovered(DecorTag self, Vector3 from, Vector3 forward)
+        {
+            foreach (RaycastHit h in Physics.RaycastAll(from + forward * 0.3f, -forward, 1.9f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (h.collider.transform.IsChildOf(self.transform))
+                    continue;
+                DecorTag other = h.collider.GetComponentInParent<DecorTag>();
+                if (other == null)
+                    return true;                                         // mur, pilier, sol du niveau
+                if (IsShelf(other.name) && Vector3.Dot(other.transform.forward, forward) < -0.5f)
+                    return true;                                         // dos à dos
+            }
+
+            return false;
+        }
+
+        /// <summary>Plateformes de traction posées sur une colonne (mesure).</summary>
+        public int PlatformsOnColumns { get; private set; }
+
+        /// <summary>
+        /// Seconde revue de la DA (D-120) : la plateforme de traction de la DA pend sous un plafond par 4 chaînes de 4 m ; posée sous un
+        /// plafond de 16 à 30 m, ses chaînes finissaient dans le vide et se lisaient comme des poteaux noirs. Les chaînes sont retirées et la
+        /// plaque (aimantée) repose sur une colonne de pierre jusqu'au sol, au niveau de la passerelle qu'elle porte.
+        /// </summary>
+        private void SupportPlatform(GameObject platform, float floor, int group)
+        {
+            Transform plate = platform.transform.Find("Plaque_Magnetique");
+            if (plate == null || !plate.TryGetComponent(out MeshFilter pf) || pf.sharedMesh == null)
+                return;
+            if (platform.TryGetComponent(out MeshRenderer chains))
+                chains.enabled = false;                                   // chaînes et accroches : maillage du parent
+            foreach (Collider c in platform.GetComponents<Collider>())
+                DestroyImmediate(c);
+            if (plate.GetComponent<Collider>() == null)
+            {
+                var box = plate.gameObject.AddComponent<BoxCollider>();
+                box.center = pf.sharedMesh.bounds.center;
+                box.size = pf.sharedMesh.bounds.size;
+            }
+
+            // Dessous de la plaque (le niveau est encore inactif : boîte du maillage, pas celle du rendu).
+            Bounds pb = pf.sharedMesh.bounds;
+            float under = float.MaxValue;
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 corner = pb.center + Vector3.Scale(pb.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                under = Mathf.Min(under, plate.TransformPoint(corner).y);
+            }
+
+            float h = under - floor;
+            if (h < 0.5f)
+                return;
+            Vector3 foot = new Vector3(platform.transform.position.x, floor, platform.transform.position.z);
+            string colName = settings.theme == ActTheme.Caves ? "Cave_PilierRoche_18m" : "Chateau_Colonne_12m";
+            GameObject prefab = settings.ensembles != null ? settings.ensembles.Find(colName) : null;
+            if (prefab == null && Art != null)
+                prefab = Art.Piece(colName);
+            GameObject column;
+            if (prefab != null)
+            {
+                float nativeH = settings.theme == ActTheme.Caves ? 18.98f : 12f, width = settings.theme == ActTheme.Caves ? 0.3f : 0.95f;
+                column = Instantiate(prefab, foot, platform.transform.rotation, platform.transform.parent);
+                column.transform.localScale = new Vector3(width, h / nativeH, width);   // sa collision (maillage) suit l'échelle
+            }
+            else
+            {
+                column = new GameObject("Kit_Colonne de la plateforme");
+                column.transform.SetParent(platform.transform.parent, false);
+                column.transform.SetPositionAndRotation(foot + Vector3.up * (h * 0.5f), platform.transform.rotation);
+                Visual(column.transform, "Fût", CylinderMesh, settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial,
+                    column.transform.position, column.transform.rotation, new Vector3(1.5f, h * 0.5f, 1.5f), merge: false);
+                var col = column.AddComponent<CapsuleCollider>();
+                col.radius = 0.75f;
+                col.height = h;
+            }
+
+            column.name = "Colonne de la plateforme";
+            column.AddComponent<NotWalkable>();
+            column.AddComponent<StalkerPassesThrough>();
+            Tag(column, DecorKind.Prop).GetComponent<DecorTag>().group = group;
+            PlatformsOnColumns++;
         }
 
         private void StampExample(EnsembleLibrary.Set set, Transform root, Vector3 at, Vector3 forward, HashSet<Vector2Int> ground, HashSet<Vector2Int> blocked)
@@ -391,6 +533,27 @@ namespace ItHunts.Level.Acts
             }
         }
 
+        private static Material _hedgeMaterial;
+
+        /// <summary>
+        /// Seconde revue de la DA (D-120) : la haie du kit (Jardin_Haie_6m), à l'ombre, se lisait comme un cube brun. Ses feuilles prennent
+        /// une copie plus claire et plus verte de la matière peinte (fusionnée à part, comme une autre matière).
+        /// </summary>
+        private Material HedgeMaterial()
+        {
+            if (_hedgeMaterial != null && _hedgeMaterial.name.EndsWith(settings.paintedFoliage.name + " (haie)"))
+                return _hedgeMaterial;
+            _hedgeMaterial = new Material(settings.paintedFoliage) { name = settings.paintedFoliage.name + " (haie)" };
+            foreach (string prop in new[] { "_BaseColor", "_Color" })
+                if (_hedgeMaterial.HasProperty(prop))
+                {
+                    Color c = _hedgeMaterial.GetColor(prop);
+                    _hedgeMaterial.SetColor(prop, new Color(c.r * 1.05f, c.g * 1.75f, c.b * 1.05f, c.a));   // couleur HDR (1.25, 1.35, 1) : pas de plafond à 1
+                }
+
+            return _hedgeMaterial;
+        }
+
         private void PaintFoliage()
         {
             if (settings.paintedFoliage == null)
@@ -399,16 +562,25 @@ namespace ItHunts.Level.Acts
             {
                 Material[] mats = r.sharedMaterials;
                 bool any = false;
+                bool hedge = IsHedge(r.transform);
                 for (int i = 0; i < mats.Length; i++)
-                    if (mats[i] != null && mats[i].name == "M_Kit_Feuillage")
+                    if (mats[i] != null && (mats[i].name == "M_Kit_Feuillage" || (hedge && mats[i] == settings.paintedFoliage)))
                     {
-                        mats[i] = settings.paintedFoliage;
+                        mats[i] = hedge ? HedgeMaterial() : settings.paintedFoliage;
                         any = true;
                     }
 
                 if (any)
                     r.sharedMaterials = mats;
             }
+        }
+
+        private static bool IsHedge(Transform t)
+        {
+            for (; t != null; t = t.parent)
+                if (t.name.StartsWith("Jardin_Haie"))
+                    return true;
+            return false;
         }
 
         private GameObject Place(string name, Transform root, Vector3 at, Quaternion rot, float scale, int group)

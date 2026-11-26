@@ -41,16 +41,18 @@ namespace ItHunts.Level.Acts
         private int _wallRun;
 
         /// <summary>Mur extérieur droit : pièces du kit en file, face vers la salle, à la longueur et à la hauteur du mur.</summary>
-        private void DressOuterWall(Transform root, Vector3 pa, Vector3 pb, Vector3 inward, float floor, float top)
+        private bool DressOuterWall(Transform root, Vector3 pa, Vector3 pb, Vector3 inward, float floor, float top)
         {
             if (Art == null || Art.outerWalls.Count == 0)
-                return;
+                return false;
             float len = Vector3.Distance(pa, pb);
-            if (len < 5f)
-                return;
+            bool forest = settings.theme == ActTheme.Jardin;
+            if (len < (forest ? 1.5f : 5f))
+                return false;                                           // jardin : les courts biais des contours organiques aussi
             int n = Mathf.Max(1, Mathf.RoundToInt(len / Art.wallPieceWidth));
             float w = len / n;
-            float h = Mathf.Min(top - floor, 40f);
+            // Jardin (D-120) : la lisière garde sa hauteur (22 m) ; étirée à 40 m devant une falaise, elle faisait un mur de troncs.
+            float h = settings.theme == ActTheme.Jardin ? Art.wallPieceHeight : Mathf.Min(top - floor, 40f);
             Vector3 dir = (pb - pa) / len;
             for (int k = 0; k < n; k++)
             {
@@ -81,13 +83,49 @@ namespace ItHunts.Level.Acts
                 // s'empilent en rangs à leur hauteur. Le jardin garde l'étirement (lisière de forêt : des arbres, pas des briques).
                 int rows = settings.theme == ActTheme.Jardin ? 1 : Mathf.Max(1, Mathf.RoundToInt(h / Art.wallPieceHeight));
                 float rowH = h / rows;
+                if (forest)
+                    sx = Mathf.Max(sx, 0.4f);                           // jamais une lisière écrasée en mince tranche
                 for (int row = 0; row < rows; row++)
                 {
                     GameObject piece = row == 0 ? prefab : Art.outerWalls[_rng.Next(Art.outerWalls.Count)];
                     float rsy = rowH / Art.wallPieceHeight;
-                    KitPiece(piece, root, at + Vector3.up * (row * rowH), inward, new Vector3(sx, rsy, Mathf.Clamp(rsy, 0.8f, 1.4f)));
+                    GameObject go = KitPiece(piece, root, at + Vector3.up * (row * rowH), inward, new Vector3(sx, rsy, Mathf.Clamp(rsy, 0.8f, 1.4f)));
+                    if (forest)
+                        LowBackdrop(go);
                 }
             }
+
+            return true;
+        }
+
+        private static readonly Dictionary<Mesh, Mesh> _lowBackdrops = new Dictionary<Mesh, Mesh>();
+
+        /// <summary>
+        /// Lisière du jardin (D-120) : son fond noir (M_Fond_Noir, 18 m de haut) cachait la falaise ; sans falaise, il dépassait des cimes
+        /// et se lisait comme de grands rectangles sur le ciel. Il est abaissé à 9 m : il masque encore le vide au pied des troncs.
+        /// </summary>
+        private static void LowBackdrop(GameObject piece)
+        {
+            if (piece == null || !piece.TryGetComponent(out MeshFilter mf) || !piece.TryGetComponent(out MeshRenderer mr) || mf.sharedMesh == null
+                || !mf.sharedMesh.isReadable)
+                return;
+            Material[] mats = mr.sharedMaterials;
+            int sub = System.Array.FindIndex(mats, m => m != null && m.name == "M_Fond_Noir");
+            if (sub < 0 || sub >= mf.sharedMesh.subMeshCount)
+                return;
+            if (!_lowBackdrops.TryGetValue(mf.sharedMesh, out Mesh low) || low == null)
+            {
+                low = Instantiate(mf.sharedMesh);
+                low.name = mf.sharedMesh.name + " (fond bas)";
+                Vector3[] v = low.vertices;
+                foreach (int i in low.GetIndices(sub))
+                    v[i].y = Mathf.Min(v[i].y, 9f);
+                low.vertices = v;
+                low.RecalculateBounds();
+                _lowBackdrops[mf.sharedMesh] = low;
+            }
+
+            mf.sharedMesh = low;
         }
 
         /// <summary>Mur entre deux salles du jardin : haie (ou muret) en file, aux deux faces, à la hauteur du mur.</summary>

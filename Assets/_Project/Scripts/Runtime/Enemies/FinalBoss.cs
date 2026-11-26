@@ -137,6 +137,7 @@ namespace ItHunts.Enemies
                 col.radius = 1.1f;
                 var hb = go.AddComponent<Hitbox>();
                 hb.Head = head;
+                hb.ApplyScale();
                 var d = go.AddComponent<Damageable>();
                 d.Unkillable = true;                                     // ne meurt jamais : ni mort comptée, ni barre de PV
                 var vis = GameObject.CreatePrimitive(PrimitiveType.Sphere);
