@@ -1,0 +1,7 @@
+Niveau Acte_2_Chateau, 1920×1080, 1 joueur ; salle Salle du trône II ; timer à 5:00, pic non
+image : médiane 15,7 ms, 95 % 19,8 ms, max 78,9 ms ; images > 16.6 ms : 362/1226
+fil principal (FrameTiming) : médiane 15,6 ms, 95 % 19,7 ms ; fil de rendu : médiane 3,4 ms ; GPU : médiane 7,4 ms, 95 % 8,0 ms
+Main Thread (profileur) médiane 15,6 ms ; physique 0,54 ms ; draw calls 1887, batches 1875
+marqueurs (médiane ms) : Ghoul 0,08, Stalker 0,16, Waves 0,08, Flyer 0,16, Souls 0,00, PlayerHud 0,22, FixedUpdate.ScriptRunBehaviourFixedUpdate 2,32, Update.ScriptRunBehaviourUpdate 1,30, PreLateUpdate.ScriptRunBehaviourLateUpdate 1,21, FixedUpdate.PhysicsFixedUpdate 1,12, PostLateUpdate.FinishFrameRendering 5,82, Camera.Render 0,00, CullScriptable 0,85, RenderPipelineManager.DoRenderLoop_Internal() 0,00, UpdateRendererBoundingVolumes 2,68, GUI.Repaint 0,21, UGUI.Rendering.UpdateBatches 0,10
+ennemis actifs 134 ; au pic False ; lumières 1681 ; joueurs 1
+#fin

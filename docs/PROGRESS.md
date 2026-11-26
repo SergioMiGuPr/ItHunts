@@ -19,9 +19,15 @@
 - Cartes : poches fermées derrière les rampes rendues à la roche, margelles des bassins sur la rive, haut des marches des bassins
   libre, couloirs de wall jump dégagés, jardin sans labyrinthe d'exemple (impasses), arbres espacés de 6 m, rochers posés au sol.
 
-**Reste (au moment de l'écriture) :** fin des passages du bot (6 cartes + boss), captures finales, relecture indépendante, en-tête
-de `REVUE-CARTES.md`, fusion d'`animations` dans `main`, build de développement `Builds/Jour_2026-11-25/` et mesure des images par
-seconde, rapport.
+**Fin (2026-11-26, 08:30)** : `animations` fusionnée dans `main` et poussée ; build de développement `Builds/Jour_2026-11-25/`.
+- Contrôles (`docs/design/jour-5/decor/`) : 0 défaut de décor, 0 salle vide, traqueur 100 % sur les 6 cartes.
+- Bot (`docs/design/jour-5/bot/`) : les 6 cartes finies et le boss vaincu, 0 erreur au journal ; 1 à 5 téléportations par carte
+  (bot pris dans une nuée de goules, fosse à piliers, abords d'un puits ou d'un palier : à lire dans chaque rapport).
+- Build (1920 × 1080, 5 min de jeu, `docs/design/jour-5/perf/`) : 15,7 à 18,4 ms par image en médiane (54 à 64 i/s), GPU 7 à 8 ms ;
+  journal sans erreur ; plantage connu à la fermeture (D3D12) toujours là.
+- **Reste** : jardin encore fermé par de hauts murs sombres par endroits (lisières à poser à la place), feuillage en éclats noirs sur
+  les falaises du jardin, plafonds noirs aux actes I et II, un pan de mur isolé dans la salle de bal (palier), poteaux noirs à
+  identifier ; jardin à 54 i/s (objectif 60) ; seconde revue de la DA demandée (en-tête de `REVUE-CARTES.md`).
 
 ## Étape en cours
 
