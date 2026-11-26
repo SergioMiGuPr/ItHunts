@@ -38,7 +38,7 @@ MonoBehaviour:
   waterShare: 0.3
   voidShare: 0.2
   voidDamage: 20
-  waterDepth: 3
+  waterDepth: 1.5
   terraceShare: 0.7
   terraceHeight: {x: 3.5, y: 5.5}
   wallJumpGap: 3.6
