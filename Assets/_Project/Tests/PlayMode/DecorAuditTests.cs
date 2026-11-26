@@ -53,7 +53,9 @@ namespace ItHunts.Tests
             ActLevel level = ActLevel.Current;
             Assert.IsNotNull(level, "niveau non construit");
             yield return null;
+            level.Optimizer?.ForAudit(true);
             DecorReport left = DecorAudit.Run(level.Root, false);
+            level.Optimizer?.ForAudit(false);
             List<string> empty = level.EmptySpots();
             string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "docs", "design", "jour-5", "decor"));
             Directory.CreateDirectory(dir);

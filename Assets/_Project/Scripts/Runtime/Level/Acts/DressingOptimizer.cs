@@ -35,6 +35,18 @@ namespace ItHunts.Level.Acts
         }
 
         private readonly List<Group> _groups = new List<Group>();
+        private readonly List<MeshRenderer> _sources = new List<MeshRenderer>();
+
+        /// <summary>Audit du décor (tests) : rendus d'origine actifs mais pas dessinés, pour que l'audit lise leurs boîtes.</summary>
+        public void ForAudit(bool on)
+        {
+            foreach (MeshRenderer r in _sources)
+                if (r != null)
+                {
+                    r.enabled = on;
+                    r.forceRenderingOff = on;
+                }
+        }
         private ActPlan _plan;
         private bool _closed;
         private readonly List<HashSet<int>> _near = new List<HashSet<int>>();
@@ -45,6 +57,10 @@ namespace ItHunts.Level.Acts
             _plan = plan;
             _closed = closed;
             ThinLights(root);
+            // Flammes du décor : leur script n'a rien à faire à chaque image (16 000 appels à vide dans le château).
+            foreach (ItHunts.Art.VFX.VfxPeint v in root.GetComponentsInChildren<ItHunts.Art.VFX.VfxPeint>(true))
+                if (!v.detruireALaFin)
+                    v.enabled = false;
             Merge(root);
             CollectFlames(root);
             CollectLights(root);
@@ -172,8 +188,10 @@ namespace ItHunts.Level.Acts
             }
 
             // Les rendus d'origine restent activés (l'audit du décor les lit) mais ne sont plus dessinés.
+            // Rendus d'origine désactivés (plus de mise à jour de leurs boîtes : 2,7 ms par image dans le build) ; ForAudit les rallume.
+            _sources.AddRange(sources);
             foreach (MeshRenderer r in sources)
-                r.forceRenderingOff = true;
+                r.enabled = false;
             Merged = sources.Count;
             foreach (Group g in _groups)
             {

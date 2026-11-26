@@ -8,4 +8,4 @@ Ensembles de décor posés : 967. Salles vides (sol à plus de 9 m de tout déco
 
 Traqueur : 4774/4774 points atteints (100,0 ٪) ; non atteints : aucun
 
-Îlots de son NavMesh reliés : 18 (restés seuls : 0, 330 ms)
+Îlots de son NavMesh reliés : 18 (restés seuls : 0, 308 ms)
