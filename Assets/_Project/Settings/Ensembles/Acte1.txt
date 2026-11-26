@@ -192,8 +192,10 @@ Cave_Candelabre 3.4 2
 
 # ---- Mine, gouffre, citerne, grotte ----
 [Échafaudage] mur 10x4 fonctions Galerie de mine, Gouffre, Citerne
-Prop_Echafaudage -1 1.15
-Cave_Caisses_Pile 3.4 1.3
+Ens_Etai -1 0.6
+Ens_Pioches -1.2 1.4 20
+Ens_Wagonnet 2.6 2.2 80
+Cave_Caisses_Pile 3.6 1.0
 Cave_Brasero -4 2.2
 
 [Étais de mine] centre 9x5 fonctions Galerie de mine
