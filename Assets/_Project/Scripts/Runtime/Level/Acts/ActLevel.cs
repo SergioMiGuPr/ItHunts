@@ -181,6 +181,7 @@ namespace ItHunts.Level.Acts
             _group = 0;
             _wallJumps.Clear();
             _trees.Clear();
+            _keepClear.Clear();
             _tallCells.Clear();
             EnsembleCount = 0;
             var slice = Stopwatch.StartNew();

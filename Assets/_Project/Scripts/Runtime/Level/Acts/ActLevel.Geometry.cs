@@ -126,6 +126,11 @@ namespace ItHunts.Level.Acts
                     float len = Plan.Cell * 2f;
                     KitBuild.Ramp(root, "Marches du bassin", top - dir * len - Vector3.up * depth, dir, len, depth, Plan.Cell * 2f, settings.kit, under: RoomWall);
                     exits.Add((c, d));
+                    // Haut des marches : rien n'y sera posé (on sort de l'eau par là).
+                    Vector2Int side = new Vector2Int(-d.y, d.x);
+                    for (int k = 1; k <= 4; k++)
+                    for (int s = -2; s <= 2; s++)
+                        _keepClear.Add(c + d * k + side * s);
                     made++;
                     break;
                 }

@@ -23,6 +23,8 @@ namespace ItHunts.Level.Acts
         private static readonly string[] Routes = { "Passerelle", "Plateforme", "Mezzanine", "Estrade", "Escalier", "Tapis", "Rails" };
         private static readonly string[] PlantNames = { "Massif", "Haie", "SousBois", "ArbreMort", "GrandArbre" };
         private int _group;
+        /// <summary>Cases à laisser libres (haut des marches des bassins).</summary>
+        private readonly HashSet<Vector2Int> _keepClear = new HashSet<Vector2Int>();
 
         /// <summary>Ensembles posés dans le niveau (mesure).</summary>
         public int EnsembleCount { get; private set; }
@@ -45,7 +47,7 @@ namespace ItHunts.Level.Acts
                 for (int dy = -2; dy <= 2 && ok; dy++)
                     if (r.Use.TryGetValue(c + new Vector2Int(dx, dy), out CellUse u))
                         ok = u != CellUse.Rampe && u != CellUse.Pont && !(u == CellUse.Terrasse && kv.Value == CellUse.Passage);
-                if (ok && !NearDoor(r, Plan.CellCenter(c, r.Floor), door))
+                if (ok && !_keepClear.Contains(c) && !NearDoor(r, Plan.CellCenter(c, r.Floor), door))
                     ground.Add(c);
             }
 
