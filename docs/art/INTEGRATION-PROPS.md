@@ -1692,7 +1692,7 @@ Modélisées par script dans Blender (`Assets/Art/Source~/Ensembles/scripts/`), 
 | `Ens_Bouclier_Epees` | 1.25 × 0.18 × 0.78 | 814 | 0 | Trophée mural : écu et deux épées croisées, pivot au mur, centre à 0. |
 | `Ens_Bougies_B` | 0.4 × 0.37 × 0.5 | 1968 | 0 | Bougies B |
 | `Ens_Brouette` | 2.21 × 0.84 × 1.1 | 890 | 1 | Brouette |
-| `Ens_Buis_Boule` | 1.73 × 1.73 × 1.44 | 164 | 1 | Buis Boule |
+| `Ens_Buis_Boule` | 1.70 × 1.76 × 1.43 | 292 | 1 | Buis Boule |
 | `Ens_Cadre_Vide` | 1.57 × 0.16 × 0.96 | 492 | 0 | Cadre Vide |
 | `Ens_Cage_Suspendue` | 0.95 × 0.95 × 0.03 | 2652 | 1 | Cage de fer suspendue : pivot au crochet (z = 0), fond à -3.4 m ; un crâne au fond. |
 | `Ens_Caisse_Ouverte` | 1.24 × 0.99 × 0.61 | 2072 | 1 | Caisse Ouverte |
@@ -1789,7 +1789,7 @@ Modélisées par script dans Blender (`Assets/Art/Source~/Ensembles/scripts/`), 
 | `Ens_Sacs_A` | 1.67 × 1.13 × 0.7 | 3654 | 1 | Sacs A |
 | `Ens_Sacs_B` | 1.49 × 1.67 × 0.9 | 3854 | 1 | Sacs B |
 | `Ens_Sacs_Eventres` | 1.56 × 3.05 × 0.5 | 1986 | 1 | Sacs éventrés et grain répandu en traînée de 2.4 m. |
-| `Ens_Sapin` | 6.95 × 6.88 × 11.6 | 300 | 1 | Sapin sombre de 12 m, branches basses à 2 m. |
+| `Ens_Sapin` | 6.95 × 6.88 × 11.2 | 300 | 1 | Sapin sombre de 12 m, branches basses à 2 m. |
 | `Ens_Serre_Vitres` | 6.09 × 3.95 × 1.2 | 88 | 0 | Éclats de verre au sol et plantes envahissantes pour `Jardin_Serre_Ruine` (emprise 6 × 4 m). |
 | `Ens_Socle_Statue` | 2.6 × 2.6 × 1.3 | 528 | 3 | Socle à gradins de 2.6 m, dessus à 1.3 m (1.5 × 1.5 m). |
 | `Ens_Souche` | 2.57 × 2.7 × 0.99 | 662 | 1 | Souche |
@@ -1805,7 +1805,7 @@ Modélisées par script dans Blender (`Assets/Art/Source~/Ensembles/scripts/`), 
 | `Ens_Tombe_Ouverte` | 3.58 × 2.69 × 1.31 | 694 | 3 | Tombe vidée : dalle basculée, fosse noire peinte au ras du sol (aucun trou dans le sol), tas de terre, planches. |
 | `Ens_Tombe_Penchee` | 1.25 × 2.27 × 1.14 | 626 | 1 | Stèle arrondie penchée, gravure, terre retournée, fleurs. |
 | `Ens_Tonneau_Brise` | 2.19 × 2.0 × 0.67 | 1108 | 1 | Tonneau éclaté : fond, cercles et douves en éventail, flaque sombre. |
-| `Ens_Topiaire` | 1.34 × 1.35 × 3.41 | 510 | 2 | Topiaire en spirale de boules sur tige, dans un bac de pierre. |
+| `Ens_Topiaire` | 1.27 × 1.35 × 3.42 | 654 | 2 | Topiaire en spirale de boules sur tige, dans un bac de pierre. |
 | `Ens_Tronc_Couche` | 6.95 × 1.7 × 1.39 | 562 | 1 | Tronc abattu de 7 m, 0.9 m de diamètre, praticable (on court dessus), bout creux. |
 | `Ens_Urne_Pierre` | 0.96 × 0.96 × 2.13 | 470 | 1 | Urne Pierre |
 | `Ens_Vaisselle_A` | 0.95 × 0.39 × 0.19 | 994 | 0 | Vaisselle A |
@@ -1820,3 +1820,29 @@ Modélisées par script dans Blender (`Assets/Art/Source~/Ensembles/scripts/`), 
 **Outils** (`Assets/Art/Source~/Ensembles/scripts/`) : `ens_lib.py`, `pieces_*.py`, `construit.py` (Blender) ; `ens_textures.py` ; `ensembles.py` (plans) ;
 `EnsembleBuilder.cs` (matériaux, import, prefabs, banc) ; `AuditEnsembles.cs` ; `CapturesEnsembles.cs` ; `ens_doc.py`.
 <!-- ENSEMBLES-FIN -->
+
+## Feuillage sans trous ni éclats noirs (2026-11-26, branche `art-vegetaux`)
+
+Suite de la seconde revue des cartes (`REVUE-CARTES.md`, point 4).
+- **Cause 1 : le shader toon retournait la normale des faces vues de dos.** Une carte de feuille à deux faces dont la normale
+  peinte pointe vers le haut ou vers l'extérieur devenait noire vue de l'autre côté (herbes, rosiers, ronces, plantes de la
+  serre, à contre-jour). Nouvelle option du shader `ItHunts/Toon` : **`_FoliageNormals`** (« Feuillage : normale identique des
+  deux côtés », mot-clé `_FOLIAGE_NORMALS`), désactivée par défaut. Elle est activée sur `M_Ens_Feuillage`, `M_Kit_Feuillage`,
+  `M_Kit_Feuillage_Foret` et `M_Kit_Feuillage_Sombre`. Aucun autre matériau ne change.
+  **Pour main :** `Assets/_Project/Settings/Ensembles/M_Feuillage_Peint` et `Acte_Feuillage` sont à une face (`_Cull` 2) :
+  l'option ne les concerne pas. Si un jour ils passent à deux faces, cocher aussi `_FoliageNormals`.
+  - Piège : régler l'option par script **après** la réimportation du shader. Sinon la valeur reste à 0 et Unity retire le
+    mot-clé au chargement suivant.
+- **Cause 2 : le cœur des boules de feuillage se voyait entre les cartes.** `M_Ens_Feuillage_Coeur` passe de presque noir
+  (0.055 ; 0.075 ; 0.045) à vert d'ombre (0.10 ; 0.14 ; 0.07).
+  - `Ens_Buis_Boule` : cœur réduit (rayon 0.53 au lieu de 0.68) et 110 cartes au lieu de 46.
+  - `Ens_Topiaire` : 48 cartes par boule au lieu de 24.
+  - `Ens_Sapin` : tronc intérieur arrêté à 7.6 m au lieu de 11.6 m (il dépassait de la cime).
+- `M_Kit_Feuillage_Sombre` passe de 0.06 à 0.09 (un peu moins noir sur fond éclairé).
+- **Vérifié au banc** (27 pièces végétales, 3 vues, jardin de nuit, cœur marqué en magenta) **et en jeu** (jardin, graine 22).
+  Plus aucun trou au buis, à la topiaire ni au sapin ; herbes, rosiers et ronces éclairés sous tous les angles.
+- **Reste, hors ensembles :**
+  - `Jardin_SousBois_B` (kit) : un tapis de triangles plats sans texture, qui se lit comme des éclats sombres. À reprendre
+    dans un prochain lot.
+  - Les « éclats » des lisières sur les falaises viennent de leur placement devant les murs (point 3 de la revue, côté main).
+

@@ -129,8 +129,9 @@ def _(e):
 
 @piece("Buis_Boule", 139)
 def _(e):
-    e.tour((0, 0, 0), [(0, .02), (.5, .05), (.68, .5), (.6, 1.0), (0, 1.22)], "M_Ens_Feuillage_Coeur", n=12, bruit=.2)
-    e.buisson((0, 0, .62), (.72, .72, .66), "buis", n=46, taille=.72)
+    # cœur plus petit que la boule de cartes, et cartes deux fois plus nombreuses : il ne se voit plus entre elles
+    e.tour((0, 0, 0), [(0, .04), (.4, .07), (.53, .5), (.47, .95), (0, 1.1)], "M_Ens_Feuillage_Coeur", n=12, bruit=.15)
+    e.buisson((0, 0, .62), (.72, .72, .66), "buis", n=110, taille=.62)
     e.col_boite((0, 0, .6), (1.15, 1.15, 1.2))
 
 
@@ -143,7 +144,7 @@ def _(e):
     e.tube([(0, 0, .75), (.02, 0, 1.6), (-.02, .01, 2.6), (0, 0, 3.3)], [.06, .055, .045, .03], ECORCE, n=7, rugo=.3)
     for z, r in ((1.35, .5), (2.25, .42), (3.0, .32)):
         e.tour((0, 0, z - r * .8), [(0, 0), (r * .7, r * .25), (r * .85, r * .8), (r * .6, r * 1.4), (0, r * 1.65)], "M_Ens_Feuillage_Coeur", n=10, bruit=.2)
-        e.buisson((0, 0, z), r, "buis", n=24, taille=r * 1.25)
+        e.buisson((0, 0, z), r, "buis", n=48, taille=r * 1.15)
     e.col_boite((0, 0, .4), (1.0, 1.0, .8))
     e.col_boite((0, 0, 2.0), (.8, .8, 2.6))
 
@@ -215,7 +216,7 @@ def _(e):
 def _(e):
     """Sapin sombre de 12 m, branches basses à 2 m."""
     tronc(e, [(0, 0, -.3), (.02, .01, 1.2), (.03, .02, 2.4)], [.42, .34, .3], n=9)
-    e.tube([(.03, .02, 2.3), (-.02, 0, 6), (0, 0, 11.6)], [.28, .18, .03], "M_Ens_Feuillage_Coeur", n=8)
+    e.tube([(.03, .02, 2.3), (-.02, 0, 6), (0, 0, 7.6)], [.24, .12, .02], "M_Ens_Feuillage_Coeur", n=8)   # sous la cime (11.6 : pointe noire)
     z = 2.0
     k = 0
     while z < 11.4:
