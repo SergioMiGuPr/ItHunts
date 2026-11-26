@@ -17,7 +17,7 @@ MonoBehaviour:
   fogStart: 16
   fogEnd: 105
   moonIntensity: 0.3
-  torchIntensity: 2.5
+  torchIntensity: 2.0
   torchRange: 21
   lampIntensity: 1.6
   lampRange: 16.1
@@ -26,11 +26,11 @@ MonoBehaviour:
   labelFullDistance: 20
   labelHiddenDistance: 35
   labelFogShare: 0.8
-  postExposure: 0.15
+  postExposure: 0
   contrast: 18
   saturation: -14
   colorFilter: {r: 1, g: 1, b: 1, a: 1}
-  splitShadows: {r: 0.4, g: 0.44, b: 0.6, a: 1}
+  splitShadows: {r: 0.36, g: 0.42, b: 0.62, a: 1}
   splitHighlights: {r: 0.62, g: 0.52, b: 0.4, a: 1}
   splitBalance: -20
   look: {fileID: 11400000, guid: 1f8b13ede5c418c4794dd5fd352d7d8f, type: 2}

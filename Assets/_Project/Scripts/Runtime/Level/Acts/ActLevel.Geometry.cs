@@ -138,7 +138,8 @@ namespace ItHunts.Level.Acts
 
             // Revue de la DA (jour 5, point 12) : une margelle de pierre le long de chaque bord entre l'eau et le sol (sauf aux marches) :
             // dalle à fleur du sol (+5 cm, sans gêne pour les sauts ni le NavMesh) qui déborde de 0,45 m au-dessus de l'eau.
-            if (settings.trimMaterial == null)
+            Material rim = settings.trimMaterial != null ? settings.trimMaterial : RoomWall;
+            if (rim == null)
                 return;
             foreach (Vector2Int c in all)
                 foreach (Vector2Int d in ActPlan.Dirs)
@@ -150,7 +151,7 @@ namespace ItHunts.Level.Acts
                     Vector3 dir = new Vector3(d.x, 0f, d.y);
                     Vector3 mid = Plan.CellCenter(c, r.Floor - 0.1f) + dir * (Plan.Cell * 0.5f + 0.5f);   // sur la rive : rien ne dépasse au-dessus de l'eau
                     Vector3 size = d.x != 0 ? new Vector3(0.9f, 0.3f, Plan.Cell) : new Vector3(Plan.Cell, 0.3f, 0.9f);
-                    Solid(root, "Margelle du bassin", mid, size, 0f, KitBuild.Kind.Pont, settings.trimMaterial);
+                    Solid(root, "Margelle du bassin", mid, size, 0f, KitBuild.Kind.Pont, rim);
                 }
         }
 

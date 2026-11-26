@@ -223,7 +223,7 @@ Cave_Plateforme_3m 0 0
 Cave_Eboulis_Petit 1.4 -1.6 60 0 0.8
 Cave_Candelabre -2.4 2
 
-[Pilier de roche] centre 8x8 fonctions Gouffre, Grotte inondée, Galerie de mine, Citerne, Salle des gardes, Réserve, Ossuaire, Cave à vin ; max 3
+[Pilier de roche] centre 8x8 fonctions Gouffre, Grotte inondée, Galerie de mine, Citerne, Salle des gardes, Réserve, Ossuaire, Cave à vin ; max 2
 Cave_PilierRoche_18m 0 0
 Cave_Brasero 3.4 3.4
 
@@ -249,8 +249,32 @@ Cave_Brasero 3 1.4
 [Mur de rebords] centre 7x4 fonctions Salle de torture, Réserve, Crypte, Cachot ; max 1
 Cave_MurRebords_10m 0 0
 
+# ---- Variété pour combler (pièces de la DA, 3 au plus de chaque par salle) ----
+[Jarres] centre 3x3 fonctions * ; max 3
+Ens_Jarres 0 0
+
+[Tonneau brisé] centre 3x3 fonctions * ; max 3
+Ens_Tonneau_Brise 0 0 40
+
+[Billot] centre 3x3 fonctions * ; max 2
+Ens_Billot_Hache 0 0
+
+[Baquet] centre 2x2 fonctions * ; max 3
+Ens_Baquet 0 0
+
+[Pierres levées] centre 4x3 fonctions * ; max 2
+Ens_Pierre_Levee_A -0.8 0
+Ens_Pierre_Levee_B 0.9 0.2 40
+
+[Catafalque] centre 4x3 fonctions Ossuaire, Crypte, Chapelle souterraine ; max 2
+Ens_Catafalque 0 0
+Ens_Candelabre_Table 1.2 0 0 1
+
+[Tas de bois] centre 4x3 fonctions * ; max 2
+Ens_Tas_Bois 0 0
+
 # ---- Pour combler ----
-[Brasero et éboulis] centre 4x4 fonctions *
+[Brasero et éboulis] centre 4x4 fonctions * ; max 4
 Cave_Brasero 1 1
 Cave_Eboulis_Petit -0.6 -0.6 0 0 0.7
 
@@ -259,10 +283,10 @@ Prop_Caisse_Attrapable 0.8 0.6 20 0.45
 Prop_Caisse_Attrapable 0.2 -0.8 60 0.45
 Cave_Tonneaux_Pile -0.6 0.6 90
 
-[Candélabre] centre 2x2 fonctions *
+[Candélabre] centre 2x2 fonctions * ; max 3
 Cave_Candelabre 0 0
 
-[Sacs] centre 2x2 fonctions *
+[Sacs] centre 2x2 fonctions * ; max 4
 Cave_Sacs 0.3 0
 
 # ---- Détails au sol (sans collision) ----

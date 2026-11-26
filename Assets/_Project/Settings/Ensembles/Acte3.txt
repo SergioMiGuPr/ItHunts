@@ -191,15 +191,43 @@ Jardin_PlateformeTraction 6.6 0 0 0 1.4
 Jardin_Passerelle_10m 0 0 0 5.6
 Cave_Brasero -8 1.6
 
+# ---- Variété pour combler (pièces de la DA, 3 au plus de chaque par salle) ----
+[Topiaire] centre 2x2 fonctions * ; max 3
+Ens_Topiaire 0 0
+
+[Buis] centre 2x2 fonctions * ; max 3
+Ens_Buis_Boule 0 0
+
+[Rosiers] centre 3x2 fonctions * ; max 3
+Ens_Rosiers 0 0
+
+[Souche] centre 3x3 fonctions * ; max 3
+Ens_Souche 0 0
+
+[Tronc couché] centre 8x2 fonctions * ; max 2
+Ens_Tronc_Couche 0 0
+
+[Urne de pierre] centre 2x2 fonctions * ; max 3
+Ens_Urne_Pierre 0 0
+
+[Lanterne de pierre] centre 2x2 fonctions * ; max 3
+Ens_Lanterne_Pierre 0 0
+
+[Croix de bois] centre 2x2 fonctions Cimetière, Ravin, Bosquet ; max 3
+Ens_Croix_Bois 0 0
+
+[Plante géante] centre 5x5 fonctions Serre en ruine, Potager, Kiosque ; max 2
+Ens_Plante_Geante 0 0
+
 # ---- Pour combler ----
 [Sous-bois] centre 4x4 fonctions *
 Jardin_SousBois_A 0 0
 Jardin_Rocher_Petit 1 1 0 -0.4
 
-[Massif] centre 2x2 fonctions *
+[Massif] centre 2x2 fonctions * ; max 4
 Jardin_Massif 0 0
 
-[Candélabre de jardin] centre 2x2 fonctions * ; max 8
+[Candélabre de jardin] centre 2x2 fonctions * ; max 4
 Cave_Candelabre 0 0
 
 # ---- Détails au sol (sans collision) ----

@@ -46,6 +46,7 @@ namespace ItHunts.Level.Acts
             _closed = closed;
             ThinLights(root);
             Merge(root);
+            CollectFlames(root);
             CollectLights(root);
             for (int i = 0; i < plan.Rooms.Count; i++)
                 _near.Add(Around(i));
@@ -221,6 +222,28 @@ namespace ItHunts.Level.Acts
             }
 
             return t.GetComponent<ItHunts.Art.VFX.VfxPeint>() != null;
+        }
+
+        private void CollectFlames(Transform root)
+        {
+            var groups = new Dictionary<(int, int, int), Group>();
+            foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
+            {
+                if (!(r is ParticleSystemRenderer) && r.GetComponentInParent<ItHunts.Art.VFX.VfxPeint>() == null)
+                    continue;
+                if (r.GetComponentInParent<DecorTag>() == null)
+                    continue;
+                Vector3 p = r.transform.position;
+                int room = _plan.OwnerAt(_plan.CellOf(p));
+                var key = (room, Mathf.FloorToInt(p.x / Tile), Mathf.FloorToInt(p.z / Tile));
+                if (!groups.TryGetValue(key, out Group g))
+                {
+                    groups[key] = g = new Group { Room = room, Far = farSmall, Center = new Vector3((key.Item2 + 0.5f) * Tile, p.y, (key.Item3 + 0.5f) * Tile), Radius = Tile * 0.71f };
+                    _groups.Add(g);
+                }
+
+                g.Renderers.Add(r);
+            }
         }
 
         private void CollectLights(Transform root)

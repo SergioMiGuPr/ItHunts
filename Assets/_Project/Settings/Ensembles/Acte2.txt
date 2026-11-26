@@ -88,7 +88,7 @@ P_Prop_Armoire -2.6 1.2
 Prop_CoffreDeco 0 1.2
 Ens_Portrait_2 0 0.15 0 4.4 1.6
 P_Prop_Tonneaux_Couches 2.8 1.6
-Chateau_Torchere 1.3 1
+Chateau_Candelabre_Pied 1.3 1
 
 # ---- Bibliothèque ----
 [Rayonnages dos à dos] centre 13x2.4 fonctions Bibliothèque
@@ -112,7 +112,7 @@ Prop_Chaise_Attrapable 0.4 -2 0 0.55
 [Armoire tombée] centre 6x6 fonctions Bibliothèque, Chambre, Tour effondrée ; max 2
 Chateau_Armoire_Tombee 0 0
 Chateau_Chaise_Renversee 2.4 -1.4
-Chateau_Torchere -2 2.4
+Chateau_Candelabre_Pied -2 2.4
 
 [Rayonnage mural] mur 9x2.2 fonctions Bibliothèque
 Chateau_Bibliotheque -2.1 1 0 0 0.95
@@ -140,8 +140,8 @@ Prop_Statue 0 -2.8 180
 
 [Niche de prière] mur 8x3 fonctions Chapelle
 Prop_Statue 0 1.3
-Chateau_Torchere -1.8 1.2
-Chateau_Torchere 1.8 1.2
+Chateau_Candelabre_Pied -1.8 1.2
+Chateau_Candelabre_Pied 1.8 1.2
 Chateau_Tenture -3.1 0.15 0 10
 Chateau_Tenture 3.1 0.15 0 10
 
@@ -176,8 +176,8 @@ Chateau_Candelabre_Pied 3 0
 [Banquettes murales] mur 8x2.4 fonctions Salle de bal, Salon de musique, Galerie des portraits, Palier, Grande entrée, Grand escalier
 Ens_Banc_Chapelle 0 1.1
 Ens_Portrait_3 0 0.15 0 4.4 1.6
-Chateau_Torchere -3 1
-Chateau_Torchere 3 1
+Chateau_Candelabre_Pied -3 1
+Chateau_Candelabre_Pied 3 1
 
 # ---- Chambre ----
 [Lit à baldaquin] centre 9x8 fonctions Chambre
@@ -192,7 +192,7 @@ Prop_Chaise_Attrapable -3 2 20 0.55
 Chateau_LitBaldaquin 0 2 180
 Chateau_Coffre -2.4 1.2
 P_Prop_Armoire 3.8 1.1
-Chateau_Torchere 2 1
+Chateau_Candelabre_Pied 2 1
 Chateau_MiroirBrise -4 1.4 30
 Ens_Portrait_4 0 0.15 0 4.4 1.6
 
@@ -206,7 +206,7 @@ P_Prop_Ratelier -4 -0.5 180
 P_Prop_Ratelier -2 -0.5 180
 P_Prop_Ratelier 0 -0.5 180
 P_Prop_Ratelier 2 -0.5 180
-Chateau_Torchere 4 0
+Chateau_Candelabre_Pied 4 0
 Chateau_SupportRatelier 5 1
 Chateau_SupportRatelier 5 -1
 
@@ -217,7 +217,7 @@ Chateau_SupportRatelier 2.4 1.6
 Prop_Caisse_Attrapable -2 -1.8 0 0.45
 Prop_Caisse_Attrapable -2.4 -0.6 30 0.45
 Prop_Tonneau_Attrapable 2.4 -1.8 0 0.55
-Chateau_Torchere 0 2.4
+Chateau_Candelabre_Pied 0 2.4
 Prop_Chaise_Attrapable 0.6 -1.6 0 0.55
 
 [Râtelier mural] mur 8x2.4 fonctions Armurerie, Salle des gardes
@@ -230,17 +230,17 @@ Chateau_Tenture 0 0.15 0 9.5
 [Trône] mur 12x8 fonctions Salle du trône ; max 1
 Chateau_Estrade_Musiciens 0 2.8
 P_Prop_Fauteuil 0 3.2 0 1 1.7
-Chateau_Torchere -2.6 5.4
-Chateau_Torchere 2.6 5.4
+Chateau_Candelabre_Pied -2.6 5.4
+Chateau_Candelabre_Pied 2.6 5.4
 Prop_Statue -5 2
 Prop_Statue 5 2
 Chateau_Tenture -3.4 0.15 0 12
 Chateau_Tenture 3.4 0.15 0 12
 
-[Garde de pierre] centre 5x10 fonctions Salle du trône, Grande entrée, Grand escalier, Cloître, Palier
+[Garde de pierre] centre 5x10 fonctions Salle du trône, Grande entrée, Grand escalier, Cloître, Palier ; max 1
 Prop_Statue 0 4
 Prop_Statue 0 -4 180
-Chateau_Torchere 0 1.4
+Chateau_Candelabre_Pied 0 1.4
 Ens_Banc_Chapelle 0 -0.6 90
 
 [Courtisans] centre 12x5 fonctions Salle du trône
@@ -251,10 +251,10 @@ Ens_Banc_Chapelle 3.4 -1.2 -10
 Chateau_Candelabre_Pied 0 0
 
 # ---- Galeries, entrées, escaliers ----
-[Socle de galerie] centre 4x4 fonctions Galerie des portraits, Grande entrée, Grand escalier, Palier, Cloître, Bains
+[Socle de galerie] centre 4x4 fonctions Galerie des portraits, Grande entrée, Grand escalier, Palier, Cloître, Bains ; max 2
 Prop_Statue 0 0
-Chateau_Torchere 1.2 1.2
-Chateau_Torchere -1.2 -1.2
+Chateau_Candelabre_Pied 1.2 1.2
+Chateau_Candelabre_Pied -1.2 -1.2
 
 [Portraits] mur 9x2.4 fonctions Galerie des portraits, Grand escalier, Palier, Grande salle
 Ens_Portrait_Grand -3 0.15 0 4.4 1.6
@@ -262,7 +262,7 @@ Ens_Portrait_6 0 0.15 0 4.4 1.6
 Ens_Portrait_7 3 0.15 0 4.4 1.6
 P_Prop_Fauteuil -1.6 1.1
 P_Prop_Fauteuil 1.6 1.1
-Chateau_Torchere 4 0.9
+Chateau_Candelabre_Pied 4 0.9
 
 [Galerie abandonnée] centre 7x5 fonctions Galerie des portraits ; max 4
 Chateau_Chaise_Renversee -2 0.5 30
@@ -283,7 +283,7 @@ Chateau_Candelabre_Pied 2.6 1.8
 P_Prop_Armoire -2.8 1.1
 Prop_Banc 0 1.2
 P_Prop_Armoire 2.8 1.1
-Chateau_Torchere 1.7 1
+Chateau_Candelabre_Pied 1.7 1
 
 # ---- Tour effondrée ----
 [Éboulement] centre 10x9 fonctions Tour effondrée
@@ -291,7 +291,7 @@ Cave_MurBrise_4m 0 2
 Cave_Eboulis_Petit -2.5 -2 20
 Cave_Eboulis_Petit 2.8 -1.6 140
 P_Prop_Poutre 0.5 -2.4 35
-Chateau_Torchere 4 3.2
+Chateau_Candelabre_Pied 4 3.2
 
 [Gravats au mur] mur 8x4 fonctions Tour effondrée
 Cave_Eboulis_Petit -2 2
@@ -300,36 +300,67 @@ P_Prop_Poutre 0 2.8 70
 
 [Jardin du cloître] centre 10x10 fonctions Cloître, Fontaine
 Jardin_Fontaine 0 0
-Chateau_Torchere 4.4 4.4
+Chateau_Candelabre_Pied 4.4 4.4
 Ens_Banc_Chapelle -4.6 0 90
 
 [Massif du cloître] centre 8x5 fonctions Cloître, Fontaine
 Jardin_Massif -2 0
 Jardin_Massif 2 0
 Prop_Statue 0 0
-Chateau_Torchere 0 1.6
+Chateau_Candelabre_Pied 0 1.6
 
 # ---- Verticalité : routes de parcours dans les grandes salles ----
 [Passerelle] centre 17x4 fonctions Salle de bal, Grande salle, Grande entrée, Salle du trône, Bibliothèque, Cloître, Armurerie ; max 1
 Chateau_PlateformeTraction -6.6 0 0 0 1.4
 Chateau_PlateformeTraction 6.6 0 0 0 1.4
 Chateau_Passerelle_10m 0 0 0 5.6
-Chateau_Torchere -8 1.6
-
-[Mur de rebords] centre 8x4 fonctions Grand escalier, Grande salle, Salle à manger, Chapelle, Cloître ; max 1
-Chateau_MurRebords_10m 0 0
-Chateau_Torchere 3.6 1.4
+Chateau_Candelabre_Pied -8 1.6
 
 [Mezzanine] mur 9x8 fonctions Bibliothèque, Armurerie, Grande salle, Salle à manger ; max 1
 Chateau_Mezzanine_8x6 0 0.4
 Chateau_Echelle_6m 3.2 6.8
 Prop_CoffreDeco -2 3 0 5.1
-Chateau_Torchere -3.4 7
+Chateau_Candelabre_Pied -3.4 7
+
+# ---- Variété pour combler (pièces de la DA, 3 au plus de chaque par salle) ----
+[Guéridon et fauteuil] centre 4x3 fonctions * ; max 3
+P_Prop_Fauteuil -0.8 0 30
+Ens_Gueridon 0.7 0.2
+Ens_Candelabre_Table 0.7 0.2 0 0.8
+
+[Horloge] centre 2x2 fonctions * ; max 2
+Ens_Horloge 0 -0.2
+
+[Globe et chevalet] centre 4x4 fonctions * ; max 2
+Ens_Globe -0.9 0.6
+Ens_Chevalet 0.8 -0.2 25
+
+[Statue drapée] centre 2x2 fonctions * ; max 3
+Ens_Drap_Statue 0 0
+
+[Fauteuil drapé] centre 2x2 fonctions * ; max 3
+Ens_Drap_Fauteuil 0 0 40
+
+[Urne sur guéridon] centre 2x2 fonctions * ; max 3
+Ens_Gueridon_Urne 0 0
+
+[Lustre tombé] centre 4x4 fonctions * ; max 2
+Ens_Lustre_Tombe 0 0 30
+
+[Clavecin] centre 3x4 fonctions Salon de musique, Salle de bal, Chambre, Bibliothèque ; max 2
+Ens_Clavecin 0 0
+Ens_Banquette 0 1.7 180
+
+[Coiffeuse] mur 3x2 fonctions Chambre, Bains ; max 2
+Ens_Coiffeuse 0 0.1
+
+[Prie-Dieu] centre 2x2 fonctions Chapelle, Salle du trône, Galerie des portraits ; max 3
+Ens_Prie_Dieu 0 0
 
 # ---- Pour combler ----
-[Colonne et lumière] centre 4x4 fonctions *
+[Colonne et lumière] centre 4x4 fonctions * ; max 3
 Chateau_Colonne_12m 0 0
-Chateau_Torchere 0 1.4
+Chateau_Candelabre_Pied 0 1.4
 
 [Réserve oubliée] centre 4x4 fonctions * ; max 4
 P_Prop_Tonneau -0.7 0.6
@@ -337,24 +368,21 @@ Prop_Caisse_Attrapable 0.8 0.6 20 0.45
 Prop_Caisse_Attrapable 0.4 -0.7 60 0.45
 Prop_Tonneau_Attrapable -0.9 -0.7 0 0.55
 
-[Candélabres] centre 2x2 fonctions *
+[Candélabres] centre 2x2 fonctions * ; max 3
 Chateau_Candelabre_Pied 0 0
 
-[Buste] centre 2x2 fonctions *
+[Buste] centre 2x2 fonctions * ; max 1
 Prop_Statue 0 0
 
-[Tenture haute] mur 4x1.4 fonctions * ; max 8
+[Tenture haute] mur 4x1.4 fonctions * ; max 6
 Chateau_Tenture 0 0.15 0 11
-Chateau_Torchere -1.6 1
+Chateau_Candelabre_Pied -1.6 1
 
 [Arcade] centre 9x3 fonctions Grande entrée, Grande salle, Cloître, Palier, Chapelle, Salle de bal, Salle du trône, Bains, Grand escalier ; max 3
 Chateau_Arcade_8x12 0 0
-Chateau_Torchere 3.2 1.4
+Chateau_Candelabre_Pied 3.2 1.4
 
 # ---- Détails au sol (sans collision) ----
-[Papiers] sol 4x2 fonctions Bibliothèque, Salon de musique, Chambre, Galerie des portraits, Grande salle
-Ens_Papiers_Epars 0 0
-
 [Livres] sol 2x2 fonctions Bibliothèque, Chambre, Salon de musique
 Ens_Livres_Sol 0 0
 

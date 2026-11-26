@@ -132,6 +132,9 @@ namespace ItHunts.Debugging
                         if (!NavMesh.SamplePosition(q, out NavMeshHit h, 1.2f, small) || Mathf.Abs(h.position.y - y) > 1.2f)
                             continue;                                   // pas un sol du joueur ici (creux, mur, autre étage)
                         // Une capsule de joueur ne tient pas ici (intérieur d'un massif plein : le NavMesh y garde un îlot fictif) : pas un sol.
+                        // Pieds du joueur sur le vrai sol (au bord d'une galerie, le NavMesh descend de quelques décimètres sous le dessus).
+                        if (Physics.Raycast(h.position + Vector3.up * 1.2f, Vector3.down, out RaycastHit floorHit, 2f, ~0, QueryTriggerInteraction.Ignore))
+                            h.position = floorHit.point;
                         if (InsideSolid(h.position))
                             continue;
                         res.Samples++;

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a9181e00e108934d91e4524c0f3cfbc, type: 3}
   m_Name: Ambiance_Acte1
   m_EditorClassIdentifier: ItHunts.Runtime::ItHunts.Settings.AmbianceSettings
-  ambient: {r: 0.125, g: 0.125, b: 0.165, a: 1}
-  fogColor: {r: 0.018, g: 0.024, b: 0.042, a: 1}
+  ambient: {r: 0.105, g: 0.125, b: 0.18, a: 1}
+  fogColor: {r: 0.014, g: 0.024, b: 0.05, a: 1}
   fogStart: 14
   fogEnd: 95
   moonIntensity: 0.3
@@ -30,9 +30,9 @@ MonoBehaviour:
   contrast: 18
   saturation: -14
   colorFilter: {r: 1, g: 1, b: 1, a: 1}
-  splitShadows: {r: 0.4, g: 0.44, b: 0.6, a: 1}
+  splitShadows: {r: 0.34, g: 0.42, b: 0.62, a: 1}
   splitHighlights: {r: 0.62, g: 0.52, b: 0.4, a: 1}
-  splitBalance: -20
+  splitBalance: -35
   look: {fileID: 11400000, guid: 1f8b13ede5c418c4794dd5fd352d7d8f, type: 2}
   enraged: {fileID: 11400000, guid: 4c6285ce5cc774d4e9a7245cf108d409, type: 2}
   enragedTransition: 2
