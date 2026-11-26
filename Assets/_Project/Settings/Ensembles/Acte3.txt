@@ -63,17 +63,17 @@ Jardin_Muret_4m -2 4.4
 Jardin_Muret_4m 2 4.4
 Jardin_Muret_4m -2 -4.4
 Jardin_Muret_4m 2 -4.4
-Jardin_Massif -2.4 2
-Jardin_Massif 2.4 2
-Jardin_Massif -2.4 -2
-Jardin_Massif 2.4 -2
+Ens_Rosiers -2.4 2
+Ens_Buis_Boule 2.4 2
+Ens_Rosiers -2.4 -2
+Ens_Buis_Boule 2.4 -2
 Jardin_Statue_Pleureuse 0 0
 Cave_Candelabre 1.4 0
 
 [Banc entre deux massifs] centre 8x4 fonctions Roseraie, Kiosque, Fontaine, Terrasse du château, Grand bassin, Allée des statues
 Ens_Banc_Pierre 0 0
-Jardin_Massif -2.6 0
-Jardin_Massif 2.6 0
+Ens_Rosiers -2.6 0
+Ens_Buis_Boule 2.6 0
 Cave_Candelabre 0 1.4
 
 # ---- Cimetière ----
@@ -112,9 +112,9 @@ Cave_Brasero 5.4 3
 [Planches de culture] centre 10x8 fonctions Potager, Serre en ruine
 Jardin_Muret_4m -2.4 3
 Jardin_Muret_4m 2.4 3
-Jardin_Massif -3 0.8
-Jardin_Massif 0 0.8
-Jardin_Massif 3 0.8
+Ens_Rosiers -3 0.8
+Ens_Buis_Boule 0 0.8
+Ens_Rosiers 3 0.8
 Jardin_Muret_4m -2.4 -1.6
 Jardin_Muret_4m 2.4 -1.6
 Prop_Tonneau_Attrapable 4.2 -3 0 0.55
@@ -131,7 +131,7 @@ Cave_Candelabre 1.6 -1.6
 [Paire de statues] centre 8x4 fonctions Allée des statues, Terrasse du château, Grand bassin, Fontaine, Grande grille
 Jardin_Statue_Pleureuse -2.8 0
 Jardin_Statue_Pleureuse 2.8 0
-Jardin_Massif 0 0
+Ens_Buis_Boule 0 0
 Cave_Candelabre 0 1.6
 
 [Statue géante] centre 8x8 fonctions Allée des statues, Grand bassin, Terrasse du château, Kiosque ; max 2
@@ -153,7 +153,7 @@ Jardin_Fontaine 0 0
 Jardin_Muret_4m -4.2 0
 Jardin_Muret_4m 0 0
 Jardin_Muret_4m 4.2 0
-Jardin_Massif -2.1 1.2 0 0 0.7
+Ens_Rosiers -2.1 1.2 0 0 0.7
 Cave_Candelabre 2.1 1
 
 # ---- Bosquet, ravin, verger ----
@@ -225,7 +225,7 @@ Jardin_SousBois_A 0 0
 Jardin_Rocher_Petit 1 1 0 -0.4
 
 [Massif] centre 2x2 fonctions * ; max 4
-Jardin_Massif 0 0
+Ens_Buis_Boule 0 0
 
 [Candélabre de jardin] centre 2x2 fonctions * ; max 4
 Cave_Candelabre 0 0

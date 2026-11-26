@@ -67,7 +67,7 @@ Cave_Cellule_Grille -3.4 0
 Cave_Cellule_Grille 3.4 0
 Cave_Brasero 0 1.2
 
-[Table des geôliers] centre 8x7 fonctions Cachot, Salle de torture, Salle des gardes
+[Table des geôliers] centre 8x7 fonctions Salle du puits, Cachot, Salle de torture, Salle des gardes
 Cave_TableGarde 0 0
 Cave_Banc 0 1.2
 Cave_Tabouret 1.8 -0.6
@@ -105,7 +105,7 @@ Cave_Lit 0 1.6 90
 Cave_Lit 3 1.6 90
 Cave_Candelabre 1.5 1.2
 
-[Barricade] centre 10x5 fonctions Salle des gardes, Galerie de mine, Gouffre
+[Barricade] centre 10x5 fonctions Salle du puits, Salle des gardes, Galerie de mine, Gouffre
 Cave_MurBrise_4m 0 0
 Cave_Caisses_Pile -2 -1.8 10
 Cave_Brasero 2.6 -1.6
@@ -122,7 +122,7 @@ Cave_Etagere -1.2 -0.4 180
 Cave_Etagere 1.2 -0.4 180
 Cave_Candelabre 3.8 -0.9
 
-[Pile de caisses] centre 7x6 fonctions Réserve, Galerie de mine, Citerne
+[Pile de caisses] centre 7x6 fonctions Salle du puits, Réserve, Galerie de mine, Citerne
 Cave_Caisses_Pile 0 0
 Cave_Caisses_Pile -0.4 1.8 90
 Prop_Caisse_Attrapable 2.2 0.4 15 0.45
@@ -136,7 +136,7 @@ Cave_Etagere -0.4 1.1
 Cave_Sacs 1.8 1.4
 Cave_Tonneaux_Pile 3.4 1.5
 
-[Rang de tonneaux] centre 12x3 fonctions Cave à vin
+[Rang de tonneaux] centre 12x3 fonctions Salle du puits, Cave à vin
 P_Prop_Tonneaux_Couches -4 0
 P_Prop_Tonneaux_Couches -1 0
 P_Prop_Tonneaux_Couches 2 0
@@ -198,7 +198,7 @@ Ens_Wagonnet 2.6 2.2 80
 Cave_Caisses_Pile 3.6 1.0
 Cave_Brasero -4 2.2
 
-[Étais de mine] centre 9x5 fonctions Galerie de mine
+[Étais de mine] centre 9x5 fonctions Salle du puits, Galerie de mine
 P_Prop_Poutre -2 1 0
 P_Prop_Poutre 0 0 30
 Cave_Caisses_Pile 2.6 -1
@@ -212,13 +212,13 @@ Cave_PlateformeTraction 6.6 0 0 0 1.4
 Cave_Passerelle_10m 0 0 0 5.6
 Cave_Brasero -8 1.6
 
-[Éboulis] centre 8x7 fonctions Gouffre, Grotte inondée, Galerie de mine, Citerne
+[Éboulis] centre 8x7 fonctions Salle du puits, Gouffre, Grotte inondée, Galerie de mine, Citerne
 Cave_Eboulis_Petit -1.6 0.6
 Cave_Eboulis_Petit 1.8 -1 120
 Cave_Brasero -2.6 -2.2
 Prop_Caisse_Attrapable 2.8 1.8 20 0.45
 
-[Rocher de prise] centre 6x6 fonctions Gouffre, Grotte inondée, Citerne, Ossuaire
+[Rocher de prise] centre 6x6 fonctions Salle du puits, Gouffre, Grotte inondée, Citerne, Ossuaire
 Cave_Plateforme_3m 0 0
 Cave_Eboulis_Petit 1.4 -1.6 60 0 0.8
 Cave_Candelabre -2.4 2
@@ -227,7 +227,7 @@ Cave_Candelabre -2.4 2
 Cave_PilierRoche_18m 0 0
 Cave_Brasero 3.4 3.4
 
-[Tonneaux flottants] centre 5x5 fonctions Grotte inondée, Citerne
+[Tonneaux flottants] centre 5x5 fonctions Salle du puits, Grotte inondée, Citerne
 Cave_Tonneaux_Pile 0 0
 Prop_Tonneau_Attrapable 1.8 1.4 0 0.55
 Prop_Tonneau_Attrapable -1.6 -1.6 0 0.55

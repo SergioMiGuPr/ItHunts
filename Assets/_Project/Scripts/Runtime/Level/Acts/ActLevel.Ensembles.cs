@@ -51,11 +51,11 @@ namespace ItHunts.Level.Acts
                     ground.Add(c);
             }
 
-            // Départ du joueur : 8 m libres.
+            // Départ du joueur : 5 m libres.
             if (r.Role == RoomRole.Depart)
             {
                 var at = Vector2Int.RoundToInt(r.CenterCell);
-                ground.RemoveWhere(c => Mathf.Abs(c.x - at.x) <= 4 && Mathf.Abs(c.y - at.y) <= 4);
+                ground.RemoveWhere(c => Mathf.Abs(c.x - at.x) <= 2 && Mathf.Abs(c.y - at.y) <= 2);
             }
 
             return ground;
@@ -503,7 +503,7 @@ namespace ItHunts.Level.Acts
             var res = new List<string>();
             foreach (ActRoom r in Plan.Rooms)
             {
-                if (r.Special || r.Role == RoomRole.Depart)
+                if (r.Special)
                     continue;
                 var dist = new Dictionary<Vector2Int, int>();
                 var q = new Queue<Vector2Int>();

@@ -653,7 +653,8 @@ namespace ItHunts.Level.Acts
                 return;
             Vector3 at = Plan.CellCenter(c, r.Floor);
             float yaw = _rng.Next(2) * 90f;
-            GameObject massif = Art != null ? Art.Piece("Jardin_Massif") : null;
+            GameObject massif = settings.ensembles != null && settings.ensembles.Find("Ens_Buis_Boule") != null ? settings.ensembles.Find(_rng.Next(2) == 0 ? "Ens_Buis_Boule" : "Ens_Rosiers") ?? settings.ensembles.Find("Ens_Buis_Boule")
+                : Art != null ? Art.Piece("Jardin_Massif") : null;   // massif peint de la DA (le bac du kit faisait un cube)
             if (massif != null)
             {
                 Tag(KitPiece(massif, root, at, Quaternion.Euler(0f, yaw, 0f) * Vector3.forward, Vector3.one, true), DecorKind.Vegetal).AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
