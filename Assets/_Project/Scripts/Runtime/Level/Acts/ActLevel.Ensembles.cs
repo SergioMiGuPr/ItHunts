@@ -373,6 +373,22 @@ namespace ItHunts.Level.Acts
             EnsembleCount++;
         }
 
+        /// <summary>
+        /// Décor que le traqueur enjambe (tombes, massifs, arbres, haies…) : obstacle des goules et du bot (D-119), qui marchaient dedans.
+        /// </summary>
+        private void MarkObstacles()
+        {
+            if (Plan.Hand == null)
+                return;
+            foreach (DecorTag t in _root.GetComponentsInChildren<DecorTag>(true))
+            {
+                if (t.GetComponent<NotWalkable>() != null || t.GetComponentInParent<StalkerPassesThrough>() == null || Routes.Any(n => t.name.Contains(n))
+                    || t.GetComponentInChildren<Collider>() == null || t.GetComponentInChildren<ItHunts.Orbs.Grabbable>() != null)
+                    continue;
+                t.gameObject.AddComponent<NotWalkable>();
+            }
+        }
+
         private void PaintFoliage()
         {
             if (settings.paintedFoliage == null)

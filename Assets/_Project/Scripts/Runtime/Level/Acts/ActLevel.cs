@@ -236,6 +236,7 @@ namespace ItHunts.Level.Acts
             // chevauchent, décor traversable, formes provisoires : corrigés ici ; le test DecorAuditTests vérifie qu'il n'en reste aucun.
             long tGame = sw.ElapsedMilliseconds;
             PaintFoliage();
+            MarkObstacles();
             DecorFixes = DecorAudit.Run(_root, true, settings.trimMaterial != null ? settings.trimMaterial : settings.wallMaterial);
             long tAudit = sw.ElapsedMilliseconds;
             Batch();
