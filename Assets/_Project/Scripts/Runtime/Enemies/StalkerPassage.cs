@@ -232,14 +232,18 @@ namespace ItHunts.Enemies
             {
                 if (p == null || p.kind == StalkerLinkKind.PorteEtroite)
                     continue;
-                if (Vector3.Distance(corner, p.A) <= fromTolerance && Vector3.Distance(nextCorner, p.B) <= tolerance)
+                // Nuit du 27/11 : un lien a sa largeur (6 m pour l'escalade d'un palier) ; le NavMesh pose les coins du chemin n'importe où
+                // sur cette largeur. Sans la demi-largeur, le traqueur attendait sans fin au pied d'un palier (porte d'escalier, playtest).
+                // La marge ne vaut qu'en travers du lien (ni en hauteur, ni dans son axe), et seulement pour un lien du NavMesh.
+                float slack = p.Linked ? Mathf.Max(0f, p.width) * 0.5f : 0f;
+                if (Near(corner, p.A, p.A, p.B, fromTolerance, slack) && Near(nextCorner, p.B, p.A, p.B, tolerance, slack))
                 {
                     from = p.A;
                     to = p.B;
                     return p;
                 }
 
-                if (Vector3.Distance(corner, p.B) <= fromTolerance && Vector3.Distance(nextCorner, p.A) <= tolerance)
+                if (Near(corner, p.B, p.A, p.B, fromTolerance, slack) && Near(nextCorner, p.A, p.A, p.B, tolerance, slack))
                 {
                     from = p.B;
                     to = p.A;
@@ -248,6 +252,21 @@ namespace ItHunts.Enemies
             }
 
             return null;
+        }
+
+        /// <summary>Point à moins de tol d'un bout de lien, la composante en travers du lien (horizontale) diminuée de slack.</summary>
+        public static bool Near(Vector3 point, Vector3 end, Vector3 a, Vector3 b, float tol, float slack)
+        {
+            Vector3 d = point - end;
+            Vector3 axis = b - a;
+            axis.y = 0f;
+            if (slack <= 0f || axis.sqrMagnitude < 1e-4f)
+                return d.magnitude <= tol;
+            axis.Normalize();
+            Vector3 flat = new Vector3(d.x, 0f, d.z);
+            float along = Vector3.Dot(flat, axis);
+            float across = Mathf.Max(0f, (flat - axis * along).magnitude - slack);
+            return Mathf.Sqrt(along * along + across * across + d.y * d.y) <= tol;
         }
     }
 }

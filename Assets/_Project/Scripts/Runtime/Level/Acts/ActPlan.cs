@@ -191,7 +191,10 @@ namespace ItHunts.Level.Acts
             {
                 p.Reset(seed + attempt * 7919);
                 if (p.Build())
+                {
+                    p.CoverLockedRooms();                                // D-123 : aussi pour une carte générée
                     return p;
+                }
             }
 
             p.Failures.Add("aucun essai complet : plan gardé tel quel");

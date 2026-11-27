@@ -321,6 +321,9 @@ namespace ItHunts.Enemies
 
             _peakIndex = 0;
             _visits.Clear();
+            _roomFoes.Clear();
+            _cleared.Clear();
+            _respiteUntil = float.NegativeInfinity;
             ApplyResidents();
             HuntDirector.ResetCounters();
             var run = FindFirstObjectByType<ItHunts.Artifacts.RunState>();
@@ -389,6 +392,7 @@ namespace ItHunts.Enemies
             _flyers.Level = flyerBase * PlayerMultiplier * AreaScale;
 
             TrackVisits(now);
+            CheckCleared(now);
             UpdateKind(_ghouls, now);
             UpdateKind(_flyers, now);
 
@@ -407,7 +411,7 @@ namespace ItHunts.Enemies
                 _ghouls.Wanted = Mathf.Min(cap, Mathf.Max(quotaG, _ghouls.Wanted));
                 _flyers.Wanted = Mathf.Min(cap / 3, Mathf.Max(quotaF, _flyers.Wanted));
                 UpdatePending(now);
-                if (_players.Count == 0 || now < _relaxUntil)
+                if (_players.Count == 0 || now < _relaxUntil || InRespite)
                     return;
                 float interval = settings.continuousInterval / (elapsed >= timer ? 2f : 1f);
                 ContinuousStep(_ghouls, quotaG, interval, now);
@@ -429,13 +433,95 @@ namespace ItHunts.Enemies
             }
 
             UpdatePending(now);
-            if (_players.Count == 0)
+            if (_players.Count == 0 || InRespite)
                 return;
             WaveStep(_ghouls, now);
             WaveStep(_flyers, now);
         }
 
         private float _relaxUntil;
+
+        // ---------- Répit après une salle nettoyée (D-122) ----------
+
+        // Par salle (nom de salle : une salle en L a plusieurs volumes) : ennemis vus dedans au dernier passage.
+        private readonly Dictionary<string, HashSet<IHunter>> _roomFoes = new Dictionary<string, HashSet<IHunter>>();
+        private readonly HashSet<string> _occupied = new HashSet<string>();
+        private readonly HashSet<string> _cleared = new HashSet<string>();
+        private float _nextClearCheck, _respiteUntil = float.NegativeInfinity;
+
+        /// <summary>Répit en cours : aucune apparition, les annonces en cours sont annulées.</summary>
+        public bool InRespite => Time.time < _respiteUntil;
+        /// <summary>Secondes de répit restantes (0 hors répit).</summary>
+        public float RespiteLeft => Mathf.Max(0f, _respiteUntil - Time.time);
+        /// <summary>Répits déclenchés (mesures, tests).</summary>
+        public int Respites { get; private set; }
+
+        /// <summary>
+        /// Toutes les 0.5 s, pour chaque salle où se tient un joueur : les ennemis vivants dedans (tous ses volumes). La salle est nettoyée
+        /// quand il n'en reste aucun alors qu'au passage précédent il y en avait, et qu'au moins l'un d'eux est mort (un ennemi qui sort
+        /// en suivant le joueur ne compte pas). Une salle ne donne qu'un répit par zone (pas de répit sans fin en tuant une goule isolée),
+        /// jamais en Enragé. Une salle quittée est oubliée.
+        /// </summary>
+        private void CheckCleared(float now)
+        {
+            if (settings.clearRespite <= 0f || now < _nextClearCheck)
+                return;
+            _nextClearCheck = now + 0.5f;
+            _occupied.Clear();
+            foreach (Vector3 p in _players)
+                foreach (ItHunts.Level.RoomVolume r in ItHunts.Level.RoomVolume.All)
+                    if (r != null && r.Kind != ItHunts.Level.RoomKind.Depart && !string.IsNullOrEmpty(r.RoomName) && r.Contains(p + Vector3.up * 0.5f))
+                        _occupied.Add(r.RoomName);
+            List<IHunter> hunters = HuntDirector.Gather();
+            bool enraged = _zone != null && _zone.Enraged;
+            foreach (string room in _occupied)
+            {
+                var now_ = new HashSet<IHunter>();
+                foreach (IHunter h in hunters)
+                    if (h.CanHunt && InRoom(room, h.Position + Vector3.up * 0.5f))
+                        now_.Add(h);
+                if (_roomFoes.TryGetValue(room, out HashSet<IHunter> before) && before.Count > 0 && now_.Count == 0 && !enraged
+                    && !_cleared.Contains(room) && AnyDied(before))
+                {
+                    _cleared.Add(room);
+                    StartRespite(now);
+                }
+
+                _roomFoes[room] = now_;
+            }
+
+            _forget.Clear();
+            foreach (string r in _roomFoes.Keys)
+                if (!_occupied.Contains(r))
+                    _forget.Add(r);
+            foreach (string r in _forget)
+                _roomFoes.Remove(r);
+        }
+
+        private static bool InRoom(string room, Vector3 p)
+        {
+            foreach (ItHunts.Level.RoomVolume r in ItHunts.Level.RoomVolume.All)
+                if (r != null && r.RoomName == room && r.Contains(p))
+                    return true;
+            return false;
+        }
+
+        private static bool AnyDied(HashSet<IHunter> foes)
+        {
+            foreach (IHunter h in foes)
+                if (h is Component c && (c == null || (c.TryGetComponent(out ItHunts.Combat.Damageable d) && d.Dead)))
+                    return true;
+            return false;
+        }
+
+        private readonly List<string> _forget = new List<string>();
+
+        /// <summary>Commence (ou prolonge) le répit de clearRespite s (aussi appelé par les tests).</summary>
+        public void StartRespite(float now)
+        {
+            _respiteUntil = Mathf.Max(_respiteUntil, now + settings.clearRespite);
+            Respites++;
+        }
         private static int Quota(int[] perAct, int act) => perAct == null || perAct.Length == 0 ? 6 : perAct[Mathf.Clamp(act, 0, perAct.Length - 1)];
 
         /// <summary>Repos (cycle L4D) : un joueur vient de perdre beaucoup de PV : aucune apparition pendant relaxAfterHurt s.</summary>
@@ -648,7 +734,7 @@ namespace ItHunts.Enemies
                     continue;
                 if (p.Marker != null)
                     p.Marker.SetActive(false);
-                if (ItHunts.Level.RoomVolume.SharesRoomWithAny(p.Point.transform.position, _players))
+                if (InRespite || ItHunts.Level.RoomVolume.SharesRoomWithAny(p.Point.transform.position, _players))
                 {
                     _pending.RemoveAt(i);
                     SpawnsCancelled++;                                   // un joueur est entré dans la salle pendant l'annonce (D-045)

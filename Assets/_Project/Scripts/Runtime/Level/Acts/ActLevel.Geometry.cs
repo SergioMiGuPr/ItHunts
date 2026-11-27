@@ -31,7 +31,10 @@ namespace ItHunts.Level.Acts
             {
                 var cells = new HashSet<Vector2Int>(r.Cells);
                 foreach (RectInt rc in Rects(cells))
-                    Solid(root, "Plafond", RectCenter(rc, r.Floor + r.Ceiling + 0.5f), RectSize(rc, 1f), 0f, KitBuild.Kind.Sol, settings.ceilingMaterial, walkable: false);
+                    // Sous le ciel ouvert (pavillon fermé du jardin, D-123), le toit est un sol : on peut s'y poser en traction, donc il est
+                    // dans le NavMesh (le traqueur y monte par un lien d'îlot, ZoneNavMesh) : jamais de refuge hors de sa portée.
+                    Solid(root, "Plafond", RectCenter(rc, r.Floor + r.Ceiling + 0.5f), RectSize(rc, 1f), 0f, KitBuild.Kind.Sol, settings.ceilingMaterial,
+                        walkable: settings.Open);
             }
         }
 
@@ -210,7 +213,23 @@ namespace ItHunts.Level.Acts
                     Vector3 inward = new Vector3(l.StairsDir.x, 0f, l.StairsDir.y);
                     float front = l.Cells.Max(c => Vector2.Dot(c, (Vector2)l.StairsDir));
                     var edgeRow = l.Cells.Where(c => Mathf.Abs(Vector2.Dot(c, (Vector2)l.StairsDir) - front) < 0.1f).OrderBy(c => c.x + c.y).ToList();
-                    Vector2Int mid = edgeRow[edgeRow.Count / 4];               // à côté de l'escalier, pas dessus
+                    // Nuit du 27/11 : la case du bord la plus loin de l'escalier et des bouts de la rangée (murs). Le quart de la rangée
+                    // tombait parfois dans l'axe de l'escalier quand il n'est pas centré : le lien partait de son flanc, hors du NavMesh
+                    // du sol, et le traqueur faisait le tour de la carte (portes 6, 14 et 17 de l'acte I, graine 11).
+                    Vector2Int mid = edgeRow[edgeRow.Count / 4];
+                    float bestScore = float.NegativeInfinity;
+                    for (int i = 0; i < edgeRow.Count; i++)
+                    {
+                        float toStairs = l.Stairs.Count == 0 ? 99f : l.Stairs.Min(st => Mathf.Abs(Vector2.Dot(st - edgeRow[i], new Vector2(l.StairsDir.y, l.StairsDir.x))));
+                        float toEnd = Mathf.Min(i, edgeRow.Count - 1 - i) + 1f;
+                        float score = Mathf.Min(toStairs, toEnd * 1.5f);
+                        if (score > bestScore + 0.01f)
+                        {
+                            bestScore = score;
+                            mid = edgeRow[i];
+                        }
+                    }
+
                     Vector3 lip = Plan.CellCenter(mid, r.Floor + l.Height);
                     // Haut : dans la salle haute, 4 m derrière la porte (le palier de 6 m est trop étroit pour lui).
                     ActDoor door = l.Door >= 0 && l.Door < Plan.Doors.Count ? Plan.Doors[l.Door] : null;
@@ -423,7 +442,7 @@ namespace ItHunts.Level.Acts
                 float bottom = nb != null ? Mathf.Min(Bottom(r), Bottom(nb)) : Bottom(r);
                 float top;
                 if (nb == null)
-                    top = r.Ceiling > 0f ? WallTop(r) : r.Floor + settings.openOuterWall;
+                    top = r.Ceiling > 0f && !settings.Open ? WallTop(r) : r.Floor + settings.openOuterWall;   // pavillon couvert (D-123) : falaise gardée
                 else
                     top = Mathf.Max(WallTop(r), WallTop(nb));
                 // Ouvertures de porte sur ce segment (droit, même voisin) : le mur est coupé, linteau et seuil construits par BuildDoor.
@@ -517,7 +536,7 @@ namespace ItHunts.Level.Acts
             Vector3 mid = (qa + qb) * 0.5f + new Vector3(outN.x, 0f, outN.y).normalized * (outer ? t * 0.5f : 0f);
             float h = top - bottom;
             // Ciel ouvert : la falaise extérieure n'est magnétique qu'en bas (on ne l'escalade pas en traction).
-            if (outer && r.Ceiling <= 0f && top - r.Floor > settings.outerMagneticTop + 1f)
+            if (outer && (r.Ceiling <= 0f || settings.Open) && top - r.Floor > settings.outerMagneticTop + 1f)
             {
                 float split = r.Floor + settings.outerMagneticTop;
                 GameObject low = Solid(root, "Mur", new Vector3(mid.x, (bottom + split) * 0.5f, mid.z), new Vector3(t, split - bottom, len + t), yaw, KitBuild.Kind.Mur, null, walkable: false);
@@ -525,13 +544,16 @@ namespace ItHunts.Level.Acts
                 // devant : feuillage sombre en éclats noirs sur la roche éclairée, horizon fermé). Les volumes gardent leur collision
                 // (limite du niveau) mais ne se voient plus : la forêt se lit sur le ciel.
                 bool forest = settings.theme == ActTheme.Jardin;
-                if (!diagonal || forest)
-                    DressOuterWall(root, pa, pb, -new Vector3(outN.x, 0f, outN.y).normalized, r.Floor, r.Floor + 22f);
+                bool dressed = (!diagonal || forest)
+                    && DressOuterWall(root, pa, pb, -new Vector3(outN.x, 0f, outN.y).normalized, r.Floor, r.Floor + 22f);
                 GameObject high = Solid(root, "Falaise", new Vector3(mid.x, (split + top) * 0.5f, mid.z), new Vector3(t, top - split, len + t), yaw, KitBuild.Kind.Mur,
                     null, walkable: false);
                 high.AddComponent<NonMagneticSurface>();
-                if (forest)
+                // Nuit du 27/11 : la roche n'est cachée que là où une lisière la remplace (segment court, kit sans lisière : la falaise
+                // reste visible), et un mur caché n'est jamais magnétique : aucune surface de traction invisible derrière les troncs.
+                if (forest && dressed)
                 {
+                    low.AddComponent<NonMagneticSurface>();
                     foreach (MeshRenderer mr in low.GetComponentsInChildren<MeshRenderer>())
                         mr.enabled = false;
                     foreach (MeshRenderer mr in high.GetComponentsInChildren<MeshRenderer>())

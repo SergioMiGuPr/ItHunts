@@ -192,8 +192,13 @@ namespace ItHunts.Economy
                 return false;
             if (u.forArtifact != null && artifact != null && !SameArtifact(u.forArtifact, artifact))
                 return false;
+            if (u.needsFire && !SetsFire(c))
+                return false;                                            // D-125 : Allumette sans lanterne ne sert à rien
             return u.Generic || u.character == c;
         }
+
+        /// <summary>Personnage qui met le feu aux ennemis par son artefact (lanterne du renard).</summary>
+        public static bool SetsFire(UpgradeCharacter c) => c == UpgradeCharacter.Renard;
 
         /// <summary>Même artefact (l'asset ou sa copie par joueur faite par les améliorations).</summary>
         public static bool SameArtifact(ArtifactDefinition a, ArtifactDefinition b) =>

@@ -1229,3 +1229,14 @@ Réponses de main à `REVUE-CARTES.md` (seconde revue). Mesures à connaître po
 - `M_Kit_Feuillage_Sombre` (lisières) : plus clair pour un fond de ciel étoilé (ses cartes se découpent maintenant sur le ciel).
 - `Ens_Buis_Boule` : trous triangulaires noirs (point 4 de la seconde revue).
 
+
+## Nuit du 2026-11-27 dans le jeu (main, D-122 à D-124)
+
+| Élément | Mesure | Réglage | Remarques |
+|---|---|---|---|
+| Salle fermée sous le ciel ouvert (jardin) | **pavillon couvert** : murs jusqu'au toit, **toit à 12 m** au-dessus de son sol (`Plafond` dans la matière de plafond de l'acte), visible des terrasses | `ActPlan.LockedRoofHeight` | sans toit, ses murs de 12 m se passaient en traction ; un toit de la DA (tuiles, verrière) remplacerait la dalle |
+| Porte payée de la DA (`Art.lockedDoor`, 6 m) | dans une ouverture de 12 m : **deux pans de 3 m** de part et d'autre, **linteau** au-dessus de 6.8 m, dans le plan de la porte | `ActLevel.BuildLockedDoor` | ils étaient tournés d'un quart de tour (2 m libres de chaque côté) : un habillage de la DA pour ces pans reste à faire |
+| Brume sous le plafond | sous le dessous des poutres et des arcs : **plafond − épaisseur − 0.15 m** (0.8 m sans structure) | `ActLevel.Ceilings` | plus de scintillement contre les poutres de l'acte I |
+| Voûte des petites salles (15–16 m) | rien sous **14.1 m** (tête du traqueur) : arcs et poutres amincis, pas de console, corbeau ni applique haute s'ils descendraient plus bas | `StalkerTop` | |
+| Lisière du jardin | la roche n'est cachée **que là où une lisière est posée** ; un mur caché n'est **jamais magnétique** | `ActLevel.Geometry` (WallPiece) | segments courts (< 1.5 m) ou kit sans lisière : la falaise reste visible |
+| Escalade du palier par le traqueur | pied posé loin de l'escalier et des murs, lien de **4 m** de large (6 auparavant) | `ActLevel.Geometry`, `ZoneNavMesh` | ne rien poser au pied du bord d'un palier, du côté opposé à l'escalier |

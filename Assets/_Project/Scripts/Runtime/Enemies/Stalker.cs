@@ -942,6 +942,7 @@ namespace ItHunts.Enemies
             _rb.position = feet;
             _move.Clear();
             _move.Heading = rotation * Vector3.forward;
+            _trav = default;                                             // nuit du 27/11 : un passage en cours le ramenait à son arrivée
             _grab = GrabPhase.Aucune;
             Planted = false;
             _grabOpening = null;
@@ -966,6 +967,7 @@ namespace ItHunts.Enemies
             _rb.position = _home;
             _move.Clear();
             _move.Heading = _homeRotation * Vector3.forward;
+            _trav = default;                                             // remise à zéro pendant un bond ou une escalade
             Target = null;
             SeesTarget = false;
             _burst = BurstState.Create();
@@ -1159,6 +1161,17 @@ namespace ItHunts.Enemies
         /// vraie locomotion (NavMesh du traqueur, vitesse de chasse, il se baisse sous les arcs et les poutres). Null : comportement normal.
         /// </summary>
         public Vector3[] PatrolPoints { get; set; }
+
+        /// <summary>Ronde depuis le premier point (tests : chaque ronde repart au début, chemin recalculé tout de suite).</summary>
+        public void StartPatrol(Vector3[] points)
+        {
+            PatrolPoints = points;
+            _patrolIndex = 0;
+            _nextDecision = 0f;
+        }
+
+        /// <summary>Genre du franchissement en cours (diagnostic).</summary>
+        public StalkerLinkKind TraversalKind => _trav.Kind;
         public bool Patrolling => PatrolPoints != null && PatrolPoints.Length >= 2;
         /// <summary>Points de ronde atteints (tests : il ne reste pas accroché).</summary>
         public int PatrolLegs { get; private set; }

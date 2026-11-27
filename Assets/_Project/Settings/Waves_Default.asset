@@ -38,3 +38,5 @@ MonoBehaviour:
   scaleHuntingCaps: 1
   ghoulPool: 80
   flyerPool: 20
+  chaserEnraged: 0
+  clearRespite: 30

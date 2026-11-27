@@ -151,6 +151,35 @@ namespace ItHunts.Level.Acts
                 if (!r.Special && r.Doors.Count < 2)
                     Failures.Add($"salle {r.Name} : impasse ({r.Doors.Count} sortie)");
             LowerSmallCeilings(handCeiling);
+            CoverLockedRooms();
+        }
+
+        /// <summary>Hauteur du toit d'une salle fermée sous le ciel ouvert (m au-dessus de son sol).</summary>
+        public const float LockedRoofHeight = 12f;
+
+        /// <summary>
+        /// D-123 (playtest du 26/11) : sous le ciel ouvert, une salle fermée (coffre derrière une porte payée) avait des murs de 12 m,
+        /// magnétiques : on passait par-dessus en traction. Elle devient un pavillon couvert : murs jusqu'au toit, toit visible (il se
+        /// voit des terrasses), aucun mur invisible. Le toit laisse passer la porte (ouverture + 2 m).
+        /// </summary>
+        private void CoverLockedRooms()
+        {
+            if (!Settings.Open)
+                return;
+            foreach (ActRoom r in Rooms)
+            {
+                if (r.Role != RoomRole.Verrouillee || r.Ceiling > 0f)
+                    continue;
+                float need = LockedRoofHeight;
+                foreach (int di in r.Doors)
+                {
+                    ActDoor d = Doors[di];
+                    ActRoom o = Rooms[d.Other(r.Id)];
+                    need = Mathf.Max(need, Mathf.Max(r.Floor, o.Floor) - r.Floor + Settings.doorHeight + 2f);
+                }
+
+                r.Ceiling = need;
+            }
         }
 
         /// <summary>

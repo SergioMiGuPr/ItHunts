@@ -128,6 +128,8 @@ namespace ItHunts.Settings
         public UpgradeKind kind;
         [Tooltip("Personnage (ses 10 pour son porteur seulement) ; Aucun : pour tous.")]
         public UpgradeCharacter character = UpgradeCharacter.Aucun;
+        [Tooltip("D-125 : commune qui ne sert qu'avec du feu (Allumette) : proposée seulement aux personnages qui mettent le feu (le renard).")]
+        public bool needsFire;
         [Tooltip("Passif de personnage : un seul porté à la fois ; en prendre un autre remplace le premier (rang perdu).")]
         public bool isPassive;
         [Tooltip("Paramètre principal, une valeur par rang (Bronze, Argent, Or, Diamant, Mythique).")]

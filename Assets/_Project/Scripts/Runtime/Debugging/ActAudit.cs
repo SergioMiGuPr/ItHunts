@@ -73,7 +73,7 @@ namespace ItHunts.Debugging
             reach.Hidden.RemoveAll(h =>
             {
                 int ri = p.RoomAt(h);
-                return ri < 0 || (p.Rooms[ri].Ceiling > 0f && h.y > p.Rooms[ri].Floor + p.Rooms[ri].Ceiling - 1f);
+                return ri < 0 || (!p.Settings.Open && p.Rooms[ri].Ceiling > 0f && h.y > p.Rooms[ri].Floor + p.Rooms[ri].Ceiling - 1f);   // ciel ouvert : toits praticables
             });
             sb.Append($"\n  cachettes : {reach.Hidden.Count} sur {reach.Points} points");
             if (reach.Hidden.Count > 0)

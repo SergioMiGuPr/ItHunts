@@ -37,6 +37,9 @@ namespace ItHunts.Settings
         [Min(1)] public int hardCapPerPlayer = 16;
         [Tooltip("Repos : après une mort de goule, pas d'apparition pendant ce temps si le joueur a perdu plus de 30 PV dans les 10 s (cycle L4D).")]
         [Min(0f)] public float relaxAfterHurt = 12f;
+        [Tooltip("Répit (D-122) : quand un joueur a tué le dernier ennemi de la salle où il est, plus aucune apparition pendant ce temps " +
+                 "(s) : il ouvre les coffres tranquillement. 0 : pas de répit.")]
+        [Min(0f)] public float clearRespite = 30f;
         [Tooltip("Enragé : quota × ce facteur (une seule marche, annoncée).")]
         [Min(1f)] public float enragedQuotaScale = 1.5f;
 
@@ -83,9 +86,9 @@ namespace ItHunts.Settings
                  "de chasseurs correspondant (ennemis qui savent toujours où il est). Pas d'interpolation.")]
         public float[] chaserTimes = { 0f, 0.15f, 0.35f, 0.55f, 0.75f };
         [Tooltip("Chasseurs par joueur à chaque palier.")]
-        public int[] chaserCounts = { 1, 2, 4, 6, 8 };
+        public int[] chaserCounts = { 0, 0, 0, 0, 0 };                  // D-122 : plus de goule qui traque sans fin (playtest du 26/11)
         [Tooltip("Chasseurs par joueur en Enragé.")]
-        [Min(0)] public int chaserEnraged = 10;
+        [Min(0)] public int chaserEnraged = 0;
 
         [Header("Habitants des salles (posés par le constructeur)")]
         [Tooltip("Au début de la zone, chaque grande salle garde entre min et max goules habitantes selon sa taille (les autres " +

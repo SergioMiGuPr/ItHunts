@@ -20,6 +20,7 @@ MonoBehaviour:
   color: {r: 1.4, g: 2.8, b: 1.2, a: 1}
   kind: 27
   character: 0
+  needsFire: 1
   isPassive: 0
   rankValues:
   - 2

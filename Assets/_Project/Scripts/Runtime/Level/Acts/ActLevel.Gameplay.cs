@@ -483,7 +483,9 @@ namespace ItHunts.Level.Acts
             Vector3 inward = Plan.Rooms[d.B].Role == RoomRole.Verrouillee ? n : -n;
             if (Art != null && Art.lockedDoor != null)
             {
-                // Jour 5 (PR #56) : porte verrouillée finie de la DA (6 m de large) ; le reste de l'ouverture est muré.
+                // Jour 5 (PR #56) : porte verrouillée finie de la DA (6 m de large) ; le reste de l'ouverture est muré. Nuit du 27/11 : la
+                // longueur de ces pans suit l'axe de la porte (side) ; tournés d'un quart de tour, ils laissaient 2 m libres de chaque côté
+                // de la porte (on entrait sans payer, playtest du 26/11). Contrôle : ActLevel.LockedRoomLeaks (LockedRoomSealTests).
                 GameObject door = KitPiece(Art.lockedDoor, parent, new Vector3(c.x, sill, c.z), inward, Vector3.one, true);
                 door.name = "Porte de la salle verrouillée";
                 Vector3 side = Vector3.Cross(Vector3.up, inward).normalized;
@@ -491,10 +493,10 @@ namespace ItHunts.Level.Acts
                 if (rest > 0.2f)
                     foreach (float sgn in new[] { -1f, 1f })
                         Solid(parent, "Mur de la porte verrouillée", new Vector3(c.x, sill + hh * 0.5f, c.z) + side * sgn * (3f + rest * 0.5f),
-                            new Vector3(1f, hh, rest), Mathf.Atan2(side.x, side.z) * Mathf.Rad2Deg + 90f, KitBuild.Kind.Mur, null, walkable: false);
+                            new Vector3(1f, hh, rest), Mathf.Atan2(side.x, side.z) * Mathf.Rad2Deg, KitBuild.Kind.Mur, null, walkable: false);
                 if (hh > 6.9f)
                     Solid(parent, "Linteau de la porte verrouillée", new Vector3(c.x, sill + (6.8f + hh) * 0.5f, c.z),
-                        new Vector3(1f, hh - 6.8f, 6f), Mathf.Atan2(side.x, side.z) * Mathf.Rad2Deg + 90f, KitBuild.Kind.Mur, null, walkable: false);
+                        new Vector3(1f, hh - 6.8f, 6f), Mathf.Atan2(side.x, side.z) * Mathf.Rad2Deg, KitBuild.Kind.Mur, null, walkable: false);
                 var ldArt = door.AddComponent<LockedDoor>();
                 if (economy != null)
                     ldArt.Configure(economy);

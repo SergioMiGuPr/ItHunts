@@ -137,20 +137,30 @@ namespace ItHunts.Tests
         }
 
         [Test]
-        public void Chasseurs_ParPaliers_1Puis2_4_6_8_Enrage10()
+        public void Chasseurs_AucunParDefaut_D122_PaliersEncoreRespectes()
+        {
+            // D-122 (playtest du 26/11) : plus de goule qui traque le joueur sans fin ; le système reste, réglable.
+            var a = AssetDatabase.LoadAssetAtPath<WaveSettings>("Assets/_Project/Settings/Waves_Default.asset");
+            Assert.That(a.chaserCounts, Is.All.EqualTo(0), "aucun chasseur permanent");
+            Assert.That(a.chaserEnraged, Is.EqualTo(0), "aucun en Enragé non plus");
+            for (float t = 0f; t <= 900f; t += 50f)
+                Assert.That(WaveMath.ChasersPerPlayer(t, 900f, a), Is.EqualTo(0), $"{t} s");
+            var s = Object.Instantiate(_s);
+            s.chaserTimes = new[] { 0f, 0.15f, 0.35f, 0.55f, 0.75f };
+            s.chaserCounts = new[] { 1, 2, 4, 6, 8 };
+            s.chaserEnraged = 10;
+            Assert.That(WaveMath.ChasersPerPlayer(134f, 900f, s), Is.EqualTo(1), "juste avant 15 %");
+            Assert.That(WaveMath.ChasersPerPlayer(135f, 900f, s), Is.EqualTo(2), "palier, sans interpolation");
+            Assert.That(WaveMath.ChasersPerPlayer(700f, 900f, s), Is.EqualTo(8));
+            Assert.That(WaveMath.ChasersPerPlayer(900f, 900f, s), Is.EqualTo(10), "Enragé");
+            Object.DestroyImmediate(s);
+        }
+
+        [Test]
+        public void Repit_ApresSalleNettoyee_30s_D122()
         {
             var a = AssetDatabase.LoadAssetAtPath<WaveSettings>("Assets/_Project/Settings/Waves_Default.asset");
-            Assert.That(a.chaserTimes, Is.EqualTo(new[] { 0f, 0.15f, 0.35f, 0.55f, 0.75f }));
-            Assert.That(a.chaserCounts, Is.EqualTo(new[] { 1, 2, 4, 6, 8 }));
-            Assert.That(a.chaserEnraged, Is.EqualTo(10));
-            Assert.That(WaveMath.ChasersPerPlayer(0f, 900f, _s), Is.EqualTo(1), "début : 1 par joueur");
-            Assert.That(WaveMath.ChasersPerPlayer(134f, 900f, _s), Is.EqualTo(1), "juste avant 15 %");
-            Assert.That(WaveMath.ChasersPerPlayer(135f, 900f, _s), Is.EqualTo(2), "palier, sans interpolation");
-            Assert.That(WaveMath.ChasersPerPlayer(400f, 900f, _s), Is.EqualTo(4));
-            Assert.That(WaveMath.ChasersPerPlayer(500f, 900f, _s), Is.EqualTo(6));
-            Assert.That(WaveMath.ChasersPerPlayer(700f, 900f, _s), Is.EqualTo(8));
-            Assert.That(WaveMath.ChasersPerPlayer(900f, 900f, _s), Is.EqualTo(10), "Enragé");
-            Assert.That(WaveMath.ChasersPerPlayer(60f, 240f, _s), Is.EqualTo(WaveMath.ChasersPerPlayer(225f, 900f, _s)), "en part du timer");
+            Assert.That(a.clearRespite, Is.EqualTo(30f).Within(0.01f), "répit réglable, environ 30 s");
         }
 
         [Test]

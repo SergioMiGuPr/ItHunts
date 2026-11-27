@@ -66,7 +66,10 @@ namespace ItHunts.HudArt
             v.Panel = go.GetComponent<PanneauOffres>();
             if (v.Panel == null)
                 v.Panel = go.GetComponentInChildren<PanneauOffres>(true);
-            // Plus d'offres que de cartes (Œil du collectionneur, coffre rare : 4 choix et plus) : l'ancien panneau en liste.
+            // Plus d'offres que de cartes (Œil du collectionneur, coffre rare : 4 choix et plus) : nuit du 27/11, le panneau illustré
+            // reçoit des cartes en plus (copies de la dernière) au lieu de l'ancien panneau en liste, sans illustrations (playtest).
+            if (v.Panel != null && v.Panel.cartes != null && v.Panel.cartes.Length > 0 && menu.Offers.Count > v.Panel.cartes.Length)
+                GrowCards(v.Panel, menu.Offers.Count);
             if (v.Panel == null || v.Panel.cartes == null || menu.Offers.Count > v.Panel.cartes.Length)
             {
                 Destroy(v.Root.gameObject);
@@ -88,6 +91,81 @@ namespace ItHunts.HudArt
             _views.Add(v);
             Sync(v);
             return true;
+        }
+
+        /// <summary>Cartes copiées sur la dernière jusqu'à count, sur la même ligne, resserrées pour tenir dans la largeur des cartes d'origine.</summary>
+        public static void GrowCards(PanneauOffres panel, int count)
+        {
+            PanneauOffres.Carte[] cards = panel.cartes;
+            int n0 = cards.Length;
+            PanneauOffres.Carte last = cards[n0 - 1];
+            if (last == null || last.racine == null || count <= n0)
+                return;
+            RectTransform r0 = cards[0]?.racine, r1 = n0 > 1 ? cards[1]?.racine : null;
+            Vector2 step = r0 != null && r1 != null ? r1.anchoredPosition - r0.anchoredPosition : new Vector2(last.racine.rect.width * 1.05f, 0f);
+            var all = new System.Collections.Generic.List<PanneauOffres.Carte>(cards);
+            for (int i = n0; i < count; i++)
+            {
+                GameObject copy = Instantiate(last.racine.gameObject, last.racine.parent, false);
+                copy.name = last.racine.name + " (" + (i + 1) + ")";
+                all.Add(Rewire(last, (RectTransform)copy.transform));
+            }
+
+            // Même centre que les cartes d'origine ; toute la ligne réduite pour garder sa largeur.
+            float k = Mathf.Min(1f, (float)n0 / count);
+            Vector2 center = r0 != null ? r0.anchoredPosition + step * (n0 - 1) * 0.5f : Vector2.zero;
+            for (int i = 0; i < all.Count; i++)
+            {
+                RectTransform rt = all[i]?.racine;
+                if (rt == null)
+                    continue;
+                rt.anchoredPosition = center + step * k * (i - (count - 1) * 0.5f);
+                rt.localScale = Vector3.one * k;
+            }
+
+            panel.cartes = all.ToArray();
+        }
+
+        /// <summary>Copie d'une carte : chaque référence vers un enfant de la carte d'origine pointe vers le même enfant de la copie.</summary>
+        private static PanneauOffres.Carte Rewire(PanneauOffres.Carte src, RectTransform copyRoot)
+        {
+            var dst = new PanneauOffres.Carte();
+            foreach (System.Reflection.FieldInfo f in typeof(PanneauOffres.Carte).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public))
+            {
+                object value = f.GetValue(src);
+                if (f.FieldType == typeof(RectTransform) && ReferenceEquals(value, src.racine))
+                    f.SetValue(dst, copyRoot);
+                else if (value is Component c)
+                    f.SetValue(dst, Same(c, src.racine, copyRoot));
+                else if (value is Component[] arr)
+                {
+                    var res = (Component[])System.Array.CreateInstance(f.FieldType.GetElementType(), arr.Length);
+                    for (int i = 0; i < arr.Length; i++)
+                        res[i] = arr[i] != null ? Same(arr[i], src.racine, copyRoot) : null;
+                    f.SetValue(dst, res);
+                }
+                else if (!f.IsNotSerialized || f.FieldType.IsValueType)
+                    f.SetValue(dst, value);
+            }
+
+            dst.abordable = true;
+            dst.proprietaire = 0;
+            return dst;
+        }
+
+        private static Component Same(Component c, Transform srcRoot, Transform dstRoot)
+        {
+            if (c == null)
+                return null;
+            if (!c.transform.IsChildOf(srcRoot))
+                return c;                                                // hors de la carte : partagé
+            var path = new System.Collections.Generic.List<int>();
+            for (Transform t = c.transform; t != srcRoot; t = t.parent)
+                path.Add(t.GetSiblingIndex());
+            Transform d = dstRoot;
+            for (int i = path.Count - 1; i >= 0 && d != null; i--)
+                d = path[i] < d.childCount ? d.GetChild(path[i]) : null;
+            return d != null ? d.GetComponent(c.GetType()) : null;
         }
 
         private void Remove(View v)

@@ -225,24 +225,49 @@ namespace ItHunts.Enemies
                         continue;
                     }
 
-                    NavMeshLinkInstance li = NavMesh.AddLink(new NavMeshLinkData
+                    // Nuit du 27/11 : un pied d'escalade posé sur le bord même du NavMesh (entre la masse d'un escalier et un pilier) donnait un
+                    // lien que le chemin ne prenait jamais (le traqueur faisait le tour de la carte). Les bouts d'une escalade sont recalés à
+                    // 2 m au moins du bord, et le lien n'est gardé que si le chemin le prend vraiment ; sinon, pied suivant.
+                    bool climb = StalkerPassageMath.IsClimb(p.kind);
+                    List<Vector3> feet = climb ? InsetCandidates(ha.position, filter) : new List<Vector3> { ha.position };
+                    Vector3 top = climb ? Inset(hb.position, filter) : hb.position;
+                    bool linked = false;
+                    foreach (Vector3 foot in feet)
                     {
-                        startPosition = ha.position,
-                        endPosition = hb.position,
-                        width = p.width,
-                        costModifier = StalkerPassageMath.CostModifier(p.kind, ha.position, hb.position, stalkerSettings),
-                        bidirectional = true,
-                        area = 0,
-                        agentTypeID = StalkerAgent,
-                    });
-                    if (li.valid)
-                    {
+                        if (!StalkerPassageMath.Allowed(p.kind, foot, top, stalkerSettings))
+                            continue;
+                        NavMeshLinkInstance li = NavMesh.AddLink(new NavMeshLinkData
+                        {
+                            startPosition = foot,
+                            endPosition = top,
+                            width = climb ? Mathf.Min(p.width, 4f) : p.width,
+                            costModifier = StalkerPassageMath.CostModifier(p.kind, foot, top, stalkerSettings),
+                            bidirectional = true,
+                            area = 0,
+                            agentTypeID = StalkerAgent,
+                        });
+                        if (!li.valid)
+                            continue;
+                        if (climb && !LinkTaken(foot, top, filter))
+                        {
+                            NavMesh.RemoveLink(li);
+                            ClimbFeetRetried++;
+                            continue;
+                        }
+
                         _links.Add(li);
                         StalkerLinkCount++;
-                        p.LinkA = ha.position;
-                        p.LinkB = hb.position;
+                        p.LinkA = foot;
+                        p.LinkB = top;
                         p.Linked = true;
+                        if (climb)
+                            p.width = Mathf.Min(p.width, 4f);
+                        linked = true;
+                        break;
                     }
+
+                    if (!linked)
+                        StalkerLinksRejected++;
                 }
 
             if (StalkerAgent != EnemyLocomotion.NoAgent && stalkerSettings != null && stalkerSettings.passagesEnabled && bridgeStalkerIslands
@@ -255,6 +280,65 @@ namespace ItHunts.Enemies
 
             BuildMilliseconds = watch.ElapsedMilliseconds;
             Built = true;
+        }
+
+        /// <summary>Pieds d'escalade essayés en plus parce que le chemin ne prenait pas le lien (mesure).</summary>
+        public int ClimbFeetRetried { get; private set; }
+
+        private NavMeshPath _linkPath;
+
+        /// <summary>Le chemin d'un bout à l'autre est court (au plus deux fois la ligne droite + 6 m) : le lien, ou un escalier tout proche.</summary>
+        private bool LinkTaken(Vector3 a, Vector3 b, NavMeshQueryFilter filter)
+        {
+            _linkPath ??= new NavMeshPath();
+            if (!NavMesh.CalculatePath(a, b, filter, _linkPath) || _linkPath.status != NavMeshPathStatus.PathComplete)
+                return false;
+            float len = 0f;
+            Vector3[] c = _linkPath.corners;
+            for (int i = 1; i < c.Length; i++)
+                len += Vector3.Distance(c[i - 1], c[i]);
+            return len <= Vector3.Distance(a, b) * 2f + 6f;
+        }
+
+        /// <summary>Point du NavMesh à 4 m au plus, à la même hauteur, le plus loin possible du bord (2 m suffisent), le plus proche sinon.</summary>
+        private static Vector3 Inset(Vector3 at, NavMeshQueryFilter filter)
+        {
+            List<Vector3> c = InsetCandidates(at, filter);
+            return c.Count > 0 ? c[0] : at;
+        }
+
+        /// <summary>Candidats autour d'un bout : d'abord ceux à 2 m au moins du bord, du plus proche au plus loin ; le point lui-même à la fin.</summary>
+        private static List<Vector3> InsetCandidates(Vector3 at, NavMeshQueryFilter filter)
+        {
+            var good = new List<(float d, Vector3 p)>();
+            var weak = new List<(float edge, Vector3 p)>();
+            for (float k = 0f; k <= 4.01f; k += 1f)
+                for (int a = 0; a < (k == 0f ? 1 : 12); a++)
+                {
+                    Vector3 probe = at + Quaternion.Euler(0f, a * 30f, 0f) * Vector3.forward * k;
+                    if (!NavMesh.SamplePosition(probe, out NavMeshHit h, 1f, filter) || Mathf.Abs(h.position.y - at.y) > 1.2f)
+                        continue;
+                    // Même surface que le bout d'origine (aucun bord entre les deux) : jamais l'autre face d'un pilier ou d'un mur fin.
+                    if (k > 0f && NavMesh.Raycast(at, h.position, out _, filter))
+                        continue;
+                    float edge = NavMesh.FindClosestEdge(h.position, out NavMeshHit e, filter) ? e.distance : 0f;
+                    if (edge >= 2f)
+                        good.Add((Vector3.Distance(h.position, at), h.position));
+                    else
+                        weak.Add((edge, h.position));
+                }
+
+            good.Sort((x, y) => x.d.CompareTo(y.d));
+            weak.Sort((x, y) => y.edge.CompareTo(x.edge));
+            var r = new List<Vector3>();
+            foreach (var g in good)
+                if (r.Count < 4 && r.TrueForAll(q => Vector3.Distance(q, g.p) > 1.5f))
+                    r.Add(g.p);
+            if (weak.Count > 0 && r.Count < 5)
+                r.Add(weak[0].p);
+            if (r.TrueForAll(q => Vector3.Distance(q, at) > 0.3f))
+                r.Add(at);                                               // le bout d'origine, toujours en dernier recours
+            return r;
         }
 
         [Tooltip("Jour 5 : chaque îlot du NavMesh du traqueur sans chemin vers le départ (poche entre colonnes, galerie sans escalade, " +
