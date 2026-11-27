@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """Écran de choix du personnage : la maquette ui_choix_perso_v01 comme base (cadre, fond flouté du campement, bouton
 Valider) ; l'intérieur du panneau vient de ui_choix_fond_v01 recalé (sans grand personnage, artefact, textes, skins).
-Grands personnages = ui_choix_<perso> - fond (zone de gauche) ; artefacts = passe3 - fond (lanterne) et
-barillet - caméléon (barillet) ; vignettes découpées de passe3 (renard illuminé, autres discrets ; renard discret pris
+Grands personnages = ui_choix_<perso> - fond (zone de gauche) ; artefacts : artefacts_choix.py (nuit 7) ; vignettes découpées de passe3 (renard illuminé, autres discrets ; renard discret pris
 dans ui_choix_cameleon), version illuminée = vignette discrète + lueur du cadre du renard recolorée. Sorties :
 Assets/Art/UI/Menus/Choix/ + Choix_Layout.json (pixels de la maquette, 1671 x 941).
 
@@ -28,8 +27,6 @@ DROITE = (880, 226, 1250, 452)          # artefact et ses traînées
 VIGNETTES = {"Renard": (500, 68, 680, 246), "Koala": (680, 68, 852, 246), "Cameleon": (852, 68, 1024, 246), "Hibou": (1024, 68, 1196, 246)}
 PORTRAIT_INSET = 16
 COULEURS = {"Renard": (0.87, 0.22, 0.25), "Koala": (0.33, 0.78, 0.32), "Cameleon": (0.90, 0.62, 0.20), "Hibou": (0.55, 0.82, 1.0)}
-# corps des artefacts (le reste = traînées de lumière, qui tournent) : ellipse cx, cy, rx, ry
-CORPS_ARTEFACT = {"Lanterne": (1050, 336, 50, 100), "Barillet": (1050, 330, 62, 66)}
 # zone de texte (entre les deux filets ornementaux) et styles mesurés
 TEXTE = (900, 458, 1206, 636)
 # zones qui changent : (rect, rempli entièrement) ; sinon masque par différence dans le rect
@@ -143,21 +140,9 @@ def main():
         ys = np.nonzero((a[:, x0:x1] > 0.6).any(1))[0]
         lay["personnages"][n] = {"rect": r_, "pieds_y": int(ys.max()) if len(ys) else y1}
 
-    # ---------------- 3. artefacts : lanterne = passe3 - fond ; barillet = barillet - caméléon (et différent du fond)
+    # ---------------- 3. artefacts : refaits la nuit 7 par artefacts_choix.py (Choix_Art_*, cadre commun 850,192,400,300) ;
+    # les anciennes découpes Choix_Artefact_Lanterne / _Barillet et leurs traînées ne sont plus produites.
     lay["artefacts"] = {}
-    for n, C, B in (("Lanterne", imgs["passe3"], FD), ("Barillet", imgs["artefact_barillet"], imgs["cameleon"])):
-        roi = reg.rect_mask(h, w, *DROITE, feather=4)
-        a = reg.diff_alpha(C, B, 0.04, 0.14, r=1.0, roi=roi)
-        if n == "Barillet":
-            a = np.minimum(a, reg.diff_alpha(C, FD, 0.04, 0.14, r=1.0, roi=roi))
-        F = reg.unmix(C, FD, a)
-        cx, cy, rx, ry = CORPS_ARTEFACT[n]
-        body = reg.ellipse_mask(h, w, cx, cy, rx, ry, feather=0.25)
-        box = reg.bbox(a, pad=6)
-        lay["pieces"]["Choix_Artefact_" + n] = reg.save_piece(os.path.join(OUT, "Choix_Artefact_%s.png" % n), F, a * body, box)
-        lay["pieces"]["Choix_Artefact_%s_Trainees" % n] = reg.save_piece(os.path.join(OUT, "Choix_Artefact_%s_Trainees.png" % n), F, a * (1 - body), box)
-        bx, by, bw, bh = lay["pieces"]["Choix_Artefact_" + n]
-        lay["artefacts"][n] = {"rect": [bx, by, bw, bh], "centre_uv": [(cx - bx) / bw, 1 - (cy - by) / bh]}
 
     # ---------------- 4. vignettes
     P3 = imgs["passe3"]; CA = imgs["cameleon"]
