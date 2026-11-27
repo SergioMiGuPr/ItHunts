@@ -69,7 +69,14 @@ namespace ItHunts.HudArt
             // Plus d'offres que de cartes (Œil du collectionneur, coffre rare : 4 choix et plus) : nuit du 27/11, le panneau illustré
             // reçoit des cartes en plus (copies de la dernière) au lieu de l'ancien panneau en liste, sans illustrations (playtest).
             if (v.Panel != null && v.Panel.cartes != null && v.Panel.cartes.Length > 0 && menu.Offers.Count > v.Panel.cartes.Length)
-                GrowCards(v.Panel, menu.Offers.Count);
+            {
+                float before = ((RectTransform)v.Panel.transform).rect.width;
+                float grown = before + GrowCards(v.Panel, menu.Offers.Count);
+                // 5 cartes et plus (Œil du collectionneur), écran partagé : tout le panneau réduit pour tenir dans la vue du joueur.
+                float room = v.Root.rect.width > 1f ? v.Root.rect.width * 0.96f : grown;
+                if (grown > room)
+                    go.transform.localScale = Vector3.one * (room / grown);
+            }
             if (v.Panel == null || v.Panel.cartes == null || menu.Offers.Count > v.Panel.cartes.Length)
             {
                 Destroy(v.Root.gameObject);
@@ -94,13 +101,13 @@ namespace ItHunts.HudArt
         }
 
         /// <summary>Cartes copiées sur la dernière jusqu'à count, sur la même ligne ; le panneau s'élargit d'autant.</summary>
-        public static void GrowCards(PanneauOffres panel, int count)
+        public static float GrowCards(PanneauOffres panel, int count)
         {
             PanneauOffres.Carte[] cards = panel.cartes;
             int n0 = cards.Length;
             PanneauOffres.Carte last = cards[n0 - 1];
             if (last == null || last.racine == null || count <= n0)
-                return;
+                return 0f;
             RectTransform r0 = cards[0]?.racine, r1 = n0 > 1 ? cards[1]?.racine : null;
             Vector2 step = r0 != null && r1 != null ? r1.anchoredPosition - r0.anchoredPosition : new Vector2(last.racine.rect.width * 1.05f, 0f);
             var all = new System.Collections.Generic.List<PanneauOffres.Carte>(cards);
@@ -138,6 +145,7 @@ namespace ItHunts.HudArt
                     all[i].racine.anchoredPosition = center + step * (i - (count - 1) * 0.5f);
 
             panel.cartes = all.ToArray();
+            return extra;
         }
 
         /// <summary>Copie d'une carte : chaque référence vers un enfant de la carte d'origine pointe vers le même enfant de la copie.</summary>

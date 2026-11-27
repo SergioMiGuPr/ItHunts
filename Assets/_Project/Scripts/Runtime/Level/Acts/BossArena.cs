@@ -63,7 +63,7 @@ namespace ItHunts.Level.Acts
             go.transform.localScale = scale;
             if (!colliders)
                 foreach (Collider c in go.GetComponentsInChildren<Collider>(true))
-                    Destroy(c);
+                    DestroyImmediate(c);
             return go;
         }
 

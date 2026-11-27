@@ -450,7 +450,7 @@ namespace ItHunts.Enemies
         private float _nextClearCheck, _respiteUntil = float.NegativeInfinity;
 
         /// <summary>Répit en cours : aucune apparition, les annonces en cours sont annulées.</summary>
-        public bool InRespite => Time.time < _respiteUntil;
+        public bool InRespite => Time.time < _respiteUntil && !(_zone != null && _zone.Enraged);   // jamais en Enragé (D-122)
         /// <summary>Secondes de répit restantes (0 hors répit).</summary>
         public float RespiteLeft => Mathf.Max(0f, _respiteUntil - Time.time);
         /// <summary>Répits déclenchés (mesures, tests).</summary>

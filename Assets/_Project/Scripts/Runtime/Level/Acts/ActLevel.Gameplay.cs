@@ -439,7 +439,7 @@ namespace ItHunts.Level.Acts
                 kd.name = "Porte de sortie";
                 foreach (Collider col in kd.GetComponentsInChildren<Collider>(true))
                     if (col.transform == kd.transform)
-                        Destroy(col);                                     // l'encadrement : les murs portent déjà la collision
+                        DestroyImmediate(col);                            // l'encadrement : les murs portent déjà la collision
                 kd.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();
                 door = kd.transform;
             }
@@ -496,7 +496,7 @@ namespace ItHunts.Level.Acts
                             new Vector3(2f, hh, rest), Mathf.Atan2(side.x, side.z) * Mathf.Rad2Deg, KitBuild.Kind.Mur, null, walkable: false);   // 2 m : affleure l'arc de la porte (pas de recoin sous son surplomb)
                 if (hh > 6.9f)
                     Solid(parent, "Linteau de la porte verrouillée", new Vector3(c.x, sill + (6.8f + hh) * 0.5f, c.z),
-                        new Vector3(1f, hh - 6.8f, 6f), Mathf.Atan2(side.x, side.z) * Mathf.Rad2Deg, KitBuild.Kind.Mur, null, walkable: false);
+                        new Vector3(2f, hh - 6.8f, 6f), Mathf.Atan2(side.x, side.z) * Mathf.Rad2Deg, KitBuild.Kind.Mur, null, walkable: false);   // 2 m comme les pans
                 var ldArt = door.AddComponent<LockedDoor>();
                 if (economy != null)
                     ldArt.Configure(economy);
