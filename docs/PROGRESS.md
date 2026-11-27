@@ -23,8 +23,20 @@
   bot face au boss). EditMode 596 réussis, 1 non concluant (attendu).
 - **Build** `Builds/Nuit_2026-11-27/` : médiane 11,9 à 15,0 ms (67 à 84 i/s) ; garde-fou du plantage : 5 fermetures propres sur 5.
 - Relectures indépendantes : deux passes, tout corrigé (voir commits `bb2384c` et `dbbd4f7`).
+- **Fin de nuit** : PR d'art #65 (`art-fin-7`, bilan de la DA, docs seulement) fusionnée. Rochers du jardin : plus d'enfoncement
+  (`sink` retiré de `ActLevel.Dressing.cs`, y des rochers à 0 dans `Acte3.txt`, fait en `b2adbd7`, arrivé sur `main` avec la fusion
+  d'`animations`). Compilation sans erreur, EditMode 596 réussis, 1 non concluant (attendu). Art n'a pas lancé sa revue des cartes
+  (l'en-tête « À revoir » n'était que sur `animations`) : elle peut se faire maintenant sur `main`.
 
-**Reste / à surveiller :** économie du bot (âmes insuffisantes pour la sortie à 10:00 sur plusieurs cartes, déjà avant la nuit, à juger
+**Reste, dans l'ordre :**
+1. **Rochers du jardin à vérifier en jeu** (acte III, graines 11 et 22) : posés au sol, ni enterrés ni flottants (captures).
+2. **Sous-bois de la PR #64** : emprise plus grande dans `Jardin_Serre_B`, `KiosqueEns_B`, `Clairiere_A/B`, `FontaineBancs_B`
+   (contrôle du décor acte III) ; **images par seconde du jardin** avec les lisières en cartes (+36 % de triangles).
+3. Tests PlayMode relancés après `dbbd4f7` (linteau de la porte payée, porte de sortie, arène du boss) **interrompus** :
+   `MapRuleTests.Etanche_*` et `UpgradeOffersTests` (acte III graine 22) à refaire.
+4. **Build final** pas fait (le build `Builds/Nuit_2026-11-27/` de 05:13 précède `dbbd4f7`) : à refaire, résolution sauvée et remise.
+
+**À surveiller :** économie du bot (âmes insuffisantes pour la sortie à 10:00 sur plusieurs cartes, déjà avant la nuit, à juger
 en playtest avec le répit) ; jardin graine 22 limité par le GPU (1 836 appels de dessin) ; un toit de la DA pour le pavillon fermé.
 
 ## Pause du 2026-11-26 (seconde revue des cartes, PR #61) : fait / reste
