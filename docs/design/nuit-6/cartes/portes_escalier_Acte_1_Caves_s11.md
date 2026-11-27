@@ -1,0 +1,46 @@
+# Portes d'escalier : Acte_1_Caves, graine 11 (Les puits noyés)
+
+42 portes en haut ou en bas d'un escalier ; le traqueur fait l'aller et le retour.
+
+- passe porte 6 (Ossuaire / Cave à vin) au (-224, 8, 128), dénivelé 3,9 m : 19,1 + 18,7 s
+- passe porte 7 (Ossuaire / Gouffre) au (-160, 8, 128), dénivelé 3,4 m : 3,9 + 4,3 s
+- passe porte 8 (Crypte / Gouffre) au (-96, 8, 128), dénivelé 3,4 m : 3,9 + 4,3 s
+- passe porte 9 (Grande porte / Salle de torture) au (0, 8, 112), dénivelé 4,8 m : 3,9 + 4,3 s
+- passe porte 10 (Cachot / Citerne) au (96, 8, 128), dénivelé 3,4 m : 3,5 + 3,6 s
+- passe porte 11 (Galerie de mine / Citerne) au (160, 8, 144), dénivelé 3,4 m : 3,9 + 4,3 s
+- passe porte 12 (Galerie de mine / Réserve) au (224, 8, 144), dénivelé 3,9 m : 6,7 + 6,0 s
+- passe porte 14 (Gouffre / Salle de torture) au (-64, 4, 88), dénivelé 4,1 m : 6,7 + 5,6 s
+- passe porte 15 (Salle de torture / Citerne) au (64, 4, 88), dénivelé 3,3 m : 4,0 + 4,3 s
+- passe porte 17 (Cave à vin / Cachot II) au (-224, 4, 64), dénivelé 4,1 m : 7,9 + 7,2 s
+- passe porte 18 (Salle de torture / Grand puits) au (0, 0, 64), dénivelé 8,0 m : 5,5 + 1,1 s
+- passe porte 19 (Citerne / Salle des gardes II) au (96, 4, 64), dénivelé 4,1 m : 12,3 + 11,4 s
+- passe porte 20 (Citerne / Galerie de mine II) au (160, 4, 64), dénivelé 3,4 m : 3,9 + 4,3 s
+- passe porte 21 (Réserve / Galerie de mine II) au (224, 4, 64), dénivelé 3,4 m : 3,9 + 4,3 s
+- passe porte 23 (Cachot II / Grotte inondée) au (-192, 0, 32), dénivelé 8,0 m : 5,0 + 5,0 s
+- passe porte 24 (Chapelle souterraine / Grotte inondée) au (-192, 0, -16), dénivelé 8,0 m : 5,5 + 5,0 s
+- passe porte 26 (Grotte inondée / Salle des gardes) au (-128, 0, -32), dénivelé 4,8 m : 3,9 + 4,3 s
+- passe porte 28 (Salle des gardes / Grand puits) au (-64, 0, -48), dénivelé 8,0 m : 5,5 + 0,9 s
+- passe porte 29 (Grand puits / Salle des gardes II) au (64, 0, 32), dénivelé 8,0 m : 5,5 + 1,1 s
+- passe porte 30 (Grand puits / Réserve II) au (64, -4, -32), dénivelé 3,3 m : 3,9 + 4,3 s
+- passe porte 31 (Grand puits / Citerne II) au (0, -4, -64), dénivelé 3,3 m : 3,9 + 4,3 s
+- passe porte 32 (Salle des gardes II / Réserve II) au (96, 0, 0), dénivelé 4,0 m : 6,7 + 6,0 s
+- passe porte 35 (Galerie de mine II / Ossuaire II) au (192, 0, 0), dénivelé 3,2 m : 4,0 + 4,3 s
+- passe porte 38 (Salle des gardes / Cave à vin II) au (-96, 0, -64), dénivelé 3,4 m : 3,9 + 4,3 s
+- passe porte 40 (Crypte II / Cave à vin II) au (-128, 0, -96), dénivelé 3,4 m : 3,9 + 4,3 s
+- passe porte 42 (Citerne II / Salle de torture II) au (64, 0, -96), dénivelé 3,3 m : 3,9 + 4,3 s
+- passe porte 43 (Réserve II / Salle de torture II) au (96, 0, -64), dénivelé 4,0 m : 8,8 + 7,9 s
+- passe porte 44 (Ossuaire II / Salle de torture II) au (160, 0, -64), dénivelé 3,4 m : 3,6 + 3,9 s
+- passe porte 47 (Crypte II / Chapelle souterraine II) au (-160, 4, -128), dénivelé 4,1 m : 6,7 + 6,0 s
+- passe porte 48 (Cave à vin II / Chapelle souterraine II) au (-96, 4, -128), dénivelé 8,1 m : 5,5 + 5,0 s
+- passe porte 49 (Citerne II / Salle du puits) au (0, 0, -128), dénivelé 3,6 m : 3,9 + 4,3 s
+- passe porte 51 (Salle de torture II / Grotte inondée II) au (160, 4, -128), dénivelé 3,4 m : 3,9 + 4,3 s
+- passe porte 52 (Réserve III / Chapelle souterraine II) au (-192, 4, -160), dénivelé 4,1 m : 9,0 + 7,8 s
+- passe porte 53 (Chapelle souterraine II / Salle du puits) au (-64, 4, -160), dénivelé 4,1 m : 6,7 + 6,0 s
+- passe porte 55 (Cachot III / Grotte inondée II) au (128, 4, -160), dénivelé 4,1 m : 6,7 + 6,0 s
+- passe porte 57 (Chapelle souterraine II / Galerie de mine III) au (-160, 4, -192), dénivelé 3,3 m : 3,9 + 4,3 s
+- passe porte 58 (Chapelle souterraine II / Ossuaire III) au (-96, 4, -192), dénivelé 8,1 m : 5,5 + 5,0 s
+- passe porte 59 (Galerie de mine III / Ossuaire III) au (-128, 0, -224), dénivelé 3,4 m : 3,9 + 4,3 s
+- passe porte 60 (Ossuaire III / Salle des gardes III) au (-64, 0, -240), dénivelé 3,5 m : 3,9 + 4,3 s
+- passe porte 61 (Ossuaire III / Salle du puits) au (-64, 0, -208), dénivelé 3,5 m : 3,9 + 4,3 s
+- passe porte 66 (Grotte inondée II / Gouffre II) au (160, 4, -192), dénivelé 3,3 m : 3,9 + 4,3 s
+- passe porte 68 (Gouffre II / Crypte III) au (192, 4, -224), dénivelé 3,3 m : 3,9 + 4,3 s

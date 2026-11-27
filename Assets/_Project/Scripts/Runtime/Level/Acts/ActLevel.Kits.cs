@@ -24,7 +24,7 @@ namespace ItHunts.Level.Acts
             go.transform.localScale = scale;
             if (!keepColliders)
                 foreach (Collider c in go.GetComponentsInChildren<Collider>(true))
-                    Destroy(c);
+                    DestroyImmediate(c);                                 // nuit du 27/11 : tout de suite, sinon l'audit du décor les croit là
             foreach (Light l in go.GetComponentsInChildren<Light>(true))
             {
                 if (l.GetComponent<AmbianceLight>() == null && l.type == LightType.Point)
@@ -217,7 +217,7 @@ namespace ItHunts.Level.Acts
         private void DressWell(GameObject well, Vector3 at)
         {
             foreach (Collider c in well.GetComponentsInChildren<Collider>(true))
-                Destroy(c);
+                DestroyImmediate(c);
             var rim = well.AddComponent<CapsuleCollider>();
             rim.radius = 1.58f;
             rim.height = 4f;

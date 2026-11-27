@@ -175,7 +175,7 @@ namespace ItHunts.Level
             model.transform.localRotation = Quaternion.Euler(0f, bestRot, 0f);
             model.transform.localScale = Vector3.one * scale;
             foreach (Collider c in model.GetComponentsInChildren<Collider>(true))
-                Object.Destroy(c);                                      // la greybox garde ses colliders (physique, NavMesh, prise)
+                Object.DestroyImmediate(c);                             // la greybox garde ses colliders ; tout de suite (audit du décor)
             foreach (Renderer r in grey)
                 r.enabled = false;
             var modelRenderers = model.GetComponentsInChildren<Renderer>(true);
