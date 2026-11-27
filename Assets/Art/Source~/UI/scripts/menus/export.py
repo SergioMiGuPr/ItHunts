@@ -82,7 +82,7 @@ def main():
                 L.append("valeur Campement_cartouche_%d %.1f %.1f %.1f %.1f" % (place, *r))
         if ecran == "Choix":
             for n, a in lay["artefacts"].items():
-                L.append("valeur Choix_centre_%s %.4f %.4f" % (n, *a["centre_uv"]))
+                pass   # nuit 7 : plus de centre d'artefact (artefacts_choix.py)
             for n, p in lay["personnages"].items():
                 L.append("valeur Choix_pieds_%s %d" % (n, p["pieds_y"]))
     cad = json.load(open(os.path.join(MEN, "Commun", "Commun_Layout.json"), encoding="utf-8"))

@@ -53,10 +53,6 @@ piece Choix Choix_Renard 479.00 237.00 342.00 436.00
 piece Choix Choix_Koala 434.00 258.00 406.00 424.00
 piece Choix Choix_Cameleon 449.00 245.00 391.00 437.00
 piece Choix Choix_Hibou 434.00 234.00 406.00 448.00
-piece Choix Choix_Artefact_Lanterne 875.00 221.00 379.00 236.00
-piece Choix Choix_Artefact_Lanterne_Trainees 875.00 221.00 379.00 236.00
-piece Choix Choix_Artefact_Barillet 875.00 221.00 299.00 236.00
-piece Choix Choix_Artefact_Barillet_Trainees 875.00 221.00 299.00 236.00
 piece Choix Choix_Vignette_Renard_Discrete 500.00 68.00 180.00 178.00
 piece Choix Choix_Vignette_Koala_Discrete 680.00 68.00 172.00 178.00
 piece Choix Choix_Vignette_Cameleon_Discrete 852.00 68.00 172.00 178.00
@@ -67,8 +63,6 @@ piece Choix Choix_Vignette_Cameleon_Illuminee 852.00 68.00 172.00 178.00
 piece Choix Choix_Vignette_Hibou_Illuminee 1024.00 68.00 172.00 178.00
 piece Choix Choix_Valider 655.00 788.00 367.00 107.00
 valeur Choix_taille 1671 941
-valeur Choix_centre_Lanterne 0.4617 0.5127
-valeur Choix_centre_Barillet 0.5853 0.5381
 valeur Choix_pieds_Renard 661
 valeur Choix_pieds_Koala 661
 valeur Choix_pieds_Cameleon 661
