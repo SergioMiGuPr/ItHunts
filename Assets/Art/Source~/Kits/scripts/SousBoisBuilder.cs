@@ -44,7 +44,7 @@ public static class SousBoisBuilder
         var roche = Charge("M_Bib_RocheCave_Peint");
         var ecorce = Charge("M_Bib_Ecorce");
         // 2. remappage des FBX
-        foreach (string n in new[] { "SM_Jardin_SousBois_A", "SM_Jardin_SousBois_B" })
+        foreach (string n in new[] { "SM_Jardin_SousBois_A", "SM_Jardin_SousBois_B", "SM_Jardin_Lisiere_12m", "SM_Jardin_Lisiere_Coin" })
         {
             var mi = (ModelImporter)AssetImporter.GetAtPath(KIT + n + ".fbx");
             mi.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "M_Kit_SousBois"), m);
@@ -54,25 +54,43 @@ public static class SousBoisBuilder
         foreach (string n in new[] { "SM_Jardin_Rocher_Petit", "SM_Jardin_Rocher_Moyen", "SM_Jardin_Rocher_Grand" })
             AssetDatabase.ImportAsset(KIT + n + ".fbx", ImportAssetOptions.ForceUpdate);
         // 3. prefabs
-        foreach (string n in new[] { "Jardin_SousBois_A", "Jardin_SousBois_B", "Jardin_Rocher_Petit", "Jardin_Rocher_Moyen", "Jardin_Rocher_Grand" })
+        foreach (string n in new[] { "Jardin_SousBois_A", "Jardin_SousBois_B", "Jardin_Rocher_Petit", "Jardin_Rocher_Moyen", "Jardin_Rocher_Grand",
+                                     "Jardin_Lisiere_12m", "Jardin_Lisiere_Coin" })
         {
             string path = PRE + n + ".prefab";
+            var modele = AssetDatabase.LoadAssetAtPath<GameObject>(KIT + "SM_" + n + ".fbx");
             var root = PrefabUtility.LoadPrefabContents(path);
             try
             {
+                // enfants du modèle absents du prefab (Deco_Feuillage des lisières, nuit 7) : ajoutés avec leur maillage
+                foreach (var mm in modele.GetComponentsInChildren<MeshFilter>(true))
+                {
+                    if (mm.transform == modele.transform || root.transform.Find(mm.name) != null) continue;
+                    var go = new GameObject(mm.name);
+                    go.layer = root.layer;
+                    go.transform.SetParent(root.transform, false);
+                    go.transform.localPosition = mm.transform.localPosition; go.transform.localRotation = mm.transform.localRotation;
+                    go.transform.localScale = mm.transform.localScale;
+                    go.AddComponent<MeshFilter>().sharedMesh = mm.sharedMesh;
+                    go.AddComponent<MeshRenderer>();
+                    sb.AppendLine(n + " : enfant ajouté " + mm.name);
+                }
                 foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true))
                 {
                     var r = mf.GetComponent<MeshRenderer>();
-                    bool deco = mf.name == "Deco_SansCollision";
-                    if (n.Contains("SousBois") && r != null)
-                        r.sharedMaterials = deco ? new[] { m } : new[] { ecorce, roche };
+                    bool deco = mf.name.StartsWith("Deco_");
+                    if (mf.name.StartsWith("Col_")) { sb.AppendLine($"{n}/{mf.name} : collision seule"); continue; }
+                    // matériaux : ceux du modèle importé (remappés), même ordre que ses sous-maillages
+                    var mr = mf.transform == root.transform ? modele.GetComponent<MeshRenderer>()
+                           : modele.transform.Find(mf.name)?.GetComponent<MeshRenderer>();
+                    if (r != null && mr != null && (n.Contains("SousBois") || n.Contains("Lisiere"))) r.sharedMaterials = mr.sharedMaterials;
                     var mc = mf.GetComponent<MeshCollider>();
                     var bc = mf.GetComponent<BoxCollider>();
                     var b = mf.sharedMesh != null ? mf.sharedMesh.bounds : new Bounds();
                     // petit rocher : boîte de KitBuilder (on l'enjambe), recalée sur le maillage recalé ; pas de MeshCollider en plus
                     if (bc != null) { bc.center = b.center; bc.size = b.size; if (mc != null) { Object.DestroyImmediate(mc); mc = null; } }
                     if (deco && mc != null) { Object.DestroyImmediate(mc); mc = null; }
-                    if (!deco && mc == null && bc == null) mc = mf.gameObject.AddComponent<MeshCollider>();
+                    if (!deco && mc == null && bc == null && !n.Contains("Lisiere")) mc = mf.gameObject.AddComponent<MeshCollider>();   // lisière : Col_Lisiere bloque
                     if (mc != null) mc.sharedMesh = mf.sharedMesh;
                     sb.AppendLine($"{n}/{mf.name} : maillage {(mf.sharedMesh ? mf.sharedMesh.name : "MANQUANT")} {mf.sharedMesh?.triangles.Length / 3} tris, " +
                                   $"sous-maillages {mf.sharedMesh?.subMeshCount}, matériaux {string.Join(",", r.sharedMaterials.Select(x => x ? x.name : "null"))}, " +

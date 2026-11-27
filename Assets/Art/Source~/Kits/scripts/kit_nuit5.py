@@ -373,122 +373,6 @@ def fenetre_vue(S, nom, **kw):
     return ob
 
 
-# =================================================================== 8. lisière de forêt (acte III)
-def _feuillage(k, c, r, h, m, rnd, n=7, dents=11, aplat=0.35, normale=None):
-    """Masse de feuillage en cartes croisées dentelées (silhouette encrée lisible, jamais en boule) : n cartes verticales
-    tournées autour de c, contour en dents irrégulières, épaisseur nulle (deux faces)."""
-    for i in range(n):
-        ang = math.pi * i / n + rnd.uniform(-0.15, 0.15)
-        d = Vector((math.cos(ang), math.sin(ang), 0))
-        pts = []
-        for j in range(dents * 2):
-            t = j / (dents * 2)
-            a = 2 * math.pi * t
-            rr = (1.0 if j % 2 == 0 else 0.8 + rnd.uniform(-0.1, 0.08)) * r * (1 + rnd.uniform(-0.16, 0.16))
-            x = math.cos(a) * rr
-            z = math.sin(a) * rr * (h / (2 * r))
-            if z < -h * aplat:
-                z = -h * aplat + (z + h * aplat) * 0.25
-            pts.append(Vector(c) + d * x + Vector((0, 0, z)))
-        k.face(pts, m)
-        k.face(list(reversed(pts)), m)
-
-
-def lisiere(S, nom, Lx=12.0, coin=False):
-    """Lisière de forêt dense de Lx m (pivot au sol, au milieu du bord avant ; la forêt s'étend vers +Y sur 6.5 m) : rang de
-    troncs (Ø 0.35 à 1.1 m, 10 à 17 m), trois couches de feuillage dentelé de plus en plus sombres, sous-bois, racines,
-    fond noir à 6.5 m. Infranchissable : `Col_Lisiere` de -0.7 à 6.7 m de profondeur et 22 m de haut (troncs compris). `coin` : quart de cercle de 90° (angle d'une clairière)."""
-    k = L.K(nom)
-    kc = L.K("Col_Lisiere")
-    rnd = random.Random(S["seed"] + 561 + (7 if coin else 0))
-    def place(u, prof):
-        """u : abscisse le long de la lisière (0..1) ; prof : profondeur (m) ; renvoie (point, normale vers l'avant)."""
-        if not coin:
-            return Vector((-Lx / 2 + u * Lx, prof, 0)), Vector((0, -1, 0))
-        R = Lx * 0.66
-        a = math.pi / 2 * u
-        n_ = Vector((-math.cos(a), -math.sin(a), 0))
-        return Vector((R * math.cos(a), R * math.sin(a), 0)) + Vector((-R, -R, 0)) - n_ * prof, n_
-    # troncs sur deux rangs
-    for rang, (prof, nb) in enumerate(((0.6, int(Lx / 1.1)), (2.6, int(Lx / 1.0)), (4.6, int(Lx / 1.2)))):
-        for i in range(nb):
-            u = (i + 0.5 + rnd.uniform(-0.35, 0.35)) / nb
-            p, n_ = place(u, prof + rnd.uniform(-0.5, 0.5))
-            r = rnd.uniform(0.18, 0.55) * (1.0 if rang == 0 else 0.85)
-            h = rnd.uniform(10, 17)
-            pts = [p + Vector((0, 0, -0.3))]
-            lean = Vector((rnd.uniform(-0.6, 0.6), rnd.uniform(-0.3, 0.6), 0))
-            for s in range(1, 6):
-                t = s / 5
-                pts.append(p + lean * t * t + Vector((rnd.uniform(-0.1, 0.1), rnd.uniform(-0.1, 0.1), h * t)))
-            L.tube(k, pts, [r * 1.5, r, r * 0.9, r * 0.75, r * 0.6, r * 0.45], S["ecorce"], sides=9, rough=0.12, seed=rnd.randint(0, 999))
-            for a_ in range(4):
-                ang = rnd.uniform(0, 2 * math.pi)
-                d = Vector((math.cos(ang), math.sin(ang), 0))
-                L.tube(k, [p + d * r * 0.6 + Vector((0, 0, 0.5)), p + d * (r + 0.9) + Vector((0, 0, -0.1)), p + d * (r + 1.5) + Vector((0, 0, -0.35))],
-                       [r * 0.35, r * 0.22, r * 0.08], S["ecorce"], sides=6, rough=0.15, seed=rnd.randint(0, 999))
-    # feuillage : trois couches (devant plus clair, fond sombre)
-    couches = ((1.5, 4.0, 7.5, FEUIL_FORET, 1.7), (3.6, 5.5, 11.0, FEUIL_FORET, 1.5), (5.4, 7.5, 13.0, FEUIL_SOMBRE, 1.3))
-    for prof, r, zc, m, dens in couches:
-        nb = int(Lx / r * dens) + 1
-        for i in range(nb):
-            u = (i + 0.5) / nb + rnd.uniform(-0.04, 0.04)
-            p, n_ = place(min(max(u, 0.0), 1.0), prof + rnd.uniform(-0.6, 0.6))
-            _feuillage(k, p + Vector((0, 0, zc + rnd.uniform(-2.5, 2.5))), r * rnd.uniform(0.75, 1.15), r * rnd.uniform(1.1, 1.6), m, rnd,
-                       n=5, dents=13)
-    # sous-bois : fougères et buissons bas en cartes, devant les troncs
-    nb = int(Lx / 0.9)
-    for i in range(nb):
-        u = (i + rnd.uniform(0.1, 0.9)) / nb
-        p, n_ = place(u, rnd.uniform(-0.2, 1.6))
-        _feuillage(k, p + Vector((0, 0, 0.35)), rnd.uniform(0.6, 1.1), rnd.uniform(0.7, 1.3), FEUIL_FORET, rnd, n=4, dents=9, aplat=0.0)
-    # fond noir : on ne voit jamais au travers
-    if coin:
-        R = Lx * 0.66 + 6.5
-        for s in range(8):
-            a0, a1 = math.pi / 2 * s / 8, math.pi / 2 * (s + 1) / 8
-            P0 = Vector((R * math.cos(a0), R * math.sin(a0), 0)) + Vector((-Lx * 0.66, -Lx * 0.66, 0))
-            P1 = Vector((R * math.cos(a1), R * math.sin(a1), 0)) + Vector((-Lx * 0.66, -Lx * 0.66, 0))
-            k.face([P0, P1, P1 + Vector((0, 0, 18)), P0 + Vector((0, 0, 18))], FOND)
-    else:
-        k.face([(-Lx / 2, 6.5, -0.5), (-Lx / 2, 6.5, 18), (Lx / 2, 6.5, 18), (Lx / 2, 6.5, -0.5)], FOND)
-    # collision : boîte(s) infranchissable(s) juste derrière le sous-bois
-    if coin:
-        for s in range(6):
-            p0, _ = place(s / 6, 3.0)
-            p1, _ = place((s + 1) / 6, 3.0)
-            c = (p0 + p1) / 2
-            d = p1 - p0
-            kc.box((c.x, c.y, 11.0), (d.length + 0.8, 7.4, 22.0), COL, rot=math.atan2(d.y, d.x))
-    else:
-        kc.box((0, 3.0, 11.0), (Lx, 7.4, 22.0), COL)          # de -0.7 à 6.7 m de profondeur, 22 m de haut
-    ob = k.finish(S["seed"] + 561, dict(sale_h=0.6, mousse=0.3))
-    H.enfant(ob, kc, 0)
-    return ob
-
-
-# =================================================================== 9. sous-bois, rochers, grand arbre
-def _fougere(k, base, r, h, m, rnd, n=11):
-    """Touffe de fougère : n frondes arquées (rachis qui monte puis retombe), folioles en triangles alternés le long du
-    rachis, double face. Silhouette ajourée et dentelée, lisible au contour encré (jamais une boule ni une tache)."""
-    for f in range(n):
-        a = 2 * math.pi * f / n + rnd.uniform(-0.2, 0.2)
-        d = Vector((math.cos(a), math.sin(a), 0))
-        L_ = r * rnd.uniform(0.75, 1.1)
-        hh = h * rnd.uniform(0.7, 1.05)
-        pts = []
-        for i in range(9):
-            t = i / 8
-            pts.append(base + d * L_ * t + Vector((0, 0, hh * (math.sin(t * math.pi * 0.85)) - t * t * hh * 0.35)))
-        side = Vector((-d.y, d.x, 0))
-        for i in range(1, 8):
-            p0, p1 = pts[i], pts[i + 1]
-            lg = (1 - i / 8) * L_ * 0.3 + 0.06
-            for sgn in (-1, 1):
-                tip = p0.lerp(p1, 0.5) + side * sgn * lg + Vector((0, 0, -0.04))
-                k.face([p0, p1, tip] if sgn > 0 else [p1, p0, tip], m)     # matériau double face : une seule face
-
-
 # ------------------------------------------------------------------- sous-bois (refait la nuit 7, lot 2)
 SOUSBOIS = "M_Kit_SousBois"   # atlas peint de la végétation (T_Ens_Feuillage_BaseColor), faces arrière masquées
 CELL = {"buis": (0, 2), "lierre": (1, 2), "fougere": (2, 2), "herbe": (0, 1), "rose": (1, 1), "chene": (2, 1),
@@ -571,6 +455,23 @@ class Cartes:
             self.carte(base, s * 0.9, s, "fougere", d, (math.cos(a) * 0.25, math.sin(a) * 0.25, 1.0),
                        self.rnd.uniform(-8, 8), plis=0.16 * s)
 
+    def buisson(self, c, r, cell, n=26, taille=1.6, bas=False):
+        """Houppier : n cartes réparties sur un ellipsoïde de rayons r (x, y, z), tournées vers l'extérieur ; le dessous
+        (z < -0.35) n'a pas de cartes sauf `bas`. Normales : direction radiale relevée vers le ciel."""
+        c = Vector(c)
+        for i in range(n):
+            t = (i + 0.5) / n
+            z = 1 - 2 * t
+            if not bas and z < -0.35:
+                continue
+            a = i * 2.39996 + self.rnd.uniform(-0.3, 0.3)
+            sz = math.sqrt(max(0.0, 1 - z * z))
+            d = Vector((math.cos(a) * sz, math.sin(a) * sz, z))
+            p = c + Vector((d.x * r[0], d.y * r[1], d.z * r[2])) * self.rnd.uniform(0.78, 0.98)
+            dd = (d + Vector((self.rnd.uniform(-.35, .35), self.rnd.uniform(-.35, .35), self.rnd.uniform(-.2, .35)))).normalized()
+            w = taille * self.rnd.uniform(0.8, 1.2)
+            self.carte(p - Vector((0, 0, w / 2)), w, w, cell, dd, d + Vector((0, 0, 0.6)), self.rnd.uniform(-35, 35), seg=1)
+
     def objet(self, nom, materiau):
         import bpy
         me = bpy.data.meshes.new(nom)
@@ -585,6 +486,137 @@ class Cartes:
         bpy.context.scene.collection.objects.link(ob)
         me.materials.append(L.mat(materiau))
         return ob
+
+
+# =================================================================== 8. lisière de forêt (acte III)
+def _feuillage(k, c, r, h, m, rnd, n=7, dents=11, aplat=0.35, normale=None):
+    """Masse de feuillage en cartes croisées dentelées (silhouette encrée lisible, jamais en boule) : n cartes verticales
+    tournées autour de c, contour en dents irrégulières, épaisseur nulle (deux faces)."""
+    for i in range(n):
+        ang = math.pi * i / n + rnd.uniform(-0.15, 0.15)
+        d = Vector((math.cos(ang), math.sin(ang), 0))
+        pts = []
+        for j in range(dents * 2):
+            t = j / (dents * 2)
+            a = 2 * math.pi * t
+            rr = (1.0 if j % 2 == 0 else 0.8 + rnd.uniform(-0.1, 0.08)) * r * (1 + rnd.uniform(-0.16, 0.16))
+            x = math.cos(a) * rr
+            z = math.sin(a) * rr * (h / (2 * r))
+            if z < -h * aplat:
+                z = -h * aplat + (z + h * aplat) * 0.25
+            pts.append(Vector(c) + d * x + Vector((0, 0, z)))
+        k.face(pts, m)
+        k.face(list(reversed(pts)), m)
+
+
+def lisiere(S, nom, Lx=12.0, coin=False):
+    """Lisière de forêt dense de Lx m (pivot au sol, au milieu du bord avant ; la forêt s'étend vers +Y sur 6.5 m) : rang de
+    troncs (Ø 0.35 à 1.1 m, 10 à 17 m), trois couches de feuillage dentelé de plus en plus sombres, sous-bois, racines,
+    fond noir à 6.5 m. Infranchissable : `Col_Lisiere` de -0.7 à 6.7 m de profondeur et 22 m de haut (troncs compris). `coin` : quart de cercle de 90° (angle d'une clairière)."""
+    k = L.K(nom)
+    kc = L.K("Col_Lisiere")
+    rnd = random.Random(S["seed"] + 561 + (7 if coin else 0))
+    def place(u, prof):
+        """u : abscisse le long de la lisière (0..1) ; prof : profondeur (m) ; renvoie (point, normale vers l'avant)."""
+        if not coin:
+            return Vector((-Lx / 2 + u * Lx, prof, 0)), Vector((0, -1, 0))
+        R = Lx * 0.66
+        a = math.pi / 2 * u
+        n_ = Vector((-math.cos(a), -math.sin(a), 0))
+        return Vector((R * math.cos(a), R * math.sin(a), 0)) + Vector((-R, -R, 0)) - n_ * prof, n_
+    # troncs sur deux rangs
+    for rang, (prof, nb) in enumerate(((0.6, int(Lx / 1.1)), (2.6, int(Lx / 1.0)), (4.6, int(Lx / 1.2)))):
+        for i in range(nb):
+            u = (i + 0.5 + rnd.uniform(-0.35, 0.35)) / nb
+            p, n_ = place(u, prof + rnd.uniform(-0.5, 0.5))
+            r = rnd.uniform(0.18, 0.55) * (1.0 if rang == 0 else 0.85)
+            h = rnd.uniform(10, 17)
+            pts = [p + Vector((0, 0, -0.3))]
+            lean = Vector((rnd.uniform(-0.6, 0.6), rnd.uniform(-0.3, 0.6), 0))
+            for s in range(1, 6):
+                t = s / 5
+                pts.append(p + lean * t * t + Vector((rnd.uniform(-0.1, 0.1), rnd.uniform(-0.1, 0.1), h * t)))
+            L.tube(k, pts, [r * 1.5, r, r * 0.9, r * 0.75, r * 0.6, r * 0.45], S["ecorce"], sides=9, rough=0.12, seed=rnd.randint(0, 999))
+            for a_ in range(4):
+                ang = rnd.uniform(0, 2 * math.pi)
+                d = Vector((math.cos(ang), math.sin(ang), 0))
+                L.tube(k, [p + d * r * 0.6 + Vector((0, 0, 0.5)), p + d * (r + 0.9) + Vector((0, 0, -0.1)), p + d * (r + 1.5) + Vector((0, 0, -0.35))],
+                       [r * 0.35, r * 0.22, r * 0.08], S["ecorce"], sides=6, rough=0.15, seed=rnd.randint(0, 999))
+    # feuillage (refait la nuit 7) : houppiers en cartes peintes de l'atlas (chêne et buis devant, sapin au fond), trois
+    # couches de plus en plus hautes et serrées ; plus d'aplats dentelés qui se lisaient en éclats sombres
+    C = Cartes(random.Random(S["seed"] + 563 + (7 if coin else 0)))
+    couches = ((1.5, 3.2, 7.5, ("chene", "chene", "buis"), 2.4, 2.6), (3.6, 4.2, 11.0, ("chene", "sapin"), 2.2, 3.1), (5.4, 5.2, 13.5, ("sapin",), 2.0, 3.6))
+    for prof, r, zc, cells, dens, tc in couches:
+        nb = int(Lx / r * dens) + 1
+        for i in range(nb):
+            u = (i + 0.5) / nb + rnd.uniform(-0.04, 0.04)
+            p, n_ = place(min(max(u, 0.0), 1.0), prof + rnd.uniform(-0.6, 0.6))
+            rr = r * rnd.uniform(0.8, 1.15)
+            cc = p + Vector((0, 0, zc + rnd.uniform(-2.0, 2.0)))
+            cell = rnd.choice(cells)
+            C.buisson(cc, (rr, rr, rr * rnd.uniform(0.8, 1.1)), cell, n=int(34 + rr * 6), taille=tc)
+            C.buisson(cc, (rr * 0.55, rr * 0.55, rr * 0.5), cell, n=14, taille=tc * 0.9, bas=True)    # cœur : pas de jour au travers
+    # sous-bois au pied des troncs : fougères, ronces et herbes (mêmes cartes que les sous-bois du kit)
+    nb = int(Lx / 0.8)
+    for i in range(nb):
+        u = (i + rnd.uniform(0.1, 0.9)) / nb
+        p, n_ = place(u, rnd.uniform(-0.3, 1.6))
+        x = rnd.random()
+        if x < 0.4:
+            C.fougere(p, rnd.uniform(0.8, 1.2), n=rnd.randint(5, 7))
+        elif x < 0.65:
+            C.touffe(p, rnd.uniform(0.7, 1.1), "ronce", n=2, penche=0.15)
+        elif x < 0.8:
+            C.touffe(p, rnd.uniform(0.6, 0.9), "chene", n=2, penche=0.3)
+        else:
+            C.touffe(p, rnd.uniform(0.45, 0.8), "herbe", n=3)
+    # fond noir : on ne voit jamais au travers
+    if coin:
+        R = Lx * 0.66 + 6.5
+        for s in range(8):
+            a0, a1 = math.pi / 2 * s / 8, math.pi / 2 * (s + 1) / 8
+            P0 = Vector((R * math.cos(a0), R * math.sin(a0), 0)) + Vector((-Lx * 0.66, -Lx * 0.66, 0))
+            P1 = Vector((R * math.cos(a1), R * math.sin(a1), 0)) + Vector((-Lx * 0.66, -Lx * 0.66, 0))
+            k.face([P0, P1, P1 + Vector((0, 0, 18)), P0 + Vector((0, 0, 18))], FOND)
+    else:
+        k.face([(-Lx / 2, 6.5, -0.5), (-Lx / 2, 6.5, 18), (Lx / 2, 6.5, 18), (Lx / 2, 6.5, -0.5)], FOND)
+    # collision : boîte(s) infranchissable(s) juste derrière le sous-bois
+    if coin:
+        for s in range(6):
+            p0, _ = place(s / 6, 3.0)
+            p1, _ = place((s + 1) / 6, 3.0)
+            c = (p0 + p1) / 2
+            d = p1 - p0
+            kc.box((c.x, c.y, 11.0), (d.length + 0.8, 7.4, 22.0), COL, rot=math.atan2(d.y, d.x))
+    else:
+        kc.box((0, 3.0, 11.0), (Lx, 7.4, 22.0), COL)          # de -0.7 à 6.7 m de profondeur, 22 m de haut
+    ob = k.finish(S["seed"] + 561, dict(sale_h=0.6, mousse=0.3))
+    H.enfant(ob, kc, 0)
+    deco = C.objet("Deco_Feuillage", SOUSBOIS)
+    deco.parent = ob
+    return ob
+
+
+# =================================================================== 9. sous-bois, rochers, grand arbre
+def _fougere(k, base, r, h, m, rnd, n=11):
+    """Touffe de fougère : n frondes arquées (rachis qui monte puis retombe), folioles en triangles alternés le long du
+    rachis, double face. Silhouette ajourée et dentelée, lisible au contour encré (jamais une boule ni une tache)."""
+    for f in range(n):
+        a = 2 * math.pi * f / n + rnd.uniform(-0.2, 0.2)
+        d = Vector((math.cos(a), math.sin(a), 0))
+        L_ = r * rnd.uniform(0.75, 1.1)
+        hh = h * rnd.uniform(0.7, 1.05)
+        pts = []
+        for i in range(9):
+            t = i / 8
+            pts.append(base + d * L_ * t + Vector((0, 0, hh * (math.sin(t * math.pi * 0.85)) - t * t * hh * 0.35)))
+        side = Vector((-d.y, d.x, 0))
+        for i in range(1, 8):
+            p0, p1 = pts[i], pts[i + 1]
+            lg = (1 - i / 8) * L_ * 0.3 + 0.06
+            for sgn in (-1, 1):
+                tip = p0.lerp(p1, 0.5) + side * sgn * lg + Vector((0, 0, -0.04))
+                k.face([p0, p1, tip] if sgn > 0 else [p1, p0, tip], m)     # matériau double face : une seule face
 
 
 def sous_bois(S, nom, R=2.5, var=0):

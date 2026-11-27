@@ -858,32 +858,28 @@
  "SM_Jardin_Lisiere_12m": {
   "doc": "Lisière de forêt dense de 12 m : troncs sur deux rangs, trois couches de feuillage, sous-bois, fond noir ; infranchissable.",
   "taille": [
-   23.67,
-   17.64,
-   21.47
+   22.28,
+   15.94,
+   21.0
   ],
   "bas": -0.5,
-  "triangles": 9082,
+  "triangles": 12118,
   "materiaux": [
    "M_Bib_Ecorce",
-   "M_Kit_Feuillage_Foret",
-   "M_Kit_Feuillage_Sombre",
    "M_Fond_Noir"
   ]
  },
  "SM_Jardin_Lisiere_Coin": {
   "doc": "Lisière de forêt en quart de cercle (angle d'une clairière, rayon 8 m) ; infranchissable.",
   "taille": [
-   25.4,
-   26.78,
-   21.42
+   22.74,
+   22.87,
+   19.46
   ],
   "bas": -0.39,
-  "triangles": 9096,
+  "triangles": 12136,
   "materiaux": [
    "M_Bib_Ecorce",
-   "M_Kit_Feuillage_Foret",
-   "M_Kit_Feuillage_Sombre",
    "M_Fond_Noir"
   ]
  },
