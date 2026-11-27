@@ -17,6 +17,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Bib_RocheCave_Peint
+    second: {fileID: 2100000, guid: 8af4038fc80850c4aa46f9dedcd7aa36, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Kit_Feuillage
     second: {fileID: 2100000, guid: 39e3025ada4b71b4699825363eff9719, type: 2}
   - first:
@@ -24,6 +29,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Kit_Feuillage_Foret
     second: {fileID: 2100000, guid: 9b5b773f1286efb48bc576fc525b920d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Kit_SousBois
+    second: {fileID: 2100000, guid: 902679620c433954d87685dc79d1fcd7, type: 2}
   materials:
     materialImportMode: 2
     materialName: 1

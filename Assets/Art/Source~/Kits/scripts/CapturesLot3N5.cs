@@ -28,6 +28,35 @@ public static class CapturesLot3N5
         return Camera.main;
     }
 
+    static Vector3 Libre(Vector3 c, float sol)
+    {
+        for (float rr = 0f; rr <= 14f; rr += 1.5f)
+            for (int k = 0; k < (rr == 0f ? 1 : 12); k++)
+            {
+                float a = k * Mathf.PI / 6f;
+                var p = new Vector3(c.x + Mathf.Cos(a) * rr, sol, c.z + Mathf.Sin(a) * rr);
+                if (!Physics.Raycast(p + Vector3.up * 1.5f, Vector3.down, out RaycastHit g, 3f, ~0, QueryTriggerInteraction.Ignore)) continue;
+                if (Mathf.Abs(g.point.y - sol) > 0.25f) continue;
+                if (Physics.CheckCapsule(p + Vector3.up * 2.75f, p + Vector3.up * 4f, 2.5f, ~0, QueryTriggerInteraction.Ignore)) continue;
+                _log.Add($"  point de pose libre à {rr:F1} m du centre");
+                return new Vector3(p.x, sol + 1.7f, p.z);
+            }
+        return c;
+    }
+
+    static void Degage(Vector3 p, float r)
+    {
+        foreach (var rd in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+        {
+            var b = rd.bounds;
+            if (b.size.y > 6f || b.size.x > 6f || b.size.z > 6f) continue;            // sols, murs, grands arbres : gardés
+            var c = new Vector3(Mathf.Clamp(p.x, b.min.x, b.max.x), p.y, Mathf.Clamp(p.z, b.min.z, b.max.z));
+            if ((c - p).magnitude > r || b.max.y < p.y + 0.15f) continue;              // loin, ou au ras du sol (tapis, flaques)
+            rd.enabled = false;
+            _log.Add("  masqué : " + rd.name);
+        }
+    }
+
     static string Kit(string acte) => acte == "Cave" ? "KitCaves" : "Kit" + acte;
     static GameObject P(string acte, string nom) => nom.StartsWith("Coffre")
         ? AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/Art/Prefabs/Props/P_Prop_{nom}.prefab")
@@ -114,6 +143,9 @@ public static class CapturesLot3N5
             Vector3 centre = plan.CellCenter(best, salle.Floor + 1.7f);
             if (!Physics.Raycast(centre + Vector3.up * 1.5f, Vector3.down, out RaycastHit g0, 6f, ~0, QueryTriggerInteraction.Ignore)) continue;
             float sol = g0.point.y; centre.y = sol + 1.7f;
+            // nuit 7 : point de pose libre (le décor fusionné de la salle ne se masque pas) : spirale autour du centre jusqu'à
+            // un sol au même niveau sans rien sur 2,5 m de rayon
+            centre = Libre(centre, sol);
             float plafond = Physics.Raycast(centre, Vector3.up, out RaycastHit hp, 60f, ~0, QueryTriggerInteraction.Ignore) ? hp.point.y : sol + 14f;
             var murs = new List<RaycastHit>();
             for (int k = 0; k < 8; k++) if (Mur(centre, Quaternion.Euler(0, k * 45f, 0) * Vector3.forward, out RaycastHit h)) murs.Add(h);
@@ -133,6 +165,9 @@ public static class CapturesLot3N5
             // relecture : sous trois torches orange, les matériaux saturaient en rouge. Une torche du jeu garde le chaud ; les deux
             // autres deviennent la lumière froide de la lune (comme le rayon de lune des fenêtres et la lune de l'acte III)
             foreach (var l in new[] { t2, t3 }) { l.color = new Color(0.55f, 0.62f, 0.85f); l.intensity = 1.4f; l.range = 26f; }
+            // nuit 7 : le décor de la salle posé au point de pose (stèles, bougies, buissons de moins de 6 m) est masqué dans un rayon
+            // de 3,5 m : la pièce est vue seule, sans objet qui la traverse
+            Degage(new Vector3(centre.x, sol, centre.z), 3.5f);
             var avantVue = centre + fond.normal * Mathf.Min(fond.distance - 8f, 4f);
             torche.transform.position = pf + fond.normal * 1.2f + lat * 4.5f + Vector3.up * 2.6f;
             await Snap($"{acte}_avant_mur", centre, pf + Vector3.up * 3f);
