@@ -42,7 +42,7 @@ Material:
     - _Flotte: 0.012
     - _FlottePeriode: 5.5
     - _Graine: 0
-    - _Hauteur: 0.18
+    - _Hauteur: 0.16
     - _Intensite: 2.2
     - _Largeur: 0.05
     - _Mode: 1
@@ -63,6 +63,6 @@ Material:
     - _Direction: {r: 0.8, g: -0.6, b: 0, a: 0}
     - _Plage: {r: 0.4, g: 0.46, b: 0, a: 0}
     - _Rune: {r: 1, g: 0.54999995, b: 0.14999998, a: 1}
-    - _Source: {r: 0.5, g: 0.68, b: 0.06, a: 0.02}
+    - _Source: {r: 0.5, g: 0.64, b: 0.05, a: 0.02}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

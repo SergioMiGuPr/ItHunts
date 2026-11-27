@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """Écran de choix du personnage : la maquette ui_choix_perso_v01 comme base (cadre, fond flouté du campement, bouton
 Valider) ; l'intérieur du panneau vient de ui_choix_fond_v01 recalé (sans grand personnage, artefact, textes, skins).
-Grands personnages = ui_choix_<perso> - fond (zone de gauche) ; artefacts = passe3 - fond (lanterne) et
-barillet - caméléon (barillet) ; vignettes découpées de passe3 (renard illuminé, autres discrets ; renard discret pris
+Grands personnages = ui_choix_<perso> - fond (zone de gauche) ; artefacts : artefacts_choix.py (nuit 7) ; vignettes découpées de passe3 (renard illuminé, autres discrets ; renard discret pris
 dans ui_choix_cameleon), version illuminée = vignette discrète + lueur du cadre du renard recolorée. Sorties :
 Assets/Art/UI/Menus/Choix/ + Choix_Layout.json (pixels de la maquette, 1671 x 941).
 
@@ -28,8 +27,6 @@ DROITE = (880, 226, 1250, 452)          # artefact et ses traînées
 VIGNETTES = {"Renard": (500, 68, 680, 246), "Koala": (680, 68, 852, 246), "Cameleon": (852, 68, 1024, 246), "Hibou": (1024, 68, 1196, 246)}
 PORTRAIT_INSET = 16
 COULEURS = {"Renard": (0.87, 0.22, 0.25), "Koala": (0.33, 0.78, 0.32), "Cameleon": (0.90, 0.62, 0.20), "Hibou": (0.55, 0.82, 1.0)}
-# corps des artefacts (le reste = traînées de lumière, qui tournent) : ellipse cx, cy, rx, ry
-CORPS_ARTEFACT = {"Lanterne": (1050, 336, 50, 100), "Barillet": (1050, 330, 62, 66)}
 # zone de texte (entre les deux filets ornementaux) et styles mesurés
 TEXTE = (900, 458, 1206, 636)
 # zones qui changent : (rect, rempli entièrement) ; sinon masque par différence dans le rect

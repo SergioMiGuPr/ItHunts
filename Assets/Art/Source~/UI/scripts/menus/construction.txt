@@ -63,8 +63,6 @@ piece Choix Choix_Vignette_Cameleon_Illuminee 852.00 68.00 172.00 178.00
 piece Choix Choix_Vignette_Hibou_Illuminee 1024.00 68.00 172.00 178.00
 piece Choix Choix_Valider 655.00 788.00 367.00 107.00
 valeur Choix_taille 1671 941
-valeur Choix_centre_Lanterne 0.4617 0.5127
-valeur Choix_centre_Barillet 0.5853 0.5381
 valeur Choix_pieds_Renard 661
 valeur Choix_pieds_Koala 661
 valeur Choix_pieds_Cameleon 661

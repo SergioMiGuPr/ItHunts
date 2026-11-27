@@ -4,7 +4,8 @@
 //             refroidissent (_Chaud -> _Color) ;
 // - Reflet  : un reflet qui balaie le métal (poids = R du masque x luminance du corps _Corps), puis une pause ;
 //             la rune (G du masque) respire en ambre ;
-// - Runes   : runes peintes (_MainTex) qui pulsent, l'onde courant le long de la lame (_Plage : uv x début, fin) ;
+// - Runes   : runes peintes (_MainTex) qui s'allument et s'éteignent ensemble, léger décalage le long de la lame
+//             (_Plage : uv x début, fin) ;
 // - Volutes : canaux peints (_MainTex, R) traversés par un bruit qui monte et s'enroule (domaine déformé).
 // Gelé (_ItHuntsMenuFige = 1) : lueurs et runes à mi-respiration (image peinte), rune du barillet au repos ; braises, éclat
 // du reflet et volutes éteints ; aucun flottement.
@@ -129,7 +130,7 @@ Shader "ItHunts/UI/ArtefactLumiere"
                 #elif defined(_MODE_RUNES)
                     fixed4 tc = tex2D(_MainTex, uv);
                     float x = saturate((uv.x - _Plage.x) / max(_Plage.y - _Plage.x, 1e-3));
-                    float onde = pow(saturate(0.5 + 0.5 * cos(6.2832 * (x * 0.9 - t / max(_Periode, 0.1)))), 3.0);
+                    float onde = pow(saturate(0.5 + 0.5 * cos(6.2832 * (x * 0.25 - t / max(_Periode, 0.1)))), 2.0);   // ensemble, léger décalage
                     float k2 = _Base + _Amplitude * lerp(0.5, onde * (0.6 + 0.4 * resp), actif);
                     c = tc.rgb * _Color.rgb * k2;
                 #elif defined(_MODE_VOLUTES)

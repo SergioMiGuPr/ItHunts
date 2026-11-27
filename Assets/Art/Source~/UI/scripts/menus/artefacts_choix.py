@@ -116,13 +116,16 @@ ECH = 2                       # résolution des textures / pixels de la maquette
 CADRE = (850, 192, 400, 300)  # x, y (haut), largeur, hauteur dans la maquette
 W, H = CADRE[2] * ECH, CADRE[3] * ECH
 CENTRE = (1050 - CADRE[0], 342 - CADRE[1])  # centre visuel (lanterne) dans le cadre, maquette
+BASE = 432 - CADRE[1]        # ligne de base commune (bas des objets) : 20 px au-dessus du filet (y 452 de la maquette)
+HAUT_MIN = 262 - CADRE[1]    # haut le plus haut permis : 16 px sous la rangée des vignettes (bas à y 246)
+FLOTTE = 0.012 * CADRE[3]    # amplitude du flottement (shader), comptée dans les marges
 
 # taille visée de l'objet (boîte englobante, pixels de la maquette) et rotation (degrés, sens trigo)
 OBJETS = {
-    "Lanterne": dict(src="ui_choix_artefact_lanterne_v02.png", boite=(110, 200), rot=0.0),
-    "Epee": dict(src="ui_choix_artefact_epee_v02.png", boite=(330, 222), rot=17.0),
-    "Livre": dict(src="ui_choix_artefact_livre_v02.png", boite=(200, 152), rot=0.0, dy=22),
-    "Barillet": dict(src="ui_choix_artefact_barillet_v02.png", boite=(122, 140), rot=0.0),
+    "Lanterne": dict(src="ui_choix_artefact_lanterne_v02.png", boite=(100, 162), rot=0.0),
+    "Epee": dict(src="ui_choix_artefact_epee_v02.png", boite=(290, 162), rot=17.0),
+    "Livre": dict(src="ui_choix_artefact_livre_v02.png", boite=(205, 140), rot=0.0),
+    "Barillet": dict(src="ui_choix_artefact_barillet_v02.png", boite=(140, 148), rot=0.0),
 }
 
 
@@ -158,10 +161,14 @@ def detoure(rgb, cut):
     # le reste du halo de l'image générée colle à la découpe (liseré d'autocollant) : étalé en lueur douce, même énergie ;
     # les étincelles peintes disparaissent dans le même flou
     lum_ = np.dstack([ndimage.gaussian_filter(lum_[..., i], 11.0) for i in range(3)]) * 1.15
+    # bord du corps : ses pixels semi-transparents portent la couleur du halo de l'IA (liseré clair) ; ramenés vers l'encre
+    encre = np.array([0.05, 0.045, 0.05], np.float32)
+    bord = np.clip(a, 0, 1)[..., None] ** 2
+    rgb = rgb * bord + encre * (1 - bord)
     return np.dstack([rgb, a]), lum_
 
 
-def place(couches, boite, rot, dy=0):
+def place(couches, boite, rot, dy=0, nom=""):
     """Même transformation pour toutes les couches (la première est le corps RGBA, qui donne la taille) : rotation,
     mise à l'échelle de l'objet plein dans la boîte, centrage sur CENTRE dans une toile W x H. Couches : RGBA, RGB ou 2D."""
     def vers_image(x):
@@ -174,14 +181,26 @@ def place(couches, boite, rot, dy=0):
     al = np.asarray(ims[0])[..., 3]
     ys, xs = np.nonzero(al > 128)
     k = min(boite[0] * ECH / (xs.max() + 1 - xs.min()), boite[1] * ECH / (ys.max() + 1 - ys.min()))
-    cx, cy = (xs.min() + xs.max() + 1) / 2, (ys.min() + ys.max() + 1) / 2
+    cx, bas = (xs.min() + xs.max() + 1) / 2, ys.max() + 1
+    haut = BASE - (ys.max() + 1 - ys.min()) * k / ECH
+    # marges vérifiées, flottement compris : jamais sur le filet ni sous les vignettes
+    assert haut - FLOTTE >= HAUT_MIN - 0.5, f"{nom} : haut à {haut + CADRE[1]:.0f} (min {HAUT_MIN + CADRE[1]})"
+    print(f"  {nom} : de y {haut + CADRE[1]:.0f} à {BASE + CADRE[1]} (maquette), {(ys.max() + 1 - ys.min()) * k / ECH:.0f} px de haut")
     out = []
     for im in ims:
         im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
         toile = Image.new(im.mode, (W, H), 0)
-        toile.paste(im, (round(CENTRE[0] * ECH - cx * k), round((CENTRE[1] + dy) * ECH - cy * k)))
+        toile.paste(im, (round(CENTRE[0] * ECH - cx * k), round(BASE * ECH - bas * k)))
         out.append(np.asarray(toile, dtype=np.float32) / 255.0)
     return out
+
+
+def lumiere_douce(peinte, rgba, ecart=8, rayon=20):
+    """Lumière peinte, une fois à l'échelle : rien dans les `ecart` premiers px autour de la silhouette (le liseré), puis
+    étalée sur `rayon` px (texture x2) : un halo qui décroît doucement, comme celui de la lanterne."""
+    m = ndimage.binary_dilation(rgba[..., 3] > 0.5, iterations=ecart)
+    p = peinte * (1 - ndimage.gaussian_filter(m.astype(np.float32), 2.0))[..., None]
+    return np.dstack([ndimage.gaussian_filter(p[..., i], rayon) for i in range(3)]) * 1.6
 
 
 def additif(rgb):
@@ -254,7 +273,7 @@ def epee(rgba, peinte, runes):
     sauve(np.clip(r, 0, 1), "Choix_Art_Epee_Runes")
     vert = np.clip((c[..., 1] - c[..., 0] - 0.10) / 0.2, 0, 1)
     lame = np.clip((c[..., 1] - 0.35) / 0.4, 0, 1) * vert
-    sauve(additif(peinte * 0.8 + halo(rgba, lame, 26, 0.6)[..., :3]), "Choix_Art_Epee_Lueur")
+    sauve(additif(lumiere_douce(peinte, rgba) * 0.8 + halo(rgba, lame, 26, 0.6)[..., :3]), "Choix_Art_Epee_Lueur")
     ys, xs = np.nonzero(runes > 0.3)
     return dict(runes=[float(xs.min()) / W, float(xs.max()) / W])
 
@@ -267,7 +286,7 @@ def barillet(rgba, peinte):
     rune = ndimage.gaussian_filter(rune, 0.8)
     m = np.dstack([metal, np.clip(rune * 1.5, 0, 1), np.zeros_like(a), np.ones_like(a)])
     sauve(m, "Choix_Art_Barillet_Reflet")
-    sauve(additif(peinte + halo(rgba, rune * 2.0, 14, 1.5)[..., :3]), "Choix_Art_Barillet_Lueur")
+    sauve(additif(lumiere_douce(peinte, rgba) + halo(rgba, rune * 2.0, 14, 1.5)[..., :3]), "Choix_Art_Barillet_Lueur")
     return {}
 
 
@@ -294,7 +313,7 @@ def livre(rgba, peinte):
     p = np.clip(interieur * haut * 1.4, 0, 1)
     sauve(np.dstack([p, p, p, np.ones_like(p)]), "Choix_Art_Livre_Pages")
     large = halo(rgba, pages.astype(np.float32), 44, 1.0)[..., :3] * np.array([0.45, 0.75, 1.0], np.float32)
-    sauve(additif(peinte * 0.55 + large), "Choix_Art_Livre_Lueur")                    # bleu glacé
+    sauve(additif(lumiere_douce(peinte, rgba) * 0.55 + large), "Choix_Art_Livre_Lueur")                    # bleu glacé
     # volutes : quatre filets qui partent du haut des pages, montent de 55 à 85 px (maquette) en ondulant et s'effilent
     img = Image.new("L", (W, H), 0)
     d = ImageDraw.Draw(img)
@@ -325,10 +344,10 @@ def main():
         assert cut.shape[:2] == rgb.shape[:2], nom
         corps, peinte = detoure(rgb, cut)
         if nom == "Epee":
-            rgba, peinte, runes = place([corps, peinte, runes_source(rgb)], o["boite"], o["rot"])
+            rgba, peinte, runes = place([corps, peinte, runes_source(rgb)], o["boite"], o["rot"], nom=nom)
             info["epee"] = epee(rgba, peinte, runes)
             continue
-        rgba, peinte = place([corps, peinte], o["boite"], o["rot"], o.get("dy", 0))
+        rgba, peinte = place([corps, peinte], o["boite"], o["rot"], nom=nom)
         if nom != "Livre":
             sauve(rgba, "Choix_Art_" + nom)
         info[nom.lower()] = {"Lanterne": lanterne, "Barillet": barillet, "Livre": livre}[nom](rgba, peinte)

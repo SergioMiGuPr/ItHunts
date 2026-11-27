@@ -505,8 +505,9 @@ Tous les artefacts flottent lentement (± 1,2 % de la hauteur du cadre, 5,5 s), 
 
 **Fichiers.**
 - Sprites : `Assets/Art/UI/Menus/Choix/Choix_Art_<Lanterne|Epee|Barillet|Livre>[_Lueur|_Verre|_Runes|_Reflet|_Pages|_Volutes].png`,
-  800 × 600 px (×2) pour un **cadre commun de 400 × 300 px de la maquette posé en (850, 192)**, centré sur le centre visuel de
-  l'ancienne lanterne (1050, 342) ; le livre est posé 22 px plus bas (place des volutes). Corps, lueurs, verre et runes en sRGB
+  800 × 600 px (×2) pour un **cadre commun de 400 × 300 px de la maquette posé en (850, 192)**. Les quatre objets sont centrés
+  en x sur 1050 et **posés sur une même ligne de base (y 432, 20 px au-dessus du filet)**, dans une bande qui s'arrête 16 px
+  sous les vignettes (y 262), flottement compris : `artefacts_choix.py` vérifie ces marges et refuse un objet qui en sort. Corps, lueurs, verre et runes en sRGB
   (couleurs peintes) ; `_Reflet`, `_Pages`, `_Volutes` en données linéaires (`MenusBuilder.DonneesArt`) ; mipmaps et filtre
   trilinéaire (texture ×2 réduite de moitié en 1080p, traits fins qui flottent).
 - Corps : silhouette du détourage ; lumière : ce que la silhouette ne couvre pas dans l'image générée, étalée en lueur douce (le

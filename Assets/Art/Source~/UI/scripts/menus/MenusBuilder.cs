@@ -888,19 +888,19 @@ public static class MenusBuilder
                 Img(ag, "Verre", S("_Verre"), r, MatLum(a, "Verre", 0, g, 0.05f, 0.5f, 3.8f, Color.white, 1.4f));
                 Img(ag, "Braises", null, r, MatLum(a, "Braises", 1, g, 1, 0, 3.8f, new Color(1f, 0.16f, 0.07f), 2.2f, m =>
                 {
-                    m.SetFloat("_Nombre", 12); m.SetFloat("_Taille", 3.8f); m.SetFloat("_Hauteur", 0.18f);
-                    m.SetVector("_Source", new Vector4(0.5f, 0.68f, 0.06f, 0.02f));
+                    m.SetFloat("_Nombre", 12); m.SetFloat("_Taille", 3.8f); m.SetFloat("_Hauteur", 0.16f);
+                    m.SetVector("_Source", new Vector4(0.5f, 0.64f, 0.05f, 0.02f));
                     m.SetColor("_Chaud", new Color(1f, 0.72f, 0.38f));
                 }));
                 break;
             case "Epee":
                 Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.7f, 0.35f, 4.0f, Color.white, 2.0f));
                 Img(ag, "Corps", S(""), r, MatArt(a, "Corps", SH_CORPS, g, m => { m.SetFloat("_AvecPages", 0); m.DisableKeyword("_PAGES"); }));
-                Img(ag, "Runes", S("_Runes"), r, MatLum(a, "Runes", 3, g, 0.12f, 2.2f, 3.2f, Color.white, 1.3f, m =>
-                    m.SetVector("_Plage", new Vector4(0.441f, 0.495f, 0, 0))));
+                Img(ag, "Runes", S("_Runes"), r, MatLum(a, "Runes", 3, g, 0.03f, 3.2f, 4.5f, Color.white, 1.4f, m =>
+                    m.SetVector("_Plage", new Vector4(0.4575f, 0.495f, 0, 0))));
                 break;
             case "Barillet":
-                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.75f, 0.3f, 4.2f, Color.white, 1.4f));
+                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.75f, 0.3f, 4.2f, Color.white, 2.6f));
                 Img(ag, "Corps", S(""), r, MatArt(a, "Corps", SH_CORPS, g, m => { m.SetFloat("_AvecPages", 0); m.DisableKeyword("_PAGES"); }));
                 Img(ag, "Reflet", S("_Reflet"), r, MatLum(a, "Reflet", 2, g, 0.25f, 0.55f, 5.5f, new Color(1f, 0.9f, 0.72f), 3.2f, m =>
                 {
@@ -909,7 +909,7 @@ public static class MenusBuilder
                 }));
                 break;
             case "Livre":
-                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.7f, 0.35f, 4.6f, Color.white, 1.5f));
+                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.7f, 0.35f, 4.6f, Color.white, 2.6f));
                 Img(ag, "Volutes", S("_Volutes"), r, MatLum(a, "Volutes", 4, g, 0.55f, 0.45f, 4.6f, new Color(0.5f, 0.8f, 1f), 2.4f, m =>
                 {
                     m.SetFloat("_Echelle", 8f); m.SetFloat("_Montee", 0.07f); m.SetFloat("_Seuil", 0.32f);
@@ -942,7 +942,8 @@ public static class MenusBuilder
             s.spriteMeshType = SpriteMeshType.FullRect; s.spriteGenerateFallbackPhysicsShape = false; ti.SetTextureSettings(s);
             // mipmaps (trilinéaire) : texture x2 réduite de moitié à 1080p, traits fins qui flottent : sans mipmaps ils scintillent
             ti.mipmapEnabled = true; ti.filterMode = FilterMode.Trilinear; ti.wrapMode = TextureWrapMode.Clamp;
-            ti.sRGBTexture = !donnees; ti.alphaIsTransparency = !donnees; ti.maxTextureSize = 4096;
+            ti.sRGBTexture = !donnees; ti.maxTextureSize = 4096;
+            ti.alphaIsTransparency = !donnees && !f.EndsWith("_Lueur") && !f.EndsWith("_Verre") && !f.EndsWith("_Runes");   // additifs : alpha plein
             ti.textureCompression = TextureImporterCompression.Uncompressed; ti.isReadable = false;
             ti.SaveAndReimport(); n++;
         }
