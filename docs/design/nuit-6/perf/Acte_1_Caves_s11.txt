@@ -1,0 +1,7 @@
+Niveau Acte_1_Caves, 1920×1080, 1 joueur ; salle Grand puits ; timer à 5:00, pic non
+image : médiane 12,9 ms, 95 % 15,5 ms, max 44,9 ms ; images > 16.6 ms : 44/1515
+fil principal (FrameTiming) : médiane 12,4 ms, 95 % 15,5 ms ; fil de rendu : médiane 3,1 ms ; GPU : médiane 9,4 ms, 95 % 10,1 ms
+Main Thread (profileur) médiane 12,9 ms ; physique 0,38 ms ; draw calls 1791, batches 1789
+marqueurs (médiane ms) : Ghoul 0,01, Stalker 0,12, Waves 0,27, Flyer 0,06, Souls 0,00, PlayerHud 0,29, FixedUpdate.ScriptRunBehaviourFixedUpdate 2,13, Update.ScriptRunBehaviourUpdate 0,62, PreLateUpdate.ScriptRunBehaviourLateUpdate 0,95, FixedUpdate.PhysicsFixedUpdate 0,67, PostLateUpdate.FinishFrameRendering 4,91, Camera.Render 0,00, CullScriptable 0,54, RenderPipelineManager.DoRenderLoop_Internal() 0,00, UpdateRendererBoundingVolumes 1,25, GUI.Repaint 0,15, UGUI.Rendering.UpdateBatches 0,27
+ennemis actifs 230 ; au pic False ; lumières 1709 ; joueurs 1
+#fin

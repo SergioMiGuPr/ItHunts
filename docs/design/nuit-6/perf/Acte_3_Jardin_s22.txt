@@ -1,0 +1,7 @@
+Niveau Acte_3_Jardin, 1920×1080, 1 joueur ; salle Serre en ruine ; timer à 5:00, pic non
+image : médiane 15,0 ms, 95 % 17,3 ms, max 68,3 ms ; images > 16.6 ms : 118/1322
+fil principal (FrameTiming) : médiane 13,3 ms, 95 % 17,2 ms ; fil de rendu : médiane 2,8 ms ; GPU : médiane 12,5 ms, 95 % 12,6 ms
+Main Thread (profileur) médiane 14,9 ms ; physique 0,43 ms ; draw calls 1836, batches 1839
+marqueurs (médiane ms) : Ghoul 0,03, Stalker 0,13, Waves 0,36, Flyer 0,09, Souls 0,00, PlayerHud 0,60, FixedUpdate.ScriptRunBehaviourFixedUpdate 2,02, Update.ScriptRunBehaviourUpdate 0,64, PreLateUpdate.ScriptRunBehaviourLateUpdate 1,47, FixedUpdate.PhysicsFixedUpdate 0,77, PostLateUpdate.FinishFrameRendering 4,84, Camera.Render 0,00, CullScriptable 0,48, RenderPipelineManager.DoRenderLoop_Internal() 0,00, UpdateRendererBoundingVolumes 1,64, GUI.Repaint 0,17, UGUI.Rendering.UpdateBatches 0,09
+ennemis actifs 321 ; au pic False ; lumières 1838 ; joueurs 1
+#fin
