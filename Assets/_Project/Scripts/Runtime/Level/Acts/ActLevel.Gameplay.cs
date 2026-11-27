@@ -148,7 +148,7 @@ namespace ItHunts.Level.Acts
                 GameObject f = Instantiate(settings.merchantStandIn, m.transform.position, m.transform.rotation, m.transform);
                 f.name = "Marchand (forme drapée de la DA)";
                 foreach (Collider c in f.GetComponentsInChildren<Collider>(true))
-                    Destroy(c);
+                    DestroyImmediate(c);                                  // tout de suite : la boîte mesurée juste après ne les compte plus
                 if (DecorAudit.Box(f, out Bounds fb) && fb.size.y > 0.2f)
                     f.transform.localScale *= Mathf.Clamp(2.1f / fb.size.y, 0.5f, 2f);    // à hauteur d'homme
             }

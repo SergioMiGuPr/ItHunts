@@ -187,6 +187,12 @@ namespace ItHunts.Combat
         private Color _lastGlow;
         private int _glowRefresh;
 
+        /// <summary>
+        /// Un autre script (signaux des goules et des volants) a effacé les blocs de propriétés des rendus : la lueur est réécrite à la
+        /// prochaine image au lieu d'attendre le rafraîchissement d'une image sur 30.
+        /// </summary>
+        public void MarkGlowStale() => _glowStale = true;
+
         /// <summary>Prépare la cible (appelé par Awake ; aussi par les tests, sans cycle de vie en mode édition).</summary>
         public void Init()
         {

@@ -40,7 +40,9 @@ namespace ItHunts.Level.Acts
                 {
                     var haze = new GameObject("Brume du plafond");
                     haze.transform.SetParent(root, false);
-                    haze.transform.position = RectCenter(rc, top - 0.8f);
+                    // Nuit du 27/11 : sous le dessous des poutres (et des arcs), plus dans leur plan (scintillement à l'acte I).
+                    float structure = settings.ceilingStructure == CeilingStructure.Aucune ? 0.65f : Mathf.Max(0.65f, RibThickness(r));
+                    haze.transform.position = RectCenter(rc, top - structure - 0.15f);
                     haze.transform.localScale = new Vector3(rc.width * Plan.Cell, 1f, rc.height * Plan.Cell);
                     haze.AddComponent<MeshFilter>().sharedMesh = PlaneMesh;
                     var mr = haze.AddComponent<MeshRenderer>();
@@ -89,7 +91,9 @@ namespace ItHunts.Level.Acts
         private void Rib(ActRoom r, Transform root, bool alongX, float line, int v0, int v1, float top, Material mat, bool light, bool lightAtStart)
         {
             bool arch = settings.ceilingStructure == CeilingStructure.Arcs;
-            float thick = arch ? 1.1f : 0.8f;
+            float thick = RibThickness(r);
+            if (thick < 0.3f)
+                return;                                                   // salle trop basse : pas d'arc sous la tête du traqueur
             Vector3 across = alongX ? Vector3.forward : Vector3.right;
             Vector3 a = World(alongX ? new Vector2(line, v0) : new Vector2(v0, line), 0f);
             Vector3 b = World(alongX ? new Vector2(line, v1) : new Vector2(v1, line), 0f);
@@ -108,7 +112,10 @@ namespace ItHunts.Level.Acts
             if (span < 5f)
                 return;
             // Retombée de l'arc : jamais plus bas que 15.5 m au-dessus du sol (le traqueur debout), 7 m au plus.
-            float rise = arch ? Mathf.Clamp(Mathf.Min(span * 0.2f, r.Ceiling - StalkerHeadroom - thick), 0.3f, 7f) : 0f;
+            float room = r.Ceiling - StalkerHeadroom - thick;
+            float rise = arch && room >= 0.3f ? Mathf.Min(Mathf.Min(span * 0.2f, room), 7f) : 0f;
+            // Consoles, corbeaux et appliques seulement s'ils restent au-dessus de la tête du traqueur (14 m) : petites salles sans eux.
+            float minY = r.Floor + StalkerTop;
             CeilingRibs++;
             Mesh mesh = RibMesh(span, arch ? 1f : 0.7f, thick, rise, arch ? 14 : 1);
             var go = new GameObject("Kit_" + (arch ? "Arc de la voûte" : "Poutre du plafond"));
@@ -125,21 +132,28 @@ namespace ItHunts.Level.Acts
             {
                 Vector3 inward = start ? across : -across;
                 Vector3 foot = (start ? pa : pb) + inward * 0.3f;          // face du mur
-                if (arch)
+                if (arch && spring - 0.9f >= minY)
                     // Console de pierre sous la retombée de l'arc.
                     Visual(root, "Console de l'arc", CubeMesh, mat, new Vector3(foot.x, spring - 0.45f, foot.z) + inward * 0.45f,
                         Quaternion.LookRotation(inward, Vector3.up), new Vector3(1.3f, 0.9f, 0.9f));
-                else
+                else if (!arch && spring - 1.75f >= minY)
                     // Corbeau de bois : une jambe de force du mur au dessous de la poutre.
                     Visual(root, "Corbeau de la poutre", CubeMesh, mat, new Vector3(foot.x, spring - 0.85f, foot.z) + inward * 0.75f,
                         Quaternion.LookRotation(inward, Vector3.up) * Quaternion.Euler(-45f, 0f, 0f), new Vector3(0.45f, 0.45f, 2.3f));
-                if (light && start == lightAtStart)
+                if (light && start == lightAtStart && spring - (arch ? 2.2f : 2.4f) - 0.65f >= minY)
                     UpLight(root, new Vector3(foot.x, spring - (arch ? 2.2f : 2.4f), foot.z), inward);
             }
         }
 
         /// <summary>Hauteur gardée libre sous les arcs (traqueur debout, 14 m, et une marge).</summary>
         private const float StalkerHeadroom = 15.5f;
+
+        /// <summary>Tête du traqueur debout (14 m) et une marge : rien de la voûte ne descend plus bas.</summary>
+        private const float StalkerTop = 14.1f;
+
+        /// <summary>Épaisseur de l'arc ou de la poutre, réduite dans les petites salles pour que son dessous reste au-dessus de 14.1 m.</summary>
+        private float RibThickness(ActRoom r) =>
+            Mathf.Min(settings.ceilingStructure == CeilingStructure.Arcs ? 1.1f : 0.8f, r.Ceiling - StalkerTop);
 
         private readonly List<Mesh> _ribMeshes = new List<Mesh>();
 

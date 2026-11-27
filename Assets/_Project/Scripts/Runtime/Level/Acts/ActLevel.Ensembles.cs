@@ -335,6 +335,12 @@ namespace ItHunts.Level.Acts
         /// <summary>Bibliothèques dont le dos nu se voyait : doublées dos à dos, ou retirées faute de place (mesure).</summary>
         public int ShelfBacksFixed { get; private set; }
 
+        /// <summary>Bibliothèques doublées dos à dos (mesure, nuit du 27/11).</summary>
+        public int ShelfTwins { get; private set; }
+
+        /// <summary>Bibliothèques retirées (pas de place pour un double derrière).</summary>
+        public int ShelfRemoved { get; private set; }
+
         /// <summary>
         /// Seconde revue de la DA (D-120) : une bibliothèque (ou une étagère) posée au milieu d'une salle montrait son dos nu, un grand
         /// panneau de bois sans livres (rangées de la recette, pièce isolée d'une salle d'exemple, double retiré par l'audit). Après
@@ -343,7 +349,7 @@ namespace ItHunts.Level.Acts
         /// </summary>
         private void FixShelfBacks()
         {
-            ShelfBacksFixed = 0;
+            ShelfBacksFixed = ShelfTwins = ShelfRemoved = 0;
             Physics.SyncTransforms();
             List<DecorTag> shelves = _root.GetComponentsInChildren<DecorTag>(false)
                 .Where(t => t.gameObject.activeInHierarchy && IsShelf(t.name)).ToList();
@@ -364,19 +370,32 @@ namespace ItHunts.Level.Acts
                     continue;
                 float halfW = Mathf.Max(0.4f, Mathf.Abs(Vector3.Dot(b.extents, new Vector3(Mathf.Abs(f.z), 0f, Mathf.Abs(f.x)))) - 0.1f);
                 float depth = Mathf.Max(0.3f, Mathf.Abs(Vector3.Dot(b.size, new Vector3(Mathf.Abs(f.x), 0f, Mathf.Abs(f.z)))));
-                Vector3 behind = p - f * (depth * 0.5f + 0.08f) + Vector3.up * (height * 0.5f + 0.15f);
-                bool free = !Physics.CheckBox(behind, new Vector3(halfW, height * 0.5f - 0.1f, depth * 0.5f - 0.05f), Quaternion.LookRotation(f), ~0,
-                    QueryTriggerInteraction.Ignore);
+                // Nuit du 27/11 (relecture) : le dos est pris sur la boîte du meuble, pas sur son pivot (pivot au dos ou au centre selon
+                // le modèle). Le double tourne d'un demi-tour autour de ce dos : dos à dos, quel que soit le pivot.
+                float back = Vector3.Dot(b.center - p, -f) + depth * 0.5f;
+                Vector3 backPoint = p - f * back;
+                Vector3 behind = backPoint - f * (depth * 0.5f + 0.08f) + Vector3.up * (height * 0.5f + 0.15f);
+                bool free = true;
+                foreach (Collider c in Physics.OverlapBox(behind, new Vector3(halfW, height * 0.5f - 0.1f, depth * 0.5f - 0.05f), Quaternion.LookRotation(f), ~0,
+                             QueryTriggerInteraction.Ignore))
+                    if (!c.transform.IsChildOf(t.transform))
+                    {
+                        free = false;
+                        break;
+                    }
+
                 if (free)
                 {
-                    GameObject twin = Instantiate(t.gameObject, p, Quaternion.Euler(0f, 180f, 0f) * t.transform.rotation, t.transform.parent);
+                    GameObject twin = Instantiate(t.gameObject, p - f * (2f * back), Quaternion.Euler(0f, 180f, 0f) * t.transform.rotation, t.transform.parent);
                     twin.name = t.name;
                     Physics.SyncTransforms();
+                    ShelfTwins++;
                 }
                 else
                 {
                     t.gameObject.SetActive(false);
                     Destroy(t.gameObject);
+                    ShelfRemoved++;
                 }
 
                 ShelfBacksFixed++;
@@ -533,7 +552,7 @@ namespace ItHunts.Level.Acts
             }
         }
 
-        private static Material _hedgeMaterial;
+        private Material _hedgeMaterial;                                  // propre au niveau, détruit avec lui (OnDestroy)
 
         /// <summary>
         /// Seconde revue de la DA (D-120) : la haie du kit (Jardin_Haie_6m), à l'ombre, se lisait comme un cube brun. Ses feuilles prennent
@@ -541,7 +560,7 @@ namespace ItHunts.Level.Acts
         /// </summary>
         private Material HedgeMaterial()
         {
-            if (_hedgeMaterial != null && _hedgeMaterial.name.EndsWith(settings.paintedFoliage.name + " (haie)"))
+            if (_hedgeMaterial != null)
                 return _hedgeMaterial;
             _hedgeMaterial = new Material(settings.paintedFoliage) { name = settings.paintedFoliage.name + " (haie)" };
             foreach (string prop in new[] { "_BaseColor", "_Color" })

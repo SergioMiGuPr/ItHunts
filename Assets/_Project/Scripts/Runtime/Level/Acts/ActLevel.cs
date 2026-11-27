@@ -82,6 +82,17 @@ namespace ItHunts.Level.Acts
         {
             if (Current == this)
                 Current = null;
+            // Nuit du 27/11 (relecture) : maillages et matières créés par le niveau, libérés avec lui (plus de fuite d'un acte à l'autre).
+            foreach (Mesh m in _ribMeshes)
+                if (m != null)
+                    Destroy(m);
+            _ribMeshes.Clear();
+            if (_root != null)
+                foreach (MeshFilter mf in _root.GetComponentsInChildren<MeshFilter>(true))
+                    if (mf.sharedMesh != null && mf.sharedMesh.name.StartsWith("Décor fusionné"))
+                        Destroy(mf.sharedMesh);
+            if (_hedgeMaterial != null)
+                Destroy(_hedgeMaterial);
         }
 
         private System.Collections.IEnumerator LoadRoutine(int seed)

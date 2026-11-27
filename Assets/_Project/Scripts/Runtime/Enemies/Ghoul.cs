@@ -1539,6 +1539,9 @@ namespace ItHunts.Enemies
                     _glowBlock.Clear();
                 _bodyParts[i].SetPropertyBlock(_glowBlock);
             }
+
+            if (_damageable != null)
+                _damageable.MarkGlowStale();                             // les Clear ont effacé sa lueur : réécrite à l'image suivante
         }
 
         private bool _signalsOn = true;                                  // inconnu au départ : la première remise à zéro éteint tout

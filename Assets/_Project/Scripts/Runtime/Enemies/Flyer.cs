@@ -702,6 +702,9 @@ namespace ItHunts.Enemies
                     _eyeBlock.Clear();
                 r.SetPropertyBlock(_eyeBlock);
             }
+
+            if (TryGetComponent(out ItHunts.Combat.Damageable dmg))
+                dmg.MarkGlowStale();                                     // le Clear a effacé sa lueur : réécrite à l'image suivante
         }
 
         /// <summary>Vitrine (Test_Vitrine) : affiche un état sans l'IA (composant désactivé). Affichage seulement.</summary>
