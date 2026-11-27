@@ -93,7 +93,7 @@ namespace ItHunts.HudArt
             return true;
         }
 
-        /// <summary>Cartes copiées sur la dernière jusqu'à count, sur la même ligne, resserrées pour tenir dans la largeur des cartes d'origine.</summary>
+        /// <summary>Cartes copiées sur la dernière jusqu'à count, sur la même ligne ; le panneau s'élargit d'autant.</summary>
         public static void GrowCards(PanneauOffres panel, int count)
         {
             PanneauOffres.Carte[] cards = panel.cartes;
@@ -111,17 +111,31 @@ namespace ItHunts.HudArt
                 all.Add(Rewire(last, (RectTransform)copy.transform));
             }
 
-            // Même centre que les cartes d'origine ; toute la ligne réduite pour garder sa largeur.
-            float k = Mathf.Min(1f, (float)n0 / count);
+            // Les cartes gardent leur taille (le panneau anime leur échelle au survol) et leur espacement ; la ligne est recentrée sur le
+            // centre des cartes d'origine, et le cadre et le fond (enfants à la largeur du panneau) s'élargissent d'autant.
+            float extra = Mathf.Abs(step.x) * (count - n0);
+            var panelRt = (RectTransform)panel.transform;
+            float panelW = panelRt.rect.width;
+            foreach (Transform child in panelRt)
+            {
+                if (!(child is RectTransform crt) || all.Exists(c => c?.racine == crt))
+                    continue;
+                bool stretched = !Mathf.Approximately(crt.anchorMin.x, crt.anchorMax.x);
+                if (!stretched && crt.rect.width >= panelW * 0.9f)
+                {
+                    crt.sizeDelta += new Vector2(extra, 0f);             // cadre et fond à taille fixe, élargis autour de leur centre
+                    crt.anchoredPosition -= new Vector2(extra * (0.5f - crt.pivot.x), 0f);
+                }
+                else if (stretched && crt.rect.width >= panelW * 0.9f)
+                    crt.offsetMin -= new Vector2(extra * 0.5f, 0f);       // étirés : on écarte leurs bords
+                if (stretched && crt.rect.width >= panelW * 0.9f)
+                    crt.offsetMax += new Vector2(extra * 0.5f, 0f);
+            }
+
             Vector2 center = r0 != null ? r0.anchoredPosition + step * (n0 - 1) * 0.5f : Vector2.zero;
             for (int i = 0; i < all.Count; i++)
-            {
-                RectTransform rt = all[i]?.racine;
-                if (rt == null)
-                    continue;
-                rt.anchoredPosition = center + step * k * (i - (count - 1) * 0.5f);
-                rt.localScale = Vector3.one * k;
-            }
+                if (all[i]?.racine != null)
+                    all[i].racine.anchoredPosition = center + step * (i - (count - 1) * 0.5f);
 
             panel.cartes = all.ToArray();
         }
