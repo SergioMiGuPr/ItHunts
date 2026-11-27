@@ -86,6 +86,9 @@ Shader "ItHunts/Toon"
 
         [Header(Rendu)]
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Faces", Float) = 2
+        // Cartes de feuillage à deux faces : garder la normale peinte (vers l'extérieur du buisson) des deux côtés,
+        // sinon la face vue de dos prend la normale inverse et devient noire à contre-jour.
+        [Toggle(_FOLIAGE_NORMALS)] _FoliageNormals ("Feuillage : normale identique des deux côtés", Float) = 0
         // Translucide (verre de la lanterne) : SrcAlpha / OneMinusSrcAlpha, ZWrite Off, file 3000, et passes
         // ShadowCaster, DepthOnly et DepthNormals coupées sur le matériau. Par défaut : opaque (One / Zero, ZWrite On).
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Mélange : source", Float) = 1
@@ -117,6 +120,7 @@ Shader "ItHunts/Toon"
             #pragma shader_feature_local_fragment _WORLD_UV
             #pragma shader_feature_local _DECOR
             #pragma shader_feature_local_fragment _SOLMELANGE
+            #pragma shader_feature_local_fragment _FOLIAGE_NORMALS
 
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS

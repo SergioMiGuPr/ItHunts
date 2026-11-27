@@ -258,7 +258,11 @@ half4 ToonFrag(Varyings input, FRONT_FACE_TYPE isFrontFace : FRONT_FACE_SEMANTIC
 #endif
 
     float3 positionWS = input.positionWS;
+#if defined(_FOLIAGE_NORMALS)
+    half3 normalWS = normalize(input.normalWS);     // cartes de feuillage : même normale peinte des deux côtés
+#else
     half3 normalWS = normalize(input.normalWS) * IS_FRONT_VFACE(isFrontFace, 1.0h, -1.0h);
+#endif
     half3 viewDirWS = GetWorldSpaceNormalizeViewDir(positionWS);
 
     // InputData : nommée « inputData », comme l'attendent LIGHT_LOOP_BEGIN (Forward+) et l'occlusion ambiante.

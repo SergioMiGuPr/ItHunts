@@ -102,7 +102,7 @@ public static class EnsembleBuilder
         M("Noir", null, C(0.05f, 0.048f, 0.052f), 1, false); M("Sang", null, C(0.20f, 0.035f, 0.03f), 1, false);
         M("Eau", null, C(0.045f, 0.065f, 0.085f), 1, false); M("Verre", null, C(0.16f, 0.22f, 0.17f), 1, false);
         M("Miroir", null, C(0.46f, 0.52f, 0.62f), 1, false); M("Champignon", "Papier", C(0.95f, 0.92f, 0.86f), 0.3f, false);
-        M("Tige", "Tissu", C(0.30f, 0.38f, 0.20f), 0.5f); M("Feuillage_Coeur", null, C(0.055f, 0.075f, 0.045f), 1, false);
+        M("Tige", "Tissu", C(0.30f, 0.38f, 0.20f), 0.5f); M("Feuillage_Coeur", null, C(0.10f, 0.14f, 0.07f), 1, false);   // ombre verte entre les cartes (plus de trous noirs)
         foreach (var n in new[] { "Pierre", "PierreClaire", "PierreMoussue", "Ecorce", "BoisGris" })
         {
             var m = AssetDatabase.LoadAssetAtPath<Material>($"{MATS}/M_Ens_{n}.mat");
@@ -124,7 +124,7 @@ public static class EnsembleBuilder
         v.SetFloat("_LightSaturation", 0.4f);
         var f = M("Feuillage", "Feuillage", C(0.95f, 1.0f, 0.95f), 1, false, true, 2048);
         Tex("Feuillage", 2048, true, true);
-        f.SetFloat("_AlphaClip", 1); f.EnableKeyword("_ALPHATEST_ON"); f.SetFloat("_Cutoff", 0.45f); f.SetFloat("_PointWrap", 0.6f); f.SetFloat("_LightSaturation", 0.45f);
+        f.SetFloat("_AlphaClip", 1); f.EnableKeyword("_ALPHATEST_ON"); f.SetFloat("_Cutoff", 0.45f); f.SetFloat("_PointWrap", 0.6f); f.SetFloat("_LightSaturation", 0.45f); f.SetFloat("_FoliageNormals", 1); f.EnableKeyword("_FOLIAGE_NORMALS");
         foreach (var n in new[] { "Portraits", "Tapisserie" }) { var pm = AssetDatabase.LoadAssetAtPath<Material>($"{MATS}/M_Ens_{n}.mat"); pm.SetFloat("_LightSaturation", 0.5f); EditorUtility.SetDirty(pm); }
         f.renderQueue = (int)RenderQueue.AlphaTest;
         // réglages de matériaux existants (relecture) : rouille moins saturée sous la lumière chaude, coffre décoratif aux clairs éteints

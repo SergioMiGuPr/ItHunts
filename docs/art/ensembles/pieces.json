@@ -310,13 +310,13 @@
   "bas": -0.06,
   "col": 1,
   "feuillage": true,
-  "h": 1.44,
+  "h": 1.43,
   "mats": [
    "M_Ens_Feuillage_Coeur"
   ],
-  "tris": 164,
-  "x": 1.73,
-  "z": 1.73
+  "tris": 292,
+  "x": 1.7,
+  "z": 1.76
  },
  "Cadre_Vide": {
   "bas": -0.96,
@@ -1654,7 +1654,7 @@
   "bas": -0.31,
   "col": 1,
   "feuillage": true,
-  "h": 11.6,
+  "h": 11.2,
   "mats": [
    "M_Ens_Ecorce",
    "M_Ens_Feuillage_Coeur"
@@ -1880,15 +1880,15 @@
   "bas": 0.0,
   "col": 2,
   "feuillage": true,
-  "h": 3.41,
+  "h": 3.42,
   "mats": [
    "M_Ens_PierreClaire",
    "M_Ens_Terreau",
    "M_Ens_Ecorce",
    "M_Ens_Feuillage_Coeur"
   ],
-  "tris": 510,
-  "x": 1.34,
+  "tris": 654,
+  "x": 1.27,
   "z": 1.35
  },
  "Tronc_Couche": {

@@ -61,6 +61,7 @@ Material:
     - _DstBlend: 0
     - _Emission: 0
     - _EmissionThroughFog: 0
+    - _FoliageNormals: 0
     - _GrimeGroundY: 0
     - _GrimeHeight: 1.8
     - _GrimeStrength: 0.75
@@ -95,7 +96,7 @@ Material:
     - _WorldUV: 0
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.055, g: 0.075, b: 0.045, a: 1}
+    - _BaseColor: {r: 0.1, g: 0.14, b: 0.07, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _GrimeColor: {r: 0.41999996, g: 0.39999998, b: 0.35999998, a: 1}
     - _MacroTint: {r: 0.78, g: 0.82, b: 0.74, a: 1}
