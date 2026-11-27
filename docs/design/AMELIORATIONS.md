@@ -90,7 +90,7 @@ Les chiffres sont des **valeurs de départ** : tout est dans des ScriptableObjec
 
 | # | Nom | Effet | Bronze | Argent | Or | Diamant | Mythique | Synergies |
 |---|---|---|---|---|---|---|---|---|
-| G28 | **Allumette** | un ennemi **en feu** qui meurt enflamme ses voisins | 2 m, 3 s | 2.5 m, 4 s | 3 m, 5 s, le feu ralentit 20 % | 3.5 m, 6 s | 4 m, 7 s, **le feu étourdit 0.5 s à la première brûlure** | Sillage (G13), lanterne (R1 à R8), Feu grégeois (R5) |
+| G28 | **Allumette** (D-125 : proposée seulement au renard, seule source de feu) | un ennemi **en feu** qui meurt enflamme ses voisins | 2 m, 3 s | 2.5 m, 4 s | 3 m, 5 s, le feu ralentit 20 % | 3.5 m, 6 s | 4 m, 7 s, **le feu étourdit 0.5 s à la première brûlure** | Sillage (G13), lanterne (R1 à R8), Feu grégeois (R5) |
 | G29 | **Souffle court** | le traqueur vous détecte de moins loin et perd votre trace plus vite (sa vitesse ne change pas) | −10 % | −16 % | −22 %, les goules alertent le traqueur 1 s plus tard | −28 % | −33 %, **2 s d'invisibilité pour le traqueur après une parade réussie** | Peau changeante (C-P1), Vision nocturne (H-P1) |
 | G30 | **Œil du collectionneur** | les coffres offrent un choix en plus ; les salles verrouillées sont moins chères | +1 choix | porte −25 % | +1 choix, les coffres proposent une montée de rang dès l'acte I | porte −50 % | +2 choix, **un coffre peut offrir une amélioration directement en Argent** | Marchandage (G8) |
 
