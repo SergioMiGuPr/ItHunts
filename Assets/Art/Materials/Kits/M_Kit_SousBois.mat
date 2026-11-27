@@ -13,11 +13,12 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ALPHATEST_ON
+  - _DECOR
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2450
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -58,21 +59,21 @@ Material:
     - _BandThreshold: 0.15
     - _Cull: 2
     - _Cutoff: 0.45
-    - _Decor: 0
+    - _Decor: 1
     - _DstBlend: 0
     - _Emission: 0
     - _EmissionThroughFog: 0
     - _GrimeGroundY: 0
     - _GrimeHeight: 1.8
-    - _GrimeStrength: 0.75
+    - _GrimeStrength: 0
     - _HeightBlend: 0.06
     - _LayerAmount: 0
-    - _LayerLow: 0.5
+    - _LayerLow: 0
     - _LayerTile: 2
     - _LayerTop: 0
     - _LightSaturation: 0.45
-    - _MacroScale: 6
-    - _MacroVariation: 0.35
+    - _MacroScale: 3
+    - _MacroVariation: 0.55
     - _PointFalloff: 0.8
     - _PointGradient: 0.8
     - _PointSoftness: 0.015
@@ -91,15 +92,15 @@ Material:
     - _SrcBlend: 1
     - _TopRandomRotation: 0
     - _TopRotation: 0
-    - _VertexPaint: 0
-    - _WetStrength: 0.5
+    - _VertexPaint: 1
+    - _WetStrength: 0
     - _WorldUV: 0
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 0.95, g: 1, b: 0.95, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _GrimeColor: {r: 0.41999996, g: 0.39999998, b: 0.35999998, a: 1}
-    - _MacroTint: {r: 0.78, g: 0.82, b: 0.74, a: 1}
+    - _MacroTint: {r: 0.78, g: 0.86, b: 0.55, a: 1}
     - _RimColor: {r: 0.35, g: 0.45, b: 0.7, a: 1}
     - _ShadowColor: {r: 0.028, g: 0.034, b: 0.07499998, a: 1}
     - _SolEchelle: {r: 7, g: 9, b: 5, a: 0}

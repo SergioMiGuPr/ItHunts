@@ -37,25 +37,35 @@ public static class SousBoisBuilder
         if (m == null) { m = new Material(src); AssetDatabase.CreateAsset(m, MAT); }
         else m.CopyPropertiesFromMaterial(src);
         m.shader = src.shader;
+        m.renderQueue = src.renderQueue;   // AlphaTest (2450), comme M_Ens_Feuillage
         m.SetFloat("_Cull", 2f);   // faces arrière masquées
+        // variation de teinte carte par carte (canal B des sommets) : mode décor sans saleté, couche ni humidité
+        m.SetFloat("_Decor", 1f); m.EnableKeyword("_DECOR"); m.SetFloat("_VertexPaint", 1f);
+        m.SetFloat("_MacroVariation", 0.55f); m.SetFloat("_MacroScale", 3f); m.SetColor("_MacroTint", new Color(0.78f, 0.86f, 0.55f, 1f));
+        m.SetFloat("_GrimeStrength", 0f); m.SetFloat("_WetStrength", 0f);
+        m.SetFloat("_LayerAmount", 0f); m.SetFloat("_LayerLow", 0f); m.SetFloat("_LayerTop", 0f);
         EditorUtility.SetDirty(m);
         AssetDatabase.SaveAssets();
         sb.AppendLine("matériau " + MAT + " cull=" + m.GetFloat("_Cull") + " clip=" + m.GetFloat("_AlphaClip"));
         var roche = Charge("M_Bib_RocheCave_Peint");
         var ecorce = Charge("M_Bib_Ecorce");
         // 2. remappage des FBX
-        foreach (string n in new[] { "SM_Jardin_SousBois_A", "SM_Jardin_SousBois_B", "SM_Jardin_Lisiere_12m", "SM_Jardin_Lisiere_Coin" })
+        // remappages ajoutés (changement d'import délibéré, listé dans INTEGRATION-PROPS) : M_Kit_SousBois partout,
+        // M_Bib_RocheCave_Peint seulement pour les pierres des sous-bois
+        foreach (string n in new[] { "SM_Jardin_SousBois_A", "SM_Jardin_SousBois_B", "SM_Jardin_Lisiere_12m", "SM_Jardin_Lisiere_Coin",
+                                     "SM_Jardin_GrandArbre_Praticable", "SM_Jardin_Foret_Lisiere_20m" })
         {
             var mi = (ModelImporter)AssetImporter.GetAtPath(KIT + n + ".fbx");
             mi.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "M_Kit_SousBois"), m);
-            mi.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "M_Bib_RocheCave_Peint"), roche);
+            if (n.Contains("SousBois"))
+                mi.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "M_Bib_RocheCave_Peint"), roche);
             mi.SaveAndReimport();
         }
         foreach (string n in new[] { "SM_Jardin_Rocher_Petit", "SM_Jardin_Rocher_Moyen", "SM_Jardin_Rocher_Grand" })
             AssetDatabase.ImportAsset(KIT + n + ".fbx", ImportAssetOptions.ForceUpdate);
         // 3. prefabs
         foreach (string n in new[] { "Jardin_SousBois_A", "Jardin_SousBois_B", "Jardin_Rocher_Petit", "Jardin_Rocher_Moyen", "Jardin_Rocher_Grand",
-                                     "Jardin_Lisiere_12m", "Jardin_Lisiere_Coin" })
+                                     "Jardin_Lisiere_12m", "Jardin_Lisiere_Coin", "Jardin_GrandArbre_Praticable", "Jardin_Foret_Lisiere_20m" })
         {
             string path = PRE + n + ".prefab";
             var modele = AssetDatabase.LoadAssetAtPath<GameObject>(KIT + "SM_" + n + ".fbx");
@@ -73,6 +83,7 @@ public static class SousBoisBuilder
                     go.transform.localScale = mm.transform.localScale;
                     go.AddComponent<MeshFilter>().sharedMesh = mm.sharedMesh;
                     go.AddComponent<MeshRenderer>();
+                    GameObjectUtility.SetStaticEditorFlags(go, GameObjectUtility.GetStaticEditorFlags(root));   // statique comme le reste
                     sb.AppendLine(n + " : enfant ajouté " + mm.name);
                 }
                 foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true))
@@ -83,14 +94,18 @@ public static class SousBoisBuilder
                     // matériaux : ceux du modèle importé (remappés), même ordre que ses sous-maillages
                     var mr = mf.transform == root.transform ? modele.GetComponent<MeshRenderer>()
                            : modele.transform.Find(mf.name)?.GetComponent<MeshRenderer>();
-                    if (r != null && mr != null && (n.Contains("SousBois") || n.Contains("Lisiere"))) r.sharedMaterials = mr.sharedMaterials;
+                    if (r != null && mr != null && (n.Contains("SousBois") || n.Contains("Lisiere") || n.Contains("GrandArbre"))) r.sharedMaterials = mr.sharedMaterials;
+                    // feuillage des lisières (bord de carte, répété) : pas d'ombre portée (coût) ; sous-bois et grand arbre : ombres gardées
+                    if (deco && r != null) r.shadowCastingMode = n.Contains("Lisiere")
+                        ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
                     var mc = mf.GetComponent<MeshCollider>();
                     var bc = mf.GetComponent<BoxCollider>();
                     var b = mf.sharedMesh != null ? mf.sharedMesh.bounds : new Bounds();
                     // petit rocher : boîte de KitBuilder (on l'enjambe), recalée sur le maillage recalé ; pas de MeshCollider en plus
                     if (bc != null) { bc.center = b.center; bc.size = b.size; if (mc != null) { Object.DestroyImmediate(mc); mc = null; } }
                     if (deco && mc != null) { Object.DestroyImmediate(mc); mc = null; }
-                    if (!deco && mc == null && bc == null && !n.Contains("Lisiere")) mc = mf.gameObject.AddComponent<MeshCollider>();   // lisière : Col_Lisiere bloque
+                    bool nonTouche = n.Contains("Lisiere") || n.Contains("GrandArbre");   // collisions déjà faites par KitBuilder (Col_*, tronc)
+                    if (!deco && mc == null && bc == null && !nonTouche) mc = mf.gameObject.AddComponent<MeshCollider>();
                     if (mc != null) mc.sharedMesh = mf.sharedMesh;
                     sb.AppendLine($"{n}/{mf.name} : maillage {(mf.sharedMesh ? mf.sharedMesh.name : "MANQUANT")} {mf.sharedMesh?.triangles.Length / 3} tris, " +
                                   $"sous-maillages {mf.sharedMesh?.subMeshCount}, matériaux {string.Join(",", r.sharedMaterials.Select(x => x ? x.name : "null"))}, " +

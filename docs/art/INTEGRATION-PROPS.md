@@ -1135,13 +1135,13 @@ superposée, 0 dégénérée, 0 recouvrement entre les objets visibles d'une mê
 | `SM_Jardin_SousBois_B` | 3.16 × 3.3 × 1.01 | -0.08 | 1263 | sol, centre | habillage au pied des arbres et des lisières ; traversable (`Deco_SansCollision`) |
 | `SM_Jardin_Rocher_Petit` | 1.27 × 1.15 × 0.65 | -0.08 | 360 | sol, centre (base plane enfoncée de 8 cm ; nuit 7 : flottait avant) | obstacle et appui (petit : enjambé ; moyen : hissage ; grand : double saut) |
 | `SM_Jardin_Rocher_Moyen` | 2.7 × 2.15 × 1.52 | -0.08 | 360 | sol, centre (base plane enfoncée de 8 cm ; nuit 7 : flottait avant) | obstacle et appui (petit : enjambé ; moyen : hissage ; grand : double saut) |
-| `SM_Jardin_Rocher_Grand` | 5.53 × 3.92 × 3.68 | -0.08 | 720 | sol, centre (base plane enfoncée de 8 cm ; nuit 7 : flottait avant) | obstacle et appui (petit : enjambé ; moyen : hissage ; grand : double saut) |
-| `SM_Jardin_GrandArbre_Praticable` | 14.65 × 14.15 × 22.02 | -0.45 | 2632 | sol, centre du tronc ; `Appui_Branche_1..3` au bout des branches | arbre de 20 m qu'on gravit par trois branches plates (3.4, 6.6, 9.8 m) |
+| `SM_Jardin_Rocher_Grand` | 5.53 × 3.92 × 2.78 | -0.08 | 720 | sol, centre (base plane enfoncée de 8 cm ; nuit 7 : flottait avant) | obstacle et appui (petit : enjambé ; moyen : hissage ; grand : double saut) |
+| `SM_Jardin_GrandArbre_Praticable` | 15.87 × 15.5 × 23.1 | -0.45 | 2898 | sol, centre du tronc ; `Appui_Branche_1..3` au bout des branches | arbre de 20 m qu'on gravit par trois branches plates (3.4, 6.6, 9.8 m) |
 | `SM_Jardin_Sol_Puits_8x8` | 8.0 × 8.0 × 6.55 | -2.41 | 1380 | centre, dessus de la dalle à −4 mm ; eau `Deco_Eau` à −1.5 m | dalle de sol qui remplace une case du sol de la salle : le puits a son trou |
 | `SM_Jardin_Sol_Fosse_8x8` | 8.0 × 8.0 × 4.21 | -3.41 | 438 | centre, dessus à 0 ; fond à −4 m ; `Accroche_Echelle` au pied de l'échelle | dalle de sol qui remplace une case du sol : fosse de 4 × 4 × 4 m dont on ressort par l'échelle |
 | `SM_Jardin_PlateformeTraction` | 3.0 × 3.03 × 4.48 | -0.47 | 1066 | centre du dessus ; accroches des chaînes à +4 m (`Accroche_Plafond`) ; `Accroche_Traction` sous la plaque | suspendue sous un plafond ou une voûte : on s'y tracte (plaque `Plaque_Magnetique`, runes bleu pâle) puis on s'y pose |
-| `SM_Jardin_Lisiere_12m` | 22.28 × 15.94 × 21.0 | -0.5 | 12118 | sol, milieu du bord avant ; la forêt s'étend sur 6.5 m derrière (vers −Z Unity), fond noir à 6.5 m | délimite les zones de l'acte III à la place des murs gris ; infranchissable (`Col_Lisiere`, 8 m) |
-| `SM_Jardin_Lisiere_Coin` | 22.74 × 22.87 × 19.46 | -0.39 | 12136 | sol, coin intérieur de la clairière ; quart de cercle de rayon 8 m | délimite les zones de l'acte III à la place des murs gris ; infranchissable (`Col_Lisiere`, 8 m) |
+| `SM_Jardin_Lisiere_12m` | 16.54 × 12.31 × 18.84 | -0.5 | 12382 | sol, milieu du bord avant ; la forêt s'étend sur 6.5 m derrière (vers −Z Unity), fond noir à 6.5 m | délimite les zones de l'acte III à la place des murs gris ; infranchissable (`Col_Lisiere`, 22 m) |
+| `SM_Jardin_Lisiere_Coin` | 19.49 × 19.88 × 18.79 | -0.39 | 12532 | sol, coin intérieur de la clairière ; quart de cercle de rayon 8 m | délimite les zones de l'acte III à la place des murs gris ; infranchissable (`Col_Lisiere`, 22 m) |
 | `SM_Jardin_SalleHaute_8x8` | 8.3 × 8.3 × 8.82 | 0.0 | 1816 | sol, centre ; plancher à 6 m ; `Accroche_Echelle` devant, `Passage_Porte` à gauche | pièce en hauteur reliée par échelle, pont ou coursive |
 | `SM_Jardin_PontSuspendu_12m` | 12.7 × 2.02 × 2.57 | -0.97 | 2504 | centre du tablier aux bouts (dessus à 0 aux appuis `Appui_A` / `Appui_B`, flèche de 0.8 m au milieu) | relier deux plateformes de même hauteur ; collision `Col_Tablier` lisse, garde-corps `Garde_Corps` |
 | `SM_Jardin_Rebord_3m` | 3.0 × 0.96 × 1.34 | -1.3 | 132 | ras du mur, milieu du bord arrière, dessus à 0 (saillie vers l'avant) | en quinconce tous les 2.2 à 3.5 m pour monter (saut, hissage, saut mural) |
@@ -1821,21 +1821,42 @@ Modélisées par script dans Blender (`Assets/Art/Source~/Ensembles/scripts/`), 
 `EnsembleBuilder.cs` (matériaux, import, prefabs, banc) ; `AuditEnsembles.cs` ; `CapturesEnsembles.cs` ; `ens_doc.py`.
 <!-- ENSEMBLES-FIN -->
 
-## Nuit 7, lot 2 (2026-11-27, branche `art-sousbois`) : sous-bois, lisières, rochers du jardin
+## Nuit 7, lot 2 (2026-11-27, branche `art-sousbois`) : sous-bois, lisières, grand arbre, rochers du jardin
 
-Rien à rebrancher sur `main` : mêmes prefabs, mêmes noms, mêmes maillages (les cartes déjà posées se mettent à jour seules).
+Mêmes prefabs, mêmes noms de maillages : les cartes déjà posées se mettent à jour seules, **sauf les rochers (à faire sur
+`main` à la fusion, sinon ils seront enterrés)** :
+- `Assets/_Project/Scripts/Runtime/Level/Acts/ActLevel.Dressing.cs` (~l. 528) : `sink` (0.28 / 0.73 / 0.6 m) compensait le défaut ;
+  le passer à 0 ;
+- `Assets/_Project/Settings/Ensembles/Acte3.txt` (l. 161-163, 171, 176, 181, 225) : y de −0,4 / −0,8 / −0,7 m pour les rochers ;
+  le remettre à 0.
 
-- **`Jardin_SousBois_A` / `_B`** : refaits en cartes peintes de l'atlas de végétation (`T_Ens_Feuillage_BaseColor`) : fougères en
-  rosette, rameaux de chêne, ronces, herbes hautes et basses, champignons pâles (taches claires lisibles de nuit), branche morte (A)
-  ou souche à racines (B), pierres moussues. Feuillage dans `Deco_SansCollision` (traversable) ; branche, souche et pierres dans le
-  corps, avec collision (maillage). Plus de triangles plats sans texture.
-- **`Jardin_Lisiere_12m` / `_Coin`** : les aplats dentelés du feuillage et du sous-bois (lus comme des éclats sombres) sont remplacés
-  par des houppiers et un sous-bois en cartes peintes, dans un nouvel enfant `Deco_Feuillage` (sans collision). Troncs, racines,
-  fond noir et `Col_Lisiere` (collision de 22 m) inchangés.
-- **Cartes** : deux faces dos à dos à 3 mm, normales forcées vers le ciel, matériau `M_Kit_SousBois` (copie de `M_Ens_Feuillage`
-  avec culling des faces arrière) : aucune carte noire à contre-jour, aucun z-fighting, contrôle `faces_superposees` à 0.
-- **`Jardin_Rocher_Petit` / `_Moyen` / `_Grand`** : flottaient de 0,28 / 0,73 / 0,60 m (les plans de clivage rognaient le bas du
-  bloc). Base plane enfoncée de 8 cm ; la boîte de collision du petit rocher est recalée (−0,08 à 0,57 m).
+Pièces :
+- **`Jardin_SousBois_A` / `_B`** : cartes peintes de l'atlas de végétation (`T_Ens_Feuillage_BaseColor`) : fougères en rosette,
+  rameaux de chêne, ronces, herbes hautes et basses, champignons pâles (taches claires lisibles de nuit), branche morte (A) ou
+  souche à racines (B), pierres moussues. Feuillage dans `Deco_SansCollision` (traversable) ; branche, souche et pierres dans le
+  corps, avec collision (maillage). Emprise plus large qu'avant (A : 5.24 × 4.93 m, 1.27 m de haut) : à vérifier dans les
+  ensembles qui les posent (`Jardin_Serre_B`, `KiosqueEns_B`, `Clairiere_A/B`, `FontaineBancs_B`).
+- **`Jardin_Lisiere_12m` / `_Coin`** : houppiers et sous-bois en cartes peintes dans un nouvel enfant `Deco_Feuillage` (sans
+  collision, sans ombre portée, statique) ; houppiers contenus dans l'emprise des troncs et derrière 0.7 m ; troncs sur trois
+  rangs, chacun finissant dans sa couche de feuillage. Fond noir et `Col_Lisiere` (−0.7 à 6.7 m, 22 m de haut) inchangés.
+  Attention : posée en mur extérieur, `ActLevel.Kits` étire la lisière de façon non uniforme (`sy = h / 22`) ; les cartes
+  peintes s'écrasent avec elle (à juger sur les cartes de main).
+- **`Jardin_GrandArbre_Praticable`** : couronne et bouts de branches en houppiers de cartes (enfant `Deco_Feuillage`).
+- **`Jardin_Foret_Lisiere_20m`** : rideaux sombres gardés en fond ; devant, trois étages de houppiers (5.5 à 19 m) et un sous-bois
+  en cartes (enfant `Deco_Feuillage`, sans ombre portée).
+- **Rochers** : flottaient de 0,28 / 0,73 / 0,60 m (les plans de clivage rognaient le bas des blocs). Chaque bloc (corps,
+  épaulement du grand) a sa base plane enfoncée de 8 cm ; la boîte de collision du petit rocher est recalée (−0,08 à 0,57 m).
+- **Cartes** : deux faces dos à dos à 3 mm, normales forcées vers le ciel, matériau `M_Kit_SousBois` (copie de `M_Ens_Feuillage` :
+  même atlas, même file AlphaTest 2450 ; culling des faces arrière ; mode décor avec la teinte par carte du canal B des sommets) :
+  aucune carte noire à contre-jour, aucun z-fighting ; `faces_superposees` à 0 sur les 9 pièces.
+- **`.meta` d'assets déjà sur `main` modifiés (changement d'import délibéré)** : `SM_Jardin_SousBois_A/B.fbx.meta` (remappage
+  `M_Kit_SousBois` et `M_Bib_RocheCave_Peint`), `SM_Jardin_Lisiere_12m/Coin.fbx.meta`, `SM_Jardin_GrandArbre_Praticable.fbx.meta`,
+  `SM_Jardin_Foret_Lisiere_20m.fbx.meta` (remappage `M_Kit_SousBois`).
+- **Coût** : lisière de 12 m 12 382 triangles (+36 %), lisière de 20 m 6 622, grand arbre 2 898 ; à remesurer en images par
+  seconde avec le build.
 - Refaire : `blender -b -P kit_jardin.py -- SM_Jardin_SousBois_A SM_Jardin_SousBois_B SM_Jardin_Lisiere_12m SM_Jardin_Lisiere_Coin
-  SM_Jardin_Rocher_Petit SM_Jardin_Rocher_Moyen SM_Jardin_Rocher_Grand`, puis dans Unity `SousBoisBuilder.Run` (Source~, CLI).
-- Preuves : `docs/art/rendus/Nuit7/Lot2/` (`Planche_Avant_Apres.jpg`, `Pieces/`, `Carte/` : vues loin de l'acte III, graines 22 et 11).
+  SM_Jardin_Rocher_Petit SM_Jardin_Rocher_Moyen SM_Jardin_Rocher_Grand SM_Jardin_GrandArbre_Praticable SM_Jardin_Foret_Lisiere_20m`,
+  puis dans Unity `SousBoisBuilder.Run` (Source~, CLI). Captures : `CapturesLot3N5.Shoot` (point de pose libre).
+- Preuves : `docs/art/rendus/Nuit7/Lot2/` (`Planche_Avant_Apres.jpg`, `Pieces/` : acte III graine 22, point de pose libre ;
+  `Carte/` : vues loin de l'acte III, graines 22 et 11 ; **les rochers y sont encore enfoncés deux fois** tant que `main` garde
+  sa compensation).

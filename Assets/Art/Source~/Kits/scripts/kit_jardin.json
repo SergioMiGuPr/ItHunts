@@ -68,12 +68,12 @@
  "SM_Jardin_Foret_Lisiere_20m": {
   "doc": "Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés devant deux rideaux de feuillage sombre (5 et 9 m, crêtes déchiquetées) et un roncier continu.",
   "taille": [
-   20.58,
-   10.5,
+   27.45,
+   12.59,
    22.42
   ],
   "bas": -0.53,
-  "triangles": 1378,
+  "triangles": 6622,
   "materiaux": [
    "M_Bib_Ecorce",
    "M_Kit_Feuillage"
@@ -783,7 +783,7 @@
   "taille": [
    5.53,
    3.92,
-   3.68
+   2.78
   ],
   "bas": -0.08,
   "triangles": 720,
@@ -794,16 +794,14 @@
  "SM_Jardin_GrandArbre_Praticable": {
   "doc": "Grand arbre de 20 m, tronc de Ø 2.2 m : trois branches plates à 3.4, 6.6 et 9.8 m qui montent en spirale.",
   "taille": [
-   14.65,
-   14.15,
-   22.02
+   15.87,
+   15.5,
+   23.1
   ],
   "bas": -0.45,
-  "triangles": 2632,
+  "triangles": 2898,
   "materiaux": [
-   "M_Bib_Ecorce",
-   "M_Kit_Feuillage_Foret",
-   "M_Kit_Feuillage_Sombre"
+   "M_Bib_Ecorce"
   ]
  },
  "SM_Jardin_Sol_Puits_8x8": {
@@ -856,14 +854,14 @@
   ]
  },
  "SM_Jardin_Lisiere_12m": {
-  "doc": "Lisière de forêt dense de 12 m : troncs sur deux rangs, trois couches de feuillage, sous-bois, fond noir ; infranchissable.",
+  "doc": "Lisière de forêt dense de 12 m : troncs sur trois rangs, houppiers et sous-bois en cartes peintes, fond noir ; infranchissable.",
   "taille": [
-   22.28,
-   15.94,
-   21.0
+   16.54,
+   12.31,
+   18.84
   ],
   "bas": -0.5,
-  "triangles": 12118,
+  "triangles": 12382,
   "materiaux": [
    "M_Bib_Ecorce",
    "M_Fond_Noir"
@@ -872,12 +870,12 @@
  "SM_Jardin_Lisiere_Coin": {
   "doc": "Lisière de forêt en quart de cercle (angle d'une clairière, rayon 8 m) ; infranchissable.",
   "taille": [
-   22.74,
-   22.87,
-   19.46
+   19.49,
+   19.88,
+   18.79
   ],
   "bas": -0.39,
-  "triangles": 12136,
+  "triangles": 12532,
   "materiaux": [
    "M_Bib_Ecorce",
    "M_Fond_Noir"
