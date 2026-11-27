@@ -11,7 +11,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: 9915fc7701c6a2c45ab83fc63e03c305, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _FOLIAGE_NORMALS
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -61,6 +62,7 @@ Material:
     - _DstBlend: 0
     - _Emission: 0
     - _EmissionThroughFog: 0
+    - _FoliageNormals: 1
     - _GrimeGroundY: 0
     - _GrimeHeight: 1.8
     - _GrimeStrength: 0.75

@@ -26,6 +26,9 @@ public static class KitBuilder
         AssetDatabase.CreateFolder(parent, Path.GetFileName(p));
     }
 
+    // cartes de feuillage à deux faces : même normale des deux côtés (sinon noires à contre-jour)
+    static Material Feuille(Material m) { m.SetFloat("_FoliageNormals", 1); m.EnableKeyword("_FOLIAGE_NORMALS"); EditorUtility.SetDirty(m); return m; }
+
     static Material Plat(string nom, Color c, Color? emission = null, bool doubleFace = false)
     {
         Dossier(MATKIT);
@@ -51,7 +54,7 @@ public static class KitBuilder
         Plat("M_Kit_Flamme", new Color(1f, 0.8f, 0.5f), new Color(4f, 1.6f, 0.45f), true);
         Plat("M_Kit_Toile", new Color(0.36f, 0.3f, 0.24f));
         Plat("M_Kit_Vitrail", new Color(0.026f, 0.029f, 0.036f), new Color(0.02f, 0.024f, 0.036f), true);   // vitraux : verre vieilli aux teintes sourdes (nuit 4, lot 3 : écarts de teinte faibles, le toon les accentue)
-        Plat("M_Kit_Feuillage", new Color(0.10f, 0.13f, 0.09f), null, true);
+        Feuille(Plat("M_Kit_Feuillage", new Color(0.10f, 0.13f, 0.09f), null, true));
         Plat("M_Kit_Toile_Peinte", new Color(0.16f, 0.12f, 0.12f));
         Plat("M_Kit_Lune", new Color(0.9f, 0.92f, 1f), new Color(2.2f, 2.3f, 2.6f));
         Plat("M_Kit_Os", new Color(0.81f, 0.77f, 0.65f));
@@ -101,8 +104,8 @@ public static class KitBuilder
         // plaque de traction : fer sombre, runes bleu pâle (bleu = traction, D-024) qui luisent sans éblouir
         Plat("M_Kit_Magnetique", new Color(0.5f, 0.66f, 0.88f), new Color(0.28f, 0.62f, 1.35f));
         // fond des lisières : feuillage presque noir (troisième couche)
-        Plat("M_Kit_Feuillage_Sombre", new Color(0.06f, 0.08f, 0.055f), null, true);
-        Plat("M_Kit_Feuillage_Foret", new Color(0.15f, 0.2f, 0.11f), null, true);
+        Feuille(Plat("M_Kit_Feuillage_Sombre", new Color(0.09f, 0.12f, 0.08f), null, true));   // 0.06 : éclats noirs sur fond éclairé
+        Feuille(Plat("M_Kit_Feuillage_Foret", new Color(0.15f, 0.2f, 0.11f), null, true));
         // vitres qui montrent l'extérieur (ItHunts/VueExterieure) : verre clair bleuté, rouge et ambre des vitraux
         VueMat("M_Kit_VitreVue", new Color(0.82f, 0.88f, 1f), 0.25f);
         VueMat("M_Kit_VitreVue_Rouge", new Color(1f, 0.42f, 0.4f), 0.55f);

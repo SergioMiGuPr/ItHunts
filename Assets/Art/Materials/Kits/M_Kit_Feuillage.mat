@@ -11,7 +11,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: 9915fc7701c6a2c45ab83fc63e03c305, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _FOLIAGE_NORMALS
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -35,6 +36,18 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SolGravier:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SolHerbe:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SolMousse:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0
@@ -49,6 +62,7 @@ Material:
     - _DstBlend: 0
     - _Emission: 0
     - _EmissionThroughFog: 0
+    - _FoliageNormals: 1
     - _GrimeGroundY: 0
     - _GrimeHeight: 1.8
     - _GrimeStrength: 0.75
@@ -72,6 +86,9 @@ Material:
     - _RimLitOnly: 0
     - _RimSoftness: 0.02
     - _RimWidth: 0.25
+    - _SolAntiRepet: 1
+    - _SolDouceur: 0.16
+    - _SolMelange: 0
     - _SrcBlend: 1
     - _TopRandomRotation: 0
     - _TopRotation: 0
@@ -86,6 +103,9 @@ Material:
     - _MacroTint: {r: 0.78, g: 0.82, b: 0.74, a: 1}
     - _RimColor: {r: 0.35, g: 0.45, b: 0.7, a: 1}
     - _ShadowColor: {r: 0.028, g: 0.034, b: 0.07499998, a: 1}
+    - _SolEchelle: {r: 7, g: 9, b: 5, a: 0}
+    - _SolQuantite: {r: 0.35, g: 0.45, b: 0.2, a: 0}
+    - _SolTuile: {r: 2, g: 2, b: 2, a: 2}
     - _TileOffset: {r: 0, g: 0, b: 0, a: 0}
     - _TileSize: {r: 4, g: 4, b: 0, a: 0}
     - _WetColor: {r: 0.54999995, g: 0.62, b: 0.62, a: 1}
