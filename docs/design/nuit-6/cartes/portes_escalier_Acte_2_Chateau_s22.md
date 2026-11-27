@@ -2,7 +2,7 @@
 
 34 portes en haut ou en bas d'un escalier ; le traqueur fait l'aller et le retour.
 
-- passe porte 2 (Chapelle / Salon de musique) au (-112, 4, 180), dénivelé 4,1 m : 6,8 + 6,0 s
+- passe porte 2 (Chapelle / Salon de musique) au (-112, 4, 180), dénivelé 4,1 m : 6,7 + 6,0 s
 - passe porte 3 (Salon de musique / Grande entrée) au (-48, 8, 172), dénivelé 3,9 m : 6,7 + 6,0 s
 - passe porte 4 (Grande entrée / Salle du trône) au (64, 8, 172), dénivelé 3,2 m : 3,9 + 4,3 s
 - passe porte 5 (Salle du trône / Bibliothèque) au (176, 8, 180), dénivelé 3,4 m : 3,9 + 4,3 s
@@ -12,7 +12,7 @@
 - passe porte 13 (Galerie des portraits / Chambre) au (-144, 8, 120), dénivelé 8,0 m : 5,5 + 1,0 s
 - passe porte 14 (Armurerie / Chambre) au (-176, 8, 84), dénivelé 8,0 m : 5,5 + 5,0 s
 - passe porte 15 (Chambre / Grande salle) au (-112, 8, 84), dénivelé 8,0 m : 5,5 + 1,1 s
-- passe porte 17 (Galerie des portraits / Grande salle) au (-80, 0, 120), dénivelé 3,4 m : 3,6 + 3,9 s
+- passe porte 17 (Galerie des portraits / Grande salle) au (-80, 0, 120), dénivelé 3,4 m : 3,6 + 4,0 s
 - passe porte 18 (Galerie des portraits II / Salle à manger) au (128, 4, 120), dénivelé 4,1 m : 6,7 + 6,0 s
 - passe porte 19 (Salle à manger / Grand escalier) au (176, 4, 80), dénivelé 3,4 m : 3,9 + 4,3 s
 - passe porte 23 (Grand escalier / Salon de musique II) au (216, 4, 32), dénivelé 3,4 m : 3,9 + 4,3 s
