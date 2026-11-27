@@ -66,14 +66,14 @@
   ]
  },
  "SM_Jardin_Foret_Lisiere_20m": {
-  "doc": "Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés devant deux rideaux de feuillage sombre (5 et 9 m, crêtes déchiquetées) et un roncier continu.",
+  "doc": "Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés (12 à 18 m, chacun finit dans un étage de houppiers) devant deux rideaux sombres gardés en fond, trois étages de houppiers et un sous-bois en cartes peintes devant (enfant `Deco_Feuillage`, nuit 7), roncier continu.",
   "taille": [
-   20.58,
-   10.5,
-   22.42
+   24.06,
+   12.55,
+   22.32
   ],
   "bas": -0.53,
-  "triangles": 1378,
+  "triangles": 6618,
   "materiaux": [
    "M_Bib_Ecorce",
    "M_Kit_Feuillage"
@@ -727,27 +727,29 @@
  "SM_Jardin_SousBois_A": {
   "doc": "Touffe de sous-bois de Ø 5 m : fougères et buissons bas, branche morte ; traversable.",
   "taille": [
-   4.9,
-   3.97,
-   0.76
+   5.24,
+   4.93,
+   1.27
   ],
-  "bas": 0.0,
-  "triangles": 732,
+  "bas": -0.09,
+  "triangles": 1698,
   "materiaux": [
-   "M_Bib_Ecorce"
+   "M_Bib_Ecorce",
+   "M_Bib_RocheCave_Peint"
   ]
  },
  "SM_Jardin_SousBois_B": {
   "doc": "Petite touffe de sous-bois de Ø 3.2 m ; traversable.",
   "taille": [
-   3.37,
-   2.85,
-   0.8
+   3.16,
+   3.3,
+   1.01
   ],
-  "bas": 0.0,
-  "triangles": 1018,
+  "bas": -0.08,
+  "triangles": 1263,
   "materiaux": [
-   "M_Bib_Ecorce"
+   "M_Bib_Ecorce",
+   "M_Bib_RocheCave_Peint"
   ]
  },
  "SM_Jardin_Rocher_Petit": {
@@ -757,7 +759,7 @@
    1.15,
    0.65
   ],
-  "bas": 0.28,
+  "bas": -0.08,
   "triangles": 360,
   "materiaux": [
    "M_Bib_RocheCave_Peint"
@@ -770,7 +772,7 @@
    2.15,
    1.52
   ],
-  "bas": 0.73,
+  "bas": -0.08,
   "triangles": 360,
   "materiaux": [
    "M_Bib_RocheCave_Peint"
@@ -781,9 +783,9 @@
   "taille": [
    5.53,
    3.92,
-   3.68
+   2.78
   ],
-  "bas": 0.6,
+  "bas": -0.08,
   "triangles": 720,
   "materiaux": [
    "M_Bib_RocheCave_Peint"
@@ -792,16 +794,14 @@
  "SM_Jardin_GrandArbre_Praticable": {
   "doc": "Grand arbre de 20 m, tronc de Ø 2.2 m : trois branches plates à 3.4, 6.6 et 9.8 m qui montent en spirale.",
   "taille": [
-   14.65,
-   14.15,
-   22.02
+   16.24,
+   13.96,
+   23.2
   ],
   "bas": -0.45,
-  "triangles": 2632,
+  "triangles": 2682,
   "materiaux": [
-   "M_Bib_Ecorce",
-   "M_Kit_Feuillage_Foret",
-   "M_Kit_Feuillage_Sombre"
+   "M_Bib_Ecorce"
   ]
  },
  "SM_Jardin_Sol_Puits_8x8": {
@@ -854,34 +854,30 @@
   ]
  },
  "SM_Jardin_Lisiere_12m": {
-  "doc": "Lisière de forêt dense de 12 m : troncs sur deux rangs, trois couches de feuillage, sous-bois, fond noir ; infranchissable.",
+  "doc": "Lisière de forêt dense de 12 m : troncs sur trois rangs, houppiers et sous-bois en cartes peintes, fond noir ; infranchissable.",
   "taille": [
-   23.67,
-   17.64,
-   21.47
+   16.54,
+   12.31,
+   18.84
   ],
   "bas": -0.5,
-  "triangles": 9082,
+  "triangles": 12382,
   "materiaux": [
    "M_Bib_Ecorce",
-   "M_Kit_Feuillage_Foret",
-   "M_Kit_Feuillage_Sombre",
    "M_Fond_Noir"
   ]
  },
  "SM_Jardin_Lisiere_Coin": {
   "doc": "Lisière de forêt en quart de cercle (angle d'une clairière, rayon 8 m) ; infranchissable.",
   "taille": [
-   25.4,
-   26.78,
-   21.42
+   19.49,
+   19.88,
+   18.79
   ],
   "bas": -0.39,
-  "triangles": 9096,
+  "triangles": 12532,
   "materiaux": [
    "M_Bib_Ecorce",
-   "M_Kit_Feuillage_Foret",
-   "M_Kit_Feuillage_Sombre",
    "M_Fond_Noir"
   ]
  },

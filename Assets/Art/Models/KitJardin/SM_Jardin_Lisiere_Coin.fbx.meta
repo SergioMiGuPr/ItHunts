@@ -34,6 +34,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Kit_Feuillage_Sombre
     second: {fileID: 2100000, guid: 03db7e5bdda4a1b4b9e7edfe151de3dc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Kit_SousBois
+    second: {fileID: 2100000, guid: 902679620c433954d87685dc79d1fcd7, type: 2}
   materials:
     materialImportMode: 2
     materialName: 1
