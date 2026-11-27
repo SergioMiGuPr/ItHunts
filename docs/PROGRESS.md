@@ -2,6 +2,31 @@
 
 > Mémoire du projet entre les sessions. Claude la met à jour à la fin de chaque étape.
 
+## Nuit du 2026-11-27 (nuit 6) : retours de playtest, salles fermées, traqueur, D-121 à D-125
+
+**Fait (commits sur `animations`, poussés) :**
+- **Point 1, restes du 26/11** : jardin (roche cachée seulement sous une lisière, mur caché jamais magnétique), voûte des petites salles
+  (rien sous 14.1 m), brume sous les poutres, lueurs des goules et volants (`MarkGlowStale`), mémoire (maillages, matière de haie),
+  bibliothèques doublées autour de leur dos réel (vérifié en jeu). PR d'art #62 (art-vegetaux) fusionnée.
+- **D-122** : plus de chasseurs permanents ; répit de 30 s quand la salle du joueur est nettoyée (par salle, un ennemi mort, une fois
+  par salle, jamais en Enragé).
+- **D-123** : salles fermées étanches (pans de la porte payée tournés de 90°, pavillon couvert au jardin, toit praticable et dans le
+  NavMesh du traqueur). Test `MapRuleTests.Etanche_*`.
+- **D-124** : traqueur et portes d'escalier (largeur des liens en travers seulement, pieds d'escalade recalés et vérifiés, pied du palier
+  loin de l'escalier, `WarpTo`/`ResetState` coupent un franchissement). Test `MapRuleTests.PortesEscalier_*` (ronde du vrai traqueur).
+- **D-125** : coffre rare à 4 choix (et jusqu'à 7) dans le panneau illustré au lieu de l'ancienne liste sans illustrations ; Allumette
+  seulement pour le renard. Test `UpgradeOffersTests` (4 personnages × 6 cartes : coffres, relances, marchand, HUD, écran de fin).
+- Colliders des pièces du kit et des props de la DA retirés tout de suite (chaudrons traversables) ; pans de la porte payée à 2 m.
+- PR d'art #63 (artefacts de l'écran de choix, vérifiés dans le vrai menu) et #64 (sous-bois, lisières, rochers posés au sol).
+- **Vérification** (6 cartes) : décor 0, salles vides 0, traqueur 100 % ; étanches ; portes d'escalier 42/27/25/34/25/28 sur 42/27/25/34/25/28 ;
+  améliorations sans défaut ; bot : les 6 actes gagnés (1 blocage du bot à l'acte I graine 22, 0 ailleurs) ; boss vaincu (1 blocage du
+  bot face au boss). EditMode 596 réussis, 1 non concluant (attendu).
+- **Build** `Builds/Nuit_2026-11-27/` : médiane 11,9 à 15,0 ms (67 à 84 i/s) ; garde-fou du plantage : 5 fermetures propres sur 5.
+- Relectures indépendantes : deux passes, tout corrigé (voir commits `bb2384c` et `dbbd4f7`).
+
+**Reste / à surveiller :** économie du bot (âmes insuffisantes pour la sortie à 10:00 sur plusieurs cartes, déjà avant la nuit, à juger
+en playtest avec le répit) ; jardin graine 22 limité par le GPU (1 836 appels de dessin) ; un toit de la DA pour le pavillon fermé.
+
 ## Pause du 2026-11-26 (seconde revue des cartes, PR #61) : fait / reste
 
 **Fait (commit sur `animations`, poussé) :**
