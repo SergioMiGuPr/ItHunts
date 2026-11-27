@@ -68,15 +68,15 @@ public static class MenusBuilder
         {
             var ti = (TextureImporter)AssetImporter.GetAtPath(p);
             string f = Path.GetFileNameWithoutExtension(p);
-            bool donnees = f.Contains("Masque") || f.Contains("Poids") || f.EndsWith("_Lueur")
-                           || f.EndsWith("_Runes") || f.EndsWith("_Reflet") || f.EndsWith("_Pages") || f.EndsWith("_Volutes") || f.EndsWith("_Verre");
+            bool art = f.StartsWith("Choix_Art_");      // artefacts de l'écran de choix (nuit 7) : voir DonneesArt
+            bool donnees = art ? DonneesArt(f) : (f.Contains("Masque") || f.Contains("Poids") || f.EndsWith("_Lueur"));
             ti.textureType = TextureImporterType.Sprite;
             ti.spriteImportMode = SpriteImportMode.Single;
             ti.spritePixelsPerUnit = 100;
             var s = new TextureImporterSettings(); ti.ReadTextureSettings(s);
             s.spriteMeshType = SpriteMeshType.FullRect; s.spriteGenerateFallbackPhysicsShape = false;
             ti.SetTextureSettings(s);
-            ti.mipmapEnabled = false; ti.filterMode = FilterMode.Bilinear; ti.wrapMode = TextureWrapMode.Clamp;
+            ti.mipmapEnabled = art; ti.filterMode = art ? FilterMode.Trilinear : FilterMode.Bilinear; ti.wrapMode = TextureWrapMode.Clamp;
             ti.sRGBTexture = !donnees;
             ti.alphaIsTransparency = !donnees;
             ti.maxTextureSize = 4096;
@@ -843,7 +843,13 @@ public static class MenusBuilder
     static readonly string[] NOMS_ART = { "Lanterne de feu", "Épée en os", "Barillet", "Livre à lien" };
     static readonly string[] DESC_ART = { "Jet de flammes en cône qui brûle les ennemis touchés.",
                                           "Combo de 3 coups ; frappe plus fort en pleine vitesse.",
-                                          "6 balles tirées depuis la chambre active.", "" };
+                                          "6 balles tirées depuis la chambre active.",
+                                          "Lien qui draine un ennemi ou soigne un allié." };
+    static readonly string[] IDS_ART = { "renard", "koala", "cameleon", "hibou" };
+
+    /// <summary>Calques des artefacts lus comme données linéaires : les vrais masques seulement (reflet, pages, volutes).
+    /// Lueurs, verre et runes sont des couleurs peintes : sRGB (en linéaire, leurs valeurs faibles faisaient des paliers).</summary>
+    static bool DonneesArt(string f) => f.EndsWith("_Reflet") || f.EndsWith("_Pages") || f.EndsWith("_Volutes");
     static readonly float[] CADRE_ART = { 850, 192, 400, 300 };
     static readonly string[] ModesArt = { "Lueur", "Braises", "Reflet", "Runes", "Volutes" };
     const string SH_LUM = "ItHunts/UI/ArtefactLumiere", SH_CORPS = "ItHunts/UI/ArtefactCorps";
@@ -877,9 +883,9 @@ public static class MenusBuilder
         {
             case "Lanterne":
                 // halo derrière la lanterne, corps, éclat du verre par-dessus (respire), puis les braises
-                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.65f, 0.45f, 3.8f, Color.white, 1f));
+                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.65f, 0.45f, 3.8f, Color.white, 1.5f));
                 Img(ag, "Corps", S(""), r, MatArt(a, "Corps", SH_CORPS, g, m => { m.SetFloat("_AvecPages", 0); m.DisableKeyword("_PAGES"); }));
-                Img(ag, "Verre", S("_Verre"), r, MatLum(a, "Verre", 0, g, 0.05f, 0.45f, 3.8f, Color.white, 1f));
+                Img(ag, "Verre", S("_Verre"), r, MatLum(a, "Verre", 0, g, 0.05f, 0.5f, 3.8f, Color.white, 1.4f));
                 Img(ag, "Braises", null, r, MatLum(a, "Braises", 1, g, 1, 0, 3.8f, new Color(1f, 0.16f, 0.07f), 2.2f, m =>
                 {
                     m.SetFloat("_Nombre", 12); m.SetFloat("_Taille", 3.8f); m.SetFloat("_Hauteur", 0.18f);
@@ -888,13 +894,13 @@ public static class MenusBuilder
                 }));
                 break;
             case "Epee":
-                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.7f, 0.35f, 4.0f, Color.white, 1f));
+                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.7f, 0.35f, 4.0f, Color.white, 2.0f));
                 Img(ag, "Corps", S(""), r, MatArt(a, "Corps", SH_CORPS, g, m => { m.SetFloat("_AvecPages", 0); m.DisableKeyword("_PAGES"); }));
-                Img(ag, "Runes", S("_Runes"), r, MatLum(a, "Runes", 3, g, 0.25f, 1.25f, 3.2f, Color.white, 1f, m =>
-                    m.SetVector("_Plage", new Vector4(0.45f, 0.496f, 0, 0))));
+                Img(ag, "Runes", S("_Runes"), r, MatLum(a, "Runes", 3, g, 0.12f, 2.2f, 3.2f, Color.white, 1.3f, m =>
+                    m.SetVector("_Plage", new Vector4(0.441f, 0.495f, 0, 0))));
                 break;
             case "Barillet":
-                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.75f, 0.3f, 4.2f, Color.white, 1f));
+                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.75f, 0.3f, 4.2f, Color.white, 1.4f));
                 Img(ag, "Corps", S(""), r, MatArt(a, "Corps", SH_CORPS, g, m => { m.SetFloat("_AvecPages", 0); m.DisableKeyword("_PAGES"); }));
                 Img(ag, "Reflet", S("_Reflet"), r, MatLum(a, "Reflet", 2, g, 0.25f, 0.55f, 5.5f, new Color(1f, 0.9f, 0.72f), 3.2f, m =>
                 {
@@ -903,10 +909,10 @@ public static class MenusBuilder
                 }));
                 break;
             case "Livre":
-                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.7f, 0.35f, 4.6f, Color.white, 1f));
-                Img(ag, "Volutes", S("_Volutes"), r, MatLum(a, "Volutes", 4, g, 0.5f, 0.5f, 4.6f, new Color(0.35f, 0.65f, 1f), 1.3f, m =>
+                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.7f, 0.35f, 4.6f, Color.white, 1.5f));
+                Img(ag, "Volutes", S("_Volutes"), r, MatLum(a, "Volutes", 4, g, 0.55f, 0.45f, 4.6f, new Color(0.5f, 0.8f, 1f), 2.4f, m =>
                 {
-                    m.SetFloat("_Echelle", 6f); m.SetFloat("_Montee", 0.06f); m.SetFloat("_Seuil", 0.38f);
+                    m.SetFloat("_Echelle", 8f); m.SetFloat("_Montee", 0.07f); m.SetFloat("_Seuil", 0.32f);
                 }));
                 Img(ag, "Corps", S(""), r, MatArt(a, "Corps", SH_CORPS, g, m =>
                 {
@@ -930,11 +936,12 @@ public static class MenusBuilder
             string p = AssetDatabase.GUIDToAssetPath(gid);
             var ti = (TextureImporter)AssetImporter.GetAtPath(p);
             string f = Path.GetFileNameWithoutExtension(p);
-            bool donnees = f.EndsWith("_Lueur") || f.EndsWith("_Runes") || f.EndsWith("_Reflet") || f.EndsWith("_Pages") || f.EndsWith("_Volutes") || f.EndsWith("_Verre");
+            bool donnees = DonneesArt(f);
             ti.textureType = TextureImporterType.Sprite; ti.spriteImportMode = SpriteImportMode.Single; ti.spritePixelsPerUnit = 100;
             var s = new TextureImporterSettings(); ti.ReadTextureSettings(s);
             s.spriteMeshType = SpriteMeshType.FullRect; s.spriteGenerateFallbackPhysicsShape = false; ti.SetTextureSettings(s);
-            ti.mipmapEnabled = false; ti.filterMode = FilterMode.Bilinear; ti.wrapMode = TextureWrapMode.Clamp;
+            // mipmaps (trilinéaire) : texture x2 réduite de moitié à 1080p, traits fins qui flottent : sans mipmaps ils scintillent
+            ti.mipmapEnabled = true; ti.filterMode = FilterMode.Trilinear; ti.wrapMode = TextureWrapMode.Clamp;
             ti.sRGBTexture = !donnees; ti.alphaIsTransparency = !donnees; ti.maxTextureSize = 4096;
             ti.textureCompression = TextureImporterCompression.Uncompressed; ti.isReadable = false;
             ti.SaveAndReimport(); n++;
@@ -947,11 +954,14 @@ public static class MenusBuilder
             var arts = root.transform.Find("Artefacts");
             for (int k = arts.childCount - 1; k >= 0; k--) UnityEngine.Object.DestroyImmediate(arts.GetChild(k).gameObject);
             var cp = root.GetComponent<ChoixPersoApercu>();
-            for (int i = 0; i < ARTEFACTS.Length && i < cp.entrees.Length; i++)
+            for (int i = 0; i < ARTEFACTS.Length; i++)
             {
-                cp.entrees[i].artefact = ConstruitArtefact(ARTEFACTS[i], arts, taille);
-                cp.entrees[i].artefactApercu = NOMS_ART[i];
-                cp.entrees[i].descriptionApercu = DESC_ART[i];
+                // entrée trouvée par id (pas par position) : l'ordre des entrées peut changer
+                var e = cp.entrees.FirstOrDefault(x => x != null && x.id == IDS_ART[i]);
+                if (e == null) continue;
+                e.artefact = ConstruitArtefact(ARTEFACTS[i], arts, taille);
+                e.artefactApercu = NOMS_ART[i];
+                e.descriptionApercu = DESC_ART[i];
             }
             PrefabUtility.SaveAsPrefabAsset(root, path);
         }

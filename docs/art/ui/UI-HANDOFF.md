@@ -224,9 +224,8 @@ mesurés sont dans `Assets/Art/Source~/UI/scripts/menus/fondu_reglages.json` (re
 Textes (entre les deux filets) : nom du personnage à l'emplacement de « Passive — … » (EB Garamond SemiBold **22**,
 `#F8E3BB`, ligne de base 481), nom de l'artefact à l'emplacement de « Artefact — … » (SemiBold 22, ligne de base 574),
 description à l'emplacement de sa description (Italic **19**, `#B3A59A`, lignes de base 598 et 619). Les noms sont lus dans
-`CharacterRoster` / `CharacterDefinition` ; la description dans un champ `description` de l'`ArtifactDefinition` **s'il existe**
-(à ajouter sur `main`), sinon un texte d'aperçu résumé de `docs/design/features/artefacts/design.md`. Hibou : description « à venir » tant que
-son artefact n'a pas d'`ArtifactDefinition` (l'illustration du livre s'affiche déjà). Pas de skins, pas de passif.
+`CharacterRoster` / `CharacterDefinition` ; la description dans le champ `description` de l'`ArtifactDefinition` (il existe
+sur `main` pour les quatre artefacts, livre du hibou compris : `SpiritBook_Default`), sinon un texte d'aperçu. Pas de skins, pas de passif.
 
 ### 2.6 Pause et paramètres (`Assets/Art/UI/Menus/Commun/`)
 
@@ -492,22 +491,27 @@ Points d'attention pour main :
 
 Les quatre personnages ont maintenant leur artefact illustré, dans le même style, le même cadrage et la même taille :
 **lanterne de feu** (renard), **épée en os** (koala), **barillet** (caméléon), **livre à lien** (hibou). Les anciennes traînées
-rouges et dorées tournantes sont retirées. Chaque artefact a une animation lente et discrète, qui reste à son repos peint quand le
-menu est gelé (`_ItHuntsMenuFige = 1`).
+rouges et dorées tournantes sont retirées. Chaque artefact a une animation lente et discrète. Menu gelé (`_ItHuntsMenuFige = 1`) :
+aucun flottement, lueurs et runes à mi-respiration (image peinte), braises, éclat du reflet et volutes éteints.
 
 | Artefact | Calques (de l'arrière vers l'avant) | Animation |
 |---|---|---|
 | Lanterne | `Lueur` (lumière peinte + halo large), `Corps`, `Verre` (éclat du verre), `Braises` (procédural) | le halo et le verre respirent (3,8 s) ; 12 braises montent des évents du dôme, dérivent, scintillent et refroidissent de l'orangé au rouge |
 | Barillet | `Lueur` (ambre), `Corps`, `Reflet` | un éclat de métal poli balaie le laiton en 1,6 s toutes les 5,5 s ; la rune respire en ambre |
-| Épée en os | `Lueur` (vert), `Corps`, `Runes` | les runes près de la garde pulsent, l'onde court vers la pointe (3,2 s) ; la lame respire |
-| Livre à lien | `Lueur` (bleu glacé), `Volutes`, `Corps` (pages) | les pages frémissent par bouffées (toutes les 3,4 s, frisson amorti, plus fort aux bords libres) ; quatre filets bleus montent des pages en ondulant |
+| Épée en os | `Lueur` (vert), `Corps`, `Runes` | lame d'os spectral sourde ; les runes près de la garde s'allument en vert, l'onde court vers la pointe (3,2 s) ; la lame respire |
+| Livre à lien | `Lueur` (bleu glacé), `Volutes`, `Corps` (pages) | les pages frémissent par bouffées (toutes les 3,4 s, frisson amorti, plus fort aux bords libres) ; cinq filets bleus montent des pages en ondulant et s'éteignent sous les vignettes |
 
 Tous les artefacts flottent lentement (± 1,2 % de la hauteur du cadre, 5,5 s), sur tous leurs calques à la fois.
 
 **Fichiers.**
 - Sprites : `Assets/Art/UI/Menus/Choix/Choix_Art_<Lanterne|Epee|Barillet|Livre>[_Lueur|_Verre|_Runes|_Reflet|_Pages|_Volutes].png`,
   800 × 600 px (×2) pour un **cadre commun de 400 × 300 px de la maquette posé en (850, 192)**, centré sur le centre visuel de
-  l'ancienne lanterne (1050, 342). Corps en sRGB ; lueurs et masques en données linéaires (règle de `MenusBuilder.Importe`).
+  l'ancienne lanterne (1050, 342) ; le livre est posé 22 px plus bas (place des volutes). Corps, lueurs, verre et runes en sRGB
+  (couleurs peintes) ; `_Reflet`, `_Pages`, `_Volutes` en données linéaires (`MenusBuilder.DonneesArt`) ; mipmaps et filtre
+  trilinéaire (texture ×2 réduite de moitié en 1080p, traits fins qui flottent).
+- Corps : silhouette du détourage ; lumière : ce que la silhouette ne couvre pas dans l'image générée, étalée en lueur douce (le
+  reste du halo de l'IA collé à la découpe faisait un liseré d'autocollant), plus un halo large centré sur la source (verre,
+  rune, lame, pages).
 - Shaders : `ItHunts/UI/ArtefactLumiere` (additif : modes Lueur, Braises, Reflet, Runes, Volutes) et `ItHunts/UI/ArtefactCorps`
   (alpha, flottement, option « pages ») ; outils communs `ItHunts_UIArtefact.cginc`. Matériaux `M_Choix_Art_<Artefact>_<Calque>`.
 - Le flottement est un **décalage d'UV** identique sur chaque calque : les rectangles ne bougent pas, rien ne se désaligne.
@@ -516,11 +520,11 @@ Tous les artefacts flottent lentement (± 1,2 % de la hauteur du cadre, 5,5 s), 
 personnage, dans l'ordre renard, koala, caméléon, hibou), référencé par `ChoixPersoApercu.entrees[i].artefact`.
 `MainMenuArt.SyncChoice` appelle déjà `ChoixPersoApercu.Choisit(entrée)`, qui allume l'artefact du personnage (correspondance par
 `id`, l'ordre du roster du jeu peut différer). Les animations tournent seules (shaders, `UiTemps()` = `_Time.y` +
-`_ItHuntsMenuTemps`) : pas de script, pas d'`Update`. Les textes restent ceux des données du jeu ; pour le hibou, il manque
-encore l'`ArtifactDefinition` du livre (nom et description).
+`_ItHuntsMenuTemps`) : pas de script, pas d'`Update`. Les textes restent ceux des données du jeu (« Livre à lien » : « Lien qui
+draine un ennemi ou soigne un allié. »).
 
 **Refaire.** `python Assets/Art/Source~/UI/scripts/menus/artefacts_choix.py` (détourage, calques ; sources dans
 `docs/art/ui/generees/ui_choix_artefact_<nom>_v02.png` et `_v02_detoure.png`), puis dans Unity
 `MenusBuilder.ArtefactsChoix` (import des sprites, matériaux, artefacts du prefab refaits sur place ; `MenusBuilder.Construit`
 utilise la même fonction). Captures dans le vrai menu (Play Mode) : `docs/art/rendus/UI/Menus/Artefacts/` (`Choix_<Perso>.jpg`,
-`Planche_Artefacts.jpg`, `Anim_<Artefact>.gif` sur 5,6 s).
+`Planche_Artefacts.jpg`, `Anim_<Artefact>.gif` : 5,6 s qui bouclent par un fondu enchaîné de 8 images).

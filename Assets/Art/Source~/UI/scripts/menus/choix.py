@@ -143,21 +143,9 @@ def main():
         ys = np.nonzero((a[:, x0:x1] > 0.6).any(1))[0]
         lay["personnages"][n] = {"rect": r_, "pieds_y": int(ys.max()) if len(ys) else y1}
 
-    # ---------------- 3. artefacts : lanterne = passe3 - fond ; barillet = barillet - caméléon (et différent du fond)
+    # ---------------- 3. artefacts : refaits la nuit 7 par artefacts_choix.py (Choix_Art_*, cadre commun 850,192,400,300) ;
+    # les anciennes découpes Choix_Artefact_Lanterne / _Barillet et leurs traînées ne sont plus produites.
     lay["artefacts"] = {}
-    for n, C, B in (("Lanterne", imgs["passe3"], FD), ("Barillet", imgs["artefact_barillet"], imgs["cameleon"])):
-        roi = reg.rect_mask(h, w, *DROITE, feather=4)
-        a = reg.diff_alpha(C, B, 0.04, 0.14, r=1.0, roi=roi)
-        if n == "Barillet":
-            a = np.minimum(a, reg.diff_alpha(C, FD, 0.04, 0.14, r=1.0, roi=roi))
-        F = reg.unmix(C, FD, a)
-        cx, cy, rx, ry = CORPS_ARTEFACT[n]
-        body = reg.ellipse_mask(h, w, cx, cy, rx, ry, feather=0.25)
-        box = reg.bbox(a, pad=6)
-        lay["pieces"]["Choix_Artefact_" + n] = reg.save_piece(os.path.join(OUT, "Choix_Artefact_%s.png" % n), F, a * body, box)
-        lay["pieces"]["Choix_Artefact_%s_Trainees" % n] = reg.save_piece(os.path.join(OUT, "Choix_Artefact_%s_Trainees.png" % n), F, a * (1 - body), box)
-        bx, by, bw, bh = lay["pieces"]["Choix_Artefact_" + n]
-        lay["artefacts"][n] = {"rect": [bx, by, bw, bh], "centre_uv": [(cx - bx) / bw, 1 - (cy - by) / bh]}
 
     # ---------------- 4. vignettes
     P3 = imgs["passe3"]; CA = imgs["cameleon"]

@@ -10,7 +10,8 @@ namespace ItHunts.Art.Menus
 {
     /// <summary>
     /// Écran de choix du personnage (aperçu DA). Vignettes du haut (une seule illuminée, à la couleur du personnage), grand
-    /// personnage à gauche, artefact flottant à droite (koala et hibou : « à venir »), textes Unity entre les deux filets :
+    /// personnage à gauche, artefact flottant à droite (les quatre illustrés, animés par leurs shaders : UI-HANDOFF § 11),
+    /// textes Unity entre les deux filets :
     /// nom du personnage, nom de l'artefact, description courte. Les noms sont lus dans les données du jeu
     /// (CharacterRoster / CharacterDefinition) ; la description dans un champ « description » de l'artefact s'il existe
     /// (sinon le texte d'aperçu ci-dessous). Gauche / droite (clavier, manette) ou clic sur une vignette.
@@ -24,7 +25,7 @@ namespace ItHunts.Art.Menus
             public Image vignetteDiscrete;
             public Image vignetteIlluminee;
             public GameObject grand;            // grand personnage (et sa lueur)
-            public GameObject artefact;          // corps + traînées, vide pour « à venir »
+            public GameObject artefact;          // calques de l'artefact (Artefacts/Artefact_<Nom>), vide = « à venir »
             public string nomApercu;
             public string artefactApercu;
             [TextArea] public string descriptionApercu;

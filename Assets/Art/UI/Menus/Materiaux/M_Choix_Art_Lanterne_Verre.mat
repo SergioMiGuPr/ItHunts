@@ -34,7 +34,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Amplitude: 0.45
+    - _Amplitude: 0.5
     - _Balayage: 0.3
     - _Base: 0.05
     - _ColorMask: 15
@@ -43,7 +43,7 @@ Material:
     - _FlottePeriode: 5.5
     - _Graine: 0
     - _Hauteur: 0.45
-    - _Intensite: 1
+    - _Intensite: 1.4
     - _Largeur: 0.05
     - _Mode: 0
     - _Montee: 0.05

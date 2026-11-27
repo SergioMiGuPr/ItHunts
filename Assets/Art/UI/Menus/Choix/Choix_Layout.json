@@ -35,30 +35,6 @@
    406,
    448
   ],
-  "Choix_Artefact_Lanterne": [
-   875,
-   221,
-   379,
-   236
-  ],
-  "Choix_Artefact_Lanterne_Trainees": [
-   875,
-   221,
-   379,
-   236
-  ],
-  "Choix_Artefact_Barillet": [
-   875,
-   221,
-   299,
-   236
-  ],
-  "Choix_Artefact_Barillet_Trainees": [
-   875,
-   221,
-   299,
-   236
-  ],
   "Choix_Vignette_Renard_Discrete": [
    500,
    68,
@@ -464,32 +440,7 @@
    "pieds_y": 661
   }
  },
- "artefacts": {
-  "Lanterne": {
-   "rect": [
-    875,
-    221,
-    379,
-    236
-   ],
-   "centre_uv": [
-    0.46174142480211083,
-    0.5127118644067796
-   ]
-  },
-  "Barillet": {
-   "rect": [
-    875,
-    221,
-    299,
-    236
-   ],
-   "centre_uv": [
-    0.5852842809364549,
-    0.538135593220339
-   ]
-  }
- },
+ "artefacts": {},
  "vignettes": {
   "Renard": [
    500,
