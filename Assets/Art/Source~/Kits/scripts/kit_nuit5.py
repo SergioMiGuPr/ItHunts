@@ -22,8 +22,6 @@ import kit_hauteur as H
 COL = H.COL
 MAGNET = "M_Kit_Magnetique"            # plaque de traction : fer sombre, runes bleu pâle qui luisent (créé par KitBuilder)
 VUE = {"M_Kit_Vitrail": "M_Kit_VitreVue", "M_Kit_Vitrail_Rouge": "M_Kit_VitreVue_Rouge", "M_Kit_Vitrail_Ambre": "M_Kit_VitreVue_Ambre"}
-FEUIL_SOMBRE = "M_Kit_Feuillage_Sombre"   # feuillage du fond de la lisière (créé par KitBuilder)
-FEUIL_FORET = "M_Kit_Feuillage_Foret"     # feuillage de la forêt (lisière, arbre, fougères) : plus vert que le lierre
 FOND = "M_Fond_Noir"
 
 
@@ -496,26 +494,6 @@ class Cartes:
 
 
 # =================================================================== 8. lisière de forêt (acte III)
-def _feuillage(k, c, r, h, m, rnd, n=7, dents=11, aplat=0.35, normale=None):
-    """Masse de feuillage en cartes croisées dentelées (silhouette encrée lisible, jamais en boule) : n cartes verticales
-    tournées autour de c, contour en dents irrégulières, épaisseur nulle (deux faces)."""
-    for i in range(n):
-        ang = math.pi * i / n + rnd.uniform(-0.15, 0.15)
-        d = Vector((math.cos(ang), math.sin(ang), 0))
-        pts = []
-        for j in range(dents * 2):
-            t = j / (dents * 2)
-            a = 2 * math.pi * t
-            rr = (1.0 if j % 2 == 0 else 0.8 + rnd.uniform(-0.1, 0.08)) * r * (1 + rnd.uniform(-0.16, 0.16))
-            x = math.cos(a) * rr
-            z = math.sin(a) * rr * (h / (2 * r))
-            if z < -h * aplat:
-                z = -h * aplat + (z + h * aplat) * 0.25
-            pts.append(Vector(c) + d * x + Vector((0, 0, z)))
-        k.face(pts, m)
-        k.face(list(reversed(pts)), m)
-
-
 def lisiere(S, nom, Lx=12.0, coin=False):
     """Lisière de forêt dense de Lx m (pivot au sol, au milieu du bord avant ; la forêt s'étend vers +Y sur 6.5 m) : trois rangs
     de troncs (Ø 0.35 à 1.1 m, 7 à 15.5 m, chaque rang finit dans sa couche de feuillage), trois couches de houppiers en cartes
@@ -763,7 +741,6 @@ def grand_arbre(S, nom, h=20.0):
                          p1 + n_ * 0.34 + Vector((0, 0, 0.01)), p0 + n_ * w / 2 + Vector((0, 0, 0.01))])
         k.empty(f"Appui_Branche_{i + 1}", tuple(p1))
         # petites branches et feuillage au bout
-        C.buisson(b + Vector((0, 0, 1.2)), (1.6, 1.6, 1.3), rnd.choice(("chene", "chene", "buis")), n=26, taille=1.6)
     # couronne
     for i in range(9):
         a = 2 * math.pi * i / 9

@@ -1841,9 +1841,11 @@ Pièces :
   rangs, chacun finissant dans sa couche de feuillage. Fond noir et `Col_Lisiere` (−0.7 à 6.7 m, 22 m de haut) inchangés.
   Attention : posée en mur extérieur, `ActLevel.Kits` étire la lisière de façon non uniforme (`sy = h / 22`) ; les cartes
   peintes s'écrasent avec elle (à juger sur les cartes de main).
-- **`Jardin_GrandArbre_Praticable`** : couronne et bouts de branches en houppiers de cartes (enfant `Deco_Feuillage`).
-- **`Jardin_Foret_Lisiere_20m`** : rideaux sombres gardés en fond ; devant, trois étages de houppiers (5.5 à 19 m) et un sous-bois
-  en cartes (enfant `Deco_Feuillage`, sans ombre portée).
+- **`Jardin_GrandArbre_Praticable`** : couronne en houppiers de cartes (enfant `Deco_Feuillage`) ; plus de touffe au-dessus des
+  branches praticables (elles gênaient la montée).
+- **`Jardin_Foret_Lisiere_20m`** : rideaux sombres gardés en fond (leur pied reste lisible en facettes sombres sous les
+  houppiers) ; devant, trois étages de houppiers (5.5 à 19 m, au plus 1 m au-delà des bouts) et un sous-bois en cartes (enfant
+  `Deco_Feuillage`, sans ombre portée) ; troncs de 12 à 18 m qui finissent dans l'étage haut.
 - **Rochers** : flottaient de 0,28 / 0,73 / 0,60 m (les plans de clivage rognaient le bas des blocs). Chaque bloc (corps,
   épaulement du grand) a sa base plane enfoncée de 8 cm ; la boîte de collision du petit rocher est recalée (−0,08 à 0,57 m).
 - **Cartes** : deux faces dos à dos à 3 mm, normales forcées vers le ciel, matériau `M_Kit_SousBois` (copie de `M_Ens_Feuillage` :
@@ -1852,7 +1854,7 @@ Pièces :
 - **`.meta` d'assets déjà sur `main` modifiés (changement d'import délibéré)** : `SM_Jardin_SousBois_A/B.fbx.meta` (remappage
   `M_Kit_SousBois` et `M_Bib_RocheCave_Peint`), `SM_Jardin_Lisiere_12m/Coin.fbx.meta`, `SM_Jardin_GrandArbre_Praticable.fbx.meta`,
   `SM_Jardin_Foret_Lisiere_20m.fbx.meta` (remappage `M_Kit_SousBois`).
-- **Coût** : lisière de 12 m 12 382 triangles (+36 %), lisière de 20 m 6 622, grand arbre 2 898 ; à remesurer en images par
+- **Coût** : lisière de 12 m 12382 triangles (+36 %), lisière de 20 m 6618, grand arbre 2682 ; à remesurer en images par
   seconde avec le build.
 - Refaire : `blender -b -P kit_jardin.py -- SM_Jardin_SousBois_A SM_Jardin_SousBois_B SM_Jardin_Lisiere_12m SM_Jardin_Lisiere_Coin
   SM_Jardin_Rocher_Petit SM_Jardin_Rocher_Moyen SM_Jardin_Rocher_Grand SM_Jardin_GrandArbre_Praticable SM_Jardin_Foret_Lisiere_20m`,

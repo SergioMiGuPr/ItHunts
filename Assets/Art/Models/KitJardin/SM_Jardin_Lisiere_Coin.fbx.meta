@@ -12,11 +12,6 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: M_Bib_RocheCave_Peint
-    second: {fileID: 2100000, guid: 8af4038fc80850c4aa46f9dedcd7aa36, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
       name: M_Collision_Invisible
     second: {fileID: 2100000, guid: 89ad9cfe5f9189049b7056173b6d6126, type: 2}
   - first:

@@ -57,8 +57,9 @@ public static class SousBoisBuilder
         {
             var mi = (ModelImporter)AssetImporter.GetAtPath(KIT + n + ".fbx");
             mi.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "M_Kit_SousBois"), m);
-            if (n.Contains("SousBois"))
-                mi.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "M_Bib_RocheCave_Peint"), roche);
+            var idRoche = new AssetImporter.SourceAssetIdentifier(typeof(Material), "M_Bib_RocheCave_Peint");
+            if (n.Contains("SousBois")) mi.AddRemap(idRoche, roche);
+            else mi.RemoveRemap(idRoche);   // entrée inutile du premier passage (lisières)
             mi.SaveAndReimport();
         }
         foreach (string n in new[] { "SM_Jardin_Rocher_Petit", "SM_Jardin_Rocher_Moyen", "SM_Jardin_Rocher_Grand" })
@@ -96,6 +97,7 @@ public static class SousBoisBuilder
                            : modele.transform.Find(mf.name)?.GetComponent<MeshRenderer>();
                     if (r != null && mr != null && (n.Contains("SousBois") || n.Contains("Lisiere") || n.Contains("GrandArbre"))) r.sharedMaterials = mr.sharedMaterials;
                     // feuillage des lisières (bord de carte, répété) : pas d'ombre portée (coût) ; sous-bois et grand arbre : ombres gardées
+                    if (deco) GameObjectUtility.SetStaticEditorFlags(mf.gameObject, GameObjectUtility.GetStaticEditorFlags(root));
                     if (deco && r != null) r.shadowCastingMode = n.Contains("Lisiere")
                         ? UnityEngine.Rendering.ShadowCastingMode.Off : UnityEngine.Rendering.ShadowCastingMode.On;
                     var mc = mf.GetComponent<MeshCollider>();

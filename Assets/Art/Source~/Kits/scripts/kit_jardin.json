@@ -66,14 +66,14 @@
   ]
  },
  "SM_Jardin_Foret_Lisiere_20m": {
-  "doc": "Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés devant deux rideaux de feuillage sombre (5 et 9 m, crêtes déchiquetées) et un roncier continu.",
+  "doc": "Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés (12 à 18 m, chacun finit dans un étage de houppiers) devant deux rideaux sombres gardés en fond, trois étages de houppiers et un sous-bois en cartes peintes devant (enfant `Deco_Feuillage`, nuit 7), roncier continu.",
   "taille": [
-   27.45,
-   12.59,
-   22.42
+   24.06,
+   12.55,
+   22.32
   ],
   "bas": -0.53,
-  "triangles": 6622,
+  "triangles": 6618,
   "materiaux": [
    "M_Bib_Ecorce",
    "M_Kit_Feuillage"
@@ -794,12 +794,12 @@
  "SM_Jardin_GrandArbre_Praticable": {
   "doc": "Grand arbre de 20 m, tronc de Ø 2.2 m : trois branches plates à 3.4, 6.6 et 9.8 m qui montent en spirale.",
   "taille": [
-   15.87,
-   15.5,
-   23.1
+   16.24,
+   13.96,
+   23.2
   ],
   "bas": -0.45,
-  "triangles": 2898,
+  "triangles": 2682,
   "materiaux": [
    "M_Bib_Ecorce"
   ]

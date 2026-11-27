@@ -173,15 +173,16 @@ def SM_Jardin_Massif():
 
 @piece
 def SM_Jardin_Foret_Lisiere_20m():
-    """Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés devant deux rideaux de feuillage sombre
-    (5 et 9 m, crêtes déchiquetées) et un roncier continu. Limite naturelle du jardin (infranchissable, lisible), à poser
-    en rangée. Relecture du lot 3 : rideaux de feuillage au lieu des boules."""
+    """Lisière de forêt dense (20 m de front, 10 m de profondeur) : troncs serrés (12 à 18 m, chacun finit dans un étage de
+    houppiers) devant deux rideaux sombres gardés en fond, trois étages de houppiers et un sous-bois en cartes peintes devant
+    (enfant `Deco_Feuillage`, nuit 7), roncier continu. Limite naturelle du jardin (infranchissable, lisible), à poser en
+    rangée."""
     rnd = random.Random(415)
     k = K("SM_Jardin_Foret_Lisiere_20m")
     for i in range(16):
         x = -10 + rnd.uniform(0, 20)
         y = rnd.uniform(0, 10)
-        h = rnd.uniform(14, 22)
+        h = rnd.uniform(12, 18)        # nuit 7 : les cimes finissent dans l'étage haut des houppiers (15 à 19 m)
         r = rnd.uniform(0.3, 0.8)
         L.tube(k, [(x, y, -0.5), (x + rnd.uniform(-0.6, 0.6), y, h * 0.5), (x + rnd.uniform(-1, 1), y + rnd.uniform(-0.5, 0.5), h)], [r, r * 0.7, 0.1], ECORCE, sides=6, rough=0.15, seed=i)
     L.rock_wall(k, [(-10, 2.4), (-3, 1.9), (4, 2.6), (10, 2.2)], 5.0, FEUIL, thick=1.2, seg=1.2, amp=0.45, seed=430, inward=-1,
@@ -198,8 +199,8 @@ def SM_Jardin_Foret_Lisiere_20m():
                                               (5.4, 10.0, 13.0, 2.6, 3.4, ("chene", "sapin"), 8),
                                               (7.6, 15.0, 19.0, 3.0, 3.8, ("sapin", "sapin", "chene"), 7)):
         for i in range(nb):
-            x = -9.0 + i * 18.0 / (nb - 1) + rnd.uniform(-0.5, 0.5)
-            rr = rnd.uniform(rmin, rmax)
+            x = -7.5 + i * 15.0 / (nb - 1) + rnd.uniform(-0.4, 0.4)
+            rr = min(rnd.uniform(rmin, rmax), 10.0 - abs(x) + 1.0)     # pas plus d'1 m au-delà du bout de la pièce
             cc = Vector((x, y0 + rnd.uniform(-0.3, 0.3), rnd.uniform(z0, z1)))
             cell = rnd.choice(cells)
             C.buisson(cc, (rr, min(rr, y0 - 1.6), rr * 0.9), cell, n=int(30 + rr * 6), taille=2.4 + rr * 0.15)
