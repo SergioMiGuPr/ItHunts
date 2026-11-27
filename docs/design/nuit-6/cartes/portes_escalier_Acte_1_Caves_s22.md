@@ -2,13 +2,13 @@
 
 27 portes en haut ou en bas d'un escalier ; le traqueur fait l'aller et le retour.
 
-- passe porte 4 (Réserve / Crypte) au (-204, 4, 168), dénivelé 4,1 m : 6,6 + 5,6 s
+- passe porte 4 (Réserve / Crypte) au (-204, 4, 168), dénivelé 4,1 m : 6,5 + 5,6 s
 - passe porte 6 (Cave à vin / Ossuaire) au (136, 8, 212), dénivelé 3,9 m : 6,7 + 6,0 s
 - passe porte 8 (Galerie de mine / Salle de torture) au (96, 4, 160), dénivelé 3,4 m : 3,9 + 4,3 s
 - passe porte 9 (Galerie de mine / Cachot) au (-120, 4, 160), dénivelé 4,1 m : 5,6 + 5,1 s
 - passe porte 10 (Cachot / La Fosse) au (-88, 0, 124), dénivelé 8,0 m : 5,6 + 1,1 s
 - passe porte 15 (La Fosse / Galerie de mine II) au (-16, 0, 48), dénivelé 4,9 m : 3,9 + 4,3 s
-- passe porte 16 (La Fosse / Salle de torture) au (56, 0, 128), dénivelé 8,0 m : 5,5 + 1,1 s
+- passe porte 16 (La Fosse / Salle de torture) au (56, 0, 128), dénivelé 8,0 m : 5,6 + 1,0 s
 - passe porte 18 (Salle de torture / Chapelle souterraine) au (136, 8, 124), dénivelé 8,0 m : 26,3 + 26,9 s
 - passe porte 20 (Réserve II / Grande porte) au (136, 8, 56), dénivelé 4,8 m : 3,5 + 4,0 s
 - passe porte 24 (Galerie de mine II / Citerne) au (-88, 0, 24), dénivelé 4,0 m : 5,5 + 1,1 s
