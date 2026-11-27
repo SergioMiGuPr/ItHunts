@@ -4,10 +4,10 @@
 
 - passe porte 3 (Serre en ruine / Terrasse du château) au (-120, 8, 208), dénivelé 3,4 m : 3,9 + 4,3 s
 - passe porte 4 (Terrasse du château / Kiosque) au (40, 8, 208), dénivelé 3,3 m : 3,9 + 4,3 s
-- passe porte 7 (Terrasse du château / Allée des statues) au (-40, 8, 152), dénivelé 3,9 m : 6,7 + 6,0 s
+- passe porte 7 (Terrasse du château / Allée des statues) au (-40, 8, 152), dénivelé 3,9 m : 6,8 + 6,0 s
 - passe porte 9 (Potager / Labyrinthe de haies) au (-296, 4, 152), dénivelé 3,5 m : 3,9 + 4,3 s
-- passe porte 10 (Roseraie / Cimetière) au (216, 4, 136), dénivelé 4,1 m : 6,9 + 6,1 s
-- passe porte 11 (Allée des statues / Bosquet) au (-184, 4, 120), dénivelé 4,1 m : 6,9 + 6,1 s
+- passe porte 10 (Roseraie / Cimetière) au (216, 4, 136), dénivelé 4,1 m : 6,8 + 6,1 s
+- passe porte 11 (Allée des statues / Bosquet) au (-184, 4, 120), dénivelé 4,1 m : 6,8 + 6,1 s
 - passe porte 12 (Allée des statues / Grand bassin) au (-40, 4, 120), dénivelé 3,2 m : 3,9 + 4,4 s
 - passe porte 13 (Allée des statues / Verger) au (104, 4, 120), dénivelé 3,5 m : 3,9 + 4,3 s
 - passe porte 22 (Grand bassin / Fontaine) au (-40, 0, -72), dénivelé 4,0 m : 5,5 + 5,1 s
