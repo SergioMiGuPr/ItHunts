@@ -727,27 +727,29 @@
  "SM_Jardin_SousBois_A": {
   "doc": "Touffe de sous-bois de Ø 5 m : fougères et buissons bas, branche morte ; traversable.",
   "taille": [
-   4.9,
-   3.97,
-   0.76
+   5.24,
+   4.93,
+   1.27
   ],
-  "bas": 0.0,
-  "triangles": 732,
+  "bas": -0.09,
+  "triangles": 1698,
   "materiaux": [
-   "M_Bib_Ecorce"
+   "M_Bib_Ecorce",
+   "M_Bib_RocheCave_Peint"
   ]
  },
  "SM_Jardin_SousBois_B": {
   "doc": "Petite touffe de sous-bois de Ø 3.2 m ; traversable.",
   "taille": [
-   3.37,
-   2.85,
-   0.8
+   3.16,
+   3.3,
+   1.01
   ],
-  "bas": 0.0,
-  "triangles": 1018,
+  "bas": -0.08,
+  "triangles": 1263,
   "materiaux": [
-   "M_Bib_Ecorce"
+   "M_Bib_Ecorce",
+   "M_Bib_RocheCave_Peint"
   ]
  },
  "SM_Jardin_Rocher_Petit": {
@@ -757,7 +759,7 @@
    1.15,
    0.65
   ],
-  "bas": 0.28,
+  "bas": -0.08,
   "triangles": 360,
   "materiaux": [
    "M_Bib_RocheCave_Peint"
@@ -770,7 +772,7 @@
    2.15,
    1.52
   ],
-  "bas": 0.73,
+  "bas": -0.08,
   "triangles": 360,
   "materiaux": [
    "M_Bib_RocheCave_Peint"
@@ -783,7 +785,7 @@
    3.92,
    3.68
   ],
-  "bas": 0.6,
+  "bas": -0.08,
   "triangles": 720,
   "materiaux": [
    "M_Bib_RocheCave_Peint"
