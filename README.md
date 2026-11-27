@@ -1,6 +1,10 @@
 # It Hunts
 
-> 📷 *Capture d'écran à venir*
+![It Hunts, menu principal](docs/images/menu.jpg)
+
+| Acte II, le château | Acte III, le jardin |
+|---|---|
+| ![Vue en jeu dans le château](docs/images/chateau.jpg) | ![Vue en jeu dans le jardin](docs/images/jardin.jpg) |
 
 Roguelite FPS de mouvement, dans des caves et un château très sombres. Une seule **orbe magique** à deux pouvoirs, utilisables en même temps : le **magnétisme** (se tracter vers un mur ou se repousser) et la **télékinésie** (attraper et lancer des objets). Pendant qu'on farme des âmes, un traqueur géant et intuable rôde. Solo et écran partagé à 2 aujourd'hui ; coop en ligne de 1 à 4 prévue.
 

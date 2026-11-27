@@ -24,3 +24,6 @@
 *.ogg filter=lfs diff=lfs merge=lfs -text
 *.mp3 filter=lfs diff=lfs merge=lfs -text
 *.mp4 filter=lfs diff=lfs merge=lfs -text
+
+# Captures du README : stockées dans Git (hors LFS), pour être affichées sans quota LFS
+docs/images/** -filter -diff -merge -text
