@@ -1,6 +1,8 @@
-> **Seconde revue faite (2026-11-26)** sur `main` au commit `52d1cea` : 7 points de la première revue corrigés, 1 presque, 4 en partie,
-> 1 non vérifiable ; 8 défauts nouveaux ou restants ci-dessous, du plus grave au moins grave. **À corriger par main** (sauf les points
-> marqués DA), puis remettre l'en-tête « À revoir après correction ».
+> **À revoir après correction (2026-11-27, `animations` au commit `094d336`, fusionnée dans `main` en fin de nuit).** Les 8 défauts de la
+> seconde revue sont traités (D-120, puis nuit du 27/11 : roche cachée seulement sous une lisière et jamais magnétique, voûte des petites
+> salles au-dessus de 14.1 m, brume sous les poutres, bibliothèques doublées dos à dos). Aussi : salles fermées étanches (D-123, pavillon
+> couvert au jardin), sous-bois et rochers de la PR #64 posés au sol. Contrôle du décor à 0 et traqueur à 100 % sur les 6 cartes
+> (`docs/design/jour-5/decor/`), captures `docs/design/jour-5/captures/jour5-apres/`.
 
 # Seconde revue des cartes (2026-11-26)
 
