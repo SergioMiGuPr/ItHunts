@@ -158,9 +158,9 @@ Cave_Candelabre 2.1 1
 
 # ---- Bosquet, ravin, verger ----
 [Rochers moussus] centre 8x7 fonctions Bosquet, Ravin, Verger, Grande grille
-Jardin_Rocher_Grand 0 0 0 -0.7
-Jardin_Rocher_Moyen 2.8 1.4 40 -0.8
-Jardin_Rocher_Petit -2.8 -1.4 0 -0.4
+Jardin_Rocher_Grand 0 0 0 0
+Jardin_Rocher_Moyen 2.8 1.4 40 0
+Jardin_Rocher_Petit -2.8 -1.4 0 0
 Jardin_SousBois_A -2 2.2
 Jardin_SousBois_B 2.4 -2
 
@@ -168,17 +168,17 @@ Jardin_SousBois_B 2.4 -2
 Cave_Brasero 0 0
 Ens_Banc_Pierre 0 2
 Ens_Banc_Pierre 2 -0.4 90
-Jardin_Rocher_Petit -2 0 0 -0.4
+Jardin_Rocher_Petit -2 0 0 0
 Jardin_SousBois_B -2.4 -2.4
 
 [Arbre couché] centre 10x8 fonctions Bosquet, Ravin ; max 3
 Jardin_ArbreMort_Tordu 0 0 0 0 0.7
-Jardin_Rocher_Moyen 3.4 -1.6 0 -0.8
+Jardin_Rocher_Moyen 3.4 -1.6 0 0
 Jardin_SousBois_A -3 1.6
 
 [Ruine] centre 9x8 fonctions Ravin, Bosquet, Verger, Cimetière, Grande grille, Serre en ruine ; max 2
 Arene_PilierBrise 0 0
-Jardin_Rocher_Moyen 3 -2 0 -0.8
+Jardin_Rocher_Moyen 3 -2 0 0
 Cave_Brasero -3 -2
 
 [Couvert de pierre] centre 8x5 fonctions Ravin, Bosquet, Grande grille, Potager, Cimetière
@@ -222,7 +222,7 @@ Ens_Plante_Geante 0 0
 # ---- Pour combler ----
 [Sous-bois] centre 4x4 fonctions *
 Jardin_SousBois_A 0 0
-Jardin_Rocher_Petit 1 1 0 -0.4
+Jardin_Rocher_Petit 1 1 0 0
 
 [Massif] centre 2x2 fonctions * ; max 4
 Ens_Buis_Boule 0 0

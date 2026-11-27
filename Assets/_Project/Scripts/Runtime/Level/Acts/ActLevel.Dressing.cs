@@ -543,13 +543,14 @@ namespace ItHunts.Level.Acts
                 GameObject prefab = Art != null ? Art.Piece(name) : null;
                 if (prefab == null)
                     continue;
-                // Rochers du kit : leur point bas est au-dessus du pivot (NUIT-FIN-6) ; posés sur le sol. Fougères : sans collision.
-                float sink = name.EndsWith("Petit") ? 0.28f : name.EndsWith("Moyen") ? 0.73f : name.EndsWith("Grand") ? 0.6f : 0f;
+                // Rochers du kit : base plane enfoncée de 8 cm par la DA (PR #64, nuit 7) : posés au sol, plus d'enfoncement ici.
+                // Fougères : sans collision.
+                bool rock = name.Contains("Rocher");
                 float scale = 0.85f + 0.3f * (float)_rng.NextDouble();
-                GameObject go = KitPiece(prefab, root, Plan.CellCenter(c, r.Floor) - Vector3.up * sink * scale, Quaternion.Euler(0f, _rng.Next(360), 0f) * Vector3.forward,
-                    Vector3.one * scale, sink > 0f);
+                GameObject go = KitPiece(prefab, root, Plan.CellCenter(c, r.Floor), Quaternion.Euler(0f, _rng.Next(360), 0f) * Vector3.forward,
+                    Vector3.one * scale, rock);
                 Tag(go, DecorKind.Vegetal);
-                if (sink > 0f)
+                if (rock)
                     go.AddComponent<ItHunts.Enemies.NotWalkable>();
                 if (go.GetComponent<ItHunts.Enemies.StalkerPassesThrough>() == null)
                     go.AddComponent<ItHunts.Enemies.StalkerPassesThrough>();   // le traqueur enjambe rochers et fougères

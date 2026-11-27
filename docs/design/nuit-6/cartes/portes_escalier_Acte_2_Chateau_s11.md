@@ -4,11 +4,11 @@
 
 - passe porte 2 (Chapelle / Grande entrée) au (-64, 6, 208), dénivelé 4,7 m : 3,9 + 4,3 s
 - passe porte 4 (Salon de musique / Chambre) au (160, 14, 216), dénivelé 8,0 m : 5,5 + 5,0 s
-- passe porte 6 (Grande entrée / Salle de bal) au (-8, 6, 176), dénivelé 6,0 m : 5,5 + 1,1 s
+- passe porte 6 (Grande entrée / Salle de bal) au (-8, 6, 176), dénivelé 6,0 m : 5,5 + 1,0 s
 - passe porte 7 (Salle de bal / Salon de musique) au (80, 6, 176), dénivelé 4,7 m : 3,9 + 4,3 s
 - passe porte 10 (Salle de bal / Bibliothèque) au (112, 6, 140), dénivelé 4,7 m : 3,9 + 4,3 s
 - passe porte 12 (Chambre / Bibliothèque) au (200, 14, 176), dénivelé 8,0 m : 5,1 + 5,1 s
-- passe porte 14 (Armurerie / Chambre II) au (-168, 8, 96), dénivelé 8,0 m : 5,6 + 5,2 s
+- passe porte 14 (Armurerie / Chambre II) au (-168, 8, 96), dénivelé 8,0 m : 5,6 + 5,1 s
 - passe porte 15 (Salle des gardes / Chambre II) au (-192, 8, 68), dénivelé 8,0 m : 5,5 + 5,0 s
 - passe porte 16 (Chambre II / Chambre III) au (-160, 14, 40), dénivelé 6,0 m : 5,5 + 5,0 s
 - passe porte 17 (Salle des gardes / Tour effondrée) au (-224, 0, -16), dénivelé 4,7 m : 3,9 + 4,3 s
