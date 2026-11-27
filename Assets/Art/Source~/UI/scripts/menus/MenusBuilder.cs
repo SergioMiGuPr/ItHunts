@@ -4,6 +4,8 @@
 //                données linéaires pour les masques, bordures 9 tranches)
 //   Construit  : matériaux, prefabs (Titre, Campement, Choix, Pause, Paramètres) et scène Test_UI_Menus
 //   Capture    : rendus gelés de chaque écran à la taille de la maquette (docs/art/rendus/UI/Menus/)
+//   ArtefactsChoix : refait seulement les artefacts de l'écran de choix dans le prefab Menu_Choix (nuit 7 :
+//                lanterne, épée en os, barillet, livre à lien ; calques de artefacts_choix.py)
 // Les rects viennent de construction.txt (export.py) : pixels de la maquette, coin haut gauche.
 using System;
 using System.Collections.Generic;
@@ -66,7 +68,8 @@ public static class MenusBuilder
         {
             var ti = (TextureImporter)AssetImporter.GetAtPath(p);
             string f = Path.GetFileNameWithoutExtension(p);
-            bool donnees = f.Contains("Masque") || f.Contains("Poids") || f.EndsWith("_Lueur");
+            bool donnees = f.Contains("Masque") || f.Contains("Poids") || f.EndsWith("_Lueur")
+                           || f.EndsWith("_Runes") || f.EndsWith("_Reflet") || f.EndsWith("_Pages") || f.EndsWith("_Volutes") || f.EndsWith("_Verre");
             ti.textureType = TextureImporterType.Sprite;
             ti.spriteImportMode = SpriteImportMode.Single;
             ti.spritePixelsPerUnit = 100;
@@ -833,6 +836,130 @@ public static class MenusBuilder
 
     static readonly List<(int, CampementApercu.Place)> places_ui = new List<(int, CampementApercu.Place)>();
 
+    // ------------------------------------------------------------------ artefacts de l'écran de choix (nuit 7)
+    // Un artefact par personnage, dans l'ordre de PERSOS. Tous ses calques partagent le cadre CADRE_ART (pixels de la
+    // maquette ; textures x2, faites par artefacts_choix.py) : le flottement est un décalage d'UV identique partout.
+    static readonly string[] ARTEFACTS = { "Lanterne", "Epee", "Barillet", "Livre" };
+    static readonly string[] NOMS_ART = { "Lanterne de feu", "Épée en os", "Barillet", "Livre à lien" };
+    static readonly string[] DESC_ART = { "Jet de flammes en cône qui brûle les ennemis touchés.",
+                                          "Combo de 3 coups ; frappe plus fort en pleine vitesse.",
+                                          "6 balles tirées depuis la chambre active.", "" };
+    static readonly float[] CADRE_ART = { 850, 192, 400, 300 };
+    static readonly string[] ModesArt = { "Lueur", "Braises", "Reflet", "Runes", "Volutes" };
+    const string SH_LUM = "ItHunts/UI/ArtefactLumiere", SH_CORPS = "ItHunts/UI/ArtefactCorps";
+
+    static Material MatArt(string a, string calque, string shader, float graine, Action<Material> regle) =>
+        Mat($"M_Choix_Art_{a}_{calque}", shader, m =>
+        {
+            m.SetFloat("_Flotte", 0.012f); m.SetFloat("_FlottePeriode", 5.5f); m.SetFloat("_Graine", graine);
+            regle(m);
+        });
+
+    static Material MatLum(string a, string calque, int mode, float graine, float base_, float amp, float periode, Color c, float intensite, Action<Material> regle = null) =>
+        MatArt(a, calque, SH_LUM, graine, m =>
+        {
+            Mode(m, "_Mode", ModesArt, mode);
+            m.SetFloat("_Base", base_); m.SetFloat("_Amplitude", amp); m.SetFloat("_Periode", periode);
+            m.SetColor("_Color", c); m.SetFloat("_Intensite", intensite);
+            m.SetVector("_Cadre", new Vector4(CADRE_ART[2] * 2, CADRE_ART[3] * 2, 0, 0));
+            regle?.Invoke(m);
+        });
+
+    static GameObject ConstruitArtefact(string a, Transform arts, Vector2 taille)
+    {
+        if (a == null) return null;
+        var ag = Noeud("Artefact_" + a, arts); MenuEcran.Pose(ag, 0, 0, taille.x, taille.y);
+        float[] r = CADRE_ART;
+        float g = Array.IndexOf(ARTEFACTS, a) * 1.7f;
+        Sprite S(string suffixe) => Spr("Choix", "Choix_Art_" + a + suffixe);
+        Texture2D T(string suffixe) => Tex("Choix", "Choix_Art_" + a + suffixe);
+        switch (a)
+        {
+            case "Lanterne":
+                // halo derrière la lanterne, corps, éclat du verre par-dessus (respire), puis les braises
+                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.65f, 0.45f, 3.8f, Color.white, 1f));
+                Img(ag, "Corps", S(""), r, MatArt(a, "Corps", SH_CORPS, g, m => { m.SetFloat("_AvecPages", 0); m.DisableKeyword("_PAGES"); }));
+                Img(ag, "Verre", S("_Verre"), r, MatLum(a, "Verre", 0, g, 0.05f, 0.45f, 3.8f, Color.white, 1f));
+                Img(ag, "Braises", null, r, MatLum(a, "Braises", 1, g, 1, 0, 3.8f, new Color(1f, 0.16f, 0.07f), 2.2f, m =>
+                {
+                    m.SetFloat("_Nombre", 12); m.SetFloat("_Taille", 3.8f); m.SetFloat("_Hauteur", 0.18f);
+                    m.SetVector("_Source", new Vector4(0.5f, 0.68f, 0.06f, 0.02f));
+                    m.SetColor("_Chaud", new Color(1f, 0.72f, 0.38f));
+                }));
+                break;
+            case "Epee":
+                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.7f, 0.35f, 4.0f, Color.white, 1f));
+                Img(ag, "Corps", S(""), r, MatArt(a, "Corps", SH_CORPS, g, m => { m.SetFloat("_AvecPages", 0); m.DisableKeyword("_PAGES"); }));
+                Img(ag, "Runes", S("_Runes"), r, MatLum(a, "Runes", 3, g, 0.25f, 1.25f, 3.2f, Color.white, 1f, m =>
+                    m.SetVector("_Plage", new Vector4(0.45f, 0.496f, 0, 0))));
+                break;
+            case "Barillet":
+                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.75f, 0.3f, 4.2f, Color.white, 1f));
+                Img(ag, "Corps", S(""), r, MatArt(a, "Corps", SH_CORPS, g, m => { m.SetFloat("_AvecPages", 0); m.DisableKeyword("_PAGES"); }));
+                Img(ag, "Reflet", S("_Reflet"), r, MatLum(a, "Reflet", 2, g, 0.25f, 0.55f, 5.5f, new Color(1f, 0.9f, 0.72f), 3.2f, m =>
+                {
+                    m.SetTexture("_Corps", T("")); m.SetVector("_Direction", new Vector4(0.7f, -0.7f, 0, 0));
+                    m.SetFloat("_Largeur", 0.035f); m.SetFloat("_Balayage", 0.3f); m.SetColor("_Rune", new Color(1f, 0.5f, 0.12f));
+                }));
+                break;
+            case "Livre":
+                Img(ag, "Lueur", S("_Lueur"), r, MatLum(a, "Lueur", 0, g, 0.7f, 0.35f, 4.6f, Color.white, 1f));
+                Img(ag, "Volutes", S("_Volutes"), r, MatLum(a, "Volutes", 4, g, 0.5f, 0.5f, 4.6f, new Color(0.35f, 0.65f, 1f), 1.3f, m =>
+                {
+                    m.SetFloat("_Echelle", 6f); m.SetFloat("_Montee", 0.06f); m.SetFloat("_Seuil", 0.38f);
+                }));
+                Img(ag, "Corps", S(""), r, MatArt(a, "Corps", SH_CORPS, g, m =>
+                {
+                    m.SetFloat("_AvecPages", 1); m.EnableKeyword("_PAGES"); m.SetTexture("_Pages", T("_Pages"));
+                    m.SetFloat("_Frisson", 0.005f); m.SetFloat("_PeriodePages", 3.4f);
+                }));
+                break;
+        }
+        return ag.gameObject;
+    }
+
+    /// <summary>Refait les artefacts du prefab Menu_Choix sans reconstruire l'écran (nuit 7).</summary>
+    public static string ArtefactsChoix()
+    {
+        if (!BonProjet()) return "MAUVAIS PROJET";
+        Lit();
+        AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+        int n = 0;
+        foreach (string gid in AssetDatabase.FindAssets("Choix_Art_ t:Texture2D", new[] { M + "/Choix" }))
+        {
+            string p = AssetDatabase.GUIDToAssetPath(gid);
+            var ti = (TextureImporter)AssetImporter.GetAtPath(p);
+            string f = Path.GetFileNameWithoutExtension(p);
+            bool donnees = f.EndsWith("_Lueur") || f.EndsWith("_Runes") || f.EndsWith("_Reflet") || f.EndsWith("_Pages") || f.EndsWith("_Volutes") || f.EndsWith("_Verre");
+            ti.textureType = TextureImporterType.Sprite; ti.spriteImportMode = SpriteImportMode.Single; ti.spritePixelsPerUnit = 100;
+            var s = new TextureImporterSettings(); ti.ReadTextureSettings(s);
+            s.spriteMeshType = SpriteMeshType.FullRect; s.spriteGenerateFallbackPhysicsShape = false; ti.SetTextureSettings(s);
+            ti.mipmapEnabled = false; ti.filterMode = FilterMode.Bilinear; ti.wrapMode = TextureWrapMode.Clamp;
+            ti.sRGBTexture = !donnees; ti.alphaIsTransparency = !donnees; ti.maxTextureSize = 4096;
+            ti.textureCompression = TextureImporterCompression.Uncompressed; ti.isReadable = false;
+            ti.SaveAndReimport(); n++;
+        }
+        string path = PRE + "/Menu_Choix.prefab";
+        var root = PrefabUtility.LoadPrefabContents(path);
+        try
+        {
+            var taille = new Vector2(_valeurs["Choix_taille"][0], _valeurs["Choix_taille"][1]);
+            var arts = root.transform.Find("Artefacts");
+            for (int k = arts.childCount - 1; k >= 0; k--) UnityEngine.Object.DestroyImmediate(arts.GetChild(k).gameObject);
+            var cp = root.GetComponent<ChoixPersoApercu>();
+            for (int i = 0; i < ARTEFACTS.Length && i < cp.entrees.Length; i++)
+            {
+                cp.entrees[i].artefact = ConstruitArtefact(ARTEFACTS[i], arts, taille);
+                cp.entrees[i].artefactApercu = NOMS_ART[i];
+                cp.entrees[i].descriptionApercu = DESC_ART[i];
+            }
+            PrefabUtility.SaveAsPrefabAsset(root, path);
+        }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+        AssetDatabase.SaveAssets();
+        return n + " textures ; artefacts refaits : " + string.Join(", ", ARTEFACTS);
+    }
+
     // ------------------------------------------------------------------ choix du personnage
     static GameObject ConstruitChoix(Transform canvas)
     {
@@ -842,13 +969,12 @@ public static class MenusBuilder
         var cp = e.gameObject.AddComponent<ChoixPersoApercu>();
         cp.roster = AssetDatabase.LoadAssetAtPath<ItHunts.Settings.CharacterRoster>("Assets/_Project/Settings/Personnages/Characters_Default.asset");
         var entrees = new List<ChoixPersoApercu.Entree>();
-        string[] artefacts = { "Lanterne", null, "Barillet", null };
+        string[] artefacts = ARTEFACTS;
         string[] noms = { "Renard", "Koala", "Caméléon", "Hibou" };
-        string[] nomsArt = { "Lanterne de feu", "", "Barillet", "" };
+        string[] nomsArt = NOMS_ART;
         // descriptions d'aperçu, résumées de docs/design/features/artefacts/design.md (en attendant un champ
         // « description » dans ArtifactDefinition, lu en priorité par ChoixPersoApercu)
-        string[] desc = { "Un jet de flammes en cône : chaque ennemi touché brûle quelques secondes.", "",
-                          "Six coups tirés sous le viseur ; le barillet se recharge une fois vide.", "" };
+        string[] desc = DESC_ART;
         string[] ids = { "renard", "koala", "cameleon", "hibou" };
         var grands = Noeud("Grands", e); MenuEcran.Pose(grands, 0, 0, taille.x, taille.y);
         var arts = Noeud("Artefacts", e); MenuEcran.Pose(arts, 0, 0, taille.x, taille.y);
@@ -865,23 +991,7 @@ public static class MenusBuilder
                 m.SetFloat("_Respiration", 1.6f); m.SetFloat("_Rythme", 0.2f); m.SetFloat("_Cape", 1.1f); m.SetFloat("_CapeHaut", 0.3f); m.SetFloat("_Phase", 0.1f * i);
             }));
             Img(g, "Lanterne_Vacille", Spr("Choix", "Choix_" + p + "_Lueur"), r, MatModulation("M_Choix_Lueur_" + p, new Vector4(1, 0, 0, 0), 0, 0.35f, 1.1f, 0.01f, 20 + i, new Color(1, 0.9f, 0.85f)));
-            GameObject art = null;
-            if (artefacts[i] != null)
-            {
-                string a = artefacts[i];
-                var ag = Noeud("Artefact_" + a, arts); MenuEcran.Pose(ag, 0, 0, taille.x, taille.y);
-                float[] cu = _valeurs["Choix_centre_" + a];
-                Img(ag, "Trainees", Spr("Choix", "Choix_Artefact_" + a + "_Trainees"), _pieces["Choix_Artefact_" + a + "_Trainees"], Mat("M_Choix_" + a + "_Trainees", "ItHunts/UI/Deformation", m =>
-                {
-                    m.SetFloat("_Respiration", 0); m.SetFloat("_Cape", 0); m.SetFloat("_Flottement", 5); m.SetFloat("_FlotteVitesse", 0.3f);
-                    m.SetFloat("_Orbite", 0.05f); m.SetVector("_Centre", new Vector4(cu[0], cu[1], 0.45f, 0));
-                }));
-                Img(ag, "Corps", Spr("Choix", "Choix_Artefact_" + a), _pieces["Choix_Artefact_" + a], Mat("M_Choix_" + a, "ItHunts/UI/Deformation", m =>
-                {
-                    m.SetFloat("_Respiration", 0); m.SetFloat("_Cape", 0); m.SetFloat("_Flottement", 5); m.SetFloat("_FlotteVitesse", 0.3f); m.SetFloat("_Orbite", 0);
-                }));
-                art = ag.gameObject;
-            }
+            GameObject art = ConstruitArtefact(artefacts[i], arts, taille);
             var vd = Img(vigs, "Vignette_" + p + "_Discrete", Spr("Choix", "Choix_Vignette_" + p + "_Discrete"), _pieces["Choix_Vignette_" + p + "_Discrete"], null, true);
             var vi = Img(vigs, "Vignette_" + p + "_Illuminee", Spr("Choix", "Choix_Vignette_" + p + "_Illuminee"), _pieces["Choix_Vignette_" + p + "_Illuminee"], null, true);
             foreach (var v in new[] { vd, vi })
